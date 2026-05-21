@@ -264,8 +264,8 @@ export const NewsCard = ({
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90"
-        style={{ textDecoration: 'none', color: 'inherit' }}
+        className="flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90 no-underline"
+        style={{ color: 'inherit' }}
       >
         {hasImage && (
           <div className="md:flex-[0_0_45%] rounded-element overflow-hidden">
@@ -667,7 +667,7 @@ export const NewsCard = ({
                   <span key={city.id}>
                     <LocalizedLink
                       to={`/city/${city.slug || city.id}`}
-                      style={{ color: 'var(--primary)', textDecoration: 'none' }}
+                      className="text-primary no-underline"
                     >
                       {city.name}
                     </LocalizedLink>
@@ -680,7 +680,7 @@ export const NewsCard = ({
                   <span key={country.id}>
                     <LocalizedLink
                       to={`/country/${country.slug || country.id}`}
-                      style={{ color: 'var(--primary)', textDecoration: 'none' }}
+                      className="text-primary no-underline"
                     >
                       {country.name}
                     </LocalizedLink>

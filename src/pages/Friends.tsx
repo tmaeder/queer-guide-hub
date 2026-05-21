@@ -176,7 +176,8 @@ export default function Friends() {
                                 <div>
                                   <LocalizedLink
                                     to={`/users/${friendId}`}
-                                    style={{ fontWeight: 500, transition: 'color 0.2s' }}
+                                    style={{ transition: 'color 0.2s' }}
+                                    className="font-medium"
                                   >
                                     {profile?.display_name || 'Unknown User'}
                                   </LocalizedLink>
@@ -241,7 +242,8 @@ export default function Friends() {
                                 <div>
                                   <LocalizedLink
                                     to={`/users/${request.user_id}`}
-                                    style={{ fontWeight: 500, transition: 'color 0.2s' }}
+                                    style={{ transition: 'color 0.2s' }}
+                                    className="font-medium"
                                   >
                                     {profile?.display_name || 'Unknown User'}
                                   </LocalizedLink>

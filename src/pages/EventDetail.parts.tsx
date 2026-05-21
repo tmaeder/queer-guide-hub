@@ -257,7 +257,8 @@ export function EventHero({
               {event.venues?.id ? (
                 <LocalizedLink
                   to={`/venues/${event.venues.slug || event.venues.id}`}
-                  style={{ color: 'inherit', textDecoration: 'none' }}
+                  style={{ color: 'inherit' }}
+                  className="no-underline"
                 >
                   <span className="text-sm hover:text-primary hover:underline">
                     {event.venues.name}

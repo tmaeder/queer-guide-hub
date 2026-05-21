@@ -149,7 +149,8 @@ export function VenueCard({ venue, loading = false }: VenueCardProps) {
       {venue && (
         <LocalizedLink
           to={`/venues/${venue.slug}`}
-          style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+          style={{ color: 'inherit' }}
+          className="block no-underline"
         >
           <CardHoverEffect>
             <Card hoverable className="group overflow-hidden">

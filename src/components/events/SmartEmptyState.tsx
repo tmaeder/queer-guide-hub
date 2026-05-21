@@ -62,7 +62,10 @@ export function SmartEmptyState({
       <div className="flex flex-wrap gap-2">
         {city && onClearCity && (
           <Button variant="outline" size="sm" onClick={onClearCity}>
-            {t('pages.events.smartEmpty.clearCity', { city, defaultValue: `Drop "${city}" filter` })}
+            {t('pages.events.smartEmpty.clearCity', {
+              city,
+              defaultValue: `Drop "${city}" filter`,
+            })}
           </Button>
         )}
         {dateRange && onClearDate && (
@@ -80,9 +83,15 @@ export function SmartEmptyState({
         <div className="space-y-3">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {primary.kind === 'sameCity' && city
-              ? t('pages.events.smartEmpty.sameCityHeader', { city, defaultValue: `Try in ${city} on other dates` })
+              ? t('pages.events.smartEmpty.sameCityHeader', {
+                  city,
+                  defaultValue: `Try in ${city} on other dates`,
+                })
               : primary.kind === 'otherCities'
-                ? t('pages.events.smartEmpty.otherCitiesHeader', 'Try other cities in your date range')
+                ? t(
+                    'pages.events.smartEmpty.otherCitiesHeader',
+                    'Try other cities in your date range',
+                  )
                 : t('pages.events.smartEmpty.fallbackHeader', 'Other upcoming events')}
           </p>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -108,8 +117,8 @@ function SuggestionRow({ event, dfLocale }: SuggestionRowProps) {
     <li>
       <LocalizedLink
         to={`/events/${event.slug}`}
-        className="group flex items-center gap-3 rounded-container border border-border bg-background px-3 py-2.5 transition-colors hover:bg-muted/50"
-        style={{ textDecoration: 'none', color: 'inherit' }}
+        className="group flex items-center gap-3 rounded-container border border-border bg-background px-3 py-2.5 transition-colors hover:bg-muted/50 no-underline"
+        style={{ color: 'inherit' }}
       >
         <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
         <div className="flex-1 min-w-0">

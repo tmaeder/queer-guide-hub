@@ -83,7 +83,9 @@ const EventCardFixture = () => (
       </div>
     </CardHeader>
     <CardContent>
-      <p className="text-sm text-muted-foreground">A sample event description spanning a couple of lines.</p>
+      <p className="text-sm text-muted-foreground">
+        A sample event description spanning a couple of lines.
+      </p>
       <div className="flex items-start gap-1 p-1.5 bg-muted rounded-element">
         <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
         <div className="flex-1">
@@ -180,46 +182,115 @@ export const EventCard = memo(function EventCard({
       {event && (
         <LocalizedLink
           to={`/events/${event.slug}`}
-          style={{ textDecoration: 'none', color: 'inherit' }}
+          style={{ color: 'inherit' }}
+          className="no-underline"
         >
           <CardHoverEffect>
-          <Card hoverable className="group">
-            {/* Image */}
-            {hasImage && (
-              <div className="relative h-[200px] overflow-hidden">
-                <img
-                  src={resolvedImage ?? ''}
-                  alt={event.title}
-                  role="presentation"
-                  loading="lazy"
-                  decoding="async"
-                  onError={() => setImageError(true)}
-                  className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
-                />
-                <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start">
-                  <div className="flex gap-1">
-                    {isVisited && (
-                      <div
-                        className="inline-flex items-center px-1.5 py-0.5 text-2xs font-semibold bg-foreground/80 text-background"
-                        title="Visited"
-                      >
-                        ✓ Visited
-                      </div>
+            <Card hoverable className="group">
+              {/* Image */}
+              {hasImage && (
+                <div className="relative h-[200px] overflow-hidden">
+                  <img
+                    src={resolvedImage ?? ''}
+                    alt={event.title}
+                    role="presentation"
+                    loading="lazy"
+                    decoding="async"
+                    onError={() => setImageError(true)}
+                    className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
+                  />
+                  <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start">
+                    <div className="flex gap-1">
+                      {isVisited && (
+                        <div
+                          className="inline-flex items-center px-1.5 py-0.5 text-2xs font-semibold bg-foreground/80 text-background"
+                          title="Visited"
+                        >
+                          ✓ Visited
+                        </div>
+                      )}
+                      {tripStatus?.isInTrip && (
+                        <div className="flex items-center gap-0.5 bg-primary text-primary-foreground rounded-full px-1 py-0.5 text-xs2 font-semibold">
+                          <Luggage className="w-3 h-3" />
+                          In trip
+                        </div>
+                      )}
+                      {overlapsActiveTrip && (
+                        <div
+                          className="flex items-center gap-0.5 bg-background text-primary border border-primary rounded-full px-1 py-0.5 text-xs2 font-semibold"
+                          title={`Happens during ${activeTrip?.title}`}
+                        >
+                          <Calendar className="w-3 h-3" />
+                          During your trip
+                        </div>
+                      )}
+                      {event.is_featured && (
+                        <Badge>
+                          <Star className="h-3 w-3 mr-1" />
+                          Featured
+                        </Badge>
+                      )}
+                      {isMeaningfulTag(event.event_type) && (
+                        <Badge style={{ ...getEventTypeStyle(event.event_type) }}>
+                          {event.event_type}
+                        </Badge>
+                      )}
+                      {isPast && (
+                        <Badge variant="secondary" style={{ opacity: 0.7 }}>
+                          {t('events.past', 'Past')}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {event.images && event.images.length > 1 && (
+                      <Badge variant="secondary">+{event.images.length - 1} photos</Badge>
                     )}
+                  </div>
+
+                  {/* Logo overlay */}
+                  {event.logo_url && (
+                    <img
+                      src={event.logo_url}
+                      alt=""
+                      role="presentation"
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute bottom-3 left-3 w-8 h-8 rounded-element bg-background object-contain shadow-[var(--shadow-aceternity-sm)] z-20 p-0.5"
+                      onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  )}
+
+                  {priceDisplay && (
+                    <div className="absolute bottom-4 right-4 z-20">
+                      <Badge variant={event.is_free ? 'default' : 'secondary'}>
+                        {event.is_free ? (
+                          <Ticket className="h-3 w-3 mr-1" />
+                        ) : (
+                          <DollarSign className="h-3 w-3 mr-1" />
+                        )}
+                        {priceDisplay}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <CardHeader>
+                {!hasImage && (
+                  <div className="flex flex-wrap gap-1 mb-1">
                     {tripStatus?.isInTrip && (
-                      <div className="flex items-center gap-0.5 bg-primary text-primary-foreground rounded-full px-1 py-0.5 text-xs2 font-semibold">
-                        <Luggage className="w-3 h-3" />
+                      <Badge>
+                        <Luggage className="h-3 w-3 mr-1" />
                         In trip
-                      </div>
+                      </Badge>
                     )}
                     {overlapsActiveTrip && (
-                      <div
-                        className="flex items-center gap-0.5 bg-background text-primary border border-primary rounded-full px-1 py-0.5 text-xs2 font-semibold"
-                        title={`Happens during ${activeTrip?.title}`}
-                      >
-                        <Calendar className="w-3 h-3" />
+                      <Badge variant="outline">
+                        <Calendar className="h-3 w-3 mr-1" />
                         During your trip
-                      </div>
+                      </Badge>
                     )}
                     {event.is_featured && (
                       <Badge>
@@ -232,285 +303,233 @@ export const EventCard = memo(function EventCard({
                         {event.event_type}
                       </Badge>
                     )}
-                    {isPast && (
-                      <Badge variant="secondary" style={{ opacity: 0.7 }}>
-                        {t('events.past', 'Past')}
+                    {priceDisplay && (
+                      <Badge variant={event.is_free ? 'default' : 'secondary'}>
+                        {priceDisplay}
                       </Badge>
                     )}
                   </div>
-
-                  {event.images && event.images.length > 1 && (
-                    <Badge variant="secondary">+{event.images.length - 1} photos</Badge>
-                  )}
-                </div>
-
-                {/* Logo overlay */}
-                {event.logo_url && (
-                  <img
-                    src={event.logo_url}
-                    alt=""
-                    role="presentation"
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute bottom-3 left-3 w-8 h-8 rounded-element bg-background object-contain shadow-[var(--shadow-aceternity-sm)] z-20 p-0.5"
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
                 )}
 
-                {priceDisplay && (
-                  <div className="absolute bottom-4 right-4 z-20">
-                    <Badge variant={event.is_free ? 'default' : 'secondary'}>
-                      {event.is_free ? (
-                        <Ticket className="h-3 w-3 mr-1" />
-                      ) : (
-                        <DollarSign className="h-3 w-3 mr-1" />
-                      )}
-                      {priceDisplay}
-                    </Badge>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <CardHeader>
-              {!hasImage && (
-                <div className="flex flex-wrap gap-1 mb-1">
-                  {tripStatus?.isInTrip && (
-                    <Badge>
-                      <Luggage className="h-3 w-3 mr-1" />
-                      In trip
-                    </Badge>
-                  )}
-                  {overlapsActiveTrip && (
-                    <Badge variant="outline">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      During your trip
-                    </Badge>
-                  )}
-                  {event.is_featured && (
-                    <Badge>
-                      <Star className="h-3 w-3 mr-1" />
-                      Featured
-                    </Badge>
-                  )}
-                  {isMeaningfulTag(event.event_type) && (
-                    <Badge style={{ ...getEventTypeStyle(event.event_type) }}>
-                      {event.event_type}
-                    </Badge>
-                  )}
-                  {priceDisplay && (
-                    <Badge variant={event.is_free ? 'default' : 'secondary'}>{priceDisplay}</Badge>
-                  )}
-                </div>
-              )}
-
-              <CardTitle>
-                <span className="inline-flex items-center gap-1 flex-wrap">
-                  {event.title}
-                  <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
-                </span>
-              </CardTitle>
-
-              <div className="flex flex-wrap gap-1.5 mt-1">
-                <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    {formatEventDate(event.start_date, event.end_date)}
+                <CardTitle>
+                  <span className="inline-flex items-center gap-1 flex-wrap">
+                    {event.title}
+                    <ContentLangBadge
+                      text={event.title}
+                      language={(event as { content_language?: string | null }).content_language}
+                    />
                   </span>
-                </div>
-                <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
-                </div>
-              </div>
-            </CardHeader>
+                </CardTitle>
 
-            <CardContent>
-              {sanitizeExcerpt(event.description) && (
-                <p
-                  className="text-sm text-muted-foreground overflow-hidden break-words"
-                  style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', lineHeight: 1.6 }}
-                >
-                  {sanitizeExcerpt(event.description)}
-                </p>
-              )}
-
-              {hasLocation && (
-                <div
-                  className={`flex gap-1 p-1.5 bg-muted rounded-element ${event.venues?.address ? 'items-start' : 'items-center'}`}
-                >
-                  <MapPin
-                    className="h-4 w-4 text-primary flex-shrink-0"
-                    style={{ marginTop: event.venues?.address ? 2 : 0 }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    {hasVenue && (
-                      <p
-                        className="text-sm font-medium overflow-hidden break-words"
-                        style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}
-                      >
-                        {event.venues?.name || event.venue_name}
-                      </p>
-                    )}
-                    {locationLabel && (
-                      <span className="text-xs text-muted-foreground">{locationLabel}</span>
-                    )}
-                    {event.venues?.address && (
-                      <span className="text-xs text-muted-foreground mt-0.5 block">
-                        {event.venues.address}
-                      </span>
-                    )}
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      {formatEventDate(event.start_date, event.end_date)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">
+                      {formatEventTime(event.start_date, event.end_date)}
+                    </span>
                   </div>
                 </div>
-              )}
+              </CardHeader>
 
-              <div className="flex items-center justify-between py-1">
-                <div className="flex items-center gap-2">
-                  {attendeeCount > 0 && (
-                    <div className="flex items-center gap-1">
-                      <div className="p-1 bg-muted rounded-element">
-                        <Users className="h-3.5 w-3.5 text-primary" />
+              <CardContent>
+                {sanitizeExcerpt(event.description) && (
+                  <p
+                    className="text-sm text-muted-foreground overflow-hidden break-words"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {sanitizeExcerpt(event.description)}
+                  </p>
+                )}
+
+                {hasLocation && (
+                  <div
+                    className={`flex gap-1 p-1.5 bg-muted rounded-element ${event.venues?.address ? 'items-start' : 'items-center'}`}
+                  >
+                    <MapPin
+                      className="h-4 w-4 text-primary flex-shrink-0"
+                      style={{ marginTop: event.venues?.address ? 2 : 0 }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      {hasVenue && (
+                        <p
+                          className="text-sm font-medium overflow-hidden break-words"
+                          style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 1,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {event.venues?.name || event.venue_name}
+                        </p>
+                      )}
+                      {locationLabel && (
+                        <span className="text-xs text-muted-foreground">{locationLabel}</span>
+                      )}
+                      {event.venues?.address && (
+                        <span className="text-xs text-muted-foreground mt-0.5 block">
+                          {event.venues.address}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between py-1">
+                  <div className="flex items-center gap-2">
+                    {attendeeCount > 0 && (
+                      <div className="flex items-center gap-1">
+                        <div className="p-1 bg-muted rounded-element">
+                          <Users className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <p className="text-sm font-medium">{attendeeCount} attending</p>
                       </div>
-                      <p className="text-sm font-medium">{attendeeCount} attending</p>
+                    )}
+
+                    {event.age_restriction && (
+                      <Badge variant="outline">{event.age_restriction}</Badge>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-0.5">
+                    <div
+                      onClick={(e) => e.preventDefault()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                      role="presentation"
+                    >
+                      <FavoriteButton itemId={event.id} type="event" />
+                    </div>
+                    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="h-11 w-11 min-w-11 min-h-11 p-0"
+                          aria-label={t('events.card.moreActions', 'More actions')}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <MoreVertical className="w-4 h-4" aria-hidden="true" focusable="false" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                        <AddToTripMenuItem
+                          entity={{
+                            type: 'event',
+                            id: event.id,
+                            name: event.title,
+                            latitude: event.latitude,
+                            longitude: event.longitude,
+                            city_id: event.city_id,
+                            country_id: event.country_id,
+                            category: event.event_type,
+                          }}
+                          onClose={() => setMenuOpen(false)}
+                        />
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setMenuOpen(false);
+                            navigator.clipboard.writeText(
+                              `${window.location.origin}/events/${event.slug}`,
+                            );
+                          }}
+                        >
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Share
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-1 pt-2 border-t border-border">
+                  <Button size="sm" variant="outline">
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </Button>
+
+                  {(event.venues?.website || event.ticket_url) && (
+                    <div className="flex gap-0.5 ml-auto">
+                      {event.venues?.website && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          aria-label={t('events.card.visitWebsite', 'Visit venue website')}
+                          title={t('events.card.visitWebsite', 'Visit venue website')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            window.open(event.venues!.website!, '_blank');
+                          }}
+                          className="min-w-11 min-h-11"
+                        >
+                          <ExternalLink className="h-4 w-4" aria-hidden="true" focusable="false" />
+                        </Button>
+                      )}
+                      {event.ticket_url && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          aria-label={t('events.card.getTickets', 'Get tickets')}
+                          title={t('events.card.getTickets', 'Get tickets')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            window.open(event.ticket_url!, '_blank');
+                          }}
+                          className="min-w-11 min-h-11"
+                        >
+                          <Ticket className="h-4 w-4 mr-1.5" aria-hidden="true" focusable="false" />
+                          {t('events.card.tickets', 'Tickets')}
+                        </Button>
+                      )}
                     </div>
                   )}
-
-                  {event.age_restriction && (
-                    <Badge variant="outline">{event.age_restriction}</Badge>
-                  )}
                 </div>
 
-                <div className="flex items-center gap-0.5">
-                  <div
-                    onClick={(e) => e.preventDefault()}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    role="presentation"
-                  >
-                    <FavoriteButton itemId={event.id} type="event" />
-                  </div>
-                  <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-11 w-11 min-w-11 min-h-11 p-0"
-                        aria-label={t('events.card.moreActions', 'More actions')}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                      >
-                        <MoreVertical className="w-4 h-4" aria-hidden="true" focusable="false" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-                      <AddToTripMenuItem
-                        entity={{
-                          type: 'event',
-                          id: event.id,
-                          name: event.title,
-                          latitude: event.latitude,
-                          longitude: event.longitude,
-                          city_id: event.city_id,
-                          country_id: event.country_id,
-                          category: event.event_type,
-                        }}
-                        onClose={() => setMenuOpen(false)}
-                      />
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          setMenuOpen(false);
-                          navigator.clipboard.writeText(
-                            `${window.location.origin}/events/${event.slug}`,
-                          );
-                        }}
-                      >
-                        <Share2 className="w-4 h-4 mr-2" />
-                        Share
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between gap-1 pt-2 border-t border-border">
-                <Button size="sm" variant="outline">
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Details
-                </Button>
-
-                {(event.venues?.website || event.ticket_url) && (
-                  <div className="flex gap-0.5 ml-auto">
-                    {event.venues?.website && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        aria-label={t('events.card.visitWebsite', 'Visit venue website')}
-                        title={t('events.card.visitWebsite', 'Visit venue website')}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          window.open(event.venues!.website!, '_blank');
-                        }}
-                        className="min-w-11 min-h-11"
-                      >
-                        <ExternalLink className="h-4 w-4" aria-hidden="true" focusable="false" />
-                      </Button>
-                    )}
-                    {event.ticket_url && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        aria-label={t('events.card.getTickets', 'Get tickets')}
-                        title={t('events.card.getTickets', 'Get tickets')}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          window.open(event.ticket_url!, '_blank');
-                        }}
-                        className="min-w-11 min-h-11"
-                      >
-                        <Ticket className="h-4 w-4 mr-1.5" aria-hidden="true" focusable="false" />
-                        {t('events.card.tickets', 'Tickets')}
-                      </Button>
-                    )}
+                {onUpdateAttendance && (
+                  <div className="flex gap-1 pt-1">
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onUpdateAttendance(event.id, 'going');
+                      }}
+                    >
+                      <Heart className="h-4 w-4 mr-2" />
+                      I'm Going
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onUpdateAttendance(event.id, 'interested');
+                      }}
+                    >
+                      <Star className="h-4 w-4 mr-2" />
+                      Interested
+                    </Button>
                   </div>
                 )}
-              </div>
-
-              {onUpdateAttendance && (
-                <div className="flex gap-1 pt-1">
-                  <Button
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      onUpdateAttendance(event.id, 'going');
-                    }}
-                  >
-                    <Heart className="h-4 w-4 mr-2" />
-                    I'm Going
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      onUpdateAttendance(event.id, 'interested');
-                    }}
-                  >
-                    <Star className="h-4 w-4 mr-2" />
-                    Interested
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           </CardHoverEffect>
         </LocalizedLink>
       )}

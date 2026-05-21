@@ -87,7 +87,8 @@ export const UserDirectoryGrid = ({
             <LocalizedLink
               key={profile.user_id}
               to={`/user/${profile.user_id}`}
-              style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+              style={{ color: 'inherit' }}
+              className="block no-underline"
             >
               <Card
                 style={{ height: '100%', transition: 'all 0.3s', border: '2px solid' }}

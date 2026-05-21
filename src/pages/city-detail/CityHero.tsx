@@ -68,10 +68,10 @@ export function CityHero({
                 to={`/country/${city.countries.slug || city.countries.id}`}
                 style={{
                   color: 'inherit',
-                  textDecoration: 'underline',
                   textDecorationColor: 'currentColor',
                   textUnderlineOffset: '2px',
                 }}
+                className="underline"
               >
                 {city.countries.name}
               </LocalizedLink>

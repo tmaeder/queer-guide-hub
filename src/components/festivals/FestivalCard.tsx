@@ -49,7 +49,7 @@ export function FestivalCard({ festival }: FestivalCardProps) {
   const heroImage = festival.images && festival.images.length > 0 ? festival.images[0] : null;
 
   return (
-    <LocalizedLink to={`/festivals/${festival.id}`} style={{ textDecoration: 'none' }}>
+    <LocalizedLink to={`/festivals/${festival.id}`} className="no-underline">
       <Card hoverable>
         <CardImage src={heroImage} alt={festival.name} fallbackIcon={Music} height={160} />
         <div className="p-4">

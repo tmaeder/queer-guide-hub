@@ -104,7 +104,7 @@ const CommentItem = ({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <LocalizedLink to={`/user/${comment.user_id}`} style={{ fontWeight: 500, fontSize: '0.875rem' }}>
+            <LocalizedLink to={`/user/${comment.user_id}`} className="font-medium text-sm">
               {comment.profiles?.display_name || 'Unknown User'}
             </LocalizedLink>
             <span className="text-xs text-muted-foreground">
@@ -120,7 +120,6 @@ const CommentItem = ({
               size="sm"
               onClick={handleLikeToggle}
               disabled={isLiking || !user}
-
             >
               <Heart
                 style={{
@@ -138,7 +137,6 @@ const CommentItem = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => onReply(comment.id, comment.profiles?.display_name || 'User')}
-
               >
                 <Reply size={12} className="mr-1" />
                 Reply
@@ -150,12 +148,7 @@ const CommentItem = ({
         {(isOwnComment || user) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-
-                aria-label="Comment actions"
-              >
+              <Button variant="ghost" size="sm" aria-label="Comment actions">
                 <MoreHorizontal size={12} />
               </Button>
             </DropdownMenuTrigger>
@@ -322,9 +315,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
             <div className="flex gap-3">
               <Avatar>
                 <AvatarImage src={user.user_metadata?.avatar_url} />
-                <AvatarFallback>
-                  {user.email?.charAt(0)?.toUpperCase() || 'U'}
-                </AvatarFallback>
+                <AvatarFallback>{user.email?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
 
               <div className="flex-1">

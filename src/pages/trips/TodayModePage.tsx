@@ -316,10 +316,7 @@ export default function TodayModePage() {
 
       {/* Header */}
       <div className="mb-6">
-        <LocalizedLink
-          to={`/trips/${effectiveTrip.id}`}
-          style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem' }}
-        >
+        <LocalizedLink to={`/trips/${effectiveTrip.id}`} className="text-muted-foreground text-sm">
           ← {effectiveTrip.title}
         </LocalizedLink>
         <div className="flex items-center gap-2 mt-2">
@@ -379,7 +376,8 @@ export default function TodayModePage() {
               </p>
               <LocalizedLink
                 to={`/trips/${effectiveTrip.id}`}
-                style={{ color: 'inherit', textDecoration: 'underline', fontSize: '0.8125rem' }}
+                style={{ color: 'inherit' }}
+                className="underline text-13"
               >
                 {t('trips.today.viewBriefing', 'View full safety briefing →')}
               </LocalizedLink>

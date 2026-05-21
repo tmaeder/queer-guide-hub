@@ -18,7 +18,7 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
   const isVisited = !!village.id && visitedLookup.has('village', village.id);
 
   return (
-    <LocalizedLink to={`/villages/${village.slug}`} style={{ textDecoration: 'none' }}>
+    <LocalizedLink to={`/villages/${village.slug}`} className="no-underline">
       <Card hoverable>
         <CardImage src={imageUrl} alt={village.name} fallbackIcon={Landmark} height={180}>
           {village.featured && (

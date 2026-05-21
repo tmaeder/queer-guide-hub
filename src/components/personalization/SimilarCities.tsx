@@ -86,7 +86,7 @@ export function SimilarCities({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {cities.map((city) => (
-          <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
+          <LocalizedLink key={city.id} to={`/city/${city.id}`} className="no-underline">
             <Card>
               <CardContent className="p-3">
                 <div className="flex justify-between items-center">

@@ -92,8 +92,7 @@ export function TripDocExpiryBanner({ trip }: Props) {
         </ul>
         <RouterLink
           to={`/trips/${trip.id}?tab=docs`}
-          className="inline-block mt-2 text-xs font-semibold text-primary hover:opacity-85"
-          style={{ textDecoration: 'none' }}
+          className="inline-block mt-2 text-xs font-semibold text-primary hover:opacity-85 no-underline"
         >
           {t('trips.docs.manageLink', 'Manage documents →')}
         </RouterLink>

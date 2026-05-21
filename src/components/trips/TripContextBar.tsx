@@ -47,8 +47,7 @@ export function TripContextBar() {
         <div className="flex-1" />
         <RouterLink
           to={`/trips/${activeTrip.id}`}
-          className="text-sm text-primary inline-flex items-center gap-0.5 transition-opacity hover:opacity-85 active:opacity-70 flex-shrink-0"
-          style={{ textDecoration: 'none' }}
+          className="text-sm text-primary inline-flex items-center gap-0.5 transition-opacity hover:opacity-85 active:opacity-70 flex-shrink-0 no-underline"
         >
           {t('trips.contextBar.openTrip', 'Open trip')}
           <ChevronRight size={14} aria-hidden />

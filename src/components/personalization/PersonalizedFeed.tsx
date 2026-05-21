@@ -119,7 +119,7 @@ export function PersonalizedFeed() {
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {displayCities.map((city) => (
-            <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
+            <LocalizedLink key={city.id} to={`/city/${city.id}`} className="no-underline">
               <Card className="h-full">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-2">

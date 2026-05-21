@@ -10,7 +10,8 @@ function formatRange(start: string | null, end: string | null) {
   const s = new Date(start);
   const e = end ? new Date(end) : null;
   const sStr = s.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  if (!e || e.toDateString() === s.toDateString()) return { label: sStr, end: null as string | null };
+  if (!e || e.toDateString() === s.toDateString())
+    return { label: sStr, end: null as string | null };
   const eStr = e.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   return { label: `${sStr} – ${eStr}`, end: end };
 }
@@ -63,8 +64,7 @@ export function PrideScroller() {
               >
                 <LocalizedLink
                   to={`/events/${event.id}`}
-                  className="font-semibold text-sm truncate mb-2 block"
-                  style={{ textDecoration: 'none' }}
+                  className="font-semibold text-sm truncate mb-2 block no-underline"
                 >
                   {event.title}
                 </LocalizedLink>

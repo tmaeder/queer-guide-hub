@@ -217,13 +217,8 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                   key={image.id}
                   role="button"
                   tabIndex={0}
-                  /* group removed */
-                  style={{
-                    position: 'relative',
-                    cursor: 'pointer',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s',
-                  }}
+                  /* group removed */ style={{ transition: 'all 0.3s' }}
+                  className="relative cursor-pointer overflow-hidden"
                   onClick={() => openModal(index)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {

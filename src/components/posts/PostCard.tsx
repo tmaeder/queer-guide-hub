@@ -288,7 +288,8 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
             <div>
               <LocalizedLink
                 to={`/user/${post.user_id}`}
-                style={{ fontWeight: 500, textDecoration: 'none', color: 'inherit' }}
+                style={{ color: 'inherit' }}
+                className="font-medium no-underline"
               >
                 {post.profiles?.display_name || 'Unknown User'}
               </LocalizedLink>

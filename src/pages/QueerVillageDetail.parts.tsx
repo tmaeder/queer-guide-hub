@@ -113,11 +113,8 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
               {village.cities && (
                 <LocalizedLink
                   to={`/city/${village.cities.slug || village.cities.id}`}
-                  style={{
-                    color: 'inherit',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '2px',
-                  }}
+                  style={{ color: 'inherit', textUnderlineOffset: '2px' }}
+                  className="underline"
                 >
                   {village.cities.name}
                 </LocalizedLink>
@@ -126,11 +123,8 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
               {village.countries && (
                 <LocalizedLink
                   to={`/country/${village.countries.slug || village.countries.id}`}
-                  style={{
-                    color: 'inherit',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '2px',
-                  }}
+                  style={{ color: 'inherit', textUnderlineOffset: '2px' }}
+                  className="underline"
                 >
                   {village.countries.name}
                 </LocalizedLink>

@@ -24,8 +24,7 @@ export function ResumeTripStrip() {
   if (meaningful.length === 0) return null;
 
   // Prefer the context-picked active trip when it's meaningful; else first one.
-  const current =
-    (activeTrip && meaningful.find((t) => t.id === activeTrip.id)) ?? meaningful[0];
+  const current = (activeTrip && meaningful.find((t) => t.id === activeTrip.id)) ?? meaningful[0];
 
   const title = resolveTripTitle(
     { title: current.title, primary_city_name: current.primary_city_name ?? null },
@@ -41,8 +40,7 @@ export function ResumeTripStrip() {
           </div>
           <LocalizedLink
             to={`/trips/${current.id}`}
-            className="font-bold text-xl tracking-tight truncate block hover:underline"
-            style={{ textDecoration: 'none' }}
+            className="font-bold text-xl tracking-tight truncate block hover:underline no-underline"
           >
             {title}
           </LocalizedLink>
@@ -88,8 +86,7 @@ export function ResumeTripStrip() {
           )}
           <LocalizedLink
             to={`/trips/${current.id}`}
-            className="inline-flex items-center gap-1 border border-border bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
-            style={{ textDecoration: 'none' }}
+            className="inline-flex items-center gap-1 border border-border bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity no-underline"
           >
             {t('pages.travel.hero.openTrip', 'Open trip')}
             <ArrowRight size={14} aria-hidden />

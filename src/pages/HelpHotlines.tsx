@@ -564,7 +564,7 @@ export default function HelpHotlines() {
                 <LocalizedLink
                   key={cat}
                   to={`/resources?category=${encodeURIComponent(cat)}`}
-                  style={{ textDecoration: 'none' }}
+                  className="no-underline"
                 >
                   <Badge variant="secondary" className="cursor-pointer">
                     {label}
@@ -662,7 +662,7 @@ function HotlineCard({
                 <LocalizedLink
                   key={tp}
                   to={`/resources?category=${encodeURIComponent(resourceCat)}`}
-                  style={{ textDecoration: 'none' }}
+                  className="no-underline"
                 >
                   <Badge variant="secondary" className="cursor-pointer text-xs">
                     {t(`help.topic.${tp}`, tp)}
