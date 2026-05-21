@@ -144,7 +144,7 @@ export function SecurityMonitoringDashboard() {
                   <Card key={event.id} style={{ borderLeft: '4px solid var(--primary)' }}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3 flex-1">
+                        <div className="flex items-start gap-4 flex-1">
                           <SeverityIcon className="h-5 w-5 mt-0.5" />
                           <div className="flex-1 flex flex-col gap-2">
                             <div className="flex items-center gap-2 flex-wrap">

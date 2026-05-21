@@ -81,8 +81,8 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
 
   if (report.countries.length === 0) {
     return (
-      <div className="text-center py-6 md:py-10 px-3 border-[1.5px] border-dashed border-border rounded-container">
-        <Shield className="w-10 h-10 mx-auto mb-3 opacity-30" aria-hidden="true" />
+      <div className="text-center py-6 md:py-10 px-4 border-[1.5px] border-dashed border-border rounded-container">
+        <Shield className="w-10 h-10 mx-auto mb-4 opacity-30" aria-hidden="true" />
         <h6 className="font-bold text-lg mb-0.5">{t('trips.safety.emptyTitle')}</h6>
         <p className="text-sm text-muted-foreground max-w-[420px] mx-auto">
           {t('trips.safety.emptyDescription')}
@@ -98,7 +98,7 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
       {tripId && <AiSafetyNarrativeCard tripId={tripId} canGenerate />}
 
       {report.crossBorderWarnings.length > 0 && (
-        <div className="mb-3">
+        <div className="mb-4">
           <p className="font-bold mb-1 uppercase tracking-[0.04em] text-xs2 text-muted-foreground">
             {t('trips.safety.crossBorderHeading')}
           </p>
@@ -130,7 +130,7 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
 
       <TripNewsSection countryIds={countryIds} />
 
-      <div className="mt-3 p-2 rounded-element bg-muted flex items-start gap-[0.3125rem]">
+      <div className="mt-4 p-2 rounded-element bg-muted flex items-start gap-[0.3125rem]">
         <Info className="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70" aria-hidden="true" />
         <span className="text-xs text-muted-foreground">{t('trips.safety.dataSource')}</span>
       </div>
@@ -150,7 +150,7 @@ function RiskSnapshot({ report }: { report: TripSafetyReport }) {
   }, [report.countries]);
 
   return (
-    <div className="p-2.5 md:p-3 mb-3" style={{ backgroundColor: visual.bg }}>
+    <div className="p-2.5 md:p-4 mb-4" style={{ backgroundColor: visual.bg }}>
       <div className="flex items-start gap-2">
         <div
           className="flex-shrink-0 w-12 h-12 flex items-center justify-center"

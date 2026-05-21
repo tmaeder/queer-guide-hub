@@ -58,7 +58,7 @@ export const NotificationBell = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" style={{ width: 320 }}>
         {/* User mode selector */}
-        <div className="flex items-center justify-between p-2 mb-3 border-b border-border">
+        <div className="flex items-center justify-between p-2 mb-4 border-b border-border">
           <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
             <SelectTrigger style={{ width: '100%' }}>
               <SelectValue>

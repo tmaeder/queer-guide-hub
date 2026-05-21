@@ -38,7 +38,7 @@ export function TripContextBar() {
       className="sticky top-0 z-[1099] border-b border-border px-4 sm:px-6 py-1.5"
       style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}
     >
-      <div className="flex items-center gap-3 mx-auto" style={{ maxWidth: 1400, minHeight: 28 }}>
+      <div className="flex items-center gap-4 mx-auto" style={{ maxWidth: 1400, minHeight: 28 }}>
         <Luggage size={16} style={{ opacity: 0.7 }} className="shrink-0" aria-hidden />
         <p className="text-sm font-semibold min-w-0 truncate">{displayTitle}</p>
         <span className="text-xs hidden sm:inline flex-shrink-0" style={{ opacity: 0.7 }}>

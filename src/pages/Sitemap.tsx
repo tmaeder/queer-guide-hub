@@ -177,7 +177,7 @@ export default function Sitemap() {
           <aside className="md:sticky md:top-24">
             <nav
               aria-label="Section jump navigation"
-              className="p-3 bg-card rounded-container border border-border"
+              className="p-4 bg-card rounded-container border border-border"
             >
               <p className="text-sm font-semibold mb-2 flex items-center gap-2">
                 <Hash className="w-4 h-4" /> Sections
@@ -211,7 +211,7 @@ export default function Sitemap() {
                     id={id}
                     className="p-4 bg-card rounded-container border border-border"
                   >
-                    <header className="flex items-center justify-between gap-3 mb-3">
+                    <header className="flex items-center justify-between gap-4 mb-4">
                       <h6 className="text-base font-semibold">
                         <a href={`#${id}`} className="underline-offset-4 hover:underline">
                           {section.title}

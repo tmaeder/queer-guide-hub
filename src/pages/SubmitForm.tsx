@@ -179,7 +179,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
               Your {config.label.toLowerCase()} has been submitted and will be reviewed by our team.
               It will appear on the site once approved.
             </p>
-            <div className="flex justify-center gap-3">
+            <div className="flex justify-center gap-4">
               <Button onClick={() => navigate('/submit')}>Submit More</Button>
               <Button variant="outline" onClick={reset}>
                 Submit Another {config.label}
@@ -207,7 +207,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       </Button>
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-center gap-4 mb-2">
         <Icon style={{ width: 28, height: 28, color: config.color }} />
         <h4 className="text-3xl font-bold">Submit {config.label}</h4>
       </div>
@@ -378,7 +378,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 <div
                   role="alert"
                   aria-live="polite"
-                  className="mb-4 p-3 rounded"
+                  className="mb-4 p-4 rounded"
                   style={{
                     backgroundColor: 'hsl(var(--destructive) / 0.08)',
                     border: '1px solid hsl(var(--destructive) / 0.35)',
@@ -417,7 +417,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
             </div>
 
             {/* Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {stepFields.map((fieldConfig) => (
                 <div
                   key={fieldConfig.name}
@@ -442,7 +442,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
             </div>
 
             {/* Navigation buttons */}
-            <div className="flex justify-between mt-6 gap-3">
+            <div className="flex justify-between mt-6 gap-4">
               <Button
                 type="button"
                 variant="outline"

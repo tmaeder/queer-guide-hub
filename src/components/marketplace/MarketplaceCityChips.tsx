@@ -19,7 +19,7 @@ export function MarketplaceCityChips() {
             <LocalizedLink
               key={c.name}
               to={`/cities/${c.slug}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm hover:bg-muted transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-sm hover:bg-muted transition-colors"
             >
               <MapPin size={12} aria-hidden="true" />
               <span>{c.name}</span>
@@ -30,7 +30,7 @@ export function MarketplaceCityChips() {
           ) : (
             <span
               key={c.name}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground"
             >
               <MapPin size={12} aria-hidden="true" />
               {c.name}

@@ -30,7 +30,7 @@ function SectionHeader({
   moreLink: string;
 }) {
   return (
-    <div className="flex justify-between items-center mb-3">
+    <div className="flex justify-between items-center mb-4">
       <div className="flex items-center gap-2">
         <Icon style={{ height: 18, width: 18 }} className="text-primary" />
         <span className="font-semibold" style={{ fontSize: '0.95rem' }}>

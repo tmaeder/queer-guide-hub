@@ -51,7 +51,7 @@ export function GroupMembersList({ members, canManage, groupId, onStartConversat
       {members.map((member) => (
         <Card key={member.user_id}><CardContent>
           <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Avatar><AvatarImage src={member.profiles.avatar_url || undefined} /><AvatarFallback>{member.profiles.display_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium">{member.profiles.display_name}</p>

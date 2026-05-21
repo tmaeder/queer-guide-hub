@@ -116,7 +116,7 @@ export function TripChatTab({ tripId }: Props) {
       )}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto flex flex-col gap-3 pr-2 mb-4"
+        className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2 mb-4"
       >
         {(!messages || messages.length === 0) && (
           <EmptyState
@@ -136,7 +136,7 @@ export function TripChatTab({ tripId }: Props) {
             <div
               key={m.id}
               className={cn(
-                'flex gap-3 items-start',
+                'flex gap-4 items-start',
                 mine ? 'flex-row-reverse' : 'flex-row',
               )}
             >

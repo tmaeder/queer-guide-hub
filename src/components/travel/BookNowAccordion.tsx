@@ -245,7 +245,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   key={value}
                   type="button"
                   onClick={() => handleTabChange(value)}
-                  className={`flex-1 px-4 py-3 inline-flex items-center justify-center gap-2 text-sm font-medium border-b-2 ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                  className={`flex-1 px-4 py-4 inline-flex items-center justify-center gap-2 text-sm font-medium border-b-2 ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                 >
                   <Icon style={{ height: 18, width: 18 }} />
                   {label}
@@ -274,7 +274,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                 onSubmit={(e) => {
                   e.preventDefault();
                 }}
-                className="flex gap-3 items-end"
+                className="flex gap-4 items-end"
               >
                 <div className="flex-1 flex flex-col gap-1">
                   <Label htmlFor="travel-city">City</Label>
@@ -390,7 +390,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                 </ResultsGrid>
               ) : hotelSearch && hasActiveHotelFilters ? (
                 <EmptyState>
-                  <div className="flex flex-col items-center gap-3">
+                  <div className="flex flex-col items-center gap-4">
                     <span>
                       {t('pages.travel.hotels.noResultsWithFilters', 'No hotels match your filters in {{city}}.', {
                         city: hotelSearch.city,

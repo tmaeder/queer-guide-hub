@@ -188,7 +188,7 @@ export function FeedbackButton() {
               <p className="text-sm text-muted-foreground mb-6">
                 Your feedback helps make Queer Guide better for everyone.
               </p>
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-4 justify-center">
                 <Button variant="outline" onClick={handleClose}>
                   Close
                 </Button>
@@ -319,7 +319,7 @@ export function FeedbackButton() {
                 </div>
                 {includeScreenshot && screenshotUrlRef.current && (
                   <div
-                    className="mt-2 border border-border rounded overflow-hidden ml-7"
+                    className="mt-2 border border-border rounded overflow-hidden ml-8"
                     style={{ maxWidth: 220 }}
                   >
                     <img
@@ -358,7 +358,7 @@ export function FeedbackButton() {
               />
 
               <DialogFooter>
-                <div className="flex gap-3 w-full justify-end">
+                <div className="flex gap-4 w-full justify-end">
                   <Button variant="outline" onClick={handleClose}>
                     Cancel
                   </Button>

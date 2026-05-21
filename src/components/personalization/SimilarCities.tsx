@@ -67,7 +67,7 @@ export function SimilarCities({
     return (
       <div>
         <Skeleton className="h-6 w-[200px] mb-2" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-[70px] rounded" />
           ))}
@@ -80,15 +80,15 @@ export function SimilarCities({
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <Sparkles size={18} className="text-primary" />
         <p className="font-semibold text-15">You might also like</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {cities.map((city) => (
           <LocalizedLink key={city.id} to={`/city/${city.id}`} className="no-underline">
             <Card>
-              <CardContent className="p-3">
+              <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-semibold text-sm">{city.name}</p>

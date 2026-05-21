@@ -87,7 +87,7 @@ function ChangePill({ change }: { change: AxisChange }) {
 function ChangeRow({ keyName, change }: { keyName: string; change: AxisChange }) {
   return (
     <div>
-      <div className="flex flex-row items-center gap-3">
+      <div className="flex flex-row items-center gap-4">
         <p className="text-sm font-semibold min-w-[200px] font-mono">{keyName}</p>
         <ChangePill change={change} />
       </div>
@@ -285,7 +285,7 @@ export function SettingsTab() {
                       {diff.summary.length} key(s) differ between desired (DB) and applied (Meili).
                     </p>
                   </div>
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     {Object.entries(diff.changes)
                       .filter(([, c]) => c.kind !== 'unchanged')
                       .map(([k, c]) => (
@@ -374,7 +374,7 @@ function SettingsJson({ value }: { value: SettingsObject | SettingsValue | null 
   return (
     <pre
       style={{ fontSize: 12, maxHeight: 600, background: 'hsl(var(--foreground) / 0.04)' }}
-      className="overflow-auto p-3 m-0"
+      className="overflow-auto p-4 m-0"
     >
       {value === null ? '(none)' : JSON.stringify(value, null, 2)}
     </pre>

@@ -168,7 +168,7 @@ export function BasicInfoTab({
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent style={{ width: 'auto' }} className="p-0" align="start">
-                      <div className="p-3">
+                      <div className="p-4">
                         <p className="text-sm font-medium">Select Date of Birth</p>
                         <p className="text-xs text-muted-foreground">
                           You must be at least 18 years old
@@ -191,7 +191,7 @@ export function BasicInfoTab({
                         style={{ padding: 12, pointerEvents: 'auto' }}
                       />
                       {formData.date_of_birth && (
-                        <div className="p-3">
+                        <div className="p-4">
                           <Button
                             variant="ghost"
                             size="sm"

@@ -109,7 +109,7 @@ export function CloudflareDashboard() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div
             className="p-2 rounded-element"
             style={{ backgroundColor: 'hsl(var(--foreground) / 0.55)' }}
@@ -460,7 +460,7 @@ export function CloudflareDashboard() {
                       >
                         Setup Required
                       </h5>
-                      <p className="text-sm mb-3" style={{ color: 'hsl(var(--foreground) / 0.7)' }}>
+                      <p className="text-sm mb-4" style={{ color: 'hsl(var(--foreground) / 0.7)' }}>
                         To use the Cloudflare dashboard, configure the following Supabase secrets:
                       </p>
                       <ol

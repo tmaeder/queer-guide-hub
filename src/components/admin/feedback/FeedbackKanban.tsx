@@ -171,7 +171,7 @@ function Column({
   return (
     <div ref={setNodeRef} data-col-id={col.id}>
       <div
-        className="flex items-center gap-2 mb-3 px-2 py-[6px] rounded-b"
+        className="flex items-center gap-2 mb-4 px-2 py-[6px] rounded-b"
         style={{
           borderTop: `3px solid ${col.color}`,
           backgroundColor: `color-mix(in srgb, ${col.color} 9%, transparent)`,

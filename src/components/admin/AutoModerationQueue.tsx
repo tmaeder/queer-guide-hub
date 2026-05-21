@@ -395,7 +395,7 @@ export function AutoModerationQueue() {
             </span>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {filteredFlags.map((flag) => (
               <FlagCard
                 key={flag.id}
@@ -451,7 +451,7 @@ function FlagCard({
       style={{ borderColor: selected ? 'hsl(var(--primary))' : undefined }}
     >
       <CardContent className="py-4">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-4">
           <Checkbox checked={selected} onCheckedChange={onToggleSelect} className="mt-1" />
           <div className="flex-1 min-w-0">
             {/* Top row */}
@@ -560,10 +560,10 @@ function FlagCard({
 
                   {/* Classifier-specific detail view */}
                   {isClassifierFlag && currentVal && (
-                    <div className="mb-3">
+                    <div className="mb-4">
                       {/* Relevance score bar */}
                       {relevanceScore != null && (
-                        <div className="mb-3">
+                        <div className="mb-4">
                           <p className="text-xs font-semibold block mb-1">
                             LGBTI Relevance: {(relevanceScore * 100).toFixed(0)}%
                           </p>
@@ -623,7 +623,7 @@ function FlagCard({
 
                   {/* Generic flag detail view (non-classifier flags) */}
                   {!isClassifierFlag && flag.current_value && (
-                    <div className="mb-3">
+                    <div className="mb-4">
                       <p className="text-xs font-semibold block mb-1 text-destructive">
                         Current Value:
                       </p>

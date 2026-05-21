@@ -53,11 +53,11 @@ export function PersonalitySelectionDialog({
           </p>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {candidates.map((candidate) => (
             <Card key={candidate.id} onClick={() => setSelectedCandidate(candidate)}>
               <CardHeader>
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-4">
                   <div className="mt-1">
                     <User />
                   </div>

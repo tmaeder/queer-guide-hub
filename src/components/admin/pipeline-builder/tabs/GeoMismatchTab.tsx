@@ -113,7 +113,7 @@ export default function GeoMismatchTab() {
       <h3 style={{ alignItems: 'center' }} className="mb-4 flex gap-2">
         <MapPin size={18} /> Geo mismatch review ({rows.length})
       </h3>
-      <div style={{ flexDirection: 'column' }} className="flex gap-3">
+      <div style={{ flexDirection: 'column' }} className="flex gap-4">
         {rows.map((r) => {
           const distKm =
             r.original_lat != null && r.validated_lat != null
@@ -125,8 +125,8 @@ export default function GeoMismatchTab() {
                 )
               : null;
           return (
-            <div key={r.id} style={{ background: 'hsl(var(--background) / 0.04)' }} className="p-3">
-              <div style={{ justifyContent: 'space-between' }} className="flex gap-3">
+            <div key={r.id} style={{ background: 'hsl(var(--background) / 0.04)' }} className="p-4">
+              <div style={{ justifyContent: 'space-between' }} className="flex gap-4">
                 <div style={{ flex: 1 }}>
                   <div style={{ alignItems: 'center' }} className="flex gap-2 mb-1.5">
                     <Badge>{r.content_type}</Badge>

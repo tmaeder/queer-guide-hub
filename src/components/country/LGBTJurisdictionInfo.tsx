@@ -118,7 +118,7 @@ function ProtectionRow({
 
   const _yesCount = [status.so, status.gi, status.ge, status.sc].filter((s) => s === 'Yes').length;
   return (
-    <div className="flex items-center gap-3 py-2">
+    <div className="flex items-center gap-4 py-2">
       <Icon style={{ height: 16, width: 16, color: '#6b7280' }} className="shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="text-13 font-medium leading-snug">{label}</p>
@@ -162,7 +162,7 @@ function SimpleRow({
   const displayValue = value && value !== 'No data' ? value : null;
 
   return (
-    <div className="flex items-center gap-3 py-2">
+    <div className="flex items-center gap-4 py-2">
       <Icon style={{ height: 16, width: 16, color: '#6b7280' }} className="shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="text-13 font-medium leading-snug">{label}</p>
@@ -238,7 +238,7 @@ export default function LGBTJurisdictionInfo({
         <div>
           <SectionLabel>Criminalisation & Freedoms</SectionLabel>
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3 py-2">
+            <div className="flex items-center gap-4 py-2">
               <Scale size={16} style={{ color: '#6b7280' }} className="shrink-0" />
               <div className="flex-1">
                 <p className="text-13 font-medium">Same-Sex Activity</p>
@@ -352,7 +352,7 @@ export default function LGBTJurisdictionInfo({
         <div>
           <SectionLabel>Family & Relationships</SectionLabel>
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3 py-2">
+            <div className="flex items-center gap-4 py-2">
               <Heart size={16} style={{ color: '#6b7280' }} className="shrink-0" />
               <div className="flex-1">
                 <p className="text-13 font-medium">Same-Sex Unions</p>
@@ -388,7 +388,7 @@ export default function LGBTJurisdictionInfo({
           <div className="flex flex-col gap-1">
             {country.lgbti_gender_recognition &&
               Object.keys(country.lgbti_gender_recognition).length > 0 && (
-                <div className="flex items-start gap-3 py-2">
+                <div className="flex items-start gap-4 py-2">
                   <Fingerprint size={16} style={{ color: '#6b7280' }} className="shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-13 font-medium">Gender Recognition</p>

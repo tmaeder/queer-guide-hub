@@ -32,7 +32,7 @@ export function TransferSection({
   if (compact) {
     return (
       <div
-        className="flex items-center gap-3 p-4"
+        className="flex items-center gap-4 p-4"
         style={{
           backgroundColor: isLowSafety ? 'hsl(var(--warning) / 0.15)' : 'hsl(var(--muted))',
         }}
@@ -61,7 +61,7 @@ export function TransferSection({
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <Bus size={18} className="text-primary" />
         <p className="font-semibold text-base">
           Airport Transfers{airportCode ? ` (${airportCode})` : ''}
@@ -77,7 +77,7 @@ export function TransferSection({
       </div>
 
       {isLowSafety && (
-        <div className="p-3 mb-3" style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}>
+        <div className="p-4 mb-4" style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}>
           <p className="text-xs">
             This destination has a lower LGBTQ+ safety score. We recommend booking a private
             transfer for a safer, more comfortable arrival.
@@ -85,11 +85,11 @@ export function TransferSection({
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">Kiwitaxi</p>
-            <p className="text-xs text-muted-foreground mb-3">
+            <p className="text-xs text-muted-foreground mb-4">
               Pre-booked airport pickup, fixed price, meet & greet
             </p>
             <Button
@@ -105,7 +105,7 @@ export function TransferSection({
         <Card>
           <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">GetTransfer</p>
-            <p className="text-xs text-muted-foreground mb-3">
+            <p className="text-xs text-muted-foreground mb-4">
               Private drivers, any route, competitive bidding
             </p>
             <Button

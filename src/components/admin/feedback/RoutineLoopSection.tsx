@@ -133,7 +133,7 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
 
   return (
     <TooltipProvider>
-    <div data-testid="routine-loop" className="flex flex-col gap-3">
+    <div data-testid="routine-loop" className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <Bot size={14} />
         <span className="text-xs uppercase tracking-wider">Claude routine</span>
@@ -157,7 +157,7 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
 
       {/* Approve & dispatch */}
       {showApproveCard && (
-        <div className="border border-border rounded p-3 flex flex-col gap-2">
+        <div className="border border-border rounded p-4 flex flex-col gap-2">
           <p className="text-sm font-semibold">Approve for Claude routine</p>
           <p className="text-xs text-muted-foreground">
             A human review is required before any code-changing routine runs.
@@ -210,7 +210,7 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
 
       {/* Dispatch */}
       {showDispatchCard && (
-        <div className="border border-border rounded p-3 flex flex-col gap-2">
+        <div className="border border-border rounded p-4 flex flex-col gap-2">
           <p className="text-sm font-semibold inline-flex items-center gap-1">
             <Sparkles size={12} /> Dispatch routine
           </p>
@@ -270,7 +270,7 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
       {/* Verify */}
       {showVerifyCard && latestRun && latestRetest && (
         <div
-          className="border border-foreground/40 rounded p-3 flex flex-col gap-2"
+          className="border border-foreground/40 rounded p-4 flex flex-col gap-2"
           data-testid="verify-card"
         >
           <p className="text-sm font-semibold">Ready for verification</p>
@@ -304,7 +304,7 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
 
       {/* Archive */}
       {showArchiveCard && (
-        <div className="border border-border rounded p-3 flex flex-col gap-2">
+        <div className="border border-border rounded p-4 flex flex-col gap-2">
           <p className="text-sm font-semibold">Archive</p>
           <p className="text-xs text-muted-foreground">
             Resolved stories can be archived for auditability. Archived stories
@@ -348,7 +348,7 @@ function RoutineRunCard({ run, retests, onCancel, onStartRetest, cancelling, ret
   const inFlight = run.status === 'queued' || run.status === 'dispatched' || run.status === 'in_progress';
   const failed = run.status === 'failed';
   return (
-    <div className="border border-border rounded p-3 flex flex-col gap-2" data-testid="routine-run-card">
+    <div className="border border-border rounded p-4 flex flex-col gap-2" data-testid="routine-run-card">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm font-semibold">Run · {run.runner}</span>
         <Badge variant="secondary" style={{ height: 20, fontSize: '0.7rem' }}>{run.status}</Badge>

@@ -32,7 +32,7 @@ export function ResumeTripStrip() {
   );
 
   return (
-    <section className="border border-border bg-background p-5 sm:p-6 mb-6 rounded">
+    <section className="border border-border bg-background p-6 sm:p-6 mb-6 rounded">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0 flex-1">
           <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
@@ -71,7 +71,7 @@ export function ResumeTripStrip() {
             <select
               value={current.id}
               onChange={(e) => setActiveTripId(e.target.value)}
-              className="border border-border bg-background px-3 py-2 text-sm"
+              className="border border-border bg-background px-4 py-2 text-sm"
               aria-label={t('pages.travel.plan.switchTrip', 'Switch active trip')}
             >
               {meaningful.map((tr) => (

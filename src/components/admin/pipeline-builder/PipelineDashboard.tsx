@@ -153,7 +153,7 @@ export default function PipelineDashboard() {
         <TabsContent value="runs">
           <div style={{ gridTemplateColumns: '2fr 1fr' }} className="grid gap-4">
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-4">
                 <CardTitle className="text-sm font-medium">Recent Runs</CardTitle>
               </CardHeader>
               <CardContent>
@@ -228,7 +228,7 @@ export default function PipelineDashboard() {
 
             {/* Run Detail Panel */}
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-4">
                 <CardTitle className="text-sm font-medium">
                   {selectedRun ? 'Node States' : 'Select a run'}
                 </CardTitle>
@@ -281,13 +281,13 @@ export default function PipelineDashboard() {
         {/* Circuit Breakers Tab */}
         <TabsContent value="circuits">
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-4">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Shield className="h-4 w-4" /> API Circuit Breakers
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div style={{ gridTemplateColumns: 'repeat(3, 1fr)' }} className="grid gap-3">
+              <div style={{ gridTemplateColumns: 'repeat(3, 1fr)' }} className="grid gap-4">
                 {circuitBreakers?.map((cb) => (
                   <div
                     key={cb.id}
@@ -295,7 +295,7 @@ export default function PipelineDashboard() {
                       border: '1px solid hsl(var(--border))',
                       borderRadius: 'var(--radius-element)',
                     }}
-                    className="p-3"
+                    className="p-4"
                   >
                     <div
                       style={{ alignItems: 'center', justifyContent: 'space-between' }}
@@ -343,13 +343,13 @@ export default function PipelineDashboard() {
         {/* Staging Tab */}
         <TabsContent value="staging">
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-4">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Database className="h-4 w-4" /> Ingestion Staging
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {stagingStats && stagingStats.length > 0 ? (
                   <>
                     <div className="flex gap-1 h-6 rounded-full overflow-hidden">
@@ -362,7 +362,7 @@ export default function PipelineDashboard() {
                         />
                       ))}
                     </div>
-                    <div style={{ gridTemplateColumns: 'repeat(4, 1fr)' }} className="grid gap-3">
+                    <div style={{ gridTemplateColumns: 'repeat(4, 1fr)' }} className="grid gap-4">
                       {stagingStats.map((s) => (
                         <div
                           key={s.status}
@@ -370,7 +370,7 @@ export default function PipelineDashboard() {
                             border: '1px solid hsl(var(--border))',
                             borderRadius: 'var(--radius-element)',
                           }}
-                          className="p-3 text-center"
+                          className="p-4 text-center"
                         >
                           <div style={{ fontSize: 20 }} className="font-bold">
                             {s.count.toLocaleString()}
@@ -396,7 +396,7 @@ export default function PipelineDashboard() {
         {/* Definitions Tab */}
         <TabsContent value="definitions">
           <Card>
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardHeader className="pb-4 flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium">Pipeline Definitions</CardTitle>
               <Button size="sm" onClick={() => navigate('/admin/pipelines')}>
                 <Zap className="h-3.5 w-3.5 mr-1.5" /> Open Builder

@@ -11,8 +11,8 @@ import { PageLoadingState } from '@/components/layout/PageLoadingState';
 const GroupCardFixture = () => (
   <Card>
     <CardHeader>
-      <div className="pb-3">
-        <div className="flex items-start gap-3">
+      <div className="pb-4">
+        <div className="flex items-start gap-4">
           <Avatar><AvatarFallback>S</AvatarFallback></Avatar>
           <div className="flex-1">
             <p className="font-semibold">Sample Group</p>
@@ -75,8 +75,8 @@ export const GroupCard = ({
   return (
     <Card>
       <CardHeader>
-        <div className="pb-3">
-          <div className="flex items-start gap-3">
+        <div className="pb-4">
+          <div className="flex items-start gap-4">
             <Avatar>
               <AvatarImage src={group.image_url || undefined} />
               <AvatarFallback>{group.name.charAt(0).toUpperCase()}</AvatarFallback>
@@ -99,7 +99,7 @@ export const GroupCard = ({
                 )}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   <Users size={12} />
                   <p className="text-sm font-medium">{group.member_count}</p>

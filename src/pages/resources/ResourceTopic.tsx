@@ -87,7 +87,7 @@ export default function ResourceTopic() {
       </LocalizedLink>
 
       <PageHeader title={topic.title} subtitle={topic.description}>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <Icon aria-hidden style={{ width: 18, height: 18 }} />
           <span>{t('resources.topic.stats', { guides: counts.guides, orgs: counts.orgs, news: counts.news })}</span>
         </div>
@@ -99,13 +99,13 @@ export default function ResourceTopic() {
             <FileText aria-hidden size={18} /> {t('resources.topic.guidesHeading')}
           </h2>
           {guidesLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-container" />)}
             </div>
           ) : guides.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('resources.topic.guidesEmpty')}</p>
           ) : (
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {guides.map((g) => (
                 <li key={g.slug}>
                   <LocalizedLink
@@ -128,13 +128,13 @@ export default function ResourceTopic() {
         <section aria-labelledby="topic-orgs-heading">
           <h2 id="topic-orgs-heading" className="text-base font-semibold mb-4">{t('resources.topic.orgsHeading')}</h2>
           {orgsLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-56 rounded-container" />)}
             </div>
           ) : orgs.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('resources.topic.orgsEmpty')}</p>
           ) : (
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {orgs.map((v) => (
                 <li key={v.id}><VenueCard venue={v} /></li>
               ))}
@@ -147,13 +147,13 @@ export default function ResourceTopic() {
             <Newspaper aria-hidden size={18} /> {t('resources.topic.newsHeading')}
           </h2>
           {newsLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-container" />)}
             </div>
           ) : news.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('resources.topic.newsEmpty')}</p>
           ) : (
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {news.map((n) => (
                 <li key={n.id}>
                   <LocalizedLink

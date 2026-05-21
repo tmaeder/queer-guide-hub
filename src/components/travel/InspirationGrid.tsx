@@ -40,7 +40,7 @@ export function InspirationGrid({ visitedFilter = 'all' }: Props) {
 
   const villagesPanel = (
     <div className="border border-border bg-background p-6 rounded">
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-baseline justify-between mb-4">
         <h3 className="text-lg font-bold tracking-tight">
           {t('pages.travel.inspiration.villages', 'Queer villages')}
         </h3>
@@ -49,7 +49,7 @@ export function InspirationGrid({ visitedFilter = 'all' }: Props) {
         </LocalizedLink>
       </div>
       {villagesLoading ? (
-        <div className={hasPublicTrips ? 'grid gap-3' : 'grid sm:grid-cols-2 gap-3'}>
+        <div className={hasPublicTrips ? 'grid gap-4' : 'grid sm:grid-cols-2 gap-4'}>
           {Array.from({ length: villageLimit }).map((_, i) => (
             <Skeleton key={i} className="h-[80px] rounded" />
           ))}
@@ -59,7 +59,7 @@ export function InspirationGrid({ visitedFilter = 'all' }: Props) {
           {t('pages.travel.inspiration.noVillages', 'No villages yet.')}
         </p>
       ) : (
-        <div className={hasPublicTrips ? 'grid gap-3' : 'grid sm:grid-cols-2 gap-3'}>
+        <div className={hasPublicTrips ? 'grid gap-4' : 'grid sm:grid-cols-2 gap-4'}>
           {featuredVillages.map((village) => (
             <VillageCard key={village.id} village={village} />
           ))}
@@ -76,7 +76,7 @@ export function InspirationGrid({ visitedFilter = 'all' }: Props) {
     <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       {villagesPanel}
       <div className="border border-border bg-background p-6 rounded">
-        <div className="flex items-baseline justify-between mb-3">
+        <div className="flex items-baseline justify-between mb-4">
           <h3 className="text-lg font-bold tracking-tight">
             {t('pages.travel.inspiration.publicTrips', 'Public trips')}
           </h3>
@@ -85,13 +85,13 @@ export function InspirationGrid({ visitedFilter = 'all' }: Props) {
           </LocalizedLink>
         </div>
         {tripsLoading ? (
-          <div className="grid gap-3">
+          <div className="grid gap-4">
             {[0, 1, 2].map((i) => (
               <Skeleton key={i} className="h-[80px] rounded" />
             ))}
           </div>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid gap-4">
             {featuredTrips.map((trip) => (
               <PublicTripCard key={trip.id} trip={trip} />
             ))}

@@ -73,7 +73,7 @@ export function HeroCTA({ hotlines, country }: { hotlines: Hotline[]; country: s
   const secondary = (hero.channels ?? []).filter((c) => c.kind !== 'phone');
 
   return (
-    <div className="mb-6 rounded-container border bg-card p-5 shadow-[var(--shadow-aceternity-sm)]">
+    <div className="mb-6 rounded-container border bg-card p-6 shadow-[var(--shadow-aceternity-sm)]">
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t('help.hero_label', 'Recommended right now')}
@@ -98,7 +98,7 @@ export function HeroCTA({ hotlines, country }: { hotlines: Hotline[]; country: s
       <p className="mb-4 text-sm text-muted-foreground">{hero.description}</p>
 
       {primary && (
-        <Button asChild size="lg" className="mb-3 h-14 w-full justify-between text-base">
+        <Button asChild size="lg" className="mb-4 h-14 w-full justify-between text-base">
           <a href={channelHref(primary)}>
             <span className="flex items-center gap-2">
               <Phone size={20} />

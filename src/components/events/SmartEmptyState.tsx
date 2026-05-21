@@ -80,7 +80,7 @@ export function SmartEmptyState({
 
       {/* Suggestions */}
       {primary && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {primary.kind === 'sameCity' && city
               ? t('pages.events.smartEmpty.sameCityHeader', {
@@ -117,7 +117,7 @@ function SuggestionRow({ event, dfLocale }: SuggestionRowProps) {
     <li>
       <LocalizedLink
         to={`/events/${event.slug}`}
-        className="group flex items-center gap-3 rounded-container border border-border bg-background px-3 py-2.5 transition-colors hover:bg-muted/50 no-underline"
+        className="group flex items-center gap-4 rounded-container border border-border bg-background px-4 py-2.5 transition-colors hover:bg-muted/50 no-underline"
         style={{ color: 'inherit' }}
       >
         <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />

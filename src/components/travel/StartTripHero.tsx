@@ -68,14 +68,14 @@ export function StartTripHero() {
       <h2 className="text-3xl font-bold tracking-tight mb-2">
         {t('pages.travel.hero.title', 'Plan a trip')}
       </h2>
-      <p className="text-muted-foreground mb-5 max-w-prose">
+      <p className="text-muted-foreground mb-6 max-w-prose">
         {t(
           'pages.travel.hero.subtitle',
           'Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.',
         )}
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_160px_160px_auto] gap-3 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_160px_160px_auto] gap-4 items-end">
         <CityCountryAutocomplete
           id="travel-hero-city"
           label={t('pages.travel.hero.cityLabel', 'Where to?')}
@@ -109,7 +109,7 @@ export function StartTripHero() {
         </Button>
       </div>
 
-      {error && <p className="text-sm text-destructive mt-3">{error}</p>}
+      {error && <p className="text-sm text-destructive mt-4">{error}</p>}
 
       <p className="text-sm text-muted-foreground mt-4">
         {t('pages.travel.hero.discover', 'Or')}{' '}

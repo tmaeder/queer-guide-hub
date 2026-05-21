@@ -124,7 +124,7 @@ export function MergeDuplicatesDialog({
           <DialogTitle>Merge into existing submission</DialogTitle>
         </DialogHeader>
 
-        <div style={{ flexDirection: 'column' }} className="flex gap-3">
+        <div style={{ flexDirection: 'column' }} className="flex gap-4">
           <Input
             placeholder="Search by title or id…"
             value={search}

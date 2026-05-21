@@ -161,7 +161,7 @@ function ItemDetail({
       {/* Duplicate warning */}
       {hasDuplicates && (
         <div
-          className="flex items-center gap-2 p-3 mb-4 rounded-element"
+          className="flex items-center gap-2 p-4 mb-4 rounded-element"
           style={{ backgroundColor: '#fef3c7' }}
         >
           <AlertTriangle size={16} style={{ color: '#d97706' }} className="shrink-0" />
@@ -300,7 +300,7 @@ export function FlyerScanResults({
       <Card>
         <CardContent data-testid="extraction-empty-card">
           <p className="text-sm text-muted-foreground">{t('submission.errors.extractionEmpty')}</p>
-          <Button variant="outline" size="sm" onClick={onDismiss} className="mt-3">
+          <Button variant="outline" size="sm" onClick={onDismiss} className="mt-4">
             {t('submission.errors.manualFallbackCta')}
           </Button>
         </CardContent>
@@ -316,7 +316,7 @@ export function FlyerScanResults({
     return (
       <Card>
         <CardContent>
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex justify-between items-center mb-4">
             <p className="text-sm font-semibold">Scan results</p>
             <Button
               variant="ghost"
@@ -397,7 +397,7 @@ export function FlyerScanResults({
                   role="button"
                   tabIndex={0}
                   aria-expanded={isExpanded}
-                  className="flex items-center gap-2 p-3 cursor-pointer hover:bg-muted"
+                  className="flex items-center gap-2 p-4 cursor-pointer hover:bg-muted"
                 >
                   <Badge
                     style={{
@@ -431,7 +431,7 @@ export function FlyerScanResults({
 
                 {/* Expanded detail */}
                 {isExpanded && (
-                  <div className="p-3 pt-0">
+                  <div className="p-4 pt-0">
                     <ItemDetail
                       item={{ ...item, detected_type: effectiveType }}
                       imageUrl={result.image_url}

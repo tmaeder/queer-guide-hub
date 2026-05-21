@@ -137,7 +137,7 @@ export default function DLQTab() {
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
                 {['Source', 'Stage', 'Status', 'Items', 'Next retry'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -146,15 +146,15 @@ export default function DLQTab() {
                 <tr><td colSpan={5} className="p-6 text-center text-muted-foreground text-xs">DLQ is empty</td></tr>
               ) : summary.map((r, i) => (
                 <tr key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                  <td className="px-3 py-2 font-mono text-xs">{r.source_slug ?? '—'}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{r.stage}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-2 font-mono text-xs">{r.source_slug ?? '—'}</td>
+                  <td className="px-4 py-2 font-mono text-xs">{r.stage}</td>
+                  <td className="px-4 py-2">
                     <span className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
                       {r.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2 tabular-nums font-semibold">{r.items}</td>
-                  <td className="px-3 py-2 text-muted-foreground text-xs"
+                  <td className="px-4 py-2 tabular-nums font-semibold">{r.items}</td>
+                  <td className="px-4 py-2 text-muted-foreground text-xs"
                       title={r.next_retry ? new Date(r.next_retry).toISOString() : ''}>
                     {r.next_retry ? formatDistanceToNow(new Date(r.next_retry), { addSuffix: true }) : '—'}
                   </td>
@@ -170,7 +170,7 @@ export default function DLQTab() {
             <thead className="bg-muted/40 sticky top-0">
               <tr className="border-b border-border">
                 {['Stage', 'Source', 'Error', 'Attempts', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -181,9 +181,9 @@ export default function DLQTab() {
                 <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Nothing in queue</td></tr>
               ) : rows.map(r => (
                 <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                  <td className="px-3 py-2 font-mono text-xs align-top">{r.stage}</td>
-                  <td className="px-3 py-2 font-mono text-xs align-top">{r.source_slug ?? '—'}</td>
-                  <td className="px-3 py-2 align-top max-w-[360px]">
+                  <td className="px-4 py-2 font-mono text-xs align-top">{r.stage}</td>
+                  <td className="px-4 py-2 font-mono text-xs align-top">{r.source_slug ?? '—'}</td>
+                  <td className="px-4 py-2 align-top max-w-[360px]">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="font-mono text-xs2 text-destructive truncate cursor-help">
@@ -198,15 +198,15 @@ export default function DLQTab() {
                       )}
                     </Tooltip>
                   </td>
-                  <td className="px-3 py-2 tabular-nums text-xs align-top">
+                  <td className="px-4 py-2 tabular-nums text-xs align-top">
                     {r.attempts}/{r.max_attempts}
                   </td>
-                  <td className="px-3 py-2 align-top">
+                  <td className="px-4 py-2 align-top">
                     <span className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
                       {r.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2 align-top flex gap-1">
+                  <td className="px-4 py-2 align-top flex gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button

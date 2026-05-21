@@ -77,7 +77,7 @@ export function EmailForwardingSettings() {
         </p>
       ) : (
         <>
-          <div className="flex items-center gap-2 p-3 bg-background font-mono text-base mb-3" style={{ wordBreak: 'break-all' }}>
+          <div className="flex items-center gap-2 p-4 bg-background font-mono text-base mb-4" style={{ wordBreak: 'break-all' }}>
             <div className="flex-1 min-w-0">{data.address}</div>
             <Button
               variant="ghost"

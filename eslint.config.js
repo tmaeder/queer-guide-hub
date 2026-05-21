@@ -219,6 +219,12 @@ export default tseslint.config(
           message:
             "Use semantic radius: rounded-container (cards/modals), rounded-element (buttons/inputs), or rounded-badge (chips/tags). See src/index.css @theme.",
         },
+        {
+          selector:
+            "Literal[value=/\\b(p|m|mx|my|mt|mb|ml|mr|px|py|pl|pr|pt|pb|gap|gap-x|gap-y|space-x|space-y)-(3|5|7|9|11|13|15)\\b/]",
+          message:
+            "Strict 8 pt grid (UI audit P8). Use even-step Tailwind utility (-4, -6, -8, -10, -12, -14, -16) or the explicit .5 micro-spacing (-0.5, -1.5, -2.5, -3.5) for icon-level offsets.",
+        },
       ],
     },
   },

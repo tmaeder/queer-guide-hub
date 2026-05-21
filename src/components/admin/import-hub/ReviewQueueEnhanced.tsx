@@ -198,7 +198,7 @@ export function ReviewQueueEnhanced() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Filters */}
       <Card>
         <CardContent>
@@ -244,7 +244,7 @@ export function ReviewQueueEnhanced() {
                   placeholder="Search data..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-[200px] pl-7 h-9"
+                  className="w-[200px] pl-8 h-9"
                 />
               </div>
 
@@ -332,7 +332,7 @@ export function ReviewQueueEnhanced() {
               <AlertTriangle className="h-12 w-12 text-destructive" />
             </div>
             <h6 className="font-semibold text-lg mb-1">Failed to load staging items</h6>
-            <p className="text-muted-foreground mb-3">
+            <p className="text-muted-foreground mb-4">
               {error instanceof Error ? error.message : 'The staging query failed. Check the database connection.'}
             </p>
             <Button variant="outline" size="sm" onClick={() => refetch()} style={{ display: 'flex', gap: 6, margin: '0 auto' }}>

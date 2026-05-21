@@ -32,7 +32,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 adminJustification="location_verification"
               >
                 {profile.location && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <MapPin className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Location</p>
@@ -65,7 +65,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 adminJustification="profile_verification"
               >
                 {profile.occupation && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <Briefcase className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Occupation</p>
@@ -83,7 +83,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 adminJustification="profile_verification"
               >
                 {profile.education && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <GraduationCap className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Education</p>
@@ -104,7 +104,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               {profile.interests &&
                 Array.isArray(profile.interests) &&
                 profile.interests.length > 0 && (
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     <div>
                       <p className="text-base font-medium mb-2">Interests</p>
                       <div className="flex flex-wrap gap-2">
@@ -136,7 +136,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
           <CardContent>
             <div className="flex flex-col gap-4">
               {profile.website && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Globe className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium">Website</p>
@@ -160,7 +160,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 adminJustification="emergency_contact"
               >
                 {profile.phone && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <Phone className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Phone</p>
@@ -227,7 +227,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   adminJustification="profile_moderation"
                 >
                   {profile.relationship_status && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <Heart className="h-5 w-5 text-muted-foreground" />
                       <div>
                         <p className="text-sm font-medium">Relationship Status</p>
@@ -254,7 +254,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               </div>
 
               {!isOwnProfile && isAdmin && (
-                <div className="mt-4 p-3 bg-destructive/10 border border-destructive rounded-element">
+                <div className="mt-4 p-4 bg-destructive/10 border border-destructive rounded-element">
                   <p className="text-sm text-destructive font-medium">
                     Admin Access: This sensitive information is logged and monitored for security
                     compliance.

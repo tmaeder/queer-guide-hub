@@ -41,7 +41,7 @@ export function PersonalityCardSkeleton() {
       <div className="relative w-full bg-muted" style={{ paddingTop: '133.33%' }}>
         <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
       </div>
-      <div className="p-3">
+      <div className="p-4">
         <Skeleton className="h-4 w-3/4 mb-2" />
         <Skeleton className="h-4 w-[55%] mb-2" />
         <Skeleton className="h-4 w-[65%]" />
@@ -158,7 +158,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
         </div>
 
         {/* Content */}
-        <div className="p-3 flex-grow">
+        <div className="p-4 flex-grow">
           <h3
             className="text-foreground overflow-hidden text-ellipsis whitespace-nowrap font-semibold"
             style={{ fontSize: '0.95rem', lineHeight: 1.3 }}
@@ -227,7 +227,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
             {getInitials(personality.name)}
           </div>
         )}
-        <div className="p-3 space-y-1.5">
+        <div className="p-4 space-y-1.5">
           <div className="text-sm font-semibold leading-snug">{personality.name}</div>
           {personality.profession && (
             <div className="text-xs text-muted-foreground">{personality.profession}</div>

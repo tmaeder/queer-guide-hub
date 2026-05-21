@@ -199,7 +199,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 rel="noopener noreferrer"
                 className="block -m-2 p-4 rounded-element transition-colors hover:bg-muted no-underline text-foreground"
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-4">
                   <ExternalLink size={20} className="text-muted-foreground mt-1 shrink-0" />
                   <div className="min-w-0 flex-1">
                     {post.link_title && (
@@ -239,7 +239,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {/* Poll */}
         {post.post_type === 'poll' && post.poll_options && (
           <Card>
-            <CardContent style={{ flexDirection: 'column' }} className="p-4 flex gap-3">
+            <CardContent style={{ flexDirection: 'column' }} className="p-4 flex gap-4">
               <p className="font-medium">Poll</p>
               <div className="flex flex-col gap-2">
                 {(post.poll_options as { options?: string[] })?.options?.map(
@@ -248,11 +248,11 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                       key={index}
                       variant="outline"
                       style={{ width: '100%', justifyContent: 'flex-start', height: 'auto' }}
-                      className="text-left pt-3 pb-3"
+                      className="text-left pt-4 pb-4"
                       disabled
                     >
                       <span
-                        className="rounded-full mr-3 shrink-0 inline-block"
+                        className="rounded-full mr-4 shrink-0 inline-block"
                         style={{
                           width: 24,
                           height: 24,
@@ -278,7 +278,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
     <Card>
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Avatar style={{ height: 40, width: 40 }}>
               <AvatarImage src={post.profiles?.avatar_url || undefined} />
               <AvatarFallback>

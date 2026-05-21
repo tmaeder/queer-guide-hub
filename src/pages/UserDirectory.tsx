@@ -112,14 +112,14 @@ const UserDirectory = () => {
           People, connections, and networks within the
           inclusive LGBTQ+ community.
         </p>
-        <div className="flex flex-wrap justify-center gap-3 text-sm">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
+        <div className="flex flex-wrap justify-center gap-4 text-sm">
+          <div className="flex items-center gap-1.5 px-4 py-1.5 bg-muted rounded-full">
             <Users className="h-3.5 w-3.5" />
             <span className="text-sm font-medium">
               {profiles?.length || 0} Members
             </span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
+          <div className="flex items-center gap-1.5 px-4 py-1.5 bg-muted rounded-full">
             <Sparkles className="h-3.5 w-3.5" />
             <span className="text-sm font-medium">Active Community</span>
           </div>

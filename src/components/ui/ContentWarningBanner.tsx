@@ -76,7 +76,7 @@ export const ContentWarningBanner = ({
   }
 
   return (
-    <div className="mb-4 flex items-start gap-3 border border-foreground bg-background p-4">
+    <div className="mb-4 flex items-start gap-4 border border-foreground bg-background p-4">
       <AlertTriangle size={20} className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
       <div className="flex-1">
         <p className="mb-2 text-sm font-bold uppercase tracking-wide">Content Notice</p>

@@ -152,7 +152,7 @@ export default function About() {
             as="h1"
             staggerDelay={0.07}
           />
-          <div className="reveal-up reveal-delay-1 text-lg md:text-title text-muted-foreground mb-3">
+          <div className="reveal-up reveal-delay-1 text-lg md:text-title text-muted-foreground mb-4">
             <span className="mr-1.5">A guide for queer</span>
             <WordRotate
               className="text-foreground font-semibold"
@@ -200,7 +200,7 @@ export default function About() {
           <h2 className="font-bold mb-6 md:mb-8 text-headline md:text-4xl">Our Story</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-6">
               <p className="text-muted-foreground leading-[1.8] text-body-lg">
                 Finding a queer-friendly bar shouldn't require a group chat, three Reddit threads,
                 and a leap of faith. We started The Queer Guide because we were tired of guessing
@@ -252,7 +252,7 @@ export default function About() {
           What We Offer
         </h2>
 
-        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
@@ -260,7 +260,7 @@ export default function About() {
                 <Card style={{ height: '100%' }} className="cursor-pointer">
                   <CardContent
                     style={{ padding: isMobile ? 20 : 28, height: '100%', flexDirection: 'column' }}
-                    className="flex gap-3"
+                    className="flex gap-4"
                   >
                     <p className="font-bold text-base md:text-body-lg flex items-center gap-2">
                       <Icon
@@ -286,7 +286,7 @@ export default function About() {
         <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
           <h2 className="font-bold mb-8 md:mb-10 text-headline md:text-4xl">Our Values</h2>
 
-          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {values.map((value) => {
               const Icon = value.icon;
               return (
@@ -319,7 +319,7 @@ export default function About() {
             members who volunteer their time and energy.
           </p>
 
-          <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {team.map((member) => (
               <Card key={member.name} style={{ height: '100%' }}>
                 <CardContent
@@ -346,7 +346,7 @@ export default function About() {
             This platform grows because people like you contribute. Here's how you can help.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 mb-10 md:mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10 md:mb-12">
             {[
               {
                 icon: MapPin,
@@ -462,10 +462,10 @@ export default function About() {
         <h2 className="text-center text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
           Help us write the next chapter.
         </h2>
-        <p className="mt-3 text-center text-muted-foreground max-w-xl">
+        <p className="mt-4 text-center text-muted-foreground max-w-xl">
           Every verified entry has a story behind it. Add yours.
         </p>
-        <div className="mt-6 flex flex-wrap gap-3 justify-center">
+        <div className="mt-6 flex flex-wrap gap-4 justify-center">
           <LocalizedLink to="/submit" className="no-underline">
             <ShineButton>Submit a venue</ShineButton>
           </LocalizedLink>

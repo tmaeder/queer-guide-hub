@@ -249,7 +249,7 @@ export function TripCard({ trip }: Props) {
             {displayTitle}
           </h3>
 
-          <div className="flex items-center gap-3 mb-3 flex-wrap text-muted-foreground">
+          <div className="flex items-center gap-4 mb-4 flex-wrap text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <Calendar size={14} style={{ opacity: 0.7 }} className="shrink-0" />
               <span className="text-13">{dateRange}</span>

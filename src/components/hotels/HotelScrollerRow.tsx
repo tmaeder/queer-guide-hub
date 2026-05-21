@@ -10,7 +10,7 @@ interface HotelScrollerRowProps {
 export function HotelScrollerRow({ title, subtitle, hotels }: HotelScrollerRowProps) {
   if (!hotels.length) return null;
   return (
-    <section className="space-y-3">
+    <section className="space-y-4">
       <div>
         <h3 className="text-lg font-semibold">{title}</h3>
         {subtitle && (

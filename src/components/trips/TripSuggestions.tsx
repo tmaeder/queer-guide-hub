@@ -195,7 +195,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
       ))}
 
       {/* Category filter */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
+      <div className="flex flex-wrap gap-1.5 mb-4">
         {filters.map((label, i) => (
           <Badge
             key={label}

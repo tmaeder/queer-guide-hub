@@ -12,7 +12,7 @@ function StatBlock({ label, value, variant }: { label: string; value: number; va
     variant === 'destructive' ? 'text-destructive' :
     'text-foreground';
   return (
-    <div className="border border-border rounded-element bg-background p-3">
+    <div className="border border-border rounded-element bg-background p-4">
       <div className={`text-2xl font-bold tabular-nums ${colorClass}`}>
         {value.toLocaleString()}
       </div>
@@ -80,7 +80,7 @@ export default function NewsTab() {
           <Newspaper className="h-3.5 w-3.5" />
           News staging (disposition)
         </div>
-        <div className="grid grid-cols-3 gap-3 p-4">
+        <div className="grid grid-cols-3 gap-4 p-4">
           <StatBlock label="Pending" value={staging?.pending ?? 0} />
           <StatBlock label="Committed" value={staging?.committed ?? 0} variant="success" />
           <StatBlock label="Rejected" value={staging?.rejected ?? 0} variant={(staging?.rejected ?? 0) > 0 ? 'destructive' : 'default'} />
@@ -130,11 +130,11 @@ export default function NewsTab() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 sticky top-0">
               <tr className="border-b border-border">
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Source</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">Status</th>
-                <th className="text-right px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[80px]">Fails</th>
-                <th className="text-right px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">Reliability</th>
-                <th className="text-right px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[90px]">Avg/fetch</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Source</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">Status</th>
+                <th className="text-right px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[80px]">Fails</th>
+                <th className="text-right px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">Reliability</th>
+                <th className="text-right px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[90px]">Avg/fetch</th>
               </tr>
             </thead>
             <tbody>
@@ -151,16 +151,16 @@ export default function NewsTab() {
                   : 'text-foreground dark:text-foreground';
                 return (
                   <tr key={String(s.id)} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                    <td className="px-3 py-2 truncate max-w-[280px]" title={String(s.name)}>
+                    <td className="px-4 py-2 truncate max-w-[280px]" title={String(s.name)}>
                       {String(s.name)}
                       {s.auto_paused ? <Badge variant="outline" className="ml-2 text-3xs px-1 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive">paused</Badge> : null}
                     </td>
-                    <td className={`px-3 py-2 text-xs ${statusColor}`}>{status}</td>
-                    <td className={`px-3 py-2 text-right font-mono tabular-nums ${failures > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                    <td className={`px-4 py-2 text-xs ${statusColor}`}>{status}</td>
+                    <td className={`px-4 py-2 text-right font-mono tabular-nums ${failures > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                       {failures}
                     </td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">{reliability.toFixed(2)}</td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums text-muted-foreground">{avg.toFixed(1)}</td>
+                    <td className="px-4 py-2 text-right font-mono tabular-nums">{reliability.toFixed(2)}</td>
+                    <td className="px-4 py-2 text-right font-mono tabular-nums text-muted-foreground">{avg.toFixed(1)}</td>
                   </tr>
                 );
               })}

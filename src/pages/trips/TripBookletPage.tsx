@@ -159,7 +159,7 @@ export default function TripBookletPage() {
           .map((day) => {
             const places = placesByDay.get(day.id) ?? [];
             return (
-              <div key={day.id} className="mb-3">
+              <div key={day.id} className="mb-4">
                 <h3>
                   {fmtDate(day.date)}
                   {day.title ? ` — ${day.title}` : ''}

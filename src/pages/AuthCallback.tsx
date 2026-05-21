@@ -92,7 +92,7 @@ export default function AuthCallback() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-card border rounded-element p-6 space-y-3">
+      <div className="max-w-md w-full bg-card border rounded-element p-6 space-y-4">
         {status === "working" && <p>Signing you in…</p>}
         {status === "ok" && <p>Signed in. Redirecting…</p>}
         {status === "ext-ok" && (
@@ -109,7 +109,7 @@ export default function AuthCallback() {
             <p className="text-sm text-muted-foreground">
               The extension was not detected on this device. Copy the payload below and paste it into the extension popup.
             </p>
-            <pre className="bg-muted p-3 rounded text-xs break-all select-all">{manualPayload}</pre>
+            <pre className="bg-muted p-4 rounded text-xs break-all select-all">{manualPayload}</pre>
           </>
         )}
         {status === "error" && (

@@ -44,14 +44,14 @@ export function BookingActivitySection({ tripId }: Props) {
   return (
     <div className="mt-8">
       <p
-        className="font-bold mb-3 uppercase text-xs text-muted-foreground"
+        className="font-bold mb-4 uppercase text-xs text-muted-foreground"
         style={{ letterSpacing: '0.04em' }}
       >
         Booking activity
       </p>
 
-      <div className="p-4 bg-muted mb-3">
-        <div className="flex items-center gap-2 mb-3">
+      <div className="p-4 bg-muted mb-4">
+        <div className="flex items-center gap-2 mb-4">
           <MousePointerClick size={16} style={{ opacity: 0.7 }} />
           <p className="text-sm">
             <strong>{data.total}</strong> booking click{data.total === 1 ? '' : 's'} from this trip

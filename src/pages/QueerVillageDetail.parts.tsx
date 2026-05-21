@@ -220,7 +220,7 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
               {village.notable_landmarks && village.notable_landmarks.length > 0 ? (
                 <div className="flex flex-col gap-2">
                   {village.notable_landmarks.map((landmark, i) => (
-                    <div key={i} className="flex items-center gap-2 rounded-element bg-accent p-3">
+                    <div key={i} className="flex items-center gap-2 rounded-element bg-accent p-4">
                       <Landmark className="text-muted-foreground shrink-0" size={16} />
                       <p className="text-sm font-medium">{landmark}</p>
                     </div>

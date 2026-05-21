@@ -93,7 +93,7 @@ export function QuickActions() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {quickActions.map((action) => {
               const Icon = action.icon;
               return (

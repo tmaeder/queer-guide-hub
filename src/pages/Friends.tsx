@@ -166,7 +166,7 @@ export default function Friends() {
                         <Card key={friendship.id}>
                           <CardContent>
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-4">
                                 <Avatar style={{ width: 48, height: 48 }}>
                                   <AvatarImage src={profile?.avatar_url || undefined} />
                                   <AvatarFallback>
@@ -232,7 +232,7 @@ export default function Friends() {
                         <Card key={request.id}>
                           <CardContent>
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-4">
                                 <Avatar style={{ width: 48, height: 48 }}>
                                   <AvatarImage src={profile?.avatar_url || undefined} />
                                   <AvatarFallback>

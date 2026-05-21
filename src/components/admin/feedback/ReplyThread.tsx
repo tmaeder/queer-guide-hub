@@ -34,7 +34,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
       </p>
 
       {replies.length > 0 && (
-        <div className="flex flex-col gap-2 mb-3">
+        <div className="flex flex-col gap-2 mb-4">
           {replies.map((r, i) => {
             const isGithub = r.by_name.startsWith('GH:');
             return (

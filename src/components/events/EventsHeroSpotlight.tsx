@@ -34,7 +34,7 @@ export function EventsHeroSpotlight() {
   return (
     <LocalizedLink
       to={`/events/${event.slug}`}
-      className="group block rounded-container border border-border bg-card px-5 py-4 sm:px-6 sm:py-5 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 focus-visible:ring-offset-2 no-underline"
+      className="group block rounded-container border border-border bg-card px-6 py-4 sm:px-6 sm:py-6 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 focus-visible:ring-offset-2 no-underline"
       style={{ color: 'inherit' }}
     >
       <div className="flex items-center justify-between gap-4">

@@ -74,7 +74,7 @@ function RunColumn({
       </Select>
 
       {run && (
-        <div className="border border-border rounded-element bg-background p-3 text-xs space-y-1.5">
+        <div className="border border-border rounded-element bg-background p-4 text-xs space-y-1.5">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className={`text-2xs px-1.5 py-0 ${statusClass[run.status] || ''}`}>
               {run.status}
@@ -118,14 +118,14 @@ function RunColumn({
 
       {run?.node_states && (
         <div className="border border-border rounded-element bg-background text-xs overflow-hidden">
-          <div className="px-3 py-1.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/40">
+          <div className="px-4 py-1.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/40">
             Per-node
           </div>
           <div className="max-h-[300px] overflow-y-auto">
             {Object.entries(run.node_states as Record<string, { status: string; items_out: number; duration_ms?: number; error?: string }>).map(([nodeId, state]) => {
               const Icon = statusIcon[state.status] || Clock;
               return (
-                <div key={nodeId} className="flex items-center gap-2 px-3 py-1.5 border-b border-border/40 last:border-0">
+                <div key={nodeId} className="flex items-center gap-2 px-4 py-1.5 border-b border-border/40 last:border-0">
                   <Icon className={`h-3 w-3 shrink-0 ${statusClass[state.status] || 'text-muted-foreground'}`} />
                   <span className="font-mono text-xs2 truncate flex-1" title={nodeId}>{nodeId.slice(0, 24)}</span>
                   <span className="font-mono tabular-nums text-xs2 text-muted-foreground whitespace-nowrap">
@@ -188,7 +188,7 @@ export default function RunCompareDialog() {
         </div>
 
         {runA && runB && (
-          <div className="border-t border-border pt-3 mt-3">
+          <div className="border-t border-border pt-4 mt-4">
             <div className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Diff summary</div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="border border-border rounded-element p-2">

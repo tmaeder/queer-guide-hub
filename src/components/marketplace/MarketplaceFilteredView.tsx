@@ -73,7 +73,7 @@ export function MarketplaceFilteredView({
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <p className="text-muted-foreground">
           {accumulated.length === total
             ? `${total} listing${total !== 1 ? 's' : ''}`

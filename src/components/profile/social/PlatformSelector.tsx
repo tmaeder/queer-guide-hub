@@ -56,7 +56,7 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
       </div>
 
       {showCustom && (
-        <div className="flex flex-col gap-2 p-3 bg-muted">
+        <div className="flex flex-col gap-2 p-4 bg-muted">
           <Label htmlFor="custom-url">Custom URL</Label>
           <div className="flex gap-2">
             <Input
@@ -72,7 +72,7 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <div className="relative">
           <Search
             style={{ left: 12, top: 12, width: 16, height: 16 }}
@@ -90,7 +90,7 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
             <button
               key={category}
               type="button"
-              className="px-3 py-1 text-sm font-medium transition-colors cursor-pointer"
+              className="px-4 py-1 text-sm font-medium transition-colors cursor-pointer"
               style={{
                 backgroundColor:
                   selectedCategory === category ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',

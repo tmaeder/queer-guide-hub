@@ -152,7 +152,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 mt-2">
+        <div className="flex flex-col gap-6 mt-2">
           {/* Module Selection */}
           <div>
             <Label>Automation Module</Label>
@@ -176,7 +176,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           </div>
 
           {/* Info box */}
-          <div className="bg-muted rounded p-3">
+          <div className="bg-muted rounded p-4">
             <span className="text-xs text-muted-foreground">
               The module will process items according to its configured batch size and create flags
               in the automation review queue. High-confidence changes may be auto-approved based on
@@ -199,7 +199,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
 
           {/* Results */}
           {result && !loading && (
-            <div className="border border-border rounded-element p-4 flex flex-col gap-3">
+            <div className="border border-border rounded-element p-4 flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <CheckCircle size={18} className="text-foreground" />
                 <span className="text-sm font-semibold">Processing Complete</span>

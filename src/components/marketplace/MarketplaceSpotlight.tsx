@@ -27,7 +27,7 @@ export function MarketplaceSpotlight() {
         />
       </div>
       <div className="md:col-span-2 p-6 md:p-10 flex flex-col justify-center gap-4">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground self-start">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground self-start">
           <Sparkles size={12} aria-hidden="true" />
           Spotlight
         </span>

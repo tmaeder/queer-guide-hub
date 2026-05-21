@@ -133,7 +133,7 @@ export function AiPlanTab({ trip }: Props) {
         )}
       </p>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col gap-3 pr-2 mb-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2 mb-4">
         {isLoading && (
           <div className="py-4 text-center text-muted-foreground">
             <Loader2 size={16} className="animate-spin inline" />
@@ -156,12 +156,12 @@ export function AiPlanTab({ trip }: Props) {
           return (
             <div key={m.id} className={`flex ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
               <div
-                className={`max-w-[85%] p-3 ${mine ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}
+                className={`max-w-[85%] p-4 ${mine ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}
               >
                 <p className="text-sm whitespace-pre-wrap">{m.content}</p>
 
                 {!mine && draft && draft.days.length > 0 && (
-                  <div className="mt-3 flex flex-col gap-2">
+                  <div className="mt-4 flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold">
                         {t('trips.ai.draftTitle', 'Proposed itinerary')}
@@ -175,7 +175,7 @@ export function AiPlanTab({ trip }: Props) {
                     </div>
                     {draft.days.map((day) => (
                       <Card key={day.date} className="border border-border">
-                        <CardContent className="p-3">
+                        <CardContent className="p-4">
                           <span className="text-xs font-bold flex items-center gap-2">
                             {day.date}
                             {!tripDayByDate.has(day.date) && (
@@ -226,7 +226,7 @@ export function AiPlanTab({ trip }: Props) {
 
         {send.isPending && (
           <div className="flex">
-            <div className="p-3 bg-muted text-muted-foreground text-sm flex items-center gap-2">
+            <div className="p-4 bg-muted text-muted-foreground text-sm flex items-center gap-2">
               <Loader2 size={12} className="animate-spin" />
               {t('trips.ai.thinking', 'Concierge is thinking…')}
             </div>

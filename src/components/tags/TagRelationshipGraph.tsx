@@ -199,7 +199,7 @@ export default function TagRelationshipGraph({
       <div
         role="alert"
         data-testid="tag-graph-error"
-        className="flex flex-col items-center justify-center gap-3 p-8 text-center"
+        className="flex flex-col items-center justify-center gap-4 p-8 text-center"
       >
         <AlertTriangle className="h-8 w-8 text-destructive" aria-hidden="true" />
         <div>
@@ -225,14 +225,14 @@ export default function TagRelationshipGraph({
         <p className="text-sm text-muted-foreground">
           {graphData?.nodes.length || 0} tags, {graphData?.edges.length || 0} relationships
         </p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {topNodes.map((node) => (
             <Card
               key={node.id}
               className="cursor-pointer"
               onClick={() => onTagClick({ id: node.id, name: node.name })}
             >
-              <CardContent className="p-3">
+              <CardContent className="p-4">
                 <p className="text-sm font-semibold truncate" style={{ fontSize: '0.8rem' }}>
                   {node.name}
                 </p>
@@ -276,7 +276,7 @@ export default function TagRelationshipGraph({
           </Select>
         )}
 
-        <div className="flex items-center gap-3" style={{ minWidth: 220 }}>
+        <div className="flex items-center gap-4" style={{ minWidth: 220 }}>
           <span className="text-xs text-muted-foreground whitespace-nowrap">
             Min. similarity {Math.round(minScore * 100)}%
           </span>
@@ -349,7 +349,7 @@ export default function TagRelationshipGraph({
         {/* Hover tooltip */}
         {hoveredNode && (
           <div
-            className="absolute bg-background p-3 pointer-events-none"
+            className="absolute bg-background p-4 pointer-events-none"
             style={{ top: 12, right: 12, maxWidth: 220 }}
           >
             <p className="text-sm font-semibold mb-1">{hoveredNode.name}</p>

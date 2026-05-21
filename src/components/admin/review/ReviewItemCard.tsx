@@ -76,8 +76,8 @@ export const ReviewItemCard = ({
     <Card
       className={`mb-2 transition-all ${selected ? 'border-primary bg-accent' : 'border-border bg-background'}`}
     >
-      <CardContent className={`${compact ? 'py-2' : 'py-3'} px-4`}>
-        <div className="flex items-start gap-3">
+      <CardContent className={`${compact ? 'py-2' : 'py-4'} px-4`}>
+        <div className="flex items-start gap-4">
           {/* Selection checkbox */}
           {onSelect && (
             <Checkbox

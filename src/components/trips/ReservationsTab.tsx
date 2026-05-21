@@ -123,7 +123,7 @@ export function ReservationsTab({ tripId }: Props) {
           <ReservationSuggestionsPanel tripId={tripId} />
         </div>
         <div className="rounded-container border border-dashed border-muted px-6 py-12 text-center md:py-20">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-element bg-[hsl(var(--foreground)/0.1)]">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-element bg-[hsl(var(--foreground)/0.1)]">
             <Ticket size={26} className="text-foreground" />
           </div>
           <h3 className="mb-1 text-lg font-bold">{t('trips.reservations.emptyTitle')}</h3>
@@ -158,7 +158,7 @@ export function ReservationsTab({ tripId }: Props) {
     <div className="flex flex-col gap-6">
       {/* Next up card */}
       {nextUp && (
-        <div className="flex items-center gap-3 bg-[hsl(var(--foreground)/0.08)] p-4">
+        <div className="flex items-center gap-4 bg-[hsl(var(--foreground)/0.08)] p-4">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-element bg-[hsl(var(--foreground))] text-[hsl(var(--background))]">
             <CalendarClock size={18} />
           </div>
@@ -186,7 +186,7 @@ export function ReservationsTab({ tripId }: Props) {
         const Icon = TYPE_ICONS[type] || Package;
         return (
           <div key={type}>
-            <div className="mb-3 flex items-center gap-2">
+            <div className="mb-4 flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-badge bg-accent">
                 <Icon size={14} />
               </div>
@@ -194,7 +194,7 @@ export function ReservationsTab({ tripId }: Props) {
               <Badge variant="secondary">{typeItems.length}</Badge>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {typeItems.map((res) => (
                 <Card
                   key={res.id}

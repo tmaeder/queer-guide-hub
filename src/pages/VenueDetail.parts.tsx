@@ -143,7 +143,7 @@ export function VenueHero({
 
       {/* Permanently Closed Banner */}
       {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
-        <div className="mb-6 px-4 py-3 bg-destructive text-destructive-foreground flex items-center gap-2">
+        <div className="mb-6 px-4 py-4 bg-destructive text-destructive-foreground flex items-center gap-2">
           <p className="text-sm font-semibold">
             Permanently closed
             {' · '}
@@ -159,7 +159,7 @@ export function VenueHero({
       {/* Title Row */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-1 flex-wrap">
+          <div className="flex items-center gap-4 mb-1 flex-wrap">
             {venue.logo_url && (
               <img
                 src={venue.logo_url}
@@ -217,7 +217,7 @@ export function VenueHero({
           <button
             type="button"
             onClick={onAddToTrip}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-bold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-2.5 text-sm font-bold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
           >
             <Luggage size={14} aria-hidden="true" />
             Add to trip
@@ -322,7 +322,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 <CardTitle>{t('pages.venueDetail.amenities', 'Amenities')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {venue.amenities.map((amenity, index) => (
                     <div key={index} className="flex items-center gap-2 p-2 rounded">
                       {amenity === 'wifi' && <Wifi size={16} />}
@@ -387,7 +387,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
             </CardHeader>
             <CardContent>
               {venue.address && (
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-4">
                   <MapPin size={16} className="text-muted-foreground shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm">
@@ -410,7 +410,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 </div>
               )}
               {venue.phone && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Phone size={16} className="text-muted-foreground" />
                   <a href={`tel:${venue.phone}`} className="text-sm text-primary hover:underline">
                     {venue.phone}
@@ -418,7 +418,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 </div>
               )}
               {venue.email && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Mail size={16} className="text-muted-foreground" />
                   <a
                     href={`mailto:${venue.email}`}
@@ -429,7 +429,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 </div>
               )}
               {venue.website && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Globe size={16} className="text-muted-foreground" />
                   <a
                     href={venue.website}
@@ -442,7 +442,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 </div>
               )}
               {venue.instagram && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Instagram size={16} className="text-muted-foreground" />
                   <a
                     href={`https://instagram.com/${venue.instagram}`}
@@ -589,7 +589,7 @@ export function VenueReviewsTab({ reviews }: VenueReviewsProps) {
           <Card key={review.id}>
             <CardContent>
               <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div
                     className="bg-muted rounded-full flex items-center justify-center font-semibold text-sm"
                     style={{ width: 36, height: 36 }}

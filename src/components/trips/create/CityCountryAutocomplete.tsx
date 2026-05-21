@@ -198,7 +198,7 @@ export function CityCountryAutocomplete({
           aria-autocomplete="list"
           aria-expanded={open}
           aria-controls={`${id}-listbox`}
-          className="pl-9 pr-9"
+          className="pl-10 pr-10"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 flex">
           {loading ? (

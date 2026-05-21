@@ -59,7 +59,7 @@ function CellTitle({
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center gap-2">
         <Icon size={14} className="text-muted-foreground" aria-hidden />
-        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <h3 className="text-xs font-medium uppercase tracking-[0.04em] text-muted-foreground">
           {label}
         </h3>
       </div>
@@ -81,7 +81,7 @@ function CellTitle({
 function Metric({ label, value, ok }: { label: string; value: string; ok: boolean }) {
   return (
     <div className="p-2 bg-muted">
-      <div className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="text-2xs font-medium uppercase tracking-[0.04em] text-muted-foreground">
         {label}
       </div>
       <div className={`text-base font-bold leading-none mt-1 ${ok ? '' : 'text-destructive'}`}>
@@ -109,7 +109,7 @@ function SystemStatusCell({ data }: { data: CockpitData }) {
 
   return (
     <BentoCell span={3} title={<CellTitle icon={Activity} label="System Status" />}>
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <StatusIcon size={16} className="text-muted-foreground" aria-hidden />
         <span className="text-sm font-semibold">{statusLabels[system.status]}</span>
       </div>
@@ -259,7 +259,7 @@ function ContentOverviewCell({ stats }: { stats: CockpitData['stats'] }) {
       span={12}
       title={
         <div className="flex items-center justify-between w-full">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-xs font-medium uppercase tracking-[0.04em] text-muted-foreground">
             Content Overview
           </h3>
           <span className="text-xs2 text-muted-foreground">
@@ -274,7 +274,7 @@ function ContentOverviewCell({ stats }: { stats: CockpitData['stats'] }) {
             key={key}
             type="button"
             onClick={() => navigate(route)}
-            className="flex flex-col items-center gap-1 p-3 bg-background hover:bg-muted/30 text-center"
+            className="flex flex-col items-center gap-1 p-4 bg-background hover:bg-muted/30 text-center"
           >
             <Icon size={16} className="text-muted-foreground" aria-hidden />
             <div className="text-base font-bold leading-none">
@@ -338,7 +338,7 @@ export default function AdminDashboard() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <LayoutDashboard size={22} className="text-muted-foreground" aria-hidden />
           <h1 className="text-lg font-bold">Cockpit</h1>
         </div>

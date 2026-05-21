@@ -26,7 +26,7 @@ export function ErrorRetry({
     <div
       role="alert"
       aria-live="polite"
-      className="flex flex-col items-center text-center gap-3 py-12 px-4"
+      className="flex flex-col items-center text-center gap-4 py-12 px-4"
     >
       <AlertTriangle size={32} className="text-foreground" aria-hidden="true" />
       <h2 className="text-base font-semibold">{title}</h2>

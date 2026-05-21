@@ -366,7 +366,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                     {job.import_summary && Object.keys(job.import_summary).length > 0 && (
                       <div>
                         <p className="font-medium mb-2">Import Details</p>
-                        <pre className="text-sm bg-muted p-3 rounded-element overflow-auto">
+                        <pre className="text-sm bg-muted p-4 rounded-element overflow-auto">
                           {JSON.stringify(job.import_summary, null, 2)}
                         </pre>
                       </div>
@@ -428,7 +428,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                         <div>
                           <p className="font-medium mb-2">Validation Summary</p>
                           <pre
-                            className="text-sm bg-muted p-3 rounded-element overflow-auto"
+                            className="text-sm bg-muted p-4 rounded-element overflow-auto"
                             style={{ maxHeight: 160 }}
                           >
                             {JSON.stringify(job.validation_report, null, 2)}
@@ -468,12 +468,12 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                       </AlertDescription>
                     </Alert>
                   ) : (
-                    <div className="flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: 384 }}>
+                    <div className="flex flex-col gap-4 overflow-y-auto" style={{ maxHeight: 384 }}>
                       {validationResults
                         .filter((r) => !r.is_valid)
                         .slice(0, 20)
                         .map((result, index) => (
-                          <div key={index} className="rounded-element p-3">
+                          <div key={index} className="rounded-element p-4">
                             <div className="flex items-center justify-between mb-2">
                               <Badge variant="destructive">Record {result.record_index}</Badge>
                               <p className="text-sm text-muted-foreground">
@@ -545,12 +545,12 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                     <div className="mt-6">
                       <p className="font-medium mb-2">Error Summary</p>
                       <div
-                        className="p-3 rounded-element"
+                        className="p-4 rounded-element"
                         style={{
                           backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)',
                         }}
                       >
-                        <pre className="text-sm bg-muted p-3 rounded-element overflow-auto">
+                        <pre className="text-sm bg-muted p-4 rounded-element overflow-auto">
                           {JSON.stringify(job.error_report, null, 2)}
                         </pre>
                       </div>
@@ -575,7 +575,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                     {job.validation_rules && Object.keys(job.validation_rules).length > 0 && (
                       <div>
                         <p className="font-medium mb-2">Validation Rules</p>
-                        <pre className="text-sm bg-muted p-3 rounded-element overflow-auto">
+                        <pre className="text-sm bg-muted p-4 rounded-element overflow-auto">
                           {JSON.stringify(job.validation_rules, null, 2)}
                         </pre>
                       </div>
@@ -584,7 +584,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                     {job.filters && Object.keys(job.filters).length > 0 && (
                       <div>
                         <p className="font-medium mb-2">Applied Filters</p>
-                        <pre className="text-sm bg-muted p-3 rounded-element overflow-auto">
+                        <pre className="text-sm bg-muted p-4 rounded-element overflow-auto">
                           {JSON.stringify(job.filters, null, 2)}
                         </pre>
                       </div>
@@ -596,7 +596,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
           </Tabs>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-border">
+          <div className="flex gap-4 pt-4 border-t border-border">
             <Button onClick={exportReport} variant="outline" className="flex gap-2">
               <Download size={16} />
               Export Full Report

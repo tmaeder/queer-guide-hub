@@ -86,7 +86,7 @@ export function getWeatherIcon(condition: string) {
 
 export function SectionLoader({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 gap-3">
+    <div className="flex flex-col items-center justify-center py-12 gap-4">
       <Loader2 className="h-6 w-6 animate-spin text-primary" />
       <p className="text-sm text-muted-foreground">Loading {label}...</p>
     </div>
@@ -110,7 +110,7 @@ export function CountryHero({ country, cities, weatherData }: CountryHeroProps) 
         <CountryHeroImages country={country} />
       </div>
 
-      <div className="flex items-start justify-between flex-wrap gap-4 mb-3">
+      <div className="flex items-start justify-between flex-wrap gap-4 mb-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-4">
             <h3 className="text-3xl lg:text-5xl font-bold text-foreground">
@@ -274,7 +274,7 @@ interface FactRowProps {
 
 function FactRow({ icon: Icon, label, value, alignRight }: FactRowProps) {
   return (
-    <div className="flex items-center justify-between p-3 rounded-element bg-muted">
+    <div className="flex items-center justify-between p-4 rounded-element bg-muted">
       <div className="flex items-center gap-2">
         <Icon style={{ height: 14, width: 14 }} className="text-muted-foreground" />
         <span className="text-sm font-medium">{label}</span>

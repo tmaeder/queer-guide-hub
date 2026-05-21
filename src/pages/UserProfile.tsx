@@ -157,7 +157,7 @@ export default function UserProfile() {
 
               <div className="flex-1 flex flex-col gap-4">
                 <div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
                     <h4 className="text-2xl font-bold">
                       {profile.display_name || 'Anonymous User'}
                     </h4>
@@ -170,7 +170,7 @@ export default function UserProfile() {
                     <TrustTierBadge userId={profile.user_id} showLabel />
                   </div>
 
-                  <div className="flex flex-wrap gap-3 text-muted-foreground mb-3">
+                  <div className="flex flex-wrap gap-4 text-muted-foreground mb-4">
                     {profile.pronouns && <p className="text-sm">{profile.pronouns}</p>}
                     {(profile as unknown as Record<string, unknown>)?.age_range && (
                       <>
@@ -204,7 +204,7 @@ export default function UserProfile() {
                 </div>
 
                 {!isOwnProfile && (
-                  <div className="flex gap-3">
+                  <div className="flex gap-4">
                     <StartConversationButton
                       userId={profile.user_id}
                       userName={profile.display_name || 'User'}

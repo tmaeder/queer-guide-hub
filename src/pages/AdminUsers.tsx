@@ -66,7 +66,7 @@ export default function AdminUsers() {
           const name =
             info.getValue() || row.first_name || row.last_name || row.email || 'Anonymous';
           return (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Avatar style={{ width: 32, height: 32 }} className="shrink-0">
                 <AvatarImage src={row.avatar_url ?? undefined} alt={name} />
                 <AvatarFallback className="text-xs">{name.charAt(0).toUpperCase()}</AvatarFallback>

@@ -92,9 +92,9 @@ export function EditorHeader({
   const saveShortcut = isMac ? '⌘S' : 'Ctrl+S';
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-shrink-0 min-h-[56px]">
+    <div className="flex items-center justify-between px-4 py-4 border-b border-border bg-background flex-shrink-0 min-h-[56px]">
       {/* Left side */}
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-4 min-w-0 flex-1">
         <div
           className="flex items-center justify-center flex-shrink-0 rounded-element w-10 h-10"
           style={{ backgroundColor: contentType.color + '18', color: contentType.color }}
@@ -266,8 +266,8 @@ export function EditorHeader({
       {/* Preview Dialog */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader className="border-b border-border pb-3">
-            <DialogTitle className="flex items-center gap-3">
+          <DialogHeader className="border-b border-border pb-4">
+            <DialogTitle className="flex items-center gap-4">
               <Eye size={20} style={{ opacity: 0.6 }} />
               <span className="font-semibold">Content Preview</span>
             </DialogTitle>
@@ -323,7 +323,7 @@ export function EditorHeader({
                 })}
             </div>
           </div>
-          <DialogFooter className="border-t border-border pt-3">
+          <DialogFooter className="border-t border-border pt-4">
             <Button
               variant="ghost"
               onClick={() => setPreviewOpen(false)}

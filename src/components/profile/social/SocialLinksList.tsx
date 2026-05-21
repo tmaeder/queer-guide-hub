@@ -29,12 +29,12 @@ export function SocialLinksList({
       {customLinks.length > 0 && (
         <div className="flex flex-col gap-4">
           <h6 className="text-base font-medium">Social Links</h6>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {customLinks.map((link, index) => (
               <div key={index} className="p-4 bg-background">
-                <div className="flex items-start gap-3">
-                  <div className="flex-1 flex flex-col gap-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex items-start gap-4">
+                  <div className="flex-1 flex flex-col gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <Label>Platform</Label>
                         <Input

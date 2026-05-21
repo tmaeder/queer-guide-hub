@@ -46,7 +46,7 @@ export function ResourceCategory({
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6 flex-wrap">
+      <div className="flex items-center gap-4 mb-6 flex-wrap">
         <Button variant="secondary" size="sm" onClick={onBack}>
           <ArrowLeft size={14} className="mr-1.5" />
           {t('resources.category.back')}
@@ -99,7 +99,7 @@ export function ResourceCategory({
         })()
       ) : (
         <div className="flex flex-col gap-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {allChildren.map((child) => {
               const Icon = getCategoryIcon(child.name);
               const isEmpty = child.tag_count === 0;
@@ -143,7 +143,7 @@ export function ResourceCategory({
               if (childTags.length === 0) return null;
               return (
                 <div key={child.id}>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold">{getCategoryShortName(child.name)}</p>
                       <Badge variant="secondary">{child.tag_count}</Badge>
@@ -197,7 +197,7 @@ export function ResourceSubcategory({
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6 flex-wrap">
+      <div className="flex items-center gap-4 mb-6 flex-wrap">
         <Button variant="secondary" size="sm" onClick={onBack}>
           <ArrowLeft size={14} className="mr-1.5" />
           {t('resources.category.back')}

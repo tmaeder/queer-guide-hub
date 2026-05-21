@@ -50,7 +50,7 @@ export function TripViewSwitcher({ current, className }: Props) {
               );
             }}
             className={cn(
-              'inline-flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
+              'inline-flex items-center gap-1.5 px-4 py-1.5 text-sm transition-colors',
               active
                 ? 'bg-foreground text-background'
                 : 'text-muted-foreground hover:text-foreground',

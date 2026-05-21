@@ -66,10 +66,10 @@ export function TripCoverBand({
         className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/15 to-black/65 dark:from-black/35 dark:to-black/[0.78]"
       />
 
-      <div className="relative z-[1] w-full px-5 py-5 md:px-8 md:py-6 flex items-end justify-between gap-4 flex-wrap">
+      <div className="relative z-[1] w-full px-6 py-6 md:px-8 md:py-6 flex items-end justify-between gap-4 flex-wrap">
         <div className="flex-1 min-w-0">
           {/* Status pill */}
-          <div className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white/20 text-white text-xs2 font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-1 px-4 py-0.5 rounded-full bg-white/20 text-white text-xs2 font-bold uppercase tracking-wider mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             {statusLabel}
           </div>

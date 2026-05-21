@@ -223,7 +223,7 @@ export const CreatePostDialog = ({
                   />
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   <Label>Poll Options</Label>
                   {pollOptions.map((option, index) => (
                     <div key={index} className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export const CreatePostDialog = ({
           </Tabs>
 
           {/* Mentions Section */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <Label>Mentions</Label>
 

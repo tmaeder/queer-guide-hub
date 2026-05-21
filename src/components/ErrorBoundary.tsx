@@ -75,11 +75,11 @@ export class ErrorBoundary extends Component<Props, State> {
               An unexpected error occurred. Please try refreshing the page.
             </p>
             {import.meta.env.DEV && this.state.error && (
-              <pre className="text-xs font-mono text-left p-3 bg-muted rounded-element max-h-40 overflow-auto break-all">
+              <pre className="text-xs font-mono text-left p-4 bg-muted rounded-element max-h-40 overflow-auto break-all">
                 {this.state.error.name}: {this.state.error.message}
               </pre>
             )}
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-4 justify-center">
               <Button onClick={this.handleRetry} variant="outline" size="sm">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again

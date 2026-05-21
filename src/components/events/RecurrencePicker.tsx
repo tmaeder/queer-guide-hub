@@ -71,7 +71,7 @@ export const RecurrencePicker = ({ value, onChange }: RecurrencePickerProps) => 
   };
 
   return (
-    <div className="p-3">
+    <div className="p-4">
       {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
       <label className="flex items-center gap-2 cursor-pointer">
         <Switch checked={enabled} onCheckedChange={handleToggle} />
@@ -82,7 +82,7 @@ export const RecurrencePicker = ({ value, onChange }: RecurrencePickerProps) => 
       </label>
 
       {enabled && value && (
-        <div className="mt-3 flex flex-col gap-3">
+        <div className="mt-4 flex flex-col gap-4">
           {/* Frequency */}
           <div className="flex flex-col gap-1">
             <Label className="text-xs">Repeats</Label>
@@ -117,7 +117,7 @@ export const RecurrencePicker = ({ value, onChange }: RecurrencePickerProps) => 
                       variant={selected ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => toggleDay(idx)}
-                      className="px-3 py-1 h-8 text-xs normal-case"
+                      className="px-4 py-1 h-8 text-xs normal-case"
                     >
                       {label}
                     </Button>

@@ -244,8 +244,8 @@ const ConversationList = ({
           }}
           onClick={() => onSelectConversation(conversation.id)}
         >
-          <CardContent className="p-3">
-            <div style={{ alignItems: 'center', minHeight: 48 }} className="flex gap-3">
+          <CardContent className="p-4">
+            <div style={{ alignItems: 'center', minHeight: 48 }} className="flex gap-4">
               <Avatar>
                 <AvatarImage src={getConversationAvatar(conversation) || ''} />
                 <AvatarFallback>{getConversationTitle(conversation).charAt(0)}</AvatarFallback>
@@ -406,7 +406,7 @@ const MessageInput = ({
         backgroundColor: 'color-mix(in srgb, var(--background) 50%, transparent)',
         backdropFilter: 'blur(8px)',
       }}
-      className="flex gap-2 p-3"
+      className="flex gap-2 p-4"
     >
       <Input
         ref={inputRef}
@@ -435,7 +435,7 @@ const MessageInput = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent style={{ width: 320 }} className="p-4" side="top">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <p className="font-medium text-sm">Choose an emoji</p>
             <div className="grid grid-cols-8 md:grid-cols-10 gap-1">
               {commonEmojis.map((emoji, index) => (
@@ -584,8 +584,8 @@ export const MessagingInterface = () => {
         className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r flex-col`}
         style={{ backgroundColor: 'rgba(var(--background-rgb), 0.5)' }}
       >
-        <div className="p-3 md:p-4 border-b">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
+        <div className="p-4 md:p-4 border-b">
+          <div className="flex items-center justify-between mb-4 md:mb-4">
             <h6 className="font-semibold text-lg md:text-base">Messages</h6>
             <Button size="sm" variant="outline" className="rounded-element" style={{ height: 36 }}>
               <Plus size={16} className="mr-2" />
@@ -609,7 +609,7 @@ export const MessagingInterface = () => {
         </div>
 
         <ScrollArea style={{ flex: 1 }}>
-          <div className="p-3 md:p-4">
+          <div className="p-4 md:p-4">
             {filteredConversations.length === 0 ? (
               <div className="text-center py-8">
                 <MessageCircle
@@ -637,14 +637,14 @@ export const MessagingInterface = () => {
           <>
             {/* Chat Header */}
             <div
-              className="p-3 md:p-4 border-b"
+              className="p-4 md:p-4 border-b"
               style={{
                 backgroundColor: 'rgba(var(--background-rgb), 0.5)',
                 backdropFilter: 'blur(8px)',
               }}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   {/* Back button for mobile */}
                   <Button
                     variant="ghost"
@@ -727,7 +727,7 @@ export const MessagingInterface = () => {
                   'linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), var(--background))',
               }}
             >
-              <div className="p-3 md:p-4">
+              <div className="p-4 md:p-4">
                 {currentMessages.length === 0 ? (
                   <div className="text-center py-8">
                     <MessageCircle

@@ -51,7 +51,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
             role="status"
             aria-label="Loading venue activity"
             aria-busy="true"
-            className="flex flex-col gap-3 animate-pulse"
+            className="flex flex-col gap-4 animate-pulse"
           >
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center justify-between">
@@ -121,7 +121,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
                 const hour = stat.checkin_hour as string | undefined;
                 const count = Number(stat.total_checkins) || 0;
                 return (
-                  <div key={index} className="flex items-center justify-between py-2 px-3 bg-muted">
+                  <div key={index} className="flex items-center justify-between py-2 px-4 bg-muted">
                     <p className="text-sm">
                       {hour ? new Date(hour).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit' }) : ''}
                     </p>

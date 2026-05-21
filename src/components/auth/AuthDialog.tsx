@@ -80,7 +80,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="flex items-center justify-center gap-2 mb-4">
             <Heart
               className="w-7 h-7 fill-current animate-pulse text-primary"
             />
@@ -156,7 +156,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
                 <Separator className="w-full" />
               </div>
               <div className="relative flex justify-center">
-                <span className="text-xs bg-background px-3 text-muted-foreground font-medium uppercase">
+                <span className="text-xs bg-background px-4 text-muted-foreground font-medium uppercase">
                   New to The Queer Guide?
                 </span>
               </div>

@@ -116,7 +116,7 @@ export function ResourceTagDetail({
             }}
           />
           <div
-            className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6"
+            className="absolute inset-0 flex flex-col justify-end p-6 sm:p-6"
             style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)' }}
           >
             {primary && (

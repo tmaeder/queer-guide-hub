@@ -72,7 +72,7 @@ export function FeaturedPersonalityRail() {
 
   return (
     <div className="mb-8">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <Star
           size={18}
           className="text-foreground"
@@ -81,7 +81,7 @@ export function FeaturedPersonalityRail() {
         />
         <h2 className="font-bold text-lg">Featured icons</h2>
       </div>
-      <div className="flex gap-5 overflow-x-auto pb-2" style={{ scrollSnapType: 'x mandatory' }}>
+      <div className="flex gap-6 overflow-x-auto pb-2" style={{ scrollSnapType: 'x mandatory' }}>
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="flex-none w-40">

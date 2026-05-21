@@ -284,7 +284,7 @@ export default function TodayModePage() {
     <div className="container mx-auto py-8 md:py-12 px-4">
       {(!online || servingFromSnapshot) && (
         <div
-          className="mb-4 p-3 bg-muted flex items-center gap-2 text-sm text-muted-foreground"
+          className="mb-4 p-4 bg-muted flex items-center gap-2 text-sm text-muted-foreground"
           role="status"
         >
           <WifiOff size={16} />
@@ -301,7 +301,7 @@ export default function TodayModePage() {
       )}
 
       {online && push.supported && !push.subscribed && (
-        <div className="mb-4 p-3 flex items-center justify-between gap-2 bg-muted">
+        <div className="mb-4 p-4 flex items-center justify-between gap-2 bg-muted">
           <div className="flex items-center gap-2">
             <Bell size={16} />
             <span className="text-sm">
@@ -337,7 +337,7 @@ export default function TodayModePage() {
           (activeCountrySafety.equality_score != null &&
             activeCountrySafety.equality_score < 50)) && (
           <div
-            className={`mb-6 p-4 flex items-start gap-3 ${
+            className={`mb-6 p-4 flex items-start gap-4 ${
               activeCountrySafety.deathPenalty
                 ? 'bg-destructive text-destructive-foreground'
                 : 'bg-muted text-foreground'
@@ -386,7 +386,7 @@ export default function TodayModePage() {
         )}
 
       {(activeNow || nextUp) && (
-        <div className="mb-6 p-4 bg-muted flex items-center gap-3">
+        <div className="mb-6 p-4 bg-muted flex items-center gap-4">
           <div className="w-10 h-10 bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
             {activeNow ? <MapPin size={18} /> : <Clock size={18} />}
           </div>
@@ -416,14 +416,14 @@ export default function TodayModePage() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {timeline.map((item) => {
             const Icon = item.icon;
             const isPast = item.end && item.end.getTime() < now.getTime();
             return (
               <Card key={item.id}>
                 <CardContent>
-                  <div className="flex gap-3 items-start" style={{ opacity: isPast ? 0.55 : 1 }}>
+                  <div className="flex gap-4 items-start" style={{ opacity: isPast ? 0.55 : 1 }}>
                     <div className="w-9 h-9 bg-muted flex items-center justify-center flex-shrink-0">
                       <Icon size={16} />
                     </div>

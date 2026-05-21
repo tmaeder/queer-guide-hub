@@ -17,7 +17,7 @@ export function ResourceProfessions({
   const { t } = useTranslation();
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-4 mb-6">
         <Button variant="secondary" size="sm" onClick={onBack}>
           <ArrowLeft size={14} className="mr-1.5" />
           {t('resources.professions.back')}
@@ -33,7 +33,7 @@ export function ResourceProfessions({
             onClick={() =>
               onNavigate(`/personalities?profession=${encodeURIComponent(profession)}`)
             }
-            className="inline-flex items-center px-3.5 py-1.5 rounded-full cursor-pointer bg-background text-inherit border-0 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary transition-all duration-150"
+            className="inline-flex items-center px-4.5 py-1.5 rounded-full cursor-pointer bg-background text-inherit border-0 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary transition-all duration-150"
             style={{ minHeight: 36 }}
           >
             <span className="font-medium" style={{ fontSize: '0.8rem' }}>{profession}</span>

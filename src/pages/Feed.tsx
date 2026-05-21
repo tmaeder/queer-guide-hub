@@ -100,7 +100,7 @@ export default function Feed() {
               <CardContent className="p-4">
                 <CreatePostDialog>
                   <Button variant="outline" className="w-full justify-start h-14 text-left">
-                    <PenSquare className="h-5 w-5 mr-3 text-muted-foreground" />
+                    <PenSquare className="h-5 w-5 mr-4 text-muted-foreground" />
                     <span className="text-muted-foreground">
                       What's on your mind? Share with the community...
                     </span>

@@ -73,7 +73,7 @@ export function ReportDialog({ open, onOpenChange, contentType, contentId, conte
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 mt-2">
+        <div className="flex flex-col gap-6 mt-2">
           <div className="flex flex-col gap-1.5">
             <Label>Issue Type</Label>
             <Select

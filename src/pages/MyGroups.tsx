@@ -179,7 +179,7 @@ export default function MyGroups() {
                 <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
                   Start by joining existing groups or create your own!
                 </p>
-                <div className="flex justify-center gap-3">
+                <div className="flex justify-center gap-4">
                   <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
                   <Button variant="outline" asChild>
                     <LocalizedLink to="/groups">

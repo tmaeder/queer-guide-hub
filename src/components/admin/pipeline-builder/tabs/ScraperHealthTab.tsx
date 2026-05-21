@@ -98,7 +98,7 @@ export default function ScraperHealthTab() {
   const totalOrphans = orphans.reduce((s, o) => s + o.orphan_count, 0);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {/* Orphans */}
       <div className="border border-border rounded-element bg-background overflow-hidden">
         <SectionHeader
@@ -119,19 +119,19 @@ export default function ScraperHealthTab() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Entity type</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Orphans</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Action</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Entity type</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Orphans</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody>
               {orphans.map(o => (
                 <tr key={o.entity_type} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                  <td className="px-3 py-2 capitalize">{o.entity_type}</td>
-                  <td className={`px-3 py-2 tabular-nums font-semibold ${o.orphan_count > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  <td className="px-4 py-2 capitalize">{o.entity_type}</td>
+                  <td className={`px-4 py-2 tabular-nums font-semibold ${o.orphan_count > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                     {o.orphan_count}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-2">
                     {o.orphan_count > 0 && (
                       <Button
                         size="sm"
@@ -211,22 +211,22 @@ export default function ScraperHealthTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Entity', 'Source', 'N', 'min', 'p25', 'p50', 'p75', 'max', 'avg'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {quality.map((q, i) => (
                   <tr key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                    <td className="px-3 py-1.5 capitalize">{q.entity_type}</td>
-                    <td className="px-3 py-1.5 font-mono text-xs">{q.source_name}</td>
-                    <td className="px-3 py-1.5 tabular-nums">{q.n}</td>
-                    <td className="px-3 py-1.5 tabular-nums text-muted-foreground">{q.score_min}</td>
-                    <td className="px-3 py-1.5 tabular-nums">{q.score_p25}</td>
-                    <td className="px-3 py-1.5 tabular-nums font-semibold">{q.score_p50}</td>
-                    <td className="px-3 py-1.5 tabular-nums">{q.score_p75}</td>
-                    <td className="px-3 py-1.5 tabular-nums text-muted-foreground">{q.score_max}</td>
-                    <td className="px-3 py-1.5 tabular-nums font-mono">{q.score_avg.toFixed(1)}</td>
+                    <td className="px-4 py-1.5 capitalize">{q.entity_type}</td>
+                    <td className="px-4 py-1.5 font-mono text-xs">{q.source_name}</td>
+                    <td className="px-4 py-1.5 tabular-nums">{q.n}</td>
+                    <td className="px-4 py-1.5 tabular-nums text-muted-foreground">{q.score_min}</td>
+                    <td className="px-4 py-1.5 tabular-nums">{q.score_p25}</td>
+                    <td className="px-4 py-1.5 tabular-nums font-semibold">{q.score_p50}</td>
+                    <td className="px-4 py-1.5 tabular-nums">{q.score_p75}</td>
+                    <td className="px-4 py-1.5 tabular-nums text-muted-foreground">{q.score_max}</td>
+                    <td className="px-4 py-1.5 tabular-nums font-mono">{q.score_avg.toFixed(1)}</td>
                   </tr>
                 ))}
               </tbody>

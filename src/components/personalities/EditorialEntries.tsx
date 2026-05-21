@@ -43,7 +43,7 @@ export function EditorialEntries({
     items: typeof bornThisWeek,
     dateField: 'birth_date' | 'death_date',
   ) => (
-    <ul className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+    <ul className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
       {items.map((p) => {
         const iso = p[dateField];
         const d = iso ? new Date(iso) : null;
@@ -145,7 +145,7 @@ export function EditorialEntries({
                   }
                   aria-pressed={active}
                   className={
-                    'flex items-center justify-between text-left px-3 py-2.5 border rounded-element transition-colors hover:bg-accent ' +
+                    'flex items-center justify-between text-left px-4 py-2.5 border rounded-element transition-colors hover:bg-accent ' +
                     (active ? 'border-foreground bg-accent' : 'border-border')
                   }
                 >

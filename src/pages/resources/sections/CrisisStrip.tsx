@@ -101,8 +101,8 @@ export function CrisisStrip() {
   const emergency = EMERGENCY_NUMBERS[country] ?? EMERGENCY_NUMBERS.INT;
 
   return (
-    <section aria-labelledby="crisis-heading" className="rounded-container bg-foreground/[0.03] border border-border/60 p-5 sm:p-6">
-      <header className="flex flex-wrap items-center gap-3 mb-4">
+    <section aria-labelledby="crisis-heading" className="rounded-container bg-foreground/[0.03] border border-border/60 p-6 sm:p-6">
+      <header className="flex flex-wrap items-center gap-4 mb-4">
         <div className="flex items-center gap-2">
           <AlertTriangle aria-hidden size={18} />
           <h2 id="crisis-heading" className="text-base font-semibold">{t('resources.crisis.heading')}</h2>
@@ -139,19 +139,19 @@ export function CrisisStrip() {
       </p>
 
       {showNoLocalNote && (
-        <p className="text-xs text-muted-foreground mb-3">
+        <p className="text-xs text-muted-foreground mb-4">
           {t('resources.crisis.noLocal', { country: countryLabel(country) })}
         </p>
       )}
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-element" />)}
         </div>
       ) : visible.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('resources.crisis.noHotlinesLoaded')}</p>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" aria-label={t('resources.crisis.listAria')}>
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4" aria-label={t('resources.crisis.listAria')}>
           {visible.map((h) => (
             <li key={h.id}>
               <Card className="p-4 h-full flex flex-col gap-2">

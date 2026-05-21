@@ -266,7 +266,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
           </span>
 
           {!hasFlightBooked && (
-            <div className="flex items-center gap-2 p-3 bg-muted rounded">
+            <div className="flex items-center gap-2 p-4 bg-muted rounded">
               <Plane size={16} className="text-muted-foreground" />
               <p className="text-sm flex-1">{t('trips.bookingAssistant.flights', 'Flights')}</p>
               <LocalizedLink to="/travel?tab=flights">
@@ -277,7 +277,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
             </div>
           )}
           {hasFlightBooked && (
-            <div className="flex items-center gap-2 p-3 opacity-60">
+            <div className="flex items-center gap-2 p-4 opacity-60">
               <Check size={16} style={{ color: 'hsl(var(--success))' }} />
               <p className="text-sm">
                 {t('trips.bookingAssistant.flightsBooked', 'Flights booked')}
@@ -286,7 +286,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
           )}
 
           {!hasHotelBooked && (
-            <div className="flex items-center gap-2 p-3 bg-muted rounded">
+            <div className="flex items-center gap-2 p-4 bg-muted rounded">
               <Hotel size={16} className="text-muted-foreground" />
               <p className="text-sm flex-1">
                 {firstCity
@@ -305,7 +305,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
             </div>
           )}
           {hasHotelBooked && (
-            <div className="flex items-center gap-2 p-3 opacity-60">
+            <div className="flex items-center gap-2 p-4 opacity-60">
               <Check size={16} style={{ color: 'hsl(var(--success))' }} />
               <p className="text-sm">{t('trips.bookingAssistant.hotelBooked', 'Hotel booked')}</p>
             </div>
@@ -330,7 +330,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                   {hotelResults.slice(0, 2).map((hotel) => (
                     <div
                       key={hotel.id}
-                      className="flex items-center gap-3 p-3 bg-muted rounded cursor-pointer"
+                      className="flex items-center gap-4 p-4 bg-muted rounded cursor-pointer"
                       onClick={() => setBookingHotel(hotel)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {

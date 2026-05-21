@@ -24,7 +24,7 @@ export default function MarketplaceCategory() {
   if (!subcategory) {
     return (
       <div className="container mx-auto py-12 px-4 text-center">
-        <h1 className="text-2xl font-bold mb-3">Category not found</h1>
+        <h1 className="text-2xl font-bold mb-4">Category not found</h1>
         <LocalizedLink to="/marketplace">
           <Button>
             <ArrowLeft size={16} className="mr-2" />

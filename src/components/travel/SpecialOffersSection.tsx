@@ -62,7 +62,7 @@ export function SpecialOffersSection() {
     return (
       <div className="mb-8">
         <Skeleton className="h-6 w-[180px] mb-2" />
-        <div className="flex gap-3 overflow-x-auto">
+        <div className="flex gap-4 overflow-x-auto">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="w-[200px] h-[100px] rounded shrink-0" />
           ))}
@@ -75,18 +75,18 @@ export function SpecialOffersSection() {
 
   return (
     <div className="mb-8">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <Sparkles size={18} className="text-primary" />
         <p className="font-bold text-base">Hot Deals</p>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex gap-4 overflow-x-auto pb-2">
         {offers.map((offer, i) => (
           <Card
             key={`${offer.origin}-${offer.destination}-${i}`}
             style={{ minWidth: 200 }}
             className="shrink-0"
           >
-            <CardContent className="p-3">
+            <CardContent className="p-4">
               <div className="flex items-center gap-1 mb-1">
                 {offer.airline && (
                   <img

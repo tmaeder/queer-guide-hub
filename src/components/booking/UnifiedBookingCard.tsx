@@ -111,7 +111,7 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
         )}
 
         {result.vertical === 'flight' && (
-          <div className="flex gap-2 flex-wrap mb-3 items-center">
+          <div className="flex gap-2 flex-wrap mb-4 items-center">
             {result.departureDate && (
               <span className="text-xs text-muted-foreground">
                 {formatDate(result.departureDate)}

@@ -177,7 +177,7 @@ export function StoryDetailDrawer({
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-full md:max-w-[600px] sm:max-w-[600px] p-0">
-        <div className="p-5 flex flex-col gap-4">
+        <div className="p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
               Story · {story.origin === 'ai_suggested' ? 'AI-suggested' : 'Manual'}
@@ -219,7 +219,7 @@ export function StoryDetailDrawer({
           {/* Narrative */}
           {onSaveNarrative && (
             <div
-              className="p-3 bg-muted flex flex-col gap-2"
+              className="p-4 bg-muted flex flex-col gap-2"
               style={{ borderLeft: '3px solid hsl(var(--foreground))' }}
             >
               <div

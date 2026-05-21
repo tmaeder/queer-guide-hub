@@ -254,7 +254,7 @@ export function VenueCard({ venue, loading = false }: VenueCardProps) {
                 )}
               </div>
 
-              <div className="p-3">
+              <div className="p-4">
                 <div className="flex items-center gap-1 min-w-0">
                   <p className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0">
                     {venue.name}

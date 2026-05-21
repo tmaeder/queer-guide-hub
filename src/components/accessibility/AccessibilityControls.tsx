@@ -153,7 +153,7 @@ export function AccessibilityControls() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <strong>Tab:</strong> Navigate forward
             </div>

@@ -223,7 +223,7 @@ export function IngestionQualityTab() {
           <Card>
             <CardContent>
               <h6 className="text-lg font-semibold mb-2">Axis breakdown</h6>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 {VISIBILITY_AXES.map((axis) => {
                   const a = result.breakdown[axis];
                   return (
@@ -253,7 +253,7 @@ export function IngestionQualityTab() {
             <Card>
               <CardContent>
                 <h6 className="text-lg font-semibold mb-2">Suggestions</h6>
-                <ul className="m-0 pl-5 list-disc">
+                <ul className="m-0 pl-6 list-disc">
                   {result.suggestions.map((s, i) => (
                     <li key={i}>
                       <p className="text-sm">{s}</p>

@@ -161,7 +161,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
 
             return (
               <div key={revision.id}>
-                <div className="flex gap-4 py-3 px-4 rounded hover:bg-muted">
+                <div className="flex gap-4 py-4 px-4 rounded hover:bg-muted">
                   {/* Timeline indicator */}
                   <div className="flex flex-col items-center pt-1">
                     <div
@@ -195,7 +195,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                       </p>
                     )}
 
-                    <div className="flex flex-row items-center gap-3">
+                    <div className="flex flex-row items-center gap-4">
                       <div className="flex flex-row items-center gap-1">
                         <Avatar className="w-[18px] h-[18px]">
                           <AvatarFallback className="text-3xs bg-border">
@@ -246,7 +246,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                   </div>
                 </div>
 
-                {index < revisions.length - 1 && <Separator className="ml-9" />}
+                {index < revisions.length - 1 && <Separator className="ml-10" />}
               </div>
             );
           })}

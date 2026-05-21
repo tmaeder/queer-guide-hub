@@ -206,7 +206,7 @@ export default function EmailTemplates() {
                 {templates.map((template) => (
                   <div
                     key={template.id}
-                    className="cursor-pointer transition-colors p-3"
+                    className="cursor-pointer transition-colors p-4"
                     style={{
                       borderRadius: 'var(--radius-element)',
                       borderWidth: 1,
@@ -550,7 +550,7 @@ export default function EmailTemplates() {
 
                   <div className="flex flex-col gap-2">
                     <Label className="text-sm font-medium">Subject Line</Label>
-                    <div className="rounded-element bg-muted p-3">
+                    <div className="rounded-element bg-muted p-4">
                       <code className="text-sm">{selectedTemplate.subject}</code>
                     </div>
                   </div>

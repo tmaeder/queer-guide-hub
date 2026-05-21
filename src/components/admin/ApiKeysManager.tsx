@@ -369,7 +369,7 @@ export const ApiKeysManager = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {requiredKeys.map((rk) => (
                     <div
                       key={rk.key_name}
@@ -389,7 +389,7 @@ export const ApiKeysManager = () => {
                               : 'hsl(var(--destructive) / 0.05)',
                       }}
                     >
-                      <div className="flex items-center gap-3 flex-1">
+                      <div className="flex items-center gap-4 flex-1">
                         {getStatusIcon(rk.status)}
                         <div>
                           <p className="font-semibold font-mono text-sm">{rk.key_name}</p>
@@ -447,13 +447,13 @@ export const ApiKeysManager = () => {
                   </p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {keys.map((key) => (
                     <div
                       key={key.id}
                       className="flex items-center justify-between p-4 rounded border border-border"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <Key
                           size={16}
                           style={{

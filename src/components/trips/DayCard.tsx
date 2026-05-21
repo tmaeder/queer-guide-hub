@@ -154,12 +154,12 @@ export function DayCard({
     <Card
       data-day-id={day.id}
       data-day-today={isToday ? 'true' : undefined}
-      className={`mb-3 rounded-container overflow-hidden border ${cardBorder} ${dimClass}`}
+      className={`mb-4 rounded-container overflow-hidden border ${cardBorder} ${dimClass}`}
     >
       <CardContent>
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 gap-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-4 gap-4">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             <div
               className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-element text-background"
               style={{ backgroundColor: 'hsl(var(--foreground))' }}

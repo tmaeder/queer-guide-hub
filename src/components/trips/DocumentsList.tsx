@@ -166,7 +166,7 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
             return (
               <Card key={doc.id}>
                 <CardContent>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <div className="w-9 h-9 bg-muted flex items-center justify-center flex-shrink-0">
                       {isImage ? <ImageIcon size={16} /> : <Icon size={16} />}
                     </div>

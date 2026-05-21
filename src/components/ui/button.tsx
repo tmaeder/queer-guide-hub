@@ -27,9 +27,9 @@ const buttonVariants = cva(
         brand: "bg-foreground text-background hover:opacity-85",
       },
       size: {
-        default: "h-10 px-5",
+        default: "h-10 px-6",
         sm: "h-9 px-4 text-xs",
-        lg: "h-12 px-7 text-sm",
+        lg: "h-12 px-8 text-sm",
         icon: "h-10 w-10",
       },
     },

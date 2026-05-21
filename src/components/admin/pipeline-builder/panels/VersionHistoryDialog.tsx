@@ -88,7 +88,7 @@ export default function VersionHistoryDialog({ pipelineId, currentVersion, onRev
               {versions.map(v => {
                 const isCurrent = v.version === currentVersion;
                 return (
-                  <div key={v.id} className="p-3 flex items-start gap-3 hover:bg-muted/30 transition-colors">
+                  <div key={v.id} className="p-4 flex items-start gap-4 hover:bg-muted/30 transition-colors">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="outline" className={`text-2xs px-1.5 py-0 font-mono ${isCurrent ? 'bg-primary/10 text-primary border-primary/30' : ''}`}>
@@ -99,7 +99,7 @@ export default function VersionHistoryDialog({ pipelineId, currentVersion, onRev
                           {formatDistanceToNow(new Date(v.saved_at), { addSuffix: true })}
                         </span>
                       </div>
-                      <div className="text-xs2 text-muted-foreground flex items-center gap-3">
+                      <div className="text-xs2 text-muted-foreground flex items-center gap-4">
                         <span>{v.nodes?.length || 0} nodes · {v.edges?.length || 0} edges</span>
                         {v.schedule && <span className="font-mono">{v.schedule}</span>}
                         {v.saved_by && (

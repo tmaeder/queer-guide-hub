@@ -50,7 +50,7 @@ export function ClaimUsernameBanner() {
 
   return (
     <>
-      <div className="bg-foreground text-background px-4 py-2 flex items-center justify-between gap-3">
+      <div className="bg-foreground text-background px-4 py-2 flex items-center justify-between gap-4">
         <p className="text-sm">Claim your unique queer.guide identity</p>
         <div className="flex items-center gap-2">
           <Button

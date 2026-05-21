@@ -57,7 +57,7 @@ export const EmptyState = ({
     <Card>
       <CardContent>
         <motion.div
-          className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-5"
+          className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-6"
           style={{ backgroundColor: `hsl(var(--foreground) / ${bgOpacity})` }}
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -104,7 +104,7 @@ export const EmptyState = ({
             ))}
           </div>
         )}
-        <div className="flex justify-center gap-3 flex-wrap">
+        <div className="flex justify-center gap-4 flex-wrap">
           {primaryAction && (
             <Button
               variant={primaryAction.variant || 'default'}
@@ -199,7 +199,7 @@ export const ErrorState = ({
           {description && (
             <p className="text-sm text-muted-foreground mb-4 max-w-md">{description}</p>
           )}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-4">
             {primaryAction && (
               <Button variant={primaryAction.variant ?? 'default'} onClick={primaryAction.onClick}>
                 {primaryAction.label}

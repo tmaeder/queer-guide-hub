@@ -117,7 +117,7 @@ export function FlyerScanUpload({
     return (
       <Card>
         <CardContent>
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-4">
             <AlertCircle size={20} style={{ color: '#ef4444' }} className="shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-semibold mb-1">{t('submission.errors.title')}</p>
@@ -153,7 +153,7 @@ export function FlyerScanUpload({
     return (
       <Card>
         <CardContent>
-          <div className="flex flex-col items-center gap-3 py-2">
+          <div className="flex flex-col items-center gap-4 py-2">
             <Loader2
               className="animate-spin h-8 w-8"
               style={{ color: '#ec4899' }}
@@ -199,7 +199,7 @@ export function FlyerScanUpload({
           onChange={handleInputChange}
           className="hidden"
         />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div
             className="w-10 h-10 rounded-element flex items-center justify-center shrink-0"
             style={{ backgroundColor: '#ec489915' }}
@@ -233,7 +233,7 @@ export function FlyerScanUpload({
           <div
             role="alert"
             aria-live="polite"
-            className="flex items-start gap-2 mt-3"
+            className="flex items-start gap-2 mt-4"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >

@@ -91,7 +91,7 @@ export function NextTripStrip({ trips }: Props) {
             <Luggage size={32} style={{ opacity: 0.3 }} />
           </div>
         )}
-        <div className="flex-1 p-5 md:p-6 flex flex-col gap-3 justify-between">
+        <div className="flex-1 p-6 md:p-6 flex flex-col gap-4 justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Badge

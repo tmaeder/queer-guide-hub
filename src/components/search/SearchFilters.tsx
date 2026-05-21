@@ -25,7 +25,7 @@ export function SearchFilters({ onAddFilter }: SearchFiltersProps) {
             onSelect={() => onAddFilter(filter.value)}
             style={{ cursor: 'pointer' }}
           >
-            <Icon className="h-4 w-4 mr-3 text-muted-foreground" />
+            <Icon className="h-4 w-4 mr-4 text-muted-foreground" />
             {filter.label}
           </CommandItem>
         );

@@ -85,7 +85,7 @@ export function VenueEnrichmentPreview({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {results.map((result, index) => (
             <Card key={index} className="cursor-pointer transition-colors hover:bg-muted/40">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{result.data.name || venueName}</CardTitle>
                   <Badge variant={getSourceBadgeVariant(result.source)}>

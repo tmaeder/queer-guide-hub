@@ -216,7 +216,7 @@ export function AutomatedSecurityScheduler() {
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-muted-foreground mb-4">
                 {task.description}
               </p>
 

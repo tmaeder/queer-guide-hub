@@ -81,7 +81,7 @@ function totalsFor(sources: Array<[string, Agg]>) {
 
 function StatCard({ icon: Icon, color, value, label }: { icon: React.ComponentType<{ className?: string }>; color: string; value: number | string; label: string }) {
   return (
-    <div className="border border-border rounded-element bg-background px-4 py-3">
+    <div className="border border-border rounded-element bg-background px-4 py-4">
       <div className="flex items-center gap-2">
         <Icon className={`h-4 w-4 ${color}`} />
         <span className="text-2xl font-bold tabular-nums">{value}</span>
@@ -96,7 +96,7 @@ function IngestTable({ label, sources, totals }: { label: string; sources: Array
     <div className="border border-border rounded-element bg-background overflow-hidden">
       <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
         <div className="font-semibold text-sm">{label} Ingest</div>
-        <div className="text-xs text-muted-foreground flex items-center gap-3">
+        <div className="text-xs text-muted-foreground flex items-center gap-4">
           <span>staged <span className="font-semibold text-foreground">{totals.staged}</span></span>
           <span>·</span>
           <span>committed <span className="font-semibold text-foreground dark:text-foreground">{totals.inserted}</span></span>
@@ -112,25 +112,25 @@ function IngestTable({ label, sources, totals }: { label: string; sources: Array
           <thead className="bg-muted/40 sticky top-0">
             <tr className="border-b border-border">
               {['Source', 'Staged', 'Validated', 'Unique', 'Dupe', 'Merge?', 'Committed', 'Updated', 'Review', 'Rejected'].map(h => (
-                <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {sources.length === 0 ? (
-              <tr><td colSpan={10} className="p-5 text-center text-muted-foreground text-xs">No {label.toLowerCase()} ingest activity</td></tr>
+              <tr><td colSpan={10} className="p-6 text-center text-muted-foreground text-xs">No {label.toLowerCase()} ingest activity</td></tr>
             ) : sources.map(([src, v]) => (
               <tr key={src} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                <td className="px-3 py-2 font-medium">{src}</td>
-                <td className="px-3 py-2 tabular-nums">{v.staged}</td>
-                <td className="px-3 py-2 tabular-nums">{v.validated}</td>
-                <td className="px-3 py-2 tabular-nums">{v.unique_items}</td>
-                <td className={`px-3 py-2 tabular-nums ${v.duplicates ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{v.duplicates}</td>
-                <td className={`px-3 py-2 tabular-nums ${v.merge_candidates ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{v.merge_candidates}</td>
-                <td className={`px-3 py-2 tabular-nums ${v.inserted ? 'text-foreground dark:text-foreground font-semibold' : 'text-muted-foreground'}`}>{v.inserted}</td>
-                <td className="px-3 py-2 tabular-nums">{v.updated}</td>
-                <td className={`px-3 py-2 tabular-nums ${v.pending_review ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{v.pending_review}</td>
-                <td className={`px-3 py-2 tabular-nums ${v.rejected ? 'text-destructive' : 'text-muted-foreground'}`}>{v.rejected}</td>
+                <td className="px-4 py-2 font-medium">{src}</td>
+                <td className="px-4 py-2 tabular-nums">{v.staged}</td>
+                <td className="px-4 py-2 tabular-nums">{v.validated}</td>
+                <td className="px-4 py-2 tabular-nums">{v.unique_items}</td>
+                <td className={`px-4 py-2 tabular-nums ${v.duplicates ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{v.duplicates}</td>
+                <td className={`px-4 py-2 tabular-nums ${v.merge_candidates ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{v.merge_candidates}</td>
+                <td className={`px-4 py-2 tabular-nums ${v.inserted ? 'text-foreground dark:text-foreground font-semibold' : 'text-muted-foreground'}`}>{v.inserted}</td>
+                <td className="px-4 py-2 tabular-nums">{v.updated}</td>
+                <td className={`px-4 py-2 tabular-nums ${v.pending_review ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{v.pending_review}</td>
+                <td className={`px-4 py-2 tabular-nums ${v.rejected ? 'text-destructive' : 'text-muted-foreground'}`}>{v.rejected}</td>
               </tr>
             ))}
           </tbody>
@@ -213,9 +213,9 @@ export default function MonitorTab() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         {/* Summary cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <StatCard icon={Play} color="text-foreground" value={stats.running} label="Running" />
           <StatCard icon={CheckCircle} color="text-foreground" value={stats.completed} label="Completed" />
           <StatCard icon={XCircle} color="text-destructive" value={stats.failed} label="Failed" />
@@ -224,13 +224,13 @@ export default function MonitorTab() {
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="border border-border rounded-element bg-background overflow-hidden">
             <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <BarChart3 className="h-3.5 w-3.5" />
               Run duration distribution
             </div>
-            <div className="p-3" style={{ height: 180 }}>
+            <div className="p-4" style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={durationHistogram} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
                   <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
@@ -251,7 +251,7 @@ export default function MonitorTab() {
               <TrendingUp className="h-3.5 w-3.5" />
               Throughput (last 24h)
             </div>
-            <div className="p-3" style={{ height: 180 }}>
+            <div className="p-4" style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={throughputData} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
                   <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
@@ -322,7 +322,7 @@ export default function MonitorTab() {
                 <thead className="bg-muted/40 sticky top-0">
                   <tr className="border-b border-border">
                     {['Name', 'Type', 'Status', 'Items', 'Duration', 'Started'].map(h => (
-                      <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                      <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -343,27 +343,27 @@ export default function MonitorTab() {
                           selectedRun?.id === run.id ? 'bg-primary/10' : 'hover:bg-muted/30'
                         }`}
                       >
-                        <td className="px-3 py-2 font-medium truncate max-w-[200px]" title={run.name}>{run.name}</td>
-                        <td className="px-3 py-2">
+                        <td className="px-4 py-2 font-medium truncate max-w-[200px]" title={run.name}>{run.name}</td>
+                        <td className="px-4 py-2">
                           <Badge variant="outline" className="text-2xs px-1.5 py-0">
                             {run.type}
                           </Badge>
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-4 py-2">
                           <span className={`inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded-full ${statusClass[run.status] || 'bg-muted'}`}>
                             <Icon className={`h-2.5 w-2.5 ${run.status === 'running' ? 'animate-spin' : ''}`} />
                             {run.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2 tabular-nums text-xs">
+                        <td className="px-4 py-2 tabular-nums text-xs">
                           <span className="text-foreground dark:text-foreground font-semibold">{run.items_succeeded}</span>
                           <span className="text-muted-foreground">/{run.items_processed}</span>
                           {run.items_failed > 0 && <span className="text-destructive ml-1">·{run.items_failed}</span>}
                         </td>
-                        <td className="px-3 py-2 text-muted-foreground font-mono tabular-nums text-xs">
+                        <td className="px-4 py-2 text-muted-foreground font-mono tabular-nums text-xs">
                           {formatDuration(run.duration_ms, run.status)}
                         </td>
-                        <td className="px-3 py-2 text-muted-foreground text-xs" title={run.started_at ? new Date(run.started_at).toISOString() : ''}>
+                        <td className="px-4 py-2 text-muted-foreground text-xs" title={run.started_at ? new Date(run.started_at).toISOString() : ''}>
                           {run.started_at ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true }) : '—'}
                         </td>
                       </tr>
@@ -373,7 +373,7 @@ export default function MonitorTab() {
               </table>
             </div>
             {!isLoading && (
-              <div className="px-3 py-1.5 border-t border-border text-xs2 text-muted-foreground">
+              <div className="px-4 py-1.5 border-t border-border text-xs2 text-muted-foreground">
                 Showing {filteredRuns.length} of {allRuns.length} runs
               </div>
             )}
@@ -384,7 +384,7 @@ export default function MonitorTab() {
             <div className="px-4 py-2.5 border-b border-border font-semibold text-sm">
               {selectedRun ? 'Run Details' : 'Select a run'}
             </div>
-            <div className="p-3 max-h-[500px] overflow-y-auto">
+            <div className="p-4 max-h-[500px] overflow-y-auto">
               {selectedRun ? (
                 <div className="flex flex-col gap-2">
                   <div>

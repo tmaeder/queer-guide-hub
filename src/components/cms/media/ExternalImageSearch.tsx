@@ -108,7 +108,7 @@ export default function ExternalImageSearch({
   return (
     <div className="flex flex-col h-full">
       {/* Search input */}
-      <div className="px-0 pb-3 relative">
+      <div className="px-0 pb-4 relative">
         <Search
           size={16}
           className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -120,7 +120,7 @@ export default function ExternalImageSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="pl-9 h-9"
+          className="pl-10 h-9"
         />
       </div>
 
@@ -138,7 +138,7 @@ export default function ExternalImageSearch({
       </Tabs>
 
       {/* Results */}
-      <div className="flex-1 overflow-auto pt-3">
+      <div className="flex-1 overflow-auto pt-4">
         {error && (
           <Alert variant="destructive" className="mb-2">
             <AlertDescription>{error}</AlertDescription>
@@ -239,7 +239,7 @@ export default function ExternalImageSearch({
 
             {/* Load more (stock photos only, Wikipedia returns all at once) */}
             {activeTab === 'stock' && !loading && (
-              <div className="flex justify-center py-3">
+              <div className="flex justify-center py-4">
                 <Button variant="outline" size="sm" onClick={handleLoadMore}>
                   Load more
                 </Button>
@@ -247,7 +247,7 @@ export default function ExternalImageSearch({
             )}
 
             {loading && displayResults.length > 0 && (
-              <div className="flex justify-center py-3">
+              <div className="flex justify-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
               </div>
             )}
@@ -257,8 +257,8 @@ export default function ExternalImageSearch({
 
       {/* Selected image attribution */}
       {selectedImage && (
-        <div className="mt-1 p-3 border-t border-border bg-muted rounded">
-          <div className="flex flex-row gap-3 items-center">
+        <div className="mt-1 p-4 border-t border-border bg-muted rounded">
+          <div className="flex flex-row gap-4 items-center">
             <img
               src={selectedImage.thumbnail}
               alt=""

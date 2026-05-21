@@ -39,7 +39,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
       <CardContent>
         {/* Header Row */}
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             <Badge variant="outline">{pair.entity_type}</Badge>
             <Badge variant="secondary">{pair.match_method}</Badge>
             <ConfidenceBadge confidence={pair.confidence} />

@@ -94,7 +94,7 @@ function MainGridSection({
       </div>
 
       <StaggerGrid
-        className={viewMode === 'grid' ? 'grid grid-cols-12 gap-3 md:gap-4' : 'flex flex-col gap-3'}
+        className={viewMode === 'grid' ? 'grid grid-cols-12 gap-4 md:gap-4' : 'flex flex-col gap-4'}
         itemClassName={
           viewMode === 'grid'
             ? (i: number) => MARKETPLACE_SPAN_CLASS[spansForPreset('mosaic', i, visible.length)]
@@ -382,7 +382,7 @@ const Marketplace = () => {
                 <MarketplaceFilters initialSearch={qParam} onFiltersChange={handleFiltersChange} />
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <TabsList
                   style={{ width: '100%', maxWidth: '28rem', gridTemplateColumns: '1fr 1fr 1fr' }}
                   className="grid"
@@ -394,7 +394,7 @@ const Marketplace = () => {
                   ))}
                 </TabsList>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <SavedSearchesButton />
                   <Select value={sortBy} onValueChange={handleSortChange}>
                     <SelectTrigger style={{ width: 200 }} aria-label="Sort listings">

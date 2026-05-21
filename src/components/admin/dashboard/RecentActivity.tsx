@@ -44,7 +44,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
         </CardHeader>
         <CardContent>
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-start gap-3 animate-pulse">
+            <div key={i} className="flex items-start gap-4 animate-pulse">
               <Skeleton />
               <div className="flex-1 flex flex-col gap-2">
                 <Skeleton />
@@ -86,7 +86,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
             {activities.map((activity) => {
               const Icon = activity.icon;
               return (
-                <div key={activity.id} className="flex items-start gap-3 group">
+                <div key={activity.id} className="flex items-start gap-4 group">
                   <div className="p-2 bg-muted rounded-full">
                     <Icon style={{ width: 16, height: 16 }} />
                   </div>

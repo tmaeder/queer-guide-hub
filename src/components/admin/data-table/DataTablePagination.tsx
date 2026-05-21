@@ -32,7 +32,7 @@ export function DataTablePagination({
   const to = Math.min(page * pageSize, totalCount);
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-border flex-wrap gap-2">
+    <div className="flex items-center justify-between px-4 py-4 border-t border-border flex-wrap gap-2">
       <div className="flex items-center gap-4">
         {selectedCount > 0 && (
           <p className="text-sm font-medium">

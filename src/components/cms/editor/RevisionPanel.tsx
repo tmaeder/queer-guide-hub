@@ -64,7 +64,7 @@ export function RevisionPanel({ sourceTable, sourceId }: RevisionPanelProps) {
   return (
     <TooltipProvider>
       <div>
-        <div className="flex flex-row items-center gap-2 mb-3">
+        <div className="flex flex-row items-center gap-2 mb-4">
           <History size={14} className="text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Recent Revisions

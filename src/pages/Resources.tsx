@@ -482,7 +482,7 @@ export default function Resources() {
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="w-full flex items-center justify-between gap-3 rounded-element border border-border bg-background px-4 py-3 text-left hover:bg-muted transition-colors group"
+                className="w-full flex items-center justify-between gap-4 rounded-element border border-border bg-background px-4 py-4 text-left hover:bg-muted transition-colors group"
                 aria-label={t('resources.disclosureAria')}
               >
                 <span className="font-semibold text-sm">{t('resources.disclosure')}</span>

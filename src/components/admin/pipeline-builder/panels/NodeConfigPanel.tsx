@@ -56,7 +56,7 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
 
   return (
     <Card className="w-80 border-l rounded-none h-full">
-      <CardHeader className="pb-3 flex flex-row items-center justify-between">
+      <CardHeader className="pb-4 flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-sm font-medium">{nodeData.label as string || nodeTypeSlug}</CardTitle>
           <p className="text-xs text-muted-foreground mt-0.5">{nodeType?.category}</p>

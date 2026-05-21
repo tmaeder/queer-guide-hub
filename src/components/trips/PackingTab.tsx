@@ -119,7 +119,7 @@ export function PackingTab({ tripId }: Props) {
     return (
       <div className="text-center py-12 md:py-20 px-6 border-[1.5px] border-dashed border-border rounded-container">
         <div
-          className="w-14 h-14 rounded-element flex items-center justify-center mx-auto mb-3"
+          className="w-14 h-14 rounded-element flex items-center justify-center mx-auto mb-4"
           style={{ background: 'hsl(var(--foreground) / 0.1)' }}
         >
           <CheckSquare size={26} className="text-foreground" />
@@ -147,7 +147,7 @@ export function PackingTab({ tripId }: Props) {
   return (
     <div>
       {/* Progress card */}
-      <div className="p-4 md:p-5 mb-6">
+      <div className="p-4 md:p-6 mb-6">
         <div className="flex items-baseline justify-between mb-2 gap-2">
           <p
             className="font-bold text-title"
@@ -200,7 +200,7 @@ export function PackingTab({ tripId }: Props) {
       </div>
 
       {/* Category groups */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         {allGroups.map((group) => {
           const isCollapsed = collapsed[group.category];
           const groupChecked = group.items.filter((i) => i.is_checked).length;

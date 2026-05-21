@@ -192,7 +192,7 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
                 </p>
               </div>
 
-              <div className="mt-3 flex flex-col gap-1 text-xs">
+              <div className="mt-4 flex flex-col gap-1 text-xs">
                 <div className="flex items-center justify-center gap-1">
                   <Droplets size={12} />
                   {day.humidity}%

@@ -83,9 +83,9 @@ export const UserDirectoryFilters = ({
 }: UserDirectoryFiltersProps) => {
   return (
     <div className="border border-border rounded-element bg-background">
-      <CardContent className="p-5">
+      <CardContent className="p-6">
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search
                 style={{
@@ -186,7 +186,7 @@ export const UserDirectoryFilters = ({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-4">
                         <Label className={labelCls}>
                           <MapPin size={16} />
                           Location
@@ -200,7 +200,7 @@ export const UserDirectoryFilters = ({
                         />
                       </div>
 
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-4">
                         <Label className={labelCls}>
                           <Calendar size={16} />
                           Age Range
@@ -225,7 +225,7 @@ export const UserDirectoryFilters = ({
                         </Select>
                       </div>
 
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-4">
                         <Label className={labelCls}>
                           <Heart size={16} />
                           Relationship Status
@@ -250,7 +250,7 @@ export const UserDirectoryFilters = ({
                         </Select>
                       </div>
 
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-4">
                         <Label className={labelCls}>
                           <Briefcase size={16} />
                           Occupation
@@ -264,7 +264,7 @@ export const UserDirectoryFilters = ({
                         />
                       </div>
 
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-4">
                         <Label className={labelCls}>
                           <GraduationCap size={16} />
                           Education
@@ -289,7 +289,7 @@ export const UserDirectoryFilters = ({
                         </Select>
                       </div>
 
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-4">
                         <Label className={labelCls}>
                           <Users size={16} />
                           Gender Identity
@@ -315,7 +315,7 @@ export const UserDirectoryFilters = ({
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-4">
                       <Label className={labelCls}>
                         <Sparkles size={16} />
                         Interests
@@ -442,7 +442,7 @@ export const UserDirectoryFilters = ({
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-4">
                       <Label className={labelCls}>
                         <TrendingUp size={16} />
                         Sort By

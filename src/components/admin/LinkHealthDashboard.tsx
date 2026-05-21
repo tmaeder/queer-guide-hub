@@ -305,10 +305,10 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
   };
 
   return (
-    <div className={embedded ? '' : 'p-3 max-w-[1200px] mx-auto'}>
+    <div className={embedded ? '' : 'p-4 max-w-[1200px] mx-auto'}>
       {/* Header */}
       {!embedded && (
-        <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
           <h5 className="text-2xl flex items-center gap-1">
             <Link2 className="w-6 h-6" />
             Link Health
@@ -369,7 +369,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2 mb-3">
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2 mb-4">
           {STAT_KEYS.map(key => {
             const isActive = statusFilter === key.toUpperCase();
             const colorClass =
@@ -417,7 +417,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
       )}
 
       {/* Filters */}
-      <div className="flex gap-2 mb-3 flex-wrap items-center">
+      <div className="flex gap-2 mb-4 flex-wrap items-center">
         <Select value={statusFilter} onValueChange={handleFilterChange}>
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>

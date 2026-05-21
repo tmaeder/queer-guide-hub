@@ -110,7 +110,7 @@ export function HotelSearchForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex gap-3 flex-wrap items-end"
+      className="flex gap-4 flex-wrap items-end"
     >
       <div className="flex flex-col gap-1" style={{ flex: '1 1 200px' }}>
         <Label className="text-xs">City</Label>

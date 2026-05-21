@@ -70,7 +70,7 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
       <CardContent>
         <div className="flex flex-col gap-4">
           {upcomingEvents.map((event) => (
-            <div key={event.id} className="flex items-center justify-between p-3 border border-border hover:bg-muted transition-colors">
+            <div key={event.id} className="flex items-center justify-between p-4 border border-border hover:bg-muted transition-colors">
               <div className="flex-1">
                 <p className="text-sm font-medium">
                   {event.title}

@@ -121,10 +121,10 @@ function OverviewSkeleton() {
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="p-5 rounded-element bg-background"
+            className="p-6 rounded-element bg-background"
             style={{ borderLeft: '3px solid', borderColor: 'hsl(var(--border))' }}
           >
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-4 mb-4">
               <Skeleton className="rounded-full" style={{ width: 36, height: 36 }} />
               <Skeleton className="h-4 w-16" />
             </div>
@@ -133,24 +133,24 @@ function OverviewSkeleton() {
         ))}
       </div>
 
-      <Skeleton className="h-6 w-32 mb-3" />
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
+      <Skeleton className="h-6 w-32 mb-4" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
         {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
           <div key={i} className="p-4 rounded-element bg-background overflow-hidden">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <Skeleton className="rounded-full" style={{ width: 28, height: 28 }} />
               <Skeleton className="h-4 w-20" />
             </div>
-            <Skeleton className="h-7 w-12 mb-3" />
+            <Skeleton className="h-7 w-12 mb-4" />
             <Skeleton className="h-1 w-full rounded" />
           </div>
         ))}
       </div>
 
-      <Skeleton className="h-6 w-32 mb-3" />
+      <Skeleton className="h-6 w-32 mb-4" />
       <div className="p-4 rounded-element bg-background">
         {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} className="flex items-center gap-4 py-3">
+          <div key={i} className="flex items-center gap-4 py-4">
             <Skeleton className="rounded-full" style={{ width: 8, height: 8 }} />
             <div className="flex-1">
               <Skeleton className="h-4 w-3/5" />
@@ -313,7 +313,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
               }
               role={isQueue ? 'button' : undefined}
               tabIndex={isQueue ? 0 : undefined}
-              className="p-5 rounded-element transition-all"
+              className="p-6 rounded-element transition-all"
               style={{
                 borderLeft: `3px solid ${card.color}`,
                 background: `linear-gradient(135deg, ${alphaHex(card.color, 0.04)} 0%, hsl(var(--background)) 100%)`,
@@ -322,7 +322,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
             >
               {isQueue ? (
                 <>
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-4 mb-2">
                     <div
                       className="rounded-full flex items-center justify-center"
                       style={{
@@ -356,7 +356,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                 </>
               ) : (
                 <>
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center gap-4 mb-4">
                     <div
                       className="rounded-full flex items-center justify-center"
                       style={{
@@ -380,8 +380,8 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       </div>
 
       {/* ── Content type cards ──────────────────────────────────── */}
-      <h2 className="text-base font-semibold mb-3">Content Types</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
+      <h2 className="text-base font-semibold mb-4">Content Types</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
         {counts.map((ct) => {
           const Icon = ct.icon;
           const barWidth = Math.max((ct.count / maxCount) * 100, 2);
@@ -395,7 +395,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
               }
               className="text-left p-4 cursor-pointer rounded-element overflow-hidden bg-background border border-border transition-transform hover:-translate-y-0.5"
             >
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-4">
                 <div
                   className="rounded-full flex items-center justify-center flex-shrink-0"
                   style={{
@@ -411,7 +411,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                 </p>
               </div>
 
-              <div className="text-lg font-bold mb-3">{ct.count.toLocaleString()}</div>
+              <div className="text-lg font-bold mb-4">{ct.count.toLocaleString()}</div>
 
               <div
                 className="w-full rounded-full"
@@ -434,7 +434,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       {/* ── Recent Activity ─────────────────────────────────────── */}
       {recentActivity.length > 0 && (
         <>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold">Recent Activity</h2>
             <Button
               variant="ghost"
@@ -454,7 +454,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
               return (
                 <div
                   key={entry.id}
-                  className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-muted"
+                  className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-muted"
                   style={{
                     borderBottom: isLast ? 'none' : '1px solid hsl(var(--border))',
                   }}
@@ -491,9 +491,9 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
 
       {/* ── Quick Actions ───────────────────────────────────────── */}
       <hr className="my-4 border-border" />
-      <h2 className="text-base font-semibold mb-3">Quick Actions</h2>
+      <h2 className="text-base font-semibold mb-4">Quick Actions</h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="col-span-2 sm:col-span-4">
           <span
             className="text-muted-foreground uppercase tracking-wider"
@@ -532,7 +532,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
             type="button"
             key={action.label}
             onClick={action.onClick}
-            className="p-4 rounded-element cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px text-left"
+            className="p-4 rounded-element cursor-pointer flex items-center gap-4 bg-background border border-border transition-transform hover:-translate-y-px text-left"
           >
             <div
               className="rounded-element flex items-center justify-center"
@@ -588,7 +588,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
               type="button"
               key={action.label}
               onClick={action.onClick}
-              className="p-4 rounded-element cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px text-left"
+              className="p-4 rounded-element cursor-pointer flex items-center gap-4 bg-background border border-border transition-transform hover:-translate-y-px text-left"
             >
               <div
                 className="rounded-element flex items-center justify-center"

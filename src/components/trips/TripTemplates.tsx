@@ -67,7 +67,7 @@ export function TripTemplates() {
         </div>
       </ScrollReveal>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {isLoading && !templates
           ? Array.from({ length: 3 }).map((_, i) => (
               <Skeleton
@@ -115,7 +115,7 @@ export function TripTemplates() {
                         {template.cities}
                       </p>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-4">
                       <Badge variant="secondary">
                         <span className="inline-flex items-center gap-1">
                           <Clock size={12} />

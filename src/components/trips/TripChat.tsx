@@ -79,7 +79,7 @@ export function TripChat({ tripId }: Props) {
       {/* Messages list */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto space-y-3 p-3"
+        className="flex-1 overflow-y-auto space-y-4 p-4"
         style={{ overscrollBehavior: 'contain' }}
       >
         {(!messages || messages.length === 0) && (
@@ -133,7 +133,7 @@ export function TripChat({ tripId }: Props) {
 
                 <div
                   className={cn(
-                    'rounded-element p-3',
+                    'rounded-element p-4',
                     isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
                   )}
                 >
@@ -156,7 +156,7 @@ export function TripChat({ tripId }: Props) {
 
       {/* Reply preview */}
       {replyTo && (
-        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-border bg-muted">
+        <div className="flex items-center gap-2 px-4 py-1.5 border-t border-border bg-muted">
           <Reply size={14} style={{ opacity: 0.5 }} className="shrink-0" />
           <div className="flex-1 min-w-0">
             <span className="block text-xs2 font-semibold">
@@ -176,7 +176,7 @@ export function TripChat({ tripId }: Props) {
       )}
 
       {/* Input */}
-      <div className="flex gap-2 items-end mt-2 p-3 border-t border-border">
+      <div className="flex gap-2 items-end mt-2 p-4 border-t border-border">
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}

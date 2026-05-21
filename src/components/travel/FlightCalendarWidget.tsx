@@ -63,7 +63,7 @@ export function FlightCalendarWidget({
 
     return (
       <div>
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-4">
           <Calendar size={18} className="text-primary" />
           <span className="font-semibold" style={{ fontSize: '0.95rem' }}>
             Best Time to Fly to {destinationCity}

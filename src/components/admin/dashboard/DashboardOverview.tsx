@@ -178,7 +178,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
             return (
               <Card key={card.title}>
                 <CardContent>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <div className="p-2 rounded-full bg-muted">
                       <Icon style={{ height: 16, width: 16 }} className={card.color} />
                     </div>
@@ -200,7 +200,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
           <CardTitle>Storage Usage</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <div className="flex justify-between text-sm">
               <span className="text-sm">Used Storage</span>
               <span className="text-sm">{systemHealth.storageUsed}% of limit</span>

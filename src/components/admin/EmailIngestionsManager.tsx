@@ -156,7 +156,7 @@ export function EmailIngestionsManager() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Mail size={24} className="text-foreground" />
           <div>
             <h6 className="text-base font-semibold">Email Ingestions</h6>
@@ -202,7 +202,7 @@ export function EmailIngestionsManager() {
       </div>
 
       {/* Search and filters */}
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-wrap gap-4 items-center">
         <div className="relative flex-1 min-w-[200px]">
           <Search
             style={{ left: 10, top: '50%', transform: 'translateY(-50%)', height: 14, width: 14 }}
@@ -248,7 +248,7 @@ export function EmailIngestionsManager() {
           </CardContent>
         </Card>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {filtered.map((ing) => (
             <Collapsible key={ing.id}>
               <Card
@@ -257,10 +257,10 @@ export function EmailIngestionsManager() {
                   transition: 'border-color 0.2s',
                 }}
               >
-                <CardContent className="p-3.5">
+                <CardContent className="p-4.5">
                   {/* Summary row */}
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
                       <Badge variant={STATUS_BADGE_VARIANT[ing.status] || 'outline'}>
                         {ing.status === 'no_content' ? 'no content' : ing.status}
                       </Badge>
@@ -269,7 +269,7 @@ export function EmailIngestionsManager() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 flex-shrink-0 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-4 flex-shrink-0 text-xs text-muted-foreground">
                       <span className="hidden md:inline" title={ing.from_address}>
                         {ing.from_address.length > 24
                           ? ing.from_address.slice(0, 24) + '...'
@@ -357,7 +357,7 @@ export function EmailIngestionsManager() {
                       {ing.error_message && (
                         <div className="md:col-span-2">
                           <div
-                            className="flex items-start gap-2 p-3 rounded"
+                            className="flex items-start gap-2 p-4 rounded"
                             style={{
                               backgroundColor: 'hsl(var(--destructive) / 0.08)',
                               border: '1px solid hsl(var(--destructive) / 0.2)',
@@ -455,7 +455,7 @@ export function EmailIngestionsManager() {
                           </Button>
                           {expandedJson.has(ing.id) && (
                             <pre
-                              className="mt-2 p-3 rounded overflow-auto text-xs"
+                              className="mt-2 p-4 rounded overflow-auto text-xs"
                               style={{
                                 backgroundColor: 'hsl(var(--foreground) / 0.05)',
                                 maxHeight: 400,

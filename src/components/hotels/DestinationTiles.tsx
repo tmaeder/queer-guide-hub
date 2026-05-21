@@ -29,7 +29,7 @@ export function DestinationTiles({ cities }: DestinationTilesProps) {
               decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <p className="font-semibold text-base leading-tight">{c.name}</p>
               <p className="text-xs opacity-90 mt-0.5">
                 {c.hotel_count} {c.hotel_count === 1 ? 'hotel' : 'hotels'}

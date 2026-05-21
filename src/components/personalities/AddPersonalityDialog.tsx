@@ -464,8 +464,8 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         {/* Wikipedia/Wikidata Lookup */}
         <Card>
           <CardContent>
-            <h6 className="text-lg font-semibold mb-3">Quick Lookup</h6>
-            <p className="text-sm text-muted-foreground mb-3">
+            <h6 className="text-lg font-semibold mb-4">Quick Lookup</h6>
+            <p className="text-sm text-muted-foreground mb-4">
               Search Wikipedia/Wikidata to automatically prefill personality information
             </p>
 
@@ -495,7 +495,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
             {/* Basic Information */}
             <Card>
               <CardContent>
-                <h6 className="text-lg font-semibold mb-3">Basic Information</h6>
+                <h6 className="text-lg font-semibold mb-4">Basic Information</h6>
 
                 <div>
                   <Label htmlFor="name">Name *</Label>
@@ -603,7 +603,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
             {/* Dates and Status */}
             <Card>
               <CardContent>
-                <h6 className="text-lg font-semibold mb-3">Dates & Status</h6>
+                <h6 className="text-lg font-semibold mb-4">Dates & Status</h6>
 
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -677,7 +677,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 {/* Image Upload */}
                 <div>
                   <Label>Profile Image</Label>
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     {formData.image_url ? (
                       <div className="relative">
                         <img
@@ -745,7 +745,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
           {/* Description and Bio */}
           <Card>
             <CardContent>
-              <h6 className="text-lg font-semibold mb-3">Description & Biography</h6>
+              <h6 className="text-lg font-semibold mb-4">Description & Biography</h6>
 
               <div>
                 <Label htmlFor="description">Short Description</Label>
@@ -776,10 +776,10 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
           {/* Fields of Work */}
           <Card>
             <CardContent>
-              <h6 className="text-lg font-semibold mb-3">Fields of Work</h6>
+              <h6 className="text-lg font-semibold mb-4">Fields of Work</h6>
 
               {formData.fields.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {formData.fields.map((field) => (
                     <Badge key={field} variant="secondary">
                       {field}
@@ -814,7 +814,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
           {/* Achievements */}
           <Card>
             <CardContent>
-              <h6 className="text-lg font-semibold mb-3">Achievements</h6>
+              <h6 className="text-lg font-semibold mb-4">Achievements</h6>
 
               <div className="flex gap-2">
                 <Input
@@ -854,7 +854,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
           {/* Tags */}
           <Card>
             <CardContent>
-              <h6 className="text-lg font-semibold mb-3">Tags</h6>
+              <h6 className="text-lg font-semibold mb-4">Tags</h6>
 
               <div className="flex gap-2">
                 <Input
@@ -889,7 +889,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
           </Card>
 
           {/* Submit Button */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-4 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>

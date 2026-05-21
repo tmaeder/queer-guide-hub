@@ -149,7 +149,7 @@ export function SetupTab() {
         return (
           <Card key={cat}>
             <CardContent>
-              <p className="text-sm font-semibold uppercase mb-3">
+              <p className="text-sm font-semibold uppercase mb-4">
                 {cat}{' '}
                 <span className="text-xs text-muted-foreground">
                   ({checks.length})

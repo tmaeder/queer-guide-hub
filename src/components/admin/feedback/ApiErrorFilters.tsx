@@ -53,7 +53,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-3 mb-4 flex-wrap">
+    <div className="flex items-center gap-4 mb-4 flex-wrap">
       {/* Search */}
       <div
         className="inline-flex items-center gap-1 flex-[1_1_220px] min-w-[180px] max-w-[320px] py-[1px] border-b transition-colors focus-within:border-primary"

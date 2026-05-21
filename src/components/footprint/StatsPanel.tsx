@@ -46,7 +46,7 @@ export function StatsPanel({ stats, visible }: Props) {
   if (tiles.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="footprint-stats">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-testid="footprint-stats">
       {tiles.map((t) => (
         <Card key={t.key}>
           <CardContent className="py-4">

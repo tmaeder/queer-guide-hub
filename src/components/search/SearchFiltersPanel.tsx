@@ -249,7 +249,7 @@ export const SearchFiltersPanel = ({
       {/* Facet Drill-down — wired to Meili facetDistribution from useSearch. */}
       {facets &&
         FACET_GROUPS.some((g) => facets[g.facet] && Object.keys(facets[g.facet]).length > 0) && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {FACET_GROUPS.map((group) => {
               const dist = facets[group.facet];
               if (!dist) return null;

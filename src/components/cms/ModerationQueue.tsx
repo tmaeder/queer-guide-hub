@@ -289,7 +289,7 @@ export function ModerationQueue() {
                     <span className="text-xs text-muted-foreground block mb-2">
                       Submission data
                     </span>
-                    <pre className="m-0 p-3 bg-background border border-border rounded text-xs overflow-auto max-h-52">
+                    <pre className="m-0 p-4 bg-background border border-border rounded text-xs overflow-auto max-h-52">
                       {JSON.stringify(item.data, null, 2)}
                     </pre>
                     <div className="mt-4">

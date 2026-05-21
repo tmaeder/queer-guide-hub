@@ -206,7 +206,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
               return (
                 <div
                   key={entry.id}
-                  className="flex gap-2 py-3 px-1 hover:bg-muted rounded"
+                  className="flex gap-2 py-4 px-1 hover:bg-muted rounded"
                 >
                   <Avatar className="w-7 h-7 mt-0.5">
                     <AvatarFallback className="bg-border text-2xs">

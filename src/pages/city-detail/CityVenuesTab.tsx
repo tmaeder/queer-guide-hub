@@ -36,9 +36,9 @@ export function CityVenuesTab({
       <div className="mt-6">
         {showCreateTrip && (
           <Card className="mb-4">
-            <CardContent className="pt-5">
+            <CardContent className="pt-6">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Luggage size={20} style={{ opacity: 0.6 }} />
                   <p className="font-medium">Planning a trip to {city.name}?</p>
                 </div>

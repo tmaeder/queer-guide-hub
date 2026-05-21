@@ -28,7 +28,7 @@ const NotFound = () => {
             "The page you're looking for doesn't exist or has been moved.",
           )}
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button
             variant="outline"
             onClick={() => window.history.back()}

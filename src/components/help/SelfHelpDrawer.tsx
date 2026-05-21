@@ -41,7 +41,7 @@ export function SelfHelpDrawer() {
             <Wind size={16} aria-hidden />
             {t('help.breathing_title', '4-7-8 breathing')}
           </h3>
-          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+          <ol className="mt-2 list-decimal space-y-1 pl-6 text-sm text-muted-foreground">
             <li>{t('help.breathing_1', 'Breathe in through your nose for 4 seconds.')}</li>
             <li>{t('help.breathing_2', 'Hold your breath for 7 seconds.')}</li>
             <li>{t('help.breathing_3', 'Breathe out through your mouth for 8 seconds.')}</li>
@@ -57,7 +57,7 @@ export function SelfHelpDrawer() {
           <p className="mt-2 text-sm text-muted-foreground">
             {t('help.grounding_intro', 'Name, out loud or in your head:')}
           </p>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+          <ul className="mt-2 list-disc space-y-1 pl-6 text-sm text-muted-foreground">
             <li>{t('help.grounding_5', '5 things you can see')}</li>
             <li>{t('help.grounding_4', '4 things you can touch')}</li>
             <li>{t('help.grounding_3', '3 things you can hear')}</li>

@@ -194,7 +194,7 @@ function Column({
   return (
     <div ref={setNodeRef} data-col-id={col.id}>
       <div
-        className="flex items-center gap-2 mb-3 pb-2 border-b-2"
+        className="flex items-center gap-2 mb-4 pb-2 border-b-2"
         style={{ borderColor: col.color }}
       >
         <p className="text-sm font-bold">{col.label}</p>

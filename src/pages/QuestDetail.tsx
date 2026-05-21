@@ -91,7 +91,7 @@ export default function QuestDetail() {
             </article>
 
             <section className="rounded-container border border-border bg-card p-6">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Criteria</h3>
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Criteria</h3>
               <ul className="space-y-2 text-sm">
                 {quest.criteria_json.entity_type && (
                   <li><span className="text-muted-foreground">Type:</span> {quest.criteria_json.entity_type}</li>
@@ -128,29 +128,29 @@ export default function QuestDetail() {
 
           <aside className="space-y-6">
             <div className="rounded-container border border-border bg-card p-6">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Progress</h3>
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Progress</h3>
               <div className="text-3xl font-semibold">
                 {accepted}
                 {target > 0 && <span className="text-muted-foreground"> / {target}</span>}
               </div>
-              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div className="h-full bg-foreground" style={{ width: `${pct}%` }} />
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">
+              <p className="mt-4 text-xs text-muted-foreground">
                 {progress?.contributor_count ?? 0} contributors · {progress?.pending_count ?? 0} pending review
               </p>
             </div>
 
             {isActive && (
               <div className="rounded-container border border-border bg-card p-6">
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Join</h3>
+                <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Join</h3>
                 {!user ? (
                   <p className="text-sm text-muted-foreground">
                     <Link to="/auth" className="underline">Sign in</Link> to participate.
                   </p>
                 ) : (
                   <form
-                    className="space-y-3"
+                    className="space-y-4"
                     onSubmit={(e) => {
                       e.preventDefault();
                       join.mutate(
@@ -167,7 +167,7 @@ export default function QuestDetail() {
                       );
                     }}
                   >
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center justify-between gap-4">
                       <Label htmlFor="opt-public" className="text-sm">Show me in contributors</Label>
                       <Switch id="opt-public" checked={optedIn} onCheckedChange={setOptedIn} />
                     </div>
@@ -199,7 +199,7 @@ export default function QuestDetail() {
             )}
 
             <div className="rounded-container border border-border bg-card p-6">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Contributors
               </h3>
               {!contributors || contributors.length === 0 ? (

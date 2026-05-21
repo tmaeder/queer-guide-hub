@@ -391,7 +391,7 @@ function InfoRow({
   value: string | null | undefined;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-4">
       <Icon style={{ height: 14, width: 14 }} className="text-muted-foreground shrink-0" />
       <span className="text-sm text-muted-foreground min-w-[120px]">{label}</span>
       <span className="text-sm font-medium">{value || '-'}</span>

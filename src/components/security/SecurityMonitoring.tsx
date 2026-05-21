@@ -114,7 +114,7 @@ export function SecurityMonitoring() {
       <div className="grid gap-4">
         {events.map((event) => (
           <Card key={event.id}>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
                   <div className="flex items-center gap-2">

@@ -123,7 +123,7 @@ export function MediaDetailPage() {
     <div className="max-w-screen-lg mx-auto p-6 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => navigate('/admin/media')}>
             <ArrowLeft size={16} />
           </Button>
@@ -344,7 +344,7 @@ export function MediaDetailPage() {
             {getOptimizationStatusBadge(detail.optimization_status)}
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className="flex flex-col gap-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Original Size</p>
@@ -386,8 +386,8 @@ export function MediaDetailPage() {
           <CardTitle className="text-base">Technical Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3 text-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {detail.phash && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Perceptual Hash</span>
@@ -425,7 +425,7 @@ export function MediaDetailPage() {
 
             <Separator />
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-muted-foreground">Created</p>
                 <p>{new Date(detail.created_at).toLocaleDateString()}</p>
@@ -488,7 +488,7 @@ function ExifDataSection({ metadata }: { metadata: Record<string, unknown> }) {
     return (
       <details>
         <summary className="text-muted-foreground cursor-pointer">Raw Metadata</summary>
-        <pre className="mt-2 p-3 bg-muted text-xs overflow-auto max-h-48">
+        <pre className="mt-2 p-4 bg-muted text-xs overflow-auto max-h-48">
           {JSON.stringify(metadata, null, 2)}
         </pre>
       </details>

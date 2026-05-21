@@ -100,7 +100,7 @@ export function TripPolls({ tripId }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <p className="text-sm font-medium text-muted-foreground">
           {polls?.length || 0}{' '}
           {(polls?.length || 0) === 1
@@ -127,7 +127,7 @@ export function TripPolls({ tripId }: Props) {
         </ScrollReveal>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {polls?.map((poll) => {
           const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes?.length || 0), 0);
           const isExpired = poll.deadline ? isPast(new Date(poll.deadline)) : false;
@@ -178,7 +178,7 @@ export function TripPolls({ tripId }: Props) {
                         role={!isClosed && user ? 'button' : undefined}
                         tabIndex={!isClosed && user ? 0 : undefined}
                         aria-pressed={!isClosed && user ? !!hasVoted : undefined}
-                        className={`relative bg-muted rounded-element px-3 h-8 flex items-center overflow-hidden transition-colors ${isClosed ? 'cursor-default' : 'cursor-pointer hover:bg-accent'}`}
+                        className={`relative bg-muted rounded-element px-4 h-8 flex items-center overflow-hidden transition-colors ${isClosed ? 'cursor-default' : 'cursor-pointer hover:bg-accent'}`}
                         style={
                           hasVoted
                             ? { outline: '2px solid hsl(var(--foreground))', outlineOffset: -2 }
@@ -251,7 +251,7 @@ export function TripPolls({ tripId }: Props) {
             <DialogTitle>{t('trips.polls.create', 'Create Poll')}</DialogTitle>
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 mt-2">
+          <div className="flex flex-col gap-4 mt-2">
             <Input
               value={question}
               onChange={(e) => setQuestion(e.target.value)}

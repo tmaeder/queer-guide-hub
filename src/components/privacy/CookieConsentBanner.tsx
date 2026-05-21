@@ -44,7 +44,7 @@ export function CookieConsentBanner() {
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-4">
                 <Button onClick={acceptAll} size="sm">
                   Accept All
                 </Button>

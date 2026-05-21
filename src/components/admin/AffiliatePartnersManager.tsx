@@ -171,7 +171,7 @@ export function AffiliatePartnersManager() {
       ) : (
         <div className="flex flex-col gap-4">
           {partners.map((p) => (
-            <div key={p.id} className="rounded-element border bg-card p-5 flex items-center gap-4">
+            <div key={p.id} className="rounded-element border bg-card p-6 flex items-center gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-base font-semibold">{p.partner_name}</span>

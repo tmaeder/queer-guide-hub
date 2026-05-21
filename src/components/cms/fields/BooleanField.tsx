@@ -13,7 +13,7 @@ export function BooleanField({ field, value, onChange, error, disabled }: FieldP
 
   return (
     <FieldWrapper field={field} error={error} hideLabel>
-      <div className="flex items-center gap-3 py-1">
+      <div className="flex items-center gap-4 py-1">
         <Switch
           id={field.name}
           checked={checked}

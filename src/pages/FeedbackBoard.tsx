@@ -119,7 +119,7 @@ export default function FeedbackBoard() {
             <div key={col.id}>
               {/* Column header */}
               <div
-                className="flex items-center gap-2 mb-3 pb-2 border-b-2"
+                className="flex items-center gap-2 mb-4 pb-2 border-b-2"
                 style={{ borderColor: col.color }}
               >
                 <p className="text-sm font-bold">{col.label}</p>
@@ -131,7 +131,7 @@ export default function FeedbackBoard() {
               {/* Cards */}
               <div className="flex flex-col gap-2 md:max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
                 {colItems.length === 0 && (
-                  <p className="py-5 text-center text-xs2 italic opacity-60 text-muted-foreground">
+                  <p className="py-6 text-center text-xs2 italic opacity-60 text-muted-foreground">
                     —
                   </p>
                 )}

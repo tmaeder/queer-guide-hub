@@ -90,7 +90,7 @@ export function TravelDealCard({
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-3">
+        <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {deal.airline ? (
               <img
@@ -123,7 +123,7 @@ export function TravelDealCard({
           </p>
         )}
 
-        <div className="flex gap-2 flex-wrap mb-3 items-center">
+        <div className="flex gap-2 flex-wrap mb-4 items-center">
           {deal.departure_date && (
             <span className="text-xs text-muted-foreground">
               {formatDate(deal.departure_date)}

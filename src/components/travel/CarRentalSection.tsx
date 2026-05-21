@@ -43,7 +43,7 @@ export function CarRentalSection({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-muted">
+      <div className="flex items-center gap-4 p-4 bg-muted">
         <Car size={20} className="text-primary shrink-0" />
         <div className="flex-1">
           <p className="font-semibold text-sm">Rent a Car in {city}</p>
@@ -59,15 +59,15 @@ export function CarRentalSection({
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <Car size={18} className="text-primary" />
         <p className="font-semibold text-base">Rent a Car in {city}</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">DiscoverCars</p>
-            <p className="text-xs text-muted-foreground mb-3">
+            <p className="text-xs text-muted-foreground mb-4">
               Compare 500+ providers, free cancellation
             </p>
             <Button
@@ -83,7 +83,7 @@ export function CarRentalSection({
         <Card>
           <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">Rentalcars.com</p>
-            <p className="text-xs text-muted-foreground mb-3">
+            <p className="text-xs text-muted-foreground mb-4">
               Booking.com partner, loyalty rewards
             </p>
             <Button

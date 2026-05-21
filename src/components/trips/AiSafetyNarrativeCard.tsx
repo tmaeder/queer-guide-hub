@@ -30,11 +30,11 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
   if (!briefing) {
     if (!canGenerate) return null;
     return (
-      <div className="p-5 mb-6 bg-muted flex items-start gap-3">
+      <div className="p-6 mb-6 bg-muted flex items-start gap-4">
         <Sparkles size={18} style={{ opacity: 0.7 }} className="mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold mb-1">AI safety briefing</p>
-          <span className="block text-xs text-muted-foreground mb-3">
+          <span className="block text-xs text-muted-foreground mb-4">
             Generate a plain-language summary synthesizing country data and recent news for this
             trip.
           </span>
@@ -52,7 +52,7 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
   }
 
   return (
-    <div className="p-5 mb-6 bg-muted flex items-start gap-3">
+    <div className="p-6 mb-6 bg-muted flex items-start gap-4">
       <Sparkles size={18} style={{ opacity: 0.7 }} className="mt-0.5 shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1 gap-2">

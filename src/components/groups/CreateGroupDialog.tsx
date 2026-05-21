@@ -117,7 +117,7 @@ export const CreateGroupDialog = ({
           }))} placeholder="Add tags to help others discover your group..." maxTags={5} allowCustomTags={true} />
           </div>
 
-          <div className="flex items-center justify-between p-3">
+          <div className="flex items-center justify-between p-4">
             <div>
               <Label htmlFor="private">
                 Private Group
@@ -132,7 +132,7 @@ export const CreateGroupDialog = ({
           }))} />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-4 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>

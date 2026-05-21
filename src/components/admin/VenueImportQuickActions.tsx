@@ -338,7 +338,7 @@ export const VenueImportQuickActions = () => {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div
-              className="text-center p-3 rounded-element"
+              className="text-center p-4 rounded-element"
               style={{ backgroundColor: 'hsl(var(--muted))' }}
             >
               <div className="text-xl font-semibold text-muted-foreground">
@@ -347,7 +347,7 @@ export const VenueImportQuickActions = () => {
               <div className="text-xs text-muted-foreground">Total Venues</div>
             </div>
             <div
-              className="text-center p-3 rounded-element"
+              className="text-center p-4 rounded-element"
               style={{ backgroundColor: 'hsl(var(--muted))' }}
             >
               <div className="text-xl font-semibold text-foreground">
@@ -356,7 +356,7 @@ export const VenueImportQuickActions = () => {
               <div className="text-xs text-foreground">Manual / Other</div>
             </div>
             <div
-              className="text-center p-3 rounded-element"
+              className="text-center p-4 rounded-element"
               style={{ backgroundColor: 'hsl(var(--muted))' }}
             >
               <div
@@ -370,14 +370,14 @@ export const VenueImportQuickActions = () => {
               </div>
             </div>
             <div
-              className="text-center p-3 rounded-element"
+              className="text-center p-4 rounded-element"
               style={{ backgroundColor: 'hsl(var(--muted))' }}
             >
               <div className="text-xl font-semibold text-foreground">{activeSources}</div>
               <div className="text-xs text-foreground">Active Sources</div>
             </div>
             <div
-              className="text-center p-3 rounded-element"
+              className="text-center p-4 rounded-element"
               style={{ backgroundColor: 'hsl(var(--muted))' }}
             >
               <div className="text-xl font-semibold text-destructive">{venueSources.length}</div>

@@ -24,7 +24,7 @@ type NewsArticle = Tables<'news_articles'> & {
 
 const NewsCardFixture = () => (
   <Card>
-    <CardHeader style={{ flexDirection: 'column' }} className="flex gap-3">
+    <CardHeader style={{ flexDirection: 'column' }} className="flex gap-4">
       <h3 className="text-base font-semibold text-lg">Sample News Headline</h3>
       <div className="flex items-center gap-2">
         <Badge style={{ backgroundColor: 'hsl(var(--foreground))' }} className="text-background">
@@ -222,7 +222,7 @@ export const NewsCard = ({
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="flex items-center gap-4 py-3 px-4 transition-colors hover:bg-muted border-b border-border no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex items-center gap-4 py-4 px-4 transition-colors hover:bg-muted border-b border-border no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-semibold truncate m-0">{safeTitle}</h3>
@@ -285,7 +285,7 @@ export const NewsCard = ({
             />
           </div>
         )}
-        <div className="flex-1 flex flex-col justify-center gap-3">
+        <div className="flex-1 flex flex-col justify-center gap-4">
           <div className="flex items-center gap-2">
             {displayCategory && (
               <Badge
@@ -344,7 +344,7 @@ export const NewsCard = ({
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="flex gap-3 p-3 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex gap-4 p-4 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <img
           loading="lazy"
@@ -406,7 +406,7 @@ export const NewsCard = ({
               {excerptText}
             </p>
           )}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-auto">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-auto">
             {authorName && <span>By {authorName}</span>}
             {!hideDate && article.published_at && (
               <span>
@@ -437,7 +437,7 @@ export const NewsCard = ({
         style={{ borderColor: 'hsl(var(--border))' }}
         onClick={() => navigate(`/news/${article.slug}`)}
       >
-        <CardHeader style={{ flexDirection: 'column' }} className="flex gap-3">
+        <CardHeader style={{ flexDirection: 'column' }} className="flex gap-4">
           {hasImage && (
             <div className="relative overflow-hidden rounded-element">
               <img
@@ -482,7 +482,7 @@ export const NewsCard = ({
             </div>
           )}
 
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-4">
             <h3
               className="font-semibold m-0 text-lg overflow-hidden"
               style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
@@ -562,7 +562,7 @@ export const NewsCard = ({
           </div>
         </CardHeader>
 
-        <CardContent style={{ flexDirection: 'column' }} className="flex gap-3">
+        <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
           {excerptText && (
             <p
               className="text-sm text-muted-foreground overflow-hidden"

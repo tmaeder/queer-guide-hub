@@ -15,7 +15,7 @@ export function WhatToExpect() {
     <div className="mb-6 rounded-element border bg-muted/40">
       <button
         type="button"
-        className="flex w-full items-center justify-between px-4 py-3 text-left"
+        className="flex w-full items-center justify-between px-4 py-4 text-left"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
@@ -31,8 +31,8 @@ export function WhatToExpect() {
         />
       </button>
       {open && (
-        <div className="border-t px-4 py-3 text-sm leading-relaxed text-muted-foreground">
-          <ul className="list-disc space-y-1 pl-5">
+        <div className="border-t px-4 py-4 text-sm leading-relaxed text-muted-foreground">
+          <ul className="list-disc space-y-1 pl-6">
             <li>
               {t('help.expect_1', 'You’ll hear a short greeting. You don’t have to give your name.')}
             </li>

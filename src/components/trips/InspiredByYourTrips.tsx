@@ -45,7 +45,7 @@ export function InspiredByYourTrips({ ownTrips }: Props) {
 
   return (
     <section className="mt-12 pt-10 border-t border-border">
-      <div className="flex items-end justify-between gap-3 mb-4">
+      <div className="flex items-end justify-between gap-4 mb-4">
         <div>
           <div className="inline-flex items-center gap-2 mb-1">
             <Sparkles size={16} />

@@ -152,7 +152,7 @@ export function PostTripMemoryPrompt({ trip }: Props) {
           How was it? Add to your footprint
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Confirm the places you actually visited on this trip. They become
           part of your private passport.

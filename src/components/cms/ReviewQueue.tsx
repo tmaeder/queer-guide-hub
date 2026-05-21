@@ -253,7 +253,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-1.5">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-1.5">
         <div>
           <h5 className="text-2xl font-bold mb-0.5">Review Queue</h5>
           <p className="text-sm text-muted-foreground">
@@ -304,7 +304,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
       {/* Filters */}
       {items.length > 0 && (
-        <div className="flex gap-2 mb-3 flex-wrap items-center">
+        <div className="flex gap-2 mb-4 flex-wrap items-center">
           <div className="flex items-center gap-0.5">
             <Checkbox
               checked={selectedIds.size === displayItems.length && displayItems.length > 0}

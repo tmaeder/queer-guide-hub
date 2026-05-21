@@ -456,7 +456,7 @@ export default function AdminQueerVillages() {
               <DialogHeader>
                 <DialogTitle>{editingId ? 'Edit Village' : 'Create Village'}</DialogTitle>
               </DialogHeader>
-              <div className="flex flex-col gap-5 pt-2">
+              <div className="flex flex-col gap-6 pt-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="aqv-name">Name *</Label>
                   <Input

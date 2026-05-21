@@ -33,7 +33,7 @@ export function LocationPrivacyManager() {
           <div className="flex flex-col gap-6">
             {/* Precise Location Setting */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Eye size={16} className="text-muted-foreground" />
                 <div>
                   <p className="font-medium">Precise Location Sharing</p>
@@ -60,7 +60,7 @@ export function LocationPrivacyManager() {
 
             {/* Region-Only Setting */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Shield size={16} className="text-muted-foreground" />
                 <div>
                   <p className="font-medium">Region-Only Sharing</p>
@@ -87,7 +87,7 @@ export function LocationPrivacyManager() {
 
             {/* Auto-Anonymize Setting */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Clock size={16} className="text-muted-foreground" />
                 <div>
                   <p className="font-medium">Automatic Data Anonymization</p>

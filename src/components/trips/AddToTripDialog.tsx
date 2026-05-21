@@ -245,7 +245,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                     tabIndex={0}
                     aria-checked={selectedTripId === trip.id}
                     className={cn(
-                      'flex items-center justify-between p-3 rounded-element border-2 cursor-pointer transition-colors',
+                      'flex items-center justify-between p-4 rounded-element border-2 cursor-pointer transition-colors',
                       selectedTripId === trip.id
                         ? 'border-primary'
                         : 'border-border hover:border-muted-foreground',
@@ -253,7 +253,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-semibold truncate">{resolveTripTitle(trip, t)}</p>
-                      <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-4 mt-1">
                         {trip.start_date && (
                           <span className="text-xs text-muted-foreground">
                             <Calendar

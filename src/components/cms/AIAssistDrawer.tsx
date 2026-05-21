@@ -155,7 +155,7 @@ export function AIAssistDrawer({
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="right" className="w-full sm:w-[420px] p-5 overflow-auto">
+      <SheetContent side="right" className="w-full sm:w-[420px] p-6 overflow-auto">
         <div className="flex items-center mb-4">
           <Sparkles size={18} />
           <h6 className="text-lg font-bold ml-2 flex-1">AI Assist</h6>
@@ -189,7 +189,7 @@ export function AIAssistDrawer({
           </Alert>
         )}
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {ops.map((op) => {
             const meta = OP_META[op];
             const Icon = meta.icon;
@@ -198,7 +198,7 @@ export function AIAssistDrawer({
             return (
               <div
                 key={op}
-                className="border border-border rounded-element p-3 bg-background"
+                className="border border-border rounded-element p-4 bg-background"
               >
                 <div className="flex items-center mb-1">
                   <Icon size={14} />

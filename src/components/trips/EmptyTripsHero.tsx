@@ -68,7 +68,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
   return (
     <div className="mt-2">
       <div className="text-center mb-8 md:mb-10 max-w-2xl mx-auto px-2">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
           {t('trips.empty.hero.title', 'Plan a trip you’ll feel safe on.')}
         </h2>
         <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
@@ -110,7 +110,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
 
       {(discoverLoading || previewTrips.length > 0) && (
         <section className="mb-12">
-          <div className="flex items-end justify-between gap-3 mb-4">
+          <div className="flex items-end justify-between gap-4 mb-4">
             <div>
               <div className="inline-flex items-center gap-2 mb-1">
                 <Compass size={16} />

@@ -81,7 +81,7 @@ function formatMs(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-const cardCls = 'border border-border rounded-element bg-background p-5';
+const cardCls = 'border border-border rounded-element bg-background p-6';
 
 // ── Pipeline Health Card ────────────────────────────────────────────────
 
@@ -116,7 +116,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
         )}
       </div>
 
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-4 gap-4 mb-4">
         <MetricBox
           label="Total"
           value={last24h.total.toLocaleString()}
@@ -162,7 +162,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
       )}
 
       {Object.keys(health.failuresByStep).length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           {Object.entries(health.failuresByStep).map(([step, count]) => (
             <span
               key={step}
@@ -181,7 +181,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
 
 function MetricBox({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className="p-3 rounded-element text-center" style={{ background: 'hsl(var(--muted))' }}>
+    <div className="p-4 rounded-element text-center" style={{ background: 'hsl(var(--muted))' }}>
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className="text-base font-bold" style={{ color }}>
         {value}
@@ -283,7 +283,7 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
         })}
       </div>
 
-      <div className="flex gap-4 mt-4 pt-3 border-t border-border">
+      <div className="flex gap-4 mt-4 pt-4 border-t border-border">
         <div className="flex items-center gap-1">
           <div
             className="rounded-full"
@@ -346,7 +346,7 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
           </span>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {(['venues', 'events', 'personalities', 'news_articles'] as const).map((type) => {
             const meta = ENTITY_META[type];
             const count = needsAttention[type];
@@ -354,7 +354,7 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
             return (
               <div
                 key={type}
-                className="p-3 rounded-element text-center"
+                className="p-4 rounded-element text-center"
                 style={{
                   background: count > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
                 }}
@@ -442,9 +442,9 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
             return (
               <div
                 key={item.id}
-                className="flex items-center justify-between px-3 py-2 rounded hover:bg-muted"
+                className="flex items-center justify-between px-4 py-2 rounded hover:bg-muted"
               >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="flex items-center gap-4 min-w-0 flex-1">
                   <TypeIcon size={14} style={{ color: typeMeta.color }} className="shrink-0" />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
@@ -588,9 +588,9 @@ function FailedEnrichmentsCard() {
             return (
               <div
                 key={`${item.entity_type}-${item.entity_id}`}
-                className="flex items-center justify-between px-3 py-2 rounded hover:bg-muted"
+                className="flex items-center justify-between px-4 py-2 rounded hover:bg-muted"
               >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="flex items-center gap-4 min-w-0 flex-1">
                   <EntityIcon
                     size={14}
                     style={{ color: entityMeta?.color ?? 'hsl(var(--muted-foreground))' }}
@@ -650,7 +650,7 @@ function FailedEnrichmentsCard() {
             )
           }
           disabled={retry.isPending}
-          className="mt-3 font-semibold"
+          className="mt-4 font-semibold"
         >
           <RefreshCw size={14} className="mr-1.5" />
           Retry All ({items.length})
@@ -664,7 +664,7 @@ function FailedEnrichmentsCard() {
 
 function DashboardSkeleton() {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="rounded-element" style={{ height: 200 }} />
@@ -682,7 +682,7 @@ export function EnrichmentDashboard() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Sparkles size={24} className="text-foreground" />
           <h1 className="text-xl font-bold">Enrichment Pipeline</h1>
         </div>
@@ -699,7 +699,7 @@ export function EnrichmentDashboard() {
       {isLoading || !data ? (
         <DashboardSkeleton />
       ) : (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
               <PipelineHealthCard data={data} />

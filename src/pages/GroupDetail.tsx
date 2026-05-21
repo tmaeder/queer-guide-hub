@@ -173,7 +173,7 @@ export default function GroupDetail() {
 
             <div className="flex-1 text-center md:text-left flex flex-col gap-4">
               <div>
-                <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
+                <div className="flex items-center gap-4 justify-center md:justify-start mb-2">
                   <h1 className="text-3xl font-bold">{group.name}</h1>
                   {group.is_private ? (
                     <Lock size={20} className="text-muted-foreground" />
@@ -303,7 +303,7 @@ export default function GroupDetail() {
 
               <Separator />
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 <h4 className="text-base font-semibold">Group Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export default function GroupDetail() {
               {group.tags && group.tags.length > 0 && (
                 <>
                   <Separator />
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     <h4 className="text-base font-semibold">Tags</h4>
                     <div className="flex flex-wrap gap-2">
                       {group.tags.map((tag) => (
@@ -354,7 +354,7 @@ export default function GroupDetail() {
               {group.rules && (
                 <>
                   <Separator />
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     <h4 className="text-base font-semibold">Group Rules</h4>
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                       {group.rules}

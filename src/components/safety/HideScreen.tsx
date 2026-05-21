@@ -28,7 +28,7 @@ export function HideScreen() {
         aria-label={t('help.reveal_aria', 'Click anywhere to show the page again')}
       >
         <div className="max-w-sm px-4 text-center">
-          <Eye size={32} className="mx-auto mb-3 opacity-60" />
+          <Eye size={32} className="mx-auto mb-4 opacity-60" />
           <p className="text-sm text-muted-foreground">
             {t('help.hidden_hint', 'Page hidden. Click anywhere to show again.')}
           </p>

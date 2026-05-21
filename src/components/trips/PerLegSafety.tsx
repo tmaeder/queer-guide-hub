@@ -53,7 +53,7 @@ export function PerLegSafety({ tripId, tripPlaces, tripDays }: Props) {
 
   return (
     <div className="mt-8">
-      <p className="font-bold mb-3 uppercase tracking-wider text-xs text-muted-foreground">
+      <p className="font-bold mb-4 uppercase tracking-wider text-xs text-muted-foreground">
         {t('trips.safety.perLegHeading', 'Per-leg breakdown')}
       </p>
       <div className="flex flex-col gap-2">
@@ -61,7 +61,7 @@ export function PerLegSafety({ tripId, tripPlaces, tripDays }: Props) {
           const country = countryById.get(seg.country_id);
           return (
             <div key={`${seg.country_id}:${seg.start_date}`}>
-              <div className="flex items-center gap-3 p-3 bg-background">
+              <div className="flex items-center gap-4 p-4 bg-background">
                 <div
                   className={`w-11 h-11 flex items-center justify-center shrink-0 font-bold tabular-nums text-15 ${scoreClass(country?.equality_score ?? null)}`}
                   aria-label={

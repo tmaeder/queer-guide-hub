@@ -61,7 +61,7 @@ export function TripsSignedOutHero() {
               {t('trips.signedOut.subtitle')}
             </p>
 
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex flex-wrap gap-4 mb-8">
               <Button
                 size="lg"
                 variant="brand"
@@ -84,7 +84,7 @@ export function TripsSignedOutHero() {
 
             <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {bullets.map(({ icon: Icon, titleKey, bodyKey }) => (
-                <li key={titleKey} className="flex gap-3 items-start">
+                <li key={titleKey} className="flex gap-4 items-start">
                   <div
                     className="flex-shrink-0 w-9 h-9 rounded-element flex items-center justify-center"
                     style={{ backgroundColor: `${brand}12` }}
@@ -126,7 +126,7 @@ export function TripsSignedOutHero() {
                     }}
                   >
                     <div
-                      className="p-5 min-h-[96px] flex flex-col justify-between"
+                      className="p-6 min-h-[96px] flex flex-col justify-between"
                       style={{
                         backgroundImage: template.coverImageUrl
                           ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${template.coverImageUrl}"), ${template.gradient}`

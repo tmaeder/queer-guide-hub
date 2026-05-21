@@ -140,7 +140,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {content.image_url && (
               <Avatar style={{ height: 48, width: 48 }}>
                 <AvatarImage src={content.image_url as string} alt={content.title as string} />

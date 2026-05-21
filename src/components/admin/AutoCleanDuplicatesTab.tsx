@@ -86,7 +86,7 @@ export function AutoCleanDuplicatesTab() {
   return (
     <div className="flex flex-col gap-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
         {ENTITY_TYPES.map(({ key, label, icon: Icon, color }) => {
           const count = (counts as unknown as Record<string, number>)?.[key] ?? 0;
           const bg =
@@ -283,7 +283,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
 
       {/* Progress bar */}
       <div
-        className="bg-muted overflow-hidden mb-3 relative"
+        className="bg-muted overflow-hidden mb-4 relative"
         style={{ borderRadius: 'var(--radius-badge)', height: 6 }}
       >
         {indeterminate ? (
@@ -566,7 +566,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
       </CardHeader>
       <CardContent>
         <div
-          className="grid gap-3"
+          className="grid gap-4"
           style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}
         >
           {staging.phase1_skipped_duplicates > 0 && (
@@ -794,7 +794,7 @@ function DuplicateGroup({
         <Badge variant="secondary">{pairs.length}</Badge>
       </button>
       {expanded && (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {pairs.map((pair) => (
             <DuplicatePairCard key={pair.id} pair={pair} onMerge={onMerge} />
           ))}
@@ -833,7 +833,7 @@ function MergeHistorySection() {
               return (
                 <div
                   key={entry.id as string}
-                  className="flex items-center bg-muted gap-4 p-3"
+                  className="flex items-center bg-muted gap-4 p-4"
                   style={{ borderRadius: 'var(--radius-badge)', fontSize: '0.85rem' }}
                 >
                   <Merge size={14} className="text-muted-foreground shrink-0" />

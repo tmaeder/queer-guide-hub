@@ -133,7 +133,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   if (items.length === 0) {
     return (
       <>
-        <div className="text-center py-6 md:py-10 px-3 border-[1.5px] border-dashed border-border rounded-container">
+        <div className="text-center py-6 md:py-10 px-4 border-[1.5px] border-dashed border-border rounded-container">
           <div
             className="w-14 h-14 rounded-element flex items-center justify-center mx-auto mb-1.5"
             style={{ backgroundColor: `${brand}1a` }}
@@ -141,7 +141,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
             <Wallet size={26} style={{ color: brand }} />
           </div>
           <h6 className="font-bold mb-0.5 text-lg">{t('trips.budget.emptyTitle')}</h6>
-          <p className="text-sm text-muted-foreground mb-3 max-w-[360px] mx-auto">
+          <p className="text-sm text-muted-foreground mb-4 max-w-[360px] mx-auto">
             {t('trips.budget.emptyDescription')}
           </p>
           <div className="flex gap-1 justify-center flex-wrap">
@@ -186,7 +186,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               {t('trips.budget.membersCount', { count: members.length })}
             </Badge>
           </div>
-          <div className="flex items-baseline gap-3 flex-wrap">
+          <div className="flex items-baseline gap-4 flex-wrap">
             {Object.keys(summary.totalByCurrency).length > 1 && summary.totalConverted != null ? (
               <>
                 <span className="text-2xl md:text-headline font-bold tabular-nums">
@@ -218,7 +218,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
 
       {/* Pie chart */}
       {chartData.length > 0 && (
-        <Card className="mt-3">
+        <Card className="mt-4">
           <CardContent>
             <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-xs2 block mb-1">
               {t('trips.budget.spendingByCategory')}
@@ -270,7 +270,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         }
 
         return (
-          <div key={cat} className="mt-3">
+          <div key={cat} className="mt-4">
             <div className="flex items-center justify-between mb-[0.3125rem]">
               <div className="flex items-center gap-1">
                 <div

@@ -150,7 +150,7 @@ const RegionalEventsCalendar = () => {
             {format(new Date(hero.start_date), 'dd MMM').toUpperCase()}
           </div>
           <h3
-            className="m-0 mb-3 overflow-hidden font-bold leading-[1.15]"
+            className="m-0 mb-4 overflow-hidden font-bold leading-[1.15]"
             style={{
               fontFamily: DISPLAY,
               fontSize: 'clamp(1.5rem, 3.2vw, 2.5rem)',
@@ -179,7 +179,7 @@ const RegionalEventsCalendar = () => {
                 {idx > 0 && <Hairline />}
                 <LocalizedLink
                   to={`/events/${ev.slug}`}
-                  className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-x-4 py-3 text-foreground no-underline md:py-4"
+                  className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-x-4 py-4 text-foreground no-underline md:py-4"
                 >
                   <div
                     className="whitespace-nowrap text-xs font-medium uppercase text-muted-foreground"
@@ -220,7 +220,7 @@ const RegionalEventsCalendar = () => {
             {t('home.upcoming.next14', 'Next 14 days')}
           </div>
           <div
-            className="grid gap-x-3 gap-y-6 md:gap-x-4"
+            className="grid gap-x-4 gap-y-6 md:gap-x-4"
             style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))' }}
           >
             {activeDays.map((day) => {

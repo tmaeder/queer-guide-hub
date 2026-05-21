@@ -166,7 +166,7 @@ export function SendEventDialog({
       role="option"
       tabIndex={0}
       aria-selected={selected}
-      className={`flex items-center gap-3 px-3 py-2 rounded cursor-pointer ${selected ? 'bg-accent' : 'hover:bg-muted'}`}
+      className={`flex items-center gap-4 px-4 py-2 rounded cursor-pointer ${selected ? 'bg-accent' : 'hover:bg-muted'}`}
     >
       <Avatar style={{ width: 36, height: 36 }}>
         <AvatarImage src={avatarUrl || undefined} />
@@ -198,7 +198,7 @@ export function SendEventDialog({
           </TabsList>
 
           <TabsContent value="member">
-            <div className="relative mt-3">
+            <div className="relative mt-4">
               <Search
                 style={{
                   left: 12,

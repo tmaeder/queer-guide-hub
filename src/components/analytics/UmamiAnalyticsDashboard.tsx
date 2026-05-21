@@ -287,7 +287,7 @@ export const UmamiAnalyticsDashboard = () => {
       <div className="flex flex-col gap-6">
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <div className="p-2 bg-destructive/10 rounded-element">
                 <Activity size={24} />
               </div>
@@ -582,7 +582,7 @@ export const UmamiAnalyticsDashboard = () => {
               <div className="flex flex-col gap-4">
                 {stats.topPages.map((page, index) => (
                   <div key={page.path} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
+                    <div className="flex items-center gap-4 flex-1">
                       <Badge variant="secondary">{index + 1}</Badge>
                       <div className="flex-1">
                         <p className="font-mono text-sm font-medium">{page.path}</p>
@@ -680,13 +680,13 @@ export const UmamiAnalyticsDashboard = () => {
               <CardDescription>Detailed breakdown of visitors by country</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 {stats.topCountries.map((country, index) => (
                   <div
                     key={country.country}
-                    className="flex items-center justify-between p-3 rounded-element border"
+                    className="flex items-center justify-between p-4 rounded-element border"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <Badge variant="outline">{index + 1}</Badge>
                       <div>
                         <p className="font-medium">{country.country}</p>
@@ -715,7 +715,7 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Most used browsers</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {stats.topBrowsers.map((browser, index) => (
                     <div key={browser.browser} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
@@ -739,7 +739,7 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Device types</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {stats.topDevices.map((device, _index) => (
                     <div key={device.device} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
@@ -763,7 +763,7 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Most common screen resolutions</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {stats.topScreens.map((screen, _index) => (
                     <div key={screen.screen} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
@@ -837,7 +837,7 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Latest page views and events</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3 max-h-80 overflow-y-auto">
+                <div className="flex flex-col gap-4 max-h-80 overflow-y-auto">
                   {stats.recentEvents.slice(0, 10).map((event) => (
                     <div key={event.event_id} className="flex items-center justify-between text-sm">
                       <div className="flex-1 min-w-0">

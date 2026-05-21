@@ -246,9 +246,9 @@ export const BulkCreatePersonalities = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <Label>Data Sources</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="wikidata"
@@ -388,7 +388,7 @@ export const BulkCreatePersonalities = () => {
                         borderLeftColor: 'hsl(var(--success))',
                       }}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-4">
                         {personality.image_url && (
                           <img
                             src={personality.image_url}

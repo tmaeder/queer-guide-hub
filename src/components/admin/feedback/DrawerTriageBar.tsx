@@ -38,7 +38,7 @@ export function DrawerTriageBar({
   const assignee = assigneeId ? admins.find((a) => a.user_id === assigneeId) : null;
 
   return (
-    <div className="grid grid-cols-2 gap-3 mb-5">
+    <div className="grid grid-cols-2 gap-4 mb-6">
       <div>
         <span className="text-xs font-semibold block mb-1">Status</span>
         <Select value={status || 'new'} onValueChange={(v) => onStatusChange(v as KanbanStatus)}>

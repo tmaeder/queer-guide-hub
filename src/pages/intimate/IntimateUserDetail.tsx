@@ -77,7 +77,7 @@ export default function IntimateUserDetail() {
 
   function Row({ k, v }: { k: string; v: string }) {
     return (
-      <div className="flex justify-between gap-4 border-t border-border pt-3">
+      <div className="flex justify-between gap-4 border-t border-border pt-4">
         <dt className="text-muted-foreground shrink-0">{k}</dt>
         <dd className="text-right">{v}</dd>
       </div>
@@ -122,7 +122,7 @@ export default function IntimateUserDetail() {
       </FlatFieldGroup>
 
       <FlatFieldGroup title="Profile">
-        <dl className="space-y-3 text-sm">
+        <dl className="space-y-4 text-sm">
           {profile.role?.length ? <Row k="Role" v={profile.role.join(', ')} /> : null}
           {profile.into_tags?.length ? <Row k="Into" v={profile.into_tags.join(', ')} /> : null}
           {profile.limits?.length ? <Row k="Limits" v={profile.limits.join(', ')} /> : null}
@@ -138,7 +138,7 @@ export default function IntimateUserDetail() {
 
       {reportOpen && (
         <div className="mt-6 border-t border-border pt-6">
-          <p className="text-sm font-medium mb-3">Reason for report</p>
+          <p className="text-sm font-medium mb-4">Reason for report</p>
           <div className="flex flex-wrap gap-2">
             {['underage','spam','impersonation','hateful','illegal','other'].map((r) => (
               <Button

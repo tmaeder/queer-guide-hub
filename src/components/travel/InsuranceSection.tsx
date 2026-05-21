@@ -38,7 +38,7 @@ const PROVIDERS = [
 export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
   if (compact) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-muted">
+      <div className="flex items-center gap-4 p-4 bg-muted">
         <Shield size={20} className="text-primary shrink-0" />
         <div className="flex-1">
           <p className="font-semibold text-sm">Travel Insurance</p>
@@ -64,7 +64,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
         medication.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {PROVIDERS.map((p) => (
           <Card key={p.name}>
             <CardContent className="p-4">
@@ -73,7 +73,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
                 <Badge variant="outline">{p.badge}</Badge>
               </div>
               <p className="text-xs text-muted-foreground mb-2">{p.description}</p>
-              <div className="flex items-center gap-1 mb-3">
+              <div className="flex items-center gap-1 mb-4">
                 <Heart size={12} className="text-primary" />
                 <p className="text-xs text-primary font-medium">{p.lgbtqNote}</p>
               </div>

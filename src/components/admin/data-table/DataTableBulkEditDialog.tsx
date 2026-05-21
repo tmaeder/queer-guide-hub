@@ -102,7 +102,7 @@ export function DataTableBulkEditDialog({
           {fields.map((field) => (
             <div
               key={field.key}
-              className={`flex items-start gap-2 p-3 rounded border ${enabledFields.has(field.key) ? 'border-primary opacity-100' : 'border-border opacity-60'}`}
+              className={`flex items-start gap-2 p-4 rounded border ${enabledFields.has(field.key) ? 'border-primary opacity-100' : 'border-border opacity-60'}`}
             >
               <Checkbox
                 checked={enabledFields.has(field.key)}

@@ -48,7 +48,7 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
           numberOfMonths={2}
           selected={range}
           onSelect={setRange}
-          className="p-3"
+          className="p-4"
         />
         <div className="flex items-center justify-between gap-2 border-t border-border p-2">
           <Button
@@ -120,7 +120,7 @@ export const EraPopover = ({
         )}
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 p-4 border-border">
-        <div className="flex items-baseline justify-between mb-3">
+        <div className="flex items-baseline justify-between mb-4">
           <span className="text-xs text-muted-foreground">Era</span>
           <span className="text-sm font-medium tabular-nums">
             {draft[0]}s – {draft[1]}s

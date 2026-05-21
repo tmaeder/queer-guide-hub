@@ -245,7 +245,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
         <div className="flex flex-col gap-4">
           {/* User Info */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Avatar style={{ height: 40, width: 40 }}>
               <AvatarImage src={profile?.avatar_url || undefined} />
               <AvatarFallback>
@@ -345,7 +345,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
           {postType === 'link' && (
             <Card>
-              <CardContent style={{ flexDirection: 'column' }} className="p-4 flex gap-3">
+              <CardContent style={{ flexDirection: 'column' }} className="p-4 flex gap-4">
                 <div>
                   <Label htmlFor="link-url">Link URL</Label>
                   <Input
@@ -380,7 +380,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
           {postType === 'poll' && (
             <Card>
-              <CardContent style={{ flexDirection: 'column' }} className="p-4 flex gap-3">
+              <CardContent style={{ flexDirection: 'column' }} className="p-4 flex gap-4">
                 <Label>Poll Options</Label>
                 {pollOptions.map((option, index) => (
                   <div key={index} className="flex items-center gap-2">

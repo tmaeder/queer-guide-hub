@@ -185,13 +185,13 @@ export default function TripPlannerPage() {
   };
 
   return (
-    <div className="container mx-auto py-5 md:py-8">
+    <div className="container mx-auto py-6 md:py-8">
       {/* Back to trips */}
       <Button
         variant="ghost"
         size="sm"
         onClick={() => navigate('/trips')}
-        className="mb-3 pl-2 pr-3"
+        className="mb-4 pl-2 pr-4"
       >
         <ArrowLeft size={16} className="mr-1.5" />
         {t('trips.backToTrips')}
@@ -265,8 +265,8 @@ export default function TripPlannerPage() {
       <TripNudgesBanner tripId={trip.id} />
 
       {/* Quick action row */}
-      <div className="flex items-center justify-between mb-5 gap-3 mt-2">
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+      <div className="flex items-center justify-between mb-6 gap-4 mt-2">
+        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
           {t('trips.planner.placesCount', { count: trip.trip_places.length })}
           {trip.trip_days.length > 0 && (
@@ -347,7 +347,7 @@ export default function TripPlannerPage() {
         className="mt-8 border-t border-border pt-6"
         aria-label={t('trips.timeline.more', 'More tools')}
       >
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-3">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
           {t('trips.timeline.more', 'More tools')}
         </h2>
         <Accordion type="multiple" className="w-full">

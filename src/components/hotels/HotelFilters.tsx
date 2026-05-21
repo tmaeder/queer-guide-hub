@@ -34,7 +34,7 @@ export function HotelFilters({
     : HOTEL_TYPE_OPTIONS;
 
   return (
-    <div className="flex flex-wrap gap-3 mb-6">
+    <div className="flex flex-wrap gap-4 mb-6">
       <div className="relative flex-1 max-w-xs min-w-[200px]">
         <Search
           style={{ left: 10, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16 }}

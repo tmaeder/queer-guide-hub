@@ -64,7 +64,7 @@ function ShellSkeleton() {
         <Skeleton className="rounded-element mb-1" style={{ width: 160, height: 24 }} />
         <Skeleton className="mb-6" style={{ width: 100, height: 16 }} />
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 mb-2">
+          <div key={i} className="flex items-center gap-4 mb-2">
             <Skeleton className="rounded-element" style={{ width: 28, height: 28 }} />
             <Skeleton style={{ width: 80 + Math.random() * 60, height: 20 }} />
           </div>
@@ -424,8 +424,8 @@ function CMSSettingsPanel() {
       <p className="text-sm text-muted-foreground mb-6">CMS configuration</p>
 
       <div className="flex flex-col gap-4">
-        <div className="border border-border rounded-container p-5">
-          <p className="text-sm font-semibold mb-3">Content Settings</p>
+        <div className="border border-border rounded-container p-6">
+          <p className="text-sm font-semibold mb-4">Content Settings</p>
           <div className="flex flex-col gap-2">
             <SettingRow defaultChecked label="Auto-save drafts" />
             <SettingRow label="Require review before publish" />
@@ -433,16 +433,16 @@ function CMSSettingsPanel() {
           </div>
         </div>
 
-        <div className="border border-border rounded-container p-5">
-          <p className="text-sm font-semibold mb-3">Media Settings</p>
+        <div className="border border-border rounded-container p-6">
+          <p className="text-sm font-semibold mb-4">Media Settings</p>
           <div className="flex flex-col gap-2">
             <SettingRow defaultChecked label="Compress images on upload" />
             <SettingRow defaultChecked label="Generate thumbnails" />
           </div>
         </div>
 
-        <div className="border border-border rounded-container p-5">
-          <p className="text-sm font-semibold mb-3">SEO Settings</p>
+        <div className="border border-border rounded-container p-6">
+          <p className="text-sm font-semibold mb-4">SEO Settings</p>
           <div className="flex flex-col gap-2">
             <SettingRow defaultChecked label="Auto-generate meta descriptions" />
             <SettingRow defaultChecked label="Generate XML sitemap" />

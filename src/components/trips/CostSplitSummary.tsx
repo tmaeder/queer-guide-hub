@@ -122,7 +122,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
       {/* Per-member balances */}
       <div className="flex flex-col gap-2 mb-4">
         {balances.map((b) => (
-          <div key={b.user_id} className="flex items-center gap-3">
+          <div key={b.user_id} className="flex items-center gap-4">
             <Avatar className="h-7 w-7">
               <AvatarImage src={avatarFor(b.user_id)} />
               <AvatarFallback>{displayName(b.user_id).slice(0, 1).toUpperCase()}</AvatarFallback>
@@ -157,7 +157,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
       )}
 
       {skippedCount > 0 && (
-        <p className="text-xs text-muted-foreground mt-3 italic">
+        <p className="text-xs text-muted-foreground mt-4 italic">
           {t('trips.split.skipped', {
             count: skippedCount,
             defaultValue: '{{count}} items in other currencies excluded',

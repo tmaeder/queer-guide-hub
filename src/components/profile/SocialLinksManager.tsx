@@ -174,7 +174,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
       <CardContent>
         <div className="flex flex-col gap-6">
           <div className="p-4 bg-background">
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <h6 className="text-base font-medium">Add Social Profile</h6>
               <div className="flex gap-2">
                 <Input

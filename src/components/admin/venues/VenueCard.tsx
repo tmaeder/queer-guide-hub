@@ -34,7 +34,7 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
     <Card>
       <CardContent>
         <div className="flex flex-col md:flex-row gap-4 md:items-start md:justify-between">
-          <div className="flex-1 flex flex-col gap-3">
+          <div className="flex-1 flex flex-col gap-4">
             <div className="flex flex-wrap items-start gap-2">
               <h6 className="text-base font-semibold leading-tight">{venue.name}</h6>
               <div className="flex flex-wrap gap-1">

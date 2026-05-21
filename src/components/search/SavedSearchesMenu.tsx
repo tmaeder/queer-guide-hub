@@ -48,9 +48,9 @@ export function SavedSearchesMenu({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" style={{ width: 320 }} className="p-3">
+      <PopoverContent align="end" style={{ width: 320 }} className="p-4">
         {currentQueryString && (
-          <div className="flex flex-col gap-1.5 mb-3">
+          <div className="flex flex-col gap-1.5 mb-4">
             <label className="text-xs font-medium" htmlFor="qg-saved-name">
               {t('search.saveThisSearch', 'Save this search')}
             </label>

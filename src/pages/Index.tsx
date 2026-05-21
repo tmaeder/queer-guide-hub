@@ -105,7 +105,7 @@ const Index = React.memo(() => {
             <button
               type="button"
               onClick={() => navigate('/directory')}
-              className="inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-bold tracking-tight text-background transition-transform duration-200 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-transform duration-200 hover:-translate-y-0.5"
             >
               <Calendar size={16} aria-hidden="true" />
               {t('home.browseDirectory', 'Browse the directory')}
@@ -275,7 +275,7 @@ const Index = React.memo(() => {
               <li key={feature.titleKey} className="bg-background">
                 <LocalizedLink
                   to={feature.link}
-                  className="flex h-full items-start gap-3 p-6 transition-colors hover:bg-muted/40 no-underline"
+                  className="flex h-full items-start gap-4 p-6 transition-colors hover:bg-muted/40 no-underline"
                 >
                   <Icon size={20} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
                   <div>
@@ -317,16 +317,16 @@ const Index = React.memo(() => {
         <p className="mt-4 text-sm md:text-base opacity-70 max-w-xl mx-auto">
           {t('home.cta.subtitle', 'Verified safe spaces, real reviews, no paywalls.')}
         </p>
-        <div className="mt-8 flex flex-wrap gap-3 justify-center">
+        <div className="mt-8 flex flex-wrap gap-4 justify-center">
           <LocalizedLink
             to="/submit"
-            className="inline-flex items-center justify-center rounded-full bg-background text-foreground px-7 py-4 text-sm font-bold tracking-tight hover:opacity-90 transition-opacity no-underline"
+            className="inline-flex items-center justify-center rounded-full bg-background text-foreground px-8 py-4 text-sm font-bold tracking-tight hover:opacity-90 transition-opacity no-underline"
           >
             {t('home.cta.submit', 'Add a venue')}
           </LocalizedLink>
           <LocalizedLink
             to="/about"
-            className="inline-flex items-center justify-center rounded-full border border-background text-background px-7 py-4 text-sm font-bold tracking-tight hover:bg-background hover:text-foreground transition-colors no-underline"
+            className="inline-flex items-center justify-center rounded-full border border-background text-background px-8 py-4 text-sm font-bold tracking-tight hover:bg-background hover:text-foreground transition-colors no-underline"
           >
             {t('home.cta.about', 'Read the mission')}
           </LocalizedLink>

@@ -136,7 +136,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
           <Search size={14} className="text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground">Google Preview</span>
         </div>
-        <div className={cn('rounded-element border border-border p-3 bg-white')}>
+        <div className={cn('rounded-element border border-border p-4 bg-white')}>
           {/* Title line */}
           <p
             className="text-base font-medium leading-snug overflow-hidden text-ellipsis whitespace-nowrap text-muted-foreground"

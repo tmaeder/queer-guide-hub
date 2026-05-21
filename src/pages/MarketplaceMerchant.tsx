@@ -20,7 +20,7 @@ export default function MarketplaceMerchant() {
   if (!cleanDomain) {
     return (
       <div className="container mx-auto py-12 px-4 text-center">
-        <h1 className="text-2xl font-bold mb-3">Merchant not found</h1>
+        <h1 className="text-2xl font-bold mb-4">Merchant not found</h1>
         <LocalizedLink to="/marketplace">
           <Button>
             <ArrowLeft size={16} className="mr-2" />

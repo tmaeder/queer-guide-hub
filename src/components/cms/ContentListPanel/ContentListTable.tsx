@@ -95,7 +95,7 @@ function EmptyState({
   return (
     <div className="py-16 px-6 flex flex-col items-center text-center">
       <div
-        className="rounded-full flex items-center justify-center mb-5"
+        className="rounded-full flex items-center justify-center mb-6"
         style={{
           width: 72,
           height: 72,
@@ -125,7 +125,7 @@ function EmptyState({
           <h6 className="text-lg font-semibold mb-1">
             No {config ? config.label.plural.toLowerCase() : 'items'} yet
           </h6>
-          <p className="text-sm text-muted-foreground mb-5 max-w-[360px]">
+          <p className="text-sm text-muted-foreground mb-6 max-w-[360px]">
             {config
               ? `Create your first ${config.label.singular.toLowerCase()} to get started.`
               : 'Content you create will appear here.'}
@@ -320,7 +320,7 @@ export function ContentListTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead style={{ width: 42 }} className="pl-3">
+              <TableHead style={{ width: 42 }} className="pl-4">
                 <Checkbox
                   checked={someSelected && !allSelected ? 'indeterminate' : allSelected}
                   onCheckedChange={toggleSelectAll}
@@ -403,7 +403,7 @@ export function ContentListTable({
                     }}
                     onClick={() => onEdit(item.contentType, item.id)}
                   >
-                    <TableCell className="pl-3" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => toggleSelect(itemKey)}

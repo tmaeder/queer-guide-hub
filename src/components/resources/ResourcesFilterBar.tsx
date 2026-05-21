@@ -130,7 +130,7 @@ export function ResourcesFilterBar({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-wrap gap-4 items-center">
         <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
           <SelectTrigger
             style={{ width: 220, height: 40 }}
@@ -197,7 +197,7 @@ export function ResourcesFilterBar({
               />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="w-full mt-3 flex flex-wrap gap-3 items-center">
+          <CollapsibleContent className="w-full mt-4 flex flex-wrap gap-4 items-center">
             <Select value={usageFilter} onValueChange={onUsageFilterChange}>
               <SelectTrigger
                 style={{ width: 140, height: 40 }}

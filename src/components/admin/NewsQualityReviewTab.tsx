@@ -73,7 +73,7 @@ function HealthStat({
   color: string;
 }) {
   return (
-    <div className="border p-3">
+    <div className="border p-4">
       <span className="block text-xs text-muted-foreground">{label}</span>
       <div className="text-2xl font-bold" style={{ color }}>
         {typeof value === 'number' ? value.toLocaleString() : value}

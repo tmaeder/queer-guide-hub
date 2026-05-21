@@ -386,13 +386,13 @@ export default function SearchResults() {
             </p>
             {result.description && (
               <p
-                className="text-sm text-muted-foreground overflow-hidden mb-3"
+                className="text-sm text-muted-foreground overflow-hidden mb-4"
                 style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
               >
                 {result.description}
               </p>
             )}
-            <div className="flex flex-wrap items-center mb-3 gap-2">
+            <div className="flex flex-wrap items-center mb-4 gap-2">
               {result.location && (
                 <div className="flex items-center gap-1">
                   <MapPin size={12} />
@@ -471,7 +471,7 @@ export default function SearchResults() {
                   <h3 className="font-semibold mb-2 text-lg">{result.title}</h3>
                   {result.description && (
                     <p
-                      className="text-sm text-muted-foreground overflow-hidden mb-3"
+                      className="text-sm text-muted-foreground overflow-hidden mb-4"
                       style={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -481,7 +481,7 @@ export default function SearchResults() {
                       {result.description}
                     </p>
                   )}
-                  <div className="flex flex-wrap items-center mb-3 gap-4">
+                  <div className="flex flex-wrap items-center mb-4 gap-4">
                     {result.location && (
                       <div className="flex items-center gap-1">
                         <MapPin size={12} />
@@ -641,7 +641,7 @@ export default function SearchResults() {
           }
         >
           {/* Enhanced Search Bar */}
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search
                 style={{
@@ -693,7 +693,7 @@ export default function SearchResults() {
         )}
 
         {/* Active filter chips + saved-search menu */}
-        <div className="flex items-center justify-between gap-3" style={{ flexWrap: 'wrap' }}>
+        <div className="flex items-center justify-between gap-4" style={{ flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
           </div>
@@ -905,7 +905,7 @@ export default function SearchResults() {
                 <p className="text-muted-foreground mb-4">
                   {t('search.tryDifferent', 'Try different keywords or adjust your filters')}
                 </p>
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <Button variant="outline" onClick={() => setShowFilters(true)}>
                     Adjust Filters
                   </Button>
@@ -985,7 +985,7 @@ export default function SearchResults() {
                     const topN = typeResults.slice(0, 3);
                     return (
                       <section key={type || 'other'} aria-label={label}>
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center justify-between mb-4">
                           <h2 className="font-semibold inline-flex items-center text-base gap-2">
                             <Icon style={{ width: 16, height: 16 }} />
                             {label}

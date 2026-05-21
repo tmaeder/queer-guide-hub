@@ -41,7 +41,7 @@ export function TripBookingInbox({ tripId }: Props) {
         aria-label={t('trips.inbox.label', 'Booking inbox')}
         className="border border-border bg-background p-4 mb-4"
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-4">
           <Inbox className="h-5 w-5 mt-0.5 text-muted-foreground" aria-hidden />
           <div className="flex-1">
             <h3 className="text-sm font-bold uppercase tracking-wide">
@@ -53,7 +53,7 @@ export function TripBookingInbox({ tripId }: Props) {
                 'Get a private address for this trip. Forward Booking.com, Airbnb, airlines — we parse and slot automatically.',
               )}
             </p>
-            <div className="flex gap-2 mt-3 flex-wrap">
+            <div className="flex gap-2 mt-4 flex-wrap">
               <Button
                 size="sm"
                 onClick={() => enable.mutate()}
@@ -94,7 +94,7 @@ export function TripBookingInbox({ tripId }: Props) {
       aria-label={t('trips.inbox.label', 'Booking inbox')}
       className="border border-border bg-background p-4 mb-4"
     >
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h3 className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
           <Inbox className="h-4 w-4" aria-hidden />
           {t('trips.inbox.title', 'Booking inbox')}
@@ -102,7 +102,7 @@ export function TripBookingInbox({ tripId }: Props) {
       </div>
 
       {address && (
-        <div className="border border-border p-3 mb-3 bg-muted/30">
+        <div className="border border-border p-4 mb-4 bg-muted/30">
           <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
             {t('trips.inbox.address.label', 'Forwarding address')}
           </div>
@@ -141,7 +141,7 @@ export function TripBookingInbox({ tripId }: Props) {
         </div>
       )}
 
-      <div className="mb-3">
+      <div className="mb-4">
         <Button
           size="sm"
           variant="ghost"
@@ -184,7 +184,7 @@ export function TripBookingInbox({ tripId }: Props) {
             </li>
           ))}
           {failedItems.map((item) => (
-            <li key={item.id} className="text-sm border border-border p-3 bg-muted/20">
+            <li key={item.id} className="text-sm border border-border p-4 bg-muted/20">
               <div className="font-medium">{item.raw_subject ?? '(no subject)'}</div>
               <div className="text-xs text-muted-foreground">
                 {t('trips.inbox.parseFailed', 'Could not parse this email.')}
@@ -218,7 +218,7 @@ function PasteBox({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mt-3 space-y-2">
+    <div className="mt-4 space-y-2">
       <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -255,7 +255,7 @@ function InboxItemRow({
   const conf = item.parse_confidence == null ? null : Math.round(item.parse_confidence * 100);
 
   return (
-    <div className="border border-border p-3">
+    <div className="border border-border p-4">
       <div className="flex items-start justify-between gap-2 flex-wrap">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">

@@ -191,7 +191,7 @@ export function WorkflowDashboard() {
               key={key}
               onClick={() => setActiveTab(key)}
               className={cn(
-                'flex items-center gap-2 border-b-2 px-4 py-3 text-sm transition-colors',
+                'flex items-center gap-2 border-b-2 px-4 py-4 text-sm transition-colors',
                 activeTab === key
                   ? 'border-primary font-bold text-primary'
                   : 'border-transparent font-medium text-muted-foreground hover:text-primary',
@@ -293,7 +293,7 @@ function OverviewTab({
       {/* Active runs */}
       {activeRuns.length > 0 && (
         <div className="rounded-element border bg-card p-4">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-bold">
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold">
             <Loader2 size={14} className="animate-spin" />
             Active Runs ({activeRuns.length})
           </h3>
@@ -324,10 +324,10 @@ function OverviewTab({
       {/* Queue metrics */}
       {metrics?.queues && metrics.queues.length > 0 && (
         <div className="rounded-element border bg-card p-4">
-          <h3 className="mb-3 text-sm font-bold">Queue Depths</h3>
+          <h3 className="mb-4 text-sm font-bold">Queue Depths</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
             {metrics.queues.map((q) => (
-              <div key={q.queue_name} className="rounded border p-3">
+              <div key={q.queue_name} className="rounded border p-4">
                 <span className="text-xs text-muted-foreground">{q.queue_name}</span>
                 <div className="text-lg font-bold">{q.queue_length}</div>
                 {q.oldest_msg_age_sec != null && (
@@ -364,7 +364,7 @@ function RunsTab({
   return (
     <div className="flex flex-col gap-4">
       {/* Filter */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <div className="flex flex-col gap-1">
           <Label className="text-xs">Status</Label>
           <Select

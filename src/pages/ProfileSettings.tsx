@@ -218,7 +218,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
   }, [formData, hasUnsavedChanges, handleSave, saveStatus]);
 
   const lineTab =
-    'h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none';
+    'h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none';
 
   return (
     <div className="container mx-auto py-8 px-4 flex flex-col gap-6 pb-24">
@@ -327,7 +327,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
 
       {/* Sticky auto-save status bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-center gap-2 text-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-center gap-2 text-sm">
           {saveStatus === 'saving' && (
             <>
               <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
@@ -347,7 +347,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
             <Badge variant="destructive" className="rounded-element">Save failed</Badge>
           )}
           {saveStatus === 'auth-error' && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Badge variant="destructive" className="rounded-element">Session expired</Badge>
               <Button variant="outline" size="sm" onClick={() => navigate('/auth')} className="rounded-element">
                 Sign in

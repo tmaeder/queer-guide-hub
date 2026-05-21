@@ -21,14 +21,14 @@ function formatValue(v: unknown): string {
 export function FieldDiffView({ diffs }: FieldDiffViewProps) {
   if (diffs.length === 0) {
     return (
-      <p className="text-xs text-muted-foreground px-3 py-2">No changes detected.</p>
+      <p className="text-xs text-muted-foreground px-4 py-2">No changes detected.</p>
     );
   }
 
   return (
     <div className="divide-y">
       {diffs.map((d) => (
-        <div key={d.field} className="px-3 py-2 bg-muted/30">
+        <div key={d.field} className="px-4 py-2 bg-muted/30">
           <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
             {d.field}
           </p>

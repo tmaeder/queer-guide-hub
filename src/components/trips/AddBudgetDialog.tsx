@@ -112,7 +112,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="budget-amount">{t('trips.budget.amount', 'Amount')}</Label>
               <Input
@@ -142,7 +142,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="budget-category">{t('trips.budget.category', 'Category')}</Label>
               <Select value={category} onValueChange={setCategory}>
@@ -210,7 +210,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
                     type="button"
                     onClick={() => toggleSplitMember(m.user_id)}
                     className={cn(
-                      'inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm min-h-11 cursor-pointer transition-colors',
+                      'inline-flex items-center gap-2 rounded-full border pl-1 pr-4 py-1 text-sm min-h-11 cursor-pointer transition-colors',
                       selected
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background border-border hover:bg-muted',
@@ -230,7 +230,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
           </div>
         </div>
 
-        <DialogFooter className="mt-3">
+        <DialogFooter className="mt-4">
           <Button variant="outline" onClick={resetAndClose}>
             {t('common.cancel', 'Cancel')}
           </Button>

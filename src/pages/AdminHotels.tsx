@@ -450,7 +450,7 @@ export default function AdminHotels() {
                 placeholder="Search for hotel address..."
                 label="Address"
               />
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <div className="flex flex-col gap-2 flex-1">
                   <Label htmlFor="hotel-city">City</Label>
                   <Input
@@ -484,7 +484,7 @@ export default function AdminHotels() {
                   onChange={(e) => setFormData((p) => ({ ...p, booking_url: e.target.value }))}
                 />
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <div className="flex flex-col gap-2 flex-1">
                   <Label htmlFor="hotel-phone">Phone</Label>
                   <Input
@@ -502,7 +502,7 @@ export default function AdminHotels() {
                   />
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <div className="flex flex-col gap-2 flex-1">
                   <Label htmlFor="hotel-stars">Star Rating</Label>
                   <Input

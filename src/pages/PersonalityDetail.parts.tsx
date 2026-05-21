@@ -128,7 +128,7 @@ export function PersonalityHero({
         </Avatar>
 
         <div>
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-4 mb-2">
             <h1 className="text-3xl font-bold">{personality.name}</h1>
             {personality.is_featured && (
               <Badge
@@ -147,7 +147,7 @@ export function PersonalityHero({
             <p className="text-muted-foreground mb-2">({personality.pronouns})</p>
           )}
 
-          <div className="flex items-center gap-4 text-muted-foreground mb-3 flex-wrap">
+          <div className="flex items-center gap-4 text-muted-foreground mb-4 flex-wrap">
             {personality.profession && (
               <a
                 href={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
@@ -192,7 +192,7 @@ export function PersonalityHero({
           </div>
 
           {personality.birth_date && (
-            <p className="text-sm text-muted-foreground mb-3">
+            <p className="text-sm text-muted-foreground mb-4">
               Age: {calculateAge(personality.birth_date, personality.death_date || undefined)}
               {personality.is_living ? ' years old' : ' years'}
             </p>
@@ -260,7 +260,7 @@ function RelatedContent({ personality }: { personality: Personality }) {
                 <li key={n.id}>
                   <LocalizedLink
                     to={`/news/${n.slug}`}
-                    className="flex items-start gap-3 py-3 no-underline text-inherit hover:bg-accent transition-colors -mx-2 px-2 rounded"
+                    className="flex items-start gap-4 py-4 no-underline text-inherit hover:bg-accent transition-colors -mx-2 px-2 rounded"
                   >
                     {n.image_url && (
                       <img
@@ -297,12 +297,12 @@ function RelatedContent({ personality }: { personality: Personality }) {
             <CardTitle>{t('pages.personalities.detail.relatedEvents', 'Related events')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {events.map((e) => (
                 <li key={e.id}>
                   <LocalizedLink
                     to={`/events/${e.slug ?? e.id}`}
-                    className="flex items-start gap-3 p-2 rounded no-underline text-inherit hover:bg-accent transition-colors"
+                    className="flex items-start gap-4 p-2 rounded no-underline text-inherit hover:bg-accent transition-colors"
                   >
                     {e.image_url && (
                       <img
@@ -412,7 +412,7 @@ export function PersonalityOverview({
                   <LocalizedLink
                     key={similar.id}
                     to={`/personalities/${similar.slug || similar.id}`}
-                    className="flex items-center gap-3 p-3 rounded no-underline text-inherit transition-all hover:bg-muted"
+                    className="flex items-center gap-4 p-4 rounded no-underline text-inherit transition-all hover:bg-muted"
                   >
                     <Avatar style={{ height: 40, width: 40 }} className="shrink-0">
                       <AvatarImage
@@ -469,7 +469,7 @@ export function PersonalitySidebar({
           </CardHeader>
           <CardContent style={{ flexDirection: 'column', gap: '0.75rem' }} className="flex">
             {personality.birth_date && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Calendar size={16} className="text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Born</p>
@@ -482,7 +482,7 @@ export function PersonalitySidebar({
               </div>
             )}
             {personality.death_date && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Calendar size={16} className="text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Died</p>
@@ -495,7 +495,7 @@ export function PersonalitySidebar({
               </div>
             )}
             {personality.nationality && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <MapPin size={16} className="text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Nationality</p>
@@ -513,7 +513,7 @@ export function PersonalitySidebar({
               </div>
             )}
             {personality.profession && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Briefcase size={16} className="text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Profession</p>
@@ -527,7 +527,7 @@ export function PersonalitySidebar({
               </div>
             )}
             {personality.birth_place && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <MapPin size={16} className="text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Birth Place</p>

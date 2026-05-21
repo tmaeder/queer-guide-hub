@@ -47,7 +47,7 @@ export function CityTravelTab({
             </CardHeader>
             <CardContent>
               {city.major_airport_code && (
-                <div className="p-3 rounded-element bg-muted mb-4">
+                <div className="p-4 rounded-element bg-muted mb-4">
                   <div className="flex items-center gap-2 mb-1">
                     <Plane size={16} />
                     <span className="text-sm font-medium">Major Airport</span>
@@ -56,7 +56,7 @@ export function CityTravelTab({
                 </div>
               )}
               {!hasAirport && nearestAirport && (
-                <div className="p-3 rounded-element bg-muted mb-4">
+                <div className="p-4 rounded-element bg-muted mb-4">
                   <div className="flex items-center gap-2 mb-1">
                     <Plane size={16} />
                     <span className="text-sm font-medium">Nearest Airport</span>
@@ -69,7 +69,7 @@ export function CityTravelTab({
               )}
               {city.airport_codes && city.airport_codes.length > 0 && (
                 <div>
-                  <span className="text-sm font-medium mb-3 block">All Airport Codes</span>
+                  <span className="text-sm font-medium mb-4 block">All Airport Codes</span>
                   <div className="flex flex-wrap gap-2">
                     {city.airport_codes.map((code: string, index: number) => (
                       <Badge key={index} variant="outline">
@@ -92,9 +92,9 @@ export function CityTravelTab({
             </CardHeader>
             <CardContent>
               {city.transportation_info && Object.keys(city.transportation_info).length > 0 ? (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {Object.entries(city.transportation_info).map(([key, value]) => (
-                    <div key={key} className="p-3 rounded-element bg-muted">
+                    <div key={key} className="p-4 rounded-element bg-muted">
                       <div className="flex items-center gap-2 mb-1">
                         <Bus size={16} className="text-muted-foreground" />
                         <span className="text-sm font-medium capitalize">

@@ -144,7 +144,7 @@ export default function HealthTab() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         {/* Dead-letter cluster */}
         <SectionCard
           icon={Zap}
@@ -157,7 +157,7 @@ export default function HealthTab() {
           }
         >
           {deadLetter.length > 0 && (
-            <div className="grid grid-cols-[120px_1fr_80px] gap-x-3 gap-y-1 text-xs">
+            <div className="grid grid-cols-[120px_1fr_80px] gap-x-4 gap-y-1 text-xs">
               <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs">Stage</div>
               <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs">Error class</div>
               <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs text-right">Count</div>
@@ -182,7 +182,7 @@ export default function HealthTab() {
         {/* Enrichment audit */}
         {enrichSummary.length > 0 && (
           <SectionCard title="Enrichment outcomes" extra={<Badge variant="outline" className="text-2xs px-1.5 py-0">last 24h</Badge>}>
-            <div className="grid grid-cols-[1fr_80px_80px_80px] gap-x-3 gap-y-1 text-xs">
+            <div className="grid grid-cols-[1fr_80px_80px_80px] gap-x-4 gap-y-1 text-xs">
               <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs">Stage</div>
               <div className="font-semibold text-foreground dark:text-foreground uppercase tracking-wider text-2xs text-right">Success</div>
               <div className="font-semibold text-foreground dark:text-foreground uppercase tracking-wider text-2xs text-right">Partial</div>
@@ -201,7 +201,7 @@ export default function HealthTab() {
 
         {/* Circuit Breakers */}
         <div>
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-4">
             <Shield className="h-4 w-4" />
             <span className="text-sm font-semibold">API Circuit Breakers</span>
             {openCircuits > 0 && (
@@ -215,7 +215,7 @@ export default function HealthTab() {
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
               {circuitBreakers.map(cb => (
-                <div key={cb.id} className="border border-border rounded-element bg-background p-3 hover:bg-muted/30 transition-colors">
+                <div key={cb.id} className="border border-border rounded-element bg-background p-4 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="font-medium text-sm truncate">{cb.api_name}</span>
                     <span className={`text-3xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${cbClass[cb.state] || 'bg-muted'}`}>
@@ -254,7 +254,7 @@ export default function HealthTab() {
               { label: 'Countries · duplicates', value: geoHealth?.countries_duplicates },
               { label: 'Merge candidates',       value: geoHealth?.geo_merge_candidates },
             ].map(({ label, value }) => (
-              <div key={label} className="border border-border rounded-element p-3">
+              <div key={label} className="border border-border rounded-element p-4">
                 <div className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-foreground dark:text-foreground'}`}>
                   {value ?? '–'}
                 </div>
@@ -274,7 +274,7 @@ export default function HealthTab() {
                 {queueMetrics.map(q => (
                   <div key={q.queue_name as string} className="flex justify-between items-center py-1.5 border-b border-border/40 last:border-0">
                     <span className="text-sm font-mono">{q.queue_name as string}</span>
-                    <div className="flex gap-3 text-xs text-muted-foreground">
+                    <div className="flex gap-4 text-xs text-muted-foreground">
                       <span>
                         Depth:{' '}
                         <strong className={(q.queue_length as number) > 0 ? 'text-foreground dark:text-foreground' : 'text-foreground dark:text-foreground'}>
@@ -298,7 +298,7 @@ export default function HealthTab() {
               <p className="text-xs text-muted-foreground">No staging items</p>
             ) : (
               <>
-                <div className="flex h-5 rounded-full overflow-hidden mb-3 gap-[1px] bg-muted">
+                <div className="flex h-5 rounded-full overflow-hidden mb-4 gap-[1px] bg-muted">
                   {stagingStats.map(s => (
                     <Tooltip key={s.status}>
                       <TooltipTrigger asChild>
@@ -342,21 +342,21 @@ export default function HealthTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Name', 'Type', 'Schedule', 'Enabled'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {pipelineDefs?.map((def: Record<string, unknown>) => (
                   <tr key={def.id as string} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                    <td className="px-3 py-2 font-medium">{(def.display_name || def.name) as string}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-2 font-medium">{(def.display_name || def.name) as string}</td>
+                    <td className="px-4 py-2">
                       <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
                         <GitBranch className="h-2.5 w-2.5" /> pipeline
                       </Badge>
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
+                    <td className="px-4 py-2">
                       <span className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
                         def.is_enabled ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' : 'bg-muted text-muted-foreground'
                       }`}>
@@ -367,14 +367,14 @@ export default function HealthTab() {
                 ))}
                 {workflowDefs?.map((def: Record<string, unknown>) => (
                   <tr key={def.id as string} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                    <td className="px-3 py-2 font-medium">{(def.display_name || def.name) as string}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-2 font-medium">{(def.display_name || def.name) as string}</td>
+                    <td className="px-4 py-2">
                       <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
                         <Workflow className="h-2.5 w-2.5" /> workflow
                       </Badge>
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
+                    <td className="px-4 py-2">
                       <span className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
                         def.is_enabled ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' : 'bg-muted text-muted-foreground'
                       }`}>

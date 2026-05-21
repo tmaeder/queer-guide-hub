@@ -372,7 +372,7 @@ export function CMSListView({
                       </TableCell>
 
                       <TableCell>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                           {item.image_url && (
                             <Avatar style={{ height: 32, width: 32 }}>
                               <AvatarImage src={item.image_url} alt={item.title} />

@@ -35,7 +35,7 @@ export function SavedSearchesButton() {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div>
             <p className="text-sm font-semibold mb-2">Save current filters</p>
             <div className="flex gap-2">
@@ -61,7 +61,7 @@ export function SavedSearchesButton() {
           </div>
 
           {searches.length > 0 && (
-            <div className="border-t border-border pt-3">
+            <div className="border-t border-border pt-4">
               <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Saved</p>
               <ul className="flex flex-col gap-1 max-h-[260px] overflow-y-auto">
                 {searches.map((s) => (

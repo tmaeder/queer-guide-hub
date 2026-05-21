@@ -72,7 +72,7 @@ export const TagSelector = ({
 
       {/* Selected Tags */}
       {selectedTags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2 mb-3">
+        <div className="flex flex-wrap gap-2 mt-2 mb-4">
           {selectedTags.map((tagName) => {
             const tag = allTags.find((t) => t.name === tagName);
             return (

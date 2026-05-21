@@ -69,7 +69,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
 
   return (
     <div className="w-72 shrink-0 border-l border-border bg-muted/20 flex flex-col overflow-hidden">
-      <div className="px-3 py-2.5 border-b border-border flex items-center justify-between">
+      <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <History className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="font-semibold text-sm">Run History</span>
@@ -119,7 +119,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
             <button
               key={run.id}
               onClick={() => onSelectRun(isActive ? null : run.id)}
-              className={`w-full text-left px-3 py-2 border-b border-border/50 transition-colors ${
+              className={`w-full text-left px-4 py-2 border-b border-border/50 transition-colors ${
                 isActive ? 'bg-primary/10 hover:bg-primary/15' : 'hover:bg-accent'
               }`}
             >
@@ -163,7 +163,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
 
       {/* Footer info */}
       {!isLoading && filtered.length > 0 && (
-        <div className="px-3 py-1.5 border-t border-border text-2xs text-muted-foreground text-center">
+        <div className="px-4 py-1.5 border-t border-border text-2xs text-muted-foreground text-center">
           Showing {filtered.length} of {runs.length} runs
         </div>
       )}

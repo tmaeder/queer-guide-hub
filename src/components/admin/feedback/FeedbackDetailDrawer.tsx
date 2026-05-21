@@ -136,7 +136,7 @@ export function FeedbackDetailDrawer({
           {/* Banners */}
           {canonical && (
             <div
-              className="mb-3 flex items-center gap-2 p-2.5"
+              className="mb-4 flex items-center gap-2 p-2.5"
               style={{
                 borderLeft: '3px solid hsl(var(--muted-foreground))',
                 backgroundColor: 'hsl(var(--muted-foreground) / 0.08)',
@@ -159,7 +159,7 @@ export function FeedbackDetailDrawer({
 
           {item.is_spam && (
             <div
-              className="mb-3 flex items-center gap-2 p-2.5"
+              className="mb-4 flex items-center gap-2 p-2.5"
               style={{
                 borderLeft: '3px solid hsl(var(--destructive))',
                 backgroundColor: 'hsl(var(--destructive) / 0.08)',
@@ -193,7 +193,7 @@ export function FeedbackDetailDrawer({
 
           {isForwarded && item.feedback_status !== 'done' && (
             <div
-              className="mb-3 flex items-center p-2.5 gap-2"
+              className="mb-4 flex items-center p-2.5 gap-2"
               style={{
                 borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
                 backgroundColor: 'hsl(var(--foreground) / 0.55)',
@@ -216,7 +216,7 @@ export function FeedbackDetailDrawer({
           )}
 
           {/* Title + badges + close */}
-          <div className="flex items-start gap-3 mb-3">
+          <div className="flex items-start gap-4 mb-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center flex-wrap mb-1.5 gap-1">
                 <Badge
@@ -280,7 +280,7 @@ export function FeedbackDetailDrawer({
 
           {/* Tabbed sections */}
           <Tabs defaultValue="details" className="flex-1">
-            <TabsList className="mb-3">
+            <TabsList className="mb-4">
               <TabsTrigger value="details" className="text-xs">
                 Details
               </TabsTrigger>

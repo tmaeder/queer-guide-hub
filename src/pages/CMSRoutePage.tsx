@@ -112,7 +112,7 @@ function ChildPageCard({ page }: { page: CMSPage }) {
   return (
     <LocalizedLink
       to={`/${page.slug}`}
-      className="flex items-start gap-4 bg-card p-5 text-foreground no-underline transition-opacity hover:opacity-85"
+      className="flex items-start gap-4 bg-card p-6 text-foreground no-underline transition-opacity hover:opacity-85"
     >
       <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center bg-primary text-primary-foreground">
         <FileText size={20} />
@@ -212,7 +212,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           this space safe.
         </p>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {childPages.map((child) => (
             <LegalHubCard key={child.slug} page={child} />
           ))}
@@ -292,7 +292,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
       {childPages.length > 0 && (
         <div className="mt-8">
           <h2 className="mb-4 text-xl font-bold">Related Pages</h2>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {childPages.map((child) => (
               <ChildPageCard key={child.slug} page={child} />
             ))}

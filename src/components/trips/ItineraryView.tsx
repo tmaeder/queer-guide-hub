@@ -43,7 +43,7 @@ function PlaceCard({ place, tripId }: PlaceCardProps) {
 
   return (
     <Card className="mb-2">
-      <CardContent className="py-3 px-4">
+      <CardContent className="py-4 px-4">
         <div className="flex items-center gap-2">
           <div className="rounded-full flex items-center justify-center shrink-0 w-7 h-7 bg-muted">
             <Icon size={14} />
@@ -132,7 +132,7 @@ export function ItineraryView({ tripId, days, places }: Props) {
         const dayPlaces = placesByDay(day.id);
         return (
           <div key={day.id} className="mb-6">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <p className="text-base font-semibold">
                   {format(new Date(day.date), 'EEE, MMM d')}

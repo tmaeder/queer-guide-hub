@@ -70,10 +70,10 @@ export function DonationForm() {
 
   return (
     <Card>
-      <CardContent className="p-6 space-y-5">
+      <CardContent className="p-6 space-y-6">
         {/* Amount selection */}
         <div>
-          <p className="font-semibold text-sm mb-3">{t('donate.tipJar', 'Quick amounts')}</p>
+          <p className="font-semibold text-sm mb-4">{t('donate.tipJar', 'Quick amounts')}</p>
           <div className="grid grid-cols-4 gap-2">
             {TIP_AMOUNTS.map((amount) => (
               <Button
@@ -112,7 +112,7 @@ export function DonationForm() {
 
         {/* Frequency */}
         <div>
-          <p className="font-semibold text-sm mb-3">{t('donate.frequency', 'Frequency')}</p>
+          <p className="font-semibold text-sm mb-4">{t('donate.frequency', 'Frequency')}</p>
           <div className="grid grid-cols-3 gap-2 p-1 rounded-element bg-muted">
             {FREQUENCY_OPTIONS.map((opt) => (
               <Button

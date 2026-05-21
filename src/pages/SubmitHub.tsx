@@ -29,7 +29,7 @@ const SubmitHub = () => {
       </Button>
 
       <div className="text-center mb-8">
-        <div className="flex justify-center mb-3">
+        <div className="flex justify-center mb-4">
           <Heart size={32} />
         </div>
         <h4 className="text-2xl font-bold mb-2">
@@ -86,13 +86,13 @@ const SubmitHub = () => {
             <Card key={type.id} onClick={() => navigate(`/submit/${type.id}`)}>
               <CardContent>
                 <div
-                  className="flex items-center justify-center mb-3"
+                  className="flex items-center justify-center mb-4"
                   style={{ width: 44, height: 44, backgroundColor: `${type.color}15` }}
                 >
                   <Icon style={{ width: 22, height: 22, color: type.color }} />
                 </div>
                 <p className="text-base font-semibold mb-1">Submit {type.label}</p>
-                <p className="text-sm text-muted-foreground mb-3" style={{ minHeight: '2.5em' }}>
+                <p className="text-sm text-muted-foreground mb-4" style={{ minHeight: '2.5em' }}>
                   {type.description}
                 </p>
                 <div className="flex items-center gap-1">

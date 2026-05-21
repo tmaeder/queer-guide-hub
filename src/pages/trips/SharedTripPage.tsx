@@ -238,7 +238,7 @@ function SharedTripPage() {
     <div className="mx-auto pb-6">
       {/* Branded cover band */}
       <div
-        className="relative rounded-none sm:rounded-container overflow-hidden mb-3 sm:mx-2 sm:mt-2 min-h-[180px] md:min-h-[220px] flex items-end bg-cover bg-center"
+        className="relative rounded-none sm:rounded-container overflow-hidden mb-4 sm:mx-2 sm:mt-2 min-h-[180px] md:min-h-[220px] flex items-end bg-cover bg-center"
         style={{
           background: hasCover ? undefined : fallbackGradient,
           backgroundImage: hasCover ? `url(${trip.cover_image_url})` : undefined,
@@ -249,7 +249,7 @@ function SharedTripPage() {
           className="absolute inset-0 pointer-events-none"
           style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%)' }}
         />
-        <div className="relative z-[1] w-full px-[1.25rem] md:px-4 py-[1.25rem] md:py-3">
+        <div className="relative z-[1] w-full px-[1.25rem] md:px-4 py-[1.25rem] md:py-4">
           <div
             className="inline-flex items-center gap-0.5 px-[0.625rem] rounded-full text-white text-xs2 font-bold uppercase tracking-[0.04em] mb-[0.3125rem]"
             style={{ backgroundColor: 'rgba(255,255,255,0.18)', padding: '1px 10px' }}
@@ -292,7 +292,7 @@ function SharedTripPage() {
       <div className="px-2">
         {/* Safety warnings */}
         {unsafeCountries.size > 0 && (
-          <Card className="mb-3">
+          <Card className="mb-4">
             <CardContent>
               <div className="flex items-start gap-2 -mx-2 -mt-1 -mb-1 p-2 bg-muted">
                 <AlertTriangle size={16} className="text-foreground flex-shrink-0 mt-0.5" />
@@ -311,7 +311,7 @@ function SharedTripPage() {
 
         {/* Map */}
         {mapPlaces.some((p) => p.latitude && p.longitude) && (
-          <div className="h-[300px] mb-3 rounded-container overflow-hidden">
+          <div className="h-[300px] mb-4 rounded-container overflow-hidden">
             <TripMap places={mapPlaces as never} days={mapDays} />
           </div>
         )}
@@ -442,9 +442,9 @@ function SharedTripPage() {
         </Tabs>
 
         {/* Conversion CTA */}
-        <Card className="mt-5">
+        <Card className="mt-6">
           <CardContent>
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
               <div
                 className="w-12 h-12 rounded-element flex items-center justify-center flex-shrink-0 text-white"
                 style={{
@@ -474,7 +474,7 @@ function SharedTripPage() {
           </CardContent>
         </Card>
 
-        <p className="text-xs text-muted-foreground block text-center mt-3">{t('trips.shared.footer')}</p>
+        <p className="text-xs text-muted-foreground block text-center mt-4">{t('trips.shared.footer')}</p>
       </div>
 
       <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />

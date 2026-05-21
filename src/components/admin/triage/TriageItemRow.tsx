@@ -79,7 +79,7 @@ export function TriageItemRow({
         if (e.key === 'Enter') onSelect();
       }}
       className={cn(
-        'flex items-start gap-2.5 px-3 py-2.5 border-b cursor-pointer transition-colors',
+        'flex items-start gap-2.5 px-4 py-2.5 border-b cursor-pointer transition-colors',
         isActive
           ? 'bg-foreground/[0.06] border-l-2 border-l-foreground'
           : 'hover:bg-muted/50 border-l-2 border-l-transparent',

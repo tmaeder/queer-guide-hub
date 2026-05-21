@@ -102,7 +102,7 @@ export default function ProfessionDetail() {
             <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <User size={32} className="text-primary" />
             <h4 className="text-2xl font-bold">{professionData.name}</h4>
             <Badge variant="secondary">

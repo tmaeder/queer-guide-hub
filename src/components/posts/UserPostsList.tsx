@@ -22,7 +22,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
         {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i}>
             <CardContent>
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-4 mb-4">
                 <div className="h-10 w-10 bg-muted rounded-full"></div>
                 <div className="flex flex-col gap-2">
                   <div className="h-4 bg-muted w-24"></div>

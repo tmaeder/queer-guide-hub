@@ -212,7 +212,7 @@ export function EventHero({
 
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-1 flex-wrap pl-[2px]">
+          <div className="flex items-center gap-4 mb-1 flex-wrap pl-[2px]">
             {event.logo_url && (
               <img
                 src={event.logo_url}
@@ -399,7 +399,7 @@ export function EventHero({
           .filter(Boolean)
           .join(' and ');
         return (
-          <div className="flex flex-wrap items-center gap-3 mb-6 p-3 bg-muted rounded-element">
+          <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-muted rounded-element">
             <p className="text-sm text-muted-foreground">
               {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet — check the source
               for the latest info.
@@ -454,7 +454,7 @@ export function EventOverview({
         {user && !isPast && (
           <Card>
             <CardContent className="pt-6">
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <Button
                   variant={userAttendance === 'going' ? 'default' : 'outline'}
                   onClick={() => onAttendanceUpdate('going')}
@@ -541,26 +541,26 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
             <CardTitle>Event Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Calendar size={16} className="text-muted-foreground" />
               <span className="text-sm">{formatEventDate(event.start_date, event.end_date)}</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Clock size={16} className="text-muted-foreground" />
               <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <DollarSign size={16} className="text-muted-foreground" />
               <span className="text-sm font-medium">{getPriceDisplay(event)}</span>
             </div>
             {event.max_attendees && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Users size={16} className="text-muted-foreground" />
                 <span className="text-sm">Max {event.max_attendees} attendees</span>
               </div>
             )}
             {(event.organizer || event.organizer_name) && (
-              <div className="mt-2 pt-3 border-t border-border">
+              <div className="mt-2 pt-4 border-t border-border">
                 <p className="text-sm font-medium mb-1">Organizer</p>
                 {event.organizer ? (
                   <>

@@ -229,7 +229,7 @@ export default function AdminIngestionRules() {
               {rules.map((r) => (
                 <div
                   key={r.id}
-                  className="p-3 border border-border flex items-center gap-3 flex-wrap"
+                  className="p-4 border border-border flex items-center gap-4 flex-wrap"
                 >
                   <Switch
                     checked={r.enabled}
@@ -375,7 +375,7 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
         <DialogHeader>
           <DialogTitle>{rule?.id ? 'Edit rule' : 'New rule'}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <Field label="Name">
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </Field>

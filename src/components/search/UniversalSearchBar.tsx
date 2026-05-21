@@ -837,7 +837,7 @@ function DesktopLayout(props: DesktopLayoutProps) {
         </div>
       </div>
       <div
-        className="flex items-center justify-between border-t border-border text-muted-foreground gap-3"
+        className="flex items-center justify-between border-t border-border text-muted-foreground gap-4"
         style={{ padding: '6px 12px', fontSize: '0.7rem' }}
         aria-hidden="true"
       >
@@ -912,7 +912,7 @@ function MobileLayout(props: MobileLayoutProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <button
           type="button"
           onClick={onClose}

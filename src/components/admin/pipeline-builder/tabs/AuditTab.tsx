@@ -186,7 +186,7 @@ export default function AuditTab() {
                 {filtered.map(e => {
                   if (e.kind === 'save') {
                     return (
-                      <div key={`save-${e.id}`} className="p-3 flex items-start gap-3 hover:bg-muted/30 transition-colors">
+                      <div key={`save-${e.id}`} className="p-4 flex items-start gap-4 hover:bg-muted/30 transition-colors">
                         <div className="w-7 h-7 rounded-full bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground flex items-center justify-center shrink-0">
                           <Save className="h-3.5 w-3.5" />
                         </div>
@@ -195,7 +195,7 @@ export default function AuditTab() {
                             <span className="font-medium truncate">{e.pipeline_name}</span>
                             <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">v{e.version}</Badge>
                           </div>
-                          <div className="flex items-center gap-3 text-xs2 text-muted-foreground mt-0.5">
+                          <div className="flex items-center gap-4 text-xs2 text-muted-foreground mt-0.5">
                             <span>{e.nodes_count} nodes · {e.edges_count} edges</span>
                             {e.actor_id && (
                               <Tooltip>
@@ -232,7 +232,7 @@ export default function AuditTab() {
                                             : e.status === 'running' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
                                             : 'bg-muted text-muted-foreground';
                     return (
-                      <div key={`run-${e.id}`} className="p-3 flex items-start gap-3 hover:bg-muted/30 transition-colors">
+                      <div key={`run-${e.id}`} className="p-4 flex items-start gap-4 hover:bg-muted/30 transition-colors">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${statusColorClass}`}>
                           <StatusIcon className={`h-3.5 w-3.5 ${e.status === 'running' ? 'animate-spin' : ''}`} />
                         </div>
@@ -247,7 +247,7 @@ export default function AuditTab() {
                               <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">v{e.pipeline_version}</Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-3 text-xs2 text-muted-foreground mt-0.5 flex-wrap">
+                          <div className="flex items-center gap-4 text-xs2 text-muted-foreground mt-0.5 flex-wrap">
                             <span>
                               <span className="text-foreground dark:text-foreground font-semibold">{e.items_succeeded ?? 0}</span>
                               <span> / {e.items_total ?? 0}</span>
@@ -288,7 +288,7 @@ export default function AuditTab() {
             )}
           </div>
           {filtered.length > 0 && (
-            <div className="px-3 py-1.5 border-t border-border text-xs2 text-muted-foreground">
+            <div className="px-4 py-1.5 border-t border-border text-xs2 text-muted-foreground">
               Showing {filtered.length} of {events.length} events
             </div>
           )}

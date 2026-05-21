@@ -104,7 +104,7 @@ export function SecurityMonitoringDashboard() {
       {/* System Statistics Overview */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="p-2 bg-muted rounded-element">
               <Activity size={16} />
             </div>
@@ -117,7 +117,7 @@ export function SecurityMonitoringDashboard() {
         </Card>
 
         <Card>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div
               className="p-2 rounded-element"
               style={{ backgroundColor: 'rgba(var(--destructive-rgb), 0.1)' }}
@@ -133,7 +133,7 @@ export function SecurityMonitoringDashboard() {
         </Card>
 
         <Card>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div
               className="p-2 rounded-element"
               style={{ backgroundColor: 'rgba(var(--success-rgb), 0.1)' }}
@@ -156,13 +156,13 @@ export function SecurityMonitoringDashboard() {
             <CardDescription>Latest security events and system alerts</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
+            <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
               {recentEvents.slice(0, 10).map((event) => {
                 const det = event.details as { severity?: string } | undefined;
                 return (
                   <div
                     key={event.id}
-                    className="flex items-start gap-3 p-3 border border-border rounded-element"
+                    className="flex items-start gap-4 p-4 border border-border rounded-element"
                   >
                     <div className="mt-1">{getEventIcon(event.event_type)}</div>
                     <div className="flex-1 flex flex-col gap-1">
@@ -204,11 +204,11 @@ export function SecurityMonitoringDashboard() {
             <CardDescription>Recent role assignments and changes</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
+            <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
               {auditLogs.map((log: Record<string, unknown>) => (
                 <div
                   key={log.id as string}
-                  className="flex items-start gap-3 p-3 border border-border rounded-element"
+                  className="flex items-start gap-4 p-4 border border-border rounded-element"
                 >
                   <Users size={16} className="mt-1" />
                   <div className="flex-1 flex flex-col gap-1">
@@ -241,11 +241,11 @@ export function SecurityMonitoringDashboard() {
             <CardDescription>Recent failed authentication attempts</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
+            <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
               {recentFailedLogins.map((attempt: Record<string, unknown>) => (
                 <div
                   key={attempt.id as string}
-                  className="flex items-start gap-3 p-3 border border-border rounded-element"
+                  className="flex items-start gap-4 p-4 border border-border rounded-element"
                 >
                   <AlertTriangle
                     size={16}

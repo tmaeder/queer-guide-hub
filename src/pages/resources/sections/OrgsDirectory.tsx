@@ -50,7 +50,7 @@ export function OrgsDirectory() {
 
   return (
     <section aria-labelledby="orgs-heading">
-      <header className="flex flex-wrap items-center gap-3 mb-4">
+      <header className="flex flex-wrap items-center gap-4 mb-4">
         <div className="flex items-center gap-2">
           <Building2 aria-hidden size={18} />
           <h2 id="orgs-heading" className="text-base font-semibold">{t('resources.orgs.heading')}</h2>
@@ -72,13 +72,13 @@ export function OrgsDirectory() {
       </header>
 
       {fellBackToGlobal && countryName && (
-        <p className="text-xs text-muted-foreground mb-3">
+        <p className="text-xs text-muted-foreground mb-4">
           {t('resources.orgs.noLocal', { country: countryName })}
         </p>
       )}
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-56 w-full rounded-container" />)}
         </div>
       ) : filtered.length === 0 ? (
@@ -88,7 +88,7 @@ export function OrgsDirectory() {
           {t('resources.orgs.emptySuffix')}
         </p>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((v) => (
             <li key={v.id}>
               <VenueCard venue={v} />

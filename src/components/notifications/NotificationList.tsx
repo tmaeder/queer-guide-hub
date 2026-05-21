@@ -174,10 +174,10 @@ export const NotificationList = () => {
           <button
             type="button"
             key={item.key}
-            className={`w-full text-left p-3 cursor-pointer hover:bg-muted transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
+            className={`w-full text-left p-4 cursor-pointer hover:bg-muted transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
             onClick={() => handleNotificationClick(n)}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <div className="p-1 rounded">{getNotificationIcon(n.type as string)}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between">
@@ -221,10 +221,10 @@ export const NotificationList = () => {
           <button
             type="button"
             key={item.key}
-            className="w-full text-left p-3 cursor-pointer hover:bg-muted"
+            className="w-full text-left p-4 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/messages')}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={avatar} />
                 <AvatarFallback>{(title || 'U').charAt(0).toUpperCase()}</AvatarFallback>
@@ -250,10 +250,10 @@ export const NotificationList = () => {
           <button
             type="button"
             key={item.key}
-            className="w-full text-left p-3 cursor-pointer hover:bg-muted"
+            className="w-full text-left p-4 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/groups')}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={n.triggered_by_profile?.avatar_url || ''} />
                 <AvatarFallback>
@@ -284,10 +284,10 @@ export const NotificationList = () => {
           <button
             type="button"
             key={item.key}
-            className="w-full text-left p-3 cursor-pointer hover:bg-muted"
+            className="w-full text-left p-4 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/feed')}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={l.user_avatar_url || ''} />
                 <AvatarFallback>
@@ -315,10 +315,10 @@ export const NotificationList = () => {
           <button
             type="button"
             key={item.key}
-            className="w-full text-left p-3 cursor-pointer hover:bg-muted"
+            className="w-full text-left p-4 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/feed')}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={c.user_avatar_url || ''} />
                 <AvatarFallback>

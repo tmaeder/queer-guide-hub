@@ -80,7 +80,7 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
         )}
       </CardImage>
       <div className="p-4">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-4">
           {date && (
             <div
               className="rounded-element bg-muted flex flex-col items-center justify-center py-1.5 flex-shrink-0"
@@ -147,7 +147,7 @@ function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick
             {n.excerpt}
           </p>
         )}
-        <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center justify-between mt-4">
           <span className="text-xs text-muted-foreground">
             {n.news_sources?.name}
             {n.news_sources?.name && n.published_at && ' · '}
@@ -214,7 +214,7 @@ function PersonalityCard({
           </div>
         )}
       </div>
-      <div className="p-3">
+      <div className="p-4">
         <p className="font-semibold truncate" style={{ fontSize: '0.9rem', lineHeight: 1.3 }}>
           {p.name}
         </p>
@@ -415,7 +415,7 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
             ))}
           </div>
           {news.length > MAX_NEWS && (
-            <p className="text-sm text-muted-foreground mt-3 text-center">
+            <p className="text-sm text-muted-foreground mt-4 text-center">
               +{news.length - MAX_NEWS} more articles
             </p>
           )}
@@ -425,7 +425,7 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
       {/* Groups */}
       {groups.length > 0 && (
         <Section title="Communities" count={groups.length}>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {groups.map((g) => (
               <GroupCard key={g.id} g={g} onClick={() => navigate(`/groups/${g.id}`)} />
             ))}

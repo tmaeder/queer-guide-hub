@@ -338,13 +338,13 @@ export default function NewsDetail() {
           {story && (
             <LocalizedLink
               to={`/news/story/${story.slug}`}
-              className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground mb-3 no-underline"
+              className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground mb-4 no-underline"
             >
               <Layers size={12} aria-hidden="true" />
               Part of story · {story.article_count} articles
             </LocalizedLink>
           )}
-          <div className="flex items-center gap-3 mb-2 flex-wrap">
+          <div className="flex items-center gap-4 mb-2 flex-wrap">
             <h1 className="text-2xl font-bold leading-tight m-0">
               {decodeHtmlEntities(article.title)}
             </h1>
@@ -505,7 +505,7 @@ export default function NewsDetail() {
                           />
                         ) : null}
                       </div>
-                      <div className="p-3">
+                      <div className="p-4">
                         <p
                           className="text-sm font-semibold mb-1 overflow-hidden text-foreground"
                           style={{
@@ -542,7 +542,7 @@ export default function NewsDetail() {
             </CardHeader>
             <CardContent>
               {article.published_at && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Calendar size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Published</p>
@@ -553,7 +553,7 @@ export default function NewsDetail() {
                 </div>
               )}
               {authorName && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <User size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Author</p>
@@ -562,7 +562,7 @@ export default function NewsDetail() {
                 </div>
               )}
               {sourceName && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Newspaper size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Source</p>
@@ -571,7 +571,7 @@ export default function NewsDetail() {
                 </div>
               )}
               {article.views_count > 0 && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Eye size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Views</p>

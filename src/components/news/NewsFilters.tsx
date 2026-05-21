@@ -321,7 +321,7 @@ export const NewsFilters = ({
         {/* Category Filter */}
         {categories.length > 0 && (
           <>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <Tag size={16} />
                 <span className="text-sm font-medium">Category</span>
@@ -345,7 +345,7 @@ export const NewsFilters = ({
         )}
 
         {/* Near Me */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MapPin size={16} />
@@ -361,7 +361,7 @@ export const NewsFilters = ({
         <Separator />
 
         {/* Countries Filter */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <Globe size={16} />
             <span className="text-sm font-medium">Country</span>
@@ -401,7 +401,7 @@ export const NewsFilters = ({
         </div>
 
         {/* Cities Filter */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <Map size={16} />
             <span className="text-sm font-medium">City</span>
@@ -444,7 +444,7 @@ export const NewsFilters = ({
 
         {/* Source Filter */}
         {sources.length > 0 && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <Building size={16} />
               <span className="text-sm font-medium">Source</span>
@@ -466,7 +466,7 @@ export const NewsFilters = ({
         )}
 
         {/* Date Range Filter */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <Calendar size={16} />
             <span className="text-sm font-medium">Published Date</span>
@@ -492,7 +492,7 @@ export const NewsFilters = ({
         {trendingTags.length > 0 && (
           <>
             <Separator />
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <TrendingUp size={16} />
                 <span className="text-sm font-medium">Trending Topics</span>

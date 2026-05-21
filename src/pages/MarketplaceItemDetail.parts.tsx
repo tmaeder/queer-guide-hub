@@ -113,12 +113,12 @@ export function MarketplaceHero({
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <div className="flex items-center gap-4 mb-2 flex-wrap">
               <h4 className="text-2xl font-bold">{listing.title}</h4>
               {listing.featured && <Badge>Featured</Badge>}
             </div>
 
-            <div className="flex items-center gap-3 mb-3 flex-wrap">
+            <div className="flex items-center gap-4 mb-4 flex-wrap">
               <p className="text-base font-medium">{listing.business_name}</p>
               {listing.business_type && getBusinessTypeIcon(listing.business_type)}
               {listing.location && (
@@ -129,7 +129,7 @@ export function MarketplaceHero({
               )}
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-4 flex-wrap">
               <Badge variant="secondary">{listing.category}</Badge>
               {listing.subcategory && <Badge variant="outline">{listing.subcategory}</Badge>}
               {averageRating > 0 && (
@@ -276,7 +276,7 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
                 {reviews.slice(0, 5).map((review) => (
                   <div key={review.id} className="pb-4">
                     <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <Avatar style={{ width: 32, height: 32 }}>
                           <AvatarFallback>
                             {review.profiles?.display_name?.[0] || 'U'}
@@ -370,7 +370,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
             </div>
 
             {pills.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
+              <div className="flex flex-wrap gap-1.5 mt-4">
                 {pills.map((p) => (
                   <span
                     key={p.key}
@@ -384,19 +384,19 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
             )}
 
             {linkState === 'broken' && (
-              <div className="mt-3 rounded border border-border bg-muted p-2 text-xs text-muted-foreground">
+              <div className="mt-4 rounded border border-border bg-muted p-2 text-xs text-muted-foreground">
                 This merchant link appears to be broken. Try contact options below.
               </div>
             )}
             {linkState === 'stale' && (
-              <div className="mt-3 text-xs text-muted-foreground">
+              <div className="mt-4 text-xs text-muted-foreground">
                 Last verified some time ago — link may have changed.
               </div>
             )}
 
             <Separator />
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {outbound && (
                 <Button style={{ width: '100%' }} asChild>
                   <a
@@ -437,14 +437,14 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
             </div>
 
             {listing.shipping_available && (
-              <div className="flex items-center gap-2 bg-muted rounded p-2 text-sm mt-3">
+              <div className="flex items-center gap-2 bg-muted rounded p-2 text-sm mt-4">
                 <Truck size={16} aria-hidden="true" />
                 Shipping available
               </div>
             )}
 
             {outbound?.isAffiliate && (
-              <div className="mt-3">
+              <div className="mt-4">
                 <AffiliateDisclosure compact />
               </div>
             )}
@@ -459,7 +459,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
               <CardTitle>Merchant</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-muted-foreground mb-4">
                 See more listings from this merchant.
               </p>
               <LocalizedLink

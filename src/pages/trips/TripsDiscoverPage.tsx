@@ -193,7 +193,7 @@ export default function TripsDiscoverPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('trips.discover.searchPlaceholder', 'Filter by city…')}
-              className="pl-9"
+              className="pl-10"
             />
           </div>
           <DropdownMenu>
@@ -258,7 +258,7 @@ export default function TripsDiscoverPage() {
           </div>
         </div>
         <div
-          className="flex flex-wrap gap-2 mt-3"
+          className="flex flex-wrap gap-2 mt-4"
           role="group"
           aria-label={t('trips.discover.filterAria', 'Filter trips')}
         >
@@ -270,7 +270,7 @@ export default function TripsDiscoverPage() {
                 type="button"
                 onClick={() => toggleFilter(f)}
                 aria-pressed={selected}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                className={`text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors ${
                   selected
                     ? 'bg-foreground text-background border-transparent'
                     : 'bg-background text-foreground border-border hover:border-foreground/40'
@@ -328,7 +328,7 @@ export default function TripsDiscoverPage() {
         <>
           {showStaffPicks && (
             <section className="mb-10">
-              <div className="flex items-end justify-between gap-3 mb-4">
+              <div className="flex items-end justify-between gap-4 mb-4">
                 <div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {t('trips.discover.staffPicks.eyebrow', 'Staff picks')}
@@ -353,7 +353,7 @@ export default function TripsDiscoverPage() {
             <>
               {regionGroups.map(({ region, trips: regTrips }) => (
                 <section key={region} className="mb-10">
-                  <h3 className="text-base font-bold tracking-tight mb-3">
+                  <h3 className="text-base font-bold tracking-tight mb-4">
                     {t(`trips.discover.region.${region}`, regionLabel(region))}
                     <span
                       className="ml-2 text-muted-foreground font-medium"

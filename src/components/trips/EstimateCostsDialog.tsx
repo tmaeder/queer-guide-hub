@@ -148,7 +148,7 @@ export function EstimateCostsDialog({ open, onClose, tripId, members, currentUse
         </DialogHeader>
 
         {estimate.isPending && (
-          <div className="flex items-center gap-3 py-8 justify-center">
+          <div className="flex items-center gap-4 py-8 justify-center">
             <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
             <p className="text-sm text-muted-foreground">
               {t('trips.budget.estimate.loading', { defaultValue: 'Crunching numbers…' })}
@@ -174,7 +174,7 @@ export function EstimateCostsDialog({ open, onClose, tripId, members, currentUse
 
         {estimate.data && estimate.data.suggestions.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <Badge variant="secondary">
                 {t('trips.budget.estimate.partySize', {
                   defaultValue: '{{count}} traveler(s)',

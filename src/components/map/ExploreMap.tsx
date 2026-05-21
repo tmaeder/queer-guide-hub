@@ -947,7 +947,7 @@ export const ExploreMap = ({
 
       {/* Fetching indicator + result count */}
       <div
-        className="absolute z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/85 backdrop-blur-md shadow-[var(--shadow-aceternity-sm)] px-3 py-1.5 pointer-events-none transition-opacity duration-200"
+        className="absolute z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/85 backdrop-blur-md shadow-[var(--shadow-aceternity-sm)] px-4 py-1.5 pointer-events-none transition-opacity duration-200"
         style={{
           bottom: 12,
           right: 56,
@@ -967,7 +967,7 @@ export const ExploreMap = ({
           variant="ghost"
           aria-label="Open full map"
           onClick={() => navigate(linkToFullMap)}
-          className="absolute bottom-3 left-3 z-10 min-w-0 px-3 py-1.5 rounded-full border border-border normal-case text-xs leading-tight bg-background/85 backdrop-blur-md shadow-[var(--shadow-aceternity-sm)] hover:bg-background"
+          className="absolute bottom-3 left-3 z-10 min-w-0 px-4 py-1.5 rounded-full border border-border normal-case text-xs leading-tight bg-background/85 backdrop-blur-md shadow-[var(--shadow-aceternity-sm)] hover:bg-background"
         >
           <ExternalLink size={14} />
           <span className="hidden sm:inline ml-1">Full map</span>

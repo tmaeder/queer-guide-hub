@@ -63,7 +63,7 @@ function ShellSkeleton() {
         <Skeleton className="rounded w-40 h-6 mb-2" />
         <Skeleton className="w-24 h-4 mb-6" />
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 mb-2">
+          <div key={i} className="flex items-center gap-4 mb-2">
             <Skeleton className="rounded-none w-7 h-7" />
             <Skeleton className="h-5" style={{ width: 80 + Math.random() * 60 }} />
           </div>
@@ -136,7 +136,7 @@ export function AdminShell() {
             type="button"
             aria-label="Open admin navigation"
             onClick={() => setMobileOpen(true)}
-            className="fixed flex items-center gap-1.5 bg-background pl-2 pr-3 py-1.5 cursor-pointer"
+            className="fixed flex items-center gap-1.5 bg-background pl-2 pr-4 py-1.5 cursor-pointer"
             style={{ top: 80, left: 8, zIndex: 1200 }}
           >
             <Button variant="ghost" size="sm" className="h-7 w-7 p-1">

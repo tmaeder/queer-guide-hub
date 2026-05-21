@@ -85,7 +85,7 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
             if (e.key === 'Enter') handleSearchSubmit();
           }}
           placeholder="Search..."
-          className="h-7 pl-7 text-xs"
+          className="h-7 pl-8 text-xs"
         />
       </div>
 

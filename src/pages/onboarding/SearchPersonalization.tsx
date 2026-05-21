@@ -102,7 +102,7 @@ export default function SearchPersonalization() {
 									<Badge
 										key={v}
 										variant={vibes.includes(v) ? "default" : "outline"}
-										className="cursor-pointer text-sm py-1.5 px-3"
+										className="cursor-pointer text-sm py-1.5 px-4"
 										onClick={() => toggleVibe(v)}
 									>
 										{v}
@@ -133,7 +133,7 @@ export default function SearchPersonalization() {
 									{citySuggestions.map((c) => (
 										<button
 											key={c.id}
-											className="block w-full text-left px-3 py-2 hover:bg-muted"
+											className="block w-full text-left px-4 py-2 hover:bg-muted"
 											onClick={() => {
 												setCityChoice({ id: c.id, title: c.title });
 												setCityQuery(c.title);
@@ -161,7 +161,7 @@ export default function SearchPersonalization() {
 									<Badge
 										key={l.code}
 										variant={langs.includes(l.code) ? "default" : "outline"}
-										className="cursor-pointer text-sm py-1.5 px-3"
+										className="cursor-pointer text-sm py-1.5 px-4"
 										onClick={() => toggleLang(l.code)}
 									>
 										{l.label}

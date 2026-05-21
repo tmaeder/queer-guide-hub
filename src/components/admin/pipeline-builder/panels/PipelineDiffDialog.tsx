@@ -115,7 +115,7 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
         ) : totalChanges === 0 ? (
           <div className="text-sm text-foreground dark:text-foreground text-center py-10 font-medium">✓ No changes — canvas matches saved</div>
         ) : (
-          <div className="overflow-y-auto flex-1 space-y-3">
+          <div className="overflow-y-auto flex-1 space-y-4">
             {diff.nodes.added.length > 0 && (
               <div>
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground dark:text-foreground mb-1.5">

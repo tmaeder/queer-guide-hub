@@ -500,7 +500,7 @@ export default function HelpHotlines() {
           {/* Saved hotlines */}
           {bookmarkedHotlines.length > 0 && (
             <div className="mb-8">
-              <h3 className="mb-3 flex items-center gap-2 text-sm font-bold">
+              <h3 className="mb-4 flex items-center gap-2 text-sm font-bold">
                 <Heart size={16} />
                 {t('help.saved_hotlines', 'Your saved hotlines')}
               </h3>
@@ -546,7 +546,7 @@ export default function HelpHotlines() {
 
           {/* Related resources */}
           <div className="mt-12 border-t pt-6">
-            <h3 className="mb-3 text-sm font-bold">
+            <h3 className="mb-4 text-sm font-bold">
               {t('help.related_resources', 'Related resources')}
             </h3>
             <div className="mb-4 flex flex-wrap gap-2">
@@ -642,11 +642,11 @@ function HotlineCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-3">
+      <CardContent className="flex flex-1 flex-col gap-4">
         <p className="text-sm leading-relaxed text-muted-foreground">{hotline.description}</p>
 
         {hotline.what_to_expect && (
-          <details className="rounded-element border bg-muted/30 px-3 py-2 text-sm">
+          <details className="rounded-element border bg-muted/30 px-4 py-2 text-sm">
             <summary className="cursor-pointer font-medium">
               {t('help.expect_short', 'What to expect')}
             </summary>

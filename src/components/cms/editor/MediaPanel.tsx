@@ -154,7 +154,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
   return (
     <div className="border border-border rounded-element bg-background">
       {/* Header */}
-      <div className="flex flex-row items-center justify-between px-4 py-3 border-b border-border">
+      <div className="flex flex-row items-center justify-between px-4 py-4 border-b border-border">
         <div className="flex flex-row items-center gap-1">
           <Paperclip size={16} className="text-muted-foreground" />
           <p className="text-sm font-semibold">Media Attachments</p>
@@ -205,7 +205,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
         )}
 
         {!loading && attachments.length > 0 && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {attachments.map((attachment) => {
               const media = attachment.media;
               if (!media) return null;
@@ -216,7 +216,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
               return (
                 <div
                   key={attachment.id}
-                  className={`flex items-center gap-3 p-2 rounded border border-border bg-muted ${
+                  className={`flex items-center gap-4 p-2 rounded border border-border bg-muted ${
                     isDetaching ? 'opacity-50' : ''
                   }`}
                 >

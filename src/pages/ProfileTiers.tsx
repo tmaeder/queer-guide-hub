@@ -97,7 +97,7 @@ export default function ProfileTiers() {
         </CardHeader>
         <CardContent className="space-y-6">
           {next && nextReq && !nextReq.manual && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="text-sm font-medium">
                 Progress to {LABEL[next]}
               </div>
@@ -141,7 +141,7 @@ export default function ProfileTiers() {
         </CardContent>
       </Card>
 
-      <section className="space-y-3">
+      <section className="space-y-4">
         <h2 className="text-xl font-semibold">The ladder</h2>
         <ol className="relative">
           {TIER_ORDER.map((t, i) => {
@@ -192,7 +192,7 @@ export default function ProfileTiers() {
                       </span>
                     )}
                   </div>
-                  <ul className="list-disc space-y-0.5 pl-5 text-sm text-muted-foreground mt-1">
+                  <ul className="list-disc space-y-0.5 pl-6 text-sm text-muted-foreground mt-1">
                     {PRIVILEGES[t].map((p) => (
                       <li key={p}>{p}</li>
                     ))}

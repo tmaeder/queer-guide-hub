@@ -162,7 +162,7 @@ export const IngestionSourcesManager = () => {
                       {SOURCE_TYPE_ICONS[source.source_type] || <Database size={16} />}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
+                      <div className="flex items-center gap-4 mb-1">
                         <p className="font-semibold">{source.name}</p>
                         <Badge variant={source.is_enabled ? 'default' : 'outline'}>
                           {source.is_enabled ? 'Enabled' : 'Disabled'}

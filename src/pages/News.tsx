@@ -529,7 +529,7 @@ export default function News() {
               role="tab"
               aria-current={activeCategory === null ? 'true' : undefined}
               aria-selected={activeCategory === null}
-              className={`whitespace-nowrap rounded-element border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              className={`whitespace-nowrap rounded-element border text-xs font-medium px-4 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeCategory === null
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-transparent text-foreground border-border hover:bg-muted'
@@ -548,7 +548,7 @@ export default function News() {
                   role="tab"
                   aria-current={selected ? 'true' : undefined}
                   aria-selected={selected}
-                  className={`whitespace-nowrap rounded-element border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  className={`whitespace-nowrap rounded-element border text-xs font-medium px-4 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     selected
                       ? 'border-transparent'
                       : 'bg-transparent text-foreground border-border hover:bg-muted'
@@ -590,7 +590,7 @@ export default function News() {
 
         {/* Quick Search & Controls — sticky on mobile so search stays reachable while scrolling */}
         <div className="border border-border rounded-element p-4 mb-6 bg-background sticky top-[44px] md:static z-10">
-          <div className="flex flex-col md:flex-row gap-3 md:items-center">
+          <div className="flex flex-col md:flex-row gap-4 md:items-center">
             <div className="relative flex-1 md:max-w-md">
               <Search
                 style={{
@@ -924,7 +924,7 @@ export default function News() {
                           className={
                             viewMode === 'grid'
                               ? 'grid grid-cols-12 gap-4 md:gap-6'
-                              : 'flex flex-col gap-3'
+                              : 'flex flex-col gap-4'
                           }
                           itemClassName={
                             viewMode === 'grid'

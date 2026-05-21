@@ -104,14 +104,14 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
   return (
     <div className="flex flex-col gap-4 p-4 bg-background">
       {/* Row 1: search + sort */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <div className="relative flex-1 min-w-[260px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by name, profession, description..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="pl-9 pr-9"
+            className="pl-10 pr-10"
           />
           {searchInput && (
             <button
@@ -229,7 +229,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
               </Select>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Checkbox
                 id="featured-only"
                 checked={filters.featured_only === true}
@@ -245,7 +245,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
               </Label>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <Checkbox
                 id="include-adult"
                 checked={filters.exclude_adult === false}

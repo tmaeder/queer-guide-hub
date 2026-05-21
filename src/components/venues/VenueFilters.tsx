@@ -394,7 +394,7 @@ export function VenueFilters({
   return (
     <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-container border border-border bg-card/60 backdrop-blur-sm">
       {/* Search Row */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search
             style={{ left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16 }}
@@ -406,7 +406,7 @@ export function VenueFilters({
             value={search}
             onChange={(e) => handleSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-11 h-11 rounded-element"
+            className="pl-12 h-11 rounded-element"
           />
         </div>
         <div className="flex gap-2">
@@ -465,7 +465,7 @@ export function VenueFilters({
             variant={category === cat ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleCategoryClick(cat)}
-            className="rounded-full h-8 px-3.5 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
+            className="rounded-full h-8 px-4.5 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
           >
             {categoryLabels[cat] ?? cat}
           </Button>
@@ -591,7 +591,7 @@ export function VenueFilters({
           {/* Desktop: inline */}
           <nav
             aria-label="Venue filters"
-            className="hidden md:flex flex-col gap-6 pt-5 mt-1 border-t border-border"
+            className="hidden md:flex flex-col gap-6 pt-6 mt-1 border-t border-border"
           >
             {renderAdvancedPanel()}
           </nav>
@@ -604,7 +604,7 @@ export function VenueFilters({
     return (
       <div className="flex flex-col gap-6">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
             Refine
           </span>
@@ -626,7 +626,7 @@ export function VenueFilters({
         </div>
 
         {/* Filter dropdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Tags */}
           <FilterDropdown
             label="Tags"
@@ -698,7 +698,7 @@ export function VenueFilters({
 
         {/* Clear button */}
         {hasActiveFilters && (
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <Button variant="outline" onClick={clearFilters} size="sm">
               <X size={14} />
               Clear All

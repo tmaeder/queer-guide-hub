@@ -51,7 +51,7 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
     <div className="flex flex-col gap-6">
       {sortedDays.map((day, dayIdx) => (
         <div key={day}>
-          <h6 className="text-base font-semibold mb-3 flex items-center gap-2">
+          <h6 className="text-base font-semibold mb-4 flex items-center gap-2">
             {format(parseISO(day), 'EEEE, MMMM d, yyyy')}
             <Badge variant="secondary">
               {`${grouped[day].length} event${grouped[day].length !== 1 ? 's' : ''}`}

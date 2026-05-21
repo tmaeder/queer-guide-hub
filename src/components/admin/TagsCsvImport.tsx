@@ -179,7 +179,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
           {importResult && (
             <Card>
               <CardContent>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-4">
                   {importResult.success ? (
                     <CheckCircle size={20} className="text-foreground" />
                   ) : (

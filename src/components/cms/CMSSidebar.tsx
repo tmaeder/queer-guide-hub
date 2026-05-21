@@ -54,7 +54,7 @@ interface CMSSidebarProps {
 function SectionLabel({ children }: { children: string }) {
   return (
     <p
-      className="block px-5 pt-4 pb-1 text-2xs font-bold text-muted-foreground/60 uppercase select-none"
+      className="block px-6 pt-4 pb-1 text-2xs font-bold text-muted-foreground/60 uppercase select-none"
       style={{ letterSpacing: '0.08em' }}
     >
       {children}
@@ -95,7 +95,7 @@ function NavItem({ isActive, accentColor, onClick, className, children }: NavIte
       type="button"
       onClick={onClick}
       className={cn(
-        'flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-3 relative transition-all hover:translate-x-0.5',
+        'flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-4 relative transition-all hover:translate-x-0.5',
         className,
       )}
       style={{
@@ -186,12 +186,12 @@ export function CMSSidebar({
     <div className="w-[260px] min-h-full border-r border-border bg-background flex flex-col overflow-hidden">
       {/* Gradient Header */}
       <div
-        className="px-5 py-5 border-b border-border"
+        className="px-6 py-6 border-b border-border"
         style={{
           background: `linear-gradient(135deg, ${brandColors.main}14 0%, ${brandColors.light}0A 50%, transparent 100%)`,
         }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div
             className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0"
             style={{
@@ -241,7 +241,7 @@ export function CMSSidebar({
           <button
             type="button"
             onClick={() => setContentOpen(!contentOpen)}
-            className="flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-3 transition-all hover:translate-x-0.5"
+            className="flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-4 transition-all hover:translate-x-0.5"
           >
             <span className="min-w-9 mr-2 flex">
               <span
@@ -269,7 +269,7 @@ export function CMSSidebar({
               >
                 <span
                   className={cn(
-                    'text-13 flex-1 ml-9',
+                    'text-13 flex-1 ml-10',
                     activeView === 'content' && !activeContentType ? 'font-semibold' : 'font-normal',
                   )}
                 >
@@ -287,7 +287,7 @@ export function CMSSidebar({
                     isActive={isActive}
                     accentColor={ct.color}
                     onClick={() => onNavigate('content', ct.id)}
-                    className="!py-1 !pl-7"
+                    className="!py-1 !pl-8"
                   >
                     <span className="min-w-9 mr-2 flex">
                       <IconBadge icon={Icon} color={ct.color} size={14} />
@@ -410,7 +410,7 @@ export function CMSSidebar({
             </span>
           </NavItem>
 
-          <hr className="my-1.5 mx-3 border-border" />
+          <hr className="my-1.5 mx-4 border-border" />
 
           <NavItem
             isActive={activeView === 'settings'}
@@ -430,7 +430,7 @@ export function CMSSidebar({
       </div>
 
       {/* User info footer */}
-      <div className="border-t border-border px-4 py-3 flex items-center gap-3 bg-muted/30">
+      <div className="border-t border-border px-4 py-4 flex items-center gap-4 bg-muted/30">
         <Avatar className="w-8 h-8">
           <AvatarImage src={user?.user_metadata?.avatar_url as string | undefined} />
           <AvatarFallback

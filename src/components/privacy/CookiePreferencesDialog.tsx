@@ -104,7 +104,7 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
           {cookieCategories.map((category) => {
             const Icon = category.icon;
             return (
-              <div key={category.id} className="flex flex-col gap-3">
+              <div key={category.id} className="flex flex-col gap-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
           })}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <Button onClick={handleSave} style={{ flex: 1 }}>
             Save Preferences
           </Button>

@@ -62,7 +62,7 @@ export default function MarketplaceShare() {
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
-            <Heart size={32} className="mx-auto mb-3" aria-hidden="true" />
+            <Heart size={32} className="mx-auto mb-4" aria-hidden="true" />
             <p className="text-sm">No active listings found for this link.</p>
           </div>
         ) : (

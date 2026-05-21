@@ -193,7 +193,7 @@ export function Header() {
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
-        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
           <Link
             to="/"
             onClick={() => setDrawerOpen(false)}
@@ -211,8 +211,8 @@ export function Header() {
         <div className="flex-1 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
           {user && (
             <>
-              <div className="px-4 py-3">
-                <div className="flex items-center gap-3 mb-3">
+              <div className="px-4 py-4">
+                <div className="flex items-center gap-4 mb-4">
                   <Avatar style={{ height: 40, width: 40 }}>
                     <AvatarImage
                       src={avatarSrc}
@@ -293,7 +293,7 @@ export function Header() {
             </>
           )}
 
-          <div className="px-4 py-3">
+          <div className="px-4 py-4">
             <Button
               variant="default"
               size="sm"
@@ -405,7 +405,7 @@ export function Header() {
       style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="px-4 sm:px-6 md:px-8">
-        <div className="flex items-center gap-2 sm:gap-3" style={{ height: isMobile ? 56 : 64 }}>
+        <div className="flex items-center gap-2 sm:gap-4" style={{ height: isMobile ? 56 : 64 }}>
           {/* ── Logo ──────────────────────────────────────────────────── */}
           {!(isMobile && mobileSearchOpen) && (
             <Link
@@ -725,7 +725,7 @@ export function Header() {
                     <button
                       key={item.to}
                       onClick={() => handleMoreNav(item.to)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left ${
                         active ? 'bg-muted font-semibold' : 'hover:bg-muted'
                       }`}
                     >

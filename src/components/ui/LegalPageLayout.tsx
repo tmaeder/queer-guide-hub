@@ -63,7 +63,7 @@ export const LegalPageLayout = ({
           className="hidden md:block sticky flex-shrink-0"
           style={{ top: 80, minWidth: 200, maxWidth: 240 }}
         >
-          <div className="bg-background p-3">
+          <div className="bg-background p-4">
             <span
               className="text-xs font-semibold mb-2 px-2 block uppercase tracking-wider"
               style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}
@@ -115,7 +115,7 @@ export const LegalPageLayout = ({
             {tocOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </Button>
           {tocOpen && (
-            <div className="mt-2 bg-background p-3">
+            <div className="mt-2 bg-background p-4">
               {sections.map((s) => (
                 <button
                   key={s.id}

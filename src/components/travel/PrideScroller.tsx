@@ -22,7 +22,7 @@ export function PrideScroller() {
 
   return (
     <section className="border border-border bg-background p-6 mb-8 rounded">
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-xl font-bold tracking-tight">
           {t('pages.travel.pride.title', 'Pride this season')}
         </h2>
@@ -36,7 +36,7 @@ export function PrideScroller() {
           role="group"
           aria-label={t('pages.travel.pride.title', 'Pride this season')}
           tabIndex={0}
-          className="flex gap-3 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex gap-4 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {[0, 1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-[140px] rounded shrink-0" style={{ width: 240 }} />
@@ -51,7 +51,7 @@ export function PrideScroller() {
           role="group"
           aria-label={t('pages.travel.pride.title', 'Pride this season')}
           tabIndex={0}
-          className="flex gap-3 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex gap-4 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {data.map((event) => {
             const range = formatRange(event.start_date, event.end_date);
@@ -59,7 +59,7 @@ export function PrideScroller() {
             return (
               <div
                 key={event.id}
-                className="shrink-0 border border-border bg-background p-3 hover:bg-muted transition-colors"
+                className="shrink-0 border border-border bg-background p-4 hover:bg-muted transition-colors"
                 style={{ width: 240 }}
               >
                 <LocalizedLink

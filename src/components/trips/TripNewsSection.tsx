@@ -56,7 +56,7 @@ export function TripNewsSection({ countryIds }: Props) {
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-start gap-3 p-3 no-underline text-inherit border-t border-border first-of-type:border-t-0 transition-colors hover:bg-muted"
+            className="flex items-start gap-4 p-4 no-underline text-inherit border-t border-border first-of-type:border-t-0 transition-colors hover:bg-muted"
           >
             {article.isSafetyFlagged ? (
               <AlertTriangle
@@ -102,7 +102,7 @@ export function TripNewsSection({ countryIds }: Props) {
           </a>
         ))}
       </div>
-      <p className="block mt-3 text-muted-foreground" style={{ fontSize: 11 }}>
+      <p className="block mt-4 text-muted-foreground" style={{ fontSize: 11 }}>
         {t('trips.news.disclaimer', {
           defaultValue:
             'News from {{lang}} sources, last 30 days. Safety flags are heuristic — verify with official advisories.',
@@ -116,7 +116,7 @@ export function TripNewsSection({ countryIds }: Props) {
 function SectionHeading({ flaggedCount = 0 }: { flaggedCount?: number }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between mb-3">
+    <div className="flex items-center justify-between mb-4">
       <p
         className="font-bold uppercase text-muted-foreground"
         style={{ letterSpacing: '0.04em', fontSize: '0.7rem' }}

@@ -121,7 +121,7 @@ export function InlineLoading({ text = 'Loading...', size = 'md' }: InlineLoadin
   return (
     <div
       style={{ alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}
-      className="flex gap-3"
+      className="flex gap-4"
     >
       <LoadingSpinner size={size} />
       <span

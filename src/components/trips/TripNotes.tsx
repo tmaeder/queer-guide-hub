@@ -140,7 +140,7 @@ export function TripNotes({ tripId }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <span className="text-sm font-medium text-muted-foreground">
           {notes?.length || 0}{' '}
           {(notes?.length || 0) === 1
@@ -228,7 +228,7 @@ export function TripNotes({ tripId }: Props) {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 mt-2">
+          <div className="flex flex-col gap-4 mt-2">
             <Input
               value={formTitle}
               onChange={(e) => setFormTitle(e.target.value)}

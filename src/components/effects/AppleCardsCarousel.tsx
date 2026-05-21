@@ -65,7 +65,7 @@ export function AppleCardsCarousel({ items, className }: AppleCardsCarouselProps
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end p-5 text-background">
+            <div className="absolute inset-0 flex flex-col justify-end p-6 text-background">
               {card.category && (
                 <p className="text-xs font-medium uppercase tracking-wider opacity-85">{card.category}</p>
               )}

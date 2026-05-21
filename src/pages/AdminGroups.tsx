@@ -44,7 +44,7 @@ export default function AdminGroups() {
       columnHelper.accessor('name', {
         header: 'Group',
         cell: (info) => (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div
               className="flex items-center justify-center rounded-element shrink-0 text-white font-semibold text-sm"
               style={{ height: 36, width: 36, background: 'hsl(var(--foreground))' }}
@@ -231,7 +231,7 @@ function PendingJoinRequestsPanel() {
   if (!requests.length) return null;
 
   return (
-    <div className="flex flex-col gap-3 p-4 bg-background">
+    <div className="flex flex-col gap-4 p-4 bg-background">
       <h3 className="text-lg font-semibold">Pending Join Requests ({requests.length})</h3>
       <div className="flex flex-col gap-2">
         {requests.map((req) => (

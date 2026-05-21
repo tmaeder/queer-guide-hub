@@ -69,7 +69,7 @@ export function MemoryRecapCard({ tripId }: Props) {
     return (
       <Card>
         <CardContent>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-4 flex-wrap">
             <div
               className="flex items-center justify-center w-10 h-10 rounded-element text-primary-foreground"
               style={{ backgroundColor: 'hsl(var(--foreground))' }}
@@ -108,7 +108,7 @@ export function MemoryRecapCard({ tripId }: Props) {
   return (
     <Card>
       <CardContent>
-        <div className="flex justify-between items-start gap-2 mb-3">
+        <div className="flex justify-between items-start gap-2 mb-4">
           <span className="uppercase tracking-wider font-bold text-xs text-foreground">
             {t('trips.recap.badge', 'Trip recap')}
           </span>
@@ -154,7 +154,7 @@ export function MemoryRecapCard({ tripId }: Props) {
           )}
         </div>
 
-        <span className="block text-xs text-muted-foreground mt-3">
+        <span className="block text-xs text-muted-foreground mt-4">
           {t('trips.recap.generatedAt', 'Generated {{date}}', {
             date: format(new Date(recap.generated_at), 'MMM d, yyyy'),
           })}

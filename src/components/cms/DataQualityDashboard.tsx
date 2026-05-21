@@ -67,7 +67,7 @@ export function DataQualityDashboard() {
       </div>
 
       {/* Summary tiles */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <SummaryTile label="Total items" value={totals.total} icon={FileText} color="hsl(var(--muted-foreground))" />
         <SummaryTile label="Published" value={totals.published} icon={CheckCircle2} color="hsl(var(--foreground))" />
         <SummaryTile
@@ -143,7 +143,7 @@ function SummaryTile({
   color: string;
 }) {
   return (
-    <div className="p-3 border border-border rounded-element bg-background flex flex-col gap-1">
+    <div className="p-4 border border-border rounded-element bg-background flex flex-col gap-1">
       <div className="flex items-center gap-1.5">
         <Icon size={14} color={color} />
         <p className="text-xs2 text-muted-foreground">{label}</p>

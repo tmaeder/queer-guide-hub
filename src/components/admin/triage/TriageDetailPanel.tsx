@@ -82,7 +82,7 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-3 border-b space-y-1.5">
+      <div className="px-4 py-4 border-b space-y-1.5">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className="text-2xs normal-case">
             {humanize(item.queue_type)}
@@ -100,7 +100,7 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
         {item.subtitle && (
           <p className="text-xs text-muted-foreground">{humanize(item.subtitle)}</p>
         )}
-        <div className="flex items-center gap-3 text-2xs text-muted-foreground">
+        <div className="flex items-center gap-4 text-2xs text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <Clock className="h-3 w-3" />
             {formatDate(item.created_at)}
@@ -132,7 +132,7 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
 
             {diffs.length > 0 && (
               <div className="border-t">
-                <p className="px-3 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
+                <p className="px-4 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
                   Changes
                 </p>
                 <FieldDiffView diffs={diffs} />
@@ -142,12 +142,12 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
             {/* Structured meta */}
             {metaEntries.length > 0 && (
               <div className="border-t">
-                <p className="px-3 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
+                <p className="px-4 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
                   Context
                 </p>
                 <div className="divide-y">
                   {metaEntries.map(([key, value]) => (
-                    <div key={key} className="flex items-baseline gap-3 px-3 py-1.5 text-xs">
+                    <div key={key} className="flex items-baseline gap-4 px-4 py-1.5 text-xs">
                       <span className="text-muted-foreground shrink-0 w-32 text-2xs uppercase tracking-wider">
                         {formatMetaKey(key)}
                       </span>

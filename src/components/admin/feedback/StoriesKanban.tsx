@@ -62,7 +62,7 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2" data-testid="stories-kanban-toolbar">
         {!selectMode ? (
           <Button
@@ -104,7 +104,7 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
           return (
             <div key={col.id} className="min-w-0">
               <div
-                className="flex items-center gap-2 mb-3 px-2 py-1.5"
+                className="flex items-center gap-2 mb-4 px-2 py-1.5"
                 style={{
                   borderTop: '3px solid',
                   borderColor: col.color,

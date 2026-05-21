@@ -10,7 +10,7 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
       <DayPicker
         showOutsideDays={showOutsideDays}
         style={{ ...style }}
-        className="p-3"
+        className="p-4"
         components={{
           Chevron: ({ orientation, ...chevronProps }) =>
             orientation === 'left' ? (

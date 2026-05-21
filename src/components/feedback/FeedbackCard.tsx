@@ -51,7 +51,7 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
         }}
         role="button"
         tabIndex={0}
-        className="p-3 bg-background cursor-pointer flex gap-3 transition-all"
+        className="p-4 bg-background cursor-pointer flex gap-4 transition-all"
       >
         <Tooltip>
           <TooltipTrigger asChild>

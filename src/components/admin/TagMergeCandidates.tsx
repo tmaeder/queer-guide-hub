@@ -153,7 +153,7 @@ export function TagMergeCandidates() {
       </button>
 
       {open && (
-        <div style={{ borderTop: '1px solid hsl(var(--border))' }} className="p-3">
+        <div style={{ borderTop: '1px solid hsl(var(--border))' }} className="p-4">
           {isLoading && (
             <div style={{ fontSize: 13 }} className="text-muted-foreground">
               Finding candidates…

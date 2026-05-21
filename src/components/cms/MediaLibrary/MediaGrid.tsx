@@ -93,7 +93,7 @@ export function MediaGrid(props: MediaGridProps) {
 
   if (viewMode === 'grid') {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {items.map((item) => (
           <Card
             key={item.id}
@@ -166,7 +166,7 @@ export function MediaGrid(props: MediaGridProps) {
       {items.map((item) => (
         <div
           key={item.id}
-          className="p-3 flex items-center gap-3 hover:bg-muted cursor-pointer"
+          className="p-4 flex items-center gap-4 hover:bg-muted cursor-pointer"
           onClick={() => navigate(`/admin/media/${item.id}`)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -206,7 +206,7 @@ export function MediaGrid(props: MediaGridProps) {
               {item.starred && <Star size={12} style={{ fill: 'currentColor' }} />}
               {item.is_flagged && <Flag size={12} />}
             </div>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span>{formatFileSize(item.file_size)}</span>
               {item.width && item.height && <span>{item.width}×{item.height}</span>}
               <span>{new Date(item.created_at).toLocaleDateString()}</span>

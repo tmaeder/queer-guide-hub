@@ -109,7 +109,7 @@ export default function AlertsTab() {
           <thead className="bg-muted/40 sticky top-0">
             <tr className="border-b border-border">
               {['Kind', 'Severity', 'Source', 'Detail', 'Created', 'Action'].map(h => (
-                <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
@@ -123,19 +123,19 @@ export default function AlertsTab() {
               </td></tr>
             ) : alerts.map(a => (
               <tr key={a.id} className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${a.acked_at ? 'opacity-60' : ''}`}>
-                <td className="px-3 py-2.5 align-top font-medium">
+                <td className="px-4 py-2.5 align-top font-medium">
                   {KIND_LABEL[a.alert_kind] ?? a.alert_kind}
                 </td>
-                <td className="px-3 py-2.5 align-top">
+                <td className="px-4 py-2.5 align-top">
                   <span className={`inline-block text-2xs px-2 py-0.5 rounded-full font-medium ${severityClass[a.severity] || 'bg-muted'}`}>
                     {a.severity}
                   </span>
                 </td>
-                <td className="px-3 py-2.5 align-top font-mono text-xs">
+                <td className="px-4 py-2.5 align-top font-mono text-xs">
                   {a.source_slug ?? <span className="text-muted-foreground">—</span>}
                 </td>
-                <td className="px-3 py-2.5 align-top max-w-[380px]">
-                  <div className="text-xs2 font-mono space-x-3 break-words">
+                <td className="px-4 py-2.5 align-top max-w-[380px]">
+                  <div className="text-xs2 font-mono space-x-4 break-words">
                     {Object.entries(a.detail).map(([k, v]) => (
                       <span key={k}>
                         <span className="text-muted-foreground">{k}:</span>{' '}
@@ -144,11 +144,11 @@ export default function AlertsTab() {
                     ))}
                   </div>
                 </td>
-                <td className="px-3 py-2.5 align-top text-xs text-muted-foreground"
+                <td className="px-4 py-2.5 align-top text-xs text-muted-foreground"
                     title={new Date(a.created_at).toISOString()}>
                   {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
                 </td>
-                <td className="px-3 py-2.5 align-top">
+                <td className="px-4 py-2.5 align-top">
                   {a.acked_at ? (
                     <span className="inline-flex items-center gap-1 text-xs2 text-foreground dark:text-foreground">
                       <CheckCircle className="h-3 w-3" />

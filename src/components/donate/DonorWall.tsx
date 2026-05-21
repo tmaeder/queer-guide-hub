@@ -32,10 +32,10 @@ export function DonorWall() {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-4">
       {donors.map((donor) => (
         <Card key={donor.id}>
-          <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
+          <CardContent className="py-4 px-4 flex items-center justify-between gap-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium truncate">

@@ -187,7 +187,7 @@ export const AvatarSettings = ({
             </div>
             <div className="flex items-center justify-center w-full">
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground rounded-element cursor-pointer transition-colors hover:bg-muted">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <div className="flex flex-col items-center justify-center pt-6 pb-6">
                   <Upload size={32} className="mb-2 text-muted-foreground" />
                   <p className="text-sm">
                     <span className="font-semibold">Click to upload</span>

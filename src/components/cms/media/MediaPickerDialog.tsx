@@ -235,7 +235,7 @@ export default function MediaPickerDialog({
               setSelectedExternal(null);
             }}
           >
-            <TabsList className="min-h-10 mb-3">
+            <TabsList className="min-h-10 mb-4">
               <TabsTrigger value="library">
                 <FolderOpen size={14} className="mr-1" />
                 Media Library
@@ -252,7 +252,7 @@ export default function MediaPickerDialog({
         {dialogMode === 'library' && (
           <>
             <div className="px-6 pb-1">
-              <div className="flex flex-row gap-3 items-center mb-3">
+              <div className="flex flex-row gap-4 items-center mb-4">
                 <div className="flex-1 relative">
                   <Search
                     size={16}
@@ -263,7 +263,7 @@ export default function MediaPickerDialog({
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={handleSearchKeyDown}
-                    className="pl-9 h-9"
+                    className="pl-10 h-9"
                   />
                 </div>
                 <Button variant="outline" size="sm" onClick={() => setShowUploader(!showUploader)}>
@@ -273,7 +273,7 @@ export default function MediaPickerDialog({
               </div>
 
               {showUploader && (
-                <div className="mb-3">
+                <div className="mb-4">
                   <MediaUploader
                     onUploaded={handleUploaded}
                     accept={mimeFilter ? `${mimeFilter}*` : undefined}
@@ -312,9 +312,9 @@ export default function MediaPickerDialog({
               )}
             </div>
 
-            <div className="flex-1 overflow-auto p-3 border-y border-border">
+            <div className="flex-1 overflow-auto p-4 border-y border-border">
               {error && (
-                <Alert variant="destructive" className="mb-3">
+                <Alert variant="destructive" className="mb-4">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
@@ -344,7 +344,7 @@ export default function MediaPickerDialog({
               )}
 
               {!loading && media.length > 0 && (
-                <div className="grid grid-cols-4 gap-3 m-0">
+                <div className="grid grid-cols-4 gap-4 m-0">
                   {media.map((item) => {
                     const isSelected = selectedId === item.id;
                     const isImage = item.mime_type.startsWith('image/');
@@ -428,7 +428,7 @@ export default function MediaPickerDialog({
               )}
             </div>
 
-            <div className="px-6 py-3 flex items-center justify-between">
+            <div className="px-6 py-4 flex items-center justify-between">
               <span className="text-xs text-muted-foreground">
                 {totalCount} item{totalCount !== 1 ? 's' : ''}
               </span>
@@ -469,7 +469,7 @@ export default function MediaPickerDialog({
 
         {/* External sources mode */}
         {dialogMode === 'external' && (
-          <div className="flex-1 overflow-auto p-3 border-y border-border">
+          <div className="flex-1 overflow-auto p-4 border-y border-border">
             <ExternalImageSearch onSelect={handleExternalSelect} initialQuery={searchHint || ''} />
           </div>
         )}

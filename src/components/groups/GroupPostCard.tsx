@@ -79,7 +79,7 @@ export const GroupPostCard = ({
 
     return (
       <div className="mt-4 p-4 rounded-element bg-muted">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-4">
           <BarChart3 size={16} color="var(--primary)" />
           <p className="text-sm font-medium">{post.poll_data.question}</p>
         </div>
@@ -110,7 +110,7 @@ export const GroupPostCard = ({
           })}
         </div>
 
-        <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
+        <div className="flex items-center justify-between mt-4 pt-2 border-t border-border">
           <Button
             variant="ghost"
             size="sm"
@@ -132,8 +132,8 @@ export const GroupPostCard = ({
     <Card>
       <div className={className ?? ''}>
         <CardHeader>
-          <div className="pb-3">
-            <div className="flex items-start gap-3">
+          <div className="pb-4">
+            <div className="flex items-start gap-4">
               <Avatar>
                 <AvatarImage src={post.profiles?.avatar_url || undefined} />
                 <AvatarFallback>

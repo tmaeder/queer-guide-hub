@@ -286,7 +286,7 @@ export function ModerationQueue() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {flags.map((flag) => (
               <Card
                 key={flag.id}
@@ -296,7 +296,7 @@ export function ModerationQueue() {
                 )}
               >
                 <CardContent className="py-4">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-4">
                     <Checkbox
                       checked={selectedIds.includes(flag.id)}
                       onCheckedChange={() => toggleSelect(flag.id)}

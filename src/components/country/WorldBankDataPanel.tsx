@@ -36,7 +36,7 @@ const DataRow = ({
 }) => {
   if (value == null || value === '') return null;
   return (
-    <div className="flex justify-between items-center p-3 rounded-element bg-muted">
+    <div className="flex justify-between items-center p-4 rounded-element bg-muted">
       <div className="flex items-center gap-2">
         {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
         <span className="text-sm font-medium">{label}</span>
@@ -107,7 +107,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
     <div className="flex flex-col gap-6">
       {/* Income Level Badge */}
       {data.wb_income_level && (
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-4 flex-wrap">
           <Badge
             variant="secondary"
             style={{

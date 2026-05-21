@@ -94,7 +94,7 @@ const CommentItem = ({
 
   return (
     <>
-      <div className="flex gap-3 py-3">
+      <div className="flex gap-4 py-4">
         <Avatar>
           <AvatarImage src={comment.profiles?.avatar_url || undefined} />
           <AvatarFallback>
@@ -268,7 +268,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         <CardContent>
           <div className="flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex gap-3 animate-pulse">
+              <div key={i} className="flex gap-4 animate-pulse">
                 <div className="h-8 w-8 bg-accent rounded-full" />
                 <div className="flex-1 flex flex-col gap-2">
                   <div className="h-3 bg-accent rounded-badge w-1/4" />
@@ -312,7 +312,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <Avatar>
                 <AvatarImage src={user.user_metadata?.avatar_url} />
                 <AvatarFallback>{user.email?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>

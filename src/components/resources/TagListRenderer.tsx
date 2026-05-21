@@ -35,7 +35,7 @@ export function TagListRenderer({
 
   if (displayMode === 'grid') {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {tags.map((tag) => {
           const uses = tagUsageCounts[tag.name] || 0;
           return (
@@ -98,7 +98,7 @@ export function TagListRenderer({
               key={tag.id}
               type="button"
               onClick={() => onTagClick(tag)}
-              className="flex items-center gap-3 px-3 py-2 rounded-element cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
+              className="flex items-center gap-4 px-4 py-2 rounded-element cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
               style={{ minHeight: 44, font: 'inherit', color: 'inherit' }}
             >
               <div

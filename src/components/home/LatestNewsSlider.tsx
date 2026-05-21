@@ -118,7 +118,7 @@ const LatestNewsSlider = React.memo(() => {
               />
             </div>
           <div
-            className="mb-3 flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground"
+            className="mb-4 flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground"
             style={{ letterSpacing: '0.06em' }}
           >
             {feature.publisher_name && (
@@ -132,7 +132,7 @@ const LatestNewsSlider = React.memo(() => {
             </span>
           </div>
           <h3
-            className="m-0 mb-3 overflow-hidden font-bold leading-[1.1]"
+            className="m-0 mb-4 overflow-hidden font-bold leading-[1.1]"
             style={{
               fontFamily: DISPLAY_FONT,
               fontSize: 'clamp(1.75rem, 4vw, 3rem)',
@@ -164,7 +164,7 @@ const LatestNewsSlider = React.memo(() => {
               {idx > 0 && <Hairline />}
               <LocalizedLink
                 to={`/news/${a.slug}`}
-                className="group grid grid-cols-[auto_1fr] items-baseline gap-x-4 py-3 text-foreground no-underline md:py-4"
+                className="group grid grid-cols-[auto_1fr] items-baseline gap-x-4 py-4 text-foreground no-underline md:py-4"
               >
                 <div
                   className="text-sm font-normal text-muted-foreground"

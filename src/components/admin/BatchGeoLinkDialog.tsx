@@ -131,10 +131,10 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 mt-2">
+        <div className="flex flex-col gap-6 mt-2">
           {/* Unlinked counts */}
           {unlinkedCounts && (
-            <div className="border border-border rounded-element p-3 flex flex-col gap-1">
+            <div className="border border-border rounded-element p-4 flex flex-col gap-1">
               <span className="text-xs font-semibold mb-1">Unlinked Items</span>
               <div className="grid grid-cols-2 gap-1">
                 {[
@@ -197,7 +197,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           </div>
 
           {/* Info box */}
-          <div className="bg-muted rounded p-3">
+          <div className="bg-muted rounded p-4">
             <span className="text-xs text-muted-foreground">
               <strong>No AI cost</strong> — Uses deterministic alias normalization and
               exact matching against 351 cities and 199 countries in the database.
@@ -219,7 +219,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
 
           {/* Results */}
           {totals && !loading && (
-            <div className="border border-border rounded-element p-4 flex flex-col gap-3">
+            <div className="border border-border rounded-element p-4 flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <CheckCircle size={18} className="text-foreground" />
                 <span className="text-sm font-semibold">Geo-Link Complete</span>

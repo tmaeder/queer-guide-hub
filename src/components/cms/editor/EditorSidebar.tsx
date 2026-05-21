@@ -58,7 +58,7 @@ function Panel({ title, open, onOpenChange, badge, children }: PanelProps) {
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-4 pb-3 pt-0">{children}</div>
+          <div className="px-4 pb-4 pt-0">{children}</div>
         </CollapsibleContent>
       </div>
     </Collapsible>
@@ -114,7 +114,7 @@ export function EditorSidebar({
   };
 
   return (
-    <div className="p-4 flex flex-col gap-3">
+    <div className="p-4 flex flex-col gap-4">
       {/* Workflow Panel */}
       <Panel title="Workflow" open={expandedPanels.workflow} onOpenChange={setPanel('workflow')}>
         <WorkflowPanel contentType={contentType} itemId={itemId} />

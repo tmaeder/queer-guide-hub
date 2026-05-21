@@ -79,7 +79,7 @@ export function HandoffSection({ handoffs, prompt, onRecord, onUpdateStatus, isR
         </div>
 
         {/* Copy actions */}
-        <div className="flex gap-1.5 mb-3 flex-wrap">
+        <div className="flex gap-1.5 mb-4 flex-wrap">
           <Button
             onClick={() => copyAndRecord('claude-code')}
             disabled={isRecording}
@@ -113,7 +113,7 @@ export function HandoffSection({ handoffs, prompt, onRecord, onUpdateStatus, isR
 
         {/* Timeline */}
         {sorted.length === 0 ? (
-          <span className="block py-2 px-3 bg-muted rounded text-xs2 text-muted-foreground">
+          <span className="block py-2 px-4 bg-muted rounded text-xs2 text-muted-foreground">
             No handoffs yet. Click <strong>Copy prompt for Claude</strong> to send this ticket to
             Claude Code.
           </span>

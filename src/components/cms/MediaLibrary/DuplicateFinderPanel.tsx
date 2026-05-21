@@ -205,12 +205,12 @@ export function DuplicateFinderPanel() {
           {visualQuery.data.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">No visual duplicates found.</p>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <p className="text-sm text-muted-foreground">
                 {visualQuery.data.length} similar pair{visualQuery.data.length !== 1 ? 's' : ''} found
               </p>
               {visualQuery.data.map((pair, i) => (
-                <div key={i} className="flex items-center gap-3 border border-border p-3">
+                <div key={i} className="flex items-center gap-4 border border-border p-4">
                   <div className="w-20 h-20 bg-muted flex-shrink-0">
                     <img src={pair.thumb_a || pair.url_a} alt="" className="w-full h-full object-cover" loading="lazy" />
                   </div>

@@ -46,7 +46,7 @@ export function TripNudgesBanner({ tripId }: Props) {
         return (
           <div
             key={n.id}
-            className="flex items-start gap-3 p-3"
+            className="flex items-start gap-4 p-4"
             style={{ backgroundColor: tone.bg }}
           >
             <div className="flex items-center mt-0.5" style={{ color: tone.fg }}>

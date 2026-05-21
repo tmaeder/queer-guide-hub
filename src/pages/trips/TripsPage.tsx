@@ -99,7 +99,7 @@ export default function TripsPage() {
             <ColourfulText text={t('trips.title')} />
             {hasAnyTrips && (
               <span
-                className="ml-3 text-muted-foreground font-medium tabular-nums"
+                className="ml-4 text-muted-foreground font-medium tabular-nums"
                 style={{ fontSize: '0.65em' }}
               >
                 · {trips?.length}
@@ -145,7 +145,7 @@ export default function TripsPage() {
       )}
 
       {scopeEmptyIds && (
-        <div className="border border-border bg-muted/30 p-3 mb-4 rounded flex items-center justify-between gap-3">
+        <div className="border border-border bg-muted/30 p-4 mb-4 rounded flex items-center justify-between gap-4">
           <p className="text-sm">
             {t(
               'pages.trips.emptyTripsBanner.scopeNote',

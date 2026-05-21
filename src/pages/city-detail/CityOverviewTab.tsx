@@ -46,7 +46,7 @@ interface FactRowProps {
 
 function FactRow({ icon: Icon, label, value, valueSize }: FactRowProps) {
   return (
-    <div className="flex items-center justify-between p-3 rounded-element bg-muted">
+    <div className="flex items-center justify-between p-4 rounded-element bg-muted">
       <div className="flex items-center gap-2">
         <Icon style={{ height: 16, width: 16 }} className="text-muted-foreground" />
         <span className="text-sm font-medium">{label}</span>
@@ -138,7 +138,7 @@ export function CityOverviewTab({
                   Basic Information
                 </CardTitle>
               </CardHeader>
-              <CardContent style={{ flexDirection: 'column' }} className="flex gap-3">
+              <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
                 {city.population && (
                   <FactRow
                     icon={Users}
@@ -165,9 +165,9 @@ export function CityOverviewTab({
                   Climate & Geography
                 </CardTitle>
               </CardHeader>
-              <CardContent style={{ flexDirection: 'column' }} className="flex gap-3">
+              <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
                 {city.climate_type && (
-                  <div className="p-3 rounded-element bg-muted">
+                  <div className="p-4 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
                       <Thermometer size={16} className="text-muted-foreground" />
                       <span className="text-sm font-medium">Climate</span>
@@ -176,7 +176,7 @@ export function CityOverviewTab({
                   </div>
                 )}
                 {city.latitude && city.longitude && (
-                  <div className="p-3 rounded-element bg-muted">
+                  <div className="p-4 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
                       <MapPin size={16} className="text-muted-foreground" />
                       <span className="text-sm font-medium">Coordinates</span>
@@ -196,7 +196,7 @@ export function CityOverviewTab({
                   Contact & Codes
                 </CardTitle>
               </CardHeader>
-              <CardContent style={{ flexDirection: 'column' }} className="flex gap-3">
+              <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
                 {city.postal_codes && city.postal_codes.length > 0 && (
                   <div>
                     <span className="text-sm font-medium mb-2 block">Postal Codes</span>
@@ -228,7 +228,7 @@ export function CityOverviewTab({
                   </div>
                 )}
                 {effectiveIata && (
-                  <div className="p-3 rounded-element bg-muted">
+                  <div className="p-4 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
                       <Plane size={16} className="text-muted-foreground" />
                       <span className="text-sm font-medium">
@@ -257,7 +257,7 @@ export function CityOverviewTab({
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {Object.entries(city.demographics).map(([key, value]) => (
-                      <div key={key} className="p-3 rounded-element bg-muted">
+                      <div key={key} className="p-4 rounded-element bg-muted">
                         <span className="text-sm font-medium capitalize block mb-1">
                           {key.replace(/_/g, ' ')}
                         </span>
@@ -298,11 +298,11 @@ export function CityOverviewTab({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-4">
                       {Object.entries(city.cost_of_living).map(([key, value]) => (
                         <div
                           key={key}
-                          className="flex items-center justify-between p-3 rounded-element bg-muted"
+                          className="flex items-center justify-between p-4 rounded-element bg-muted"
                         >
                           <span className="text-sm font-medium capitalize">
                             {key.replace(/_/g, ' ')}
@@ -325,9 +325,9 @@ export function CityOverviewTab({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {city.universities.map((university: string, index: number) => (
-                      <div key={index} className="p-3 rounded-element bg-muted">
+                      <div key={index} className="p-4 rounded-element bg-muted">
                         <div className="flex items-center gap-2">
                           <GraduationCap size={16} />
                           <span className="font-medium text-sm">{university}</span>
@@ -349,9 +349,9 @@ export function CityOverviewTab({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid gap-3">
+                    <div className="grid gap-4">
                       {city.notable_landmarks.map((landmark: string, index: number) => (
-                        <div key={index} className="p-3 rounded-element bg-muted">
+                        <div key={index} className="p-4 rounded-element bg-muted">
                           <div className="flex items-center gap-2">
                             <Landmark size={16} />
                             <span className="font-medium">{landmark}</span>
@@ -371,9 +371,9 @@ export function CityOverviewTab({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid gap-3">
+                    <div className="grid gap-4">
                       {city.sister_cities.map((sisterCity: string, index: number) => (
-                        <div key={index} className="p-3 rounded-element bg-muted">
+                        <div key={index} className="p-4 rounded-element bg-muted">
                           <div className="flex items-center gap-2">
                             <Globe size={16} />
                             <span className="font-medium">{sisterCity}</span>

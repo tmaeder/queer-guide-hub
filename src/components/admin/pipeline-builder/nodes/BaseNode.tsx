@@ -80,7 +80,7 @@ function BaseNode({ data, selected }: NodeProps) {
 
         {/* Header */}
         <div
-          className="flex items-center gap-2 px-3 py-2.5 rounded-t-element"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-t-element"
           style={{ backgroundColor: `${color}12` }}
         >
           {IconComponent && <IconComponent className="h-4 w-4 shrink-0" />}
@@ -113,7 +113,7 @@ function BaseNode({ data, selected }: NodeProps) {
 
         {/* Metrics bar */}
         {(d.itemsOut !== undefined || d.itemsIn !== undefined || d.durationMs) && (
-          <div className="flex items-center gap-3 px-3 py-1.5 text-xs2 font-mono border-t border-border/50">
+          <div className="flex items-center gap-4 px-4 py-1.5 text-xs2 font-mono border-t border-border/50">
             {d.itemsIn !== undefined && (
               <span className="text-muted-foreground" title="items in">
                 <ArrowDownToLine className="h-3 w-3 inline mr-0.5" />{d.itemsIn}
@@ -136,7 +136,7 @@ function BaseNode({ data, selected }: NodeProps) {
         {d.errorMessage && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="px-3 py-1.5 text-2xs text-destructive bg-destructive/5 border-t border-destructive/20 truncate cursor-help">
+              <div className="px-4 py-1.5 text-2xs text-destructive bg-destructive/5 border-t border-destructive/20 truncate cursor-help">
                 {d.errorMessage}
               </div>
             </TooltipTrigger>

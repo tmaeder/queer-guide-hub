@@ -455,7 +455,7 @@ const Events = () => {
         <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
           {/* Search Bar */}
           <div className="flex flex-wrap gap-2 items-center">
-            <div className="flex-1 basis-full sm:basis-auto min-w-0 flex items-center gap-2 rounded px-3 py-2 bg-background">
+            <div className="flex-1 basis-full sm:basis-auto min-w-0 flex items-center gap-2 rounded px-4 py-2 bg-background">
               <Search className="w-4 h-4 text-muted-foreground shrink-0" />
               <Input
                 aria-label={t('pages.events.searchLabel', 'Search events')}
@@ -586,7 +586,7 @@ const Events = () => {
                         onSelect={setStartDate}
                         initialFocus
                         style={{ pointerEvents: 'auto' }}
-                        className="p-3"
+                        className="p-4"
                       />
                     </PopoverContent>
                   </Popover>
@@ -616,7 +616,7 @@ const Events = () => {
                         onSelect={setEndDate}
                         initialFocus
                         style={{ pointerEvents: 'auto' }}
-                        className="p-3"
+                        className="p-4"
                         disabled={(date) => (startDate ? date < startDate : false)}
                       />
                     </PopoverContent>
@@ -825,7 +825,7 @@ const Events = () => {
 
         {/* Result-meta row: count + view toggle + sort + past toggle */}
         {!loading && !error && (
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <p className="text-sm text-muted-foreground" aria-live="polite">
               {autoLocationLabel && city === autoLocationLabel
                 ? t('pages.events.resultsNear', {
@@ -1009,7 +1009,7 @@ const Events = () => {
         {/* Event Content */}
         {!loading && events.length > 0 && viewMode === 'grid' && (
           <StaggerGrid
-            className="grid grid-cols-12 gap-3 md:gap-4"
+            className="grid grid-cols-12 gap-4 md:gap-4"
             itemClassName={(i) => EVENT_SPAN_CLASS[spansForPreset('mosaic', i, events.length)]}
           >
             {events.map((event) => (

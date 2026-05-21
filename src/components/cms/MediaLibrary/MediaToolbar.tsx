@@ -80,9 +80,9 @@ export function MediaToolbar(props: MediaToolbarProps) {
   ].filter(Boolean).length;
 
   return (
-    <div className="flex flex-col gap-3 p-4 border border-border">
+    <div className="flex flex-col gap-4 p-4 border border-border">
       {/* Row 1: Search + view controls */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search
             style={{ left: 10, top: '50%', transform: 'translateY(-50%)', height: 14, width: 14 }}

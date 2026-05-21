@@ -152,7 +152,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
   const isNewItem = !itemId;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Current State */}
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">Status</p>
@@ -215,7 +215,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       {commentTarget && (
         <>
           <hr className="border-border" />
-          <div className="rounded-element p-3 bg-muted border border-border">
+          <div className="rounded-element p-4 bg-muted border border-border">
             <p className="text-sm font-semibold mb-1">{commentTarget.label}</p>
             {commentTarget.description && (
               <p className="text-xs text-muted-foreground block mb-1.5">

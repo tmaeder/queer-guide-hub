@@ -77,7 +77,7 @@ export default function NewsStoryDetail() {
         <ArrowLeft size={14} /> Back to News
       </LocalizedLink>
 
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <Badge
           style={{ backgroundColor: 'hsl(var(--foreground))' }}
           className="inline-flex items-center gap-1 text-background"
@@ -95,13 +95,13 @@ export default function NewsStoryDetail() {
 
       {story.summary && <p className="text-lg text-muted-foreground mb-8">{story.summary}</p>}
 
-      <h2 className="text-sm uppercase tracking-widest text-muted-foreground mb-3">Coverage</h2>
-      <ol className="flex flex-col gap-3 list-none p-0 m-0">
+      <h2 className="text-sm uppercase tracking-widest text-muted-foreground mb-4">Coverage</h2>
+      <ol className="flex flex-col gap-4 list-none p-0 m-0">
         {story.articles.map((a) => (
           <li key={a.id}>
             <LocalizedLink
               to={`/news/${a.slug}`}
-              className="flex gap-4 p-3 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex gap-4 p-4 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {a.image_url && (
                 <img

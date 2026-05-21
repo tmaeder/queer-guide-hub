@@ -62,7 +62,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
 
       <CollapsibleContent className="space-y-4 pb-4">
         <div
-          className="grid grid-cols-2 gap-3 bg-muted p-2.5"
+          className="grid grid-cols-2 gap-4 bg-muted p-2.5"
           style={{ borderRadius: 'var(--radius-badge)' }}
         >
           <MetaItem icon={ChevronUp} label="Votes" value={String(voteCount)} />

@@ -175,7 +175,7 @@ export default function Contact() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit}>
-                  <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-6">
                     <FloatingInput
                       label="Name"
                       value={form.name}
@@ -275,13 +275,13 @@ export default function Contact() {
 
             <Card>
               <CardContent>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Clock size={18} className="text-primary" />
                   <p className="text-sm">
                     <strong>Response Time</strong> — within 24 hours
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Shield size={18} className="text-primary" />
                   <p className="text-sm">
                     <strong>Safety First</strong> — priority support for safety concerns
@@ -298,7 +298,7 @@ export default function Contact() {
             <HelpCircle size={24} className="text-primary" />
             Frequently Asked Questions
           </h2>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {faqs.map((faq, index) => (
               <Card key={index}>
                 <Collapsible

@@ -129,14 +129,14 @@ export function SideBySideComparison({
         <CardContent>
           {/* Column Headers */}
           <div className="grid border-b-2 border-border bg-muted" style={gridCols}>
-            <div className="p-3 font-semibold text-xs uppercase text-muted-foreground">Field</div>
-            <div className="p-3 font-semibold text-xs uppercase text-muted-foreground">
+            <div className="p-4 font-semibold text-xs uppercase text-muted-foreground">Field</div>
+            <div className="p-4 font-semibold text-xs uppercase text-muted-foreground">
               {leftLabel}
             </div>
-            <div className="p-3 flex items-center justify-center">
+            <div className="p-4 flex items-center justify-center">
               <ArrowRight size={14} className="text-muted-foreground" />
             </div>
-            <div className="p-3 font-semibold text-xs uppercase text-foreground">{rightLabel}</div>
+            <div className="p-4 font-semibold text-xs uppercase text-foreground">{rightLabel}</div>
           </div>
 
           {/* Rows */}
@@ -155,7 +155,7 @@ export function SideBySideComparison({
                 }}
               >
                 {/* Field Name */}
-                <div className="p-3 flex items-center">
+                <div className="p-4 flex items-center">
                   <span
                     className="text-xs font-semibold text-muted-foreground"
                     style={{ fontSize: '0.7rem' }}
@@ -167,7 +167,7 @@ export function SideBySideComparison({
                 {/* Left Value */}
                 {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex conditionally applied when isDiff */}
                 <div
-                  className="p-3"
+                  className="p-4"
                   style={{
                     cursor: isDiff ? 'pointer' : 'default',
                     borderLeft:
@@ -221,7 +221,7 @@ export function SideBySideComparison({
                 {/* Right Value */}
                 {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex conditionally applied when isDiff */}
                 <div
-                  className="p-3"
+                  className="p-4"
                   style={{
                     cursor: isDiff ? 'pointer' : 'default',
                     borderLeft:

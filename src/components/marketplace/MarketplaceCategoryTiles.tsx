@@ -63,7 +63,7 @@ export function MarketplaceCategoryTiles() {
           See all categories
         </LocalizedLink>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {loading
           ? Array.from({ length: 8 }).map((_, i) => (
               <div
@@ -78,7 +78,7 @@ export function MarketplaceCategoryTiles() {
                 <LocalizedLink
                   key={tile.slug}
                   to={`/marketplace/category/${tile.slug}`}
-                  className="group relative flex flex-col justify-between rounded-container border border-border bg-card p-4 sm:p-5 min-h-[120px] hover:bg-muted transition-colors"
+                  className="group relative flex flex-col justify-between rounded-container border border-border bg-card p-4 sm:p-6 min-h-[120px] hover:bg-muted transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <Icon style={{ width: 22, height: 22 }} className="text-foreground" aria-hidden="true" />
@@ -87,7 +87,7 @@ export function MarketplaceCategoryTiles() {
                       aria-hidden="true"
                     />
                   </div>
-                  <div className="flex flex-col gap-1 mt-3">
+                  <div className="flex flex-col gap-1 mt-4">
                     <span className="text-sm font-semibold leading-tight text-balance">{prettify(tile.slug)}</span>
                     <span className="text-xs2 uppercase tracking-[0.14em] text-muted-foreground">
                       {tile.count.toLocaleString()} listing{tile.count !== 1 ? 's' : ''}

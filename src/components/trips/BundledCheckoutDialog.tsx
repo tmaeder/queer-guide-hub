@@ -204,12 +204,12 @@ export function BundledCheckoutDialog({
                 />
               ))}
             </div>
-            <p className="text-xs text-muted-foreground mb-3 block">
+            <p className="text-xs text-muted-foreground mb-4 block">
               {t('trips.bundledCheckout.stepOf', 'Step {{current}} of {{total}} · {{booked}} opened', { current: index + 1, total, booked: bookedCount })}
             </p>
 
             {/* Current card */}
-            <div className="p-5 bg-muted flex items-start gap-3 rounded">
+            <div className="p-6 bg-muted flex items-start gap-4 rounded">
               <div
                 className="shrink-0 w-10 h-10 flex items-center justify-center bg-background rounded text-foreground"
               >

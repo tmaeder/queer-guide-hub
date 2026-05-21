@@ -303,7 +303,7 @@ export function SuggestionsTab() {
                         <Badge variant="secondary">conf {s.confidence.toFixed(2)}</Badge>
                       )}
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-4">
                       {s.suggestion_type === 'translation' ? (
                         <TranslationDiff s={s} />
                       ) : (

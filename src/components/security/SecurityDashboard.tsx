@@ -195,11 +195,11 @@ export function SecurityDashboard() {
           <CardTitle>Recent Security Events</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {events.slice(0, 20).map((event) => (
               <div
                 key={event.id}
-                className="flex items-start gap-3 p-3 border border-border rounded"
+                className="flex items-start gap-4 p-4 border border-border rounded"
               >
                 {getSeverityIcon(event.severity)}
                 <div className="flex-1 min-w-0">
@@ -234,7 +234,7 @@ export function SecurityDashboard() {
           <CardTitle>Security Implementation Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <CheckCircle size={16} className="text-foreground" />
               <span>Profile data encryption and RLS policies hardened</span>

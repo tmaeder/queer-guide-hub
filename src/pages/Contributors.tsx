@@ -58,9 +58,9 @@ function ContributorCard({ row }: ContributorCardProps) {
       <motion.div
         variants={{ rest: restState, hover: hoverState }}
         transition={{ duration: reduced ? 0 : 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute inset-0 flex flex-col items-start justify-between p-5"
+        className="absolute inset-0 flex flex-col items-start justify-between p-6"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {row.avatar_url ? (
             <img
               src={row.avatar_url}
@@ -85,7 +85,7 @@ function ContributorCard({ row }: ContributorCardProps) {
         <motion.div
           variants={{ rest: detailRest, hover: detailHover }}
           transition={{ duration: reduced ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0 flex items-end rounded-container bg-background/95 p-5 backdrop-blur-sm pointer-events-none"
+          className="absolute inset-0 flex items-end rounded-container bg-background/95 p-6 backdrop-blur-sm pointer-events-none"
           aria-hidden="true"
         >
           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">
@@ -166,7 +166,7 @@ export default function Contributors() {
                   {CATEGORY_LABELS[row.category] ?? row.category}
                 </p>
                 {row.blurb_md && (
-                  <p className="mt-3 max-w-2xl text-base leading-relaxed">
+                  <p className="mt-4 max-w-2xl text-base leading-relaxed">
                     {row.blurb_md}
                   </p>
                 )}

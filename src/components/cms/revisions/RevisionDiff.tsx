@@ -192,7 +192,7 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
               ) : (
                 <div className="flex flex-col gap-2">
                   <div
-                    className="rounded p-3"
+                    className="rounded p-4"
                     style={{
                       backgroundColor: 'hsl(var(--destructive) / 0.08)',
                       border: '1px solid hsl(var(--destructive) / 0.2)',
@@ -215,7 +215,7 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
                   </div>
 
                   <div
-                    className="rounded p-3"
+                    className="rounded p-4"
                     style={{
                       backgroundColor: 'hsl(var(--foreground) / 0.08)',
                       border: '1px solid hsl(var(--foreground) / 0.2)',

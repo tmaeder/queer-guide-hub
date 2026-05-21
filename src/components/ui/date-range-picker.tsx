@@ -50,7 +50,7 @@ export function DatePickerWithRange({ date, onSelect }: DatePickerWithRangeProps
             onSelect={onSelect}
             numberOfMonths={2}
             style={{ pointerEvents: 'auto' }}
-            className="p-3"
+            className="p-4"
           />
         </PopoverContent>
       </Popover>

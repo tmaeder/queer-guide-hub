@@ -25,7 +25,7 @@ export function ActionBar({ onAction, isLoading }: ActionBarProps) {
   }
 
   return (
-    <div className="border-t p-3 space-y-2">
+    <div className="border-t p-4 space-y-2">
       <div className="flex items-center gap-2">
         <Button
           size="sm"

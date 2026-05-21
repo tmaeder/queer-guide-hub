@@ -89,7 +89,7 @@ export const EventsCalendarView = ({
       {monthlyStats.totalEvents === 0 ? (
         <Card>
           <CardContent className="py-8 text-center">
-            <div className="mx-auto mb-3 w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+            <div className="mx-auto mb-4 w-12 h-12 bg-muted rounded-full flex items-center justify-center">
               <CalendarIcon className="h-6 w-6 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold mb-1">
@@ -107,7 +107,7 @@ export const EventsCalendarView = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card>
             <CardContent>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="p-2 bg-muted rounded-element relative">
                   <CalendarIcon className="h-5 w-5" />
                 </div>
@@ -123,7 +123,7 @@ export const EventsCalendarView = ({
 
           <Card>
             <CardContent>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="p-2 bg-muted relative">
                   <Ticket className="h-5 w-5 text-foreground" />
                 </div>
@@ -139,7 +139,7 @@ export const EventsCalendarView = ({
 
           <Card>
             <CardContent>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="p-2 rounded-element bg-muted relative">
                   <Star className="h-5 w-5 text-muted-foreground" />
                 </div>
@@ -249,7 +249,7 @@ export const EventsCalendarView = ({
                       <div key={event.id} className="relative">
                         <div className="p-4 border-2 border-transparent rounded-element hover:border-primary bg-card">
                           {/* Event Header */}
-                          <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="flex items-start justify-between gap-4 mb-4">
                             <button
                               type="button"
                               className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors line-clamp-2 text-left bg-transparent border-0 p-0"

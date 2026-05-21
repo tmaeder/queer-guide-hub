@@ -241,7 +241,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
 
   if (state.isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 p-8">
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-8">
         <Loader2 className="h-10 w-10 animate-spin" aria-label="Loading" />
         <p className="text-sm text-muted-foreground">
           Loading {config.label.singular.toLowerCase()}...
@@ -296,12 +296,12 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
 
       {/* ── Error banners ───────────────────────────────────── */}
       {state.errors._conflict && (
-        <Alert className="mx-3 mt-3 border-border text-foreground">
+        <Alert className="mx-4 mt-4 border-border text-foreground">
           <AlertDescription>{state.errors._conflict}</AlertDescription>
         </Alert>
       )}
       {state.errors._save && (
-        <Alert variant="destructive" className="mx-3 mt-3">
+        <Alert variant="destructive" className="mx-4 mt-4">
           <AlertDescription>{state.errors._save}</AlertDescription>
         </Alert>
       )}
@@ -310,7 +310,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
       <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
         {/* ── Main Column ─────────────────────────────────── */}
         <div className="flex-1 overflow-auto lg:w-[70%] lg:max-w-[70%]">
-          <div className="border border-border rounded-element bg-background m-3 mb-1 lg:mb-3 overflow-hidden">
+          <div className="border border-border rounded-element bg-background m-4 mb-1 lg:mb-4 overflow-hidden">
             {/* Group tabs */}
             <Tabs value={state.activeGroup} onValueChange={(v) => setActiveGroup(v as FieldGroup)}>
               <TabsList className="border-b border-border min-h-12 bg-background w-full justify-start overflow-x-auto">
@@ -323,7 +323,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
                     <TabsTrigger
                       key={group}
                       value={group}
-                      className="min-h-12 normal-case font-medium text-sm gap-1.5 px-3"
+                      className="min-h-12 normal-case font-medium text-sm gap-1.5 px-4"
                     >
                       <GroupIcon
                         style={{ width: 15, height: 15, color: dotColor }}
@@ -340,8 +340,8 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
             </Tabs>
 
             {/* Field grid */}
-            <div className="p-3 sm:p-6">
-              <div className="grid gap-3 sm:gap-5 grid-cols-1 sm:grid-cols-2">
+            <div className="p-4 sm:p-6">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
                 {activeFields.map((field) => (
                   <div
                     key={field.name}
@@ -350,7 +350,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
                     }}
                   >
                     <div
-                      className={`p-3 rounded-element border bg-background transition-colors focus-within:border-primary focus-within:shadow-[0_0_0_2px_hsl(var(--primary)/0.2)] ${
+                      className={`p-4 rounded-element border bg-background transition-colors focus-within:border-primary focus-within:shadow-[0_0_0_2px_hsl(var(--primary)/0.2)] ${
                         state.errors[field.name] ? 'border-destructive' : 'border-border'
                       }`}
                     >
@@ -392,7 +392,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
         <>
           <Button
             onClick={() => setAiOpen(true)}
-            className="fixed bottom-6 right-6 z-30 normal-case font-semibold shadow-lg"
+            className="fixed bottom-6 right-6 z-30 normal-case font-semibold shadow-[var(--shadow-aceternity-lg)]"
           >
             <Sparkles size={16} className="mr-1" />
             AI Assist

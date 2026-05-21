@@ -670,7 +670,7 @@ function FlagDetailDialog({
             <div>
               <p className="font-semibold text-sm mb-1">Current Value</p>
               <div
-                className="p-3 rounded font-mono text-13 whitespace-pre-wrap break-all"
+                className="p-4 rounded font-mono text-13 whitespace-pre-wrap break-all"
                 style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 {JSON.stringify(flag.current_value, null, 2)}
@@ -682,7 +682,7 @@ function FlagDetailDialog({
             <div>
               <p className="font-semibold text-sm mb-1">Suggested Value</p>
               <div
-                className="p-3 rounded font-mono text-13 whitespace-pre-wrap break-all"
+                className="p-4 rounded font-mono text-13 whitespace-pre-wrap break-all"
                 style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 {JSON.stringify(flag.suggested_value, null, 2)}
