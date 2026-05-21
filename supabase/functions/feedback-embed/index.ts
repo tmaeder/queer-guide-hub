@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
   const token = Deno.env.get('CLOUDFLARE_API_TOKEN');
   if (!token) return errorResponse('CLOUDFLARE_API_TOKEN missing', 500, req);
 
-  let body: BodyShape = {};
+  let body: BodyShape;
   try {
     body = req.method === 'POST' ? ((await req.json()) as BodyShape) : {};
   } catch {

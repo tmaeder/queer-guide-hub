@@ -155,12 +155,15 @@ export const UniversalSearchBar = () => {
     setResultsFocused(null);
   }, [suggestions.length, activeScope]);
 
-  const saveRecentSearch = (searchTerm: string) => {
-    if (!searchTerm.trim()) return;
-    const updated = [searchTerm, ...recentSearches.filter((s) => s !== searchTerm)].slice(0, 10);
-    setRecentSearches(updated);
-    localStorage.setItem('recent-searches', JSON.stringify(updated));
-  };
+  const saveRecentSearch = useCallback(
+    (searchTerm: string) => {
+      if (!searchTerm.trim()) return;
+      const updated = [searchTerm, ...recentSearches.filter((s) => s !== searchTerm)].slice(0, 10);
+      setRecentSearches(updated);
+      localStorage.setItem('recent-searches', JSON.stringify(updated));
+    },
+    [recentSearches],
+  );
 
   const handleSearch = useCallback(
     (searchQuery?: string) => {
@@ -188,9 +191,8 @@ export const UniversalSearchBar = () => {
       });
       navigate(`/search?${params}`);
       setIsOpen(false);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [query, filters, activeScope, navigate],
+    [query, filters, activeScope, navigate, saveRecentSearch],
   );
 
   const handleSelectSuggestion = useCallback(

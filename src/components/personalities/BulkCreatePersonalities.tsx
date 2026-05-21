@@ -119,6 +119,7 @@ export const BulkCreatePersonalities = () => {
         console.error('Network error calling edge function:', invokeError);
         throw new Error(
           `Network error: ${invokeError.message || 'Failed to send request to the Edge Function'}`,
+          { cause: invokeError },
         );
       }
 

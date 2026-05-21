@@ -259,6 +259,7 @@ export function SearchPopoverResults({
                 className="shrink-0 flex overflow-hidden"
               >
                 {suggestion.image ? (
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a load event, not user interaction
                   <img
                     src={suggestion.image}
                     alt=""

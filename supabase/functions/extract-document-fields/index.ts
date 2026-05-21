@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
   const end = text.lastIndexOf('}');
   if (start === -1 || end === -1) return jsonResp({ confidence: 0 });
 
-  let parsed: Record<string, unknown> = {};
+  let parsed: Record<string, unknown>;
   try {
     parsed = JSON.parse(text.slice(start, end + 1));
   } catch {

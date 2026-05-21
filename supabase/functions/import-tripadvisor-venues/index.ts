@@ -53,9 +53,9 @@ interface TripAdvisorLocation {
 }
 
 async function mapVenueCategoryAndAmenities(supabase: SupabaseClient, venue: TripAdvisorLocation, keyword: string) {
-  let categoryName = 'Entertainment & Nightlife'
-  let categorySlug = 'entertainment-nightlife'
-  let category = 'bar'
+  let categoryName: string
+  let categorySlug: string
+  let category: string
   
   const amenityNames = []
   const serviceNames = []

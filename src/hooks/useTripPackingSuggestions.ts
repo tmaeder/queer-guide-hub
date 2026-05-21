@@ -42,7 +42,7 @@ export function useTripPackingSuggestions(tripId: string | undefined) {
       if (!trip) return [];
 
       // Activities from trip_places categories (safe when no places yet)
-      let activities: ReturnType<typeof deriveActivities> = [];
+      let activities: ReturnType<typeof deriveActivities>;
       try {
         const { data: places } = await supabase
           .from('trip_places')

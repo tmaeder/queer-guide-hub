@@ -269,7 +269,7 @@ export function usePipelineBuilder(pipelineId?: string) {
         if (error) throw error;
         return data;
       } catch (e) {
-        if ((e as Error).name === 'AbortError') throw new Error('Pipeline executor timed out after 30s');
+        if ((e as Error).name === 'AbortError') throw new Error('Pipeline executor timed out after 30s', { cause: e });
         throw e;
       } finally {
         clearTimeout(timeout);

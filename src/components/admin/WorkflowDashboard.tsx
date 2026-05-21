@@ -724,7 +724,7 @@ function EnqueueDialog({
 
   const handleEnqueue = async () => {
     if (!selectedWorkflow) return;
-    let payload: Record<string, unknown> = {};
+    let payload: Record<string, unknown>;
     try {
       payload = JSON.parse(payloadStr);
       setPayloadError('');
