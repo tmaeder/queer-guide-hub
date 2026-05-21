@@ -117,6 +117,10 @@ jobs:
   # libs in _tests/ and _shared/news-quality/; this job ensures those
   # actually run on every PR. Pipeline-node coverage is tracked
   # separately (see docs/test-coverage-analysis.md).
+  #
+  # Test files are listed explicitly (mirroring pipeline-health.yml's
+  # known-working invocation) rather than using `deno test .` so a
+  # broken file doesn't silently mask the other suites.
   edge-fn-tests:
     runs-on: ubuntu-latest
     steps:
@@ -126,5 +130,15 @@ jobs:
           # Matches pipeline-health.yml — Supabase Edge Runtime has
           # moved to Deno 2.x.
           deno-version: v2.x
-      - run: deno task test
+      - name: Run deno unit tests
         working-directory: supabase/functions/_tests
+        run: |
+          deno test --allow-net --allow-env --allow-read \
+            entity-classifier.test.ts \
+            entity-type-classifier.test.ts \
+            ingestion-rules.test.ts \
+            pipeline-commit-build-record.test.ts \
+            pipeline-nodes.test.ts \
+            safety-relevance.test.ts \
+            source-adapter.test.ts \
+            stripe-webhook-helpers.test.ts

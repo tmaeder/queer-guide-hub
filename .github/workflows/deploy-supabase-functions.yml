@@ -74,8 +74,18 @@ jobs:
         # relevance/source adapter) regresses. The same job runs on
         # every PR via ci.yml's edge-fn-tests; running it again here
         # closes the gap where a PR is merged with a stale CI run.
-        run: deno task test
+        # Files listed explicitly to keep parity with ci.yml.
         working-directory: supabase/functions/_tests
+        run: |
+          deno test --allow-net --allow-env --allow-read \
+            entity-classifier.test.ts \
+            entity-type-classifier.test.ts \
+            ingestion-rules.test.ts \
+            pipeline-commit-build-record.test.ts \
+            pipeline-nodes.test.ts \
+            safety-relevance.test.ts \
+            source-adapter.test.ts \
+            stripe-webhook-helpers.test.ts
 
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v2
