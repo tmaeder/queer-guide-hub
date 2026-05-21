@@ -57,7 +57,7 @@ export function OrgsDirectory() {
         </div>
         <div className="ml-auto">
           <Select value={country} onValueChange={setCountry}>
-            <SelectTrigger className="h-8 w-[170px] text-xs" aria-label={t('resources.orgs.filterAria')}>
+            <SelectTrigger className="h-8 w-full sm:w-[170px] text-xs" aria-label={t('resources.orgs.filterAria')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

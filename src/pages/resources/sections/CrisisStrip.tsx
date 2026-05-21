@@ -110,7 +110,7 @@ export function CrisisStrip() {
         <Badge variant="secondary" className="text-xs2">{t('resources.crisis.badge')}</Badge>
         <div className="ml-auto flex items-center gap-2">
           <Select value={country} onValueChange={setCountry}>
-            <SelectTrigger className="h-8 w-[170px] text-xs" aria-label={t('resources.crisis.chooseCountryAria')}>
+            <SelectTrigger className="h-8 w-full sm:w-[170px] text-xs" aria-label={t('resources.crisis.chooseCountryAria')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

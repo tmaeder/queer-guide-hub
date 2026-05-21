@@ -191,6 +191,7 @@ export default function TripBookletPage() {
         {/* Addresses index */}
         <div className="page-break" />
         <h2>{t('trips.booklet.addresses', 'Addresses')}</h2>
+        <div className="overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -216,6 +217,7 @@ export default function TripBookletPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
         {/* Reservations */}
         <h2>{t('trips.booklet.reservations', 'Reservations & confirmations')}</h2>
@@ -223,6 +225,7 @@ export default function TripBookletPage() {
           <p className="muted">{t('trips.booklet.noReservations', 'No reservations recorded.')}</p>
         )}
         {reservations && reservations.length > 0 && (
+          <div className="overflow-x-auto">
           <table>
             <thead>
               <tr>
@@ -251,6 +254,7 @@ export default function TripBookletPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
 
         {/* Country safety */}
@@ -274,6 +278,7 @@ export default function TripBookletPage() {
 
         {/* Emergency */}
         <h2>{t('trips.booklet.emergency', 'Emergency contacts')}</h2>
+        <div className="overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -299,6 +304,7 @@ export default function TripBookletPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
         <p className="muted mt-8" style={{ fontSize: 10 }}>
           {t(

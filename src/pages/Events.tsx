@@ -861,7 +861,7 @@ const Events = () => {
               </Button>
               <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
                 <SelectTrigger
-                  className="w-[140px]"
+                  className="w-full sm:w-[140px]"
                   aria-label={t('pages.events.sortLabel', 'Sort events')}
                 >
                   <SelectValue />

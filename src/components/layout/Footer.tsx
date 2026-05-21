@@ -57,7 +57,7 @@ export function Footer() {
           <Button
             variant="ghost"
             size="sm"
-            style={{ minWidth: 36, minHeight: 36 }}
+            className="min-w-11 min-h-11"
             aria-label="Scroll to top"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
