@@ -184,7 +184,7 @@ export default function About() {
                 )}
               </div>
               <p
-                className="opacity-60 mt-1 font-medium uppercase text-xs2"
+                className="text-muted-foreground mt-1 font-medium uppercase text-xs2"
                 style={{ letterSpacing: '0.02em' }}
               >
                 {stat.label}
@@ -342,7 +342,7 @@ export default function About() {
       <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8 bg-foreground text-background">
         <ScrollReveal direction="up">
           <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">Get Involved</h2>
-          <p className="opacity-60 mb-8 md:mb-10 text-body-lg leading-[1.7] max-w-[600px]">
+          <p className="text-background/80 mb-8 md:mb-10 text-body-lg leading-[1.7] max-w-[600px]">
             This platform grows because people like you contribute. Here's how you can help.
           </p>
 
@@ -384,7 +384,7 @@ export default function About() {
                     />
                     {item.title}
                   </p>
-                  <p className="text-sm opacity-50 leading-[1.6]">{item.desc}</p>
+                  <p className="text-sm text-background/75 leading-[1.6]">{item.desc}</p>
                 </div>
               );
             })}

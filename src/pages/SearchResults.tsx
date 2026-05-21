@@ -778,6 +778,8 @@ export default function SearchResults() {
                   size="sm"
                   onClick={() => setViewMode('list')}
                   className="rounded-r-none"
+                  aria-label="List view"
+                  aria-pressed={viewMode === 'list'}
                 >
                   <List size={16} />
                 </Button>
@@ -786,6 +788,8 @@ export default function SearchResults() {
                   size="sm"
                   onClick={() => setViewMode('grid')}
                   className="rounded-none"
+                  aria-label="Grid view"
+                  aria-pressed={viewMode === 'grid'}
                 >
                   <Grid size={16} />
                 </Button>
@@ -795,6 +799,7 @@ export default function SearchResults() {
                   onClick={() => setViewMode('map')}
                   className="rounded-l-none"
                   aria-label="Map view"
+                  aria-pressed={viewMode === 'map'}
                 >
                   <MapPin size={16} />
                 </Button>

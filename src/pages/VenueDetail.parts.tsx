@@ -125,7 +125,6 @@ export function VenueHero({
         <img
           src={heroImage || getRandomFallbackImage()}
           alt={venue.name}
-          role="presentation"
           className="w-full h-full object-cover"
           onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
             (e.target as HTMLImageElement).style.display = 'none';
@@ -217,7 +216,7 @@ export function VenueHero({
           <button
             type="button"
             onClick={onAddToTrip}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-2.5 text-sm font-bold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-2.5 text-sm font-bold tracking-tight text-background transition-opacity duration-300 hover:opacity-90"
           >
             <Luggage size={14} aria-hidden="true" />
             Add to trip

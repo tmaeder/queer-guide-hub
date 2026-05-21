@@ -168,7 +168,10 @@ export default function Friends() {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4">
                                 <Avatar style={{ width: 48, height: 48 }}>
-                                  <AvatarImage src={profile?.avatar_url || undefined} />
+                                  <AvatarImage
+                                    src={profile?.avatar_url || undefined}
+                                    alt={profile?.display_name || ''}
+                                  />
                                   <AvatarFallback>
                                     {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
                                   </AvatarFallback>
@@ -234,7 +237,10 @@ export default function Friends() {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4">
                                 <Avatar style={{ width: 48, height: 48 }}>
-                                  <AvatarImage src={profile?.avatar_url || undefined} />
+                                  <AvatarImage
+                                    src={profile?.avatar_url || undefined}
+                                    alt={profile?.display_name || ''}
+                                  />
                                   <AvatarFallback>
                                     {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
                                   </AvatarFallback>

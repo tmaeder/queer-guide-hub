@@ -162,7 +162,7 @@ export default function GroupDetail() {
         <CardContent style={{ padding: '32px' }}>
           <div className="flex flex-col md:flex-row gap-6">
             <Avatar style={{ height: 96, width: 96 }}>
-              <AvatarImage src={group.image_url || undefined} />
+              <AvatarImage src={group.image_url || undefined} alt={group.name} />
               <AvatarFallback
                 style={{ background: 'var(--gradient-primary)', color: 'white' }}
                 className="text-2xl"

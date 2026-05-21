@@ -142,7 +142,10 @@ export default function UserProfile() {
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex flex-col items-center text-center md:text-left">
                 <Avatar style={{ width: 128, height: 128 }} className="mb-4">
-                  <AvatarImage src={profile.avatar_url || undefined} />
+                  <AvatarImage
+                    src={profile.avatar_url || undefined}
+                    alt={profile.display_name || 'Profile photo'}
+                  />
                   <AvatarFallback className="text-2xl">
                     {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
