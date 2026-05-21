@@ -123,6 +123,8 @@ jobs:
       - uses: actions/checkout@v6
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: v1.x
+          # Matches pipeline-health.yml — Supabase Edge Runtime has
+          # moved to Deno 2.x.
+          deno-version: v2.x
       - run: deno task test
         working-directory: supabase/functions/_tests
