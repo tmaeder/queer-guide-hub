@@ -14,7 +14,10 @@ interface FlightSearchFormProps {
   initialDestinationLabel?: string;
 }
 
-export function FlightSearchForm({ initialDestination, initialDestinationLabel }: FlightSearchFormProps) {
+export function FlightSearchForm({
+  initialDestination,
+  initialDestinationLabel,
+}: FlightSearchFormProps) {
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 
   const [origin, setOrigin] = useState('');
@@ -68,7 +71,7 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
             <Plane size={20} className="text-primary" />
             Search Flights
           </CardTitle>
@@ -79,7 +82,10 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
               <AirportAutocomplete
                 value={origin}
                 displayLabel={originLabel}
-                onChange={(iata, label) => { setOrigin(iata); setOriginLabel(label); }}
+                onChange={(iata, label) => {
+                  setOrigin(iata);
+                  setOriginLabel(label);
+                }}
                 placeholder={originLoading ? 'Detecting location...' : 'From...'}
                 label="From"
               />
@@ -87,14 +93,18 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
                 variant="ghost"
                 size="icon"
                 onClick={handleSwap}
-                style={{ alignSelf: 'end', marginBottom: 2 }}
+                style={{ alignSelf: 'end' }}
+                className="mb-0.5"
               >
                 <ArrowRightLeft size={16} />
               </Button>
               <AirportAutocomplete
                 value={destination}
                 displayLabel={destinationLabel}
-                onChange={(iata, label) => { setDestination(iata); setDestinationLabel(label); }}
+                onChange={(iata, label) => {
+                  setDestination(iata);
+                  setDestinationLabel(label);
+                }}
                 placeholder="To..."
                 label="To"
               />

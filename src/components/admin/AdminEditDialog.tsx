@@ -384,7 +384,9 @@ export function AdminEditDialog({
     const isEnriched = enrichedFields.has(field.name);
     const labelText = isEnriched ? `${field.label} ✨` : field.label;
     const fieldId = `field-${field.name}`;
-    const enrichedClass = isEnriched ? 'border-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--foreground))]' : '';
+    const enrichedClass = isEnriched
+      ? 'border-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--foreground))]'
+      : '';
 
     switch (field.type) {
       case 'boolean':
@@ -576,9 +578,7 @@ export function AdminEditDialog({
             {resolvedFields[field.name] && (
               <div className="flex items-center gap-1 mt-1">
                 <Check size={14} className="text-foreground" />
-                <span className="text-xs text-foreground">
-                  City & country linked
-                </span>
+                <span className="text-xs text-foreground">City & country linked</span>
               </div>
             )}
           </div>
@@ -656,7 +656,7 @@ export function AdminEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent style={{ maxWidth: 680, maxHeight: '85vh', overflow: 'auto' }}>
+      <DialogContent style={{ maxWidth: 680, maxHeight: '85vh' }} className="overflow-auto">
         <DialogHeader>
           <DialogTitle>Edit {typeLabel}</DialogTitle>
           <DialogDescription>
@@ -734,11 +734,7 @@ export function AdminEditDialog({
             Cancel
           </Button>
           <Button variant="outline" onClick={handleEnrich} disabled={loading || enriching}>
-            {enriching ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Sparkles size={14} />
-            )}
+            {enriching ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
             {enriching ? 'Enriching...' : 'Enrich with AI'}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || changedCount === 0}>

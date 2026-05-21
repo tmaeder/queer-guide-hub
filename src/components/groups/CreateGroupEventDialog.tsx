@@ -1,10 +1,22 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -37,7 +49,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
     website: '',
     age_restriction: '',
     organizer_name: '',
-    organizer_contact: ''
+    organizer_contact: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -65,7 +77,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
       website: formData.website || undefined,
       age_restriction: formData.age_restriction || undefined,
       organizer_name: formData.organizer_name || undefined,
-      organizer_contact: formData.organizer_contact || undefined
+      organizer_contact: formData.organizer_contact || undefined,
     };
 
     onCreateEvent(eventData);
@@ -87,7 +99,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
       website: '',
       age_restriction: '',
       organizer_name: '',
-      organizer_contact: ''
+      organizer_contact: '',
     });
     setStartDate(undefined);
     setEndDate(undefined);
@@ -135,12 +147,9 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
               <Label>Start Date *</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-
-                  >
-                    <CalendarIcon size={16} style={{ marginRight: 8 }} />
-                    {startDate ? format(startDate, "PPP") : "Select start date"}
+                  <Button variant="outline">
+                    <CalendarIcon size={16} className="mr-2" />
+                    {startDate ? format(startDate, 'PPP') : 'Select start date'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent>
@@ -159,12 +168,9 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
               <Label>End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-
-                  >
-                    <CalendarIcon size={16} style={{ marginRight: 8 }} />
-                    {endDate ? format(endDate, "PPP") : "Select end date"}
+                  <Button variant="outline">
+                    <CalendarIcon size={16} className="mr-2" />
+                    {endDate ? format(endDate, 'PPP') : 'Select end date'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent>
@@ -181,7 +187,10 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
 
             <div>
               <Label htmlFor="event_type">Event Type</Label>
-              <Select value={formData.event_type} onValueChange={(value) => setFormData({ ...formData, event_type: value })}>
+              <Select
+                value={formData.event_type}
+                onValueChange={(value) => setFormData({ ...formData, event_type: value })}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -293,7 +302,10 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
 
             <div>
               <Label htmlFor="age_restriction">Age Restriction</Label>
-              <Select value={formData.age_restriction} onValueChange={(value) => setFormData({ ...formData, age_restriction: value })}>
+              <Select
+                value={formData.age_restriction}
+                onValueChange={(value) => setFormData({ ...formData, age_restriction: value })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select age restriction" />
                 </SelectTrigger>
@@ -359,9 +371,8 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
             <Button
               type="submit"
               disabled={isCreating || !startDate || !formData.title || !formData.city}
-
             >
-              {isCreating ? "Creating..." : "Create Event"}
+              {isCreating ? 'Creating...' : 'Create Event'}
             </Button>
           </div>
         </form>

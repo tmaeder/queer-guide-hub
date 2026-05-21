@@ -39,8 +39,8 @@ export function MarketplaceSpotlight() {
         </div>
         {listing.description && (
           <p
-            className="text-sm text-muted-foreground"
-            style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+            className="text-sm text-muted-foreground overflow-hidden"
+            style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
           >
             {listing.description}
           </p>

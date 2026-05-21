@@ -6,15 +6,36 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, ChevronRight, Mail, Calendar, MapPin, AlertCircle, Clock } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  Mail,
+  Calendar,
+  MapPin,
+  AlertCircle,
+  Clock,
+} from 'lucide-react';
 import { Link } from 'react-router';
 import { listFromWhere } from '@/hooks/usePageFetchers';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface EmailIngestion {
   id: string;
@@ -86,7 +107,9 @@ export const EmailIngestionsPanel = () => {
           <Badge variant="secondary">{ingestions.length}</Badge>
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="min-w-[140px] h-9 w-auto"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="min-w-[140px] h-9 w-auto">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
@@ -99,7 +122,7 @@ export const EmailIngestionsPanel = () => {
 
       {ingestions.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          <Mail size={32} style={{ opacity: 0.3, marginBottom: 8 }} className="mx-auto" />
+          <Mail size={32} style={{ opacity: 0.3 }} className="mx-auto mb-2" />
           <p>No email ingestions found</p>
         </div>
       ) : (
@@ -119,13 +142,14 @@ export const EmailIngestionsPanel = () => {
             <TableBody>
               {ingestions.map((ing) => (
                 <React.Fragment key={ing.id}>
-                  <TableRow
-                    onClick={() => toggleExpand(ing.id)}
-                    className="cursor-pointer"
-                  >
+                  <TableRow onClick={() => toggleExpand(ing.id)} className="cursor-pointer">
                     <TableCell>
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                        {expandedId === ing.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        {expandedId === ing.id ? (
+                          <ChevronDown size={16} />
+                        ) : (
+                          <ChevronRight size={16} />
+                        )}
                       </Button>
                     </TableCell>
                     <TableCell>
@@ -137,21 +161,21 @@ export const EmailIngestionsPanel = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_VARIANT[ing.status] || 'outline'}>
-                        {ing.status}
-                      </Badge>
+                      <Badge variant={STATUS_VARIANT[ing.status] || 'outline'}>{ing.status}</Badge>
                     </TableCell>
                     <TableCell className="text-center">
                       {ing.extracted_events > 0 && (
                         <Badge variant="outline" className="gap-1">
-                          <Calendar size={12} />{ing.extracted_events}
+                          <Calendar size={12} />
+                          {ing.extracted_events}
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-center">
                       {ing.extracted_venues > 0 && (
                         <Badge variant="outline" className="gap-1">
-                          <MapPin size={12} />{ing.extracted_venues}
+                          <MapPin size={12} />
+                          {ing.extracted_venues}
                         </Badge>
                       )}
                     </TableCell>
@@ -170,12 +194,14 @@ export const EmailIngestionsPanel = () => {
                             <div className="flex gap-4 mb-4 flex-wrap">
                               {ing.processing_ms != null && (
                                 <Badge variant="secondary" className="gap-1">
-                                  <Clock size={12} />{ing.processing_ms}ms
+                                  <Clock size={12} />
+                                  {ing.processing_ms}ms
                                 </Badge>
                               )}
                               {ing.error_message && (
                                 <Badge variant="destructive" className="gap-1">
-                                  <AlertCircle size={12} />{ing.error_message}
+                                  <AlertCircle size={12} />
+                                  {ing.error_message}
                                 </Badge>
                               )}
                             </div>
@@ -186,7 +212,9 @@ export const EmailIngestionsPanel = () => {
                                 <div className="flex gap-1 flex-wrap mt-1">
                                   {ing.inserted_event_ids.map((id) => (
                                     <Link key={id} to={`/events/${id}`}>
-                                      <Badge variant="outline" className="cursor-pointer">{id.slice(0, 8)}</Badge>
+                                      <Badge variant="outline" className="cursor-pointer">
+                                        {id.slice(0, 8)}
+                                      </Badge>
                                     </Link>
                                   ))}
                                 </div>
@@ -198,7 +226,9 @@ export const EmailIngestionsPanel = () => {
                                 <div className="flex gap-1 flex-wrap mt-1">
                                   {ing.inserted_venue_ids.map((id) => (
                                     <Link key={id} to={`/venues/${id}`}>
-                                      <Badge variant="outline" className="cursor-pointer">{id.slice(0, 8)}</Badge>
+                                      <Badge variant="outline" className="cursor-pointer">
+                                        {id.slice(0, 8)}
+                                      </Badge>
                                     </Link>
                                   ))}
                                 </div>

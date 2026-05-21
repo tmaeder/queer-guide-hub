@@ -16,11 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Pagination,
   PaginationContent,
@@ -216,7 +212,10 @@ function renderColumnValue(
   }
   if (field.type === 'select') {
     const opt = field.options?.find((o) => o.value === v);
-    const color = field.name === 'category' ? (config?.color ?? 'hsl(var(--muted-foreground))') : 'hsl(var(--muted-foreground))';
+    const color =
+      field.name === 'category'
+        ? (config?.color ?? 'hsl(var(--muted-foreground))')
+        : 'hsl(var(--muted-foreground))';
     return (
       <Badge
         className="h-5 text-xs2 font-semibold"
@@ -254,17 +253,11 @@ function renderColumnValue(
             {String(tag)}
           </Badge>
         ))}
-        {remaining > 0 && (
-          <span className="text-xs text-muted-foreground">+{remaining}</span>
-        )}
+        {remaining > 0 && <span className="text-xs text-muted-foreground">+{remaining}</span>}
       </div>
     );
   }
-  return (
-    <span className="text-13 truncate block">
-      {String(v)}
-    </span>
-  );
+  return <span className="text-13 truncate block">{String(v)}</span>;
 }
 
 // ── Main table component ────────────────────────────────────────────
@@ -327,7 +320,7 @@ export function ContentListTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead style={{ width: 42, paddingLeft: 12 }}>
+              <TableHead style={{ width: 42 }} className="pl-3">
                 <Checkbox
                   checked={someSelected && !allSelected ? 'indeterminate' : allSelected}
                   onCheckedChange={toggleSelectAll}
@@ -410,7 +403,7 @@ export function ContentListTable({
                     }}
                     onClick={() => onEdit(item.contentType, item.id)}
                   >
-                    <TableCell style={{ paddingLeft: 12 }} onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="pl-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => toggleSelect(itemKey)}
@@ -451,10 +444,7 @@ export function ContentListTable({
                             className="rounded-full flex-shrink-0"
                             style={{ width: 8, height: 8, backgroundColor: statusColor }}
                           />
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: statusColor }}
-                          >
+                          <span className="text-xs font-medium" style={{ color: statusColor }}>
                             {getStatusLabel(item.status)}
                           </span>
                         </div>
@@ -529,7 +519,8 @@ export function ContentListTable({
               </SelectContent>
             </Select>
             <span>
-              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount}
+              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalCount)} of{' '}
+              {totalCount}
             </span>
           </div>
           <Pagination className="mx-0 w-auto justify-end">

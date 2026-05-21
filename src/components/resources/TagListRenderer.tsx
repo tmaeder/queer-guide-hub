@@ -77,10 +77,7 @@ export function TagListRenderer({
                 >
                   {tag.name}
                 </span>
-                <span
-                  className="text-muted-foreground truncate"
-                  style={{ fontSize: '0.7rem' }}
-                >
+                <span className="text-muted-foreground truncate" style={{ fontSize: '0.7rem' }}>
                   {getTagCategoryLabel(tag)}
                 </span>
               </div>
@@ -104,7 +101,10 @@ export function TagListRenderer({
               className="flex items-center gap-3 px-3 py-2 rounded-element cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
               style={{ minHeight: 44, font: 'inherit', color: 'inherit' }}
             >
-              <div className="rounded-element overflow-hidden shrink-0 bg-muted" style={{ width: 40, height: 40 }}>
+              <div
+                className="rounded-element overflow-hidden shrink-0 bg-muted"
+                style={{ width: 40, height: 40 }}
+              >
                 <img
                   src={tag.image_url || getRandomFallbackImage()}
                   alt={tag.name}
@@ -117,7 +117,10 @@ export function TagListRenderer({
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="font-semibold block" style={{ fontSize: '0.85rem', lineHeight: 1.25 }}>
+                <span
+                  className="font-semibold block"
+                  style={{ fontSize: '0.85rem', lineHeight: 1.25 }}
+                >
                   {tag.name}
                 </span>
                 <span
@@ -138,7 +141,7 @@ export function TagListRenderer({
               <Badge variant="secondary" className="shrink-0">
                 {getTagCategoryLabel(tag)}
               </Badge>
-              <ChevronRight size={14} style={{ flexShrink: 0, opacity: 0.4 }} />
+              <ChevronRight size={14} style={{ opacity: 0.4 }} className="shrink-0" />
             </button>
           );
         })}
@@ -162,7 +165,9 @@ export function TagListRenderer({
             style={{ minHeight: 36, padding: '6px 12px' }}
           >
             <Tag size={12} style={{ opacity: 0.55 }} />
-            <span style={{ fontWeight: 500, fontSize: '0.78rem' }}>{tag.name}</span>
+            <span style={{ fontSize: '0.78rem' }} className="font-medium">
+              {tag.name}
+            </span>
             {uses > 0 && (
               <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
                 {uses}

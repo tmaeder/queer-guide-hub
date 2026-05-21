@@ -44,13 +44,11 @@ export function DrawerActionFooter({
         />
         <label
           htmlFor="notify-submitter-toggle"
-          style={{ fontSize: '0.7rem', cursor: 'pointer', flex: 1 }}
-          className="text-muted-foreground"
+          style={{ fontSize: '0.7rem', flex: 1 }}
+          className="text-muted-foreground cursor-pointer"
         >
           Email on status change
-          {!hasContactEmail && (
-            <span style={{ marginLeft: 4 }}>(no email)</span>
-          )}
+          {!hasContactEmail && <span className="ml-1">(no email)</span>}
         </label>
       </div>
 
@@ -93,13 +91,10 @@ export function DrawerActionFooter({
           <Button
             size="sm"
             variant="outline"
-            onClick={() =>
-              window.open(githubIssueUrl!, '_blank', 'noopener,noreferrer')
-            }
+            onClick={() => window.open(githubIssueUrl!, '_blank', 'noopener,noreferrer')}
             className="gap-1.5"
           >
-            <Github size={12} />
-            #{githubIssueNumber}
+            <Github size={12} />#{githubIssueNumber}
           </Button>
         ) : (
           <Button

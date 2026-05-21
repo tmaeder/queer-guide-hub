@@ -2,7 +2,11 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
 import { SmartEmptyState } from '@/components/events/SmartEmptyState';
-import { PresetChips, getPresetDateRange, type EventPresetId } from '@/components/events/PresetChips';
+import {
+  PresetChips,
+  getPresetDateRange,
+  type EventPresetId,
+} from '@/components/events/PresetChips';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
@@ -64,7 +68,6 @@ import { useTranslation } from 'react-i18next';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSearchParams } from 'react-router';
 
-
 type Event = Database['public']['Tables']['events']['Row'];
 const eventTypes = [
   'party',
@@ -93,15 +96,22 @@ const Events = () => {
   const { t, i18n } = useTranslation();
   const dfLocale = dateFnsLocaleFor(i18n.language);
   const navigate = useLocalizedNavigate();
-  const { events, loading, error, hasMore, datasetTotal, fetchEvents, updateAttendance, loadingTimedOut } =
-    useEvents(false);
+  const {
+    events,
+    loading,
+    error,
+    hasMore,
+    datasetTotal,
+    fetchEvents,
+    updateAttendance,
+    loadingTimedOut,
+  } = useEvents(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
   useMeta({
     title: 'Events',
-    description:
-      'LGBTQ+ community events — parties, meetups, pride marches, workshops, and more.',
+    description: 'LGBTQ+ community events — parties, meetups, pride marches, workshops, and more.',
     canonicalPath: '/events',
     jsonLd: {
       '@context': 'https://schema.org',
@@ -210,9 +220,12 @@ const Events = () => {
       {
         search: search || undefined,
         city: city || undefined,
-        eventType: preset === 'pride' ? 'pride' : eventType && eventType !== 'all' ? eventType : undefined,
+        eventType:
+          preset === 'pride' ? 'pride' : eventType && eventType !== 'all' ? eventType : undefined,
         tags: selectedTags.length > 0 ? selectedTags : undefined,
-        dateRange: range ? { start: range.start.toISOString(), end: range.end.toISOString() } : undefined,
+        dateRange: range
+          ? { start: range.start.toISOString(), end: range.end.toISOString() }
+          : undefined,
         featured: preset === 'featured' || undefined,
         isFree: preset === 'free' || undefined,
         includePast: showPast || undefined,
@@ -253,7 +266,10 @@ const Events = () => {
       } catch (_error) {
         toast({
           title: t('pages.events.locationError', 'Location Error'),
-          description: t('pages.events.locationErrorDesc', 'Unable to get your location. Please allow location access.'),
+          description: t(
+            'pages.events.locationErrorDesc',
+            'Unable to get your location. Please allow location access.',
+          ),
           variant: 'destructive',
         });
       }
@@ -327,7 +343,17 @@ const Events = () => {
     setSelectedEvent(event);
   };
   const hasActiveFilters =
-    search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe || showPast || isFree || featuredOnly || activePreset;
+    search ||
+    city ||
+    eventType ||
+    selectedTags.length > 0 ||
+    startDate ||
+    endDate ||
+    nearMe ||
+    showPast ||
+    isFree ||
+    featuredOnly ||
+    activePreset;
   const autoInitDone = useRef(false);
   useEffect(() => {
     if (autoInitDone.current) return;
@@ -342,8 +368,8 @@ const Events = () => {
     } else {
       fetchEvents({}, { page: 1, pageSize: PAGE_SIZE, append: false });
     }
-  // run once on mount; visitorLocation may not yet be available but that is fine — user can still see all events
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // run once on mount; visitorLocation may not yet be available but that is fine — user can still see all events
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Re-fetch when the past-events toggle changes
@@ -354,7 +380,7 @@ const Events = () => {
       return;
     }
     handleFiltersChange();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showPast]);
 
   // Reactive city filter — fire as soon as a value is picked from the
@@ -366,7 +392,7 @@ const Events = () => {
       return;
     }
     handleFiltersChange();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city]);
 
   // Re-fetch when sort changes
@@ -377,7 +403,7 @@ const Events = () => {
       return;
     }
     handleFiltersChange();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sort]);
 
   // Debounced search — apply ~300ms after the user stops typing so the
@@ -390,7 +416,7 @@ const Events = () => {
       return;
     }
     handleFiltersChange();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
   // Sync city + search to URL params for shareable / refreshable state.
@@ -404,7 +430,7 @@ const Events = () => {
     if (next.toString() !== searchParams.toString()) {
       setSearchParams(next, { replace: true });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city, debouncedSearch]);
 
   // Hydrate filters from URL on first mount.
@@ -413,7 +439,7 @@ const Events = () => {
     const urlQ = searchParams.get('q');
     if (urlCity) setCity(urlCity);
     if (urlQ) setSearch(urlQ);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <div className="min-h-screen">
@@ -433,7 +459,10 @@ const Events = () => {
               <Search className="w-4 h-4 text-muted-foreground shrink-0" />
               <Input
                 aria-label={t('pages.events.searchLabel', 'Search events')}
-                placeholder={t('pages.events.searchPlaceholder', 'Search events, cities, organizers')}
+                placeholder={t(
+                  'pages.events.searchPlaceholder',
+                  'Search events, cities, organizers',
+                )}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleFiltersChange()}
@@ -457,10 +486,7 @@ const Events = () => {
 
           {/* Extended Filters */}
           {showFilters && (
-            <nav
-              aria-label="Event filters"
-              className="flex flex-col gap-4 pt-4"
-            >
+            <nav aria-label="Event filters" className="flex flex-col gap-4 pt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="city">{t('pages.events.cities', 'Cities')}</Label>
@@ -474,17 +500,12 @@ const Events = () => {
                       >
                         {city || t('pages.events.selectCities', 'Select city…')}
                         <ChevronDown
-                          style={{
-                            marginLeft: 8,
-                            width: 16,
-                            height: 16,
-                            flexShrink: 0,
-                            color: 'hsl(var(--muted-foreground))',
-                          }}
+                          style={{ width: 16, height: 16 }}
+                          className="ml-2 shrink-0 text-muted-foreground"
                         />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent style={{ width: '100%', padding: 0 }}>
+                    <PopoverContent style={{ width: '100%' }} className="p-0">
                       <Command>
                         <CommandInput
                           placeholder="Search cities..."
@@ -495,7 +516,9 @@ const Events = () => {
                           <CommandEmpty>No cities found.</CommandEmpty>
                           <CommandGroup>
                             {availableCities
-                              .filter((c) => normalizeCityLabel(c).includes(normalizeCityLabel(city)))
+                              .filter((c) =>
+                                normalizeCityLabel(c).includes(normalizeCityLabel(city)),
+                              )
                               .map((cityName) => (
                                 <CommandItem
                                   key={cityName}
@@ -507,11 +530,11 @@ const Events = () => {
                                 >
                                   <Check
                                     style={{
-                                      marginRight: 8,
                                       width: 16,
                                       height: 16,
                                       opacity: city === cityName ? 1 : 0,
                                     }}
+                                    className="mr-2"
                                   />
                                   {cityName}
                                 </CommandItem>
@@ -552,17 +575,18 @@ const Events = () => {
                           fontWeight: 400,
                         }}
                       >
-                        <CalendarIcon size={16} style={{ marginRight: 8 }} />
+                        <CalendarIcon size={16} className="mr-2" />
                         {startDate ? format(startDate, 'PPP') : <span>Pick start date</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">
+                    <PopoverContent style={{ width: 'auto' }} className="p-0" align="start">
                       <CalendarComponent
                         mode="single"
                         selected={startDate}
                         onSelect={setStartDate}
                         initialFocus
-                        style={{ padding: 12, pointerEvents: 'auto' }}
+                        style={{ pointerEvents: 'auto' }}
+                        className="p-3"
                       />
                     </PopoverContent>
                   </Popover>
@@ -581,17 +605,18 @@ const Events = () => {
                           fontWeight: 400,
                         }}
                       >
-                        <CalendarIcon size={16} style={{ marginRight: 8 }} />
+                        <CalendarIcon size={16} className="mr-2" />
                         {endDate ? format(endDate, 'PPP') : <span>Pick end date</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">
+                    <PopoverContent style={{ width: 'auto' }} className="p-0" align="start">
                       <CalendarComponent
                         mode="single"
                         selected={endDate}
                         onSelect={setEndDate}
                         initialFocus
-                        style={{ padding: 12, pointerEvents: 'auto' }}
+                        style={{ pointerEvents: 'auto' }}
+                        className="p-3"
                         disabled={(date) => (startDate ? date < startDate : false)}
                       />
                     </PopoverContent>
@@ -639,13 +664,11 @@ const Events = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-2 pt-2">
-                <Button onClick={handleFiltersChange}>{t('pages.events.applyFilters', 'Apply Filters')}</Button>
+                <Button onClick={handleFiltersChange}>
+                  {t('pages.events.applyFilters', 'Apply Filters')}
+                </Button>
                 {hasActiveFilters && (
-                  <Button
-                    variant="outline"
-                    onClick={clearFilters}
-                    style={{ display: 'flex', gap: 8 }}
-                  >
+                  <Button variant="outline" onClick={clearFilters} className="flex gap-2">
                     <X size={16} />
                     {t('pages.events.clearAll', 'Clear All')}
                   </Button>
@@ -661,9 +684,15 @@ const Events = () => {
                 {t('pages.events.activeFilters', 'Active filters:')}
               </p>
               {search && (
-                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
-                  {t('pages.events.filterSearch', { value: search, defaultValue: `Search: ${search}` })}
-                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                <Badge variant="secondary" className="inline-flex gap-1">
+                  {t('pages.events.filterSearch', {
+                    value: search,
+                    defaultValue: `Search: ${search}`,
+                  })}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
                     role="button"
                     aria-label={t('pages.events.clearFilterSearch', 'Clear search')}
                     onClick={() => setSearch('')}
@@ -671,7 +700,11 @@ const Events = () => {
                 </Badge>
               )}
               {city && (
-                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
+                <Badge
+                  variant="secondary"
+                  style={{ alignItems: 'center' }}
+                  className="inline-flex gap-1"
+                >
                   {autoLocationLabel === city && <MapPin size={10} />}
                   {autoLocationLabel === city
                     ? t('pages.events.filterNearYou', {
@@ -682,17 +715,26 @@ const Events = () => {
                         value: displayCityName(city, i18n.language),
                         defaultValue: `City: ${displayCityName(city, i18n.language)}`,
                       })}
-                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
                     role="button"
                     aria-label={t('pages.events.clearFilterCity', 'Clear city filter')}
-                    onClick={() => { setCity(''); setAutoLocationLabel(null); }}
+                    onClick={() => {
+                      setCity('');
+                      setAutoLocationLabel(null);
+                    }}
                   />
                 </Badge>
               )}
               {eventType && (
-                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
+                <Badge variant="secondary" className="inline-flex gap-1">
                   {eventType}
-                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
                     role="button"
                     aria-label={t('pages.events.clearFilterEventType', 'Clear event type filter')}
                     onClick={() => setEventType('')}
@@ -700,12 +742,15 @@ const Events = () => {
                 </Badge>
               )}
               {startDate && (
-                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
+                <Badge variant="secondary" className="inline-flex gap-1">
                   {t('pages.events.filterFrom', {
                     value: format(startDate, 'PP', { locale: dfLocale }),
                     defaultValue: `From: ${format(startDate, 'PP', { locale: dfLocale })}`,
                   })}
-                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
                     role="button"
                     aria-label={t('pages.events.clearFilterStartDate', 'Clear start date filter')}
                     onClick={() => setStartDate(undefined)}
@@ -713,12 +758,15 @@ const Events = () => {
                 </Badge>
               )}
               {endDate && (
-                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
+                <Badge variant="secondary" className="inline-flex gap-1">
                   {t('pages.events.filterTo', {
                     value: format(endDate, 'PP', { locale: dfLocale }),
                     defaultValue: `To: ${format(endDate, 'PP', { locale: dfLocale })}`,
                   })}
-                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
                     role="button"
                     aria-label={t('pages.events.clearFilterEndDate', 'Clear end date filter')}
                     onClick={() => setEndDate(undefined)}
@@ -726,9 +774,12 @@ const Events = () => {
                 </Badge>
               )}
               {nearMe && (
-                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
+                <Badge variant="secondary" className="inline-flex gap-1">
                   {t('pages.events.filterNearMe', 'Near Me')}
-                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
                     role="button"
                     aria-label={t('pages.events.clearFilterNearMe', 'Clear near me filter')}
                     onClick={() => setNearMe(false)}
@@ -736,9 +787,12 @@ const Events = () => {
                 </Badge>
               )}
               {showPast && (
-                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
+                <Badge variant="secondary" className="inline-flex gap-1">
                   {t('pages.events.pastEvents', 'Past events')}
-                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
                     role="button"
                     aria-label={t('pages.events.clearFilterPast', 'Clear past events filter')}
                     onClick={() => setShowPast(false)}
@@ -746,9 +800,12 @@ const Events = () => {
                 </Badge>
               )}
               {selectedTags.map((tag) => (
-                <Badge key={tag} variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
+                <Badge key={tag} variant="secondary" className="inline-flex gap-1">
                   {tag}
-                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
                     role="button"
                     aria-label={`Remove ${tag} filter`}
                     onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))}
@@ -783,7 +840,10 @@ const Events = () => {
               {autoLocationLabel && city === autoLocationLabel && (
                 <button
                   type="button"
-                  onClick={() => { setCity(''); setAutoLocationLabel(null); }}
+                  onClick={() => {
+                    setCity('');
+                    setAutoLocationLabel(null);
+                  }}
                   className="ml-2 underline hover:text-foreground"
                 >
                   {t('pages.events.showWorldwide', 'Show worldwide')}
@@ -807,8 +867,12 @@ const Events = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="date-asc">{t('pages.events.sort.dateAsc', 'Soonest first')}</SelectItem>
-                  <SelectItem value="date-desc">{t('pages.events.sort.dateDesc', 'Latest first')}</SelectItem>
+                  <SelectItem value="date-asc">
+                    {t('pages.events.sort.dateAsc', 'Soonest first')}
+                  </SelectItem>
+                  <SelectItem value="date-desc">
+                    {t('pages.events.sort.dateDesc', 'Latest first')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <div
@@ -834,7 +898,9 @@ const Events = () => {
                   style={{ display: 'inline-flex', gap: 6 }}
                 >
                   <CalendarIcon size={16} />
-                  <span className="hidden sm:inline">{t('pages.events.calendarView', 'Calendar')}</span>
+                  <span className="hidden sm:inline">
+                    {t('pages.events.calendarView', 'Calendar')}
+                  </span>
                 </Button>
                 <Button
                   variant={viewMode === 'map' ? 'default' : 'ghost'}
@@ -852,12 +918,7 @@ const Events = () => {
         )}
 
         {/* Status region for screen readers */}
-        <div
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-          className="sr-only"
-        >
+        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {loading ? 'Loading events...' : error ? error : `${events.length} events found`}
         </div>
 
@@ -867,14 +928,18 @@ const Events = () => {
         {/* Loading State */}
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (<EventCard key={i} loading />))}
+            {Array.from({ length: 6 }).map((_, i) => (
+              <EventCard key={i} loading />
+            ))}
           </div>
         )}
         {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchEvents()} />}
 
         {/* Empty State */}
-        {!loading && !error && events.length === 0 && (
-          datasetTotal === 0 || (datasetTotal === null && !hasActiveFilters) ? (
+        {!loading &&
+          !error &&
+          events.length === 0 &&
+          (datasetTotal === 0 || (datasetTotal === null && !hasActiveFilters) ? (
             <EmptyState
               icon={Calendar}
               variant="empty"
@@ -883,28 +948,63 @@ const Events = () => {
                 'pages.events.emptyDataset.body',
                 "We haven't added any events here yet. Help us grow the guide by submitting one.",
               )}
-              primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
+              primaryAction={{
+                label: t('pages.events.submitAnEvent', 'Submit an Event'),
+                onClick: () => navigate('/submit/event'),
+              }}
             />
           ) : showPast ? (
             <EmptyState
               icon={Calendar}
               variant="filtered"
               title={t('pages.events.noPastEvents', 'No past events found')}
-              description={t('pages.events.noPastEventsDesc', 'No past events match these filters. Turn off the toggle to see upcoming events.')}
-              primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
-              secondaryAction={hasActiveFilters ? { label: t('pages.events.clearFiltersLabel', 'Clear Filters'), onClick: clearFilters, variant: 'outline' } : undefined}
+              description={t(
+                'pages.events.noPastEventsDesc',
+                'No past events match these filters. Turn off the toggle to see upcoming events.',
+              )}
+              primaryAction={{
+                label: t('pages.events.submitAnEvent', 'Submit an Event'),
+                onClick: () => navigate('/submit/event'),
+              }}
+              secondaryAction={
+                hasActiveFilters
+                  ? {
+                      label: t('pages.events.clearFiltersLabel', 'Clear Filters'),
+                      onClick: clearFilters,
+                      variant: 'outline',
+                    }
+                  : undefined
+              }
             />
           ) : (
             <SmartEmptyState
               city={city || undefined}
-              dateRange={startDate && endDate ? { start: startDate.toISOString(), end: endDate.toISOString() } : undefined}
+              dateRange={
+                startDate && endDate
+                  ? { start: startDate.toISOString(), end: endDate.toISOString() }
+                  : undefined
+              }
               hasActiveFilters={!!hasActiveFilters}
               onClearFilters={clearFilters}
-              onClearCity={city ? () => { setCity(''); setAutoLocationLabel(null); } : undefined}
-              onClearDate={startDate || endDate ? () => { setStartDate(undefined); setEndDate(undefined); handleFiltersChange(); } : undefined}
+              onClearCity={
+                city
+                  ? () => {
+                      setCity('');
+                      setAutoLocationLabel(null);
+                    }
+                  : undefined
+              }
+              onClearDate={
+                startDate || endDate
+                  ? () => {
+                      setStartDate(undefined);
+                      setEndDate(undefined);
+                      handleFiltersChange();
+                    }
+                  : undefined
+              }
             />
-          )
-        )}
+          ))}
 
         {/* Event Content */}
         {!loading && events.length > 0 && viewMode === 'grid' && (

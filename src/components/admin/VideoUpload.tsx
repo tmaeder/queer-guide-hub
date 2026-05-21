@@ -29,33 +29,33 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
   const [_isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const videoFiles = acceptedFiles.filter(file => file.type.startsWith('video/'));
+    const videoFiles = acceptedFiles.filter((file) => file.type.startsWith('video/'));
 
     if (videoFiles.length === 0) {
       toast.error('Please upload video files only');
       return;
     }
 
-    const newVideos = videoFiles.map(file => ({
+    const newVideos = videoFiles.map((file) => ({
       id: crypto.randomUUID(),
       title: file.name.split('.')[0],
       description: '',
       file,
       uploadProgress: 0,
-      status: 'uploading' as const
+      status: 'uploading' as const,
     }));
 
-    setVideos(prev => [...prev, ...newVideos]);
-    newVideos.forEach(video => uploadVideo(video));
+    setVideos((prev) => [...prev, ...newVideos]);
+    newVideos.forEach((video) => uploadVideo(video));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- uploadVideo defined below, stable in practice
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'video/*': ['.mp4', '.mov', '.avi', '.mkv', '.webm']
+      'video/*': ['.mp4', '.mov', '.avi', '.mkv', '.webm'],
     },
-    multiple: true
+    multiple: true,
   });
 
   const uploadVideo = async (video: UploadedVideo) => {
@@ -90,28 +90,25 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
             adaptive: { hls: true, dash: false },
             resolutions: ['1080p', '720p', '540p', '360p'],
             generateCaptions: true,
-            generateThumbnails: true
-          }
-        }
+            generateThumbnails: true,
+          },
+        },
       });
 
       if (processError) throw processError;
 
-      setVideos(prev => prev.map(v =>
-        v.id === video.id ? { ...v, status: 'processing' } : v
-      ));
+      setVideos((prev) =>
+        prev.map((v) => (v.id === video.id ? { ...v, status: 'processing' } : v)),
+      );
 
       pollProcessingStatus(video.id);
 
       toast.success(`Started processing "${video.title}"`);
       onUploadComplete?.(video.id);
-
     } catch (error) {
       console.error('Upload error:', error);
       toast.error(`Failed to upload "${video.title}"`);
-      setVideos(prev => prev.map(v =>
-        v.id === video.id ? { ...v, status: 'error' } : v
-      ));
+      setVideos((prev) => prev.map((v) => (v.id === video.id ? { ...v, status: 'error' } : v)));
     } finally {
       setIsUploading(false);
     }
@@ -121,20 +118,28 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
     const pollInterval = setInterval(async () => {
       try {
         const { data: job } = await supabase.functions.invoke('process-video', {
-          body: { action: 'status', jobId: videoId }
+          body: { action: 'status', jobId: videoId },
         });
 
         if (job?.job) {
           const { status, progress_percent } = job.job;
 
-          setVideos(prev => prev.map(v =>
-            v.id === videoId ? {
-              ...v,
-              processingProgress: progress_percent,
-              status: status === 'completed' ? 'completed' :
-                      status === 'failed' ? 'error' : 'processing'
-            } : v
-          ));
+          setVideos((prev) =>
+            prev.map((v) =>
+              v.id === videoId
+                ? {
+                    ...v,
+                    processingProgress: progress_percent,
+                    status:
+                      status === 'completed'
+                        ? 'completed'
+                        : status === 'failed'
+                          ? 'error'
+                          : 'processing',
+                  }
+                : v,
+            ),
+          );
 
           if (status === 'completed' || status === 'failed') {
             clearInterval(pollInterval);
@@ -152,13 +157,11 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
   };
 
   const updateVideoInfo = (id: string, field: 'title' | 'description', value: string) => {
-    setVideos(prev => prev.map(v =>
-      v.id === id ? { ...v, [field]: value } : v
-    ));
+    setVideos((prev) => prev.map((v) => (v.id === id ? { ...v, [field]: value } : v)));
   };
 
   const removeVideo = (id: string) => {
-    setVideos(prev => prev.filter(v => v.id !== id));
+    setVideos((prev) => prev.filter((v) => v.id !== id));
   };
 
   return (
@@ -179,7 +182,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
             }`}
           >
             <input {...getInputProps()} />
-            <Upload size={48} style={{ margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+            <Upload size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
             {isDragActive ? (
               <p className="text-base font-medium">Drop video files here...</p>
             ) : (
@@ -187,9 +190,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
                 <p className="text-base font-medium mb-2">
                   Drag & drop video files here, or click to select
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Supports MP4, MOV, AVI, MKV, WebM
-                </p>
+                <p className="text-sm text-muted-foreground">Supports MP4, MOV, AVI, MKV, WebM</p>
               </div>
             )}
           </div>
@@ -226,9 +227,11 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
                             className="inline-block w-2 h-2 rounded-full"
                             style={{
                               backgroundColor:
-                                video.status === 'completed' ? 'hsl(var(--foreground))' :
-                                video.status === 'error' ? 'hsl(var(--destructive))' :
-                                'hsl(var(--foreground) / 0.55)',
+                                video.status === 'completed'
+                                  ? 'hsl(var(--foreground))'
+                                  : video.status === 'error'
+                                    ? 'hsl(var(--destructive))'
+                                    : 'hsl(var(--foreground) / 0.55)',
                             }}
                           />
                           <p className="text-sm capitalize">{video.status}</p>
@@ -268,11 +271,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
                     )}
                   </div>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeVideo(video.id)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => removeVideo(video.id)}>
                     <X size={16} />
                   </Button>
                 </div>

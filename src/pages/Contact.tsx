@@ -1,32 +1,99 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FloatingInput } from "@/components/effects";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Mail, Clock, MessageCircle, Shield, Bug, HelpCircle, ChevronDown, ChevronRight, Send, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { ColourfulText } from "@/components/effects/ColourfulText";
-import { WordRotate } from "@/components/effects/WordRotate";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FloatingInput } from '@/components/effects';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Mail,
+  Clock,
+  MessageCircle,
+  Shield,
+  Bug,
+  HelpCircle,
+  ChevronDown,
+  ChevronRight,
+  Send,
+  Loader2,
+} from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { ColourfulText } from '@/components/effects/ColourfulText';
+import { WordRotate } from '@/components/effects/WordRotate';
 
 const categories = [
-  { value: "support", label: "Email Support", icon: Mail, email: "support@queer.guide", responseTime: "24 hours" },
-  { value: "safety", label: "Safety & Moderation", icon: Shield, email: "safety@queer.guide", responseTime: "6 hours" },
-  { value: "partnerships", label: "Partnerships", icon: MessageCircle, email: "partnerships@queer.guide", responseTime: "48 hours" },
-  { value: "bugs", label: "Bug Reports", icon: Bug, email: "bugs@queer.guide", responseTime: "72 hours" },
-  { value: "other", label: "Other", icon: Mail, email: "support@queer.guide", responseTime: "48 hours" },
+  {
+    value: 'support',
+    label: 'Email Support',
+    icon: Mail,
+    email: 'support@queer.guide',
+    responseTime: '24 hours',
+  },
+  {
+    value: 'safety',
+    label: 'Safety & Moderation',
+    icon: Shield,
+    email: 'safety@queer.guide',
+    responseTime: '6 hours',
+  },
+  {
+    value: 'partnerships',
+    label: 'Partnerships',
+    icon: MessageCircle,
+    email: 'partnerships@queer.guide',
+    responseTime: '48 hours',
+  },
+  {
+    value: 'bugs',
+    label: 'Bug Reports',
+    icon: Bug,
+    email: 'bugs@queer.guide',
+    responseTime: '72 hours',
+  },
+  {
+    value: 'other',
+    label: 'Other',
+    icon: Mail,
+    email: 'support@queer.guide',
+    responseTime: '48 hours',
+  },
 ];
 
 const faqs = [
-  { question: "How do I add my business to The Queer Guide?", answer: "Create an account and navigate to the Venues section. Click 'Add Venue' and fill out the required information. All submissions are reviewed before being published." },
-  { question: "How do you verify that venues are LGBTQ+ friendly?", answer: "We use a combination of community reviews, direct outreach to businesses, and verification from local ambassadors. Venues with verified status have been confirmed through multiple sources." },
-  { question: "Can I report inappropriate content or behavior?", answer: "Yes. We have a zero-tolerance policy for harassment, discrimination, or inappropriate content. Use the report button on any post or contact our safety team directly." },
-  { question: "How can I become a local ambassador?", answer: "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Contact us through partnerships@queer.guide if you're interested." },
-  { question: "Is my personal information secure?", answer: "Yes, we take privacy seriously. Please review our Privacy Policy for detailed information about how we collect, use, and protect your data." },
+  {
+    question: 'How do I add my business to The Queer Guide?',
+    answer:
+      "Create an account and navigate to the Venues section. Click 'Add Venue' and fill out the required information. All submissions are reviewed before being published.",
+  },
+  {
+    question: 'How do you verify that venues are LGBTQ+ friendly?',
+    answer:
+      'We use a combination of community reviews, direct outreach to businesses, and verification from local ambassadors. Venues with verified status have been confirmed through multiple sources.',
+  },
+  {
+    question: 'Can I report inappropriate content or behavior?',
+    answer:
+      'Yes. We have a zero-tolerance policy for harassment, discrimination, or inappropriate content. Use the report button on any post or contact our safety team directly.',
+  },
+  {
+    question: 'How can I become a local ambassador?',
+    answer:
+      "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Contact us through partnerships@queer.guide if you're interested.",
+  },
+  {
+    question: 'Is my personal information secure?',
+    answer:
+      'Yes, we take privacy seriously. Please review our Privacy Policy for detailed information about how we collect, use, and protect your data.',
+  },
 ];
 
 export default function Contact() {
@@ -36,10 +103,10 @@ export default function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
-    name: "",
-    email: user?.email ?? "",
-    category: "",
-    message: "",
+    name: '',
+    email: user?.email ?? '',
+    category: '',
+    message: '',
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -48,7 +115,7 @@ export default function Contact() {
 
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("contact-form", {
+      const { data, error } = await supabase.functions.invoke('contact-form', {
         body: form,
       });
 
@@ -56,10 +123,10 @@ export default function Contact() {
       if (data?.error) throw new Error(data.error);
 
       setSubmitted(true);
-      toast({ title: "Message sent", description: "We'll get back to you soon." });
+      toast({ title: 'Message sent', description: "We'll get back to you soon." });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      toast({ title: "Error", description: message, variant: "destructive" });
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -91,12 +158,18 @@ export default function Contact() {
             <CardContent>
               {submitted ? (
                 <div className="text-center py-8">
-                  <Mail size={48} style={{ margin: "0 auto 16px", opacity: 0.5 }} />
+                  <Mail size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
                   <h3 className="text-lg font-semibold mb-2">Message Sent</h3>
                   <p className="text-sm text-muted-foreground mb-6">
                     We'll respond as soon as possible.
                   </p>
-                  <Button variant="outline" onClick={() => { setSubmitted(false); setForm({ name: "", email: user?.email ?? "", category: "", message: "" }); }}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSubmitted(false);
+                      setForm({ name: '', email: user?.email ?? '', category: '', message: '' });
+                    }}
+                  >
                     Send Another
                   </Button>
                 </div>
@@ -118,13 +191,21 @@ export default function Contact() {
                     />
                     <div className="flex flex-col gap-2">
                       <Label id="contact-category-label">Category</Label>
-                      <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}>
-                        <SelectTrigger aria-labelledby="contact-category-label" aria-label="Category">
+                      <Select
+                        value={form.category}
+                        onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
+                      >
+                        <SelectTrigger
+                          aria-labelledby="contact-category-label"
+                          aria-label="Category"
+                        >
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent>
                           {categories.map((c) => (
-                            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.label}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -140,9 +221,22 @@ export default function Contact() {
                         style={{ minHeight: 120 }}
                       />
                     </div>
-                    <Button type="submit" disabled={submitting || !form.name || !form.email || !form.category || !form.message}>
-                      {submitting ? <Loader2 size={16} style={{ marginRight: 8, animation: "spin 1s linear infinite" }} /> : <Send size={16} className="mr-2" />}
-                      {submitting ? "Sending..." : "Send Message"}
+                    <Button
+                      type="submit"
+                      disabled={
+                        submitting || !form.name || !form.email || !form.category || !form.message
+                      }
+                    >
+                      {submitting ? (
+                        <Loader2
+                          size={16}
+                          style={{ animation: 'spin 1s linear infinite' }}
+                          className="mr-2"
+                        />
+                      ) : (
+                        <Send size={16} className="mr-2" />
+                      )}
+                      {submitting ? 'Sending...' : 'Send Message'}
                     </Button>
                   </div>
                 </form>
@@ -153,36 +247,45 @@ export default function Contact() {
           {/* Contact Methods + Info */}
           <div className="flex flex-col gap-4">
             <h2 className="text-xl font-bold">Direct Contact</h2>
-            {categories.filter((c) => c.value !== "other").map((method) => (
-              <Card key={method.value}>
-                <CardContent>
-                  <div className="flex items-start gap-4">
-                    <method.icon style={{ width: 20, height: 20, flexShrink: 0, marginTop: 2 }} className="text-primary" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-15">{method.label}</p>
-                      <div className="flex items-center justify-between mt-1">
-                        <a href={`mailto:${method.email}`} className="text-sm text-primary">
-                          {method.email}
-                        </a>
-                        <span className="text-xs text-muted-foreground">
-                          ~{method.responseTime}
-                        </span>
+            {categories
+              .filter((c) => c.value !== 'other')
+              .map((method) => (
+                <Card key={method.value}>
+                  <CardContent>
+                    <div className="flex items-start gap-4">
+                      <method.icon
+                        style={{ width: 20, height: 20 }}
+                        className="text-primary shrink-0 mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold text-15">{method.label}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <a href={`mailto:${method.email}`} className="text-sm text-primary">
+                            {method.email}
+                          </a>
+                          <span className="text-xs text-muted-foreground">
+                            ~{method.responseTime}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
 
             <Card>
               <CardContent>
                 <div className="flex items-center gap-3">
                   <Clock size={18} className="text-primary" />
-                  <p className="text-sm"><strong>Response Time</strong> — within 24 hours</p>
+                  <p className="text-sm">
+                    <strong>Response Time</strong> — within 24 hours
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <Shield size={18} className="text-primary" />
-                  <p className="text-sm"><strong>Safety First</strong> — priority support for safety concerns</p>
+                  <p className="text-sm">
+                    <strong>Safety First</strong> — priority support for safety concerns
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -198,11 +301,18 @@ export default function Contact() {
           <div className="flex flex-col gap-3">
             {faqs.map((faq, index) => (
               <Card key={index}>
-                <Collapsible open={openFaq === index} onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}>
+                <Collapsible
+                  open={openFaq === index}
+                  onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}
+                >
                   <CollapsibleTrigger className="flex w-full flex-col gap-1.5 p-6 text-left">
                     <div className="flex w-full items-center justify-between">
                       <p className="font-semibold text-15">{faq.question}</p>
-                      {openFaq === index ? <ChevronDown size={18} className="shrink-0" /> : <ChevronRight size={18} className="shrink-0" />}
+                      {openFaq === index ? (
+                        <ChevronDown size={18} className="shrink-0" />
+                      ) : (
+                        <ChevronRight size={18} className="shrink-0" />
+                      )}
                     </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent>

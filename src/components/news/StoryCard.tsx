@@ -35,30 +35,38 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
           role="presentation"
           width={400}
           height={200}
-          style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
-          className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
+          style={{ width: '100%', height: 200, objectFit: 'cover' }}
+          className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04] block"
           onError={() => setImgFailed(true)}
         />
         <Badge
-          className="absolute top-2 left-2 inline-flex items-center gap-1"
-          style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}
+          className="absolute top-2 left-2 inline-flex items-center gap-1 text-background"
+          style={{ backgroundColor: 'hsl(var(--foreground))' }}
         >
           <Layers size={10} aria-hidden="true" />
           {story.article_count} articles
         </Badge>
       </div>
       <div className="flex flex-col gap-2 px-4 pb-4">
-        <h3 className="text-lg font-bold leading-tight m-0" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <h3
+          className="text-lg font-bold leading-tight m-0 overflow-hidden"
+          style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
+        >
           {title}
         </h3>
         {hero?.excerpt && (
-          <p className="text-sm text-muted-foreground" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          <p
+            className="text-sm text-muted-foreground overflow-hidden"
+            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+          >
             {safeText(hero.excerpt)}
           </p>
         )}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Clock size={12} aria-hidden="true" />
-          <span>Updated {formatDistanceToNow(new Date(story.last_updated_at), { addSuffix: true })}</span>
+          <span>
+            Updated {formatDistanceToNow(new Date(story.last_updated_at), { addSuffix: true })}
+          </span>
         </div>
       </div>
     </LocalizedLink>

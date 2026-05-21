@@ -64,12 +64,8 @@ export const EmptyState = ({
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         >
           <Icon
-            style={{
-              width: 32,
-              height: 32,
-              color: 'hsl(var(--foreground))',
-              opacity: iconOpacity,
-            }}
+            style={{ width: 32, height: 32, opacity: iconOpacity }}
+            className="text-foreground"
           />
         </motion.div>
         <motion.h6
@@ -94,11 +90,7 @@ export const EmptyState = ({
             data-testid="empty-state-active-filters"
           >
             {activeFilters.map((chip, i) => (
-              <Badge
-                key={`${chip.label}-${i}`}
-                variant="outline"
-                className="gap-1 pr-1"
-              >
+              <Badge key={`${chip.label}-${i}`} variant="outline" className="gap-1 pr-1">
                 {chip.label}
                 <button
                   type="button"
@@ -123,7 +115,10 @@ export const EmptyState = ({
             </Button>
           )}
           {secondaryAction ? (
-            <Button variant={secondaryAction.variant || 'outline'} onClick={secondaryAction.onClick}>
+            <Button
+              variant={secondaryAction.variant || 'outline'}
+              onClick={secondaryAction.onClick}
+            >
               {secondaryAction.label}
             </Button>
           ) : (
@@ -193,17 +188,12 @@ export const ErrorState = ({
   primaryAction,
   secondaryAction,
 }: ErrorStateProps) => {
-  const headline =
-    title ?? message ?? 'Something went wrong while loading data. Please try again.';
+  const headline = title ?? message ?? 'Something went wrong while loading data. Please try again.';
   return (
     <Card>
       <CardContent>
         <div role="alert" aria-live="polite">
-          <h2
-            className={`text-lg font-semibold text-destructive ${
-              description ? 'mb-2' : 'mb-4'
-            }`}
-          >
+          <h2 className={`text-lg font-semibold text-destructive ${description ? 'mb-2' : 'mb-4'}`}>
             {headline}
           </h2>
           {description && (

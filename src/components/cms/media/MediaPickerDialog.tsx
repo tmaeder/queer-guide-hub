@@ -87,7 +87,8 @@ function formatFileSize(bytes: number): string {
 }
 
 function getMimeIcon(mimeType: string) {
-  if (mimeType.startsWith('image/')) return <ImageIcon size={40} className="text-muted-foreground" />;
+  if (mimeType.startsWith('image/'))
+    return <ImageIcon size={40} className="text-muted-foreground" />;
   if (mimeType.startsWith('video/')) return <Film size={40} className="text-muted-foreground" />;
   if (mimeType.startsWith('audio/')) return <Music size={40} className="text-muted-foreground" />;
   return <FileText size={40} className="text-muted-foreground" />;
@@ -216,10 +217,7 @@ export default function MediaPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent
-        className="max-w-5xl w-full p-0 flex flex-col"
-        style={{ height: '80vh' }}
-      >
+      <DialogContent className="max-w-5xl w-full p-0 flex flex-col" style={{ height: '80vh' }}>
         <DialogHeader className="flex flex-row items-center justify-between pb-1 px-6 pt-4 space-y-0">
           <DialogTitle className="text-lg">Select Media</DialogTitle>
           <Button onClick={onClose} variant="ghost" size="sm" className="h-7 w-7 p-0">
@@ -268,11 +266,7 @@ export default function MediaPickerDialog({
                     className="pl-9 h-9"
                   />
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowUploader(!showUploader)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setShowUploader(!showUploader)}>
                   <Upload size={16} className="mr-1" />
                   Upload
                 </Button>
@@ -373,9 +367,7 @@ export default function MediaPickerDialog({
                         tabIndex={0}
                         aria-pressed={isSelected}
                         className={`cursor-pointer rounded overflow-hidden border-2 relative bg-muted hover:border-muted ${
-                          isSelected
-                            ? 'border-primary hover:border-primary'
-                            : 'border-transparent'
+                          isSelected ? 'border-primary hover:border-primary' : 'border-transparent'
                         }`}
                       >
                         {isImage ? (
@@ -383,12 +375,8 @@ export default function MediaPickerDialog({
                             src={getMediaThumbnailUrl(item)}
                             alt={item.alt_text?.en || item.filename}
                             loading="lazy"
-                            style={{
-                              width: '100%',
-                              height: 160,
-                              objectFit: 'cover',
-                              display: 'block',
-                            }}
+                            style={{ width: '100%', height: 160, objectFit: 'cover' }}
+                            className="block"
                           />
                         ) : (
                           <div
@@ -450,9 +438,7 @@ export default function MediaPickerDialog({
                     <PaginationItem>
                       <PaginationPrevious
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        className={
-                          page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
-                        }
+                        className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                       />
                     </PaginationItem>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
@@ -470,9 +456,7 @@ export default function MediaPickerDialog({
                       <PaginationNext
                         onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                         className={
-                          page === totalPages
-                            ? 'pointer-events-none opacity-50'
-                            : 'cursor-pointer'
+                          page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'
                         }
                       />
                     </PaginationItem>
@@ -486,10 +470,7 @@ export default function MediaPickerDialog({
         {/* External sources mode */}
         {dialogMode === 'external' && (
           <div className="flex-1 overflow-auto p-3 border-y border-border">
-            <ExternalImageSearch
-              onSelect={handleExternalSelect}
-              initialQuery={searchHint || ''}
-            />
+            <ExternalImageSearch onSelect={handleExternalSelect} initialQuery={searchHint || ''} />
           </div>
         )}
 

@@ -84,9 +84,7 @@ export function StartTripHero() {
           required
         />
         <div className="flex flex-col gap-1">
-          <Label htmlFor="travel-hero-start">
-            {t('pages.travel.hero.start', 'Start')}
-          </Label>
+          <Label htmlFor="travel-hero-start">{t('pages.travel.hero.start', 'Start')}</Label>
           <Input
             id="travel-hero-start"
             type="date"
@@ -96,9 +94,7 @@ export function StartTripHero() {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor="travel-hero-end">
-            {t('pages.travel.hero.end', 'End')}
-          </Label>
+          <Label htmlFor="travel-hero-end">{t('pages.travel.hero.end', 'End')}</Label>
           <Input
             id="travel-hero-end"
             type="date"
@@ -107,14 +103,8 @@ export function StartTripHero() {
             min={startDate || today}
           />
         </div>
-        <Button
-          onClick={handlePlan}
-          disabled={createTrip.isPending}
-          data-testid="travel-plan-trip"
-        >
-          {createTrip.isPending && (
-            <Loader2 size={16} className="animate-spin" style={{ marginRight: 6 }} />
-          )}
+        <Button onClick={handlePlan} disabled={createTrip.isPending} data-testid="travel-plan-trip">
+          {createTrip.isPending && <Loader2 size={16} className="animate-spin mr-1.5" />}
           {t('pages.travel.hero.cta', 'Plan this trip')}
         </Button>
       </div>

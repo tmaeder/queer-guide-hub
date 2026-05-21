@@ -72,7 +72,11 @@ export interface EntityMapProps {
    * Fires on map `moveend` with the current bounds. Used by /search to
    * implement "Search this area" — drives a lat/lng/radius refinement.
    */
-  onMoveEnd?: (info: { center: [number, number]; bounds: { north: number; south: number; east: number; west: number }; zoom: number }) => void;
+  onMoveEnd?: (info: {
+    center: [number, number];
+    bounds: { north: number; south: number; east: number; west: number };
+    zoom: number;
+  }) => void;
 }
 
 const PRIMARY_MARKER_SOURCE = 'entity-primary';
@@ -121,7 +125,12 @@ export const EntityMap = ({
 
   const isVisitedMarker = useCallback(
     (m: EntityMapMarker) =>
-      !!(visitedLookup && m.entityType && m.entityId && visitedLookup.has(m.entityType, m.entityId)),
+      !!(
+        visitedLookup &&
+        m.entityType &&
+        m.entityId &&
+        visitedLookup.has(m.entityType, m.entityId)
+      ),
     [visitedLookup],
   );
 
@@ -163,7 +172,12 @@ export const EntityMap = ({
   useMapBoundaryLayers({
     map: mapRef.current,
     mapReady,
-    config: boundary?.config ?? { key: '_none', entityType: 'countries', matchKey: '', matchMode: 'code' },
+    config: boundary?.config ?? {
+      key: '_none',
+      entityType: 'countries',
+      matchKey: '',
+      matchMode: 'code',
+    },
     boundaries: boundary?.geojson,
     markers: boundary?.markers ?? [],
     enabled: !!boundary,
@@ -353,7 +367,11 @@ export const EntityMap = ({
           if (!feat || feat.geometry.type !== 'Point') return;
           const props = feat.properties as Record<string, unknown>;
           let meta: Record<string, unknown> = {};
-          try { meta = JSON.parse(props.meta ?? '{}'); } catch { /* ignore */ }
+          try {
+            meta = JSON.parse(props.meta ?? '{}');
+          } catch {
+            /* ignore */
+          }
 
           showPopup(map, e.lngLat, {
             id: props.id,
@@ -380,7 +398,10 @@ export const EntityMap = ({
   }, [primary, nearby, mapReady, showPopup, isVisitedMarker]);
 
   return (
-    <div className={`${className} rounded-element`} style={{ position: 'relative', overflow: 'hidden' }}>
+    <div
+      className={`${className} rounded-element`}
+      style={{ position: 'relative', overflow: 'hidden' }}
+    >
       <div ref={containerRef} style={{ height, width: '100%' }} />
 
       {visitedLookup && !visitedLookup.isEmpty && (
@@ -401,16 +422,13 @@ export const EntityMap = ({
 
       <div
         ref={tooltipRef}
-        className="rounded-element shadow-[var(--shadow-aceternity-sm)]"
+        className="rounded-element shadow-[var(--shadow-aceternity-sm)] hidden absolute whitespace-nowrap"
         style={{
-          display: 'none',
-          position: 'absolute',
           pointerEvents: 'none',
           zIndex: 20,
           background: 'rgba(255,255,255,0.95)',
           padding: '5px 10px',
           fontSize: 13,
-          whiteSpace: 'nowrap',
         }}
       />
 
@@ -429,9 +447,7 @@ export const EntityMap = ({
           style={{ backgroundColor: 'hsl(var(--muted))', zIndex: 5 }}
           role="status"
         >
-          <p className="text-sm text-muted-foreground">
-            Map couldn&rsquo;t load.
-          </p>
+          <p className="text-sm text-muted-foreground">Map couldn&rsquo;t load.</p>
           {primary[0] && (
             <a
               href={`https://www.openstreetmap.org/?mlat=${primary[0].lat}&mlon=${primary[0].lng}#map=15/${primary[0].lat}/${primary[0].lng}`}

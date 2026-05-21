@@ -15,7 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, ThumbsUp, ThumbsDown, Flag, ShieldAlert, Inbox, MessageSquare, X } from 'lucide-react';
+import {
+  Loader2,
+  ThumbsUp,
+  ThumbsDown,
+  Flag,
+  ShieldAlert,
+  Inbox,
+  MessageSquare,
+  X,
+} from 'lucide-react';
 import { listFromWhere, updateRow } from '@/hooks/usePageFetchers';
 import { CommentThread } from './CommentThread';
 
@@ -94,8 +103,9 @@ export function ModerationQueue() {
 
   const counts = useMemo(() => {
     return {
-      pending: items.filter((i) => !i.is_spam && ['new', 'under_review'].includes(i.feedback_status))
-        .length,
+      pending: items.filter(
+        (i) => !i.is_spam && ['new', 'under_review'].includes(i.feedback_status),
+      ).length,
       spam: items.filter((i) => i.is_spam).length,
       total: items.length,
     };
@@ -164,7 +174,7 @@ export function ModerationQueue() {
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center py-16 text-muted-foreground">
-          <Inbox size={36} style={{ opacity: 0.3, marginBottom: 8 }} />
+          <Inbox size={36} style={{ opacity: 0.3 }} className="mb-2" />
           <p className="text-sm">Nothing to moderate.</p>
         </div>
       ) : (
@@ -230,7 +240,9 @@ export function ModerationQueue() {
                   <Button
                     size="sm"
                     disabled={busy}
-                    onClick={() => transition(item.id, { feedback_status: 'approved', status: 'approved' })}
+                    onClick={() =>
+                      transition(item.id, { feedback_status: 'approved', status: 'approved' })
+                    }
                     className="font-semibold text-xs bg-foreground hover:bg-foreground text-white"
                   >
                     <ThumbsUp size={14} />
@@ -240,7 +252,9 @@ export function ModerationQueue() {
                     size="sm"
                     variant="outline"
                     disabled={busy}
-                    onClick={() => transition(item.id, { feedback_status: 'rejected', status: 'rejected' })}
+                    onClick={() =>
+                      transition(item.id, { feedback_status: 'rejected', status: 'rejected' })
+                    }
                     className="font-semibold text-xs text-destructive border-destructive/50 hover:bg-destructive/10"
                   >
                     <ThumbsDown size={14} />

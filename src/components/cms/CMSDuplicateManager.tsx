@@ -7,7 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
@@ -99,24 +106,51 @@ export function CMSDuplicateManager() {
   const [reviewReason, setReviewReason] = useState('');
   const [isRunningDetection, setIsRunningDetection] = useState(false);
 
-  const pendingCandidates = duplicateCandidates.filter(c => c.status === 'pending');
-  const reviewedCandidates = duplicateCandidates.filter(c => c.status !== 'pending');
+  const pendingCandidates = duplicateCandidates.filter((c) => c.status === 'pending');
+  const reviewedCandidates = duplicateCandidates.filter((c) => c.status !== 'pending');
 
   const getStatusStyle = (status: string): React.CSSProperties => {
     switch (status) {
-      case 'pending': return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)', borderColor: 'hsl(var(--muted))' };
-      case 'merged': return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
-      case 'not_duplicate': return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', borderColor: 'hsl(var(--muted))' };
-      case 'deferred': return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
-      default: return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
+      case 'pending':
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground) / 0.7)',
+          borderColor: 'hsl(var(--muted))',
+        };
+      case 'merged':
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
+      case 'not_duplicate':
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--muted-foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
+      case 'deferred':
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
+      default:
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
     }
   };
 
   const runDuplicateDetection = async () => {
     setIsRunningDetection(true);
     try {
-      let events: Array<{ id: string; title?: string; created_at: string; description?: string }> = [];
-      let venues: Array<{ id: string; name?: string; created_at: string; description?: string }> = [];
+      let events: Array<{ id: string; title?: string; created_at: string; description?: string }> =
+        [];
+      let venues: Array<{ id: string; name?: string; created_at: string; description?: string }> =
+        [];
       try {
         events = await listFrom('events', 'id, title, created_at, description', undefined, 100);
         venues = await listFrom('venues', 'id, name, created_at, description', undefined, 100);
@@ -127,14 +161,23 @@ export function CMSDuplicateManager() {
         return;
       }
 
-      const newCandidates: Array<{ id: string; type: string; item1: Record<string, unknown>; item2: Record<string, unknown>; similarity_score: number }> = [];
+      const newCandidates: Array<{
+        id: string;
+        type: string;
+        item1: Record<string, unknown>;
+        item2: Record<string, unknown>;
+        similarity_score: number;
+      }> = [];
 
       if (events) {
         for (let i = 0; i < events.length; i++) {
           for (let j = i + 1; j < events.length; j++) {
             const event1 = events[i];
             const event2 = events[j];
-            const titleSimilarity = calculateTitleSimilarity(event1.title || '', event2.title || '');
+            const titleSimilarity = calculateTitleSimilarity(
+              event1.title || '',
+              event2.title || '',
+            );
 
             if (titleSimilarity > 0.7) {
               newCandidates.push({
@@ -208,7 +251,9 @@ export function CMSDuplicateManager() {
       }
 
       setDuplicateCandidates(newCandidates);
-      toast.success(`Found ${newCandidates.length} potential duplicate${newCandidates.length !== 1 ? 's' : ''}`);
+      toast.success(
+        `Found ${newCandidates.length} potential duplicate${newCandidates.length !== 1 ? 's' : ''}`,
+      );
     } catch (error) {
       console.error('Error running duplicate detection:', error);
       toast.error('Failed to run duplicate detection');
@@ -221,7 +266,7 @@ export function CMSDuplicateManager() {
     const words1 = title1.toLowerCase().split(/\s+/);
     const words2 = title2.toLowerCase().split(/\s+/);
     const allWords = new Set([...words1, ...words2]);
-    const intersection = words1.filter(word => words2.includes(word));
+    const intersection = words1.filter((word) => words2.includes(word));
     return intersection.length / allWords.size;
   };
 
@@ -231,13 +276,21 @@ export function CMSDuplicateManager() {
     // console.log.
   };
 
-  const CandidateComparison = ({ candidate }: { candidate: { id: string; type: string; item1: Record<string, unknown>; item2: Record<string, unknown>; similarity_score: number } }) => (
+  const CandidateComparison = ({
+    candidate,
+  }: {
+    candidate: {
+      id: string;
+      type: string;
+      item1: Record<string, unknown>;
+      item2: Record<string, unknown>;
+      similarity_score: number;
+    };
+  }) => (
     <div className="flex flex-col gap-6">
       {/* Similarity Score */}
       <div className="text-center">
-        <h4 className="text-xl font-bold">
-          {Math.round(candidate.similarity_score * 100)}%
-        </h4>
+        <h4 className="text-xl font-bold">{Math.round(candidate.similarity_score * 100)}%</h4>
         <p className="text-sm text-muted-foreground">Similarity Score</p>
         <Progress value={candidate.similarity_score * 100} />
       </div>
@@ -248,8 +301,8 @@ export function CMSDuplicateManager() {
           <CardHeader>
             <CardTitle>Original Content</CardTitle>
             <CardDescription>
-              Created {new Date(candidate.content_1.created_at).toLocaleDateString()} •
-              Source: {candidate.content_1.source}
+              Created {new Date(candidate.content_1.created_at).toLocaleDateString()} • Source:{' '}
+              {candidate.content_1.source}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -260,9 +313,7 @@ export function CMSDuplicateManager() {
               </div>
               <div>
                 <Label>Type</Label>
-                <Badge variant="outline">
-                  {candidate.content_1.content_type}
-                </Badge>
+                <Badge variant="outline">{candidate.content_1.content_type}</Badge>
               </div>
             </div>
           </CardContent>
@@ -272,8 +323,8 @@ export function CMSDuplicateManager() {
           <CardHeader>
             <CardTitle>Potential Duplicate</CardTitle>
             <CardDescription>
-              Created {new Date(candidate.content_2.created_at).toLocaleDateString()} •
-              Source: {candidate.content_2.source}
+              Created {new Date(candidate.content_2.created_at).toLocaleDateString()} • Source:{' '}
+              {candidate.content_2.source}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -284,9 +335,7 @@ export function CMSDuplicateManager() {
               </div>
               <div>
                 <Label>Type</Label>
-                <Badge variant="outline">
-                  {candidate.content_2.content_type}
-                </Badge>
+                <Badge variant="outline">{candidate.content_2.content_type}</Badge>
               </div>
             </div>
           </CardContent>
@@ -306,35 +355,39 @@ export function CMSDuplicateManager() {
                 <p className="text-sm">
                   {Math.round(candidate.matching_criteria.title_similarity * 100)}%
                 </p>
-                {candidate.matching_criteria.title_similarity > 0.8 ?
-                  <Check size={16} className="text-foreground" /> :
+                {candidate.matching_criteria.title_similarity > 0.8 ? (
+                  <Check size={16} className="text-foreground" />
+                ) : (
                   <X size={16} className="text-destructive" />
-                }
+                )}
               </div>
             </div>
 
             <div className="flex items-center justify-between">
               <p className="text-sm">Location Match</p>
-              {candidate.matching_criteria.location_match ?
-                <Check size={16} className="text-foreground" /> :
+              {candidate.matching_criteria.location_match ? (
+                <Check size={16} className="text-foreground" />
+              ) : (
                 <X size={16} className="text-destructive" />
-              }
+              )}
             </div>
 
             <div className="flex items-center justify-between">
               <p className="text-sm">Date Overlap</p>
-              {candidate.matching_criteria.date_overlap ?
-                <Check size={16} className="text-foreground" /> :
+              {candidate.matching_criteria.date_overlap ? (
+                <Check size={16} className="text-foreground" />
+              ) : (
                 <X size={16} className="text-destructive" />
-              }
+              )}
             </div>
 
             <div className="flex items-center justify-between">
               <p className="text-sm">External ID Match</p>
-              {candidate.matching_criteria.external_id_match ?
-                <Check size={16} className="text-foreground" /> :
+              {candidate.matching_criteria.external_id_match ? (
+                <Check size={16} className="text-foreground" />
+              ) : (
                 <X size={16} className="text-destructive" />
-              }
+              )}
             </div>
           </div>
         </CardContent>
@@ -355,25 +408,15 @@ export function CMSDuplicateManager() {
           </div>
 
           <div className="flex gap-2">
-            <Button
-              onClick={() => handleDecision(candidate.id, 'merge')}
-
-            >
+            <Button onClick={() => handleDecision(candidate.id, 'merge')}>
               <Merge size={16} className="mr-2" />
               Merge Items
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleDecision(candidate.id, 'not_duplicate')}
-
-            >
+            <Button variant="outline" onClick={() => handleDecision(candidate.id, 'not_duplicate')}>
               <X size={16} className="mr-2" />
               Not Duplicate
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleDecision(candidate.id, 'defer')}
-            >
+            <Button variant="outline" onClick={() => handleDecision(candidate.id, 'defer')}>
               Defer
             </Button>
           </div>
@@ -388,14 +431,19 @@ export function CMSDuplicateManager() {
       <div className="flex items-center justify-between">
         <div>
           <h5 className="text-lg font-semibold">Duplicate Detection</h5>
-          <p className="text-sm text-muted-foreground">Review and manage potential duplicate content</p>
+          <p className="text-sm text-muted-foreground">
+            Review and manage potential duplicate content
+          </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={runDuplicateDetection}
-          disabled={isRunningDetection}
-        >
-          <RotateCcw style={{ height: 16, width: 16, marginRight: 8, ...(isRunningDetection ? { animation: 'spin 1s linear infinite' } : {}) }} />
+        <Button variant="outline" onClick={runDuplicateDetection} disabled={isRunningDetection}>
+          <RotateCcw
+            style={{
+              height: 16,
+              width: 16,
+              marginRight: 8,
+              ...(isRunningDetection ? { animation: 'spin 1s linear infinite' } : {}),
+            }}
+          />
           {isRunningDetection ? 'Running...' : 'Run Detection'}
         </Button>
       </div>
@@ -417,7 +465,7 @@ export function CMSDuplicateManager() {
           </CardHeader>
           <CardContent>
             <h5 className="text-lg font-semibold">
-              {reviewedCandidates.filter(c => c.status === 'merged').length}
+              {reviewedCandidates.filter((c) => c.status === 'merged').length}
             </h5>
           </CardContent>
         </Card>
@@ -428,7 +476,7 @@ export function CMSDuplicateManager() {
           </CardHeader>
           <CardContent>
             <h5 className="text-lg font-semibold">
-              {reviewedCandidates.filter(c => c.status === 'not_duplicate').length}
+              {reviewedCandidates.filter((c) => c.status === 'not_duplicate').length}
             </h5>
           </CardContent>
         </Card>
@@ -439,7 +487,7 @@ export function CMSDuplicateManager() {
           </CardHeader>
           <CardContent>
             <h5 className="text-lg font-semibold">
-              {reviewedCandidates.filter(c => c.status === 'deferred').length}
+              {reviewedCandidates.filter((c) => c.status === 'deferred').length}
             </h5>
           </CardContent>
         </Card>
@@ -456,9 +504,11 @@ export function CMSDuplicateManager() {
             {pendingCandidates.length === 0 ? (
               <Card>
                 <CardContent>
-                  <Check size={48} style={{ color: 'hsl(var(--foreground))', margin: '0 auto 16px' }} />
+                  <Check size={48} style={{ margin: '0 auto 16px' }} className="text-foreground" />
                   <h6 className="text-base font-semibold">No pending duplicates</h6>
-                  <p className="text-sm text-muted-foreground">All potential duplicates have been reviewed</p>
+                  <p className="text-sm text-muted-foreground">
+                    All potential duplicates have been reviewed
+                  </p>
                 </CardContent>
               </Card>
             ) : (
@@ -468,7 +518,10 @@ export function CMSDuplicateManager() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle>
-                          <AlertTriangle size={20} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
+                          <AlertTriangle
+                            size={20}
+                            style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                          />
                           Potential Duplicate Detected
                           <Badge style={{ border: '1px solid' }}>
                             {Math.round(candidate.similarity_score * 100)}% match
@@ -484,13 +537,9 @@ export function CMSDuplicateManager() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div>
-                          <p>
-                            "{Object.values(candidate.content_1.title)[0] as string}"
-                          </p>
+                          <p>"{Object.values(candidate.content_1.title)[0] as string}"</p>
                           <p className="text-sm text-muted-foreground">vs</p>
-                          <p>
-                            "{Object.values(candidate.content_2.title)[0] as string}"
-                          </p>
+                          <p>"{Object.values(candidate.content_2.title)[0] as string}"</p>
                         </div>
                       </div>
 
@@ -533,7 +582,10 @@ export function CMSDuplicateManager() {
                         Duplicate Review Completed
                       </CardTitle>
                       <CardDescription>
-                        Reviewed {candidate.reviewed_at ? new Date(candidate.reviewed_at).toLocaleString() : 'Unknown'}
+                        Reviewed{' '}
+                        {candidate.reviewed_at
+                          ? new Date(candidate.reviewed_at).toLocaleString()
+                          : 'Unknown'}
                       </CardDescription>
                     </div>
                   </div>

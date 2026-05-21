@@ -109,7 +109,9 @@ export function DataTableBulkEditDialog({
                 onCheckedChange={() => toggleField(field.key)}
               />
               <div className="flex-1 flex flex-col gap-1">
-                <Label style={{ fontSize: 13, fontWeight: 500 }}>{field.label}</Label>
+                <Label style={{ fontSize: 13 }} className="font-medium">
+                  {field.label}
+                </Label>
                 <BulkFieldInput
                   field={field}
                   value={values[field.key]}

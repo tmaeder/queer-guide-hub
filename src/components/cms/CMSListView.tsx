@@ -104,15 +104,15 @@ export function CMSListView({
     if (filters.sortBy !== column) {
       return <ArrowUpDown size={16} />;
     }
-    return filters.sortOrder === 'asc' ? (
-      <ArrowUp size={16} />
-    ) : (
-      <ArrowDown size={16} />
-    );
+    return filters.sortOrder === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />;
   };
 
   const SortableHeader = ({ column, children }: { column: string; children: React.ReactNode }) => (
-    <TableHead style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => updateSort(column)}>
+    <TableHead
+      style={{ userSelect: 'none' }}
+      className="cursor-pointer"
+      onClick={() => updateSort(column)}
+    >
       <div className="flex items-center gap-2 hover:text-foreground">
         {children}
         {getSortIcon(column)}
@@ -167,7 +167,11 @@ export function CMSListView({
     const { error } = await updateRow(tableName, item.id, { [titleField]: newVal });
     setEditingId(null);
     if (error) {
-      toast({ title: 'Save failed', description: (error as { message: string }).message, variant: 'destructive' });
+      toast({
+        title: 'Save failed',
+        description: (error as { message: string }).message,
+        variant: 'destructive',
+      });
     } else {
       toast({ title: 'Saved' });
       onRefresh();
@@ -178,17 +182,37 @@ export function CMSListView({
     switch (status?.toLowerCase()) {
       case 'active':
       case 'published':
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
       case 'draft':
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
       case 'inactive':
       case 'archived':
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--destructive))', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--destructive))',
+          borderColor: 'hsl(var(--muted))',
+        };
       case 'pending':
       case 'review':
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground) / 0.7)',
+          borderColor: 'hsl(var(--muted))',
+        };
       default:
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
     }
   };
 
@@ -219,9 +243,7 @@ export function CMSListView({
         <Card>
           <CardContent>
             <div className="p-8 text-center">
-              <div className="animate-pulse">
-                Loading content...
-              </div>
+              <div className="animate-pulse">Loading content...</div>
             </div>
           </CardContent>
         </Card>
@@ -243,9 +265,7 @@ export function CMSListView({
         <Card>
           <CardContent>
             <div className="p-8 text-center">
-              <p className="text-destructive mb-4">
-                {error}
-              </p>
+              <p className="text-destructive mb-4">{error}</p>
               <Button onClick={onRefresh}>Retry</Button>
             </div>
           </CardContent>
@@ -271,9 +291,7 @@ export function CMSListView({
         <div className="flex items-center gap-4">
           {selectedItems.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {selectedItems.length} selected
-              </span>
+              <span className="text-sm text-muted-foreground">{selectedItems.length} selected</span>
               <Button variant="outline" size="sm">
                 Bulk Actions
               </Button>
@@ -307,9 +325,7 @@ export function CMSListView({
         <CardContent>
           {filteredData.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                No content found matching your criteria.
-              </p>
+              <p className="text-muted-foreground">No content found matching your criteria.</p>
             </div>
           ) : (
             <div className="overflow-auto">
@@ -401,9 +417,8 @@ export function CMSListView({
                             )}
                             {item.description && (
                               <p
-                                className="text-sm text-muted-foreground"
+                                className="text-sm text-muted-foreground overflow-hidden"
                                 style={{
-                                  overflow: 'hidden',
                                   display: '-webkit-box',
                                   WebkitLineClamp: 1,
                                   WebkitBoxOrient: 'vertical',
@@ -523,7 +538,11 @@ export function CMSListView({
 
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" style={{ height: 32, width: 32, padding: 0 }}>
+                              <Button
+                                variant="ghost"
+                                style={{ height: 32, width: 32 }}
+                                className="p-0"
+                              >
                                 <MoreHorizontal size={16} />
                               </Button>
                             </DropdownMenuTrigger>
@@ -536,11 +555,11 @@ export function CMSListView({
                               }}
                             >
                               <DropdownMenuItem onClick={() => onEdit(item)}>
-                                <Edit size={16} style={{ marginRight: 8 }} />
+                                <Edit size={16} className="mr-2" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem disabled>
-                                <Eye size={16} style={{ marginRight: 8 }} />
+                                <Eye size={16} className="mr-2" />
                                 Preview
                               </DropdownMenuItem>
                               {onDelete &&
@@ -550,7 +569,7 @@ export function CMSListView({
                                     onClick={() => onDelete(item.id)}
                                     style={{ color: 'var(--destructive)' }}
                                   >
-                                    <Trash2 size={16} style={{ marginRight: 8 }} />
+                                    <Trash2 size={16} className="mr-2" />
                                     Delete
                                   </DropdownMenuItem>
                                 )}
@@ -590,9 +609,7 @@ export function CMSListView({
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-            <span className="text-sm text-muted-foreground">
-              per page
-            </span>
+            <span className="text-sm text-muted-foreground">per page</span>
           </div>
 
           <Pagination>

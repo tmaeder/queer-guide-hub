@@ -19,7 +19,12 @@ function buildGetTransferUrl(city: string): string {
   return `https://www.gettransfer.com/en?utm_source=travelpayouts&utm_medium=affiliate&location=${encodeURIComponent(city)}`;
 }
 
-export function TransferSection({ city, equalityScore, airportCode, compact = false }: TransferSectionProps) {
+export function TransferSection({
+  city,
+  equalityScore,
+  airportCode,
+  compact = false,
+}: TransferSectionProps) {
   const isLowSafety = equalityScore != null && equalityScore < 50;
   const kiwitaxiUrl = buildKiwitaxiUrl(city);
   const getTransferUrl = buildGetTransferUrl(city);
@@ -28,9 +33,15 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
     return (
       <div
         className="flex items-center gap-3 p-4"
-        style={{ backgroundColor: isLowSafety ? 'hsl(var(--warning) / 0.15)' : 'hsl(var(--muted))' }}
+        style={{
+          backgroundColor: isLowSafety ? 'hsl(var(--warning) / 0.15)' : 'hsl(var(--muted))',
+        }}
       >
-        <Bus size={20} style={{ color: isLowSafety ? 'var(--warning)' : 'var(--primary)', flexShrink: 0 }} />
+        <Bus
+          size={20}
+          style={{ color: isLowSafety ? 'var(--warning)' : 'var(--primary)' }}
+          className="shrink-0"
+        />
         <div className="flex-1">
           <p className="font-semibold text-sm">
             {isLowSafety ? 'Private Transfer Recommended' : `Airport Transfer in ${city}`}
@@ -58,7 +69,9 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
         {isLowSafety && (
           <div className="flex items-center gap-1 ml-2">
             <Shield size={14} style={{ color: 'var(--warning)' }} />
-            <p className="text-xs font-semibold" style={{ color: 'var(--warning)' }}>Recommended</p>
+            <p className="text-xs font-semibold" style={{ color: 'var(--warning)' }}>
+              Recommended
+            </p>
           </div>
         )}
       </div>
@@ -66,31 +79,41 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
       {isLowSafety && (
         <div className="p-3 mb-3" style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}>
           <p className="text-xs">
-            This destination has a lower LGBTQ+ safety score. We recommend booking a private transfer for a safer, more comfortable arrival.
+            This destination has a lower LGBTQ+ safety score. We recommend booking a private
+            transfer for a safer, more comfortable arrival.
           </p>
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card>
-          <CardContent style={{ padding: 16 }}>
+          <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">Kiwitaxi</p>
             <p className="text-xs text-muted-foreground mb-3">
               Pre-booked airport pickup, fixed price, meet & greet
             </p>
-            <Button size="sm" className="w-full" onClick={() => window.open(kiwitaxiUrl, '_blank', 'noopener')}>
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={() => window.open(kiwitaxiUrl, '_blank', 'noopener')}
+            >
               <ExternalLink size={14} className="mr-1" />
               Book Transfer
             </Button>
           </CardContent>
         </Card>
         <Card>
-          <CardContent style={{ padding: 16 }}>
+          <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">GetTransfer</p>
             <p className="text-xs text-muted-foreground mb-3">
               Private drivers, any route, competitive bidding
             </p>
-            <Button size="sm" variant="outline" className="w-full" onClick={() => window.open(getTransferUrl, '_blank', 'noopener')}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              onClick={() => window.open(getTransferUrl, '_blank', 'noopener')}
+            >
               <ExternalLink size={14} className="mr-1" />
               Get Quotes
             </Button>

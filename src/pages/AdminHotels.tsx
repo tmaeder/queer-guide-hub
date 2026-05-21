@@ -176,8 +176,10 @@ export default function AdminHotels() {
       featured: formData.featured,
       verified: formData.verified,
     };
-    if ((formData as Record<string, unknown>).city_id) payload.city_id = (formData as Record<string, unknown>).city_id;
-    if ((formData as Record<string, unknown>).country_id) payload.country_id = (formData as Record<string, unknown>).country_id;
+    if ((formData as Record<string, unknown>).city_id)
+      payload.city_id = (formData as Record<string, unknown>).city_id;
+    if ((formData as Record<string, unknown>).country_id)
+      payload.country_id = (formData as Record<string, unknown>).country_id;
 
     try {
       if (editingHotel) {
@@ -254,7 +256,12 @@ export default function AdminHotels() {
         header: 'LGBTQ+',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>LGBTQ+</Badge>
+            <Badge
+              style={{ backgroundColor: 'hsl(var(--muted))' }}
+              className="text-muted-foreground"
+            >
+              LGBTQ+
+            </Badge>
           ) : null,
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
@@ -262,7 +269,12 @@ export default function AdminHotels() {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
+            <Badge
+              style={{
+                backgroundColor: 'hsl(var(--muted))',
+                color: 'hsl(var(--foreground) / 0.7)',
+              }}
+            >
               <Star size={12} className="mr-1" />
               Featured
             </Badge>
@@ -365,207 +377,209 @@ export default function AdminHotels() {
       config={tableConfig}
       afterTable={
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent style={{ maxWidth: 600, maxHeight: '90vh', overflow: 'auto' }}>
-          <DialogHeader>
-            <DialogTitle>{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="hotel-name">Name *</Label>
-              <Input
-                id="hotel-name"
-                value={formData.name}
-                onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="hotel-desc">Description</Label>
-              <Textarea
-                id="hotel-desc"
-                value={formData.description}
-                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-                rows={3}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label>Type</Label>
-              <Select
-                value={formData.hotel_type}
-                onValueChange={(v) => setFormData((p) => ({ ...p, hotel_type: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {HOTEL_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <LocationAutocomplete
-              value={formData.address}
-              onChange={async (address, coordinates, components) => {
-                setFormData((p) => ({
-                  ...p,
-                  address,
-                  latitude: coordinates ? String(coordinates.lat) : p.latitude,
-                  longitude: coordinates ? String(coordinates.lng) : p.longitude,
-                  ...(components?.city ? { city: components.city } : {}),
-                  ...(components?.country ? { country: components.country } : {}),
-                }));
-                if (components?.country) {
-                  const resolved = await resolveAddress(
-                    components.city,
-                    components.country,
-                    coordinates?.lat,
-                    coordinates?.lng,
-                  );
-                  if (resolved) {
-                    setFormData((p) => ({
-                      ...p,
-                      ...(resolved.city_name ? { city: resolved.city_name } : {}),
-                      ...(resolved.country_name ? { country: resolved.country_name } : {}),
-                      city_id: resolved.city_id || '',
-                      country_id: resolved.country_id || '',
-                    }));
+          <DialogContent style={{ maxWidth: 600, maxHeight: '90vh' }} className="overflow-auto">
+            <DialogHeader>
+              <DialogTitle>{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="hotel-name">Name *</Label>
+                <Input
+                  id="hotel-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="hotel-desc">Description</Label>
+                <Textarea
+                  id="hotel-desc"
+                  value={formData.description}
+                  onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label>Type</Label>
+                <Select
+                  value={formData.hotel_type}
+                  onValueChange={(v) => setFormData((p) => ({ ...p, hotel_type: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {HOTEL_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <LocationAutocomplete
+                value={formData.address}
+                onChange={async (address, coordinates, components) => {
+                  setFormData((p) => ({
+                    ...p,
+                    address,
+                    latitude: coordinates ? String(coordinates.lat) : p.latitude,
+                    longitude: coordinates ? String(coordinates.lng) : p.longitude,
+                    ...(components?.city ? { city: components.city } : {}),
+                    ...(components?.country ? { country: components.country } : {}),
+                  }));
+                  if (components?.country) {
+                    const resolved = await resolveAddress(
+                      components.city,
+                      components.country,
+                      coordinates?.lat,
+                      coordinates?.lng,
+                    );
+                    if (resolved) {
+                      setFormData((p) => ({
+                        ...p,
+                        ...(resolved.city_name ? { city: resolved.city_name } : {}),
+                        ...(resolved.country_name ? { country: resolved.country_name } : {}),
+                        city_id: resolved.city_id || '',
+                        country_id: resolved.country_id || '',
+                      }));
+                    }
                   }
-                }
-              }}
-              placeholder="Search for hotel address..."
-              label="Address"
-            />
-            <div className="flex gap-3">
-              <div className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="hotel-city">City</Label>
-                <Input
-                  id="hotel-city"
-                  value={formData.city}
-                  onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
-                />
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="hotel-country">Country</Label>
-                <Input
-                  id="hotel-country"
-                  value={formData.country}
-                  onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="hotel-website">Website</Label>
-              <Input
-                id="hotel-website"
-                value={formData.website}
-                onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="hotel-booking">Booking URL</Label>
-              <Input
-                id="hotel-booking"
-                value={formData.booking_url}
-                onChange={(e) => setFormData((p) => ({ ...p, booking_url: e.target.value }))}
-              />
-            </div>
-            <div className="flex gap-3">
-              <div className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="hotel-phone">Phone</Label>
-                <Input
-                  id="hotel-phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
-                />
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="hotel-email">Email</Label>
-                <Input
-                  id="hotel-email"
-                  value={formData.email}
-                  onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="hotel-stars">Star Rating</Label>
-                <Input
-                  id="hotel-stars"
-                  type="number"
-                  min={1}
-                  max={5}
-                  step={0.5}
-                  value={formData.star_rating}
-                  onChange={(e) => setFormData((p) => ({ ...p, star_rating: e.target.value }))}
-                />
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="hotel-price">Price Range (1-4)</Label>
-                <Input
-                  id="hotel-price"
-                  type="number"
-                  min={1}
-                  max={4}
-                  value={formData.price_range}
-                  onChange={(e) => setFormData((p) => ({ ...p, price_range: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="hotel-safety">Queer Safety Notes</Label>
-              <Textarea
-                id="hotel-safety"
-                value={formData.queer_safety_notes}
-                onChange={(e) => setFormData((p) => ({ ...p, queer_safety_notes: e.target.value }))}
-                rows={2}
-              />
-            </div>
-            <div className="flex gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="hotel-lgbtq"
-                  checked={formData.lgbtq_friendly}
-                  onCheckedChange={(c) => setFormData((p) => ({ ...p, lgbtq_friendly: c }))}
-                />
-                <Label htmlFor="hotel-lgbtq">LGBTQ+ Friendly</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="hotel-featured"
-                  checked={formData.featured}
-                  onCheckedChange={(c) => setFormData((p) => ({ ...p, featured: c }))}
-                />
-                <Label htmlFor="hotel-featured">Featured</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="hotel-verified"
-                  checked={formData.verified}
-                  onCheckedChange={(c) => setFormData((p) => ({ ...p, verified: c }))}
-                />
-                <Label htmlFor="hotel-verified">Verified</Label>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => {
-                  resetForm();
-                  setIsDialogOpen(false);
                 }}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">{editingHotel ? 'Update Hotel' : 'Add Hotel'}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+                placeholder="Search for hotel address..."
+                label="Address"
+              />
+              <div className="flex gap-3">
+                <div className="flex flex-col gap-2 flex-1">
+                  <Label htmlFor="hotel-city">City</Label>
+                  <Input
+                    id="hotel-city"
+                    value={formData.city}
+                    onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
+                  />
+                </div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <Label htmlFor="hotel-country">Country</Label>
+                  <Input
+                    id="hotel-country"
+                    value={formData.country}
+                    onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="hotel-website">Website</Label>
+                <Input
+                  id="hotel-website"
+                  value={formData.website}
+                  onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="hotel-booking">Booking URL</Label>
+                <Input
+                  id="hotel-booking"
+                  value={formData.booking_url}
+                  onChange={(e) => setFormData((p) => ({ ...p, booking_url: e.target.value }))}
+                />
+              </div>
+              <div className="flex gap-3">
+                <div className="flex flex-col gap-2 flex-1">
+                  <Label htmlFor="hotel-phone">Phone</Label>
+                  <Input
+                    id="hotel-phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
+                  />
+                </div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <Label htmlFor="hotel-email">Email</Label>
+                  <Input
+                    id="hotel-email"
+                    value={formData.email}
+                    onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <div className="flex flex-col gap-2 flex-1">
+                  <Label htmlFor="hotel-stars">Star Rating</Label>
+                  <Input
+                    id="hotel-stars"
+                    type="number"
+                    min={1}
+                    max={5}
+                    step={0.5}
+                    value={formData.star_rating}
+                    onChange={(e) => setFormData((p) => ({ ...p, star_rating: e.target.value }))}
+                  />
+                </div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <Label htmlFor="hotel-price">Price Range (1-4)</Label>
+                  <Input
+                    id="hotel-price"
+                    type="number"
+                    min={1}
+                    max={4}
+                    value={formData.price_range}
+                    onChange={(e) => setFormData((p) => ({ ...p, price_range: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="hotel-safety">Queer Safety Notes</Label>
+                <Textarea
+                  id="hotel-safety"
+                  value={formData.queer_safety_notes}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, queer_safety_notes: e.target.value }))
+                  }
+                  rows={2}
+                />
+              </div>
+              <div className="flex gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="hotel-lgbtq"
+                    checked={formData.lgbtq_friendly}
+                    onCheckedChange={(c) => setFormData((p) => ({ ...p, lgbtq_friendly: c }))}
+                  />
+                  <Label htmlFor="hotel-lgbtq">LGBTQ+ Friendly</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="hotel-featured"
+                    checked={formData.featured}
+                    onCheckedChange={(c) => setFormData((p) => ({ ...p, featured: c }))}
+                  />
+                  <Label htmlFor="hotel-featured">Featured</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="hotel-verified"
+                    checked={formData.verified}
+                    onCheckedChange={(c) => setFormData((p) => ({ ...p, verified: c }))}
+                  />
+                  <Label htmlFor="hotel-verified">Verified</Label>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => {
+                    resetForm();
+                    setIsDialogOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit">{editingHotel ? 'Update Hotel' : 'Add Hotel'}</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       }
     />
   );

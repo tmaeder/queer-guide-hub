@@ -127,10 +127,7 @@ export function MemoryRecapCard({ tripId }: Props) {
           </Button>
         </div>
 
-        <p
-          className="whitespace-pre-wrap mb-4"
-          style={{ fontSize: '1.0625rem', lineHeight: 1.65 }}
-        >
+        <p className="whitespace-pre-wrap mb-4 text-body-lg" style={{ lineHeight: 1.65 }}>
           {recap.summary}
         </p>
 

@@ -184,15 +184,15 @@ export function EventHero({
   return (
     <>
       <ParallaxHero className="w-full h-40 md:h-48 rounded-container mb-6">
-          <img
-            src={heroImage || getRandomFallbackImage()}
-            alt={event.title}
-            role="presentation"
-            className="w-full h-full object-cover"
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
+        <img
+          src={heroImage || getRandomFallbackImage()}
+          alt={event.title}
+          role="presentation"
+          className="w-full h-full object-cover"
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
       </ParallaxHero>
 
       {event.countries?.lgbti_criminalization && (
@@ -225,11 +225,19 @@ export function EventHero({
                 }}
               />
             )}
-            <h1 className="text-2xl font-bold min-w-0 flex-[1_1_100%] sm:flex-[1_1_auto] break-words pl-[1px]" style={{ overflowWrap: 'anywhere' }}>
+            <h1
+              className="text-2xl font-bold min-w-0 flex-[1_1_100%] sm:flex-[1_1_auto] break-words pl-[1px]"
+              style={{ overflowWrap: 'anywhere' }}
+            >
               {event.title}
             </h1>
             {event.is_featured && (
-              <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>Featured</Badge>
+              <Badge
+                style={{ backgroundColor: 'hsl(var(--foreground))' }}
+                className="text-background"
+              >
+                Featured
+              </Badge>
             )}
             {event.countries?.equality_score != null && (
               <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
@@ -244,7 +252,7 @@ export function EventHero({
             </div>
           )}
           <div className="flex items-center gap-1 mb-2">
-            <MapPin size={14} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+            <MapPin size={14} className="text-muted-foreground shrink-0" />
             <span className="text-sm text-muted-foreground">
               {event.venues?.id ? (
                 <LocalizedLink
@@ -262,7 +270,11 @@ export function EventHero({
                 <>
                   {event.venues?.name || event.venue_name ? ', ' : ''}
                   {cityLink ? (
-                    <LocalizedLink to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <LocalizedLink
+                      to={cityLink}
+                      style={{ color: 'inherit' }}
+                      className="no-underline"
+                    >
                       <span className="text-sm hover:text-primary hover:underline">{cityName}</span>
                     </LocalizedLink>
                   ) : (
@@ -274,7 +286,11 @@ export function EventHero({
                 <>
                   {', '}
                   {countryLink ? (
-                    <LocalizedLink to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <LocalizedLink
+                      to={countryLink}
+                      style={{ color: 'inherit' }}
+                      className="no-underline"
+                    >
                       <span className="text-sm hover:text-primary hover:underline">
                         {countryName}
                       </span>
@@ -291,11 +307,11 @@ export function EventHero({
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
           <FavoriteButton itemId={event.id} type="event" size="md" />
           {!isPast && (
-                          <Button variant="outline" size="sm" onClick={onAddToTrip}>
-                <Luggage size={14} className="mr-1.5" />
-                Add to Trip
-              </Button>
-                      )}
+            <Button variant="outline" size="sm" onClick={onAddToTrip}>
+              <Luggage size={14} className="mr-1.5" />
+              Add to Trip
+            </Button>
+          )}
           {!isPast && isInTrip && (
             <Badge variant="secondary">
               In {tripCount} trip{tripCount !== 1 ? 's' : ''}
@@ -310,13 +326,13 @@ export function EventHero({
             onSaved={() => window.location.reload()}
           />
           {event.ticket_url && (
-                          <Button size="sm" asChild>
-                <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink size={16} className="mr-2" />
-                  Get Tickets
-                </a>
-              </Button>
-                      )}
+            <Button size="sm" asChild>
+              <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink size={16} className="mr-2" />
+                Get Tickets
+              </a>
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={onExportToCalendar}>
             <Download size={16} className="mr-1.5" />
             Calendar
@@ -370,9 +386,7 @@ export function EventHero({
             {event.event_type}
           </Badge>
         )}
-        {event.age_restriction && (
-          <Badge variant="outline">{event.age_restriction}</Badge>
-        )}
+        {event.age_restriction && <Badge variant="outline">{event.age_restriction}</Badge>}
       </div>
 
       {(() => {
@@ -386,8 +400,8 @@ export function EventHero({
         return (
           <div className="flex flex-wrap items-center gap-3 mb-6 p-3 bg-muted rounded-element">
             <p className="text-sm text-muted-foreground">
-              {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet —
-              check the source for the latest info.
+              {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet — check the source
+              for the latest info.
             </p>
             <Button size="sm" variant="outline" asChild>
               <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
@@ -422,60 +436,60 @@ export function EventOverview({
 
   return (
     <ScrollReveal direction="up">
-    <div className="flex flex-col gap-6">
-      {event.description && (
-        <Card>
-          <CardHeader>
-            <CardTitle>About This Event</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground whitespace-pre-wrap" style={{ lineHeight: 1.7 }}>
-              {event.description}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <div className="flex flex-col gap-6">
+        {event.description && (
+          <Card>
+            <CardHeader>
+              <CardTitle>About This Event</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground whitespace-pre-wrap" style={{ lineHeight: 1.7 }}>
+                {event.description}
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-      {user && !isPast && (
-        <Card>
-          <CardContent style={{ paddingTop: 24 }}>
-            <div className="flex gap-3">
-              <Button
-                variant={userAttendance === 'going' ? 'default' : 'outline'}
-                onClick={() => onAttendanceUpdate('going')}
-                style={{ flex: 1 }}
-              >
-                <Users size={16} className="mr-2" />
-                Going {userAttendance === 'going' && '✓'}
-              </Button>
-              <Button
-                variant={userAttendance === 'interested' ? 'default' : 'outline'}
-                onClick={() => onAttendanceUpdate('interested')}
-                style={{ flex: 1 }}
-              >
-                <Users size={16} className="mr-2" />
-                Interested {userAttendance === 'interested' && '✓'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+        {user && !isPast && (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex gap-3">
+                <Button
+                  variant={userAttendance === 'going' ? 'default' : 'outline'}
+                  onClick={() => onAttendanceUpdate('going')}
+                  style={{ flex: 1 }}
+                >
+                  <Users size={16} className="mr-2" />
+                  Going {userAttendance === 'going' && '✓'}
+                </Button>
+                <Button
+                  variant={userAttendance === 'interested' ? 'default' : 'outline'}
+                  onClick={() => onAttendanceUpdate('interested')}
+                  style={{ flex: 1 }}
+                >
+                  <Users size={16} className="mr-2" />
+                  Interested {userAttendance === 'interested' && '✓'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-      {(goingCount > 0 || interestedCount > 0) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Attendees ({goingCount} going, {interestedCount} interested)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Individual attendee profiles are private.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        {(goingCount > 0 || interestedCount > 0) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Attendees ({goingCount} going, {interestedCount} interested)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Individual attendee profiles are private.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </ScrollReveal>
   );
 }
@@ -497,211 +511,228 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
 
   return (
     <ScrollReveal direction="up">
-    <div className="flex flex-col gap-6">
-      {hasMap && (
-        <Card ref={venueRef}>
-          <CardContent>
-            <EntityMap
-              center={[Number(lng), Number(lat)]}
-              zoom={15}
-              height={200}
-              markers={[
-                {
-                  id: event.id,
-                  lat: Number(lat),
-                  lng: Number(lng),
-                  name: event.title ?? 'Event',
-                  subtitle: event.venues?.name,
-                  type: 'events',
-                  primary: true,
-                },
-              ]}
-            />
-          </CardContent>
-        </Card>
-      )}
+      <div className="flex flex-col gap-6">
+        {hasMap && (
+          <Card ref={venueRef}>
+            <CardContent>
+              <EntityMap
+                center={[Number(lng), Number(lat)]}
+                zoom={15}
+                height={200}
+                markers={[
+                  {
+                    id: event.id,
+                    lat: Number(lat),
+                    lng: Number(lng),
+                    name: event.title ?? 'Event',
+                    subtitle: event.venues?.name,
+                    type: 'events',
+                    primary: true,
+                  },
+                ]}
+              />
+            </CardContent>
+          </Card>
+        )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Event Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3">
-            <Calendar size={16} className="text-muted-foreground" />
-            <span className="text-sm">{formatEventDate(event.start_date, event.end_date)}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Clock size={16} className="text-muted-foreground" />
-            <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <DollarSign size={16} className="text-muted-foreground" />
-            <span className="text-sm font-medium">{getPriceDisplay(event)}</span>
-          </div>
-          {event.max_attendees && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Event Details</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="flex items-center gap-3">
-              <Users size={16} className="text-muted-foreground" />
-              <span className="text-sm">Max {event.max_attendees} attendees</span>
+              <Calendar size={16} className="text-muted-foreground" />
+              <span className="text-sm">{formatEventDate(event.start_date, event.end_date)}</span>
             </div>
-          )}
-          {(event.organizer || event.organizer_name) && (
-            <div className="mt-2 pt-3 border-t border-border">
-              <p className="text-sm font-medium mb-1">Organizer</p>
-              {event.organizer ? (
-                <>
-                  <LocalizedLink
-                    to={`/venues/${event.organizer.slug || event.organizer.id}`}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    {event.organizer.name}
-                  </LocalizedLink>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {(event.organizer.website || event.organizer.organizer_handles?.website) && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={event.organizer.website || event.organizer.organizer_handles?.website} target="_blank" rel="noopener noreferrer">
-                          <Globe size={14} className="mr-1.5" />
-                          Website
-                        </a>
-                      </Button>
-                    )}
-                    {(event.organizer.instagram || event.organizer.organizer_handles?.instagram) && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={`https://instagram.com/${(event.organizer.instagram || event.organizer.organizer_handles?.instagram || '').replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer">
-                          Instagram
-                        </a>
-                      </Button>
-                    )}
-                    {event.organizer.organizer_handles?.telegram && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={`https://t.me/${event.organizer.organizer_handles.telegram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer">
-                          Telegram
-                        </a>
-                      </Button>
-                    )}
-                    {event.organizer.organizer_handles?.bluesky && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={`https://bsky.app/profile/${event.organizer.organizer_handles.bluesky.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer">
-                          Bluesky
-                        </a>
-                      </Button>
-                    )}
-                    {event.organizer.email && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={`mailto:${event.organizer.email}`}>
-                          Email
-                        </a>
-                      </Button>
-                    )}
-                    {event.organizer.phone && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={`tel:${event.organizer.phone}`}>
-                          <Phone size={14} className="mr-1.5" />
-                          Call
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => onOrganizerClick(event.organizer_name!)}
-                    className="text-sm text-primary hover:underline text-left border-0 bg-transparent cursor-pointer p-0"
-                  >
-                    {event.organizer_name}
-                  </button>
-                  {event.organizer_contact && (
-                    <span className="block text-xs text-muted-foreground mt-0.5">
-                      {event.organizer_contact}
-                    </span>
-                  )}
-                </>
-              )}
+            <div className="flex items-center gap-3">
+              <Clock size={16} className="text-muted-foreground" />
+              <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {(event.website || event.ticket_url) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Links</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {event.website && (
-              <Button
-                variant="outline"
-                size="sm"
-                style={{ width: '100%', justifyContent: 'flex-start' }}
-                asChild
-              >
-                <a href={event.website} target="_blank" rel="noopener noreferrer">
-                  <Globe size={16} className="mr-2" />
-                  Event Website
-                </a>
-              </Button>
+            <div className="flex items-center gap-3">
+              <DollarSign size={16} className="text-muted-foreground" />
+              <span className="text-sm font-medium">{getPriceDisplay(event)}</span>
+            </div>
+            {event.max_attendees && (
+              <div className="flex items-center gap-3">
+                <Users size={16} className="text-muted-foreground" />
+                <span className="text-sm">Max {event.max_attendees} attendees</span>
+              </div>
             )}
-            {event.ticket_url && (
-              <Button
-                variant="outline"
-                size="sm"
-                style={{ width: '100%', justifyContent: 'flex-start' }}
-                asChild
-              >
-                <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink size={16} className="mr-2" />
-                  Get Tickets
-                </a>
-              </Button>
+            {(event.organizer || event.organizer_name) && (
+              <div className="mt-2 pt-3 border-t border-border">
+                <p className="text-sm font-medium mb-1">Organizer</p>
+                {event.organizer ? (
+                  <>
+                    <LocalizedLink
+                      to={`/venues/${event.organizer.slug || event.organizer.id}`}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      {event.organizer.name}
+                    </LocalizedLink>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {(event.organizer.website || event.organizer.organizer_handles?.website) && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a
+                            href={
+                              event.organizer.website || event.organizer.organizer_handles?.website
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Globe size={14} className="mr-1.5" />
+                            Website
+                          </a>
+                        </Button>
+                      )}
+                      {(event.organizer.instagram ||
+                        event.organizer.organizer_handles?.instagram) && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a
+                            href={`https://instagram.com/${(event.organizer.instagram || event.organizer.organizer_handles?.instagram || '').replace(/^@/, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Instagram
+                          </a>
+                        </Button>
+                      )}
+                      {event.organizer.organizer_handles?.telegram && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a
+                            href={`https://t.me/${event.organizer.organizer_handles.telegram.replace(/^@/, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Telegram
+                          </a>
+                        </Button>
+                      )}
+                      {event.organizer.organizer_handles?.bluesky && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a
+                            href={`https://bsky.app/profile/${event.organizer.organizer_handles.bluesky.replace(/^@/, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Bluesky
+                          </a>
+                        </Button>
+                      )}
+                      {event.organizer.email && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={`mailto:${event.organizer.email}`}>Email</a>
+                        </Button>
+                      )}
+                      {event.organizer.phone && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={`tel:${event.organizer.phone}`}>
+                            <Phone size={14} className="mr-1.5" />
+                            Call
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => onOrganizerClick(event.organizer_name!)}
+                      className="text-sm text-primary hover:underline text-left border-0 bg-transparent cursor-pointer p-0"
+                    >
+                      {event.organizer_name}
+                    </button>
+                    {event.organizer_contact && (
+                      <span className="block text-xs text-muted-foreground mt-0.5">
+                        {event.organizer_contact}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
-      )}
 
-      {event.venues && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Venue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-medium">{event.venues.name}</p>
-            <p className="text-sm text-muted-foreground">
-              {event.venues.address}
-              <br />
-              {event.venues.city}
-              {event.venues.state ? `, ${event.venues.state}` : ''} {event.venues.country}
-            </p>
-            <div className="flex gap-2 mt-1 flex-wrap">
-              {hasMap && (
-                <Button variant="outline" size="sm" asChild>
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Navigation2 size={14} className="mr-1.5" />
-                    Directions
+        {(event.website || event.ticket_url) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Links</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {event.website && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  style={{ width: '100%', justifyContent: 'flex-start' }}
+                  asChild
+                >
+                  <a href={event.website} target="_blank" rel="noopener noreferrer">
+                    <Globe size={16} className="mr-2" />
+                    Event Website
                   </a>
                 </Button>
               )}
-              {event.venues.phone && (
-                <Button variant="outline" size="sm" asChild>
-                  <a href={`tel:${event.venues.phone}`}>
-                    <Phone size={14} className="mr-1.5" />
-                    Call
+              {event.ticket_url && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  style={{ width: '100%', justifyContent: 'flex-start' }}
+                  asChild
+                >
+                  <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={16} className="mr-2" />
+                    Get Tickets
                   </a>
                 </Button>
               )}
-              <LocalizedLink to={`/venues/${event.venues.slug || event.venues.id}`}>
-                <Button variant="outline" size="sm">
-                  View Venue
-                </Button>
-              </LocalizedLink>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {event.venues && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Venue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="font-medium">{event.venues.name}</p>
+              <p className="text-sm text-muted-foreground">
+                {event.venues.address}
+                <br />
+                {event.venues.city}
+                {event.venues.state ? `, ${event.venues.state}` : ''} {event.venues.country}
+              </p>
+              <div className="flex gap-2 mt-1 flex-wrap">
+                {hasMap && (
+                  <Button variant="outline" size="sm" asChild>
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Navigation2 size={14} className="mr-1.5" />
+                      Directions
+                    </a>
+                  </Button>
+                )}
+                {event.venues.phone && (
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={`tel:${event.venues.phone}`}>
+                      <Phone size={14} className="mr-1.5" />
+                      Call
+                    </a>
+                  </Button>
+                )}
+                <LocalizedLink to={`/venues/${event.venues.slug || event.venues.id}`}>
+                  <Button variant="outline" size="sm">
+                    View Venue
+                  </Button>
+                </LocalizedLink>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </ScrollReveal>
   );
 }

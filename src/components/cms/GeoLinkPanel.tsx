@@ -48,9 +48,8 @@ export function GeoLinkPanel({
     }
   }, [edgeFnType, contentId, linkSingle, onLinked]);
 
-  const locationDisplay = cityName && countryName
-    ? `${cityName}, ${countryName}`
-    : cityName || countryName || null;
+  const locationDisplay =
+    cityName && countryName ? `${cityName}, ${countryName}` : cityName || countryName || null;
 
   const resultItem = result?.results?.[0];
   const resolvedDisplay = resultItem
@@ -80,7 +79,9 @@ export function GeoLinkPanel({
           ) : isPartiallyLinked ? (
             <>
               <AlertCircle size={14} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
-              <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>Partially linked</p>
+              <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
+                Partially linked
+              </p>
               {locationDisplay && (
                 <p className="text-sm text-muted-foreground">{locationDisplay}</p>
               )}
@@ -89,7 +90,7 @@ export function GeoLinkPanel({
             <>
               <AlertCircle size={14} className="text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{locationDisplay}</p>
-              <Badge variant="outline" style={{ fontSize: '0.625rem', padding: '0 4px' }}>
+              <Badge variant="outline" style={{ padding: '0 4px' }} className="text-2xs">
                 Not linked
               </Badge>
             </>
@@ -117,9 +118,7 @@ export function GeoLinkPanel({
               </span>
             </div>
             {resolvedDisplay && (
-              <span className="text-xs text-muted-foreground">
-                Resolved to: {resolvedDisplay}
-              </span>
+              <span className="text-xs text-muted-foreground">Resolved to: {resolvedDisplay}</span>
             )}
           </div>
         )}

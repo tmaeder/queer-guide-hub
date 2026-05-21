@@ -80,10 +80,7 @@ export function getInitials(name: string) {
 function VerificationBadge({ status }: { status: Personality['verification_status'] }) {
   if (status === 'verified') {
     return (
-      <Badge
-        variant="secondary"
-        style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-      >
+      <Badge variant="secondary" style={{ alignItems: 'center', gap: '0.25rem' }} className="flex">
         <Verified size={12} />
         Verified
       </Badge>
@@ -93,13 +90,8 @@ function VerificationBadge({ status }: { status: Personality['verification_statu
     return (
       <Badge
         variant="secondary"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.25rem',
-          backgroundColor: 'hsl(var(--muted))',
-          color: 'hsl(var(--muted-foreground))',
-        }}
+        style={{ alignItems: 'center', gap: '0.25rem', backgroundColor: 'hsl(var(--muted))' }}
+        className="flex text-muted-foreground"
       >
         Disputed
       </Badge>
@@ -130,7 +122,7 @@ export function PersonalityHero({
             alt={personality.name}
             style={{ objectFit: 'cover' }}
           />
-          <AvatarFallback style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+          <AvatarFallback className="text-xl font-semibold">
             {getInitials(personality.name)}
           </AvatarFallback>
         </Avatar>
@@ -141,7 +133,8 @@ export function PersonalityHero({
             {personality.is_featured && (
               <Badge
                 variant="secondary"
-                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                style={{ alignItems: 'center', gap: '0.25rem' }}
+                className="flex"
               >
                 <Star size={12} />
                 Featured
@@ -353,115 +346,107 @@ export function PersonalityOverview({
 }) {
   return (
     <ScrollReveal direction="up">
-    <div className="flex flex-col gap-6 mt-4">
-      {personality.description && (
-        <Card>
-          <CardHeader>
-            <CardTitle>About</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">{personality.description}</p>
-          </CardContent>
-        </Card>
-      )}
+      <div className="flex flex-col gap-6 mt-4">
+        {personality.description && (
+          <Card>
+            <CardHeader>
+              <CardTitle>About</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{personality.description}</p>
+            </CardContent>
+          </Card>
+        )}
 
-      {personality.bio && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Biography</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4">
-              {personality.bio.split('\n').map(
-                (paragraph, index) =>
-                  paragraph.trim() && (
-                    <p key={index} className="text-muted-foreground">
-                      {paragraph}
-                    </p>
-                  ),
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {personality.achievements.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Notable Achievements</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="flex flex-col gap-2">
-              {personality.achievements.map((achievement, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <div
-                    className="bg-primary rounded-full mt-2 flex-shrink-0"
-                    style={{ height: 8, width: 8 }}
-                  />
-                  <span className="text-muted-foreground">{achievement}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      <RelatedContent personality={personality} />
-
-      {similarPersonalities.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Similar Personalities</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {similarPersonalities.map((similar) => (
-                <LocalizedLink
-                  key={similar.id}
-                  to={`/personalities/${similar.slug || similar.id}`}
-                  className="flex items-center gap-3 p-3 rounded no-underline text-inherit transition-all hover:bg-muted"
-                >
-                  <Avatar style={{ height: 40, width: 40, flexShrink: 0 }}>
-                    <AvatarImage
-                      src={similar.image_url || ''}
-                      alt={similar.name}
-                      style={{ objectFit: 'cover' }}
-                    />
-                    <AvatarFallback className="text-xs">
-                      {getInitials(similar.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p
-                      className="font-semibold text-sm"
-                      style={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {similar.name}
-                    </p>
-                    {similar.profession && (
-                      <p
-                        className="text-xs text-muted-foreground"
-                        style={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {similar.profession}
+        {personality.bio && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Biography</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4">
+                {personality.bio.split('\n').map(
+                  (paragraph, index) =>
+                    paragraph.trim() && (
+                      <p key={index} className="text-muted-foreground">
+                        {paragraph}
                       </p>
-                    )}
-                  </div>
-                </LocalizedLink>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+                    ),
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {personality.achievements.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Notable Achievements</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="flex flex-col gap-2">
+                {personality.achievements.map((achievement, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <div
+                      className="bg-primary rounded-full mt-2 flex-shrink-0"
+                      style={{ height: 8, width: 8 }}
+                    />
+                    <span className="text-muted-foreground">{achievement}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        <RelatedContent personality={personality} />
+
+        {similarPersonalities.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Similar Personalities</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {similarPersonalities.map((similar) => (
+                  <LocalizedLink
+                    key={similar.id}
+                    to={`/personalities/${similar.slug || similar.id}`}
+                    className="flex items-center gap-3 p-3 rounded no-underline text-inherit transition-all hover:bg-muted"
+                  >
+                    <Avatar style={{ height: 40, width: 40 }} className="shrink-0">
+                      <AvatarImage
+                        src={similar.image_url || ''}
+                        alt={similar.name}
+                        style={{ objectFit: 'cover' }}
+                      />
+                      <AvatarFallback className="text-xs">
+                        {getInitials(similar.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p
+                        className="font-semibold text-sm overflow-hidden whitespace-nowrap"
+                        style={{ textOverflow: 'ellipsis' }}
+                      >
+                        {similar.name}
+                      </p>
+                      {similar.profession && (
+                        <p
+                          className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap"
+                          style={{ textOverflow: 'ellipsis' }}
+                        >
+                          {similar.profession}
+                        </p>
+                      )}
+                    </div>
+                  </LocalizedLink>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </ScrollReveal>
   );
 }
@@ -477,118 +462,118 @@ export function PersonalitySidebar({
 }) {
   return (
     <ScrollReveal direction="up">
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-        </CardHeader>
-        <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {personality.birth_date && (
-            <div className="flex items-center gap-3">
-              <Calendar size={16} className="text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Born</p>
-                <p className="font-medium">
-                  <time dateTime={isoDateAttr(personality.birth_date) ?? undefined}>
-                    {formatPersonDate(personality.birth_date) ?? personality.birth_date}
-                  </time>
-                </p>
+      <div className="flex flex-col gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Personal Information</CardTitle>
+          </CardHeader>
+          <CardContent style={{ flexDirection: 'column', gap: '0.75rem' }} className="flex">
+            {personality.birth_date && (
+              <div className="flex items-center gap-3">
+                <Calendar size={16} className="text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Born</p>
+                  <p className="font-medium">
+                    <time dateTime={isoDateAttr(personality.birth_date) ?? undefined}>
+                      {formatPersonDate(personality.birth_date) ?? personality.birth_date}
+                    </time>
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-          {personality.death_date && (
-            <div className="flex items-center gap-3">
-              <Calendar size={16} className="text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Died</p>
-                <p className="font-medium">
-                  <time dateTime={isoDateAttr(personality.death_date) ?? undefined}>
-                    {formatPersonDate(personality.death_date) ?? personality.death_date}
-                  </time>
-                </p>
+            )}
+            {personality.death_date && (
+              <div className="flex items-center gap-3">
+                <Calendar size={16} className="text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Died</p>
+                  <p className="font-medium">
+                    <time dateTime={isoDateAttr(personality.death_date) ?? undefined}>
+                      {formatPersonDate(personality.death_date) ?? personality.death_date}
+                    </time>
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-          {personality.nationality && (
-            <div className="flex items-center gap-3">
-              <MapPin size={16} className="text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Nationality</p>
-                {countryId ? (
+            )}
+            {personality.nationality && (
+              <div className="flex items-center gap-3">
+                <MapPin size={16} className="text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Nationality</p>
+                  {countryId ? (
+                    <LocalizedLink
+                      to={`/country/${countryId}`}
+                      className="font-medium text-primary no-underline hover:underline"
+                    >
+                      {personality.nationality}
+                    </LocalizedLink>
+                  ) : (
+                    <p className="font-medium">{personality.nationality}</p>
+                  )}
+                </div>
+              </div>
+            )}
+            {personality.profession && (
+              <div className="flex items-center gap-3">
+                <Briefcase size={16} className="text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Profession</p>
                   <LocalizedLink
-                    to={`/country/${countryId}`}
+                    to={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
                     className="font-medium text-primary no-underline hover:underline"
                   >
-                    {personality.nationality}
+                    {personality.profession}
                   </LocalizedLink>
-                ) : (
-                  <p className="font-medium">{personality.nationality}</p>
-                )}
+                </div>
               </div>
-            </div>
-          )}
-          {personality.profession && (
-            <div className="flex items-center gap-3">
-              <Briefcase size={16} className="text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Profession</p>
-                <LocalizedLink
-                  to={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
-                  className="font-medium text-primary no-underline hover:underline"
-                >
-                  {personality.profession}
-                </LocalizedLink>
+            )}
+            {personality.birth_place && (
+              <div className="flex items-center gap-3">
+                <MapPin size={16} className="text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Birth Place</p>
+                  <p className="font-medium">{personality.birth_place}</p>
+                </div>
               </div>
-            </div>
-          )}
-          {personality.birth_place && (
-            <div className="flex items-center gap-3">
-              <MapPin size={16} className="text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Birth Place</p>
-                <p className="font-medium">{personality.birth_place}</p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {personality.social_links && Object.keys(personality.social_links).length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Social Links</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <SocialLinksDisplay socialLinks={personality.social_links} size="sm" />
+            )}
           </CardContent>
         </Card>
-      )}
 
-      {personality.tags && personality.tags.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Tag size={16} />
-              Tags
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {personality.tags.map((tag, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  style={{ fontSize: '0.75rem', cursor: 'pointer' }}
-                  onClick={() => onTagClick(tag)}
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        {personality.social_links && Object.keys(personality.social_links).length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Links</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SocialLinksDisplay socialLinks={personality.social_links} size="sm" />
+            </CardContent>
+          </Card>
+        )}
+
+        {personality.tags && personality.tags.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle style={{ alignItems: 'center', gap: '0.5rem' }} className="flex">
+                <Tag size={16} />
+                Tags
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {personality.tags.map((tag, index) => (
+                  <Badge
+                    key={index}
+                    variant="outline"
+                    className="text-xs cursor-pointer"
+                    onClick={() => onTagClick(tag)}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </ScrollReveal>
   );
 }

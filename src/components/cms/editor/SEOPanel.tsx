@@ -78,10 +78,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-semibold text-foreground">Meta Title</span>
           <span
-            className={cn(
-              'text-xs2',
-              titleOver ? 'text-destructive' : 'text-muted-foreground',
-            )}
+            className={cn('text-xs2', titleOver ? 'text-destructive' : 'text-muted-foreground')}
           >
             {metaTitle.length}/{META_TITLE_MAX}
           </span>
@@ -100,12 +97,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
       <div>
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-semibold text-foreground">Meta Description</span>
-          <span
-            className={cn(
-              'text-xs2',
-              descOver ? 'text-destructive' : 'text-muted-foreground',
-            )}
-          >
+          <span className={cn('text-xs2', descOver ? 'text-destructive' : 'text-muted-foreground')}>
             {metaDescription.length}/{META_DESCRIPTION_MAX}
           </span>
         </div>
@@ -147,25 +139,24 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
         <div className={cn('rounded-element border border-border p-3 bg-white')}>
           {/* Title line */}
           <p
-            className="text-base font-medium leading-snug overflow-hidden text-ellipsis whitespace-nowrap"
-            style={{ color: 'hsl(var(--muted-foreground))', fontFamily: 'Arial, sans-serif' }}
+            className="text-base font-medium leading-snug overflow-hidden text-ellipsis whitespace-nowrap text-muted-foreground"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
             {truncatedTitle}
           </p>
 
           {/* URL line */}
           <span
-            className="block mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13"
-            style={{ color: 'hsl(var(--foreground))', fontFamily: 'Arial, sans-serif' }}
+            className="block mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13 text-foreground"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
             {previewUrl}
           </span>
 
           {/* Description */}
           <span
-            className="mt-1 overflow-hidden text-13 leading-snug"
+            className="mt-1 overflow-hidden text-13 leading-snug text-muted-foreground"
             style={{
-              color: 'hsl(var(--muted-foreground))',
               fontFamily: 'Arial, sans-serif',
               display: '-webkit-box',
               WebkitLineClamp: 3,

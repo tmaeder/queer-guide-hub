@@ -61,10 +61,14 @@ export function SecurityMonitoringDashboard() {
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return AlertTriangle;
-      case 'high': return Shield;
-      case 'medium': return Eye;
-      default: return Lock;
+      case 'critical':
+        return AlertTriangle;
+      case 'high':
+        return Shield;
+      case 'medium':
+        return Eye;
+      default:
+        return Lock;
     }
   };
 
@@ -138,7 +142,7 @@ export function SecurityMonitoringDashboard() {
                 const SeverityIcon = getSeverityIcon(event.severity);
                 return (
                   <Card key={event.id} style={{ borderLeft: '4px solid var(--primary)' }}>
-                    <CardContent style={{ padding: 16 }}>
+                    <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 flex-1">
                           <SeverityIcon className="h-5 w-5 mt-0.5" />
@@ -166,7 +170,8 @@ export function SecurityMonitoringDashboard() {
 
                               {event.target_user_id && (
                                 <div>
-                                  Target User: <code className="text-xs">{event.target_user_id}</code>
+                                  Target User:{' '}
+                                  <code className="text-xs">{event.target_user_id}</code>
                                 </div>
                               )}
 

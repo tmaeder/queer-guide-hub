@@ -1,4 +1,12 @@
-import { ExternalLink, MousePointerClick, Hotel, Ticket, Plane, UtensilsCrossed, Link2 } from 'lucide-react';
+import {
+  ExternalLink,
+  MousePointerClick,
+  Hotel,
+  Ticket,
+  Plane,
+  UtensilsCrossed,
+  Link2,
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useTripBookingClicks, type TripBookingClick } from '@/hooks/useTripBookingClicks';
 
@@ -27,7 +35,9 @@ export function BookingActivitySection({ tripId }: Props) {
 
   if (isLoading || !data || data.total === 0) return null;
 
-  const verticalEntries = (Object.entries(data.byVertical) as [TripBookingClick['vertical'], number][])
+  const verticalEntries = (
+    Object.entries(data.byVertical) as [TripBookingClick['vertical'], number][]
+  )
     .filter(([, count]) => count > 0)
     .sort((a, b) => b[1] - a[1]);
 
@@ -81,7 +91,7 @@ export function BookingActivitySection({ tripId }: Props) {
                 key={r.id}
                 className="flex items-center gap-2 px-2 py-1.5 bg-background border border-border"
               >
-                <Icon size={14} style={{ flexShrink: 0, opacity: 0.7 }} />
+                <Icon size={14} style={{ opacity: 0.7 }} className="shrink-0" />
                 <span className="text-xs font-semibold flex-shrink-0">{r.provider}</span>
                 <span className="text-xs text-muted-foreground flex-1 min-w-0 truncate">
                   {host}

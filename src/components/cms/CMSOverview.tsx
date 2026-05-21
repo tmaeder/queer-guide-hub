@@ -173,10 +173,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
   const [loading, setLoading] = useState(true);
   const [recentActivity, setRecentActivity] = useState<AuditEntry[]>([]);
 
-  const contentTypeIds = useMemo(
-    () => getContentTypeIds().filter((id) => id !== 'cms_pages'),
-    [],
-  );
+  const contentTypeIds = useMemo(() => getContentTypeIds().filter((id) => id !== 'cms_pages'), []);
 
   const firstName = useMemo(() => getFirstName(user?.email), [user?.email]);
 
@@ -245,9 +242,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         return;
       }
 
-      const actorIds = [
-        ...new Set(entries.map((e) => e.actor_id).filter(Boolean) as string[]),
-      ];
+      const actorIds = [...new Set(entries.map((e) => e.actor_id).filter(Boolean) as string[])];
 
       let actorMap: Record<string, string> = {};
       if (actorIds.length > 0) {
@@ -292,9 +287,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         <h1 className="text-2xl font-bold mb-1">
           {firstName ? `Welcome back, ${firstName}` : 'Dashboard'}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Overview of all content across the platform
-        </p>
+        <p className="text-sm text-muted-foreground">Overview of all content across the platform</p>
       </div>
 
       {/* ── Summary stat cards ──────────────────────────────────── */}
@@ -352,11 +345,8 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                       </Badge>
                     ) : (
                       <Badge
-                        className="h-[22px] text-xs2 font-semibold"
-                        style={{
-                          background: alphaHex('hsl(var(--foreground))', 0.12),
-                          color: 'hsl(var(--foreground))',
-                        }}
+                        className="h-[22px] text-xs2 font-semibold text-foreground"
+                        style={{ background: alphaHex('hsl(var(--foreground))', 0.12) }}
                       >
                         All Clear
                       </Badge>
@@ -479,7 +469,8 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                       {formatAction(entry.action)}
                       {entry.source_table && (
                         <span className="text-muted-foreground font-normal">
-                          {' '}on {entry.source_table.replace(/_/g, ' ')}
+                          {' '}
+                          on {entry.source_table.replace(/_/g, ' ')}
                         </span>
                       )}
                     </p>
@@ -512,10 +503,30 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           </span>
         </div>
         {[
-          { label: 'New Page', icon: FileText, color: 'hsl(var(--muted-foreground))', onClick: () => onEdit('cms_pages', null) },
-          { label: 'New Venue', icon: MapPin, color: 'hsl(var(--foreground))', onClick: () => onEdit('venues', null) },
-          { label: 'New Event', icon: Calendar, color: 'hsl(var(--foreground))', onClick: () => onEdit('events', null) },
-          { label: 'New Article', icon: Newspaper, color: 'hsl(var(--muted-foreground))', onClick: () => onEdit('news_articles', null) },
+          {
+            label: 'New Page',
+            icon: FileText,
+            color: 'hsl(var(--muted-foreground))',
+            onClick: () => onEdit('cms_pages', null),
+          },
+          {
+            label: 'New Venue',
+            icon: MapPin,
+            color: 'hsl(var(--foreground))',
+            onClick: () => onEdit('venues', null),
+          },
+          {
+            label: 'New Event',
+            icon: Calendar,
+            color: 'hsl(var(--foreground))',
+            onClick: () => onEdit('events', null),
+          },
+          {
+            label: 'New Article',
+            icon: Newspaper,
+            color: 'hsl(var(--muted-foreground))',
+            onClick: () => onEdit('news_articles', null),
+          },
         ].map((action) => (
           <button
             type="button"
@@ -546,10 +557,30 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           </span>
         </div>
         {[
-          { label: 'Media Library', icon: Image, color: 'hsl(var(--foreground) / 0.55)', onClick: () => onNavigate('media') },
-          { label: 'Review Queue', icon: ClipboardCheck, color: 'hsl(var(--foreground) / 0.55)', onClick: () => onNavigate('review') },
-          { label: 'Audit Log', icon: History, color: 'hsl(var(--muted-foreground))', onClick: () => onNavigate('audit') },
-          { label: 'All Content', icon: BarChart3, color: 'hsl(var(--muted-foreground))', onClick: () => onNavigate('content') },
+          {
+            label: 'Media Library',
+            icon: Image,
+            color: 'hsl(var(--foreground) / 0.55)',
+            onClick: () => onNavigate('media'),
+          },
+          {
+            label: 'Review Queue',
+            icon: ClipboardCheck,
+            color: 'hsl(var(--foreground) / 0.55)',
+            onClick: () => onNavigate('review'),
+          },
+          {
+            label: 'Audit Log',
+            icon: History,
+            color: 'hsl(var(--muted-foreground))',
+            onClick: () => onNavigate('audit'),
+          },
+          {
+            label: 'All Content',
+            icon: BarChart3,
+            color: 'hsl(var(--muted-foreground))',
+            onClick: () => onNavigate('content'),
+          },
         ].map((action) => {
           const ActionIcon = action.icon;
           return (

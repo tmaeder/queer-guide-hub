@@ -23,11 +23,7 @@ import { useTripSafety } from '@/hooks/useTripSafety';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { computeTripSegments, findActiveSegment } from '@/utils/tripSegments';
-import {
-  cacheTripSnapshot,
-  readTripSnapshot,
-  pruneStaleSnapshots,
-} from '@/utils/offlineTripPack';
+import { cacheTripSnapshot, readTripSnapshot, pruneStaleSnapshots } from '@/utils/offlineTripPack';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -293,16 +289,11 @@ export default function TodayModePage() {
         >
           <WifiOff size={16} />
           <span className="text-sm">
-            {t(
-              'trips.today.offlineBanner',
-              "You're offline — showing your last-saved itinerary.",
-            )}
+            {t('trips.today.offlineBanner', "You're offline — showing your last-saved itinerary.")}
             {snapshotSavedAt && (
               <>
                 {' '}
-                <span style={{ opacity: 0.7 }}>
-                  ({new Date(snapshotSavedAt).toLocaleString()})
-                </span>
+                <span style={{ opacity: 0.7 }}>({new Date(snapshotSavedAt).toLocaleString()})</span>
               </>
             )}
           </span>
@@ -314,10 +305,7 @@ export default function TodayModePage() {
           <div className="flex items-center gap-2">
             <Bell size={16} />
             <span className="text-sm">
-              {t(
-                'trips.today.pushPrompt',
-                'Get a reminder 30 min before each reservation.',
-              )}
+              {t('trips.today.pushPrompt', 'Get a reminder 30 min before each reservation.')}
             </span>
           </div>
           <Button size="sm" onClick={push.subscribe} disabled={push.pending}>
@@ -335,9 +323,7 @@ export default function TodayModePage() {
           ← {effectiveTrip.title}
         </LocalizedLink>
         <div className="flex items-center gap-2 mt-2">
-          <h3 className="text-3xl md:text-4xl font-bold">
-            {t('trips.today.title', 'Today')}
-          </h3>
+          <h3 className="text-3xl md:text-4xl font-bold">{t('trips.today.title', 'Today')}</h3>
           <span className="text-muted-foreground text-lg font-medium">
             {now.toLocaleDateString(undefined, {
               weekday: 'long',
@@ -362,24 +348,33 @@ export default function TodayModePage() {
             role="alert"
           >
             <div className="pt-0.5 flex-shrink-0">
-              {activeCountrySafety.deathPenalty ? (
-                <Skull size={20} />
-              ) : (
-                <ShieldAlert size={20} />
-              )}
+              {activeCountrySafety.deathPenalty ? <Skull size={20} /> : <ShieldAlert size={20} />}
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold mb-1">
                 {activeCountrySafety.deathPenalty
-                  ? t('trips.today.safetyDeathTitle', "You're in a country with the death penalty for same-sex acts")
+                  ? t(
+                      'trips.today.safetyDeathTitle',
+                      "You're in a country with the death penalty for same-sex acts",
+                    )
                   : activeCountrySafety.criminalized
-                    ? t('trips.today.safetyCriminalTitle', "You're in a country where same-sex acts are criminalized")
-                    : t('trips.today.safetyLimitedTitle', "You're in a country with limited LGBTQ+ rights")}
+                    ? t(
+                        'trips.today.safetyCriminalTitle',
+                        "You're in a country where same-sex acts are criminalized",
+                      )
+                    : t(
+                        'trips.today.safetyLimitedTitle',
+                        "You're in a country with limited LGBTQ+ rights",
+                      )}
               </p>
               <p className="text-sm opacity-90">
                 {activeCountrySafety.name}
                 {activeCountrySafety.equality_score != null && (
-                  <> · {t('trips.today.scoreLabel', 'Equality score')} {activeCountrySafety.equality_score}/100</>
+                  <>
+                    {' '}
+                    · {t('trips.today.scoreLabel', 'Equality score')}{' '}
+                    {activeCountrySafety.equality_score}/100
+                  </>
                 )}
               </p>
               <LocalizedLink
@@ -403,9 +398,7 @@ export default function TodayModePage() {
                 ? t('trips.today.happeningNow', 'Happening now')
                 : t('trips.today.nextUp', 'Next up')}
             </p>
-            <p className="font-bold">
-              {activeNow?.title ?? nextUp?.title}
-            </p>
+            <p className="font-bold">{activeNow?.title ?? nextUp?.title}</p>
             {nextUp && !activeNow && nextUp.start && (
               <p className="text-muted-foreground text-sm">
                 {formatCountdown(nextUp.start, now, t)}
@@ -432,19 +425,14 @@ export default function TodayModePage() {
             return (
               <Card key={item.id}>
                 <CardContent>
-                  <div
-                    className="flex gap-3 items-start"
-                    style={{ opacity: isPast ? 0.55 : 1 }}
-                  >
+                  <div className="flex gap-3 items-start" style={{ opacity: isPast ? 0.55 : 1 }}>
                     <div className="w-9 h-9 bg-muted flex items-center justify-center flex-shrink-0">
                       <Icon size={16} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-bold">{item.title}</p>
-                        {item.category && (
-                          <Badge className="capitalize">{item.category}</Badge>
-                        )}
+                        {item.category && <Badge className="capitalize">{item.category}</Badge>}
                         {item.kind === 'reservation' && (
                           <Badge variant="outline">
                             {t('trips.today.reservationLabel', 'reservation')}
@@ -465,7 +453,8 @@ export default function TodayModePage() {
                             : t('trips.today.anytime', 'Any time')}
                           {item.end && item.start && (
                             <>
-                              {' '}–{' '}
+                              {' '}
+                              –{' '}
                               {item.end.toLocaleTimeString(undefined, {
                                 hour: '2-digit',
                                 minute: '2-digit',
@@ -475,10 +464,7 @@ export default function TodayModePage() {
                         </span>
                       </div>
                     </div>
-                    <ArrowRight
-                      size={14}
-                      style={{ color: 'var(--muted-foreground)', flexShrink: 0, marginTop: 10 }}
-                    />
+                    <ArrowRight size={14} className="text-muted-foreground shrink-0 mt-2.5" />
                   </div>
                 </CardContent>
               </Card>

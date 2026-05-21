@@ -16,11 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { useTrips, useTripMutations } from '@/hooks/useTrips';
-import {
-  useReservations,
-  useAttachBookingToTrip,
-  type Reservation,
-} from '@/hooks/useReservations';
+import { useReservations, useAttachBookingToTrip, type Reservation } from '@/hooks/useReservations';
 import { suggestTripGroupings, type TripSuggestion } from '@/utils/tripGrouping';
 import { useEmailForwardingAddress } from '@/hooks/useEmailForwardingAddress';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -67,7 +63,7 @@ const formatRange = (start: string | null, end: string | null): string | null =>
 
 const formatAmount = (amount: number | null, currency: string | null) => {
   if (!amount) return null;
-  const symbol = currency === 'EUR' ? '€' : currency === 'USD' ? '$' : currency ?? '';
+  const symbol = currency === 'EUR' ? '€' : currency === 'USD' ? '$' : (currency ?? '');
   return `${symbol}${Math.round(amount).toLocaleString()}`;
 };
 
@@ -85,10 +81,7 @@ export function TripsInboxSection() {
     () => (reservations ?? []).filter((r) => !r.trip_id),
     [reservations],
   );
-  const suggestions = useMemo(
-    () => suggestTripGroupings(orphanReservations),
-    [orphanReservations],
-  );
+  const suggestions = useMemo(() => suggestTripGroupings(orphanReservations), [orphanReservations]);
 
   const reservationIdsInSuggestions = useMemo(() => {
     const set = new Set<string>();
@@ -103,8 +96,7 @@ export function TripsInboxSection() {
 
   // Hide the section entirely when there's nothing to show and no
   // forwarding address to surface — keeps the Trips page clean.
-  const hasContent =
-    isLoading || !!error || orphanReservations.length > 0 || !!forwarding;
+  const hasContent = isLoading || !!error || orphanReservations.length > 0 || !!forwarding;
   if (!hasContent) return null;
 
   return (
@@ -238,11 +230,7 @@ function SuggestionCard({
           ))}
         </div>
       </div>
-      <Button
-        variant="brand"
-        onClick={() => void onCreate(titleSuggestion)}
-        disabled={pending}
-      >
+      <Button variant="brand" onClick={() => void onCreate(titleSuggestion)} disabled={pending}>
         <Plus size={16} className="mr-1.5" />
         {t('pages.inbox.suggestions.createCta', 'Create trip')}
       </Button>
@@ -271,7 +259,7 @@ function OrphanRow({
   return (
     <div className="p-4 bg-background flex items-start gap-4 border border-border rounded-element">
       <div className="p-2 bg-muted rounded">
-        <Icon style={{ width: 22, height: 22, color: 'var(--primary)' }} />
+        <Icon style={{ width: 22, height: 22 }} className="text-primary" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
@@ -291,9 +279,7 @@ function OrphanRow({
         )}
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        {amount && (
-          <span className="font-bold text-primary whitespace-nowrap">{amount}</span>
-        )}
+        {amount && <span className="font-bold text-primary whitespace-nowrap">{amount}</span>}
         {canAttach && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -361,9 +347,7 @@ function ForwardingAddressCard() {
     <div className="mt-4 p-6 bg-muted">
       <div className="flex items-center gap-2 mb-2">
         <Mail size={18} className="text-primary" />
-        <p className="font-bold">
-          {t('pages.inbox.forwarding.title', 'Forward bookings here')}
-        </p>
+        <p className="font-bold">{t('pages.inbox.forwarding.title', 'Forward bookings here')}</p>
       </div>
       <p className="text-muted-foreground text-sm mb-4">
         {t(
@@ -379,11 +363,7 @@ function ForwardingAddressCard() {
           onClick={() => void copy()}
           aria-label={t('pages.inbox.forwarding.copy', 'Copy address')}
         >
-          {copied ? (
-            <Check size={16} />
-          ) : (
-            <Copy size={16} />
-          )}
+          {copied ? <Check size={16} /> : <Copy size={16} />}
         </Button>
       </div>
     </div>

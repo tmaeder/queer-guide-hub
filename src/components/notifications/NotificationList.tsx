@@ -90,7 +90,11 @@ export const NotificationList = () => {
     };
   }, [user?.id]);
 
-  const handleNotificationClick = (notification: { id: string; read?: boolean; action_url?: string }) => {
+  const handleNotificationClick = (notification: {
+    id: string;
+    read?: boolean;
+    action_url?: string;
+  }) => {
     if (!notification.read) {
       markAsRead(notification.id);
     }
@@ -111,7 +115,12 @@ export const NotificationList = () => {
     loading || messagingLoading || groupsLoading || likesLoading || commentsLoading;
 
   const combinedItems = useMemo(() => {
-    const items: Array<{ type: string; createdAt: Date; data: Record<string, unknown>; key: string }> = [];
+    const items: Array<{
+      type: string;
+      createdAt: Date;
+      data: Record<string, unknown>;
+      key: string;
+    }> = [];
 
     notifications.forEach((n: Record<string, unknown>) => {
       items.push({
@@ -152,7 +161,12 @@ export const NotificationList = () => {
     return items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }, [notifications, directMessages, groupNotifs, likes, comments]);
 
-  const renderItem = (item: { type: string; createdAt: Date; data: Record<string, unknown>; key: string }) => {
+  const renderItem = (item: {
+    type: string;
+    createdAt: Date;
+    data: Record<string, unknown>;
+    key: string;
+  }) => {
     switch (item.type) {
       case 'notification': {
         const n = item.data;
@@ -164,9 +178,7 @@ export const NotificationList = () => {
             onClick={() => handleNotificationClick(n)}
           >
             <div className="flex items-start gap-3">
-              <div className="p-1 rounded">
-                {getNotificationIcon(n.type as string)}
-              </div>
+              <div className="p-1 rounded">{getNotificationIcon(n.type as string)}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between">
                   <p className={`text-sm truncate ${!n.read ? 'font-semibold' : 'font-medium'}`}>
@@ -176,8 +188,12 @@ export const NotificationList = () => {
                 </div>
                 {n.content && (
                   <p
-                    className="text-xs text-muted-foreground mt-1"
-                    style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                    className="text-xs text-muted-foreground mt-1 overflow-hidden"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
                   >
                     {n.content}
                   </p>
@@ -192,9 +208,14 @@ export const NotificationList = () => {
       }
       case 'dm': {
         const c = item.data;
-        const others = (c.participants || []).filter((p: { user_id: string }) => p.user_id !== user?.id);
+        const others = (c.participants || []).filter(
+          (p: { user_id: string }) => p.user_id !== user?.id,
+        );
         const title =
-          c.title || others.map((o: { profile?: { display_name?: string } }) => o.profile?.display_name || 'User').join(', ');
+          c.title ||
+          others
+            .map((o: { profile?: { display_name?: string } }) => o.profile?.display_name || 'User')
+            .join(', ');
         const avatar = others[0]?.profile?.avatar_url || '';
         return (
           <button
@@ -217,9 +238,7 @@ export const NotificationList = () => {
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1 truncate">
-                  Tap to open chat
-                </p>
+                <p className="text-xs text-muted-foreground mt-1 truncate">Tap to open chat</p>
               </div>
             </div>
           </button>
@@ -244,8 +263,7 @@ export const NotificationList = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <Users size={16} />{' '}
-                    {n.community_groups?.name || 'Group'}
+                    <Users size={16} /> {n.community_groups?.name || 'Group'}
                   </h4>
                   <span className="text-xs text-muted-foreground ml-2">
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
@@ -279,16 +297,13 @@ export const NotificationList = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <Heart size={16} /> {l.user_display_name} liked your
-                    post
+                    <Heart size={16} /> {l.user_display_name} liked your post
                   </h4>
                   <span className="text-xs text-muted-foreground ml-2">
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1 truncate">
-                  Tap to view in feed
-                </p>
+                <p className="text-xs text-muted-foreground mt-1 truncate">Tap to view in feed</p>
               </div>
             </div>
           </button>
@@ -313,16 +328,19 @@ export const NotificationList = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <MessageSquare size={16} /> {c.user_display_name}{' '}
-                    commented
+                    <MessageSquare size={16} /> {c.user_display_name} commented
                   </h4>
                   <span className="text-xs text-muted-foreground ml-2">
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
                   </span>
                 </div>
                 <p
-                  className="text-xs text-muted-foreground mt-1"
-                  style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                  className="text-xs text-muted-foreground mt-1 overflow-hidden"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
                 >
                   {c.content}
                 </p>
@@ -339,9 +357,7 @@ export const NotificationList = () => {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between p-2">
-        <span className="text-sm font-medium">
-          Recent
-        </span>
+        <span className="text-sm font-medium">Recent</span>
         <Button variant="ghost" size="sm" onClick={markAllAsRead}>
           <CheckCheck size={12} className="mr-1" />
           Mark all read

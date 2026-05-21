@@ -4,9 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
-  MapPin, Search, Download, RefreshCw, CheckCircle, AlertTriangle,
-  Clock, Globe, Navigation, Plane, AlertCircle,
-  XCircle, Key, Database
+  MapPin,
+  Search,
+  Download,
+  RefreshCw,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  Globe,
+  Navigation,
+  Plane,
+  AlertCircle,
+  XCircle,
+  Key,
+  Database,
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
 import { toast } from 'sonner';
@@ -33,34 +44,37 @@ interface VenueStats {
 }
 
 const PROVIDER_ICONS: Record<string, React.ReactNode> = {
-  'foursquare': <Navigation size={24} />,
+  foursquare: <Navigation size={24} />,
   'google-places': <Globe size={24} />,
-  'tomtom': <MapPin size={24} />,
-  'tripadvisor': <Plane size={24} />,
-  'spartacus': <Database size={24} />,
+  tomtom: <MapPin size={24} />,
+  tripadvisor: <Plane size={24} />,
+  spartacus: <Database size={24} />,
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
-  'foursquare': 'hsl(var(--muted-foreground))',
+  foursquare: 'hsl(var(--muted-foreground))',
   'google-places': 'hsl(var(--foreground))',
-  'tomtom': 'hsl(var(--foreground) / 0.55)',
-  'tripadvisor': 'hsl(var(--muted-foreground))',
-  'spartacus': 'hsl(var(--foreground) / 0.55)',
+  tomtom: 'hsl(var(--foreground) / 0.55)',
+  tripadvisor: 'hsl(var(--muted-foreground))',
+  spartacus: 'hsl(var(--foreground) / 0.55)',
 };
 
 const SLUG_TO_DATA_SOURCE: Record<string, string> = {
-  'foursquare': 'foursquare',
+  foursquare: 'foursquare',
   'google-places': 'google_places',
-  'tomtom': 'tomtom',
-  'tripadvisor': 'tripadvisor',
-  'spartacus': 'spartacus',
+  tomtom: 'tomtom',
+  tripadvisor: 'tripadvisor',
+  spartacus: 'spartacus',
 };
 
-const SLUG_TO_DIALOG_PROVIDER: Record<string, 'foursquare' | 'google-places' | 'tomtom' | 'tripadvisor'> = {
-  'foursquare': 'foursquare',
+const SLUG_TO_DIALOG_PROVIDER: Record<
+  string,
+  'foursquare' | 'google-places' | 'tomtom' | 'tripadvisor'
+> = {
+  foursquare: 'foursquare',
   'google-places': 'google-places',
-  'tomtom': 'tomtom',
-  'tripadvisor': 'tripadvisor',
+  tomtom: 'tomtom',
+  tripadvisor: 'tripadvisor',
 };
 
 export const VenueImportQuickActions = () => {
@@ -69,7 +83,9 @@ export const VenueImportQuickActions = () => {
   const [totalVenues, setTotalVenues] = useState(0);
   const [loadingData, setLoadingData] = useState(true);
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
-  const [apiKeyStatuses, setApiKeyStatuses] = useState<Record<string, 'configured' | 'missing' | 'error'>>({});
+  const [apiKeyStatuses, setApiKeyStatuses] = useState<
+    Record<string, 'configured' | 'missing' | 'error'>
+  >({});
 
   const [importDialog, setImportDialog] = useState<{
     open: boolean;
@@ -88,7 +104,7 @@ export const VenueImportQuickActions = () => {
           { order: { col: 'name', ascending: true } },
         );
 
-        const knownSlugs = (sources || []).map(s => s.slug);
+        const knownSlugs = (sources || []).map((s) => s.slug);
         const extraSources: VenueSource[] = [];
 
         if (!knownSlugs.includes('tomtom')) {
@@ -110,10 +126,7 @@ export const VenueImportQuickActions = () => {
 
         setVenueSources([...(sources || []), ...extraSources]);
 
-        const allVenues = await listFrom<{ data_source: string | null }>(
-          'venues',
-          'data_source',
-        );
+        const allVenues = await listFrom<{ data_source: string | null }>('venues', 'data_source');
 
         const stats: VenueStats = {};
         let total = 0;
@@ -126,9 +139,12 @@ export const VenueImportQuickActions = () => {
         setTotalVenues(total);
 
         try {
-          const { data: keyData, error: keyError } = await supabase.functions.invoke('manage-api-keys?action=status', {
-            method: 'GET'
-          });
+          const { data: keyData, error: keyError } = await supabase.functions.invoke(
+            'manage-api-keys?action=status',
+            {
+              method: 'GET',
+            },
+          );
           if (!keyError && keyData?.required_keys) {
             const statuses: Record<string, 'configured' | 'missing' | 'error'> = {};
             for (const rk of keyData.required_keys) {
@@ -139,7 +155,6 @@ export const VenueImportQuickActions = () => {
         } catch {
           // optional
         }
-
       } catch (error) {
         console.error('Failed to fetch venue data:', error);
       } finally {
@@ -162,11 +177,26 @@ export const VenueImportQuickActions = () => {
     const status = getKeyStatus(source);
     switch (status) {
       case 'ready':
-        return <Badge variant="default"><Key size={10} />API Ready</Badge>;
+        return (
+          <Badge variant="default">
+            <Key size={10} />
+            API Ready
+          </Badge>
+        );
       case 'error':
-        return <Badge variant="destructive"><AlertTriangle size={10} />Key Error</Badge>;
+        return (
+          <Badge variant="destructive">
+            <AlertTriangle size={10} />
+            Key Error
+          </Badge>
+        );
       case 'missing':
-        return <Badge variant="destructive"><XCircle size={10} />Key Missing</Badge>;
+        return (
+          <Badge variant="destructive">
+            <XCircle size={10} />
+            Key Missing
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">No Key Needed</Badge>;
     }
@@ -179,7 +209,13 @@ export const VenueImportQuickActions = () => {
 
   const getStatusIcon = (source: VenueSource) => {
     if (loadingStates[source.slug]) {
-      return <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite', color: 'hsl(var(--muted-foreground))' }} />;
+      return (
+        <RefreshCw
+          size={16}
+          style={{ animation: 'spin 1s linear infinite' }}
+          className="text-muted-foreground"
+        />
+      );
     }
     if (source.last_error) {
       return <AlertCircle size={16} className="text-destructive" />;
@@ -209,7 +245,7 @@ export const VenueImportQuickActions = () => {
     if (dialogProvider) {
       setImportDialog({ open: true, provider: dialogProvider });
     } else if (source.source_type === 'scraper' && source.edge_function) {
-      setLoadingStates(prev => ({ ...prev, [source.slug]: true }));
+      setLoadingStates((prev) => ({ ...prev, [source.slug]: true }));
       try {
         const { error } = await supabase.functions.invoke(source.edge_function, { body: {} });
         if (error) throw error;
@@ -220,14 +256,14 @@ export const VenueImportQuickActions = () => {
       } catch (error) {
         toast.error(`Import Failed: ${error}`);
       } finally {
-        setLoadingStates(prev => ({ ...prev, [source.slug]: false }));
+        setLoadingStates((prev) => ({ ...prev, [source.slug]: false }));
       }
     }
   };
 
   const handleImportConfig = async (config: Record<string, unknown>) => {
     if (!importDialog.provider) return;
-    setLoadingStates(prev => ({ ...prev, [importDialog.provider!]: true }));
+    setLoadingStates((prev) => ({ ...prev, [importDialog.provider!]: true }));
 
     try {
       const functionName = `import-${importDialog.provider}-venues`;
@@ -239,7 +275,7 @@ export const VenueImportQuickActions = () => {
     } catch (error) {
       toast.error(`Import Failed: ${error}`);
     } finally {
-      setLoadingStates(prev => ({ ...prev, [importDialog.provider!]: false }));
+      setLoadingStates((prev) => ({ ...prev, [importDialog.provider!]: false }));
     }
   };
 
@@ -264,14 +300,18 @@ export const VenueImportQuickActions = () => {
     .filter(([k]) => !Object.values(SLUG_TO_DATA_SOURCE).includes(k) && k !== 'manual')
     .reduce((sum, [, v]) => sum + v, 0);
   const importedCount = totalVenues - manualCount - nullCount;
-  const activeSources = venueSources.filter(s => s.last_success_at).length;
+  const activeSources = venueSources.filter((s) => s.last_success_at).length;
 
   if (loadingData) {
     return (
       <div className="flex flex-col gap-6">
         <h5 className="text-xl font-semibold">Venue Imports</h5>
         <div className="flex justify-center p-8">
-          <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', color: 'hsl(var(--muted-foreground))' }} />
+          <RefreshCw
+            size={24}
+            style={{ animation: 'spin 1s linear infinite' }}
+            className="text-muted-foreground"
+          />
         </div>
       </div>
     );
@@ -297,23 +337,49 @@ export const VenueImportQuickActions = () => {
       <Card>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-              <div className="text-xl font-semibold text-muted-foreground">{totalVenues.toLocaleString()}</div>
+            <div
+              className="text-center p-3 rounded-element"
+              style={{ backgroundColor: 'hsl(var(--muted))' }}
+            >
+              <div className="text-xl font-semibold text-muted-foreground">
+                {totalVenues.toLocaleString()}
+              </div>
               <div className="text-xs text-muted-foreground">Total Venues</div>
             </div>
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-              <div className="text-xl font-semibold text-foreground">{(manualCount + nullCount).toLocaleString()}</div>
+            <div
+              className="text-center p-3 rounded-element"
+              style={{ backgroundColor: 'hsl(var(--muted))' }}
+            >
+              <div className="text-xl font-semibold text-foreground">
+                {(manualCount + nullCount).toLocaleString()}
+              </div>
               <div className="text-xs text-foreground">Manual / Other</div>
             </div>
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>{importedCount.toLocaleString()}</div>
-              <div className="text-xs" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>Imported</div>
+            <div
+              className="text-center p-3 rounded-element"
+              style={{ backgroundColor: 'hsl(var(--muted))' }}
+            >
+              <div
+                className="text-xl font-semibold"
+                style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+              >
+                {importedCount.toLocaleString()}
+              </div>
+              <div className="text-xs" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
+                Imported
+              </div>
             </div>
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
+            <div
+              className="text-center p-3 rounded-element"
+              style={{ backgroundColor: 'hsl(var(--muted))' }}
+            >
               <div className="text-xl font-semibold text-foreground">{activeSources}</div>
               <div className="text-xs text-foreground">Active Sources</div>
             </div>
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
+            <div
+              className="text-center p-3 rounded-element"
+              style={{ backgroundColor: 'hsl(var(--muted))' }}
+            >
               <div className="text-xl font-semibold text-destructive">{venueSources.length}</div>
               <div className="text-xs text-destructive">Registered Sources</div>
             </div>
@@ -337,7 +403,10 @@ export const VenueImportQuickActions = () => {
             <Card key={source.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div className="p-2 rounded-element text-white" style={{ backgroundColor: color }}>
+                  <div
+                    className="p-2 rounded-element text-white"
+                    style={{ backgroundColor: color }}
+                  >
                     {icon}
                   </div>
                   <div className="flex items-center gap-1">
@@ -347,7 +416,8 @@ export const VenueImportQuickActions = () => {
                 </div>
                 <CardTitle>{source.name}</CardTitle>
                 <CardDescription>
-                  {source.source_type === 'scraper' ? 'Web scraper' : 'API import'} &middot; {source.is_enabled ? 'Enabled' : 'Disabled'}
+                  {source.source_type === 'scraper' ? 'Web scraper' : 'API import'} &middot;{' '}
+                  {source.is_enabled ? 'Enabled' : 'Disabled'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -359,7 +429,9 @@ export const VenueImportQuickActions = () => {
                 {source.total_items_fetched != null && (
                   <div className="flex justify-between">
                     <p className="text-sm text-muted-foreground">Total Fetched:</p>
-                    <p className="text-sm font-semibold">{source.total_items_fetched.toLocaleString()}</p>
+                    <p className="text-sm font-semibold">
+                      {source.total_items_fetched.toLocaleString()}
+                    </p>
                   </div>
                 )}
 
@@ -373,10 +445,14 @@ export const VenueImportQuickActions = () => {
                 {source.last_error && (
                   <div
                     className="p-2 rounded"
-                    style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)', border: '1px solid hsl(var(--destructive) / 0.2)' }}
+                    style={{
+                      backgroundColor: 'hsl(var(--destructive) / 0.1)',
+                      border: '1px solid hsl(var(--destructive) / 0.2)',
+                    }}
                   >
                     <span className="text-xs text-destructive">
-                      {source.last_error.slice(0, 80)}{source.last_error.length > 80 ? '...' : ''}
+                      {source.last_error.slice(0, 80)}
+                      {source.last_error.length > 80 ? '...' : ''}
                     </span>
                   </div>
                 )}
@@ -392,7 +468,7 @@ export const VenueImportQuickActions = () => {
                 {/* Action Button */}
                 <Button
                   size="sm"
-                  variant={canImport(source) ? "default" : "secondary"}
+                  variant={canImport(source) ? 'default' : 'secondary'}
                   disabled={!canImport(source)}
                   onClick={() => handleImportClick(source)}
                 >

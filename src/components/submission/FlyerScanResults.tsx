@@ -135,9 +135,7 @@ function ItemDetail({
               fontWeight: 600,
               fontSize: '0.75rem',
               cursor: 'pointer',
-              ...(detected_type === 'event'
-                ? { backgroundColor: '#ec4899', color: '#fff' }
-                : {}),
+              ...(detected_type === 'event' ? { backgroundColor: '#ec4899', color: '#fff' } : {}),
             }}
             variant={detected_type === 'event' ? 'default' : 'secondary'}
           >
@@ -166,7 +164,7 @@ function ItemDetail({
           className="flex items-center gap-2 p-3 mb-4 rounded-element"
           style={{ backgroundColor: '#fef3c7' }}
         >
-          <AlertTriangle size={16} style={{ color: '#d97706', flexShrink: 0 }} />
+          <AlertTriangle size={16} style={{ color: '#d97706' }} className="shrink-0" />
           <span className="text-xs" style={{ color: '#92400e' }}>
             {matches.duplicate_events.length > 0
               ? `Similar event found: "${matches.duplicate_events[0].title}"`
@@ -301,10 +299,8 @@ export function FlyerScanResults({
     return (
       <Card>
         <CardContent data-testid="extraction-empty-card">
-          <p className="text-sm text-muted-foreground">
-            {t('submission.errors.extractionEmpty')}
-          </p>
-          <Button variant="outline" size="sm" onClick={onDismiss} style={{ marginTop: 12 }}>
+          <p className="text-sm text-muted-foreground">{t('submission.errors.extractionEmpty')}</p>
+          <Button variant="outline" size="sm" onClick={onDismiss} className="mt-3">
             {t('submission.errors.manualFallbackCta')}
           </Button>
         </CardContent>
@@ -321,14 +317,13 @@ export function FlyerScanResults({
       <Card>
         <CardContent>
           <div className="flex justify-between items-center mb-3">
-            <p className="text-sm font-semibold">
-              Scan results
-            </p>
+            <p className="text-sm font-semibold">Scan results</p>
             <Button
               variant="ghost"
               size="sm"
               onClick={onDismiss}
-              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+              style={{ alignItems: 'center' }}
+              className="flex gap-1"
             >
               <X size={14} />
               Dismiss
@@ -359,7 +354,8 @@ export function FlyerScanResults({
             variant="ghost"
             size="sm"
             onClick={onDismiss}
-            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+            style={{ alignItems: 'center' }}
+            className="flex gap-1"
           >
             <X size={14} />
             Dismiss
@@ -385,10 +381,9 @@ export function FlyerScanResults({
                       ? '#ec4899'
                       : 'hsl(var(--foreground))'
                     : 'hsl(var(--border))',
-                  overflow: 'hidden',
                   transition: 'border-color 0.2s',
                 }}
-                className="rounded-element"
+                className="rounded-element overflow-hidden"
               >
                 {/* Collapsed header */}
                 <div
@@ -406,12 +401,12 @@ export function FlyerScanResults({
                 >
                   <Badge
                     style={{
-                      fontWeight: 600,
                       fontSize: '0.7rem',
                       height: 22,
                       backgroundColor: effectiveType === 'event' ? '#ec489920' : '#DB277720',
                       color: effectiveType === 'event' ? '#ec4899' : 'hsl(var(--foreground))',
                     }}
+                    className="font-semibold"
                     variant="outline"
                   >
                     {effectiveType === 'event' ? 'Event' : 'Venue'}
@@ -428,9 +423,9 @@ export function FlyerScanResults({
                     )}
                   </div>
                   {isExpanded ? (
-                    <ChevronUp size={16} style={{ color: '#999', flexShrink: 0 }} />
+                    <ChevronUp size={16} style={{ color: '#999' }} className="shrink-0" />
                   ) : (
-                    <ChevronDown size={16} style={{ color: '#999', flexShrink: 0 }} />
+                    <ChevronDown size={16} style={{ color: '#999' }} className="shrink-0" />
                   )}
                 </div>
 

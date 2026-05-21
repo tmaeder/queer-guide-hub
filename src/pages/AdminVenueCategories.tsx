@@ -133,9 +133,7 @@ export default function AdminVenueCategories() {
             />
             <div>
               <span className="font-medium">{info.getValue()}</span>
-              <span className="block text-xs text-muted-foreground">
-                {info.row.original.slug}
-              </span>
+              <span className="block text-xs text-muted-foreground">{info.row.original.slug}</span>
             </div>
           </div>
         ),
@@ -145,13 +143,8 @@ export default function AdminVenueCategories() {
         header: 'Description',
         cell: (info) => (
           <span
-            style={{
-              maxWidth: 300,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              display: 'block',
-            }}
+            style={{ maxWidth: 300, textOverflow: 'ellipsis' }}
+            className="overflow-hidden whitespace-nowrap block"
           >
             {info.getValue() || '-'}
           </span>
@@ -216,89 +209,90 @@ export default function AdminVenueCategories() {
       config={tableConfig}
       afterTable={
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent style={{ maxWidth: 560 }}>
-          <DialogHeader>
-            <DialogTitle>{editingId ? 'Edit Category' : 'Create Category'}</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 pt-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Name *</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label>Slug *</Label>
-                <div className="flex gap-2">
+          <DialogContent style={{ maxWidth: 560 }}>
+            <DialogHeader>
+              <DialogTitle>{editingId ? 'Edit Category' : 'Create Category'}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 pt-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Name *</Label>
                   <Input
-                    value={form.slug}
-                    onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={generateSlug}
-                    style={{ flexShrink: 0, height: 40 }}
-                  >
-                    Gen
-                  </Button>
+                </div>
+                <div>
+                  <Label>Slug *</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={form.slug}
+                      onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={generateSlug}
+                      style={{ height: 40 }}
+                      className="shrink-0"
+                    >
+                      Gen
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label>Icon</Label>
-                <Input
-                  value={form.icon}
-                  onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
-                  placeholder="Lucide name"
+                <Label>Description</Label>
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  rows={3}
                 />
               </div>
-              <div>
-                <Label>Color</Label>
-                <Input
-                  type="color"
-                  value={form.color}
-                  onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-                />
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Icon</Label>
+                  <Input
+                    value={form.icon}
+                    onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+                    placeholder="Lucide name"
+                  />
+                </div>
+                <div>
+                  <Label>Color</Label>
+                  <Input
+                    type="color"
+                    value={form.color}
+                    onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label>Sort Order</Label>
+                  <Input
+                    type="number"
+                    value={form.sort_order}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
+                    }
+                  />
+                </div>
               </div>
-              <div>
-                <Label>Sort Order</Label>
-                <Input
-                  type="number"
-                  value={form.sort_order}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
-                  }
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={form.is_active}
+                  onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
                 />
+                <Label>Active</Label>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={form.is_active}
-                onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
-              />
-              <Label>Active</Label>
-            </div>
-          </div>
-          <DialogFooter style={{ marginTop: 16 }}>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       }
     />
   );

@@ -1,8 +1,18 @@
 import { Bell, BellRing, Heart, Users, Map, Smile, Handshake, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useProfile } from '@/hooks/useProfile';
 import { NotificationList } from './NotificationList';
@@ -27,26 +37,19 @@ export const NotificationBell = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-          {unreadCount > 0 ? (
-            <BellRing size={20} />
-          ) : (
-            <Bell size={20} />
-          )}
+          {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
               style={{
-                position: 'absolute',
                 top: -8,
                 right: -8,
                 height: 20,
                 width: 20,
-                padding: 0,
-                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '0.75rem',
               }}
+              className="absolute p-0 flex text-xs"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>

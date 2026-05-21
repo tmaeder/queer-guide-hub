@@ -1,29 +1,58 @@
 import { useState, useCallback, useRef } from 'react';
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Plus, X, Upload, ImageIcon, Search, Loader2, Check } from "lucide-react";
-import { usePersonalities } from "@/hooks/usePersonalities";
-import { useAddressResolver } from "@/hooks/useAddressResolver";
-import { CountryAutocomplete } from "@/components/ui/country-autocomplete";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { PersonalitySelectionDialog } from "./PersonalitySelectionDialog";
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus, X, Upload, ImageIcon, Search, Loader2, Check } from 'lucide-react';
+import { usePersonalities } from '@/hooks/usePersonalities';
+import { useAddressResolver } from '@/hooks/useAddressResolver';
+import { CountryAutocomplete } from '@/components/ui/country-autocomplete';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { PersonalitySelectionDialog } from './PersonalitySelectionDialog';
 
 interface AddPersonalityDialogProps {
   onSuccess?: () => void;
 }
 
 const FIELD_OPTIONS = [
-  'activism', 'arts', 'politics', 'sports', 'entertainment', 'literature',
-  'science', 'business', 'education', 'healthcare', 'technology', 'journalism',
-  'military', 'religion', 'law', 'media', 'fashion', 'music', 'film', 'theater'
+  'activism',
+  'arts',
+  'politics',
+  'sports',
+  'entertainment',
+  'literature',
+  'science',
+  'business',
+  'education',
+  'healthcare',
+  'technology',
+  'journalism',
+  'military',
+  'religion',
+  'law',
+  'media',
+  'fashion',
+  'music',
+  'film',
+  'theater',
 ];
 
 export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
@@ -75,7 +104,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     tags: [],
     verification_status: 'pending',
     visibility: 'public',
-    is_featured: false
+    is_featured: false,
   });
 
   const [newAchievement, setNewAchievement] = useState('');
@@ -84,85 +113,93 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [lookupLoading, setLookupLoading] = useState(false);
   const [selectionDialogOpen, setSelectionDialogOpen] = useState(false);
-  const [candidates, setCandidates] = useState<Array<{ id: string; name: string; description?: string }>>([]);
+  const [candidates, setCandidates] = useState<
+    Array<{ id: string; name: string; description?: string }>
+  >([]);
 
   // Per-field validation errors. Keyed by field name; empty/undefined ⇒ no error.
   const [fieldErrors, setFieldErrors] = useState<{ name?: string }>({});
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleFieldToggle = (field: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       fields: prev.fields.includes(field)
-        ? prev.fields.filter(f => f !== field)
-        : [...prev.fields, field]
+        ? prev.fields.filter((f) => f !== field)
+        : [...prev.fields, field],
     }));
   };
 
   const addAchievement = () => {
     if (newAchievement.trim()) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        achievements: [...prev.achievements, newAchievement.trim()]
+        achievements: [...prev.achievements, newAchievement.trim()],
       }));
       setNewAchievement('');
     }
   };
 
   const removeAchievement = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      achievements: prev.achievements.filter((_, i) => i !== index)
+      achievements: prev.achievements.filter((_, i) => i !== index),
     }));
   };
 
   const addTag = () => {
     if (newTag.trim()) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()]
+        tags: [...prev.tags, newTag.trim()],
       }));
       setNewTag('');
     }
   };
 
   const removeTag = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter((_, i) => i !== index)
+      tags: prev.tags.filter((_, i) => i !== index),
     }));
   };
 
-  const handleNationalityChange = useCallback(async (value: string) => {
-    setFormData(prev => ({ ...prev, nationality: value }));
-    setResolvedCountryId(null);
-    setResolvedCountryName(null);
+  const handleNationalityChange = useCallback(
+    async (value: string) => {
+      setFormData((prev) => ({ ...prev, nationality: value }));
+      setResolvedCountryId(null);
+      setResolvedCountryName(null);
 
-    if (value.trim()) {
-      const resolved = await resolveNationality(value);
-      if (resolved?.country_id) {
-        setResolvedCountryId(resolved.country_id);
-        setResolvedCountryName(resolved.country_name);
-      }
-    }
-  }, [resolveNationality]);
-
-  const handleBirthPlaceChange = useCallback(async (value: string) => {
-    setFormData(prev => ({ ...prev, birth_place: value }));
-    setResolvedCityId(null);
-
-    if (value.trim() && value.includes(',')) {
-      const resolved = await resolveBirthPlace(value);
-      if (resolved?.city_id) {
-        setResolvedCityId(resolved.city_id);
-        // If nationality wasn't resolved yet but birth place has a country, use it
-        if (!resolvedCountryId && resolved.country_id) {
+      if (value.trim()) {
+        const resolved = await resolveNationality(value);
+        if (resolved?.country_id) {
           setResolvedCountryId(resolved.country_id);
           setResolvedCountryName(resolved.country_name);
         }
       }
-    }
-  }, [resolveBirthPlace, resolvedCountryId]);
+    },
+    [resolveNationality],
+  );
+
+  const handleBirthPlaceChange = useCallback(
+    async (value: string) => {
+      setFormData((prev) => ({ ...prev, birth_place: value }));
+      setResolvedCityId(null);
+
+      if (value.trim() && value.includes(',')) {
+        const resolved = await resolveBirthPlace(value);
+        if (resolved?.city_id) {
+          setResolvedCityId(resolved.city_id);
+          // If nationality wasn't resolved yet but birth place has a country, use it
+          if (!resolvedCountryId && resolved.country_id) {
+            setResolvedCountryId(resolved.country_id);
+            setResolvedCountryName(resolved.country_name);
+          }
+        }
+      }
+    },
+    [resolveBirthPlace, resolvedCountryId],
+  );
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -171,9 +208,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
-        title: "Error",
-        description: "Please select an image file",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Please select an image file',
+        variant: 'destructive',
       });
       return;
     }
@@ -181,9 +218,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Error",
-        description: "Image must be less than 5MB",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Image must be less than 5MB',
+        variant: 'destructive',
       });
       return;
     }
@@ -200,22 +237,22 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('personalities')
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('personalities').getPublicUrl(fileName);
 
-      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+      setFormData((prev) => ({ ...prev, image_url: publicUrl }));
 
       toast({
-        title: "Success",
-        description: "Image uploaded successfully"
+        title: 'Success',
+        description: 'Image uploaded successfully',
       });
     } catch (error) {
       console.error('Error uploading image:', error);
       toast({
-        title: "Error",
-        description: "Failed to upload image",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to upload image',
+        variant: 'destructive',
       });
     } finally {
       setUploading(false);
@@ -223,15 +260,15 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   };
 
   const removeImage = () => {
-    setFormData(prev => ({ ...prev, image_url: '' }));
+    setFormData((prev) => ({ ...prev, image_url: '' }));
   };
 
   const handleWikipediaLookup = async () => {
     if (!searchTerm.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a name to search",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Please enter a name to search',
+        variant: 'destructive',
       });
       return;
     }
@@ -240,7 +277,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
     try {
       const { data, error } = await supabase.functions.invoke('fetch-personality-data', {
-        body: { searchTerm: searchTerm.trim() }
+        body: { searchTerm: searchTerm.trim() },
       });
 
       if (error) throw error;
@@ -256,32 +293,36 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         }
       } else {
         toast({
-          title: "No data found",
-          description: "No Wikipedia/Wikidata entry found for this person",
-          variant: "destructive"
+          title: 'No data found',
+          description: 'No Wikipedia/Wikidata entry found for this person',
+          variant: 'destructive',
         });
       }
     } catch (error) {
       console.error('Error looking up personality:', error);
       toast({
-        title: "Error",
-        description: "Failed to lookup personality data",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to lookup personality data',
+        variant: 'destructive',
       });
     } finally {
       setLookupLoading(false);
     }
   };
 
-  const handleCandidateSelection = async (candidate: { id: string; name: string; description?: string }) => {
+  const handleCandidateSelection = async (candidate: {
+    id: string;
+    name: string;
+    description?: string;
+  }) => {
     setLookupLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('fetch-personality-data', {
         body: {
           searchTerm: searchTerm.trim(),
-          selectedId: candidate.id
-        }
+          selectedId: candidate.id,
+        },
       });
 
       if (error) throw error;
@@ -293,9 +334,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     } catch (error) {
       console.error('Error fetching selected personality:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch personality data",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to fetch personality data',
+        variant: 'destructive',
       });
     } finally {
       setLookupLoading(false);
@@ -303,7 +344,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   };
 
   const prefillFormData = (personalityData: Record<string, unknown>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       name: personalityData.name || prev.name,
       description: personalityData.description || prev.description,
@@ -311,17 +352,21 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
       birth_date: personalityData.birth_date || prev.birth_date,
       death_date: personalityData.death_date || prev.death_date,
       death_place: personalityData.death_place || prev.death_place,
-      is_living: personalityData.is_living !== undefined ? personalityData.is_living : prev.is_living,
+      is_living:
+        personalityData.is_living !== undefined ? personalityData.is_living : prev.is_living,
       profession: personalityData.profession || prev.profession,
       nationality: personalityData.nationality || prev.nationality,
       birth_place: personalityData.birth_place || prev.birth_place,
       image_url: personalityData.image_url || prev.image_url,
       website_url: personalityData.website_url || prev.website_url,
-      fields: personalityData.fields && personalityData.fields.length > 0 ? personalityData.fields : prev.fields
+      fields:
+        personalityData.fields && personalityData.fields.length > 0
+          ? personalityData.fields
+          : prev.fields,
     }));
 
     toast({
-      title: "Success",
+      title: 'Success',
       description: `Data found and prefilled for ${personalityData.name}`,
     });
 
@@ -382,7 +427,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         tags: [],
         verification_status: 'pending',
         visibility: 'public',
-        is_featured: false
+        is_featured: false,
       });
 
       setResolvedCountryId(null);
@@ -390,13 +435,12 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
       setResolvedCountryName(null);
       setOpen(false);
       onSuccess?.();
-
     } catch (error) {
       console.error('Error in handleSubmit:', error);
       toast({
-        title: "Error",
-        description: "Failed to add personality. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to add personality. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -430,18 +474,16 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Enter person's name to lookup..."
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleWikipediaLookup())}
+                onKeyPress={(e) =>
+                  e.key === 'Enter' && (e.preventDefault(), handleWikipediaLookup())
+                }
               />
               <Button
                 type="button"
                 onClick={handleWikipediaLookup}
                 disabled={lookupLoading || !searchTerm.trim()}
               >
-                {lookupLoading ? (
-                  <Loader2 />
-                ) : (
-                  <Search />
-                )}
+                {lookupLoading ? <Loader2 /> : <Search />}
                 {lookupLoading ? 'Searching...' : 'Lookup'}
               </Button>
             </div>
@@ -462,9 +504,10 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     ref={nameInputRef}
                     value={formData.name}
                     onChange={(e) => {
-                      setFormData(prev => ({ ...prev, name: e.target.value }));
+                      setFormData((prev) => ({ ...prev, name: e.target.value }));
                       // Clear the error as soon as the user starts typing.
-                      if (fieldErrors.name) setFieldErrors(prev => ({ ...prev, name: undefined }));
+                      if (fieldErrors.name)
+                        setFieldErrors((prev) => ({ ...prev, name: undefined }));
                     }}
                     placeholder="Full name"
                     required
@@ -483,7 +526,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   <Input
                     id="pronouns"
                     value={formData.pronouns}
-                    onChange={(e) => setFormData(prev => ({ ...prev, pronouns: e.target.value }))}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, pronouns: e.target.value }))}
                     placeholder="e.g., they/them, she/her, he/him"
                   />
                 </div>
@@ -493,7 +536,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   <Input
                     id="profession"
                     value={formData.profession}
-                    onChange={(e) => setFormData(prev => ({ ...prev, profession: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, profession: e.target.value }))
+                    }
                     placeholder="Primary profession or role"
                   />
                 </div>
@@ -522,12 +567,25 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     <Input
                       id="birth_place"
                       value={formData.birth_place}
-                      onChange={(e) => setFormData(prev => ({ ...prev, birth_place: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, birth_place: e.target.value }))
+                      }
                       onBlur={() => handleBirthPlaceChange(formData.birth_place)}
                       placeholder="City, Country (e.g. New York, United States)"
                     />
                     {resolvingGeo && (
-                      <Loader2 style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, animation: 'spin 1s linear infinite', color: '#999' }} />
+                      <Loader2
+                        style={{
+                          right: 8,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: 14,
+                          height: 14,
+                          animation: 'spin 1s linear infinite',
+                          color: '#999',
+                        }}
+                        className="absolute"
+                      />
                     )}
                   </div>
                   {resolvedCityId && (
@@ -552,7 +610,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     id="is_living"
                     checked={formData.is_living}
                     onCheckedChange={(checked) =>
-                      setFormData(prev => ({ ...prev, is_living: !!checked }))
+                      setFormData((prev) => ({ ...prev, is_living: !!checked }))
                     }
                   />
                   <Label htmlFor="is_living">Currently living</Label>
@@ -564,7 +622,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     id="birth_date"
                     type="date"
                     value={formData.birth_date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, birth_date: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, birth_date: e.target.value }))
+                    }
                   />
                 </div>
 
@@ -576,7 +636,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         id="death_date"
                         type="date"
                         value={formData.death_date}
-                        onChange={(e) => setFormData(prev => ({ ...prev, death_date: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, death_date: e.target.value }))
+                        }
                       />
                     </div>
                     <div>
@@ -584,7 +646,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                       <Input
                         id="death_place"
                         value={formData.death_place}
-                        onChange={(e) => setFormData(prev => ({ ...prev, death_place: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, death_place: e.target.value }))
+                        }
                         placeholder="City, Country"
                       />
                     </div>
@@ -596,7 +660,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   <Select
                     value={formData.visibility}
                     onValueChange={(value: 'public' | 'private' | 'draft') =>
-                      setFormData(prev => ({ ...prev, visibility: value }))
+                      setFormData((prev) => ({ ...prev, visibility: value }))
                     }
                   >
                     <SelectTrigger>
@@ -621,12 +685,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                           alt="Preview"
                           className="w-32 h-32 object-cover rounded-element border border-border"
                         />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={removeImage}
-                        >
+                        <Button type="button" variant="destructive" size="sm" onClick={removeImage}>
                           <X />
                         </Button>
                       </div>
@@ -657,12 +716,12 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                       />
                     </div>
 
-                    <span className="text-xs text-muted-foreground">
-                      Or enter URL manually:
-                    </span>
+                    <span className="text-xs text-muted-foreground">Or enter URL manually:</span>
                     <Input
                       value={formData.image_url}
-                      onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, image_url: e.target.value }))
+                      }
                       placeholder="https://..."
                     />
                   </div>
@@ -673,7 +732,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   <Input
                     id="website_url"
                     value={formData.website_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, website_url: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, website_url: e.target.value }))
+                    }
                     placeholder="https://..."
                   />
                 </div>
@@ -691,7 +752,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, description: e.target.value }))
+                  }
                   placeholder="Brief description (1-2 sentences)"
                   rows={2}
                 />
@@ -702,7 +765,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 <Textarea
                   id="bio"
                   value={formData.bio}
-                  onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, bio: e.target.value }))}
                   placeholder="Detailed biography"
                   rows={4}
                 />
@@ -741,9 +804,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                       checked={formData.fields.includes(field)}
                       onCheckedChange={() => handleFieldToggle(field)}
                     />
-                    <Label htmlFor={field}>
-                      {field}
-                    </Label>
+                    <Label htmlFor={field}>{field}</Label>
                   </div>
                 ))}
               </div>
@@ -770,7 +831,10 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
               {formData.achievements.length > 0 && (
                 <div className="flex flex-col gap-2">
                   {formData.achievements.map((achievement, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 bg-accent rounded-element">
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 p-2 bg-accent rounded-element"
+                    >
                       <span className="flex-1 text-sm">{achievement}</span>
                       <Button
                         type="button"

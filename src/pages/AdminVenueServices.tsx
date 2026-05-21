@@ -146,9 +146,7 @@ export default function AdminVenueServices() {
         cell: (info) => (
           <div>
             <span className="font-medium">{info.getValue()}</span>
-            <span className="block text-xs text-muted-foreground">
-              {info.row.original.slug}
-            </span>
+            <span className="block text-xs text-muted-foreground">{info.row.original.slug}</span>
           </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -269,7 +267,8 @@ export default function AdminVenueServices() {
                       variant="outline"
                       size="sm"
                       onClick={generateSlug}
-                      style={{ flexShrink: 0, height: 40 }}
+                      style={{ height: 40 }}
+                      className="shrink-0"
                     >
                       Gen
                     </Button>
@@ -330,7 +329,7 @@ export default function AdminVenueServices() {
                 <Label>Active</Label>
               </div>
             </div>
-            <DialogFooter style={{ marginTop: 16 }}>
+            <DialogFooter className="mt-4">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>

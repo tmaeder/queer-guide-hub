@@ -25,9 +25,7 @@ import { getContentType } from '@/config/contentTypeRegistry';
 const CMSEditorLayout = lazy(() =>
   import('./editor/CMSEditorLayout').then((m) => ({ default: m.CMSEditorLayout })),
 );
-const AuditLog = lazy(() =>
-  import('./AuditLog').then((m) => ({ default: m.AuditLog })),
-);
+const AuditLog = lazy(() => import('./AuditLog').then((m) => ({ default: m.AuditLog })));
 const DataQualityDashboard = lazy(() =>
   import('./DataQualityDashboard').then((m) => ({ default: m.DataQualityDashboard })),
 );
@@ -116,26 +114,29 @@ export function CMSShell() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  const handleNavigate = useCallback((view: CMSView, contentType?: string) => {
-    // Trigger fade-out
-    setIsTransitioning(true);
+  const handleNavigate = useCallback(
+    (view: CMSView, contentType?: string) => {
+      // Trigger fade-out
+      setIsTransitioning(true);
 
-    // Clear any previous timer
-    if (transitionTimer.current) clearTimeout(transitionTimer.current);
+      // Clear any previous timer
+      if (transitionTimer.current) clearTimeout(transitionTimer.current);
 
-    transitionTimer.current = setTimeout(() => {
-      setActiveView(view);
-      setActiveContentType(contentType);
-      setEditor(null);
+      transitionTimer.current = setTimeout(() => {
+        setActiveView(view);
+        setActiveContentType(contentType);
+        setEditor(null);
 
-      // Trigger fade-in after state updates
-      requestAnimationFrame(() => {
-        setIsTransitioning(false);
-      });
-    }, 150);
+        // Trigger fade-in after state updates
+        requestAnimationFrame(() => {
+          setIsTransitioning(false);
+        });
+      }, 150);
 
-    if (isMobile) setMobileOpen(false);
-  }, [isMobile]);
+      if (isMobile) setMobileOpen(false);
+    },
+    [isMobile],
+  );
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -144,10 +145,13 @@ export function CMSShell() {
     };
   }, []);
 
-  const handleEdit = useCallback((contentType: string, itemId: string | null) => {
-    setEditor({ contentType, itemId });
-    if (isMobile) setMobileOpen(false);
-  }, [isMobile]);
+  const handleEdit = useCallback(
+    (contentType: string, itemId: string | null) => {
+      setEditor({ contentType, itemId });
+      if (isMobile) setMobileOpen(false);
+    },
+    [isMobile],
+  );
 
   const handleCloseEditor = useCallback(() => {
     setEditor(null);
@@ -187,9 +191,7 @@ export function CMSShell() {
   // dispatched via custom events the editor listens to (no shared state needed).
   useCMSShortcuts({
     onPalette: () => setPaletteOpen(true),
-    onSave: editor
-      ? () => window.dispatchEvent(new CustomEvent('cms:editor:save'))
-      : undefined,
+    onSave: editor ? () => window.dispatchEvent(new CustomEvent('cms:editor:save')) : undefined,
     onPublish: editor
       ? () => window.dispatchEvent(new CustomEvent('cms:editor:publish'))
       : undefined,
@@ -337,14 +339,21 @@ export function CMSShell() {
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Breadcrumb bar */}
         {breadcrumbs.length > 1 && (
-          <div className="px-4 sm:px-6 py-[10px] bg-background border-b border-border flex items-center" style={{ minHeight: 44 }}>
+          <div
+            className="px-4 sm:px-6 py-[10px] bg-background border-b border-border flex items-center"
+            style={{ minHeight: 44 }}
+          >
             <nav className="flex items-center flex-nowrap">
               {breadcrumbs.map((crumb, i) => {
                 const isLast = i === breadcrumbs.length - 1;
                 return (
                   <div key={i} className="flex items-center">
                     {i > 0 && (
-                      <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 6px' }} />
+                      <ChevronRight
+                        size={14}
+                        style={{ margin: '0 6px' }}
+                        className="text-muted-foreground"
+                      />
                     )}
                     {isLast ? (
                       <span
@@ -376,7 +385,8 @@ export function CMSShell() {
           style={{
             opacity: isTransitioning ? 0 : 1,
             transform: isTransitioning ? 'translateY(6px)' : 'translateY(0)',
-            transition: 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition:
+              'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           {renderMainContent()}

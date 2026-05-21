@@ -35,13 +35,15 @@ const features = [
   {
     icon: MapPin,
     title: 'Venues',
-    description: 'Verified queer-friendly bars, cafés, clubs, and businesses — built by the community, for the community.',
+    description:
+      'Verified queer-friendly bars, cafés, clubs, and businesses — built by the community, for the community.',
     link: '/venues',
   },
   {
     icon: Calendar,
     title: 'Events',
-    description: 'Pride marches, drag shows, support groups, film screenings — find what\'s happening near you or anywhere in the world.',
+    description:
+      "Pride marches, drag shows, support groups, film screenings — find what's happening near you or anywhere in the world.",
     link: '/events',
   },
   {
@@ -53,30 +55,71 @@ const features = [
   {
     icon: MessageCircle,
     title: 'Community',
-    description: 'Ask questions, share stories, find your people. A moderated space where every voice matters.',
+    description:
+      'Ask questions, share stories, find your people. A moderated space where every voice matters.',
     link: '/groups',
   },
   {
     icon: Globe,
     title: 'Places',
-    description: 'Explore queer-friendly cities and countries. Know before you go — safety info, rights, and local tips.',
+    description:
+      'Explore queer-friendly cities and countries. Know before you go — safety info, rights, and local tips.',
     link: '/places',
   },
 ];
 
 const values = [
-  { icon: Heart, title: 'Inclusivity', description: 'Every identity, every background, every story belongs here.' },
-  { icon: Shield, title: 'Safety', description: 'Safe spaces online and offline — always our top priority.' },
-  { icon: Users, title: 'Community', description: 'Meaningful connections between individuals and organizations worldwide.' },
-  { icon: Sparkles, title: 'Authenticity', description: 'Be yourself. We built this place so you never have to hide.' },
-  { icon: HandHeart, title: 'Accessibility', description: 'A platform for everyone — highlighting spaces that prioritize access.' },
-  { icon: Globe, title: 'Growth', description: 'Always evolving, always listening. Built on your feedback.' },
+  {
+    icon: Heart,
+    title: 'Inclusivity',
+    description: 'Every identity, every background, every story belongs here.',
+  },
+  {
+    icon: Shield,
+    title: 'Safety',
+    description: 'Safe spaces online and offline — always our top priority.',
+  },
+  {
+    icon: Users,
+    title: 'Community',
+    description: 'Meaningful connections between individuals and organizations worldwide.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Authenticity',
+    description: 'Be yourself. We built this place so you never have to hide.',
+  },
+  {
+    icon: HandHeart,
+    title: 'Accessibility',
+    description: 'A platform for everyone — highlighting spaces that prioritize access.',
+  },
+  {
+    icon: Globe,
+    title: 'Growth',
+    description: 'Always evolving, always listening. Built on your feedback.',
+  },
 ];
 
 const team = [
-  { name: 'Community Moderators', role: 'Keeping it safe', description: 'Volunteer moderators working around the clock to maintain a welcoming, respectful environment.' },
-  { name: 'Local Ambassadors', role: 'Eyes on the ground', description: 'Community leaders who surface local needs and champion inclusive spaces in their regions.' },
-  { name: 'Content Contributors', role: 'Sharing knowledge', description: 'Members who write venue reviews, post events, and build the resources that make this platform valuable.' },
+  {
+    name: 'Community Moderators',
+    role: 'Keeping it safe',
+    description:
+      'Volunteer moderators working around the clock to maintain a welcoming, respectful environment.',
+  },
+  {
+    name: 'Local Ambassadors',
+    role: 'Eyes on the ground',
+    description:
+      'Community leaders who surface local needs and champion inclusive spaces in their regions.',
+  },
+  {
+    name: 'Content Contributors',
+    role: 'Sharing knowledge',
+    description:
+      'Members who write venue reviews, post events, and build the resources that make this platform valuable.',
+  },
 ];
 
 export default function About() {
@@ -117,18 +160,15 @@ export default function About() {
             />
           </div>
           <p className="reveal-up reveal-delay-2 text-body-lg sm:text-lg md:text-title text-muted-foreground leading-[1.7] max-w-[720px]">
-            The Queer Guide connects LGBTQ+ people and allies with safe venues,
-            vibrant events, and communities that get you — wherever you are in the world.
+            The Queer Guide connects LGBTQ+ people and allies with safe venues, vibrant events, and
+            communities that get you — wherever you are in the world.
           </p>
         </div>
       </SpotlightEffect>
 
       {/* Stats Strip */}
       <div className="py-10 md:py-14 px-4 sm:px-6 md:px-8 bg-foreground text-background">
-        <StaggerGrid
-          stagger={0.1}
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
-        >
+        <StaggerGrid stagger={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {statItems.map((stat, i) => (
             <div key={i} className="text-center">
               <div
@@ -164,13 +204,14 @@ export default function About() {
               <p className="text-muted-foreground leading-[1.8] text-body-lg">
                 Finding a queer-friendly bar shouldn't require a group chat, three Reddit threads,
                 and a leap of faith. We started The Queer Guide because we were tired of guessing
-                which spaces were actually safe — and which just slapped a rainbow on their logo in June.
+                which spaces were actually safe — and which just slapped a rainbow on their logo in
+                June.
               </p>
               <p className="text-muted-foreground leading-[1.8] text-body-lg">
-                What began as a personal list of trusted venues has grown into a global platform — verified
-                by the community, powered by real experiences, and always free to use. Whether you're
-                traveling solo, moving to a new city, or just looking for your people on a Friday night,
-                we've got you.
+                What began as a personal list of trusted venues has grown into a global platform —
+                verified by the community, powered by real experiences, and always free to use.
+                Whether you're traveling solo, moving to a new city, or just looking for your people
+                on a Friday night, we've got you.
               </p>
             </div>
 
@@ -181,20 +222,20 @@ export default function About() {
               <h6 className="font-bold text-lg">What makes us different</h6>
               <div className="flex flex-col gap-4">
                 <p className="text-muted-foreground leading-[1.7]">
-                  <span className="font-semibold text-foreground">Community-verified</span>
-                  {' '}— Every venue is reviewed by real LGBTQ+ people, not algorithms.
+                  <span className="font-semibold text-foreground">Community-verified</span> — Every
+                  venue is reviewed by real LGBTQ+ people, not algorithms.
                 </p>
                 <p className="text-muted-foreground leading-[1.7]">
-                  <span className="font-semibold text-foreground">Safety-first</span>
-                  {' '}— We flag safety info, local laws, and rights so you know before you go.
+                  <span className="font-semibold text-foreground">Safety-first</span> — We flag
+                  safety info, local laws, and rights so you know before you go.
                 </p>
                 <p className="text-muted-foreground leading-[1.7]">
-                  <span className="font-semibold text-foreground">Always free</span>
-                  {' '}— No paywalls, no premium tiers. This platform belongs to everyone.
+                  <span className="font-semibold text-foreground">Always free</span> — No paywalls,
+                  no premium tiers. This platform belongs to everyone.
                 </p>
                 <p className="text-muted-foreground leading-[1.7]">
-                  <span className="font-semibold text-foreground">Global reach</span>
-                  {' '}— From Berlin to Bangkok, São Paulo to Sydney — and growing every day.
+                  <span className="font-semibold text-foreground">Global reach</span> — From Berlin
+                  to Bangkok, São Paulo to Sydney — and growing every day.
                 </p>
               </div>
             </div>
@@ -215,28 +256,23 @@ export default function About() {
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <LocalizedLink
-                to={feature.link}
-                key={feature.title}
-                style={{ textDecoration: 'none', display: 'block' }}
-              >
-                <Card style={{ height: '100%', cursor: 'pointer' }}>
+              <LocalizedLink to={feature.link} key={feature.title} className="no-underline block">
+                <Card style={{ height: '100%' }} className="cursor-pointer">
                   <CardContent
-                    style={{
-                      padding: isMobile ? 20 : 28,
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 12,
-                    }}
+                    style={{ padding: isMobile ? 20 : 28, height: '100%', flexDirection: 'column' }}
+                    className="flex gap-3"
                   >
-                    <p
-                      className="font-bold text-base md:text-body-lg flex items-center gap-2"
-                    >
-                      <Icon style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden="true" />
+                    <p className="font-bold text-base md:text-body-lg flex items-center gap-2">
+                      <Icon
+                        style={{ width: 18, height: 18 }}
+                        className="shrink-0"
+                        aria-hidden="true"
+                      />
                       {feature.title}
                     </p>
-                    <p className="text-sm text-muted-foreground leading-[1.6]">{feature.description}</p>
+                    <p className="text-sm text-muted-foreground leading-[1.6]">
+                      {feature.description}
+                    </p>
                   </CardContent>
                 </Card>
               </LocalizedLink>
@@ -256,7 +292,11 @@ export default function About() {
               return (
                 <div key={value.title} className="flex flex-col gap-2">
                   <p className="font-bold flex items-center gap-2">
-                    <Icon style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden="true" />
+                    <Icon
+                      style={{ width: 18, height: 18 }}
+                      className="shrink-0"
+                      aria-hidden="true"
+                    />
                     {value.title}
                   </p>
                   <p className="text-sm text-muted-foreground leading-[1.6]">{value.description}</p>
@@ -273,30 +313,24 @@ export default function About() {
           className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
           style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
         >
-          <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">
-            The People Behind It
-          </h2>
+          <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">The People Behind It</h2>
           <p className="text-muted-foreground mb-8 md:mb-10 text-body-lg leading-[1.7] max-w-[600px]">
-            The Queer Guide isn't run by a corporation — it's powered by passionate
-            community members who volunteer their time and energy.
+            The Queer Guide isn't run by a corporation — it's powered by passionate community
+            members who volunteer their time and energy.
           </p>
 
           <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {team.map((member) => (
               <Card key={member.name} style={{ height: '100%' }}>
                 <CardContent
-                  style={{
-                    padding: isMobile ? 20 : 28,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 8,
-                  }}
+                  style={{ padding: isMobile ? 20 : 28, flexDirection: 'column' }}
+                  className="flex gap-2"
                 >
                   <p className="font-bold">{member.name}</p>
-                  <p className="text-sm font-semibold text-foreground">
-                    {member.role}
+                  <p className="text-sm font-semibold text-foreground">{member.role}</p>
+                  <p className="text-sm text-muted-foreground leading-[1.6]">
+                    {member.description}
                   </p>
-                  <p className="text-sm text-muted-foreground leading-[1.6]">{member.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -314,16 +348,40 @@ export default function About() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 mb-10 md:mb-12">
             {[
-              { icon: MapPin, title: 'Add Venues', desc: 'Know a safe spot? Share it.', link: '/venues/new' },
-              { icon: Calendar, title: 'Create Events', desc: 'Organize community gatherings.', link: '/events/new' },
-              { icon: MessageCircle, title: 'Join Discussions', desc: 'Your voice matters here.', link: '/groups' },
-              { icon: Megaphone, title: 'Spread the Word', desc: 'Tell someone who needs this.', link: '/about' },
+              {
+                icon: MapPin,
+                title: 'Add Venues',
+                desc: 'Know a safe spot? Share it.',
+                link: '/venues/new',
+              },
+              {
+                icon: Calendar,
+                title: 'Create Events',
+                desc: 'Organize community gatherings.',
+                link: '/events/new',
+              },
+              {
+                icon: MessageCircle,
+                title: 'Join Discussions',
+                desc: 'Your voice matters here.',
+                link: '/groups',
+              },
+              {
+                icon: Megaphone,
+                title: 'Spread the Word',
+                desc: 'Tell someone who needs this.',
+                link: '/about',
+              },
             ].map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.title} className="flex flex-col gap-2">
                   <p className="font-bold flex items-center gap-2">
-                    <Icon style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden="true" />
+                    <Icon
+                      style={{ width: 18, height: 18 }}
+                      className="shrink-0"
+                      aria-hidden="true"
+                    />
                     {item.title}
                   </p>
                   <p className="text-sm opacity-50 leading-[1.6]">{item.desc}</p>
@@ -339,7 +397,7 @@ export default function About() {
                 <ArrowRight size={18} className="ml-2" aria-hidden="true" />
               </Button>
             </LocalizedLink>
-            <LocalizedLink to="/donate" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <LocalizedLink to="/donate" style={{ color: 'inherit' }} className="no-underline">
               <Button variant="outline" size="lg" style={{ color: 'inherit' }}>
                 Support Us
               </Button>
@@ -352,7 +410,9 @@ export default function About() {
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
         <div className="max-w-7xl mx-auto">
           <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">How we got here</h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl">A side-project that became a global directory.</p>
+          <p className="text-muted-foreground mb-8 max-w-2xl">
+            A side-project that became a global directory.
+          </p>
         </div>
         <Timeline
           data={[
@@ -360,8 +420,8 @@ export default function About() {
               title: '2021',
               content: (
                 <p className="text-muted-foreground leading-relaxed">
-                  A side-project. Three contributors, one spreadsheet, big ambitions. We started with a list of safe
-                  bars across five European cities — shared on a Telegram group.
+                  A side-project. Three contributors, one spreadsheet, big ambitions. We started
+                  with a list of safe bars across five European cities — shared on a Telegram group.
                 </p>
               ),
             },
@@ -369,8 +429,8 @@ export default function About() {
               title: '2023',
               content: (
                 <p className="text-muted-foreground leading-relaxed">
-                  1,000 venues, 80 cities. First Pride season survived without falling over. We launched the events
-                  pipeline and the community submissions extension.
+                  1,000 venues, 80 cities. First Pride season survived without falling over. We
+                  launched the events pipeline and the community submissions extension.
                 </p>
               ),
             },
@@ -378,8 +438,9 @@ export default function About() {
               title: '2025',
               content: (
                 <p className="text-muted-foreground leading-relaxed">
-                  21,000 venues, 180 countries, 2,300 contributors. Marketplace and trip planner shipped. We added
-                  safety briefings, country-by-country rights, and weekly news digests.
+                  21,000 venues, 180 countries, 2,300 contributors. Marketplace and trip planner
+                  shipped. We added safety briefings, country-by-country rights, and weekly news
+                  digests.
                 </p>
               ),
             },
@@ -387,8 +448,8 @@ export default function About() {
               title: '2026',
               content: (
                 <p className="text-muted-foreground leading-relaxed">
-                  You are here. Help us write the next chapter — submit a venue, organise an event, or join the
-                  contributor circle.
+                  You are here. Help us write the next chapter — submit a venue, organise an event,
+                  or join the contributor circle.
                 </p>
               ),
             },

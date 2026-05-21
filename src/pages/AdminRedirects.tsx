@@ -15,12 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -41,11 +36,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import {
-  useRedirects,
-  type Redirect,
-  type RedirectEvent,
-} from '@/hooks/useRedirects';
+import { useRedirects, type Redirect, type RedirectEvent } from '@/hooks/useRedirects';
 import { toast } from 'sonner';
 import { fetchRedirectById } from '@/hooks/usePageFetchers';
 import { format } from 'date-fns';
@@ -59,8 +50,14 @@ import { PreviewDialog } from '@/pages/admin-redirects/PreviewDialog';
 
 export default function AdminRedirects() {
   const navigate = useNavigate();
-  const { createRedirect, updateRedirect, deleteRedirect, _toggleEnabled, fetchEvents, bulkImport } =
-    useRedirects();
+  const {
+    createRedirect,
+    updateRedirect,
+    deleteRedirect,
+    _toggleEnabled,
+    fetchEvents,
+    bulkImport,
+  } = useRedirects();
   const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -181,7 +178,7 @@ export default function AdminRedirects() {
         },
       ],
       toolbarActions: (
-        <div className="flex" style={{ gap: 8 }}>
+        <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setBulkDialogOpen(true)}>
             <Upload size={14} className="mr-1" />
             Import
@@ -228,8 +225,8 @@ export default function AdminRedirects() {
   );
 
   return (
-    <div className="mx-auto flex flex-col" style={{ maxWidth: 1200, padding: 24, gap: 24 }}>
-      <div className="flex items-center" style={{ gap: 16 }}>
+    <div className="mx-auto flex flex-col p-6 gap-6" style={{ maxWidth: 1200 }}>
+      <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="sm"
@@ -239,12 +236,10 @@ export default function AdminRedirects() {
           <ArrowLeft size={16} /> Back to Admin
         </Button>
         <div>
-          <h1 style={{ fontSize: '1.875rem', fontWeight: 700 }}>
+          <h1 style={{ fontSize: '1.875rem' }} className="font-bold">
             Redirects & Short Links
           </h1>
-          <p className="text-muted-foreground">
-            Manage URL redirects, short links, and analytics
-          </p>
+          <p className="text-muted-foreground">Manage URL redirects, short links, and analytics</p>
         </div>
       </div>
 
@@ -273,7 +268,12 @@ export default function AdminRedirects() {
         }}
       />
 
-      <Dialog open={!!eventsDialogId} onOpenChange={(o) => { if (!o) setEventsDialogId(null); }}>
+      <Dialog
+        open={!!eventsDialogId}
+        onOpenChange={(o) => {
+          if (!o) setEventsDialogId(null);
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
@@ -284,14 +284,11 @@ export default function AdminRedirects() {
             </DialogTitle>
           </DialogHeader>
           {eventsLoading ? (
-            <div style={{ paddingTop: 24, paddingBottom: 24 }}>
+            <div className="pt-6 pb-6">
               <Skeleton style={{ height: 200, width: '100%' }} />
             </div>
           ) : events.length === 0 ? (
-            <p
-              className="text-center text-muted-foreground"
-              style={{ paddingTop: 24, paddingBottom: 24 }}
-            >
+            <p className="text-center text-muted-foreground pt-6 pb-6">
               No click events recorded yet.
             </p>
           ) : (
@@ -312,13 +309,8 @@ export default function AdminRedirects() {
                     </TableCell>
                     <TableCell>{e.country || '—'}</TableCell>
                     <TableCell
-                      style={{
-                        maxWidth: 200,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        fontSize: '0.8rem',
-                      }}
+                      style={{ maxWidth: 200, textOverflow: 'ellipsis', fontSize: '0.8rem' }}
+                      className="overflow-hidden whitespace-nowrap"
                     >
                       {e.referer || '—'}
                     </TableCell>

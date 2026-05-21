@@ -13,15 +13,8 @@ interface UserPostsListProps {
 
 export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
   const { user } = useAuth();
-  const {
-    posts,
-    isLoading,
-    likePost,
-    unlikePost,
-    deletePost,
-    isLikingPost,
-    isDeletingPost
-  } = useCommunityPosts(userId);
+  const { posts, isLoading, likePost, unlikePost, deletePost, isLikingPost, isDeletingPost } =
+    useCommunityPosts(userId);
 
   if (isLoading) {
     return (
@@ -52,15 +45,14 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
     return (
       <Card>
         <CardContent>
-          <Users size={48} style={{ color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+          <Users size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
           <h6 className="text-base font-medium mb-2">
-            {isOwnProfile ? "You haven't posted anything yet" : "No posts yet"}
+            {isOwnProfile ? "You haven't posted anything yet" : 'No posts yet'}
           </h6>
           <p className="text-muted-foreground mb-4">
             {isOwnProfile
-              ? "Share your thoughts, experiences, or ask questions with the community."
-              : "This user hasn't shared any posts yet."
-            }
+              ? 'Share your thoughts, experiences, or ask questions with the community.'
+              : "This user hasn't shared any posts yet."}
           </p>
           {isOwnProfile && user && (
             <CreatePostDialog>

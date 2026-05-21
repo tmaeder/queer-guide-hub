@@ -16,7 +16,7 @@ import {
   AlertCircle,
   FolderOpen,
   Clock,
-  Server
+  Server,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -62,7 +62,7 @@ export function ImageOptimizationManager() {
   const loadJobs = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
-        body: { action: 'list' }
+        body: { action: 'list' },
       });
 
       if (error) throw error;
@@ -75,7 +75,7 @@ export function ImageOptimizationManager() {
   const checkJobStatus = async (jobId: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
-        body: { action: 'status', jobId }
+        body: { action: 'status', jobId },
       });
 
       if (error) throw error;
@@ -124,20 +124,21 @@ export function ImageOptimizationManager() {
 
       if (error) throw error;
 
-      const foundImages: ImageFile[] = data.images.map((img: { fileName: string; baseName: string; size: number; bucket: string }) => ({
-        fileName: img.fileName,
-        baseName: img.baseName,
-        originalSize: img.size,
-        bucket: img.bucket,
-        status: 'pending' as const
-      }));
+      const foundImages: ImageFile[] = data.images.map(
+        (img: { fileName: string; baseName: string; size: number; bucket: string }) => ({
+          fileName: img.fileName,
+          baseName: img.baseName,
+          originalSize: img.size,
+          bucket: img.bucket,
+          status: 'pending' as const,
+        }),
+      );
 
       setImages(foundImages);
       toast({
-        title: "Scan Complete",
+        title: 'Scan Complete',
         description: `Found ${foundImages.length} images ready for optimization`,
       });
-
     } catch (error) {
       console.error('Scan error:', error);
       toast.error('Scan Failed: Failed to scan for images');
@@ -149,7 +150,7 @@ export function ImageOptimizationManager() {
   const startOptimizationJob = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
-        body: { action: 'start', batchSize: 10 }
+        body: { action: 'start', batchSize: 10 },
       });
 
       if (error) {
@@ -165,23 +166,22 @@ export function ImageOptimizationManager() {
         successful_images: 0,
         failed_images: 0,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       setCurrentJob(job);
       setSelectedTab('jobs');
 
       toast({
-        title: "Optimization Started!",
+        title: 'Optimization Started!',
         description: `Background optimization job started for ${data.totalImages} images. You can close this page and it will continue processing.`,
       });
-
     } catch (error) {
       console.error('Failed to start optimization job:', error);
       toast({
-        title: "Failed to Start Optimization",
+        title: 'Failed to Start Optimization',
         description: `Could not start the optimization job: ${error.message}`,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
@@ -196,11 +196,22 @@ export function ImageOptimizationManager() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle size={16} className="text-foreground" />;
-      case 'processing': return <RefreshCw size={16} style={{ color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />;
-      case 'failed': return <AlertCircle size={16} className="text-destructive" />;
-      case 'pending': return <Clock size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
-      default: return <FileImage size={16} className="text-muted-foreground" />;
+      case 'completed':
+        return <CheckCircle size={16} className="text-foreground" />;
+      case 'processing':
+        return (
+          <RefreshCw
+            size={16}
+            style={{ animation: 'spin 1s linear infinite' }}
+            className="text-muted-foreground"
+          />
+        );
+      case 'failed':
+        return <AlertCircle size={16} className="text-destructive" />;
+      case 'pending':
+        return <Clock size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
+      default:
+        return <FileImage size={16} className="text-muted-foreground" />;
     }
   };
 
@@ -218,22 +229,17 @@ export function ImageOptimizationManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-bold" style={{ fontSize: '1.5rem' }}>🖼️ Image Optimization Manager</h2>
-          <p className="text-muted-foreground">Optimize all existing images for better performance</p>
+          <h2 className="font-bold text-2xl">🖼️ Image Optimization Manager</h2>
+          <p className="text-muted-foreground">
+            Optimize all existing images for better performance
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={scanForImages}
-            disabled={isScanning}
-          >
+          <Button variant="outline" onClick={scanForImages} disabled={isScanning}>
             <FolderOpen size={16} className="mr-2" />
             {isScanning ? 'Scanning...' : 'Scan Images'}
           </Button>
-          <Button
-            onClick={startOptimizationJob}
-            disabled={currentJob?.status === 'processing'}
-          >
+          <Button onClick={startOptimizationJob} disabled={currentJob?.status === 'processing'}>
             <Server size={16} className="mr-2" />
             Start Background Optimization
           </Button>
@@ -271,9 +277,15 @@ export function ImageOptimizationManager() {
           {images.length === 0 ? (
             <Card>
               <CardContent>
-                <FileImage size={48} style={{ margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                <FileImage
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
+                />
                 <h3 className="font-semibold mb-2 text-lg">No Images Found</h3>
-                <p className="text-muted-foreground mb-4">Click "Scan Images" to find images in your project</p>
+                <p className="text-muted-foreground mb-4">
+                  Click "Scan Images" to find images in your project
+                </p>
                 <Button onClick={scanForImages} disabled={isScanning}>
                   <FolderOpen size={16} className="mr-2" />
                   {isScanning ? 'Scanning...' : 'Scan for Images'}
@@ -289,7 +301,7 @@ export function ImageOptimizationManager() {
                     <div className="flex items-center gap-2">
                       <FileImage size={20} className="text-muted-foreground" />
                       <div>
-                        <p className="font-bold" style={{ fontSize: '1.5rem' }}>{images.length}</p>
+                        <p className="font-bold text-2xl">{images.length}</p>
                         <p className="text-sm text-muted-foreground">Total Images</p>
                       </div>
                     </div>
@@ -301,7 +313,7 @@ export function ImageOptimizationManager() {
                     <div className="flex items-center gap-2">
                       <HardDrive size={20} className="text-muted-foreground" />
                       <div>
-                        <p className="font-bold" style={{ fontSize: '1.5rem' }}>
+                        <p className="font-bold text-2xl">
                           {formatFileSize(images.reduce((sum, img) => sum + img.originalSize, 0))}
                         </p>
                         <p className="text-sm text-muted-foreground">Total Size</p>
@@ -315,8 +327,8 @@ export function ImageOptimizationManager() {
                     <div className="flex items-center gap-2">
                       <Server size={20} className="text-foreground" />
                       <div>
-                        <p className="font-bold" style={{ fontSize: '1.5rem' }}>
-                          {jobs.filter(job => job.status === 'completed').length}
+                        <p className="font-bold text-2xl">
+                          {jobs.filter((job) => job.status === 'completed').length}
                         </p>
                         <p className="text-sm text-muted-foreground">Completed Jobs</p>
                       </div>
@@ -329,7 +341,7 @@ export function ImageOptimizationManager() {
                     <div className="flex items-center gap-2">
                       <Zap size={20} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                       <div>
-                        <p className="font-bold" style={{ fontSize: '1.5rem' }}>21</p>
+                        <p className="font-bold text-2xl">21</p>
                         <p className="text-sm text-muted-foreground">Files per Image</p>
                       </div>
                     </div>
@@ -341,13 +353,18 @@ export function ImageOptimizationManager() {
               <Card>
                 <CardHeader>
                   <CardTitle>Image Files</CardTitle>
-                  <CardDescription>Images found in storage buckets ready for optimization</CardDescription>
+                  <CardDescription>
+                    Images found in storage buckets ready for optimization
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ScrollArea>
                     <div className="flex flex-col gap-3">
                       {images.map((image, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border border-border rounded-element">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 border border-border rounded-element"
+                        >
                           <div className="flex items-center gap-3">
                             {getStatusIcon(image.status)}
                             <div>
@@ -359,9 +376,7 @@ export function ImageOptimizationManager() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline">
-                              Ready
-                            </Badge>
+                            <Badge variant="outline">Ready</Badge>
                           </div>
                         </div>
                       ))}
@@ -377,9 +392,15 @@ export function ImageOptimizationManager() {
           {jobs.length === 0 ? (
             <Card>
               <CardContent>
-                <Server size={48} style={{ margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                <Server
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
+                />
                 <h3 className="font-semibold mb-2 text-lg">No Background Jobs</h3>
-                <p className="text-muted-foreground mb-4">Start an optimization job to see it here</p>
+                <p className="text-muted-foreground mb-4">
+                  Start an optimization job to see it here
+                </p>
                 <Button onClick={startOptimizationJob}>
                   <Server size={16} className="mr-2" />
                   Start Background Optimization
@@ -396,11 +417,17 @@ export function ImageOptimizationManager() {
                         {getStatusIcon(job.status)}
                         <CardTitle>Job {job.id.slice(0, 8)}</CardTitle>
                       </div>
-                      <Badge variant={
-                        job.status === 'completed' ? 'default' :
-                        job.status === 'processing' ? 'secondary' :
-                        job.status === 'failed' ? 'destructive' : 'outline'
-                      }>
+                      <Badge
+                        variant={
+                          job.status === 'completed'
+                            ? 'default'
+                            : job.status === 'processing'
+                              ? 'secondary'
+                              : job.status === 'failed'
+                                ? 'destructive'
+                                : 'outline'
+                        }
+                      >
                         {job.status}
                       </Badge>
                     </div>
@@ -422,29 +449,29 @@ export function ImageOptimizationManager() {
 
                       <div className="grid grid-cols-4 gap-4 text-center">
                         <div>
-                          <p className="font-bold" style={{ fontSize: '1.5rem' }}>{job.total_images}</p>
+                          <p className="font-bold text-2xl">{job.total_images}</p>
                           <p className="text-xs text-muted-foreground">Total</p>
                         </div>
                         <div>
-                          <p className="font-bold" style={{ fontSize: '1.5rem', color: 'hsl(var(--muted-foreground))' }}>{job.processed_images}</p>
+                          <p className="font-bold text-2xl text-muted-foreground">
+                            {job.processed_images}
+                          </p>
                           <p className="text-xs text-muted-foreground">Processed</p>
                         </div>
                         <div>
-                          <p className="font-bold" style={{ fontSize: '1.5rem', color: 'hsl(var(--foreground))' }}>{job.successful_images}</p>
+                          <p className="font-bold text-2xl text-foreground">
+                            {job.successful_images}
+                          </p>
                           <p className="text-xs text-muted-foreground">Success</p>
                         </div>
                         <div>
-                          <p className="font-bold" style={{ fontSize: '1.5rem', color: 'hsl(var(--destructive))' }}>{job.failed_images}</p>
+                          <p className="font-bold text-2xl text-destructive">{job.failed_images}</p>
                           <p className="text-xs text-muted-foreground">Failed</p>
                         </div>
                       </div>
 
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => checkJobStatus(job.id)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => checkJobStatus(job.id)}>
                           <RefreshCw size={16} className="mr-2" />
                           Refresh
                         </Button>
@@ -473,8 +500,8 @@ export function ImageOptimizationManager() {
               <Alert>
                 <Server size={16} />
                 <AlertDescription>
-                  Optimization runs on the server and continues even if you close this page or refresh.
-                  Jobs process images in batches of 10 to prevent system overload.
+                  Optimization runs on the server and continues even if you close this page or
+                  refresh. Jobs process images in batches of 10 to prevent system overload.
                 </AlertDescription>
               </Alert>
 
@@ -482,14 +509,30 @@ export function ImageOptimizationManager() {
                 <div>
                   {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
                   <label className="text-sm font-medium">AVIF Quality</label>
-                  <input type="range" min="20" max="80" defaultValue="50" style={{ width: '100%' }} />
-                  <p className="text-xs text-muted-foreground">Lower = smaller files, higher = better quality</p>
+                  <input
+                    type="range"
+                    min="20"
+                    max="80"
+                    defaultValue="50"
+                    style={{ width: '100%' }}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Lower = smaller files, higher = better quality
+                  </p>
                 </div>
                 <div>
                   {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
                   <label className="text-sm font-medium">WebP Quality</label>
-                  <input type="range" min="50" max="90" defaultValue="75" style={{ width: '100%' }} />
-                  <p className="text-xs text-muted-foreground">Lower = smaller files, higher = better quality</p>
+                  <input
+                    type="range"
+                    min="50"
+                    max="90"
+                    defaultValue="75"
+                    style={{ width: '100%' }}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Lower = smaller files, higher = better quality
+                  </p>
                 </div>
               </div>
 

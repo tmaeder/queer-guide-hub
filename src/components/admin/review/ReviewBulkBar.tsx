@@ -42,7 +42,12 @@ export const ReviewBulkBar = ({
         </Button>
       )}
 
-      <Button size="sm" variant="ghost" onClick={onClearSelection} style={{ textTransform: 'none' }}>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={onClearSelection}
+        style={{ textTransform: 'none' }}
+      >
         Clear
       </Button>
 
@@ -53,7 +58,8 @@ export const ReviewBulkBar = ({
         variant="outline"
         onClick={onBulkReject}
         disabled={loading}
-        style={{ textTransform: 'none', borderColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive))' }}
+        style={{ textTransform: 'none', borderColor: 'hsl(var(--destructive))' }}
+        className="text-destructive"
       >
         <X size={14} className="mr-1" />
         Reject

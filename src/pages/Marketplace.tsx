@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { useMarketplace, type MarketplaceSort, type MarketplaceFiltersInput } from '@/hooks/useMarketplace';
+import {
+  useMarketplace,
+  type MarketplaceSort,
+  type MarketplaceFiltersInput,
+} from '@/hooks/useMarketplace';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
@@ -123,7 +127,16 @@ function MainGridSection({
 }
 
 const VALID_TABS = ['all', 'products', 'services'] as const;
-const VALID_SORTS = ['relevance', 'newest', 'oldest', 'az', 'za', 'price_asc', 'price_desc', 'most_viewed'] as const;
+const VALID_SORTS = [
+  'relevance',
+  'newest',
+  'oldest',
+  'az',
+  'za',
+  'price_asc',
+  'price_desc',
+  'most_viewed',
+] as const;
 const VIEW_MODE_KEY = 'qg.marketplace.viewMode';
 
 const Marketplace = () => {
@@ -162,7 +175,9 @@ const Marketplace = () => {
   const rawTab = searchParams.get('tab') || 'all';
   const activeTab = (VALID_TABS as readonly string[]).includes(rawTab) ? rawTab : 'all';
   const rawSort = searchParams.get('sort') || 'relevance';
-  const sortBy = (VALID_SORTS as readonly string[]).includes(rawSort) ? (rawSort as MarketplaceSort) : 'relevance';
+  const sortBy = (VALID_SORTS as readonly string[]).includes(rawSort)
+    ? (rawSort as MarketplaceSort)
+    : 'relevance';
   const page = Math.max(0, parseInt(searchParams.get('page') || '0', 10) || 0);
   const qParam = searchParams.get('q') || '';
 
@@ -193,17 +208,20 @@ const Marketplace = () => {
   ];
 
   const setUrlParams = (updates: Record<string, string | undefined>) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      for (const [k, v] of Object.entries(updates)) {
-        if (!v || v === 'all' || v === 'relevance' || v === '0') {
-          next.delete(k);
-        } else {
-          next.set(k, v);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        for (const [k, v] of Object.entries(updates)) {
+          if (!v || v === 'all' || v === 'relevance' || v === '0') {
+            next.delete(k);
+          } else {
+            next.set(k, v);
+          }
         }
-      }
-      return next;
-    }, { replace: true });
+        return next;
+      },
+      { replace: true },
+    );
   };
 
   const combinedFilters = useMemo<MarketplaceFiltersInput>(() => {
@@ -216,12 +234,12 @@ const Marketplace = () => {
     const f = combinedFilters;
     return Boolean(
       f.search ||
-        f.category ||
-        f.subcategory ||
-        f.location ||
-        f.businessType ||
-        f.priceRange ||
-        (f.tags && f.tags.length > 0),
+      f.category ||
+      f.subcategory ||
+      f.location ||
+      f.businessType ||
+      f.priceRange ||
+      (f.tags && f.tags.length > 0),
     );
   }, [combinedFilters]);
 
@@ -243,10 +261,7 @@ const Marketplace = () => {
     }
   }, [listings, page]);
 
-  const visibleListingIds = useMemo(
-    () => accumulated.map((l) => l.id),
-    [accumulated],
-  );
+  const visibleListingIds = useMemo(() => accumulated.map((l) => l.id), [accumulated]);
   const { assets: listingAssets } = useEntityImageAssets('marketplace_listing', visibleListingIds);
 
   const handleFiltersChange = (next: Record<string, unknown>) => {
@@ -282,7 +297,9 @@ const Marketplace = () => {
     } else {
       toast({
         title: favorited ? 'Added to favorites' : 'Removed from favorites',
-        description: favorited ? 'You can find this in your favorites list.' : 'Item removed from your favorites.',
+        description: favorited
+          ? 'You can find this in your favorites list.'
+          : 'Item removed from your favorites.',
       });
       fetchListings(combinedFilters, page, sortBy);
     }
@@ -304,175 +321,200 @@ const Marketplace = () => {
 
   return (
     <CuratedIdsProvider>
-    <div className="min-h-screen relative">
-      <PageHero
-        eyebrow={t('pages.marketplace.eyebrow', 'Shop')}
-        title={t('pages.marketplace.title', 'Marketplace.')}
-        lede={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
-        primaryCta={{
-          label: t('pages.marketplace.listBusiness', 'List your business'),
-          icon: <Plus size={16} aria-hidden="true" />,
-          onClick: () => {
-            if (!user) {
-              toast({
-                title: 'Sign in required',
-                description: t('pages.marketplace.signInList', 'Create a free account to list your business.'),
-                variant: 'default',
-              });
-              navigate('/auth');
-              return;
-            }
-            navigate('/marketplace/submit');
-          },
-        }}
-        size="md"
-      />
-      <div className="container mx-auto py-8 md:py-12 px-4 relative">
+      <div className="min-h-screen relative">
+        <PageHero
+          eyebrow={t('pages.marketplace.eyebrow', 'Shop')}
+          title={t('pages.marketplace.title', 'Marketplace.')}
+          lede={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
+          primaryCta={{
+            label: t('pages.marketplace.listBusiness', 'List your business'),
+            icon: <Plus size={16} aria-hidden="true" />,
+            onClick: () => {
+              if (!user) {
+                toast({
+                  title: 'Sign in required',
+                  description: t(
+                    'pages.marketplace.signInList',
+                    'Create a free account to list your business.',
+                  ),
+                  variant: 'default',
+                });
+                navigate('/auth');
+                return;
+              }
+              navigate('/marketplace/submit');
+            },
+          }}
+          size="md"
+        />
+        <div className="container mx-auto py-8 md:py-12 px-4 relative">
+          {!hasActiveFilters && (
+            <>
+              <MarketplaceSpotlight />
+              <MarketplaceCategoryTiles />
+              <MarketplaceRow
+                rowKey="new"
+                title="New this week"
+                subtitle="Fresh arrivals from the past 14 days"
+              />
+              <MarketplaceRow
+                rowKey="price-drops"
+                title="Price drops"
+                subtitle="Recently discounted listings"
+              />
+              <MarketplaceRow
+                rowKey="most-relevant"
+                title="Most LGBTQ+ relevant"
+                subtitle="Highest relevance score from our review"
+              />
+              <MarketplaceRow
+                rowKey="featured"
+                title="Editor's picks"
+                subtitle="Hand-selected by our team"
+              />
+              <MarketplaceCityChips />
+            </>
+          )}
 
-        {!hasActiveFilters && (
-          <>
-            <MarketplaceSpotlight />
-            <MarketplaceCategoryTiles />
-            <MarketplaceRow rowKey="new" title="New this week" subtitle="Fresh arrivals from the past 14 days" />
-            <MarketplaceRow rowKey="price-drops" title="Price drops" subtitle="Recently discounted listings" />
-            <MarketplaceRow
-              rowKey="most-relevant"
-              title="Most LGBTQ+ relevant"
-              subtitle="Highest relevance score from our review"
-            />
-            <MarketplaceRow rowKey="featured" title="Editor's picks" subtitle="Hand-selected by our team" />
-            <MarketplaceCityChips />
-          </>
-        )}
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
+            <div className="sticky top-0 z-20 border border-border rounded-element p-4 mb-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+              <div className="mb-4">
+                <MarketplaceFilters initialSearch={qParam} onFiltersChange={handleFiltersChange} />
+              </div>
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} style={{ marginBottom: 24 }}>
-          <div className="sticky top-0 z-20 border border-border rounded-element p-4 mb-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-            <div className="mb-4">
-              <MarketplaceFilters initialSearch={qParam} onFiltersChange={handleFiltersChange} />
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <TabsList
-                style={{
-                  display: 'grid',
-                  width: '100%',
-                  maxWidth: '28rem',
-                  gridTemplateColumns: '1fr 1fr 1fr',
-                }}
-              >
-                {categories.map((category) => (
-                  <TabsTrigger key={category.id} value={category.id} className="text-xs">
-                    {category.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              <div className="flex items-center gap-3">
-                <SavedSearchesButton />
-                <Select value={sortBy} onValueChange={handleSortChange}>
-                  <SelectTrigger style={{ width: 200 }} aria-label="Sort listings">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sortOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  aria-label="Grid view"
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <TabsList
+                  style={{ width: '100%', maxWidth: '28rem', gridTemplateColumns: '1fr 1fr 1fr' }}
+                  className="grid"
                 >
-                  <Grid size={16} />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  aria-label="List view"
-                >
-                  <List size={16} />
-                </Button>
+                  {categories.map((category) => (
+                    <TabsTrigger key={category.id} value={category.id} className="text-xs">
+                      {category.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                <div className="flex items-center gap-3">
+                  <SavedSearchesButton />
+                  <Select value={sortBy} onValueChange={handleSortChange}>
+                    <SelectTrigger style={{ width: 200 }} aria-label="Sort listings">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sortOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    aria-label="Grid view"
+                  >
+                    <Grid size={16} />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    aria-label="List view"
+                  >
+                    <List size={16} />
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {error && (
-            <ErrorState
-              message={t('pages.marketplace.loadError', 'Something went wrong while loading the marketplace. Please try again.')}
-              onRetry={() => fetchListings(combinedFilters, page, sortBy)}
-            />
-          )}
-
-          {!error && loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchListings(combinedFilters, page, sortBy)} />}
-          {!error && loading && !loadingTimedOut && accumulated.length === 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <MarketplaceCard key={i} loading />
-              ))}
-            </div>
-          )}
-
-          {!error && !loading && accumulated.length === 0 && (
-            <EmptyState
-              icon={Store}
-              title={
-                hasActiveFilters
-                  ? t('pages.marketplace.emptyFiltersTitle', 'No listings match these filters.')
-                  : t('pages.marketplace.emptyTitle', 'No listings yet.')
-              }
-              description={
-                hasActiveFilters
-                  ? t('pages.marketplace.emptyFiltersDescription', 'Try clearing filters or broadening your search.')
-                  : t('pages.marketplace.emptyDescription', 'Check back soon or list your business.')
-              }
-              mood="neutral"
-              primaryAction={
-                hasActiveFilters
-                  ? { label: 'Clear filters', onClick: () => handleFiltersChange({}) }
-                  : {
-                      label: 'List Your Business',
-                      onClick: () => {
-                        if (!user) {
-                          toast({ title: 'Sign in required', description: 'Create a free account to list your business.', variant: 'default' });
-                          navigate('/auth');
-                          return;
-                        }
-                        navigate('/marketplace/submit');
-                      },
-                    }
-              }
-            />
-          )}
-
-          <TabsContent value={activeTab}>
-            {!error && accumulated.length > 0 && (
-              <MainGridSection
-                accumulated={accumulated}
-                total={total}
-                page={page}
-                hasActiveFilters={hasActiveFilters}
-                viewMode={viewMode}
-                listingAssets={listingAssets}
-                searchQuery={filters.search}
-                userPresent={!!user}
-                onViewDetails={handleViewDetails}
-                onToggleFavorite={handleToggleFavorite}
-                canLoadMore={canLoadMore}
-                loading={loading}
-                onLoadMore={handleLoadMore}
+            {error && (
+              <ErrorState
+                message={t(
+                  'pages.marketplace.loadError',
+                  'Something went wrong while loading the marketplace. Please try again.',
+                )}
+                onRetry={() => fetchListings(combinedFilters, page, sortBy)}
               />
             )}
-          </TabsContent>
-        </Tabs>
 
-        <AffiliateDisclosure />
+            {!error && loading && loadingTimedOut && (
+              <LoadingTimeout onRetry={() => fetchListings(combinedFilters, page, sortBy)} />
+            )}
+            {!error && loading && !loadingTimedOut && accumulated.length === 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <MarketplaceCard key={i} loading />
+                ))}
+              </div>
+            )}
+
+            {!error && !loading && accumulated.length === 0 && (
+              <EmptyState
+                icon={Store}
+                title={
+                  hasActiveFilters
+                    ? t('pages.marketplace.emptyFiltersTitle', 'No listings match these filters.')
+                    : t('pages.marketplace.emptyTitle', 'No listings yet.')
+                }
+                description={
+                  hasActiveFilters
+                    ? t(
+                        'pages.marketplace.emptyFiltersDescription',
+                        'Try clearing filters or broadening your search.',
+                      )
+                    : t(
+                        'pages.marketplace.emptyDescription',
+                        'Check back soon or list your business.',
+                      )
+                }
+                mood="neutral"
+                primaryAction={
+                  hasActiveFilters
+                    ? { label: 'Clear filters', onClick: () => handleFiltersChange({}) }
+                    : {
+                        label: 'List Your Business',
+                        onClick: () => {
+                          if (!user) {
+                            toast({
+                              title: 'Sign in required',
+                              description: 'Create a free account to list your business.',
+                              variant: 'default',
+                            });
+                            navigate('/auth');
+                            return;
+                          }
+                          navigate('/marketplace/submit');
+                        },
+                      }
+                }
+              />
+            )}
+
+            <TabsContent value={activeTab}>
+              {!error && accumulated.length > 0 && (
+                <MainGridSection
+                  accumulated={accumulated}
+                  total={total}
+                  page={page}
+                  hasActiveFilters={hasActiveFilters}
+                  viewMode={viewMode}
+                  listingAssets={listingAssets}
+                  searchQuery={filters.search}
+                  userPresent={!!user}
+                  onViewDetails={handleViewDetails}
+                  onToggleFavorite={handleToggleFavorite}
+                  canLoadMore={canLoadMore}
+                  loading={loading}
+                  onLoadMore={handleLoadMore}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
+
+          <AffiliateDisclosure />
+        </div>
       </div>
-    </div>
     </CuratedIdsProvider>
   );
 };

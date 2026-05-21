@@ -32,14 +32,19 @@ function buildRentalcarsUrl(city: string, checkIn?: string, _checkOut?: string):
   return `https://www.rentalcars.com/search-results?${params.toString()}`;
 }
 
-export function CarRentalSection({ city, checkIn, checkOut, compact = false }: CarRentalSectionProps) {
+export function CarRentalSection({
+  city,
+  checkIn,
+  checkOut,
+  compact = false,
+}: CarRentalSectionProps) {
   const discoverUrl = buildDiscoverCarsUrl(city, checkIn, checkOut);
   const rentalcarsUrl = buildRentalcarsUrl(city, checkIn, checkOut);
 
   if (compact) {
     return (
       <div className="flex items-center gap-3 p-4 bg-muted">
-        <Car size={20} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+        <Car size={20} className="text-primary shrink-0" />
         <div className="flex-1">
           <p className="font-semibold text-sm">Rent a Car in {city}</p>
           <p className="text-xs text-muted-foreground">Compare prices from top providers</p>
@@ -60,24 +65,33 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card>
-          <CardContent style={{ padding: 16 }}>
+          <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">DiscoverCars</p>
             <p className="text-xs text-muted-foreground mb-3">
               Compare 500+ providers, free cancellation
             </p>
-            <Button size="sm" className="w-full" onClick={() => window.open(discoverUrl, '_blank', 'noopener')}>
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={() => window.open(discoverUrl, '_blank', 'noopener')}
+            >
               <ExternalLink size={14} className="mr-1" />
               Search Cars
             </Button>
           </CardContent>
         </Card>
         <Card>
-          <CardContent style={{ padding: 16 }}>
+          <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">Rentalcars.com</p>
             <p className="text-xs text-muted-foreground mb-3">
               Booking.com partner, loyalty rewards
             </p>
-            <Button size="sm" variant="outline" className="w-full" onClick={() => window.open(rentalcarsUrl, '_blank', 'noopener')}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              onClick={() => window.open(rentalcarsUrl, '_blank', 'noopener')}
+            >
               <ExternalLink size={14} className="mr-1" />
               Search Cars
             </Button>

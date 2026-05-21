@@ -37,13 +37,9 @@ export function RunHistoryTable({ runs, modules }: Props) {
   if (runs.length === 0) {
     return (
       <div className="text-center py-12">
-        <Clock size={48} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }} />
-        <h3 className="text-lg text-muted-foreground">
-          No run history yet
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          Run a module to see execution logs here.
-        </p>
+        <Clock size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
+        <h3 className="text-lg text-muted-foreground">No run history yet</h3>
+        <p className="text-sm text-muted-foreground">Run a module to see execution logs here.</p>
       </div>
     );
   }
@@ -92,12 +88,16 @@ export function RunHistoryTable({ runs, modules }: Props) {
                 </p>
               </TableCell>
               <TableCell className="text-right">
-                <p className={`text-sm ${run.changes_auto_approved > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                <p
+                  className={`text-sm ${run.changes_auto_approved > 0 ? 'text-foreground' : 'text-muted-foreground'}`}
+                >
                   {run.changes_auto_approved}
                 </p>
               </TableCell>
               <TableCell className="text-right">
-                <p className={`text-sm ${run.changes_pending_review > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                <p
+                  className={`text-sm ${run.changes_pending_review > 0 ? 'text-foreground' : 'text-muted-foreground'}`}
+                >
                   {run.changes_pending_review}
                 </p>
               </TableCell>
@@ -111,9 +111,7 @@ export function RunHistoryTable({ runs, modules }: Props) {
                 )}
               </TableCell>
               <TableCell className="text-right">
-                <span className="text-xs font-mono">
-                  {formatDuration(run.duration_ms)}
-                </span>
+                <span className="text-xs font-mono">{formatDuration(run.duration_ms)}</span>
               </TableCell>
             </TableRow>
           );

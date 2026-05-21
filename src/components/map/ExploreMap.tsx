@@ -38,17 +38,39 @@ export const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'
 
 /** Circle radius interpolation stops per area type: [zoom, radiusPx][] */
 const AREA_RADIUS: Record<string, [number, number][]> = {
-  countries: [[1, 8], [3, 18], [5, 40], [7, 80], [9, 150], [12, 280]],
-  cities: [[2, 4], [4, 8], [6, 16], [8, 28], [10, 45], [14, 75]],
-  neighbourhoods: [[2, 3], [4, 6], [6, 12], [8, 22], [10, 38], [14, 60]],
+  countries: [
+    [1, 8],
+    [3, 18],
+    [5, 40],
+    [7, 80],
+    [9, 150],
+    [12, 280],
+  ],
+  cities: [
+    [2, 4],
+    [4, 8],
+    [6, 16],
+    [8, 28],
+    [10, 45],
+    [14, 75],
+  ],
+  neighbourhoods: [
+    [2, 3],
+    [4, 6],
+    [6, 12],
+    [8, 22],
+    [10, 38],
+    [14, 60],
+  ],
 };
 
 /** Circle style per area type */
-const AREA_STYLE: Record<string, { opacity: number; strokeOpacity: number; minLabelZoom: number }> = {
-  countries: { opacity: 0.2, strokeOpacity: 0.55, minLabelZoom: 1 },
-  cities: { opacity: 0.25, strokeOpacity: 0.6, minLabelZoom: 3 },
-  neighbourhoods: { opacity: 0.3, strokeOpacity: 0.7, minLabelZoom: 6 },
-};
+const AREA_STYLE: Record<string, { opacity: number; strokeOpacity: number; minLabelZoom: number }> =
+  {
+    countries: { opacity: 0.2, strokeOpacity: 0.55, minLabelZoom: 1 },
+    cities: { opacity: 0.25, strokeOpacity: 0.6, minLabelZoom: 3 },
+    neighbourhoods: { opacity: 0.3, strokeOpacity: 0.7, minLabelZoom: 6 },
+  };
 
 // ── MapLibre layer IDs for point data ────────────────────────────────────────
 
@@ -150,7 +172,8 @@ export const ExploreMap = ({
   const [currentZoom, setCurrentZoom] = useState(initialZoom ?? DEFAULT_ZOOM);
 
   const [enabledLayers, setEnabledLayers] = useState<LayerType[]>(
-    () => defaultLayers ?? LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
+    () =>
+      defaultLayers ?? LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
   );
 
   const [viewport, setViewport] = useState<MapViewport>({
@@ -198,13 +221,16 @@ export const ExploreMap = ({
   const isFetching = areaFetching || pointsFetching;
 
   // ── Layer toggle ─────────────────────────────────────────────────────────
-  const toggleLayer = useCallback((layer: LayerType) => {
-    setEnabledLayers((prev) => {
-      const next = prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer];
-      onLayersChangeProp?.(next);
-      return next;
-    });
-  }, [onLayersChangeProp]);
+  const toggleLayer = useCallback(
+    (layer: LayerType) => {
+      setEnabledLayers((prev) => {
+        const next = prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer];
+        onLayersChangeProp?.(next);
+        return next;
+      });
+    },
+    [onLayersChangeProp],
+  );
 
   // ── Geolocation ──────────────────────────────────────────────────────────
   const flyToLocation = useCallback((lng: number, lat: number, zoom = 12) => {
@@ -296,7 +322,9 @@ export const ExploreMap = ({
                 await navigator.clipboard.writeText(absoluteUrl);
                 toast({
                   title: i18next.t('map.popup.linkCopied', { defaultValue: 'Link copied' }),
-                  description: i18next.t('map.popup.linkCopiedDescription', { defaultValue: 'You can paste it now' }),
+                  description: i18next.t('map.popup.linkCopiedDescription', {
+                    defaultValue: 'You can paste it now',
+                  }),
                 });
               } catch {
                 toast({
@@ -403,9 +431,15 @@ export const ExploreMap = ({
   }, [viewport, mapReady, initialCenter]);
 
   // ── Boundary polygon rendering via shared hook ─────────────────────────
-  const countryMarkers = useMemo(() => areaMarkers.filter((m) => m.type === 'countries'), [areaMarkers]);
+  const countryMarkers = useMemo(
+    () => areaMarkers.filter((m) => m.type === 'countries'),
+    [areaMarkers],
+  );
   const cityMarkers = useMemo(() => areaMarkers.filter((m) => m.type === 'cities'), [areaMarkers]);
-  const villageMarkers = useMemo(() => areaMarkers.filter((m) => m.type === 'neighbourhoods'), [areaMarkers]);
+  const villageMarkers = useMemo(
+    () => areaMarkers.filter((m) => m.type === 'neighbourhoods'),
+    [areaMarkers],
+  );
 
   useMapBoundaryLayers({
     map: mapRef.current,
@@ -539,15 +573,23 @@ export const ExploreMap = ({
             'text-halo-color': '#ffffff',
             'text-halo-width': 1.5,
             'text-opacity': [
-              'interpolate', ['linear'], ['zoom'],
-              style.minLabelZoom, 0,
-              style.minLabelZoom + 0.5, 1,
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              style.minLabelZoom,
+              0,
+              style.minLabelZoom + 0.5,
+              1,
             ],
           },
         });
 
-        map.on('mouseenter', circleLayerId, () => { map.getCanvas().style.cursor = 'pointer'; });
-        map.on('mouseleave', circleLayerId, () => { map.getCanvas().style.cursor = ''; });
+        map.on('mouseenter', circleLayerId, () => {
+          map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', circleLayerId, () => {
+          map.getCanvas().style.cursor = '';
+        });
         map.on('click', circleLayerId, (e: MapLayerMouseEvent) => {
           const feat = e.features?.[0];
           if (!feat || feat.geometry.type !== 'Point') return;
@@ -555,7 +597,11 @@ export const ExploreMap = ({
           const meta: Record<string, unknown> = {};
           for (const [k, v] of Object.entries(props)) {
             if (k.startsWith('meta_')) {
-              try { meta[k.slice(5)] = JSON.parse(v); } catch { meta[k.slice(5)] = v; }
+              try {
+                meta[k.slice(5)] = JSON.parse(v);
+              } catch {
+                meta[k.slice(5)] = v;
+              }
             }
           }
           showPopup(map, e.lngLat, {
@@ -634,8 +680,19 @@ export const ExploreMap = ({
       filter: ['has', 'point_count'],
       paint: {
         'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 26, 100, 32, 500, 40],
-        'circle-color': ['step', ['get', 'point_count'],
-          '#818cf8', 10, '#6366f1', 50, '#4f46e5', 100, '#4338ca', 500, '#3730a3'],
+        'circle-color': [
+          'step',
+          ['get', 'point_count'],
+          '#818cf8',
+          10,
+          '#6366f1',
+          50,
+          '#4f46e5',
+          100,
+          '#4338ca',
+          500,
+          '#3730a3',
+        ],
         'circle-opacity': 0.85,
         'circle-stroke-width': 2,
         'circle-stroke-color': '#ffffff',
@@ -698,7 +755,11 @@ export const ExploreMap = ({
       if (!feat || feat.geometry.type !== 'Point') return;
       const props = feat.properties as Record<string, unknown>;
       let meta: Record<string, unknown> = {};
-      try { meta = JSON.parse(props.meta ?? '{}'); } catch { /* ignore */ }
+      try {
+        meta = JSON.parse(props.meta ?? '{}');
+      } catch {
+        /* ignore */
+      }
 
       showPopup(map, e.lngLat, {
         id: props.id,
@@ -713,9 +774,15 @@ export const ExploreMap = ({
       });
     });
 
-    map.on('mouseenter', CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ''; });
-    map.on('mouseenter', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseenter', CLUSTERS_LAYER, () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', CLUSTERS_LAYER, () => {
+      map.getCanvas().style.cursor = '';
+    });
+    map.on('mouseenter', UNCLUSTERED_LAYER, () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
     map.on('mouseleave', UNCLUSTERED_LAYER, () => {
       map.getCanvas().style.cursor = '';
       hoverPopupRef.current?.remove();
@@ -730,14 +797,18 @@ export const ExploreMap = ({
       const props = feat.properties as Record<string, unknown>;
       const name = String(props.name ?? '');
       const subtitle = props.subtitle ? String(props.subtitle) : '';
-      const safeName = name.replace(/[&<>"]/g, (c) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
+      const safeName = name.replace(
+        /[&<>"]/g,
+        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
       );
-      const safeSub = subtitle.replace(/[&<>"]/g, (c) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
+      const safeSub = subtitle.replace(
+        /[&<>"]/g,
+        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
       );
       const html = `<div style="font:13px system-ui;line-height:1.3;padding:2px 4px;max-width:200px"><div style="font-weight:600">${safeName}</div>${
-        safeSub ? `<div style="color:rgba(0,0,0,.6);font-size:11px;margin-top:2px">${safeSub}</div>` : ''
+        safeSub
+          ? `<div style="color:rgba(0,0,0,.6);font-size:11px;margin-top:2px">${safeSub}</div>`
+          : ''
       }</div>`;
       if (!hoverPopupRef.current) {
         hoverPopupRef.current = new maplibregl.Popup({
@@ -748,10 +819,7 @@ export const ExploreMap = ({
           className: 'venue-hover-popup',
         });
       }
-      hoverPopupRef.current
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
+      hoverPopupRef.current.setLngLat(e.lngLat).setHTML(html).addTo(map);
     });
 
     pointLayersAddedRef.current = true;
@@ -806,12 +874,18 @@ export const ExploreMap = ({
           'interpolate',
           ['linear'],
           ['heatmap-density'],
-          0, 'rgba(0,0,0,0)',
-          0.2, 'rgba(0,0,0,0.15)',
-          0.4, 'rgba(0,0,0,0.30)',
-          0.6, 'rgba(0,0,0,0.50)',
-          0.8, 'rgba(0,0,0,0.70)',
-          1, 'rgba(0,0,0,0.85)',
+          0,
+          'rgba(0,0,0,0)',
+          0.2,
+          'rgba(0,0,0,0.15)',
+          0.4,
+          'rgba(0,0,0,0.30)',
+          0.6,
+          'rgba(0,0,0,0.50)',
+          0.8,
+          'rgba(0,0,0,0.70)',
+          1,
+          'rgba(0,0,0,0.85)',
         ],
         'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 28, 14, 60],
         'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.85, 14, 0.65, 16, 0],
@@ -830,8 +904,8 @@ export const ExploreMap = ({
       {/* Lightweight hover tooltip for boundary polygons */}
       <div
         ref={tooltipRef}
-        className="hidden absolute pointer-events-none z-20 bg-background text-foreground whitespace-nowrap"
-        style={{ paddingLeft: 10, paddingRight: 10, paddingTop: 5, paddingBottom: 5, fontSize: 13 }}
+        className="hidden absolute pointer-events-none z-20 bg-background text-foreground whitespace-nowrap pl-2.5 pr-2.5"
+        style={{ paddingTop: 5, paddingBottom: 5, fontSize: 13 }}
       />
 
       {/* Visually-hidden list of currently-visible markers — alternative
@@ -841,23 +915,17 @@ export const ExploreMap = ({
           `role="region"` is not allowed on <ul>; use a labelled <nav>
           landmark wrapper instead (axe aria-allowed-role). */}
       <nav className="sr-only" aria-label="Visible map results">
-      <ul>
-        {pointsGeoJSON.features.slice(0, 200).map((f) => {
-          const p = f.properties;
-          const href = p.linkTo || undefined;
-          const label = p.subtitle ? `${p.name} — ${p.subtitle}` : p.name;
-          return (
-            <li key={p.id}>
-              {href ? <a href={href}>{label}</a> : <span>{label}</span>}
-            </li>
-          );
-        })}
-        {areaMarkers.slice(0, 200).map((m) => (
-          <li key={m.id}>
-            {m.linkTo ? <a href={m.linkTo}>{m.name}</a> : <span>{m.name}</span>}
-          </li>
-        ))}
-      </ul>
+        <ul>
+          {pointsGeoJSON.features.slice(0, 200).map((f) => {
+            const p = f.properties;
+            const href = p.linkTo || undefined;
+            const label = p.subtitle ? `${p.name} — ${p.subtitle}` : p.name;
+            return <li key={p.id}>{href ? <a href={href}>{label}</a> : <span>{label}</span>}</li>;
+          })}
+          {areaMarkers.slice(0, 200).map((m) => (
+            <li key={m.id}>{m.linkTo ? <a href={m.linkTo}>{m.name}</a> : <span>{m.name}</span>}</li>
+          ))}
+        </ul>
       </nav>
 
       {/* Loading overlay */}
@@ -907,12 +975,7 @@ export const ExploreMap = ({
       )}
 
       {/* Filters bar */}
-      {showFilters && (
-        <ExploreMapFiltersPanel
-          filters={filters}
-          onFiltersChange={setFilters}
-        />
-      )}
+      {showFilters && <ExploreMapFiltersPanel filters={filters} onFiltersChange={setFilters} />}
     </div>
   );
 };

@@ -68,7 +68,7 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
                 <Badge
                   key={alias.id}
                   variant={typeBadgeColor(alias.alias_type)}
-                  style={{ gap: 4, paddingRight: 2 }}
+                  className="gap-1 pr-0.5"
                 >
                   {alias.alias_name}
                   <span className="ml-0.5" style={{ opacity: 0.6, fontSize: '0.65rem' }}>

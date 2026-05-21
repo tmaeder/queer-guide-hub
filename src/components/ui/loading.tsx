@@ -1,6 +1,5 @@
-
 interface LoadingProps {
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   text?: string;
   className?: string;
 }
@@ -8,12 +7,15 @@ interface LoadingProps {
 const dotPixels = { sm: 6, md: 8, lg: 12 } as const;
 const spinnerPixels = { sm: 16, md: 24, lg: 32 } as const;
 
-export function Loading({ size = "md", text }: LoadingProps) {
+export function Loading({ size = 'md', text }: LoadingProps) {
   const d = dotPixels[size];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+    <div
+      style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+      className="flex gap-4"
+    >
+      <div style={{ alignItems: 'center' }} className="flex gap-1">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
@@ -28,21 +30,17 @@ export function Loading({ size = "md", text }: LoadingProps) {
           />
         ))}
       </div>
-      {text && (
-        <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', margin: 0 }}>
-          {text}
-        </p>
-      )}
+      {text && <p className="text-sm text-muted-foreground m-0">{text}</p>}
     </div>
   );
 }
 
 interface LoadingSpinnerProps {
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
-export function LoadingSpinner({ size = "md" }: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 'md' }: LoadingSpinnerProps) {
   const s = spinnerPixels[size];
 
   return (
@@ -63,13 +61,16 @@ interface PageLoadingProps {
   text?: string;
 }
 
-export function PageLoading({ text = "Loading..." }: PageLoadingProps) {
+export function PageLoading({ text = 'Loading...' }: PageLoadingProps) {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div
+      style={{ minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}
+      className="flex"
+    >
+      <div style={{ flexDirection: 'column' }} className="text-center flex gap-6">
         {/* Main loading animation */}
         <div className="relative">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <div style={{ alignItems: 'center', justifyContent: 'center' }} className="flex gap-2">
             {[0, 1, 2, 3, 4].map((i) => (
               <div
                 key={i}
@@ -86,11 +87,11 @@ export function PageLoading({ text = "Loading..." }: PageLoadingProps) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>{text}</h2>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <div style={{ flexDirection: 'column' }} className="flex gap-2">
+          <h2 className="text-lg font-semibold m-0">{text}</h2>
+          <div style={{ alignItems: 'center', justifyContent: 'center' }} className="flex gap-1">
             <LoadingSpinner size="sm" />
-            <span style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', marginLeft: 8 }}>Please wait</span>
+            <span className="text-sm text-muted-foreground ml-2">Please wait</span>
           </div>
         </div>
       </div>
@@ -113,17 +114,20 @@ export function PageLoading({ text = "Loading..." }: PageLoadingProps) {
 
 interface InlineLoadingProps {
   text?: string;
-  size?: "sm" | "md";
+  size?: 'sm' | 'md';
 }
 
-export function InlineLoading({ text = "Loading...", size = "md" }: InlineLoadingProps) {
+export function InlineLoading({ text = 'Loading...', size = 'md' }: InlineLoadingProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '32px 0' }}>
+    <div
+      style={{ alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}
+      className="flex gap-3"
+    >
       <LoadingSpinner size={size} />
-      <span style={{
-        color: 'hsl(var(--muted-foreground))',
-        fontSize: size === "sm" ? '0.875rem' : '1rem',
-      }}>
+      <span
+        style={{ fontSize: size === 'sm' ? '0.875rem' : '1rem' }}
+        className="text-muted-foreground"
+      >
         {text}
       </span>
     </div>

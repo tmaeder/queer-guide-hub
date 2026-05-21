@@ -6,7 +6,10 @@ interface SafetyAlertBannerProps {
   countryName: string;
 }
 
-export default function SafetyAlertBanner({ criminalization, countryName }: SafetyAlertBannerProps) {
+export default function SafetyAlertBanner({
+  criminalization,
+  countryName,
+}: SafetyAlertBannerProps) {
   if (!isCriminalized(criminalization)) return null;
 
   const deathPenalty = hasDeathPenalty(criminalization);
@@ -23,28 +26,22 @@ export default function SafetyAlertBanner({ criminalization, countryName }: Safe
         }}
       >
         {deathPenalty ? (
-          <Skull size={24} style={{ color: '#dc2626', flexShrink: 0, marginTop: 2 }} />
+          <Skull size={24} style={{ color: '#dc2626' }} className="shrink-0 mt-0.5" />
         ) : (
-          <AlertTriangle size={24} style={{ color: '#d97706', flexShrink: 0, marginTop: 2 }} />
+          <AlertTriangle size={24} style={{ color: '#d97706' }} className="shrink-0 mt-0.5" />
         )}
         <div>
           <p
-            className="font-bold mb-1"
-            style={{
-              fontSize: '0.9375rem',
-              color: deathPenalty ? '#991b1b' : '#92400e',
-            }}
+            className="font-bold mb-1 text-15"
+            style={{ color: deathPenalty ? '#991b1b' : '#92400e' }}
           >
             {deathPenalty
               ? `Travel Warning: Same-sex activity carries the death penalty in ${countryName}`
               : `Travel Warning: Same-sex activity is criminalized in ${countryName}`}
           </p>
           <p
-            style={{
-              fontSize: '0.8125rem',
-              color: deathPenalty ? '#b91c1c' : '#a16207',
-              lineHeight: 1.5,
-            }}
+            style={{ color: deathPenalty ? '#b91c1c' : '#a16207', lineHeight: 1.5 }}
+            className="text-13"
           >
             {deathPenalty
               ? 'The death penalty may be imposed for consensual same-sex sexual activity. LGBTQ+ travellers face extreme risk.'

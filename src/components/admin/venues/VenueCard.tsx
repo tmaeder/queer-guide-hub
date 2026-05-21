@@ -1,7 +1,7 @@
-import { MapPin, Edit, Trash2, Star, CheckCircle, ExternalLink, Phone, Mail } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, Edit, Trash2, Star, CheckCircle, ExternalLink, Phone, Mail } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface VenueData {
   name: string;
@@ -27,7 +27,7 @@ interface VenueCardProps {
 
 export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
   const getPriceDisplay = (priceRange: number) => {
-    return "$".repeat(Math.max(1, Math.min(4, priceRange || 1)));
+    return '$'.repeat(Math.max(1, Math.min(4, priceRange || 1)));
   };
 
   return (
@@ -57,7 +57,10 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <MapPin size={12} />
-                <span>{venue.city}{venue.state && `, ${venue.state}`}</span>
+                <span>
+                  {venue.city}
+                  {venue.state && `, ${venue.state}`}
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="font-medium">Price: {getPriceDisplay(venue.price_range)}</span>
@@ -66,8 +69,13 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
 
             {venue.description && (
               <p
-                className="text-sm text-muted-foreground"
-                style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+                className="text-sm text-muted-foreground overflow-hidden"
+                style={{
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                }}
               >
                 {venue.description}
               </p>
@@ -102,9 +110,7 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
                   </Badge>
                 ))}
                 {venue.tags.length > 3 && (
-                  <Badge variant="secondary">
-                    +{venue.tags.length - 3} more
-                  </Badge>
+                  <Badge variant="secondary">+{venue.tags.length - 3} more</Badge>
                 )}
               </div>
             )}

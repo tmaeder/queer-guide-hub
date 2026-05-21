@@ -124,7 +124,7 @@ export function MergeDuplicatesDialog({
           <DialogTitle>Merge into existing submission</DialogTitle>
         </DialogHeader>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ flexDirection: 'column' }} className="flex gap-3">
           <Input
             placeholder="Search by title or id…"
             value={search}
@@ -132,21 +132,12 @@ export function MergeDuplicatesDialog({
           />
 
           <div
-            style={{
-              maxHeight: 320,
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 4,
-            }}
+            style={{ maxHeight: 320, overflowY: 'auto', flexDirection: 'column' }}
+            className="flex gap-1"
           >
-            {loading && (
-              <div style={{ color: 'var(--muted-foreground)', padding: 8 }}>Loading…</div>
-            )}
+            {loading && <div className="text-muted-foreground p-2">Loading…</div>}
             {!loading && filtered.length === 0 && (
-              <div style={{ color: 'var(--muted-foreground)', padding: 8 }}>
-                No candidates found.
-              </div>
+              <div className="text-muted-foreground p-2">No candidates found.</div>
             )}
             {filtered.map((row) => {
               const selected = row.id === picked;
@@ -166,12 +157,12 @@ export function MergeDuplicatesDialog({
                     gap: 4,
                   }}
                 >
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div style={{ alignItems: 'center' }} className="flex gap-2">
                     <span className="font-medium">{titleOf(row)}</span>
                     <Badge variant="outline">{row.status}</Badge>
                     {row.platform && <Badge variant="secondary">{row.platform}</Badge>}
                   </div>
-                  <code style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>
+                  <code style={{ fontSize: 11 }} className="text-muted-foreground">
                     {row.id}
                   </code>
                 </button>

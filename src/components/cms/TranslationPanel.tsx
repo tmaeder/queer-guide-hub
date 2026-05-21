@@ -6,14 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
 import {
-  listFromWhere,
-  updateRow,
-  insertInto,
-  updateRowsByIds,
-} from '@/hooks/usePageFetchers';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere, updateRow, insertInto, updateRowsByIds } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, LANGUAGE_NAMES } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
@@ -22,17 +23,28 @@ import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 // Fallback heuristic when a content type hasn't declared `translatableFields` yet.
 // Prefer the registry-driven list — this is just a default during migration.
 const FALLBACK_TRANSLATABLE_FIELDS = [
-  'name', 'title', 'description', 'headline',
-  'body', 'biography', 'content', 'meta_description',
+  'name',
+  'title',
+  'description',
+  'headline',
+  'body',
+  'biography',
+  'content',
+  'meta_description',
 ];
 
-function resolveTranslatableFields(tableName: string, originalData: Record<string, unknown>): string[] {
+function resolveTranslatableFields(
+  tableName: string,
+  originalData: Record<string, unknown>,
+): string[] {
   const config = Object.values(contentTypeRegistry).find((c) => c.tableName === tableName);
   const declared = config?.translatableFields;
   const candidates = declared && declared.length > 0 ? declared : FALLBACK_TRANSLATABLE_FIELDS;
   return candidates.filter(
     (f) =>
-      originalData[f] && typeof originalData[f] === 'string' && (originalData[f] as string).trim().length > 0,
+      originalData[f] &&
+      typeof originalData[f] === 'string' &&
+      (originalData[f] as string).trim().length > 0,
   );
 }
 
@@ -66,7 +78,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
 
   useEffect(() => {
     loadTranslations();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLang, recordId]);
 
   async function loadTranslations() {
@@ -155,7 +167,9 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
     setAutoTranslating(false);
   }
 
-  const completedCount = translatableFields.filter((f) => translations[f]?.status === 'published').length;
+  const completedCount = translatableFields.filter(
+    (f) => translations[f]?.status === 'published',
+  ).length;
   const totalCount = translatableFields.length;
 
   if (translatableFields.length === 0) return null;
@@ -199,9 +213,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
               return (
                 <div key={field} className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <Label style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>
-                      {field.replace('_', ' ')}
-                    </Label>
+                    <Label className="text-xs capitalize">{field.replace('_', ' ')}</Label>
                     {existing && (
                       <Badge
                         variant={existing.status === 'published' ? 'default' : 'secondary'}
@@ -236,7 +248,12 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
             })}
 
             <div className="flex gap-2 flex-wrap">
-              <Button size="sm" onClick={handleAutoTranslate} disabled={autoTranslating} variant="outline">
+              <Button
+                size="sm"
+                onClick={handleAutoTranslate}
+                disabled={autoTranslating}
+                variant="outline"
+              >
                 {autoTranslating ? (
                   <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 ) : (

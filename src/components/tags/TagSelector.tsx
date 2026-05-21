@@ -21,17 +21,13 @@ interface TagSelectorProps {
 export const TagSelector = ({
   selectedTags,
   onTagsChange,
-  placeholder = "Select tags...",
+  placeholder = 'Select tags...',
   maxTags = 10,
   allowCustomTags = false,
   _categories,
-  className
+  className,
 }: TagSelectorProps) => {
-  const {
-    allTags,
-    tagsByCategory,
-    searchTags
-  } = useCentralizedTags();
+  const { allTags, tagsByCategory, searchTags } = useCentralizedTags();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<CentralizedTag[]>([]);
@@ -39,7 +35,10 @@ export const TagSelector = ({
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim()) {
-      const results = await searchTags(query, activeCategory === 'all' ? undefined : activeCategory);
+      const results = await searchTags(
+        query,
+        activeCategory === 'all' ? undefined : activeCategory,
+      );
       setSearchResults(results);
     } else {
       setSearchResults([]);
@@ -51,7 +50,7 @@ export const TagSelector = ({
     }
   };
   const removeTag = (tagName: string) => {
-    onTagsChange(selectedTags.filter(tag => tag !== tagName));
+    onTagsChange(selectedTags.filter((tag) => tag !== tagName));
   };
   // Filter out the placeholder "none"/empty rows that leaked in from
   // legacy ingestion. They have no semantic value as a filter facet.
@@ -65,40 +64,61 @@ export const TagSelector = ({
     if (activeCategory === 'all') {
       return dropEmpty(allTags).slice(0, 50);
     }
-    return dropEmpty(
-      tagsByCategory.find(cat => cat.category === activeCategory)?.tags || [],
-    );
+    return dropEmpty(tagsByCategory.find((cat) => cat.category === activeCategory)?.tags || []);
   };
-  return <div className={className}>
-      <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Tags</Label>
+  return (
+    <div className={className}>
+      <Label className="text-sm font-medium">Tags</Label>
 
       {/* Selected Tags */}
-      {selectedTags.length > 0 && <div className="flex flex-wrap gap-2 mt-2 mb-3">
-          {selectedTags.map(tagName => {
-        const tag = allTags.find(t => t.name === tagName);
-        return <Badge key={tagName} variant="secondary" style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-          paddingRight: 4,
-          ...(tag ? {
-            backgroundColor: `${tag.color}20`,
-            borderColor: tag.color
-          } : {})
-        }}>
+      {selectedTags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2 mb-3">
+          {selectedTags.map((tagName) => {
+            const tag = allTags.find((t) => t.name === tagName);
+            return (
+              <Badge
+                key={tagName}
+                variant="secondary"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  paddingRight: 4,
+                  ...(tag
+                    ? {
+                        backgroundColor: `${tag.color}20`,
+                        borderColor: tag.color,
+                      }
+                    : {}),
+                }}
+              >
                 <TagIcon size={12} />
                 {tagName}
-                <Button variant="ghost" size="sm" style={{ height: 16, width: 16, padding: 0 }} onClick={() => removeTag(tagName)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  style={{ height: 16, width: 16 }}
+                  className="p-0"
+                  onClick={() => removeTag(tagName)}
+                >
                   <X size={12} />
                 </Button>
-              </Badge>;
-      })}
-        </div>}
+              </Badge>
+            );
+          })}
+        </div>
+      )}
 
       {/* Tag Selector */}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" role="combobox" aria-expanded={open} style={{ width: '100%', justifyContent: 'space-between' }} disabled={selectedTags.length >= maxTags}>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            style={{ width: '100%', justifyContent: 'space-between' }}
+            disabled={selectedTags.length >= maxTags}
+          >
             <span className="flex items-center gap-2">
               <Plus size={16} />
               {selectedTags.length >= maxTags ? `Maximum ${maxTags} tags selected` : placeholder}
@@ -106,41 +126,54 @@ export const TagSelector = ({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent style={{ width: '100%', padding: 0 }} align="start">
+        <PopoverContent style={{ width: '100%' }} className="p-0" align="start">
           <div className="p-4 flex flex-col gap-4">
             {/* Search */}
             <div className="relative">
-              <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-              <Input placeholder="Search tags..." value={searchQuery} onChange={e => handleSearch(e.target.value)} style={{ paddingLeft: 36 }} />
+              <Search
+                style={{
+                  left: 12,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  height: 16,
+                  width: 16,
+                }}
+                className="absolute text-muted-foreground"
+              />
+              <Input
+                placeholder="Search tags..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                style={{ paddingLeft: 36 }}
+              />
             </div>
 
             {/* Category Tabs */}
             <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-
-
-              <ScrollArea style={{ height: 300, marginTop: 16 }}>
+              <ScrollArea style={{ height: 300 }} className="mt-4">
                 <div className="flex flex-col gap-2">
-                  {getTagsToShow().map(tag => <div
-                    key={tag.id}
-                    className={`flex items-center justify-between p-2 cursor-pointer transition-colors ${selectedTags.includes(tag.name) ? 'bg-primary/10' : 'hover:bg-muted'}`}
-                    onClick={() => addTag(tag.name)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        addTag(tag.name);
-                      }
-                    }}
-                    role="option"
-                    tabIndex={0}
-                    aria-selected={selectedTags.includes(tag.name)}
-                  >
+                  {getTagsToShow().map((tag) => (
+                    <div
+                      key={tag.id}
+                      className={`flex items-center justify-between p-2 cursor-pointer transition-colors ${selectedTags.includes(tag.name) ? 'bg-primary/10' : 'hover:bg-muted'}`}
+                      onClick={() => addTag(tag.name)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          addTag(tag.name);
+                        }
+                      }}
+                      role="option"
+                      tabIndex={0}
+                      aria-selected={selectedTags.includes(tag.name)}
+                    >
                       <div className="flex items-center gap-2 flex-1">
                         <div style={{ width: 12, height: 12, backgroundColor: tag.color }} />
                         <div className="flex-1">
                           <p className="font-medium text-sm">{tag.name}</p>
-                          {tag.description && <p style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
-                              {tag.description}
-                            </p>}
+                          {tag.description && (
+                            <p className="text-xs text-muted-foreground">{tag.description}</p>
+                          )}
                         </div>
                       </div>
 
@@ -150,33 +183,40 @@ export const TagSelector = ({
                         </Badge>
                         {tag.usage_count > 0 && <span>({tag.usage_count})</span>}
                       </div>
-                    </div>)}
+                    </div>
+                  ))}
                 </div>
               </ScrollArea>
             </Tabs>
 
             {/* Custom Tag Input (if enabled) */}
-            {allowCustomTags && <div className="pt-4">
+            {allowCustomTags && (
+              <div className="pt-4">
                 <Label className="text-sm">Create custom tag</Label>
                 <div className="flex gap-2 mt-2">
-                  <Input placeholder="Tag name..." onKeyPress={e => {
-                if (e.key === 'Enter') {
-                  const value = e.currentTarget.value.trim();
-                  if (value && !selectedTags.includes(value)) {
-                    addTag(value);
-                    e.currentTarget.value = '';
-                  }
-                }
-              }} />
+                  <Input
+                    placeholder="Tag name..."
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        const value = e.currentTarget.value.trim();
+                        if (value && !selectedTags.includes(value)) {
+                          addTag(value);
+                          e.currentTarget.value = '';
+                        }
+                      }
+                    }}
+                  />
                 </div>
-              </div>}
+              </div>
+            )}
           </div>
         </PopoverContent>
       </Popover>
 
       {/* Tag Count Info */}
-      <p style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', marginTop: 4 }}>
+      <p className="text-xs text-muted-foreground mt-1">
         {selectedTags.length}/{maxTags} tags selected
       </p>
-    </div>;
+    </div>
+  );
 };

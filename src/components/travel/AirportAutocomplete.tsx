@@ -123,15 +123,13 @@ export function AirportAutocomplete({
 
   return (
     <div ref={containerRef} className="relative">
-      {label && (
-        <label className="text-sm font-medium mb-1 block">
-          {label}
-        </label>
-      )}
+      {label && <label className="text-sm font-medium mb-1 block">{label}</label>}
       <Input
         value={displayValue}
         onChange={(e) => handleInputChange(e.target.value)}
-        onFocus={() => { if (results.length > 0) setOpen(true); }}
+        onFocus={() => {
+          if (results.length > 0) setOpen(true);
+        }}
         placeholder={placeholder}
       />
       {open && results.length > 0 && (
@@ -151,13 +149,14 @@ export function AirportAutocomplete({
               aria-selected={false}
               className="px-4 py-2 cursor-pointer flex items-center gap-2 hover:bg-muted"
             >
-              <Plane size={14} style={{ flexShrink: 0, color: 'var(--muted-foreground)' }} />
+              <Plane size={14} className="shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">
                   {airport.city_name || airport.name} ({airport.iata_code})
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {airport.name}{airport.country_code ? ` · ${airport.country_code}` : ''}
+                  {airport.name}
+                  {airport.country_code ? ` · ${airport.country_code}` : ''}
                 </p>
               </div>
             </div>

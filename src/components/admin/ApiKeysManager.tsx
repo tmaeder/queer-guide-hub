@@ -134,7 +134,10 @@ export const ApiKeysManager = () => {
     e.preventDefault();
     if (!editingKey) return;
     try {
-      const updateData: Record<string, unknown> = { description: editForm.description, is_active: editForm.is_active };
+      const updateData: Record<string, unknown> = {
+        description: editForm.description,
+        is_active: editForm.is_active,
+      };
       if (editForm.service_name && editForm.service_name !== editingKey.service_name)
         updateData.service_name = editForm.service_name;
       if (editForm.key_name && editForm.key_name !== editingKey.key_name)
@@ -185,9 +188,7 @@ export const ApiKeysManager = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold text-foreground">API Keys Management</h2>
-          <p className="text-muted-foreground">
-            Securely manage API keys for external services
-          </p>
+          <p className="text-muted-foreground">Securely manage API keys for external services</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={refreshKeys} disabled={loading} size="sm">
@@ -311,9 +312,10 @@ export const ApiKeysManager = () => {
       {loading ? (
         <Card>
           <CardContent>
-            <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite',
-                margin: '0 auto 16px',
-                color: 'var(--muted-foreground)' }}
+            <RefreshCw
+              size={32}
+              style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}
+              className="text-muted-foreground"
             />
             <p className="text-muted-foreground">Loading API keys...</p>
           </CardContent>
@@ -323,24 +325,28 @@ export const ApiKeysManager = () => {
           {/* Status Summary */}
           {requiredKeys.length > 0 && (
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 rounded-element" style={{ background: 'hsl(var(--muted))' }}>
-                <div className="text-2xl font-semibold text-foreground">
-                  {configuredCount}
-                </div>
-                <div className="text-sm text-foreground">
-                  Configured
-                </div>
+              <div
+                className="text-center p-4 rounded-element"
+                style={{ background: 'hsl(var(--muted))' }}
+              >
+                <div className="text-2xl font-semibold text-foreground">{configuredCount}</div>
+                <div className="text-sm text-foreground">Configured</div>
               </div>
-              <div className="text-center p-4 rounded-element" style={{ background: 'hsl(var(--muted))' }}>
-                <div className="text-2xl font-semibold text-destructive">
-                  {missingCount}
-                </div>
-                <div className="text-sm text-destructive">
-                  Missing
-                </div>
+              <div
+                className="text-center p-4 rounded-element"
+                style={{ background: 'hsl(var(--muted))' }}
+              >
+                <div className="text-2xl font-semibold text-destructive">{missingCount}</div>
+                <div className="text-sm text-destructive">Missing</div>
               </div>
-              <div className="text-center p-4 rounded-element" style={{ background: 'hsl(var(--muted))' }}>
-                <div className="text-2xl font-semibold" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
+              <div
+                className="text-center p-4 rounded-element"
+                style={{ background: 'hsl(var(--muted))' }}
+              >
+                <div
+                  className="text-2xl font-semibold"
+                  style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                >
                   {errorCount}
                 </div>
                 <div className="text-sm" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
@@ -393,7 +399,10 @@ export const ApiKeysManager = () => {
                             </p>
                           )}
                           {rk.status === 'error' && rk.hint && (
-                            <p className="text-xs" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
+                            <p
+                              className="text-xs"
+                              style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                            >
                               {rk.hint}
                             </p>
                           )}
@@ -428,8 +437,10 @@ export const ApiKeysManager = () => {
             <CardContent>
               {keys.length === 0 ? (
                 <div className="text-center py-6">
-                  <Key size={32} style={{ margin: '0 auto 12px',
-                      color: 'var(--muted-foreground)' }}
+                  <Key
+                    size={32}
+                    style={{ margin: '0 auto 12px' }}
+                    className="text-muted-foreground"
                   />
                   <p className="text-muted-foreground text-sm">
                     No custom API keys. Use the "+ Add API Key" button to store additional keys.
@@ -443,7 +454,13 @@ export const ApiKeysManager = () => {
                       className="flex items-center justify-between p-4 rounded border border-border"
                     >
                       <div className="flex items-center gap-3">
-                        <Key size={16} style={{ color: key.is_active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
+                        <Key
+                          size={16}
+                          style={{
+                            color: key.is_active
+                              ? 'hsl(var(--foreground))'
+                              : 'hsl(var(--muted-foreground))',
+                          }}
                         />
                         <div>
                           <p className="font-semibold text-sm">

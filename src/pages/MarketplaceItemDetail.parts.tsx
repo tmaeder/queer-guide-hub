@@ -161,18 +161,19 @@ export function MarketplaceHero({
               currentData={listing as Record<string, unknown>}
               onSaved={() => window.location.reload()}
             />
-                          <Button variant="outline" size="sm" onClick={onToggleFavorite}>
-                <Heart size={16} style={{ marginRight: 8,
-                    fill: isFavorited ? 'currentColor' : 'none',
-                    color: 'inherit' }}
-                />
-                {isFavorited ? 'Favorited' : 'Favorite'}
-              </Button>
-                                      <Button variant="outline" size="sm" onClick={onShare}>
-                <Share2 size={16} className="mr-2" />
-                Share
-              </Button>
-                      </div>
+            <Button variant="outline" size="sm" onClick={onToggleFavorite}>
+              <Heart
+                size={16}
+                style={{ fill: isFavorited ? 'currentColor' : 'none', color: 'inherit' }}
+                className="mr-2"
+              />
+              {isFavorited ? 'Favorited' : 'Favorite'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={onShare}>
+              <Share2 size={16} className="mr-2" />
+              Share
+            </Button>
+          </div>
         </div>
       </div>
     </>
@@ -191,138 +192,140 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
 
   return (
     <ScrollReveal direction="up">
-    <div className="flex flex-col gap-6">
-      {remainingImages.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('pages.marketplaceDetail.photos', 'Photos')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {remainingImages.map((image, index) => (
-                <button
-                  type="button"
-                  key={index}
-                  onClick={() => window.open(image, '_blank')}
-                  aria-label={`Open ${listing.title} photo ${index + 2} in a new tab`}
-                  className="bg-muted rounded-element overflow-hidden block w-full p-0 border-0"
-                  style={{ aspectRatio: '16/9' }}
-                >
-                  <img
-                    src={image}
-                    alt={`${listing.title} ${index + 2}`}
-                    role="presentation"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      cursor: 'pointer',
-                      transition: 'transform 300ms',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.transform = '';
-                    }}
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {listing.description && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('pages.marketplaceDetail.description', 'Description')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground whitespace-pre-wrap">{listing.description}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      <MarketplaceSimilarItems listing={listing} />
-
-      {listing.shipping_available && listing.shipping_info && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <div className="flex items-center gap-2">
-                <Truck size={16} />
-                Shipping Information
+      <div className="flex flex-col gap-6">
+        {remainingImages.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('pages.marketplaceDetail.photos', 'Photos')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {remainingImages.map((image, index) => (
+                  <button
+                    type="button"
+                    key={index}
+                    onClick={() => window.open(image, '_blank')}
+                    aria-label={`Open ${listing.title} photo ${index + 2} in a new tab`}
+                    className="bg-muted rounded-element overflow-hidden block w-full p-0 border-0"
+                    style={{ aspectRatio: '16/9' }}
+                  >
+                    <img
+                      src={image}
+                      alt={`${listing.title} ${index + 2}`}
+                      role="presentation"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 300ms',
+                      }}
+                      className="cursor-pointer"
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.transform = '';
+                      }}
+                      onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </button>
+                ))}
               </div>
-            </CardTitle>
+            </CardContent>
+          </Card>
+        )}
+
+        {listing.description && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('pages.marketplaceDetail.description', 'Description')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground whitespace-pre-wrap">{listing.description}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        <MarketplaceSimilarItems listing={listing} />
+
+        {listing.shipping_available && listing.shipping_info && (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <div className="flex items-center gap-2">
+                  <Truck size={16} />
+                  Shipping Information
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{listing.shipping_info}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Reviews ({reviews.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">{listing.shipping_info}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Reviews ({reviews.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {reviews.length > 0 ? (
-            <div className="flex flex-col gap-4">
-              {reviews.slice(0, 5).map((review) => (
-                <div key={review.id} className="pb-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <Avatar style={{ width: 32, height: 32 }}>
-                        <AvatarFallback>
-                          {review.profiles?.display_name?.[0] || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium">
-                          {review.profiles?.display_name || 'Anonymous'}
-                        </p>
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              size={12} style={{ fill: i < review.rating ? 'currentColor' : 'none',
-                                color: i < review.rating ? 'inherit' : 'hsl(var(--muted-foreground))' }}
-                            />
-                          ))}
+            {reviews.length > 0 ? (
+              <div className="flex flex-col gap-4">
+                {reviews.slice(0, 5).map((review) => (
+                  <div key={review.id} className="pb-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <Avatar style={{ width: 32, height: 32 }}>
+                          <AvatarFallback>
+                            {review.profiles?.display_name?.[0] || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">
+                            {review.profiles?.display_name || 'Anonymous'}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                size={12}
+                                style={{
+                                  fill: i < review.rating ? 'currentColor' : 'none',
+                                  color:
+                                    i < review.rating ? 'inherit' : 'hsl(var(--muted-foreground))',
+                                }}
+                              />
+                            ))}
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        {review.purchase_verified && (
+                          <Badge variant="outline" className="text-xs">
+                            <Shield size={12} className="mr-1" />
+                            Verified Purchase
+                          </Badge>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {review.purchase_verified && (
-                        <Badge variant="outline" className="text-xs">
-                          <Shield size={12} className="mr-1" />
-                          Verified Purchase
-                        </Badge>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
+                    {review.title && <p className="text-sm font-medium mb-1">{review.title}</p>}
+                    {review.content && (
+                      <p className="text-sm text-muted-foreground">{review.content}</p>
+                    )}
                   </div>
-                  {review.title && (
-                    <p className="text-sm font-medium mb-1">{review.title}</p>
-                  )}
-                  {review.content && (
-                    <p className="text-sm text-muted-foreground">{review.content}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-4">No reviews yet</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-4">No reviews yet</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </ScrollReveal>
   );
 }
@@ -341,181 +344,192 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
 
   return (
     <ScrollReveal direction="up">
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('pages.marketplaceDetail.priceContact', 'Price & Contact')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <div className="flex items-baseline gap-2">
-              {price.modifier && (
-                <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
-              )}
-              <h4 className="text-3xl font-bold">{price.primary}</h4>
-            </div>
-            {price.secondary && (
-              <p className="text-sm text-muted-foreground mt-1">{price.secondary}</p>
-            )}
-            {provenance && (
-              <p className="text-xs2 uppercase tracking-wider text-muted-foreground/70 mt-1">{provenance}</p>
-            )}
-          </div>
-
-          {pills.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {pills.map((p) => (
-                <span
-                  key={p.key}
-                  title={p.title}
-                  className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-                >
-                  {p.label}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {linkState === 'broken' && (
-            <div className="mt-3 rounded border border-border bg-muted p-2 text-xs text-muted-foreground">
-              This merchant link appears to be broken. Try contact options below.
-            </div>
-          )}
-          {linkState === 'stale' && (
-            <div className="mt-3 text-xs text-muted-foreground">Last verified some time ago — link may have changed.</div>
-          )}
-
-          <Separator />
-
-          <div className="flex flex-col gap-3">
-            {outbound && (
-              <Button style={{ width: '100%' }} asChild>
-                <a href={outbound.url} target="_blank" rel={outbound.rel} data-affiliate={outbound.isAffiliate ? 'true' : undefined}>
-                  <ExternalLink size={16} className="mr-2" />
-                  {outbound.label}
-                </a>
-              </Button>
-            )}
-            {listing.contact_email && (
-              <Button variant="outline" style={{ width: '100%' }} asChild>
-                <a href={`mailto:${listing.contact_email}`}>
-                  <Mail size={16} className="mr-2" />
-                  Send Email
-                </a>
-              </Button>
-            )}
-            {listing.contact_phone && (
-              <Button variant="outline" style={{ width: '100%' }} asChild>
-                <a href={`tel:${listing.contact_phone}`}>
-                  <Phone size={16} className="mr-2" />
-                  Call {listing.contact_phone}
-                </a>
-              </Button>
-            )}
-            {!outbound && listing.website && (
-              <Button variant="outline" style={{ width: '100%' }} asChild>
-                <a href={listing.website} target="_blank" rel="noopener noreferrer">
-                  <Globe size={16} className="mr-2" />
-                  Visit Website
-                </a>
-              </Button>
-            )}
-          </div>
-
-          {listing.shipping_available && (
-            <div className="flex items-center gap-2 bg-muted rounded p-2 text-sm mt-3">
-              <Truck size={16} aria-hidden="true" />
-              Shipping available
-            </div>
-          )}
-
-          {outbound?.isAffiliate && (
-            <div className="mt-3">
-              <AffiliateDisclosure compact />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <MarketplacePriceHistory listingId={listing.id} />
-
-      {listing.merchant_domain && (
+      <div className="flex flex-col gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Merchant</CardTitle>
+            <CardTitle>{t('pages.marketplaceDetail.priceContact', 'Price & Contact')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-3">
-              See more listings from this merchant.
-            </p>
-            <LocalizedLink
-              to={`/marketplace/merchants/${listing.merchant_domain}`}
-              className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
-            >
-              <Globe size={14} aria-hidden="true" />
-              {listing.merchant_domain}
-            </LocalizedLink>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('pages.marketplaceDetail.businessDetails', 'Business Details')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <p className="text-sm font-medium mb-1">Business Type</p>
-            <div className="flex items-center gap-2">
-              {listing.business_type && getBusinessTypeIcon(listing.business_type)}
-              <p className="text-sm capitalize">
-                {listing.business_type || 'Not specified'}
-              </p>
-            </div>
-          </div>
-
-          {listing.location && (
             <div>
-              <p className="text-sm font-medium mb-1">Location</p>
-              <p className="text-sm text-muted-foreground">{listing.location}</p>
+              <div className="flex items-baseline gap-2">
+                {price.modifier && (
+                  <span className="text-2xs uppercase tracking-wider text-muted-foreground">
+                    {price.modifier}
+                  </span>
+                )}
+                <h4 className="text-3xl font-bold">{price.primary}</h4>
+              </div>
+              {price.secondary && (
+                <p className="text-sm text-muted-foreground mt-1">{price.secondary}</p>
+              )}
+              {provenance && (
+                <p className="text-xs2 uppercase tracking-wider text-muted-foreground/70 mt-1">
+                  {provenance}
+                </p>
+              )}
             </div>
-          )}
 
-          <div>
-            <p className="text-sm font-medium mb-1">Listed</p>
-            <p className="text-sm text-muted-foreground">
-              {new Date(listing.created_at).toLocaleDateString()}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            {pills.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {pills.map((p) => (
+                  <span
+                    key={p.key}
+                    title={p.title}
+                    className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                  >
+                    {p.label}
+                  </span>
+                ))}
+              </div>
+            )}
 
-      {listing.social_media && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('pages.marketplaceDetail.socialMedia', 'Social Media')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {Object.entries(listing.social_media as Record<string, string>).map(
-              ([platform, url]) => (
-                <Button
-                  key={platform}
-                  variant="outline"
-                  size="sm"
-                  style={{ width: '100%', justifyContent: 'flex-start' }}
-                  asChild
-                >
-                  <a href={url} target="_blank" rel="noopener noreferrer">
+            {linkState === 'broken' && (
+              <div className="mt-3 rounded border border-border bg-muted p-2 text-xs text-muted-foreground">
+                This merchant link appears to be broken. Try contact options below.
+              </div>
+            )}
+            {linkState === 'stale' && (
+              <div className="mt-3 text-xs text-muted-foreground">
+                Last verified some time ago — link may have changed.
+              </div>
+            )}
+
+            <Separator />
+
+            <div className="flex flex-col gap-3">
+              {outbound && (
+                <Button style={{ width: '100%' }} asChild>
+                  <a
+                    href={outbound.url}
+                    target="_blank"
+                    rel={outbound.rel}
+                    data-affiliate={outbound.isAffiliate ? 'true' : undefined}
+                  >
                     <ExternalLink size={16} className="mr-2" />
-                    {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                    {outbound.label}
                   </a>
                 </Button>
-              ),
+              )}
+              {listing.contact_email && (
+                <Button variant="outline" style={{ width: '100%' }} asChild>
+                  <a href={`mailto:${listing.contact_email}`}>
+                    <Mail size={16} className="mr-2" />
+                    Send Email
+                  </a>
+                </Button>
+              )}
+              {listing.contact_phone && (
+                <Button variant="outline" style={{ width: '100%' }} asChild>
+                  <a href={`tel:${listing.contact_phone}`}>
+                    <Phone size={16} className="mr-2" />
+                    Call {listing.contact_phone}
+                  </a>
+                </Button>
+              )}
+              {!outbound && listing.website && (
+                <Button variant="outline" style={{ width: '100%' }} asChild>
+                  <a href={listing.website} target="_blank" rel="noopener noreferrer">
+                    <Globe size={16} className="mr-2" />
+                    Visit Website
+                  </a>
+                </Button>
+              )}
+            </div>
+
+            {listing.shipping_available && (
+              <div className="flex items-center gap-2 bg-muted rounded p-2 text-sm mt-3">
+                <Truck size={16} aria-hidden="true" />
+                Shipping available
+              </div>
+            )}
+
+            {outbound?.isAffiliate && (
+              <div className="mt-3">
+                <AffiliateDisclosure compact />
+              </div>
             )}
           </CardContent>
         </Card>
-      )}
-    </div>
+
+        <MarketplacePriceHistory listingId={listing.id} />
+
+        {listing.merchant_domain && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Merchant</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-3">
+                See more listings from this merchant.
+              </p>
+              <LocalizedLink
+                to={`/marketplace/merchants/${listing.merchant_domain}`}
+                className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
+              >
+                <Globe size={14} aria-hidden="true" />
+                {listing.merchant_domain}
+              </LocalizedLink>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {t('pages.marketplaceDetail.businessDetails', 'Business Details')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <p className="text-sm font-medium mb-1">Business Type</p>
+              <div className="flex items-center gap-2">
+                {listing.business_type && getBusinessTypeIcon(listing.business_type)}
+                <p className="text-sm capitalize">{listing.business_type || 'Not specified'}</p>
+              </div>
+            </div>
+
+            {listing.location && (
+              <div>
+                <p className="text-sm font-medium mb-1">Location</p>
+                <p className="text-sm text-muted-foreground">{listing.location}</p>
+              </div>
+            )}
+
+            <div>
+              <p className="text-sm font-medium mb-1">Listed</p>
+              <p className="text-sm text-muted-foreground">
+                {new Date(listing.created_at).toLocaleDateString()}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {listing.social_media && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('pages.marketplaceDetail.socialMedia', 'Social Media')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {Object.entries(listing.social_media as Record<string, string>).map(
+                ([platform, url]) => (
+                  <Button
+                    key={platform}
+                    variant="outline"
+                    size="sm"
+                    style={{ width: '100%', justifyContent: 'flex-start' }}
+                    asChild
+                  >
+                    <a href={url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink size={16} className="mr-2" />
+                      {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                    </a>
+                  </Button>
+                ),
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </ScrollReveal>
   );
 }

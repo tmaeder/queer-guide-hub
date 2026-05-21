@@ -15,12 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 interface EditorHeaderProps {
@@ -146,7 +141,8 @@ export function EditorHeader({
               >
                 {displayTitle}
               </p>
-              <Pencil size={13}
+              <Pencil
+                size={13}
                 className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
               />
             </div>
@@ -184,8 +180,8 @@ export function EditorHeader({
                   size="sm"
                   disabled={isEnriching || state.isSaving}
                   onClick={onEnrich}
-                  className="hidden sm:inline-flex font-medium normal-case"
-                  style={{ borderColor: 'hsl(var(--foreground))', color: 'hsl(var(--foreground))' }}
+                  className="hidden sm:inline-flex font-medium normal-case text-foreground"
+                  style={{ borderColor: 'hsl(var(--foreground))' }}
                 >
                   {isEnriching ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-1" />

@@ -152,8 +152,8 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
     case 'textarea':
       return (
         <p
-          className="text-sm"
-          style={{ whiteSpace: 'pre-wrap', maxHeight: 120, overflow: 'auto', lineHeight: 1.4 }}
+          className="text-sm overflow-auto"
+          style={{ whiteSpace: 'pre-wrap', maxHeight: 120, lineHeight: 1.4 }}
         >
           {String(value).slice(0, 500)}
           {String(value).length > 500 ? '...' : ''}
@@ -164,14 +164,10 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
       if (isUrl(value)) {
         return (
           <span className="flex items-center gap-1">
-            <span className="text-sm" style={{ color: 'hsl(var(--muted-foreground))', wordBreak: 'break-all' }}>
+            <span className="text-sm text-muted-foreground" style={{ wordBreak: 'break-all' }}>
               {String(value)}
             </span>
-            <a
-              href={String(value)}
-              target="_blank"
-              rel="noopener noreferrer" className="shrink-0"
-            >
+            <a href={String(value)} target="_blank" rel="noopener noreferrer" className="shrink-0">
               <ExternalLink size={12} className="text-muted-foreground" />
             </a>
           </span>
@@ -219,10 +215,7 @@ export function StructuredFieldDisplay({
   }
 
   return (
-    <div
-      className="grid gap-2 items-start"
-      style={{ gridTemplateColumns: '140px 1fr' }}
-    >
+    <div className="grid gap-2 items-start" style={{ gridTemplateColumns: '140px 1fr' }}>
       {fields.map((field) => {
         const val = data[field.key];
         const isHighlighted = highlightFields?.includes(field.key);

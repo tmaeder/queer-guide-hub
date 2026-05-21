@@ -31,17 +31,14 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
     if (!canGenerate) return null;
     return (
       <div className="p-5 mb-6 bg-muted flex items-start gap-3">
-        <Sparkles size={18} style={{ marginTop: 2, flexShrink: 0, opacity: 0.7 }} />
+        <Sparkles size={18} style={{ opacity: 0.7 }} className="mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold mb-1">AI safety briefing</p>
           <span className="block text-xs text-muted-foreground mb-3">
-            Generate a plain-language summary synthesizing country data and recent news for this trip.
+            Generate a plain-language summary synthesizing country data and recent news for this
+            trip.
           </span>
-          <Button
-            size="sm"
-            onClick={() => handleGenerate(false)}
-            disabled={generate.isPending}
-          >
+          <Button size="sm" onClick={() => handleGenerate(false)} disabled={generate.isPending}>
             {generate.isPending ? 'Generating…' : 'Generate briefing'}
           </Button>
           {generate.isError && (
@@ -56,7 +53,7 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
 
   return (
     <div className="p-5 mb-6 bg-muted flex items-start gap-3">
-      <Sparkles size={18} style={{ marginTop: 2, flexShrink: 0, opacity: 0.7 }} />
+      <Sparkles size={18} style={{ opacity: 0.7 }} className="mt-0.5 shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1 gap-2">
           <p className="text-sm font-bold">AI safety briefing</p>
@@ -78,7 +75,8 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
           {briefing.narrative}
         </p>
         <span className="block mt-2 text-xs text-muted-foreground">
-          Synthesized from {briefing.article_count} recent article{briefing.article_count === 1 ? '' : 's'} • generated{' '}
+          Synthesized from {briefing.article_count} recent article
+          {briefing.article_count === 1 ? '' : 's'} • generated{' '}
           {formatDistanceToNow(new Date(briefing.generated_at), { addSuffix: true })}
         </span>
       </div>

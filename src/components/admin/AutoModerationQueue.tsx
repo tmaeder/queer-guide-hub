@@ -100,8 +100,15 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export function AutoModerationQueue() {
-  const { pendingFlags, stats: _stats, flagStats, isLoading, isReviewing, reviewFlag, bulkReviewFlags } =
-    useAutomationMonitor();
+  const {
+    pendingFlags,
+    stats: _stats,
+    flagStats,
+    isLoading,
+    isReviewing,
+    reviewFlag,
+    bulkReviewFlags,
+  } = useAutomationMonitor();
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -450,8 +457,8 @@ function FlagCard({
             {/* Top row */}
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge
-                style={{ backgroundColor: severityColor, color: 'hsl(var(--background))' }}
-                className="font-semibold text-xs2 gap-1"
+                style={{ backgroundColor: severityColor }}
+                className="font-semibold text-xs2 gap-1 text-background"
               >
                 <SeverityIcon className="w-3 h-3" />
                 {flag.severity}
@@ -498,10 +505,10 @@ function FlagCard({
               {reviewPriority && (
                 <Badge
                   style={{
-                    backgroundColor: REVIEW_PRIORITY_COLORS[reviewPriority] || 'hsl(var(--muted-foreground))',
-                    color: 'hsl(var(--background))',
+                    backgroundColor:
+                      REVIEW_PRIORITY_COLORS[reviewPriority] || 'hsl(var(--muted-foreground))',
                   }}
-                  className="font-semibold text-xs2"
+                  className="font-semibold text-xs2 text-background"
                 >
                   Priority: {reviewPriority}
                 </Badge>
@@ -539,11 +546,7 @@ function FlagCard({
                 Dismiss
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onToggleExpand}>
-                {expanded ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
+                {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </div>
 

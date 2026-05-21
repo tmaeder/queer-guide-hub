@@ -1,5 +1,17 @@
 import { useState } from 'react';
-import { Plus, Trash2, ArrowRight, Utensils, Car, Home, Ticket, ShoppingBag, Package, Wallet, Sparkles } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  ArrowRight,
+  Utensils,
+  Car,
+  Home,
+  Ticket,
+  ShoppingBag,
+  Package,
+  Wallet,
+  Sparkles,
+} from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
@@ -134,11 +146,11 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
           </p>
           <div className="flex gap-1 justify-center flex-wrap">
             <Button variant="brand" onClick={() => setDialogOpen(true)}>
-              <Plus size={16} style={{ marginRight: 6 }} />
+              <Plus size={16} className="mr-1.5" />
               {t('trips.budget.addExpense')}
             </Button>
             <Button variant="outline" onClick={() => setEstimateOpen(true)}>
-              <Sparkles size={16} style={{ marginRight: 6 }} />
+              <Sparkles size={16} className="mr-1.5" />
               {t('trips.budget.estimateCosts', { defaultValue: 'Estimate costs' })}
             </Button>
           </div>
@@ -177,23 +189,20 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
           <div className="flex items-baseline gap-3 flex-wrap">
             {Object.keys(summary.totalByCurrency).length > 1 && summary.totalConverted != null ? (
               <>
-                <span
-                  className="text-2xl md:text-headline font-bold tabular-nums"
-                >
+                <span className="text-2xl md:text-headline font-bold tabular-nums">
                   {formatAmount(summary.totalConverted, defaultCurrency)}
                 </span>
                 <span className="text-xs text-muted-foreground tabular-nums">
-                  ({Object.entries(summary.totalByCurrency)
+                  (
+                  {Object.entries(summary.totalByCurrency)
                     .map(([cur, total]) => formatAmount(total, cur))
-                    .join(' + ')})
+                    .join(' + ')}
+                  )
                 </span>
               </>
             ) : (
               Object.entries(summary.totalByCurrency).map(([cur, total]) => (
-                <span
-                  key={cur}
-                  className="text-2xl md:text-headline font-bold tabular-nums"
-                >
+                <span key={cur} className="text-2xl md:text-headline font-bold tabular-nums">
                   {formatAmount(total, cur)}
                 </span>
               ))
@@ -257,8 +266,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         const color = categoryColors[cat] || categoryColors.other;
         const catTotal: Record<string, number> = {};
         for (const item of catItems) {
-          catTotal[item.currency] =
-            (catTotal[item.currency] || 0) + Number(item.amount);
+          catTotal[item.currency] = (catTotal[item.currency] || 0) + Number(item.amount);
         }
 
         return (
@@ -271,18 +279,11 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
                 >
                   <Icon size={14} style={{ color }} />
                 </div>
-                <span
-                  className="font-bold text-sm"
-                >
-                  {categoryLabel(cat)}
-                </span>
+                <span className="font-bold text-sm">{categoryLabel(cat)}</span>
               </div>
               <div className="flex gap-1">
                 {Object.entries(catTotal).map(([cur, total]) => (
-                  <span
-                    key={cur}
-                    className="text-sm font-bold text-muted-foreground tabular-nums"
-                  >
+                  <span key={cur} className="text-sm font-bold text-muted-foreground tabular-nums">
                     {formatAmount(total, cur)}
                   </span>
                 ))}
@@ -355,9 +356,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
                       <AvatarFallback>{memberName(s.to)[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm">{memberName(s.to)}</span>
-                    <span className="text-sm font-bold ml-auto">
-                      {formatAmount(s.amount, cur)}
-                    </span>
+                    <span className="text-sm font-bold ml-auto">{formatAmount(s.amount, cur)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -399,11 +398,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         currentUserId={user?.id}
       />
 
-      <CostSplitSummary
-        tripId={tripId}
-        members={members}
-        defaultCurrency={defaultCurrency}
-      />
+      <CostSplitSummary tripId={tripId} members={members} defaultCurrency={defaultCurrency} />
 
       <div className="mt-4">
         <Button variant="outline" size="sm" onClick={() => setBundleOpen(true)}>
@@ -414,23 +409,14 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
 
       <BookingActivitySection tripId={tripId} />
 
-      <BundledCheckoutDialog
-        open={bundleOpen}
-        onOpenChange={setBundleOpen}
-        tripId={tripId}
-      />
+      <BundledCheckoutDialog open={bundleOpen} onOpenChange={setBundleOpen} tripId={tripId} />
 
       {/* Delete confirmation */}
-      <Dialog
-        open={!!deleteConfirmId}
-        onOpenChange={(open) => !open && setDeleteConfirmId(null)}
-      >
+      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('trips.budget.deleteTitle')}</DialogTitle>
-            <DialogDescription>
-              {t('trips.budget.deleteConfirm')}
-            </DialogDescription>
+            <DialogDescription>{t('trips.budget.deleteConfirm')}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>

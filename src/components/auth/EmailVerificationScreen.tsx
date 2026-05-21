@@ -50,7 +50,8 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
         </div>
         <CardTitle>{t('auth.verifyEmail.title', 'Check your email')}</CardTitle>
         <CardDescription>
-          {t('auth.verifyEmail.description', 'We sent a verification link to')} <strong>{email}</strong>
+          {t('auth.verifyEmail.description', 'We sent a verification link to')}{' '}
+          <strong>{email}</strong>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -58,7 +59,7 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
           <p className="text-sm text-muted-foreground text-center">
             {t(
               'auth.verifyEmail.instructions',
-              'Click the link in the email to activate your account. The link expires in 24 hours.'
+              'Click the link in the email to activate your account. The link expires in 24 hours.',
             )}
           </p>
 
@@ -82,13 +83,19 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
             variant="outline"
             onClick={handleResend}
             disabled={cooldown > 0 || status === 'sending'}
-
           >
             {status === 'sending' && (
-              <Loader2 size={16} style={{ marginRight: 8, animation: 'spin 1s linear infinite' }} />
+              <Loader2
+                size={16}
+                style={{ animation: 'spin 1s linear infinite' }}
+                className="mr-2"
+              />
             )}
             {cooldown > 0
-              ? t('auth.verifyEmail.resendIn', { defaultValue: 'Resend in {{seconds}}s', seconds: cooldown })
+              ? t('auth.verifyEmail.resendIn', {
+                  defaultValue: 'Resend in {{seconds}}s',
+                  seconds: cooldown,
+                })
               : t('auth.verifyEmail.resend', 'Resend verification email')}
           </Button>
 

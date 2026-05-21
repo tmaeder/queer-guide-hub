@@ -274,7 +274,7 @@ export default function AdminEventServices() {
                 <Label>Active</Label>
               </div>
             </div>
-            <DialogFooter style={{ marginTop: 16 }}>
+            <DialogFooter className="mt-4">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>

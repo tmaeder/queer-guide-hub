@@ -2,11 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bookmark, BookmarkPlus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 
@@ -41,7 +37,8 @@ export function SavedSearchesMenu({
         <Button
           variant="ghost"
           size="sm"
-          style={{ fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          style={{ alignItems: 'center' }}
+          className="text-xs inline-flex gap-1"
           aria-label={t('search.savedSearches', 'Saved searches')}
         >
           <Bookmark size={14} />
@@ -51,13 +48,13 @@ export function SavedSearchesMenu({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" style={{ width: 320, padding: 12 }}>
+      <PopoverContent align="end" style={{ width: 320 }} className="p-3">
         {currentQueryString && (
-          <div className="flex flex-col" style={{ gap: 6, marginBottom: 12 }}>
+          <div className="flex flex-col gap-1.5 mb-3">
             <label className="text-xs font-medium" htmlFor="qg-saved-name">
               {t('search.saveThisSearch', 'Save this search')}
             </label>
-            <div className="flex" style={{ gap: 6 }}>
+            <div className="flex gap-1.5">
               <Input
                 id="qg-saved-name"
                 placeholder={suggestedName || t('search.namePlaceholder', 'Name…')}
@@ -72,27 +69,21 @@ export function SavedSearchesMenu({
           </div>
         )}
         {searches.length === 0 ? (
-          <p className="text-xs text-muted-foreground">{t('search.noSavedYet', 'No saved searches yet.')}</p>
+          <p className="text-xs text-muted-foreground">
+            {t('search.noSavedYet', 'No saved searches yet.')}
+          </p>
         ) : (
-          <ul className="flex flex-col" style={{ gap: 4, maxHeight: 280, overflowY: 'auto' }}>
+          <ul className="flex flex-col gap-1" style={{ maxHeight: 280, overflowY: 'auto' }}>
             {searches.map((s) => (
-              <li
-                key={s.id}
-                className="flex items-center"
-                style={{ gap: 6 }}
-              >
+              <li key={s.id} className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  className="flex-1 text-left"
+                  className="flex-1 text-left cursor-pointer text-sm overflow-hidden whitespace-nowrap"
                   style={{
                     background: 'transparent',
                     border: 0,
                     padding: '6px 8px',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem',
-                    overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
                   }}
                   onClick={() => {
                     onLoad(s.query);
@@ -104,7 +95,9 @@ export function SavedSearchesMenu({
                 </button>
                 <button
                   type="button"
-                  aria-label={t('search.deleteSavedSearch', 'Delete saved search {{name}}', { name: s.name })}
+                  aria-label={t('search.deleteSavedSearch', 'Delete saved search {{name}}', {
+                    name: s.name,
+                  })}
                   onClick={() => remove(s.id)}
                   style={{
                     background: 'transparent',

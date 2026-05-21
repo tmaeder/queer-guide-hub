@@ -23,8 +23,8 @@ export function SocialSignalBadges({ signal, tripUsageThreshold = 3 }: Props) {
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs2 font-semibold"
-                style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs2 font-semibold text-foreground"
+                style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 <Heart size={10} fill="currentColor" />
                 <span className="text-xs2 font-semibold">
@@ -36,7 +36,9 @@ export function SocialSignalBadges({ signal, tripUsageThreshold = 3 }: Props) {
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              {t('places.social.friendsSavedTooltip', { defaultValue: 'Saved by people you follow' })}
+              {t('places.social.friendsSavedTooltip', {
+                defaultValue: 'Saved by people you follow',
+              })}
             </TooltipContent>
           </Tooltip>
         )}

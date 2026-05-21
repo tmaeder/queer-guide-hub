@@ -4,7 +4,11 @@ const UnifiedDataOps = lazy(() => import('@/components/admin/pipeline-builder/Un
 
 export default function AdminPipelines() {
   return (
-    <Suspense fallback={<div style={{ padding: 32, textAlign: 'center', color: 'hsl(var(--muted-foreground))' }}>Loading Data Operations...</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-muted-foreground">Loading Data Operations...</div>
+      }
+    >
       <UnifiedDataOps />
     </Suspense>
   );

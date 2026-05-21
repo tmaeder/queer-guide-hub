@@ -45,7 +45,9 @@ export default function GeoMismatchTab() {
     refetchInterval: 60_000,
     queryFn: async () => {
       const { data } = await untypedFrom('geo_validations')
-        .select('id, content_type, content_id, original_lat, original_lng, validated_lat, validated_lng, geocoded_address, country, city, confidence, mismatch_details, source, last_validated_at')
+        .select(
+          'id, content_type, content_id, original_lat, original_lng, validated_lat, validated_lng, geocoded_address, country, city, confidence, mismatch_details, source, last_validated_at',
+        )
         .eq('has_mismatch', true)
         .order('last_validated_at', { ascending: false })
         .limit(50);
@@ -73,7 +75,8 @@ export default function GeoMismatchTab() {
       toast({ title: 'Coords updated', description: 'Validated coords applied' });
       queryClient.invalidateQueries({ queryKey: ['geo-mismatches'] });
     },
-    onError: (e: Error) => toast({ title: 'Apply failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) =>
+      toast({ title: 'Apply failed', description: e.message, variant: 'destructive' }),
   });
 
   const keepOriginal = useMutation({
@@ -87,12 +90,13 @@ export default function GeoMismatchTab() {
       toast({ title: 'Marked resolved', description: 'Kept original coords' });
       queryClient.invalidateQueries({ queryKey: ['geo-mismatches'] });
     },
-    onError: (e: Error) => toast({ title: 'Failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) =>
+      toast({ title: 'Failed', description: e.message, variant: 'destructive' }),
   });
 
   if (isLoading) {
     return (
-      <div style={{ padding: 32, textAlign: 'center' }}>
+      <div className="p-8 text-center">
         <Loader2 className="animate-spin" />
       </div>
     );
@@ -100,43 +104,63 @@ export default function GeoMismatchTab() {
 
   if (rows.length === 0) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'hsl(var(--muted-foreground))' }}>
-        No geo mismatches pending review.
-      </div>
+      <div className="p-8 text-center text-muted-foreground">No geo mismatches pending review.</div>
     );
   }
 
   return (
-    <div style={{ padding: 16 }}>
-      <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div className="p-4">
+      <h3 style={{ alignItems: 'center' }} className="mb-4 flex gap-2">
         <MapPin size={18} /> Geo mismatch review ({rows.length})
       </h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ flexDirection: 'column' }} className="flex gap-3">
         {rows.map((r) => {
-          const distKm = r.original_lat != null && r.validated_lat != null
-            ? haversineKm(r.original_lat, r.original_lng ?? 0, r.validated_lat, r.validated_lng ?? 0)
-            : null;
+          const distKm =
+            r.original_lat != null && r.validated_lat != null
+              ? haversineKm(
+                  r.original_lat,
+                  r.original_lng ?? 0,
+                  r.validated_lat,
+                  r.validated_lng ?? 0,
+                )
+              : null;
           return (
-            <div key={r.id} style={{ padding: 12, background: 'hsl(var(--background) / 0.04)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+            <div key={r.id} style={{ background: 'hsl(var(--background) / 0.04)' }} className="p-3">
+              <div style={{ justifyContent: 'space-between' }} className="flex gap-3">
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+                  <div style={{ alignItems: 'center' }} className="flex gap-2 mb-1.5">
                     <Badge>{r.content_type}</Badge>
                     {r.source && <Badge variant="outline">{r.source}</Badge>}
-                    {r.confidence != null && <span style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>conf {(r.confidence * 100).toFixed(0)}%</span>}
-                    <span style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>
+                    {r.confidence != null && (
+                      <span style={{ fontSize: 12 }} className="text-muted-foreground">
+                        conf {(r.confidence * 100).toFixed(0)}%
+                      </span>
+                    )}
+                    <span style={{ fontSize: 12 }} className="text-muted-foreground">
                       {formatDistanceToNow(new Date(r.last_validated_at))} ago
                     </span>
                   </div>
                   <div style={{ fontSize: 13, color: 'hsl(var(--muted))' }}>
-                    <strong>Original:</strong> {fmt(r.original_lat)}, {fmt(r.original_lng)}<br />
+                    <strong>Original:</strong> {fmt(r.original_lat)}, {fmt(r.original_lng)}
+                    <br />
                     <strong>Validated:</strong> {fmt(r.validated_lat)}, {fmt(r.validated_lng)}
                     {distKm != null && <> &middot; {distKm.toFixed(1)} km apart</>}
                   </div>
-                  {r.geocoded_address && <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginTop: 4 }}>↳ {r.geocoded_address}</div>}
-                  {r.mismatch_details && <div style={{ fontSize: 12, color: 'hsl(var(--destructive) / 0.5)', marginTop: 4 }}>{r.mismatch_details}</div>}
+                  {r.geocoded_address && (
+                    <div style={{ fontSize: 12 }} className="text-muted-foreground mt-1">
+                      ↳ {r.geocoded_address}
+                    </div>
+                  )}
+                  {r.mismatch_details && (
+                    <div
+                      style={{ fontSize: 12, color: 'hsl(var(--destructive) / 0.5)' }}
+                      className="mt-1"
+                    >
+                      {r.mismatch_details}
+                    </div>
+                  )}
                 </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                <div style={{ alignItems: 'flex-start' }} className="flex gap-1.5">
                   <Button
                     size="sm"
                     onClick={() => acceptValidated.mutate(r)}
@@ -171,6 +195,8 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   const toRad = (x: number) => (x * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }

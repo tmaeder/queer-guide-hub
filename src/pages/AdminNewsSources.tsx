@@ -80,7 +80,6 @@ const frequencies = [
 const columnHelper = createColumnHelper<NewsSourceRow>();
 
 export default function AdminNewsSources() {
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [keywordsDialogOpen, setKeywordsDialogOpen] = useState(false);
   const [editingSource, setEditingSource] = useState<NewsSourceRow | null>(null);
@@ -196,9 +195,7 @@ export default function AdminNewsSources() {
         cell: (info) => (
           <div>
             <span className="font-medium">{info.getValue()}</span>
-            <p className="text-sm text-muted-foreground">
-              {info.row.original.url}
-            </p>
+            <p className="text-sm text-muted-foreground">{info.row.original.url}</p>
           </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -209,11 +206,7 @@ export default function AdminNewsSources() {
           const val = info.getValue();
           return (
             <div className="flex items-center gap-1">
-              {val === 'rss' ? (
-                <Rss size={14} />
-              ) : (
-                <Globe size={14} />
-              )}
+              {val === 'rss' ? <Rss size={14} /> : <Globe size={14} />}
               <Badge variant="secondary">{val.toUpperCase()}</Badge>
             </div>
           );
@@ -235,7 +228,11 @@ export default function AdminNewsSources() {
               {row.status === 'error' ? (
                 <AlertCircle size={14} className="text-destructive" />
               ) : (
-                <CheckCircle size={14} style={{ color: active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
+                <CheckCircle
+                  size={14}
+                  style={{
+                    color: active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
+                  }}
                 />
               )}
               <Badge
@@ -402,162 +399,171 @@ export default function AdminNewsSources() {
       config={tableConfig}
       afterTable={
         <>
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent style={{ maxWidth: 500 }}>
-          <DialogHeader>
-            <DialogTitle>{editingSource ? 'Edit News Source' : 'Add News Source'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <Label htmlFor="name">Source Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., LGBTQ+ News Network"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="url">URL</Label>
-              <Input
-                id="url"
-                type="url"
-                value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                placeholder="https://example.com/rss"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Source Type</Label>
-                <Select
-                  value={formData.source_type}
-                  onValueChange={(v: 'rss' | 'api') => setFormData({ ...formData, source_type: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="rss">RSS Feed</SelectItem>
-                    <SelectItem value="api">API</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(v) => setFormData({ ...formData, category: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c.charAt(0).toUpperCase() + c.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div>
-              <Label>Fetch Frequency</Label>
-              <Select
-                value={formData.fetch_frequency.toString()}
-                onValueChange={(v) => setFormData({ ...formData, fetch_frequency: parseInt(v) })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {frequencies.map((f) => (
-                    <SelectItem key={f.value} value={f.value.toString()}>
-                      {f.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                id="is_active"
-                checked={formData.is_active}
-                onCheckedChange={(c) => setFormData({ ...formData, is_active: c })}
-              />
-              <Label htmlFor="is_active">Active</Label>
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">{editingSource ? 'Update' : 'Create'}</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Keywords Dialog */}
-      <Dialog open={keywordsDialogOpen} onOpenChange={setKeywordsDialogOpen}>
-        <DialogContent style={{ maxWidth: 500 }}>
-          <DialogHeader>
-            <DialogTitle>Manage Keywords - {editingSource?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-4">
-            <div>
-              <Label>Current Keywords</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {editingKeywords.map((kw, i) => (
-                  <Badge
-                    key={i}
-                    variant="secondary"
-                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-                  >
-                    {kw}
-                    <button
-                      onClick={() => removeKeyword(kw)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        lineHeight: 1,
-                      }}
+          {/* Create/Edit Dialog */}
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogContent style={{ maxWidth: 500 }}>
+              <DialogHeader>
+                <DialogTitle>{editingSource ? 'Edit News Source' : 'Add News Source'}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div>
+                  <Label htmlFor="name">Source Name</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g., LGBTQ+ News Network"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="url">URL</Label>
+                  <Input
+                    id="url"
+                    type="url"
+                    value={formData.url}
+                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                    placeholder="https://example.com/rss"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Source Type</Label>
+                    <Select
+                      value={formData.source_type}
+                      onValueChange={(v: 'rss' | 'api') =>
+                        setFormData({ ...formData, source_type: v })
+                      }
                     >
-                      x
-                    </button>
-                  </Badge>
-                ))}
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="rss">RSS Feed</SelectItem>
+                        <SelectItem value="api">API</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Category</Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(v) => setFormData({ ...formData, category: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c.charAt(0).toUpperCase() + c.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label>Fetch Frequency</Label>
+                  <Select
+                    value={formData.fetch_frequency.toString()}
+                    onValueChange={(v) =>
+                      setFormData({ ...formData, fetch_frequency: parseInt(v) })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {frequencies.map((f) => (
+                        <SelectItem key={f.value} value={f.value.toString()}>
+                          {f.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(c) => setFormData({ ...formData, is_active: c })}
+                  />
+                  <Label htmlFor="is_active">Active</Label>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">{editingSource ? 'Update' : 'Create'}</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Keywords Dialog */}
+          <Dialog open={keywordsDialogOpen} onOpenChange={setKeywordsDialogOpen}>
+            <DialogContent style={{ maxWidth: 500 }}>
+              <DialogHeader>
+                <DialogTitle>Manage Keywords - {editingSource?.name}</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <Label>Current Keywords</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {editingKeywords.map((kw, i) => (
+                      <Badge
+                        key={i}
+                        variant="secondary"
+                        style={{ alignItems: 'center' }}
+                        className="flex gap-1"
+                      >
+                        {kw}
+                        <button
+                          onClick={() => removeKeyword(kw)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            lineHeight: 1,
+                          }}
+                        >
+                          x
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="newKeyword">Add Keyword</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="newKeyword"
+                      value={newKeyword}
+                      onChange={(e) => setNewKeyword(e.target.value)}
+                      placeholder="Enter keyword..."
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
+                    />
+                    <Button type="button" onClick={addKeyword} disabled={!newKeyword.trim()}>
+                      Add
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setKeywordsDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={saveKeywords}>Save Keywords</Button>
+                </div>
               </div>
-            </div>
-            <div>
-              <Label htmlFor="newKeyword">Add Keyword</Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="newKeyword"
-                  value={newKeyword}
-                  onChange={(e) => setNewKeyword(e.target.value)}
-                  placeholder="Enter keyword..."
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
-                />
-                <Button type="button" onClick={addKeyword} disabled={!newKeyword.trim()}>
-                  Add
-                </Button>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setKeywordsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={saveKeywords}>Save Keywords</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </DialogContent>
+          </Dialog>
         </>
       }
     />

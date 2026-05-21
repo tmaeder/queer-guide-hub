@@ -36,10 +36,10 @@ export function CurrencySelector() {
           minWidth: 0,
           height: 36,
           padding: '0 8px',
-          gap: 4,
           border: 'none',
           background: 'transparent',
         }}
+        className="gap-1"
       >
         <Wallet size={16} className="shrink-0" />
         <SelectValue />

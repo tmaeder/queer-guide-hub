@@ -117,7 +117,8 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     fetchCityImage,
     data?.countries?.name,
     data?.country_name,
-  ]);  const formatPopulation = (population?: number | null) => {
+  ]);
+  const formatPopulation = (population?: number | null) => {
     if (!population) return null;
     if (population >= 1000000) {
       return `${(population / 1000000).toFixed(1)}M`;
@@ -142,16 +143,11 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     if (type === 'country' && data) {
       const country = data as Country;
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ flexDirection: 'column' }} className="flex gap-1">
           {country.capital && (
             <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize: '0.875rem',
-                color: 'var(--muted-foreground)',
-              }}
+              style={{ alignItems: 'center' }}
+              className="flex gap-1 text-sm text-muted-foreground"
             >
               <Crown size={16} />
               <span>{country.capital}</span>
@@ -163,18 +159,15 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     if (type === 'city' && data) {
       const city = data as City;
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ flexDirection: 'column' }} className="flex gap-1">
           {city.countries && (
-            <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', margin: 0 }}>
-              {city.countries.name}
-            </p>
+            <p className="text-sm text-muted-foreground m-0">{city.countries.name}</p>
           )}
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex gap-2">
             {city.is_capital && (
               <div
-                className="rounded-full"
+                className="rounded-full flex"
                 style={{
-                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   width: 24,
@@ -187,9 +180,8 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
             )}
             {city.is_major_city && (
               <div
-                className="rounded-full"
+                className="rounded-full flex"
                 style={{
-                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   width: 24,
@@ -197,8 +189,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                   backgroundColor: 'rgba(var(--secondary-rgb), 0.1)',
                 }}
               >
-                <Building2 size={12} style={{ color: 'var(--secondary-foreground)' }}
-                />
+                <Building2 size={12} style={{ color: 'var(--secondary-foreground)' }} />
               </div>
             )}
           </div>
@@ -210,15 +201,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
   const getStats = () => {
     if (data?.population) {
       return (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            fontSize: '0.875rem',
-            color: 'var(--muted-foreground)',
-          }}
-        >
+        <div style={{ alignItems: 'center' }} className="flex gap-1 text-sm text-muted-foreground">
           <Users size={16} />
           <span>{formatPopulation(data.population)}</span>
         </div>
@@ -231,23 +214,18 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       {/* Country Image */}
       {type === 'country' && (
         <div
-          className="rounded-t-container"
-          style={{
-            aspectRatio: '4/3',
-            width: '100%',
-            overflow: 'hidden',
-            backgroundColor: 'var(--accent)',
-          }}
+          className="rounded-t-container overflow-hidden"
+          style={{ aspectRatio: '4/3', width: '100%', backgroundColor: 'var(--accent)' }}
         >
           {imageLoading ? (
             <div
               style={{
                 width: '100%',
                 height: '100%',
-                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
+              className="flex"
             >
               <div
                 style={{
@@ -281,26 +259,23 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       {/* City Image */}
       {type === 'city' && (
         <div
-          className="rounded-t-container"
-          style={{
-            aspectRatio: '4/3',
-            width: '100%',
-            overflow: 'hidden',
-            backgroundColor: 'var(--accent)',
-          }}
+          className="rounded-t-container overflow-hidden"
+          style={{ aspectRatio: '4/3', width: '100%', backgroundColor: 'var(--accent)' }}
         >
           {cityImageLoading ? (
             <div
               style={{
                 width: '100%',
                 height: '100%',
-                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
+              className="flex"
             >
-              <Loader2 size={24} style={{ animation: 'spin 1s linear infinite',
-                  color: 'var(--muted-foreground)' }}
+              <Loader2
+                size={24}
+                style={{ animation: 'spin 1s linear infinite' }}
+                className="text-muted-foreground"
               />
             </div>
           ) : cityImageUrl && !cityImageError ? (
@@ -318,10 +293,10 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
               style={{
                 width: '100%',
                 height: '100%',
-                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
+              className="flex"
             >
               <ImageIcon size={32} className="text-muted-foreground" />
             </div>
@@ -343,7 +318,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
             ...(type === 'country' || type === 'city' ? { fontSize: '0.875rem' } : {}),
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ alignItems: 'center' }} className="flex gap-2">
             {type !== 'country' && type !== 'city' && getIcon()}
             <span
               style={
@@ -379,5 +354,19 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
   }
 
   // For continents or items without detail pages, use onClick
-  return <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}>{cardContent}</div>;
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+    >
+      {cardContent}
+    </div>
+  );
 };

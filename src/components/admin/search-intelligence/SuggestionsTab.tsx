@@ -3,10 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import {
-  Alert,
-  AlertDescription,
-} from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -16,13 +13,7 @@ import {
 } from '@/components/ui/select';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 
-type SuggestionStatus =
-  | 'pending'
-  | 'approved'
-  | 'applied'
-  | 'rejected'
-  | 'superseded'
-  | 'expired';
+type SuggestionStatus = 'pending' | 'approved' | 'applied' | 'rejected' | 'superseded' | 'expired';
 
 type SuggestionType =
   | 'tag'
@@ -80,14 +71,8 @@ function PrettyJson({ value, label }: { value: unknown; label: string }) {
     <div>
       <span className="text-xs text-muted-foreground">{label}</span>
       <pre
-        style={{
-          fontSize: 12,
-          margin: 0,
-          padding: 8,
-          background: 'hsl(var(--foreground) / 0.04)',
-          maxHeight: 200,
-          overflow: 'auto',
-        }}
+        style={{ fontSize: 12, background: 'hsl(var(--foreground) / 0.04)', maxHeight: 200 }}
+        className="m-0 p-2 overflow-auto"
       >
         {JSON.stringify(value, null, 2)}
       </pre>
@@ -124,15 +109,11 @@ function TranslationDiff({ s }: { s: AiSuggestion }) {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <span className="text-xs text-muted-foreground">Source</span>
-          <p className="text-sm whitespace-pre-wrap">
-            {sourceText || <em>(empty)</em>}
-          </p>
+          <p className="text-sm whitespace-pre-wrap">{sourceText || <em>(empty)</em>}</p>
         </div>
         <div className="flex-1">
           <span className="text-xs text-muted-foreground">{targetLocale}</span>
-          <p className="text-sm whitespace-pre-wrap">
-            {proposedText || <em>(empty)</em>}
-          </p>
+          <p className="text-sm whitespace-pre-wrap">{proposedText || <em>(empty)</em>}</p>
         </div>
       </div>
     </div>
@@ -147,7 +128,11 @@ export function SuggestionsTab() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
-  const [editing, setEditing] = useState<{ id: string; draft: string; parseError: string | null } | null>(null);
+  const [editing, setEditing] = useState<{
+    id: string;
+    draft: string;
+    parseError: string | null;
+  } | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -170,22 +155,19 @@ export function SuggestionsTab() {
     refresh();
   }, [refresh]);
 
-  const setStatus = async (
-    id: string,
-    status: SuggestionStatus,
-    proposedOverride?: unknown,
-  ) => {
+  const setStatus = async (id: string, status: SuggestionStatus, proposedOverride?: unknown) => {
     setBusy(id);
     setInfo(null);
     const body: Record<string, unknown> = { status };
     if (proposedOverride !== undefined) body.proposed_value = proposedOverride;
-    const res = await callSearchIntelligence<{ data: AiSuggestion; auto_applied?: boolean; apply_error?: string }>(
-      `suggestions/${id}`,
-      {
-        method: 'PATCH',
-        body,
-      },
-    );
+    const res = await callSearchIntelligence<{
+      data: AiSuggestion;
+      auto_applied?: boolean;
+      apply_error?: string;
+    }>(`suggestions/${id}`, {
+      method: 'PATCH',
+      body,
+    });
     if (!res.success) {
       setError(res.error);
     } else {
@@ -217,14 +199,16 @@ export function SuggestionsTab() {
           <p className="text-sm text-muted-foreground">
             Producers (auto-tag-content, automation taggers, translate-i18n-batch, future
             Claude-driven suggesters) write to <code>ai_suggestions</code>. Approving here
-            auto-applies for <code>tag</code>, <code>synonym</code>,{' '}
-            <code>cluster_membership</code>, and <code>translation</code>; other types are
-            flagged for manual application.
+            auto-applies for <code>tag</code>, <code>synonym</code>, <code>cluster_membership</code>
+            , and <code>translation</code>; other types are flagged for manual application.
           </p>
           <div className="flex flex-col md:flex-row gap-4 mt-4">
             <div className="flex flex-col gap-1 min-w-[140px]">
               <Label htmlFor="sg-status">Status</Label>
-              <Select value={statusFilter || '__all__'} onValueChange={(v) => setStatusFilter(v === '__all__' ? '' : v)}>
+              <Select
+                value={statusFilter || '__all__'}
+                onValueChange={(v) => setStatusFilter(v === '__all__' ? '' : v)}
+              >
                 <SelectTrigger id="sg-status">
                   <SelectValue />
                 </SelectTrigger>
@@ -240,7 +224,10 @@ export function SuggestionsTab() {
             </div>
             <div className="flex flex-col gap-1 min-w-[200px]">
               <Label htmlFor="sg-type">Type</Label>
-              <Select value={typeFilter || '__all__'} onValueChange={(v) => setTypeFilter(v === '__all__' ? '' : v)}>
+              <Select
+                value={typeFilter || '__all__'}
+                onValueChange={(v) => setTypeFilter(v === '__all__' ? '' : v)}
+              >
                 <SelectTrigger id="sg-type">
                   <SelectValue />
                 </SelectTrigger>
@@ -259,7 +246,13 @@ export function SuggestionsTab() {
                 </SelectContent>
               </Select>
             </div>
-            <Button size="sm" variant="outline" onClick={refresh} disabled={loading} className="self-end">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={refresh}
+              disabled={loading}
+              className="self-end"
+            >
               Refresh
             </Button>
           </div>
@@ -341,10 +334,10 @@ export function SuggestionsTab() {
                                 width: '100%',
                                 minHeight: 100,
                                 fontSize: 14,
-                                padding: 8,
                                 background: 'hsl(var(--foreground) / 0.04)',
                                 border: '1px solid hsl(var(--foreground) / 0.2)',
                               }}
+                              className="p-2"
                               value={editing.draft}
                               onChange={(e) =>
                                 setEditing({ id: s.id, draft: e.target.value, parseError: null })
@@ -362,10 +355,10 @@ export function SuggestionsTab() {
                                 minHeight: 140,
                                 fontFamily: 'monospace',
                                 fontSize: 12,
-                                padding: 8,
                                 background: 'hsl(var(--foreground) / 0.04)',
                                 border: '1px solid hsl(var(--foreground) / 0.2)',
                               }}
+                              className="p-2"
                               value={editing.draft}
                               onChange={(e) => {
                                 const val = e.target.value;

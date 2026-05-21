@@ -313,7 +313,8 @@ export const UmamiAnalyticsDashboard = () => {
                   variant="outline"
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+                  style={{ alignItems: 'center' }}
+                  className="flex gap-2"
                 >
                   <RefreshCw
                     style={{
@@ -559,7 +560,12 @@ export const UmamiAnalyticsDashboard = () => {
                   <XAxis dataKey="hour" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="views" fill="hsl(var(--primary))" animationDuration={800} animationEasing="ease-out" />
+                  <Bar
+                    dataKey="views"
+                    fill="hsl(var(--primary))"
+                    animationDuration={800}
+                    animationEasing="ease-out"
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -737,8 +743,7 @@ export const UmamiAnalyticsDashboard = () => {
                   {stats.topDevices.map((device, _index) => (
                     <div key={device.device} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
-                        <Smartphone size={16} className="text-muted-foreground"
-                        />
+                        <Smartphone size={16} className="text-muted-foreground" />
                         <span className="text-sm">{device.device}</span>
                       </div>
                       <div className="text-right">
@@ -762,8 +767,7 @@ export const UmamiAnalyticsDashboard = () => {
                   {stats.topScreens.map((screen, _index) => (
                     <div key={screen.screen} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
-                        <Monitor size={16} className="text-muted-foreground"
-                        />
+                        <Monitor size={16} className="text-muted-foreground" />
                         <span className="text-sm font-mono">{screen.screen}</span>
                       </div>
                       <div className="text-right">
@@ -835,10 +839,7 @@ export const UmamiAnalyticsDashboard = () => {
               <CardContent>
                 <div className="flex flex-col gap-3 max-h-80 overflow-y-auto">
                   {stats.recentEvents.slice(0, 10).map((event) => (
-                    <div
-                      key={event.event_id}
-                      className="flex items-center justify-between text-sm"
-                    >
+                    <div key={event.event_id} className="flex items-center justify-between text-sm">
                       <div className="flex-1 min-w-0">
                         <p className="overflow-hidden text-ellipsis whitespace-nowrap font-mono">
                           {event.url_path}

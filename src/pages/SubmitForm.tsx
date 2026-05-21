@@ -173,8 +173,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       <div className="mx-auto py-12 px-4">
         <Card>
           <CardContent>
-            <CheckCircle size={48} style={{ margin: '0 auto 16px', color: 'hsl(var(--foreground))' }}
-            />
+            <CheckCircle size={48} style={{ margin: '0 auto 16px' }} className="text-foreground" />
             <h5 className="text-xl font-semibold mb-2">Thank you!</h5>
             <p className="text-muted-foreground mb-6">
               Your {config.label.toLowerCase()} has been submitted and will be reviewed by our team.
@@ -284,7 +283,10 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                     ? { backgroundColor: config.color, color: 'hsl(var(--background))' }
                     : i < currentStep
                       ? { backgroundColor: `${config.color}25`, color: config.color }
-                      : { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }),
+                      : {
+                          backgroundColor: 'hsl(var(--muted))',
+                          color: 'hsl(var(--muted-foreground))',
+                        }),
                 }}
               >
                 {i < currentStep ? '✓' : i + 1}
@@ -293,7 +295,9 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
               {/* Step label (hidden on mobile) */}
               <span
                 className={`text-xs whitespace-nowrap hidden sm:block ${
-                  i === currentStep ? 'font-semibold text-foreground' : 'font-normal text-muted-foreground'
+                  i === currentStep
+                    ? 'font-semibold text-foreground'
+                    : 'font-normal text-muted-foreground'
                 }`}
               >
                 {step.label}
@@ -454,7 +458,11 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 disabled={isSubmitting}
                 aria-describedby={!user && isLastStep ? 'submit-auth-hint' : undefined}
                 className="flex items-center gap-1.5"
-                style={isLastStep ? { backgroundColor: config.color, color: 'hsl(var(--background))' } : undefined}
+                style={
+                  isLastStep
+                    ? { backgroundColor: config.color, color: 'hsl(var(--background))' }
+                    : undefined
+                }
               >
                 {isSubmitting ? (
                   'Submitting...'

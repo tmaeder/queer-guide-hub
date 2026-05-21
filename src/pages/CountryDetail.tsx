@@ -133,9 +133,7 @@ export default function CountryDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center flex flex-col gap-4">
           <div className="animate-pulse">
-            <Globe size={48} style={{ margin: '0 auto',
-                color: 'hsl(var(--muted-foreground))' }}
-            />
+            <Globe size={48} style={{ margin: '0 auto' }} className="text-muted-foreground" />
           </div>
           <p className="text-muted-foreground">Loading country details...</p>
         </div>
@@ -148,9 +146,7 @@ export default function CountryDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center flex flex-col gap-4">
           <h4 className="text-2xl font-bold">Country not found</h4>
-          <p className="text-muted-foreground">
-            The country you're looking for doesn't exist.
-          </p>
+          <p className="text-muted-foreground">The country you're looking for doesn't exist.</p>
           <Button asChild>
             <LocalizedLink to="/users">
               <ArrowLeft size={16} className="mr-2" />
@@ -162,21 +158,14 @@ export default function CountryDetail() {
     );
   }
 
-  const breadcrumbs = [
-    { label: 'Directory', href: '/users' },
-    { label: country.name },
-  ];
+  const breadcrumbs = [{ label: 'Directory', href: '/users' }, { label: country.name }];
 
   const tabs: EntityDetailTab[] = COUNTRY_TAB_DEFS.map((def) => {
     let content: React.ReactNode = null;
     switch (def.id) {
       case 'overview':
         content = (
-          <CountryOverviewTab
-            country={country}
-            worldBankData={worldBankData}
-            sdgData={sdgData}
-          />
+          <CountryOverviewTab country={country} worldBankData={worldBankData} sdgData={sdgData} />
         );
         break;
       case 'rights':

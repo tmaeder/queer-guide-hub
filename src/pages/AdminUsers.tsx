@@ -67,35 +67,27 @@ export default function AdminUsers() {
             info.getValue() || row.first_name || row.last_name || row.email || 'Anonymous';
           return (
             <div className="flex items-center gap-3">
-              <Avatar style={{ width: 32, height: 32, flexShrink: 0 }}>
+              <Avatar style={{ width: 32, height: 32 }} className="shrink-0">
                 <AvatarImage src={row.avatar_url ?? undefined} alt={name} />
-                <AvatarFallback className="text-xs">
-                  {name.charAt(0).toUpperCase()}
-                </AvatarFallback>
+                <AvatarFallback className="text-xs">{name.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div style={{ minWidth: 0 }}>
                 <div
-                  style={{
-                    fontWeight: 500,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
+                  style={{ textOverflow: 'ellipsis' }}
+                  className="font-medium whitespace-nowrap overflow-hidden"
                 >
                   {name}
                 </div>
                 {row.email && (
                   <span
-                    className="block text-xs text-muted-foreground"
-                    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                    className="block text-xs text-muted-foreground whitespace-nowrap overflow-hidden"
+                    style={{ textOverflow: 'ellipsis' }}
                   >
                     {row.email}
                   </span>
                 )}
                 {row.pronouns && (
-                  <span className="text-xs text-muted-foreground">
-                    {row.pronouns}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{row.pronouns}</span>
                 )}
               </div>
             </div>
@@ -118,11 +110,7 @@ export default function AdminUsers() {
         cell: (info) => {
           const roles = info.row.original._roles;
           if (!roles || roles.length === 0)
-            return (
-              <span className="text-xs text-muted-foreground">
-                user
-              </span>
-            );
+            return <span className="text-xs text-muted-foreground">user</span>;
           const primary = roles.includes('admin') ? 'admin' : roles[0];
           return (
             <Badge
@@ -180,12 +168,8 @@ export default function AdminUsers() {
             <div className="flex items-center gap-1">
               <MapPin size={12} className="shrink-0" />
               <span
-                style={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: 150,
-                }}
+                style={{ textOverflow: 'ellipsis', maxWidth: 150 }}
+                className="whitespace-nowrap overflow-hidden"
               >
                 {val}
               </span>

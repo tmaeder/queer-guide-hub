@@ -23,8 +23,8 @@ interface AutoTagPanelProps {
 /** Confidence → color mapping */
 function confidenceColor(c: number): string {
   if (c >= 0.85) return 'hsl(var(--foreground))'; // green
-  if (c >= 0.6) return 'hsl(var(--foreground) / 0.55)';  // amber
-  return 'hsl(var(--destructive))';                 // red
+  if (c >= 0.6) return 'hsl(var(--foreground) / 0.55)'; // amber
+  return 'hsl(var(--destructive))'; // red
 }
 
 function confidenceLabel(c: number): string {
@@ -42,17 +42,13 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
     setSelected(new Set());
     const result = await suggestTags(contentType, contentId);
     if (result?.tags) {
-      const highConf = new Set(
-        result.tags
-          .filter(t => t.confidence >= 0.85)
-          .map(t => t.name)
-      );
+      const highConf = new Set(result.tags.filter((t) => t.confidence >= 0.85).map((t) => t.name));
       setSelected(highConf);
     }
   }, [contentType, contentId, suggestTags]);
 
   const handleToggle = (tagName: string) => {
-    setSelected(prev => {
+    setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(tagName)) {
         next.delete(tagName);
@@ -65,7 +61,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
 
   const handleSelectAll = () => {
     if (suggestions?.tags) {
-      setSelected(new Set(suggestions.tags.map(t => t.name)));
+      setSelected(new Set(suggestions.tags.map((t) => t.name)));
     }
   };
 
@@ -123,7 +119,10 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
                     checked={selected.has(tag.name)}
                     onCheckedChange={() => handleToggle(tag.name)}
                   />
-                  <label htmlFor={`autotag-${tag.name}`} className="flex items-center gap-1 flex-wrap flex-1 m-0 cursor-pointer">
+                  <label
+                    htmlFor={`autotag-${tag.name}`}
+                    className="flex items-center gap-1 flex-wrap flex-1 m-0 cursor-pointer"
+                  >
                     <span className="text-13">{tag.name}</span>
                     <span
                       className="text-xs2 font-semibold leading-none"
@@ -134,7 +133,8 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
                     {tag.is_new && (
                       <Badge
                         variant="outline"
-                        style={{ fontSize: '0.625rem', padding: '0 4px', lineHeight: '1.25rem' }}
+                        style={{ padding: '0 4px', lineHeight: '1.25rem' }}
+                        className="text-2xs"
                       >
                         NEW
                       </Badge>
@@ -171,9 +171,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 py-2">
               <Check size={14} className="text-foreground" />
-              <span className="text-xs font-medium text-foreground">
-                Tags applied successfully
-              </span>
+              <span className="text-xs font-medium text-foreground">Tags applied successfully</span>
             </div>
             <Button
               variant="outline"

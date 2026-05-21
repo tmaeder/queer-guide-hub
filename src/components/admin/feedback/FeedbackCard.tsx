@@ -14,7 +14,11 @@ import type { AdminProfile, FeedbackSubmission, SubmissionStoryRef } from './typ
 
 const HANDOFF_CHIP: Record<string, { label: string; color: string; bg: string }> = {
   sent: { label: 'Sent', color: 'hsl(var(--background))', bg: 'hsl(var(--muted-foreground))' },
-  in_progress: { label: 'Working', color: 'hsl(var(--background))', bg: 'hsl(var(--foreground) / 0.55)' },
+  in_progress: {
+    label: 'Working',
+    color: 'hsl(var(--background))',
+    bg: 'hsl(var(--foreground) / 0.55)',
+  },
   resolved: { label: 'Resolved', color: 'hsl(var(--background))', bg: 'hsl(var(--foreground))' },
   failed: { label: 'Failed', color: 'hsl(var(--background))', bg: 'hsl(var(--destructive))' },
 };
@@ -51,8 +55,9 @@ export function FeedbackCard({
   onClick,
   onToggleSelect,
 }: Props) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: item.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
 
   const cat = feedbackCategoryMap[item.data.category] || feedbackCategoryMap.idea;
   const CatIcon = cat.icon;
@@ -68,8 +73,7 @@ export function FeedbackCard({
 
   const ageMs = Date.now() - new Date(item.submitted_at).getTime();
   const ageDays = ageMs / 86400_000;
-  const slaOpen =
-    item.feedback_status !== 'done' && !item.is_spam && !item.duplicate_of;
+  const slaOpen = item.feedback_status !== 'done' && !item.is_spam && !item.duplicate_of;
   const slaColor =
     slaOpen && ageDays >= 14
       ? 'hsl(var(--destructive))'
@@ -126,7 +130,6 @@ export function FeedbackCard({
           <span
             aria-hidden
             style={{
-              position: 'absolute',
               left: 0,
               top: 0,
               bottom: 0,
@@ -135,6 +138,7 @@ export function FeedbackCard({
               borderTopLeftRadius: 'inherit',
               borderBottomLeftRadius: 'inherit',
             }}
+            className="absolute"
           />
         )}
         {isNew && (
@@ -162,13 +166,8 @@ export function FeedbackCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <CatIcon
-                style={{
-                  width: 12,
-                  height: 12,
-                  color: cat.color,
-                  flexShrink: 0,
-                  marginTop: 2,
-                }}
+                style={{ width: 12, height: 12, color: cat.color }}
+                className="shrink-0 mt-0.5"
               />
             </TooltipTrigger>
             <TooltipContent>{cat.label}</TooltipContent>
@@ -189,18 +188,15 @@ export function FeedbackCard({
                 <TooltipTrigger asChild>
                   <span
                     style={{
-                      display: 'inline-block',
-                      marginRight: 4,
                       paddingLeft: 3,
                       paddingRight: 3,
                       borderRadius: 'var(--radius-badge)',
                       background: prio.color,
-                      color: 'hsl(var(--background))',
                       fontSize: '0.55rem',
-                      fontWeight: 700,
                       letterSpacing: 0.3,
                       verticalAlign: '2px',
                     }}
+                    className="inline-block mr-1 text-background font-bold"
                   >
                     {prio.short}
                   </span>
@@ -229,10 +225,7 @@ export function FeedbackCard({
             )}
             style={{ marginTop: 1 }}
           >
-            <Checkbox
-              checked={selected}
-              className="h-3.5 w-3.5"
-            />
+            <Checkbox checked={selected} className="h-3.5 w-3.5" />
           </div>
         </div>
 
@@ -244,12 +237,8 @@ export function FeedbackCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-flex items-center flex-shrink-0"
-                style={{
-                  color: slaColor ?? 'inherit',
-                  fontWeight: slaColor ? 700 : 400,
-                  gap: 2,
-                }}
+                className="inline-flex items-center flex-shrink-0 gap-0.5"
+                style={{ color: slaColor ?? 'inherit', fontWeight: slaColor ? 700 : 400 }}
               >
                 {slaColor && <Clock size={10} />}
                 {timeAgo(item.submitted_at)}
@@ -266,26 +255,19 @@ export function FeedbackCard({
             <Tooltip>
               <TooltipTrigger asChild>
                 <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
-                    background: handoffChip.bg,
-                    flexShrink: 0,
-                  }}
+                  style={{ width: 6, height: 6, borderRadius: '50%', background: handoffChip.bg }}
+                  className="shrink-0"
                 />
               </TooltipTrigger>
               <TooltipContent>
-                {handoff
-                  ? `${handoffChip.label} — ${handoff.target} ${timeAgo(handoff.at)}`
-                  : ''}
+                {handoff ? `${handoffChip.label} — ${handoff.target} ${timeAgo(handoff.at)}` : ''}
               </TooltipContent>
             </Tooltip>
           ) : (
             isForwarded && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Github size={10} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Github size={10} className="text-muted-foreground shrink-0" />
                 </TooltipTrigger>
                 <TooltipContent>
                   {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}
@@ -297,7 +279,7 @@ export function FeedbackCard({
           {hasScreenshot && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Camera style={{ width: 10, height: 10, flexShrink: 0 }} />
+                <Camera style={{ width: 10, height: 10 }} className="shrink-0" />
               </TooltipTrigger>
               <TooltipContent>Screenshot attached</TooltipContent>
             </Tooltip>
@@ -307,8 +289,8 @@ export function FeedbackCard({
             <Tooltip>
               <TooltipTrigger asChild>
                 <span
-                  className="inline-flex items-center flex-shrink-0"
-                  style={{ gap: 1, color: 'hsl(var(--destructive))' }}
+                  className="inline-flex items-center flex-shrink-0 text-destructive"
+                  style={{ gap: 1 }}
                 >
                   <AlertTriangle size={10} />
                   {errorCount}
@@ -370,10 +352,8 @@ export function FeedbackCard({
             <Tooltip>
               <TooltipTrigger asChild>
                 <span
-                  className="bg-muted text-muted-foreground flex-shrink-0 overflow-hidden whitespace-nowrap"
+                  className="bg-muted text-muted-foreground flex-shrink-0 overflow-hidden whitespace-nowrap pl-1 pr-1"
                   style={{
-                    paddingLeft: 4,
-                    paddingRight: 4,
                     paddingTop: 1,
                     paddingBottom: 1,
                     fontSize: '0.55rem',
@@ -392,17 +372,12 @@ export function FeedbackCard({
           {voteCount > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span
-                  className="inline-flex items-center flex-shrink-0"
-                  style={{ gap: 1 }}
-                >
+                <span className="inline-flex items-center flex-shrink-0" style={{ gap: 1 }}>
                   <ChevronUp style={{ width: 10, height: 10 }} />
                   {voteCount}
                 </span>
               </TooltipTrigger>
-              <TooltipContent>
-                {`${voteCount} vote${voteCount === 1 ? '' : 's'}`}
-              </TooltipContent>
+              <TooltipContent>{`${voteCount} vote${voteCount === 1 ? '' : 's'}`}</TooltipContent>
             </Tooltip>
           )}
 
@@ -418,9 +393,7 @@ export function FeedbackCard({
                   </AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
-              <TooltipContent>
-                {`Assigned to ${assignee.display_name || 'admin'}`}
-              </TooltipContent>
+              <TooltipContent>{`Assigned to ${assignee.display_name || 'admin'}`}</TooltipContent>
             </Tooltip>
           )}
         </div>
@@ -481,26 +454,19 @@ export function FeedbackCard({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      background: handoffChip.bg,
-                      flexShrink: 0,
-                    }}
+                    style={{ width: 6, height: 6, borderRadius: '50%', background: handoffChip.bg }}
+                    className="shrink-0"
                   />
                 </TooltipTrigger>
                 <TooltipContent>
-                  {handoff
-                    ? `${handoffChip.label} — ${handoff.target} ${timeAgo(handoff.at)}`
-                    : ''}
+                  {handoff ? `${handoffChip.label} — ${handoff.target} ${timeAgo(handoff.at)}` : ''}
                 </TooltipContent>
               </Tooltip>
             ) : (
               isForwarded && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Github size={10} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                    <Github size={10} className="text-muted-foreground shrink-0" />
                   </TooltipTrigger>
                   <TooltipContent>
                     {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}
@@ -513,8 +479,8 @@ export function FeedbackCard({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span
-                    className="inline-flex items-center flex-shrink-0"
-                    style={{ gap: 1, color: 'hsl(var(--destructive))' }}
+                    className="inline-flex items-center flex-shrink-0 text-destructive"
+                    style={{ gap: 1 }}
                   >
                     <AlertTriangle size={10} />
                     {errorCount}

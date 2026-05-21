@@ -89,15 +89,14 @@ export function DataTableToolbar({
           <div className="relative max-w-[320px]" style={{ flex: '1 1 200px' }}>
             <Search
               style={{
-                position: 'absolute',
                 left: 10,
                 top: '50%',
                 transform: 'translateY(-50%)',
                 height: 16,
                 width: 16,
-                color: 'var(--muted-foreground)',
                 pointerEvents: 'none',
               }}
+              className="absolute text-muted-foreground"
             />
             <Input
               placeholder="Search..."
@@ -135,7 +134,7 @@ export function DataTableToolbar({
           <Button variant="ghost" size="sm" onClick={onClearFilters}>
             <RotateCcw size={14} className="mr-1" />
             Clear
-            <Badge variant="secondary" style={{ marginLeft: 4 }}>
+            <Badge variant="secondary" className="ml-1">
               {activeFilterCount}
             </Badge>
           </Button>
@@ -208,7 +207,7 @@ export function DataTableToolbar({
                 <Layers size={14} className="mr-1" />
                 Group
                 {grouping.length > 0 && (
-                  <Badge variant="secondary" style={{ marginLeft: 4 }}>
+                  <Badge variant="secondary" className="ml-1">
                     {groupableColumns.find((c) => c.id === grouping[0])?.label ?? grouping[0]}
                   </Badge>
                 )}

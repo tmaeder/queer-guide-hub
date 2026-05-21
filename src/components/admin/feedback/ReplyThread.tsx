@@ -41,7 +41,9 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
               <div
                 key={`${r.at}-${i}`}
                 className="p-2 border-l-[3px] bg-muted rounded"
-                style={{ borderColor: isGithub ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))' }}
+                style={{
+                  borderColor: isGithub ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
+                }}
               >
                 <div className="flex items-center gap-1 mb-1">
                   <Avatar className="w-[18px] h-[18px]">
@@ -97,7 +99,8 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                     <a
                       href={r.github_url}
                       target="_blank"
-                      rel="noopener noreferrer" className="inline-flex"
+                      rel="noopener noreferrer"
+                      className="inline-flex"
                       aria-label="Open on GitHub"
                     >
                       <Github size={11} />
@@ -133,7 +136,8 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
         <Button
           onClick={handleSend}
           disabled={!body.trim() || isSending}
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ alignItems: 'center' }}
+          className="flex gap-1.5"
         >
           <Send size={14} />
           {isSending ? 'Sending…' : canEmail && notify ? 'Reply' : 'Save comment'}

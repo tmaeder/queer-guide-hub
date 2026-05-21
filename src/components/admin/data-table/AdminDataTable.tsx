@@ -269,7 +269,10 @@ export function AdminDataTable<TData extends { id: string }>({
                   onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                 >
                   {enableSelection && (
-                    <TableCell style={{ width: 44, padding: '0 8px' }} onClick={(e) => e.stopPropagation()}>
+                    <TableCell
+                      style={{ width: 44, padding: '0 8px' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Checkbox
                         aria-label="Select row"
                         checked={isSelected}
@@ -283,10 +286,18 @@ export function AdminDataTable<TData extends { id: string }>({
                     </TableCell>
                   ))}
                   {rowActions && rowActions.length > 0 && (
-                    <TableCell style={{ width: 48, padding: '0 8px' }} onClick={(e) => e.stopPropagation()}>
+                    <TableCell
+                      style={{ width: 48, padding: '0 8px' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label="Row actions" style={{ height: 28, width: 28 }}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Row actions"
+                            style={{ height: 28, width: 28 }}
+                          >
                             <MoreVertical size={14} />
                           </Button>
                         </DropdownMenuTrigger>
@@ -304,7 +315,7 @@ export function AdminDataTable<TData extends { id: string }>({
                                 }
                               >
                                 {action.icon && (
-                                  <action.icon style={{ height: 14, width: 14, marginRight: 8 }} />
+                                  <action.icon style={{ height: 14, width: 14 }} className="mr-2" />
                                 )}
                                 {action.label}
                               </DropdownMenuItem>

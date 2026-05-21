@@ -6,10 +6,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Check, ExternalLink, Camera, Loader2 } from 'lucide-react';
-import {
-  useExternalImageSearch,
-  type ExternalImage,
-} from '@/hooks/useExternalImageSearch';
+import { useExternalImageSearch, type ExternalImage } from '@/hooks/useExternalImageSearch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -118,9 +115,7 @@ export default function ExternalImageSearch({
         />
         <Input
           placeholder={
-            activeTab === 'stock'
-              ? 'Search Pexels & Unsplash...'
-              : 'Search Wikimedia Commons...'
+            activeTab === 'stock' ? 'Search Pexels & Unsplash...' : 'Search Wikimedia Commons...'
           }
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -168,9 +163,7 @@ export default function ExternalImageSearch({
         {!query.trim() && !loading && (
           <div className="text-center py-12">
             <Search size={48} className="text-muted-foreground" style={{ margin: '0 auto 8px' }} />
-            <p className="text-sm text-muted-foreground">
-              Enter a search term to find images
-            </p>
+            <p className="text-sm text-muted-foreground">Enter a search term to find images</p>
           </div>
         )}
 
@@ -205,12 +198,8 @@ export default function ExternalImageSearch({
                       src={image.thumbnail}
                       alt={image.alt}
                       loading="lazy"
-                      style={{
-                        width: '100%',
-                        height: 140,
-                        objectFit: 'cover',
-                        display: 'block',
-                      }}
+                      style={{ width: '100%', height: 140, objectFit: 'cover' }}
+                      className="block"
                     />
 
                     {/* Selected checkmark */}
@@ -223,7 +212,10 @@ export default function ExternalImageSearch({
                     {/* Source badge */}
                     <span
                       className="absolute top-1.5 left-1.5 h-5 px-1.5 text-2xs font-semibold text-white rounded capitalize flex items-center"
-                      style={{ backgroundColor: SOURCE_COLORS[image.source] || 'hsl(var(--muted-foreground))' }}
+                      style={{
+                        backgroundColor:
+                          SOURCE_COLORS[image.source] || 'hsl(var(--muted-foreground))',
+                      }}
                     >
                       {image.source === 'wikipedia' ? 'Wiki' : image.source}
                     </span>
@@ -232,9 +224,7 @@ export default function ExternalImageSearch({
                     <div className="p-1.5">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <p className="text-xs2 font-medium block truncate">
-                            {image.alt}
-                          </p>
+                          <p className="text-xs2 font-medium block truncate">{image.alt}</p>
                         </TooltipTrigger>
                         <TooltipContent>{image.alt}</TooltipContent>
                       </Tooltip>
@@ -275,9 +265,7 @@ export default function ExternalImageSearch({
               className="w-10 h-10 object-cover rounded-badge"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold block truncate">
-                {selectedImage.photographer}
-              </p>
+              <p className="text-xs font-semibold block truncate">{selectedImage.photographer}</p>
               <div className="flex flex-row gap-1 items-center">
                 {selectedImage.license && (
                   <Badge variant="outline" className="h-[18px] text-2xs">
@@ -290,7 +278,8 @@ export default function ExternalImageSearch({
                       <a
                         href={selectedImage.source_page_url}
                         target="_blank"
-                        rel="noopener noreferrer" className="flex"
+                        rel="noopener noreferrer"
+                        className="flex"
                       >
                         <ExternalLink size={12} className="text-muted-foreground" />
                       </a>

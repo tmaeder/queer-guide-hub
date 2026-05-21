@@ -266,10 +266,7 @@ export default function HelpHotlines() {
     return hotlines.filter((h) => {
       if (countryFilter !== 'ALL' && h.country !== countryFilter) return false;
       if (topicFilter !== 'ALL' && !h.topics.includes(topicFilter)) return false;
-      if (
-        intersectionFilter !== 'ALL' &&
-        !(h.intersections ?? []).includes(intersectionFilter)
-      )
+      if (intersectionFilter !== 'ALL' && !(h.intersections ?? []).includes(intersectionFilter))
         return false;
       if (q) {
         const haystack = `${h.name} ${h.description} ${h.languages.join(' ')}`.toLowerCase();
@@ -310,9 +307,7 @@ export default function HelpHotlines() {
       'help.meta_description',
       'Free, anonymous LGBTQIA+ crisis hotlines and counselling services worldwide. You are not alone.',
     ),
-    canonicalPath: params.country
-      ? `/help/${params.country.toLowerCase()}`
-      : '/help',
+    canonicalPath: params.country ? `/help/${params.country.toLowerCase()}` : '/help',
     jsonLd: buildEmergencyJsonLd(countryFilter, heroHotline),
   });
 
@@ -352,11 +347,11 @@ export default function HelpHotlines() {
 
       <PageHeader
         title={
-          page?.title || t('help.title', ready ? 'Help & Crisis Hotlines' : 'Help & Crisis Hotlines')
+          page?.title ||
+          t('help.title', ready ? 'Help & Crisis Hotlines' : 'Help & Crisis Hotlines')
         }
         subtitle={
-          page?.subtitle ||
-          t('help.subtitle', 'You are not alone. Find immediate support here.')
+          page?.subtitle || t('help.subtitle', 'You are not alone. Find immediate support here.')
         }
       />
 
@@ -426,13 +421,13 @@ export default function HelpHotlines() {
               <Search
                 size={16}
                 style={{
-                  position: 'absolute',
                   right: 12,
                   top: '50%',
                   transform: 'translateY(-50%)',
                   opacity: 0.4,
                   pointerEvents: 'none',
                 }}
+                className="absolute"
               />
             </div>
 
@@ -467,9 +462,7 @@ export default function HelpHotlines() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">
-                      {t('help.filter_topic_all', 'All topics')}
-                    </SelectItem>
+                    <SelectItem value="ALL">{t('help.filter_topic_all', 'All topics')}</SelectItem>
                     {availableTopics.map((tp) => (
                       <SelectItem key={tp} value={tp}>
                         {t(`help.topic.${tp}`, tp)}
@@ -484,10 +477,7 @@ export default function HelpHotlines() {
                   <Label className="mb-1 block text-xs font-semibold">
                     {t('help.filter_intersection', 'Population')}
                   </Label>
-                  <Select
-                    value={intersectionFilter}
-                    onValueChange={setIntersectionFilter}
-                  >
+                  <Select value={intersectionFilter} onValueChange={setIntersectionFilter}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -697,11 +687,8 @@ function HotlineCard({
           {h247 && (
             <Badge
               variant="default"
-              className="text-xs"
-              style={{
-                backgroundColor: 'hsl(var(--foreground))',
-                color: 'hsl(var(--background))',
-              }}
+              className="text-xs text-background"
+              style={{ backgroundColor: 'hsl(var(--foreground))' }}
             >
               <Zap size={10} className="mr-0.5" />
               {t('help.badge_24_7', '24/7')}
@@ -794,12 +781,7 @@ function HotlineCard({
             );
           })}
           {hotline.url && (
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              aria-label={`${hotline.name} — Website`}
-            >
+            <Button asChild variant="outline" size="lg" aria-label={`${hotline.name} — Website`}>
               <a href={hotline.url} target="_blank" rel="noopener noreferrer">
                 <ExternalLink size={18} />
               </a>

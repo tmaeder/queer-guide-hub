@@ -75,14 +75,8 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
       <div className="flex flex-col gap-3">
         <div className="relative">
           <Search
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: 12,
-              width: 16,
-              height: 16,
-              color: 'var(--muted-foreground)',
-            }}
+            style={{ left: 12, top: 12, width: 16, height: 16 }}
+            className="absolute text-muted-foreground"
           />
           <Input
             placeholder="Search platforms..."
@@ -96,12 +90,15 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
             <button
               key={category}
               type="button"
-              className="px-3 py-1 text-sm font-medium transition-colors"
+              className="px-3 py-1 text-sm font-medium transition-colors cursor-pointer"
               style={{
-                backgroundColor: selectedCategory === category ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                color: selectedCategory === category ? 'hsl(var(--primary-foreground))' : 'hsl(var(--secondary-foreground))',
+                backgroundColor:
+                  selectedCategory === category ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
+                color:
+                  selectedCategory === category
+                    ? 'hsl(var(--primary-foreground))'
+                    : 'hsl(var(--secondary-foreground))',
                 border: 'none',
-                cursor: 'pointer',
               }}
               onClick={() => setSelectedCategory(category)}
             >

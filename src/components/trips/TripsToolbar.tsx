@@ -48,9 +48,7 @@ export function TripsToolbar({
     <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-6">
       {/* Search */}
       <div className="flex items-center gap-2 bg-muted rounded-element px-3 h-10 min-w-full md:min-w-[260px] md:flex-none transition-colors focus-within:bg-accent">
-        <Search size={16} style={{ opacity: 0.6, flexShrink: 0 }}
-          aria-hidden="true"
-        />
+        <Search size={16} style={{ opacity: 0.6 }} className="shrink-0" aria-hidden="true" />
         <input
           type="text"
           value={search}
@@ -111,14 +109,8 @@ export function TripsToolbar({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {SORT_KEYS.map((key) => (
-              <DropdownMenuItem
-                key={key}
-                onClick={() => onSortChange(key)}
-                className="gap-2"
-              >
-                <span className="w-4 inline-flex">
-                  {key === sortKey && <Check size={16} />}
-                </span>
+              <DropdownMenuItem key={key} onClick={() => onSortChange(key)} className="gap-2">
+                <span className="w-4 inline-flex">{key === sortKey && <Check size={16} />}</span>
                 {t(`trips.toolbar.sort.${key}`)}
               </DropdownMenuItem>
             ))}

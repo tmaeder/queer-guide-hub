@@ -6,12 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import {
   Copy,
   Bot,
@@ -25,11 +20,7 @@ import {
 } from 'lucide-react';
 import { Github as GithubIcon } from '@/components/icons/brand';
 import { timeAgo } from '@/utils/timezone';
-import type {
-  FeedbackHandoff,
-  HandoffStatus,
-  HandoffTarget,
-} from './types';
+import type { FeedbackHandoff, HandoffStatus, HandoffTarget } from './types';
 
 interface Props {
   handoffs: FeedbackHandoff[];
@@ -39,20 +30,14 @@ interface Props {
   isRecording: boolean;
 }
 
-const STATUS_META: Record<
-  HandoffStatus,
-  { label: string; color: string; icon: typeof Circle }
-> = {
+const STATUS_META: Record<HandoffStatus, { label: string; color: string; icon: typeof Circle }> = {
   sent: { label: 'Handed off', color: 'hsl(var(--muted-foreground))', icon: ArrowRight },
   in_progress: { label: 'Working', color: 'hsl(var(--foreground) / 0.55)', icon: Loader },
   resolved: { label: 'Resolved', color: 'hsl(var(--foreground))', icon: Check },
   failed: { label: 'Failed', color: 'hsl(var(--destructive))', icon: X },
 };
 
-const TARGET_META: Record<
-  HandoffTarget,
-  { label: string; icon: typeof Bot }
-> = {
+const TARGET_META: Record<HandoffTarget, { label: string; icon: typeof Bot }> = {
   'claude-code': { label: 'Claude Code', icon: Bot },
   'claude-chat': { label: 'Claude (chat)', icon: MessageSquare },
   github: { label: 'GitHub', icon: GithubIcon },
@@ -69,13 +54,7 @@ const TARGET_META: Record<
  *
  * No automatic GitHub issue creation — pure copy/paste workflow.
  */
-export function HandoffSection({
-  handoffs,
-  prompt,
-  onRecord,
-  onUpdateStatus,
-  isRecording,
-}: Props) {
+export function HandoffSection({ handoffs, prompt, onRecord, onUpdateStatus, isRecording }: Props) {
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
   const sorted = [...handoffs].sort((a, b) => (a.at < b.at ? 1 : -1));
 
@@ -107,11 +86,7 @@ export function HandoffSection({
             className="flex items-center gap-1.5 font-semibold text-white"
             style={{ backgroundColor: 'hsl(var(--foreground))' }}
           >
-            {copyState === 'copied' ? (
-              <Check size={14} />
-            ) : (
-              <Copy size={14} />
-            )}
+            {copyState === 'copied' ? <Check size={14} /> : <Copy size={14} />}
             {copyState === 'copied' ? 'Copied — paste into Claude' : 'Copy prompt for Claude'}
           </Button>
           <Button
@@ -139,7 +114,8 @@ export function HandoffSection({
         {/* Timeline */}
         {sorted.length === 0 ? (
           <span className="block py-2 px-3 bg-muted rounded text-xs2 text-muted-foreground">
-            No handoffs yet. Click <strong>Copy prompt for Claude</strong> to send this ticket to Claude Code.
+            No handoffs yet. Click <strong>Copy prompt for Claude</strong> to send this ticket to
+            Claude Code.
           </span>
         ) : (
           <div className="flex flex-col gap-1">
@@ -157,10 +133,7 @@ export function HandoffSection({
                     borderRadius: '0 var(--radius-badge) var(--radius-badge) 0',
                   }}
                 >
-                  <TargetIcon
-                    size={14}
-                    style={{ color: 'var(--muted-foreground)', flexShrink: 0 }}
-                  />
+                  <TargetIcon size={14} className="text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
                     <span className="text-xs2 block">
                       <strong>{h.by_name}</strong> → {targetMeta.label}
@@ -170,15 +143,13 @@ export function HandoffSection({
                       {h.status_at && h.status !== 'sent' && (
                         <>
                           {' · '}
-                          <span style={{ color: statusMeta.color }}>{statusMeta.label.toLowerCase()} {timeAgo(h.status_at)}</span>
+                          <span style={{ color: statusMeta.color }}>
+                            {statusMeta.label.toLowerCase()} {timeAgo(h.status_at)}
+                          </span>
                         </>
                       )}
                     </span>
-                    {h.note && (
-                      <span className="text-2xs block mt-0.5 italic">
-                        “{h.note}”
-                      </span>
-                    )}
+                    {h.note && <span className="text-2xs block mt-0.5 italic">“{h.note}”</span>}
                   </div>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -204,19 +175,18 @@ export function HandoffSection({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      {(['sent', 'in_progress', 'resolved', 'failed'] as HandoffStatus[]).map((s) => {
-                        const meta = STATUS_META[s];
-                        const Icon = meta.icon;
-                        return (
-                          <DropdownMenuItem
-                            key={s}
-                            onClick={() => onUpdateStatus(h.id, s)}
-                          >
-                            <Icon size={13} style={{ color: meta.color, marginRight: 8 }} />
-                            {meta.label}
-                          </DropdownMenuItem>
-                        );
-                      })}
+                      {(['sent', 'in_progress', 'resolved', 'failed'] as HandoffStatus[]).map(
+                        (s) => {
+                          const meta = STATUS_META[s];
+                          const Icon = meta.icon;
+                          return (
+                            <DropdownMenuItem key={s} onClick={() => onUpdateStatus(h.id, s)}>
+                              <Icon size={13} style={{ color: meta.color }} className="mr-2" />
+                              {meta.label}
+                            </DropdownMenuItem>
+                          );
+                        },
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

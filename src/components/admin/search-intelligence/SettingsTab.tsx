@@ -373,14 +373,8 @@ export function SettingsTab() {
 function SettingsJson({ value }: { value: SettingsObject | SettingsValue | null }) {
   return (
     <pre
-      style={{
-        fontSize: 12,
-        maxHeight: 600,
-        overflow: 'auto',
-        background: 'hsl(var(--foreground) / 0.04)',
-        padding: 12,
-        margin: 0,
-      }}
+      style={{ fontSize: 12, maxHeight: 600, background: 'hsl(var(--foreground) / 0.04)' }}
+      className="overflow-auto p-3 m-0"
     >
       {value === null ? '(none)' : JSON.stringify(value, null, 2)}
     </pre>

@@ -24,15 +24,16 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
     <LocalizedLink
       to={href}
       aria-label={`${p.name}${p.profession ? ', ' + p.profession : ''}`}
-      className="flex-none w-40 block transition-transform hover:-translate-y-0.5 group"
-      style={{ scrollSnapAlign: 'start', textDecoration: 'none', color: 'inherit' }}
+      className="flex-none w-40 block transition-transform hover:-translate-y-0.5 group no-underline"
+      style={{ scrollSnapAlign: 'start', color: 'inherit' }}
     >
       <div
         className="featured-avatar relative flex items-center justify-center overflow-hidden mb-2 rounded-full"
         style={{
           width: 160,
           height: 160,
-          background: 'linear-gradient(135deg, hsl(var(--foreground) / 0.25) 0%, hsl(var(--foreground) / 0.15) 100%)',
+          background:
+            'linear-gradient(135deg, hsl(var(--foreground) / 0.25) 0%, hsl(var(--foreground) / 0.15) 100%)',
           border: '2px solid hsl(var(--foreground))',
         }}
       >
@@ -48,29 +49,16 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
-          <span
-            style={{
-              fontWeight: 700,
-              fontSize: '2rem',
-            }}
-          >
+          <span style={{ fontSize: '2rem' }} className="font-bold">
             {getInitials(p.name)}
           </span>
         )}
       </div>
-      <p
-        className="text-center truncate"
-        style={{
-          fontWeight: 600,
-          fontSize: '0.9rem',
-        }}
-      >
+      <p className="text-center truncate font-semibold" style={{ fontSize: '0.9rem' }}>
         {p.name}
       </p>
       {p.profession && (
-        <p className="text-xs text-muted-foreground text-center truncate">
-          {p.profession}
-        </p>
+        <p className="text-xs text-muted-foreground text-center truncate">{p.profession}</p>
       )}
     </LocalizedLink>
   );
@@ -85,20 +73,15 @@ export function FeaturedPersonalityRail() {
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-3">
-        <Star size={18} className="text-foreground" fill="hsl(var(--foreground))" aria-hidden="true" />
-        <h2
-          style={{
-            fontWeight: 700,
-            fontSize: '1.125rem',
-          }}
-        >
-          Featured icons
-        </h2>
+        <Star
+          size={18}
+          className="text-foreground"
+          fill="hsl(var(--foreground))"
+          aria-hidden="true"
+        />
+        <h2 className="font-bold text-lg">Featured icons</h2>
       </div>
-      <div
-        className="flex gap-5 overflow-x-auto pb-2"
-        style={{ scrollSnapType: 'x mandatory' }}
-      >
+      <div className="flex gap-5 overflow-x-auto pb-2" style={{ scrollSnapType: 'x mandatory' }}>
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="flex-none w-40">
@@ -107,9 +90,7 @@ export function FeaturedPersonalityRail() {
                 <div className="h-3 bg-muted w-3/4 mx-auto" />
               </div>
             ))
-          : featured.map((p, i) => (
-              <FeaturedItem key={p.id} p={p} eager={i < ABOVE_FOLD_COUNT} />
-            ))}
+          : featured.map((p, i) => <FeaturedItem key={p.id} p={p} eager={i < ABOVE_FOLD_COUNT} />)}
       </div>
     </div>
   );

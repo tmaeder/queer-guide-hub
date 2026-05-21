@@ -36,7 +36,7 @@ export const AvatarDisplay = ({
   if (avatarUrl) {
     return (
       <Avatar>
-        <span style={{ ...dims, display: 'inline-flex' }}>
+        <span style={{ ...dims }} className="inline-flex">
           <AvatarImage src={avatarUrl} alt="User avatar" />
           <AvatarFallback>
             <User size={16} />
@@ -77,7 +77,7 @@ export const AvatarDisplay = ({
   if (initialsUrl) {
     return (
       <Avatar>
-        <span style={{ ...dims, display: 'inline-flex' }}>
+        <span style={{ ...dims }} className="inline-flex">
           <AvatarImage src={initialsUrl} alt="User avatar" />
           <AvatarFallback>
             <User size={16} />
@@ -89,7 +89,7 @@ export const AvatarDisplay = ({
 
   return (
     <Avatar>
-      <span style={{ ...dims, display: 'inline-flex' }}>
+      <span style={{ ...dims }} className="inline-flex">
         <AvatarFallback>
           <User size={16} />
         </AvatarFallback>

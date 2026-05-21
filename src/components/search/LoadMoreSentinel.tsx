@@ -44,11 +44,7 @@ export function LoadMoreSentinel({ hasMore, loading, onLoadMore }: LoadMoreSenti
   if (!hasMore) return null;
 
   return (
-    <div
-      ref={ref}
-      className="flex items-center justify-center"
-      style={{ marginTop: 32, marginBottom: 16, minHeight: 48 }}
-    >
+    <div ref={ref} className="flex items-center justify-center mt-8 mb-4" style={{ minHeight: 48 }}>
       <Button variant="outline" onClick={onLoadMore} disabled={loading}>
         {loading ? (
           <>

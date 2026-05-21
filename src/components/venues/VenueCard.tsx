@@ -45,13 +45,7 @@ function isOpenNow(hours: unknown): boolean | null {
   const inRange = (open: string, close: string) => {
     const [oh, om] = open.split(':').map(Number);
     const [ch, cm] = close.split(':').map(Number);
-    if (
-      Number.isNaN(oh) ||
-      Number.isNaN(om) ||
-      Number.isNaN(ch) ||
-      Number.isNaN(cm)
-    )
-      return false;
+    if (Number.isNaN(oh) || Number.isNaN(om) || Number.isNaN(ch) || Number.isNaN(cm)) return false;
     const o = oh * 60 + om;
     const c = ch * 60 + cm;
     // Same-day window. Cross-midnight intentionally ignored — needs more data.
@@ -107,10 +101,7 @@ const VenueCardFixture = () => (
   </Card>
 );
 
-export function VenueCard({
-  venue,
-  loading = false,
-}: VenueCardProps) {
+export function VenueCard({ venue, loading = false }: VenueCardProps) {
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
   const visitedLookup = useVisitedPlaceLookup();
   const isVisited = !!venue?.id && visitedLookup.has('venue', venue.id);
@@ -134,9 +125,7 @@ export function VenueCard({
     // lands on the same language. Default locale ('en') has no prefix.
     const firstSeg = window.location.pathname.split('/')[1] ?? '';
     const prefix =
-      firstSeg && isSupportedLocale(firstSeg) && firstSeg !== DEFAULT_LOCALE
-        ? `/${firstSeg}`
-        : '';
+      firstSeg && isSupportedLocale(firstSeg) && firstSeg !== DEFAULT_LOCALE ? `/${firstSeg}` : '';
     const url = `${window.location.origin}${prefix}/venues/${venue.slug}`;
     try {
       if (navigator.share) {
@@ -163,149 +152,151 @@ export function VenueCard({
           style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
         >
           <CardHoverEffect>
-          <Card hoverable className="group overflow-hidden">
-            <div className="relative overflow-hidden">
-              <CardImage
-                src={venueImage}
-                alt={venue.name}
-                fallbackIcon={MapPin}
-                height={160}
-                className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
-              />
+            <Card hoverable className="group overflow-hidden">
+              <div className="relative overflow-hidden">
+                <CardImage
+                  src={venueImage}
+                  alt={venue.name}
+                  fallbackIcon={MapPin}
+                  height={160}
+                  className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
+                />
 
-              {/* Category label — top left. "Other" is hidden because it's noise:
+                {/* Category label — top left. "Other" is hidden because it's noise:
                   most "other" entries are uncategorized scraper imports and the
                   badge adds nothing for the user. */}
-              {venue.category && venue.category !== 'other' && (
+                {venue.category && venue.category !== 'other' && (
+                  <div
+                    className="absolute top-2 left-2 px-2 py-0.5 rounded font-bold uppercase backdrop-blur-sm text-background"
+                    style={{
+                      backgroundColor: 'hsl(var(--foreground) / 0.6)',
+                      fontSize: '0.65rem',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {categoryLabel(venue.category)}
+                  </div>
+                )}
+
+                {/* Favorite + share — top right */}
                 <div
-                  className="absolute top-2 left-2 px-2 py-0.5 rounded font-bold uppercase backdrop-blur-sm"
-                  style={{
-                    backgroundColor: 'hsl(var(--foreground) / 0.6)',
-                    color: 'hsl(var(--background))',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.05em',
+                  className="absolute top-1 right-1 flex items-center gap-0.5"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                   }}
-                >
-                  {categoryLabel(venue.category)}
-                </div>
-              )}
-
-              {/* Favorite + share — top right */}
-              <div
-                className="absolute top-1 right-1 flex items-center gap-0.5"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                onKeyDown={(e) => e.stopPropagation()}
-                role="presentation"
-              >
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  aria-label={`Share ${venue.name}`}
-                  className="h-9 w-9 rounded-full inline-flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background"
-                >
-                  <Share2 size={16} aria-hidden="true" />
-                </button>
-                <FavoriteButton itemId={venue.id} type="venue" />
-              </div>
-
-              {/* Open-now badge — bottom right */}
-              {openNow === true && (
-                <div className="absolute bottom-2 right-2">
-                  <Badge className="font-bold text-2xs h-5 px-1.5">Open now</Badge>
-                </div>
-              )}
-
-              {/* Closed badge */}
-              {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
-                <div className="absolute top-2 right-11">
-                  <Badge variant="destructive" className="font-bold text-2xs h-5">Closed</Badge>
-                </div>
-              )}
-
-              {/* Visited pill */}
-              {isVisited && (
-                <div
-                  className="absolute bottom-2 left-2 inline-flex items-center px-1.5 py-0.5 font-semibold bg-foreground/80 text-background"
-                  style={{ fontSize: '0.65rem' }}
-                  title="Visited"
-                >
-                  ✓ Visited
-                </div>
-              )}
-
-              {/* Trip badge */}
-              {!isVisited && tripStatus?.isInTrip && (
-                <div
-                  className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold bg-primary text-primary-foreground"
-                  style={{ fontSize: '0.7rem' }}
-                >
-                  <Luggage size={12} />
-                  In trip
-                </div>
-              )}
-
-              {/* Logo overlay */}
-              {venue.logo_url && (
-                <img
-                  src={venue.logo_url}
-                  alt=""
+                  onKeyDown={(e) => e.stopPropagation()}
                   role="presentation"
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute bottom-2 right-2 w-7 h-7 rounded-element bg-background object-contain shadow p-0.5"
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-              )}
-            </div>
+                >
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    aria-label={`Share ${venue.name}`}
+                    className="h-9 w-9 rounded-full inline-flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background"
+                  >
+                    <Share2 size={16} aria-hidden="true" />
+                  </button>
+                  <FavoriteButton itemId={venue.id} type="venue" />
+                </div>
 
-            <div className="p-3">
-              <div className="flex items-center gap-1 min-w-0">
-                <p className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0">
-                  {venue.name}
-                </p>
-                {isVerified && (
-                  <BadgeCheck
-                    aria-label="Verified" size={14}
-                    className="text-foreground/70 shrink-0"
+                {/* Open-now badge — bottom right */}
+                {openNow === true && (
+                  <div className="absolute bottom-2 right-2">
+                    <Badge className="font-bold text-2xs h-5 px-1.5">Open now</Badge>
+                  </div>
+                )}
+
+                {/* Closed badge */}
+                {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
+                  <div className="absolute top-2 right-11">
+                    <Badge variant="destructive" className="font-bold text-2xs h-5">
+                      Closed
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Visited pill */}
+                {isVisited && (
+                  <div
+                    className="absolute bottom-2 left-2 inline-flex items-center px-1.5 py-0.5 font-semibold bg-foreground/80 text-background"
+                    style={{ fontSize: '0.65rem' }}
+                    title="Visited"
+                  >
+                    ✓ Visited
+                  </div>
+                )}
+
+                {/* Trip badge */}
+                {!isVisited && tripStatus?.isInTrip && (
+                  <div
+                    className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold bg-primary text-primary-foreground"
+                    style={{ fontSize: '0.7rem' }}
+                  >
+                    <Luggage size={12} />
+                    In trip
+                  </div>
+                )}
+
+                {/* Logo overlay */}
+                {venue.logo_url && (
+                  <img
+                    src={venue.logo_url}
+                    alt=""
+                    role="presentation"
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute bottom-2 right-2 w-7 h-7 rounded-element bg-background object-contain shadow p-0.5"
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
                 )}
-                {priceTier && (
-                  <span
-                    aria-label={`Price tier ${priceTier}`}
-                    className="text-xs font-medium text-muted-foreground tabular-nums"
-                  >
-                    {priceTier}
-                  </span>
+              </div>
+
+              <div className="p-3">
+                <div className="flex items-center gap-1 min-w-0">
+                  <p className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0">
+                    {venue.name}
+                  </p>
+                  {isVerified && (
+                    <BadgeCheck
+                      aria-label="Verified"
+                      size={14}
+                      className="text-foreground/70 shrink-0"
+                    />
+                  )}
+                  {priceTier && (
+                    <span
+                      aria-label={`Price tier ${priceTier}`}
+                      className="text-xs font-medium text-muted-foreground tabular-nums"
+                    >
+                      {priceTier}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
+                  <MapPin size={13} className="shrink-0" />
+                  <p className="text-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                    {[venue.city, venue.state].filter(Boolean).join(', ')}
+                  </p>
+                </div>
+                {topTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {topTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-2xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {updatedLabel && (
+                  <p className="mt-2 text-2xs text-muted-foreground">Updated {updatedLabel}</p>
                 )}
               </div>
-              <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
-                <MapPin size={13} className="shrink-0" />
-                <p className="text-xs overflow-hidden text-ellipsis whitespace-nowrap">
-                  {[venue.city, venue.state].filter(Boolean).join(', ')}
-                </p>
-              </div>
-              {topTags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {topTags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-2xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {updatedLabel && (
-                <p className="mt-2 text-2xs text-muted-foreground">Updated {updatedLabel}</p>
-              )}
-            </div>
-          </Card>
+            </Card>
           </CardHoverEffect>
         </LocalizedLink>
       )}

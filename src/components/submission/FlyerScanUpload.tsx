@@ -65,9 +65,7 @@ export function FlyerScanUpload({
 
       const parts: string[] = [];
       if (unsupported.length > 0) {
-        parts.push(
-          t('submission.errors.unsupportedTypeNamed', { names: unsupported.join(', ') }),
-        );
+        parts.push(t('submission.errors.unsupportedTypeNamed', { names: unsupported.join(', ') }));
       }
       if (oversized.length > 0) {
         parts.push(
@@ -120,22 +118,18 @@ export function FlyerScanUpload({
       <Card>
         <CardContent>
           <div className="flex items-start gap-3">
-            <AlertCircle size={20} style={{ color: '#ef4444', flexShrink: 0, marginTop: 2 }}
-            />
+            <AlertCircle size={20} style={{ color: '#ef4444' }} className="shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-semibold mb-1">
-                {t('submission.errors.title')}
-              </p>
-              <p className="text-xs text-muted-foreground whitespace-pre-line">
-                {errorCopy}
-              </p>
+              <p className="text-sm font-semibold mb-1">{t('submission.errors.title')}</p>
+              <p className="text-xs text-muted-foreground whitespace-pre-line">{errorCopy}</p>
             </div>
             {showRetry && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onReset}
-                style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                style={{ alignItems: 'center' }}
+                className="flex gap-1"
               >
                 <RotateCcw size={14} />
                 {t('submission.errors.retry')}
@@ -160,7 +154,11 @@ export function FlyerScanUpload({
       <Card>
         <CardContent>
           <div className="flex flex-col items-center gap-3 py-2">
-            <Loader2 className="animate-spin h-8 w-8" style={{ color: '#ec4899' }} aria-label="Loading" />
+            <Loader2
+              className="animate-spin h-8 w-8"
+              style={{ color: '#ec4899' }}
+              aria-label="Loading"
+            />
             <p className="text-sm font-medium">{progressText}</p>
             {totalFiles > 1 && (
               <div className="w-full h-1 bg-muted rounded overflow-hidden">
@@ -223,7 +221,10 @@ export function FlyerScanUpload({
             </p>
           </div>
           {!isMobile && (
-            <FileText size={16} style={{ color: '#9ca3af', flexShrink: 0, marginLeft: 'auto' }}
+            <FileText
+              size={16}
+              style={{ color: '#9ca3af', marginLeft: 'auto' }}
+              className="shrink-0"
             />
           )}
         </div>
@@ -236,8 +237,7 @@ export function FlyerScanUpload({
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <AlertCircle size={16} style={{ color: '#ef4444', flexShrink: 0, marginTop: 2 }}
-            />
+            <AlertCircle size={16} style={{ color: '#ef4444' }} className="shrink-0 mt-0.5" />
             <p className="text-xs" style={{ color: '#ef4444' }}>
               {rejectionMessage}
             </p>

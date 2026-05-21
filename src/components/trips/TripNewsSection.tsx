@@ -59,13 +59,17 @@ export function TripNewsSection({ countryIds }: Props) {
             className="flex items-start gap-3 p-3 no-underline text-inherit border-t border-border first-of-type:border-t-0 transition-colors hover:bg-muted"
           >
             {article.isSafetyFlagged ? (
-              <AlertTriangle size={16} style={{ flexShrink: 0,
-                  marginTop: 3,
-                  color: 'hsl(var(--foreground))' }}
+              <AlertTriangle
+                size={16}
+                style={{ marginTop: 3 }}
+                className="shrink-0 text-foreground"
                 aria-label={t('trips.news.safetyFlag', 'Safety-relevant')}
               />
             ) : (
-              <Newspaper size={16} style={{ flexShrink: 0, marginTop: 3, opacity: 0.4 }}
+              <Newspaper
+                size={16}
+                style={{ marginTop: 3, opacity: 0.4 }}
+                className="shrink-0"
                 aria-hidden
               />
             )}
@@ -76,7 +80,10 @@ export function TripNewsSection({ countryIds }: Props) {
               >
                 {article.title}
               </p>
-              <div className="flex items-center gap-1.5 mt-0.5 text-muted-foreground" style={{ fontSize: 11 }}>
+              <div
+                className="flex items-center gap-1.5 mt-0.5 text-muted-foreground"
+                style={{ fontSize: 11 }}
+              >
                 {article.publisher_name && <span>{article.publisher_name}</span>}
                 {article.publisher_name && <span>·</span>}
                 <span>
@@ -86,7 +93,10 @@ export function TripNewsSection({ countryIds }: Props) {
                 </span>
               </div>
             </div>
-            <ExternalLink size={12} style={{ flexShrink: 0, marginTop: 5, opacity: 0.4 }}
+            <ExternalLink
+              size={12}
+              style={{ marginTop: 5, opacity: 0.4 }}
+              className="shrink-0"
               aria-hidden
             />
           </a>
@@ -107,17 +117,16 @@ function SectionHeading({ flaggedCount = 0 }: { flaggedCount?: number }) {
   const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between mb-3">
-      <p className="font-bold uppercase text-muted-foreground" style={{ letterSpacing: '0.04em', fontSize: '0.7rem' }}>
+      <p
+        className="font-bold uppercase text-muted-foreground"
+        style={{ letterSpacing: '0.04em', fontSize: '0.7rem' }}
+      >
         {t('trips.news.heading', 'Recent news from your destinations')}
       </p>
       {flaggedCount > 0 && (
         <div
-          className="inline-flex items-center gap-1 px-2 py-0.5 font-bold"
-          style={{
-            backgroundColor: 'hsl(var(--destructive) / 0.1)',
-            color: 'hsl(var(--destructive))',
-            fontSize: 11,
-          }}
+          className="inline-flex items-center gap-1 px-2 py-0.5 font-bold text-destructive"
+          style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)', fontSize: 11 }}
         >
           <AlertTriangle size={11} />
           {t('trips.news.flaggedBadge', '{{count}} safety alerts', { count: flaggedCount })}

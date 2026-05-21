@@ -3,11 +3,19 @@
 import { useMemo, useState } from 'react';
 import { format, differenceInCalendarDays, isSameDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { Plus, Pencil, Check, ChevronDown, ChevronUp, MapPin, Sun, Sunrise, Sunset, Moon } from 'lucide-react';
 import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+  Plus,
+  Pencil,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Sun,
+  Sunrise,
+  Sunset,
+  Moon,
+} from 'lucide-react';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -76,9 +84,7 @@ export function autoTheme(args: {
 }): string | null {
   const { isFirst, isLast, places } = args;
   const titles = places
-    .map((p) =>
-      [p.events?.title, p.venues?.name, p.custom_name].filter(Boolean).join(' '),
-    )
+    .map((p) => [p.events?.title, p.venues?.name, p.custom_name].filter(Boolean).join(' '))
     .join(' ')
     .toLowerCase();
 
@@ -139,10 +145,7 @@ export function DayCard({
     return map;
   }, [places]);
 
-  const theme = useMemo(
-    () => autoTheme({ isFirst, isLast, places }),
-    [isFirst, isLast, places],
-  );
+  const theme = useMemo(() => autoTheme({ isFirst, isLast, places }), [isFirst, isLast, places]);
 
   const dimClass = isPast ? 'opacity-60' : '';
   const cardBorder = isToday ? 'border-foreground' : 'border-border/70';
@@ -158,11 +161,8 @@ export function DayCard({
         <div className="flex items-center justify-between mb-4 gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div
-              className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-element"
-              style={{
-                backgroundColor: 'hsl(var(--foreground))',
-                color: 'hsl(var(--background))',
-              }}
+              className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-element text-background"
+              style={{ backgroundColor: 'hsl(var(--foreground))' }}
               aria-hidden="true"
             >
               <span
@@ -172,12 +172,8 @@ export function DayCard({
                 {t('trips.itinerary.dayShort')}
               </span>
               <span
-                style={{
-                  fontSize: 22,
-                  fontWeight: 700,
-                  lineHeight: 1.1,
-                  letterSpacing: '-0.02em',
-                }}
+                style={{ fontSize: 22, lineHeight: 1.1, letterSpacing: '-0.02em' }}
+                className="font-bold"
               >
                 {dayNumber}
               </span>
@@ -258,18 +254,9 @@ export function DayCard({
               aria-expanded={mapOpen}
             >
               <MapPin size={14} className="mr-1" />
-              {mapOpen ? (
-                <ChevronUp size={14} />
-              ) : (
-                <ChevronDown size={14} />
-              )}
+              {mapOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAddPlace()}
-              className="rounded-full"
-            >
+            <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
               <Plus size={14} className="mr-1" />
               {t('trips.itinerary.add')}
             </Button>
@@ -289,22 +276,15 @@ export function DayCard({
         )}
 
         {/* Time slots */}
-        <SortableContext
-          items={places.map((p) => p.id)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={places.map((p) => p.id)} strategy={verticalListSortingStrategy}>
           {places.length === 0 ? (
             <div
               className="border border-dashed rounded-container py-6 text-center min-h-[56px] transition-colors bg-muted/20"
               style={{
-                borderColor: activeDragId
-                  ? 'hsl(var(--foreground))'
-                  : 'hsl(var(--border))',
+                borderColor: activeDragId ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
               }}
             >
-              <p className="text-xs text-muted-foreground">
-                {t('trips.itinerary.dropHere')}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('trips.itinerary.dropHere')}</p>
             </div>
           ) : (
             SLOT_ORDER.map((slot) => {

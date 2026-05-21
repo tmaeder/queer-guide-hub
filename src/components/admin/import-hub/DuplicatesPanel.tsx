@@ -4,12 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Search, Merge, Database,
-  Inbox, RefreshCw, History,
-} from 'lucide-react';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search, Merge, Database, Inbox, RefreshCw, History } from 'lucide-react';
 import {
   useBatchFindDuplicates,
   useScanTableDuplicates,
@@ -84,7 +87,10 @@ function StagingDedupSection() {
           </p>
 
           <div className="flex flex-wrap items-center gap-4">
-            <Select value={targetTable || 'all'} onValueChange={v => setTargetTable(v === 'all' ? '' : v)}>
+            <Select
+              value={targetTable || 'all'}
+              onValueChange={(v) => setTargetTable(v === 'all' ? '' : v)}
+            >
               <SelectTrigger style={{ width: 160 }}>
                 <SelectValue placeholder="Target table" />
               </SelectTrigger>
@@ -96,11 +102,7 @@ function StagingDedupSection() {
               </SelectContent>
             </Select>
 
-            <Button
-              onClick={handleScan}
-              disabled={batchScan.isPending}
-              className="flex gap-2"
-            >
+            <Button onClick={handleScan} disabled={batchScan.isPending} className="flex gap-2">
               {batchScan.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
               ) : (
@@ -113,10 +115,26 @@ function StagingDedupSection() {
           {/* Results */}
           {batchScan.data && (
             <div className="mt-4 grid grid-cols-4 gap-4">
-              <ResultCard label="Processed" value={batchScan.data.processed} color="hsl(var(--muted-foreground))" />
-              <ResultCard label="Duplicates Found" value={batchScan.data.duplicates_found} color="hsl(var(--destructive))" />
-              <ResultCard label="Merge Candidates" value={batchScan.data.merge_candidates_found} color="hsl(var(--foreground) / 0.55)" />
-              <ResultCard label="Skipped" value={batchScan.data.skipped} color="hsl(var(--muted-foreground))" />
+              <ResultCard
+                label="Processed"
+                value={batchScan.data.processed}
+                color="hsl(var(--muted-foreground))"
+              />
+              <ResultCard
+                label="Duplicates Found"
+                value={batchScan.data.duplicates_found}
+                color="hsl(var(--destructive))"
+              />
+              <ResultCard
+                label="Merge Candidates"
+                value={batchScan.data.merge_candidates_found}
+                color="hsl(var(--foreground) / 0.55)"
+              />
+              <ResultCard
+                label="Skipped"
+                value={batchScan.data.skipped}
+                color="hsl(var(--muted-foreground))"
+              />
             </div>
           )}
         </CardContent>
@@ -146,9 +164,9 @@ function ExistingDedupSection() {
     setMergeDialogOpen(true);
   };
 
-  const highConfidence = pairs.filter(p => p.confidence >= 0.9);
-  const medConfidence = pairs.filter(p => p.confidence >= 0.7 && p.confidence < 0.9);
-  const lowConfidence = pairs.filter(p => p.confidence < 0.7);
+  const highConfidence = pairs.filter((p) => p.confidence >= 0.9);
+  const medConfidence = pairs.filter((p) => p.confidence >= 0.7 && p.confidence < 0.9);
+  const lowConfidence = pairs.filter((p) => p.confidence < 0.7);
 
   return (
     <div className="flex flex-col gap-6">
@@ -191,11 +209,7 @@ function ExistingDedupSection() {
               />
             </div>
 
-            <Button
-              onClick={handleScan}
-              disabled={scanMutation.isPending}
-              className="flex gap-2"
-            >
+            <Button onClick={handleScan} disabled={scanMutation.isPending} className="flex gap-2">
               {scanMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
               ) : (
@@ -212,9 +226,9 @@ function ExistingDedupSection() {
           {scanMutation.data && (
             <div className="mt-4 p-3 bg-muted rounded">
               <p className="text-sm">
-                Scanned {scanMutation.data.scanned} {scanMutation.data.entity_type} records,
-                found {scanMutation.data.duplicates_found} duplicate pairs
-                (threshold: {(scanMutation.data.threshold * 100).toFixed(0)}%)
+                Scanned {scanMutation.data.scanned} {scanMutation.data.entity_type} records, found{' '}
+                {scanMutation.data.duplicates_found} duplicate pairs (threshold:{' '}
+                {(scanMutation.data.threshold * 100).toFixed(0)}%)
               </p>
             </div>
           )}
@@ -241,13 +255,28 @@ function ExistingDedupSection() {
       ) : (
         <>
           {highConfidence.length > 0 && (
-            <DuplicateGroup label="High Confidence" color="hsl(var(--destructive))" pairs={highConfidence} onMerge={handleMerge} />
+            <DuplicateGroup
+              label="High Confidence"
+              color="hsl(var(--destructive))"
+              pairs={highConfidence}
+              onMerge={handleMerge}
+            />
           )}
           {medConfidence.length > 0 && (
-            <DuplicateGroup label="Medium Confidence" color="hsl(var(--foreground) / 0.55)" pairs={medConfidence} onMerge={handleMerge} />
+            <DuplicateGroup
+              label="Medium Confidence"
+              color="hsl(var(--foreground) / 0.55)"
+              pairs={medConfidence}
+              onMerge={handleMerge}
+            />
           )}
           {lowConfidence.length > 0 && (
-            <DuplicateGroup label="Low Confidence" color="hsl(var(--muted-foreground))" pairs={lowConfidence} onMerge={handleMerge} />
+            <DuplicateGroup
+              label="Low Confidence"
+              color="hsl(var(--muted-foreground))"
+              pairs={lowConfidence}
+              onMerge={handleMerge}
+            />
           )}
         </>
       )}
@@ -270,7 +299,17 @@ function ExistingDedupSection() {
   );
 }
 
-function DuplicateGroup({ label, color, pairs, onMerge }: { label: string; color: string; pairs: DuplicatePair[]; onMerge: (p: DuplicatePair) => void }) {
+function DuplicateGroup({
+  label,
+  color,
+  pairs,
+  onMerge,
+}: {
+  label: string;
+  color: string;
+  pairs: DuplicatePair[];
+  onMerge: (p: DuplicatePair) => void;
+}) {
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -294,7 +333,7 @@ function DuplicateGroup({ label, color, pairs, onMerge }: { label: string; color
       </div>
       {expanded && (
         <div className="flex flex-col gap-3">
-          {pairs.map(pair => (
+          {pairs.map((pair) => (
             <DuplicatePairCard key={pair.id} pair={pair} onMerge={onMerge} />
           ))}
         </div>
@@ -336,10 +375,11 @@ function MergeHistorySection() {
                     className="flex items-center gap-4 p-3 rounded bg-muted"
                     style={{ fontSize: '0.85rem' }}
                   >
-                    <Merge size={14} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                    <Merge size={14} className="text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">
-                        {details.entity_type || 'unknown'}: Kept "{details.keep_name || '?'}", removed "{details.remove_name || '?'}"
+                        {details.entity_type || 'unknown'}: Kept "{details.keep_name || '?'}",
+                        removed "{details.remove_name || '?'}"
                       </p>
                       <span className="text-xs text-muted-foreground">
                         {details.fk_updates || 0} references updated
@@ -367,7 +407,9 @@ function ResultCard({ label, value, color }: { label: string; value: number; col
       className="p-3 rounded text-center"
       style={{ backgroundColor: `${color}08`, border: `1px solid ${color}20` }}
     >
-      <p className="text-xl font-bold" style={{ color }}>{value}</p>
+      <p className="text-xl font-bold" style={{ color }}>
+        {value}
+      </p>
       <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   );

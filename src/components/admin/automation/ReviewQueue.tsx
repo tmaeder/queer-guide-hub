@@ -23,11 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { ContentChange } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -98,11 +94,9 @@ export function ReviewQueue({
   if (changes.length === 0) {
     return (
       <div className="text-center py-12">
-        <CheckCircle2 size={48} style={{ color: 'hsl(var(--foreground))', margin: '0 auto 16px' }} />
+        <CheckCircle2 size={48} style={{ margin: '0 auto 16px' }} className="text-foreground" />
         <h6 className="text-lg font-semibold text-muted-foreground">No pending changes</h6>
-        <p className="text-sm text-muted-foreground">
-          All automation changes have been reviewed.
-        </p>
+        <p className="text-sm text-muted-foreground">All automation changes have been reviewed.</p>
       </div>
     );
   }

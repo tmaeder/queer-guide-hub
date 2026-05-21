@@ -89,7 +89,12 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
   const { health } = data;
   const { last24h } = health;
   const successRate = last24h.total > 0 ? Math.round((last24h.done / last24h.total) * 100) : 100;
-  const statusColor = successRate >= 95 ? 'hsl(var(--foreground))' : successRate >= 80 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
+  const statusColor =
+    successRate >= 95
+      ? 'hsl(var(--foreground))'
+      : successRate >= 80
+        ? 'hsl(var(--foreground) / 0.55)'
+        : 'hsl(var(--destructive))';
 
   return (
     <div className={cardCls}>
@@ -103,8 +108,8 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
         <h3 className="text-sm font-semibold">Pipeline Health (24h)</h3>
         {health.queueDepth > 0 && (
           <Badge
-            className="ml-auto h-5 text-xs2 font-semibold"
-            style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+            className="ml-auto h-5 text-xs2 font-semibold text-foreground"
+            style={{ background: 'hsl(var(--muted))' }}
           >
             {health.queueDepth} queued
           </Badge>
@@ -112,8 +117,16 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
       </div>
 
       <div className="grid grid-cols-4 gap-3 mb-4">
-        <MetricBox label="Total" value={last24h.total.toLocaleString()} color="hsl(var(--muted-foreground))" />
-        <MetricBox label="Done" value={last24h.done.toLocaleString()} color="hsl(var(--foreground))" />
+        <MetricBox
+          label="Total"
+          value={last24h.total.toLocaleString()}
+          color="hsl(var(--muted-foreground))"
+        />
+        <MetricBox
+          label="Done"
+          value={last24h.done.toLocaleString()}
+          color="hsl(var(--foreground))"
+        />
         <MetricBox
           label="Failed"
           value={last24h.failed.toLocaleString()}
@@ -136,7 +149,9 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
                   borderColor: health.failuresByStep[step]
                     ? 'hsl(var(--muted))'
                     : 'hsl(var(--border))',
-                  color: health.failuresByStep[step] ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))',
+                  color: health.failuresByStep[step]
+                    ? 'hsl(var(--destructive))'
+                    : 'hsl(var(--muted-foreground))',
                 }}
               >
                 {`${STEP_LABELS[step] ?? step}: ${formatMs(ms)}`}
@@ -151,8 +166,8 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
           {Object.entries(health.failuresByStep).map(([step, count]) => (
             <span
               key={step}
-              className="inline-flex items-center gap-1 rounded px-2 h-[22px] text-xs2"
-              style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+              className="inline-flex items-center gap-1 rounded px-2 h-[22px] text-xs2 text-foreground"
+              style={{ background: 'hsl(var(--muted))' }}
             >
               <AlertCircle size={12} />
               {`${STEP_LABELS[step] ?? step}: ${count} failures`}
@@ -166,10 +181,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
 
 function MetricBox({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div
-      className="p-3 rounded-element text-center"
-      style={{ background: 'hsl(var(--muted))' }}
-    >
+    <div className="p-3 rounded-element text-center" style={{ background: 'hsl(var(--muted))' }}>
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className="text-base font-bold" style={{ color }}>
         {value}
@@ -221,7 +233,9 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
                 {excellentPct > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div style={{ width: `${excellentPct}%`, background: 'hsl(var(--foreground))' }} />
+                      <div
+                        style={{ width: `${excellentPct}%`, background: 'hsl(var(--foreground))' }}
+                      />
                     </TooltipTrigger>
                     <TooltipContent>{`Excellent (>=80): ${q.excellent}`}</TooltipContent>
                   </Tooltip>
@@ -229,7 +243,12 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
                 {goodPct > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div style={{ width: `${goodPct}%`, background: 'hsl(var(--foreground) / 0.55)' }} />
+                      <div
+                        style={{
+                          width: `${goodPct}%`,
+                          background: 'hsl(var(--foreground) / 0.55)',
+                        }}
+                      />
                     </TooltipTrigger>
                     <TooltipContent>{`Good (40-79): ${q.good}`}</TooltipContent>
                   </Tooltip>
@@ -237,7 +256,9 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
                 {attentionPct > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div style={{ width: `${attentionPct}%`, background: 'hsl(var(--destructive))' }} />
+                      <div
+                        style={{ width: `${attentionPct}%`, background: 'hsl(var(--destructive))' }}
+                      />
                     </TooltipTrigger>
                     <TooltipContent>{`Needs Attention (<40): ${q.needsAttention}`}</TooltipContent>
                   </Tooltip>
@@ -306,8 +327,8 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
         <h3 className="text-sm font-semibold">Needs Attention</h3>
         {needsAttention.total > 0 && (
           <Badge
-            className="ml-auto h-5 text-xs2 font-bold"
-            style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+            className="ml-auto h-5 text-xs2 font-bold text-foreground"
+            style={{ background: 'hsl(var(--muted))' }}
           >
             {needsAttention.total}
           </Badge>
@@ -335,21 +356,22 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
                 key={type}
                 className="p-3 rounded-element text-center"
                 style={{
-                  background:
-                    count > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
+                  background: count > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
                 }}
               >
                 <Icon
                   size={16}
                   style={{
                     color: count > 0 ? 'hsl(var(--destructive))' : meta.color,
-                    marginBottom: 4,
                     margin: '0 auto 4px',
                   }}
+                  className="mb-1"
                 />
                 <div
                   className="text-base font-bold"
-                  style={{ color: count > 0 ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))' }}
+                  style={{
+                    color: count > 0 ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
+                  }}
                 >
                   {count}
                 </div>
@@ -407,9 +429,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
           style={{ background: 'hsl(var(--muted))' }}
         >
           <CheckCircle2 size={16} className="text-foreground" />
-          <span className="text-sm font-medium text-foreground">
-            No items pending review
-          </span>
+          <span className="text-sm font-medium text-foreground">No items pending review</span>
         </div>
       ) : (
         <div className="flex flex-col gap-1 overflow-auto" style={{ maxHeight: 400 }}>
@@ -425,7 +445,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
                 className="flex items-center justify-between px-3 py-2 rounded hover:bg-muted"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <TypeIcon size={14} style={{ color: typeMeta.color, flexShrink: 0 }} />
+                  <TypeIcon size={14} style={{ color: typeMeta.color }} className="shrink-0" />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span
@@ -444,7 +464,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
                     <p className="text-xs text-muted-foreground block mt-0.5 truncate">
                       {(details.candidate_name as string)
                         ? `Similar to: ${details.candidate_name as string} (${Math.round(((details.similarity_score as number) ?? 0) * 100)}%)`
-                        : (details.reason as string) ?? item.entity_id.slice(0, 8)}
+                        : ((details.reason as string) ?? item.entity_id.slice(0, 8))}
                     </p>
                   </div>
                 </div>
@@ -558,9 +578,7 @@ function FailedEnrichmentsCard() {
           style={{ background: 'hsl(var(--muted))' }}
         >
           <CheckCircle2 size={16} className="text-foreground" />
-          <span className="text-sm font-medium text-foreground">
-            No failed enrichments
-          </span>
+          <span className="text-sm font-medium text-foreground">No failed enrichments</span>
         </div>
       ) : (
         <div className="flex flex-col gap-1 overflow-auto" style={{ maxHeight: 300 }}>
@@ -575,7 +593,8 @@ function FailedEnrichmentsCard() {
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <EntityIcon
                     size={14}
-                    style={{ color: entityMeta?.color ?? 'hsl(var(--muted-foreground))', flexShrink: 0 }}
+                    style={{ color: entityMeta?.color ?? 'hsl(var(--muted-foreground))' }}
+                    className="shrink-0"
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -585,8 +604,8 @@ function FailedEnrichmentsCard() {
                       {item.failed_steps?.map((step) => (
                         <span
                           key={step}
-                          className="inline-flex items-center rounded px-1.5 h-[18px] text-2xs font-semibold"
-                          style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+                          className="inline-flex items-center rounded px-1.5 h-[18px] text-2xs font-semibold text-foreground"
+                          style={{ background: 'hsl(var(--muted))' }}
                         >
                           {STEP_LABELS[step] ?? step}
                         </span>
@@ -664,17 +683,12 @@ export function EnrichmentDashboard() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Sparkles size={24} className='text-foreground' />
+          <Sparkles size={24} className="text-foreground" />
           <h1 className="text-xl font-bold">Enrichment Pipeline</h1>
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={() => refetch()}
-            >
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => refetch()}>
               <RefreshCw size={16} />
             </Button>
           </TooltipTrigger>

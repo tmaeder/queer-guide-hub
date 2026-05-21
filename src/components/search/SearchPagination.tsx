@@ -28,11 +28,7 @@ export const SearchPagination = ({
   for (let p = start; p <= end; p++) numbers.push(p);
 
   return (
-    <nav
-      aria-label="Search results pages"
-      className="flex items-center justify-center"
-      style={{ gap: 8, marginTop: 32 }}
-    >
+    <nav aria-label="Search results pages" className="flex items-center justify-center gap-2 mt-8">
       <Button
         variant="outline"
         size="sm"

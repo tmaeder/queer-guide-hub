@@ -24,10 +24,7 @@ export function Footer() {
     <footer className="bg-background/70 backdrop-blur-xl border-t border-border/50 mt-auto">
       <div className="w-full px-4 sm:px-6 md:px-8 py-3 flex flex-col md:flex-row items-center justify-center md:justify-between gap-2">
         <div className="flex flex-col items-center gap-0.5 order-2 md:order-1 md:flex-1">
-          <nav
-            aria-label="Footer navigation"
-            className="flex flex-wrap justify-center gap-0.5"
-          >
+          <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-0.5">
             {footerLinks.map((link, i) => (
               <div key={link.href} className="flex items-center gap-0.5">
                 {i > 0 && (
@@ -37,13 +34,8 @@ export function Footer() {
                 )}
                 <Link
                   to={link.href}
-                  style={{
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    minHeight: 24,
-                    padding: '4px 6px',
-                  }}
+                  style={{ alignItems: 'center', minHeight: 24, padding: '4px 6px' }}
+                  className="no-underline inline-flex"
                 >
                   <span className="text-xs text-muted-foreground hover:text-primary transition-colors">
                     {t(link.labelKey)}

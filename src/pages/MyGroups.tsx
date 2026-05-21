@@ -63,7 +63,10 @@ export default function MyGroups() {
   }, [userGroups, user?.id]);
 
   return (
-    <AuthGate title={t('pages.myGroups.title', 'My Groups')} description="Please sign in to view your groups">
+    <AuthGate
+      title={t('pages.myGroups.title', 'My Groups')}
+      description="Please sign in to view your groups"
+    >
       <div className="container mx-auto py-8 px-4">
         <PageHeader
           title="My Groups"
@@ -84,11 +87,11 @@ export default function MyGroups() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader style={{ paddingBottom: '8px' }}>
-              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Groups
               </CardTitle>
             </CardHeader>
-            <CardContent style={{ paddingTop: 0 }}>
+            <CardContent className="pt-0">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 <span className="text-2xl font-bold">{stats.total}</span>
@@ -98,11 +101,9 @@ export default function MyGroups() {
 
           <Card>
             <CardHeader style={{ paddingBottom: '8px' }}>
-              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>
-                Owned
-              </CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Owned</CardTitle>
             </CardHeader>
-            <CardContent style={{ paddingTop: 0 }}>
+            <CardContent className="pt-0">
               <div className="flex items-center gap-2">
                 <Crown className="h-4 w-4" />
                 <span className="text-2xl font-bold">{stats.ownedGroups}</span>
@@ -112,11 +113,9 @@ export default function MyGroups() {
 
           <Card>
             <CardHeader style={{ paddingBottom: '8px' }}>
-              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>
-                Member Of
-              </CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Member Of</CardTitle>
             </CardHeader>
-            <CardContent style={{ paddingTop: 0 }}>
+            <CardContent className="pt-0">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4" />
                 <span className="text-2xl font-bold">{stats.memberGroups}</span>
@@ -126,11 +125,9 @@ export default function MyGroups() {
 
           <Card>
             <CardHeader style={{ paddingBottom: '8px' }}>
-              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>
-                Private
-              </CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Private</CardTitle>
             </CardHeader>
-            <CardContent style={{ paddingTop: 0 }}>
+            <CardContent className="pt-0">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 <span className="text-2xl font-bold">{stats.privateGroups}</span>
@@ -153,9 +150,13 @@ export default function MyGroups() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="recent">{t('pages.myGroups.mostRecent', 'Most Recent')}</SelectItem>
+              <SelectItem value="recent">
+                {t('pages.myGroups.mostRecent', 'Most Recent')}
+              </SelectItem>
               <SelectItem value="name">{t('pages.myGroups.nameAZ', 'Name A-Z')}</SelectItem>
-              <SelectItem value="members">{t('pages.myGroups.mostMembers', 'Most Members')}</SelectItem>
+              <SelectItem value="members">
+                {t('pages.myGroups.mostMembers', 'Most Members')}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -174,16 +175,16 @@ export default function MyGroups() {
             <Card>
               <CardContent>
                 <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h6 className="text-base font-semibold mb-2">
-                  You haven't joined any groups yet
-                </h6>
+                <h6 className="text-base font-semibold mb-2">You haven't joined any groups yet</h6>
                 <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
                   Start by joining existing groups or create your own!
                 </p>
                 <div className="flex justify-center gap-3">
                   <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
                   <Button variant="outline" asChild>
-                    <LocalizedLink to="/groups">{t('pages.myGroups.browseGroups', 'Browse Groups')}</LocalizedLink>
+                    <LocalizedLink to="/groups">
+                      {t('pages.myGroups.browseGroups', 'Browse Groups')}
+                    </LocalizedLink>
                   </Button>
                 </div>
               </CardContent>

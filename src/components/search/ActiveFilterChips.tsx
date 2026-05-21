@@ -124,8 +124,7 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
 
   return (
     <div
-      className="flex flex-wrap items-center"
-      style={{ gap: 6, marginBottom: 16 }}
+      className="flex flex-wrap items-center gap-1.5 mb-4"
       role="region"
       aria-label={t('search.activeFilters', 'Active filters')}
     >
@@ -133,8 +132,7 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
         <Badge
           key={chip.key}
           variant="secondary"
-          className="inline-flex items-center"
-          style={{ gap: 4, fontSize: '0.75rem' }}
+          className="inline-flex items-center gap-1 text-xs"
         >
           {chip.label}
           <button
@@ -142,16 +140,13 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
             aria-label={t('search.removeFilter', 'Remove filter {{label}}', { label: chip.label })}
             onClick={chip.onRemove}
             style={{
-              display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               background: 'transparent',
               border: 0,
-              padding: 0,
-              marginLeft: 2,
-              cursor: 'pointer',
               color: 'inherit',
             }}
+            className="inline-flex p-0 ml-0.5 cursor-pointer"
           >
             <X size={12} />
           </button>
@@ -160,7 +155,8 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
       <Button
         variant="ghost"
         size="sm"
-        style={{ height: 24, fontSize: '0.75rem' }}
+        style={{ height: 24 }}
+        className="text-xs"
         onClick={() => onFiltersChange({})}
       >
         {t('search.clearAll', 'Clear all')}

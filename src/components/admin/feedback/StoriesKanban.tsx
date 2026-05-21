@@ -46,7 +46,8 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
 
   const handleArchiveSelected = async () => {
     if (selected.size === 0) return;
-    if (!window.confirm(`Archive ${selected.size} story${selected.size === 1 ? '' : 'ies'}?`)) return;
+    if (!window.confirm(`Archive ${selected.size} story${selected.size === 1 ? '' : 'ies'}?`))
+      return;
     const ids = Array.from(selected);
     for (const id of ids) {
       await archive.mutateAsync({ storyId: id, reason: 'Bulk archive' }).catch(() => null);
@@ -76,9 +77,7 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
           </Button>
         ) : (
           <>
-            <span className="text-xs font-semibold">
-              {selected.size} selected
-            </span>
+            <span className="text-xs font-semibold">{selected.size} selected</span>
             <Button
               size="sm"
               disabled={selected.size === 0 || archive.isPending}
@@ -132,13 +131,13 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
                 )}
                 {items.map((story) => {
                   const run = latest?.runByStory[story.id] ?? null;
-                  const retest = run ? latest?.retestByRun[run.id] ?? null : null;
+                  const retest = run ? (latest?.retestByRun[run.id] ?? null) : null;
                   const isSelected = selected.has(story.id);
                   return (
                     <StoryCard
                       key={story.id}
                       story={story}
-                      assignee={story.assignee_id ? adminById[story.assignee_id] ?? null : null}
+                      assignee={story.assignee_id ? (adminById[story.assignee_id] ?? null) : null}
                       latestRun={run}
                       latestRetest={retest}
                       selectMode={selectMode}
@@ -231,13 +230,12 @@ function StoryCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-block rounded-badge flex-shrink-0"
+                className="inline-block rounded-badge flex-shrink-0 text-background font-bold"
                 style={{
-                  paddingLeft: 3, paddingRight: 3,
+                  paddingLeft: 3,
+                  paddingRight: 3,
                   backgroundColor: prio.color,
-                  color: 'hsl(var(--background))',
                   fontSize: '0.55rem',
-                  fontWeight: 700,
                   letterSpacing: 0.3,
                 }}
               >
@@ -248,14 +246,13 @@ function StoryCard({
           </Tooltip>
         )}
         <p
-          className="flex-1 font-semibold min-w-0"
+          className="flex-1 font-semibold min-w-0 overflow-hidden"
           style={{
             fontSize: '0.8rem',
             lineHeight: 1.3,
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
             wordBreak: 'break-word',
           }}
         >
@@ -266,15 +263,13 @@ function StoryCard({
       {/* Narrative */}
       {narrative && (
         <span
-          className="text-muted-foreground italic block"
+          className="text-muted-foreground italic block overflow-hidden mb-1.5"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
             fontSize: '0.68rem',
             lineHeight: 1.35,
-            marginBottom: 6,
           }}
         >
           {narrative}
@@ -283,13 +278,13 @@ function StoryCard({
 
       {/* Footer */}
       <div
-        className="flex items-center text-muted-foreground"
-        style={{ gap: 6, fontSize: '0.6rem' }}
+        className="flex items-center text-muted-foreground gap-1.5"
+        style={{ fontSize: '0.6rem' }}
       >
         {story.feedback_count > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="inline-flex items-center flex-shrink-0" style={{ gap: 2 }}>
+              <span className="inline-flex items-center flex-shrink-0 gap-0.5">
                 <MessageSquare size={10} />
                 {story.feedback_count}
               </span>
@@ -300,7 +295,7 @@ function StoryCard({
         {story.error_count > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="inline-flex items-center flex-shrink-0" style={{ gap: 2, color: 'hsl(var(--destructive))' }}>
+              <span className="inline-flex items-center flex-shrink-0 gap-0.5 text-destructive">
                 <AlertTriangle size={10} />
                 {story.error_count}
               </span>
@@ -313,12 +308,8 @@ function StoryCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="bg-muted text-muted-foreground rounded-badge flex-shrink-0 truncate"
-                style={{
-                  paddingLeft: 4, paddingRight: 4, paddingTop: 1, paddingBottom: 1,
-                  fontSize: '0.55rem',
-                  maxWidth: 70,
-                }}
+                className="bg-muted text-muted-foreground rounded-badge flex-shrink-0 truncate pl-1 pr-1"
+                style={{ paddingTop: 1, paddingBottom: 1, fontSize: '0.55rem', maxWidth: 70 }}
               >
                 {story.labels.length === 1 ? story.labels[0] : `${story.labels.length} tags`}
               </span>
@@ -331,8 +322,8 @@ function StoryCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="font-bold flex-shrink-0"
-                style={{ paddingLeft: 4, paddingRight: 4, fontSize: '0.55rem', color: 'hsl(var(--foreground))' }}
+                className="font-bold flex-shrink-0 pl-1 pr-1 text-foreground"
+                style={{ fontSize: '0.55rem' }}
               >
                 AI
               </span>
@@ -349,7 +340,10 @@ function StoryCard({
                 data-phase={phase}
                 className="font-bold flex-shrink-0 whitespace-nowrap rounded-badge"
                 style={{
-                  paddingLeft: 4, paddingRight: 4, paddingTop: 1, paddingBottom: 1,
+                  paddingLeft: 4,
+                  paddingRight: 4,
+                  paddingTop: 1,
+                  paddingBottom: 1,
                   fontSize: '0.55rem',
                   color: PHASE_COLORS[phase],
                   backgroundColor: `color-mix(in srgb, ${PHASE_COLORS[phase]} 14%, transparent)`,

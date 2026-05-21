@@ -50,12 +50,8 @@ export function TripProgressRing({ trip, size = 72 }: Props) {
       </svg>
       <div className="absolute inset-0 flex items-center justify-center flex-col">
         <span
-          style={{
-            fontWeight: 700,
-            fontSize: size / 4,
-            lineHeight: 1,
-            fontVariantNumeric: 'tabular-nums',
-          }}
+          style={{ fontSize: size / 4, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}
+          className="font-bold"
         >
           {percent}
         </span>

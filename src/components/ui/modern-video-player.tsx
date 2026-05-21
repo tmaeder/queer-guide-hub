@@ -41,7 +41,7 @@ export function ModernVideoPlayer({
   muted = false,
   controls = true,
   onTimeUpdate,
-  onEnded
+  onEnded,
 }: ModernVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -57,10 +57,10 @@ export function ModernVideoPlayer({
     const videoElement = videoRef.current;
 
     // Find renditions by preference: HLS adaptive > AV1 > VP9 > H.264
-    const hlsRendition = video.renditions.find(r => r.format === 'hls');
-    const av1Rendition = video.renditions.find(r => r.codec === 'av1');
-    const vp9Rendition = video.renditions.find(r => r.codec === 'vp9');
-    const h264Rendition = video.renditions.find(r => r.codec === 'h264');
+    const hlsRendition = video.renditions.find((r) => r.format === 'hls');
+    const av1Rendition = video.renditions.find((r) => r.codec === 'av1');
+    const vp9Rendition = video.renditions.find((r) => r.codec === 'vp9');
+    const h264Rendition = video.renditions.find((r) => r.codec === 'h264');
 
     // Try HLS adaptive streaming first
     if (hlsRendition && Hls.isSupported()) {
@@ -105,9 +105,9 @@ export function ModernVideoPlayer({
 
     function supportsCodec(codec: string): boolean {
       const video = document.createElement('video');
-      return codec === 'av01' ?
-        video.canPlayType('video/webm; codecs="av01.0.05M.08"') !== '' :
-        video.canPlayType('video/webm; codecs="vp9"') !== '';
+      return codec === 'av01'
+        ? video.canPlayType('video/webm; codecs="av01.0.05M.08"') !== ''
+        : video.canPlayType('video/webm; codecs="vp9"') !== '';
     }
 
     return () => {
@@ -139,7 +139,10 @@ export function ModernVideoPlayer({
   const posterUrl = video.poster_image_path ? getVideoUrl(video.poster_image_path) : undefined;
 
   return (
-    <div style={{ position: 'relative', backgroundColor: 'hsl(0 0% 2%)', borderRadius: 'var(--radius-element)', overflow: 'hidden' }}>
+    <div
+      style={{ backgroundColor: 'hsl(0 0% 2%)', borderRadius: 'var(--radius-element)' }}
+      className="relative overflow-hidden"
+    >
       <video
         ref={videoRef}
         style={{ width: '100%', height: '100%' }}
@@ -164,11 +167,11 @@ export function ModernVideoPlayer({
           onEnded?.();
         }}
       >
-        <p style={{ color: 'hsl(0 0% 100%)', padding: 16 }}>
+        <p style={{ color: 'hsl(0 0% 100%)' }} className="p-4">
           Your browser doesn't support embedded videos.
-          {video.renditions.find(r => r.codec === 'h264') && (
+          {video.renditions.find((r) => r.codec === 'h264') && (
             <a
-              href={getVideoUrl(video.renditions.find(r => r.codec === 'h264')!.file_path)}
+              href={getVideoUrl(video.renditions.find((r) => r.codec === 'h264')!.file_path)}
               style={{ color: 'inherit', textDecoration: 'underline', marginLeft: 8 }}
               download
             >
@@ -180,15 +183,16 @@ export function ModernVideoPlayer({
 
       {/* Simple Controls */}
       {controls && !isLoading && (
-        <div style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: 'linear-gradient(to top, hsl(0 0% 0% / 0.8), transparent)',
-          padding: 16,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div
+          style={{
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: 'linear-gradient(to top, hsl(0 0% 0% / 0.8), transparent)',
+          }}
+          className="absolute p-4"
+        >
+          <div style={{ alignItems: 'center', justifyContent: 'space-between' }} className="flex">
             <Button
               variant="ghost"
               size="sm"
@@ -199,19 +203,14 @@ export function ModernVideoPlayer({
               {isPlaying ? <Pause size={20} /> : <Play size={20} />}
             </Button>
 
-            <span style={{ color: 'hsl(0 0% 100%)', fontSize: '0.875rem' }}>
+            <span style={{ color: 'hsl(0 0% 100%)' }} className="text-sm">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
 
-            {video.renditions.find(r => r.codec === 'h264') && (
-              <Button
-                variant="ghost"
-                size="sm"
-                style={{ color: 'hsl(0 0% 100%)' }}
-                asChild
-              >
+            {video.renditions.find((r) => r.codec === 'h264') && (
+              <Button variant="ghost" size="sm" style={{ color: 'hsl(0 0% 100%)' }} asChild>
                 <a
-                  href={getVideoUrl(video.renditions.find(r => r.codec === 'h264')!.file_path)}
+                  href={getVideoUrl(video.renditions.find((r) => r.codec === 'h264')!.file_path)}
                   download={video.title || 'video.mp4'}
                   aria-label="Download video"
                 >
@@ -224,8 +223,11 @@ export function ModernVideoPlayer({
       )}
 
       {video.title && (
-        <div style={{ position: 'absolute', top: 16, left: 16 }}>
-          <h3 style={{ color: 'hsl(0 0% 100%)', fontSize: '1.125rem', fontWeight: 600, textShadow: '0 2px 4px hsl(0 0% 0% / 0.5)', margin: 0 }}>
+        <div style={{ top: 16, left: 16 }} className="absolute">
+          <h3
+            style={{ color: 'hsl(0 0% 100%)', textShadow: '0 2px 4px hsl(0 0% 0% / 0.5)' }}
+            className="text-lg font-semibold m-0"
+          >
             {video.title}
           </h3>
         </div>

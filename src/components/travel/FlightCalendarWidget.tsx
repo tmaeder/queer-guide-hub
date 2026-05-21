@@ -10,10 +10,24 @@ interface FlightCalendarWidgetProps {
   type?: 'calendar' | 'monthly';
 }
 
-interface CalendarPrice { date: string; price: number; airline: string; transfers: number }
-interface MonthlyPrice { month: string; date: string; price: number; airline: string }
+interface CalendarPrice {
+  date: string;
+  price: number;
+  airline: string;
+  transfers: number;
+}
+interface MonthlyPrice {
+  month: string;
+  date: string;
+  price: number;
+  airline: string;
+}
 
-export function FlightCalendarWidget({ destinationIata, destinationCity, type = 'monthly' }: FlightCalendarWidgetProps) {
+export function FlightCalendarWidget({
+  destinationIata,
+  destinationCity,
+  type = 'monthly',
+}: FlightCalendarWidgetProps) {
   const { originIata } = useVisitorOrigin();
 
   const { data, isLoading } = useQuery({
@@ -45,7 +59,7 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
     const months = (data.months || []) as MonthlyPrice[];
     if (months.length === 0) return null;
 
-    const cheapest = months.reduce((min, m) => m.price < min.price ? m : min, months[0]);
+    const cheapest = months.reduce((min, m) => (m.price < min.price ? m : min), months[0]);
 
     return (
       <div>
@@ -66,14 +80,16 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
                 }`}
                 style={{ minWidth: 72, padding: 8 }}
               >
-                <div style={{ fontSize: '0.65rem', fontWeight: 500, opacity: 0.8 }}>{m.month}</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 700 }}>
-                  €{Math.round(m.price)}
+                <div style={{ fontSize: '0.65rem', opacity: 0.8 }} className="font-medium">
+                  {m.month}
                 </div>
+                <div className="text-sm font-bold">€{Math.round(m.price)}</div>
                 {isCheapest && (
-                  <div className="flex items-center justify-center" style={{ gap: 2, marginTop: 2 }}>
+                  <div className="flex items-center justify-center gap-0.5 mt-0.5">
                     <TrendingDown size={10} />
-                    <span style={{ fontSize: '0.55rem', fontWeight: 600 }}>Cheapest</span>
+                    <span style={{ fontSize: '0.55rem' }} className="font-semibold">
+                      Cheapest
+                    </span>
                   </div>
                 )}
               </div>
@@ -88,7 +104,7 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
   const prices = (data.prices || []) as CalendarPrice[];
   if (prices.length === 0) return null;
 
-  const cheapest = prices.reduce((min, p) => p.price < min.price ? p : min, prices[0]);
+  const cheapest = prices.reduce((min, p) => (p.price < min.price ? p : min), prices[0]);
 
   return (
     <div>
@@ -116,7 +132,9 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
               <div style={{ fontSize: '0.65rem' }}>
                 {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </div>
-              <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>€{Math.round(p.price)}</div>
+              <div style={{ fontSize: '0.8rem' }} className="font-bold">
+                €{Math.round(p.price)}
+              </div>
             </div>
           );
         })}

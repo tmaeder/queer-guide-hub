@@ -128,7 +128,11 @@ export function TripNotes({ tripId }: Props) {
         setEditOpen(false);
       },
       onError: (err) =>
-        toast({ title: t('trips.notes.deleteFailedToast', 'Failed to delete note'), description: String(err), variant: 'destructive' }),
+        toast({
+          title: t('trips.notes.deleteFailedToast', 'Failed to delete note'),
+          description: String(err),
+          variant: 'destructive',
+        }),
     });
   };
 
@@ -138,7 +142,10 @@ export function TripNotes({ tripId }: Props) {
     <div>
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium text-muted-foreground">
-          {notes?.length || 0} {(notes?.length || 0) === 1 ? t('trips.notes.note', 'note') : t('trips.notes.notes', 'notes')}
+          {notes?.length || 0}{' '}
+          {(notes?.length || 0) === 1
+            ? t('trips.notes.note', 'note')
+            : t('trips.notes.notes', 'notes')}
         </span>
         <Button size="sm" onClick={openNew}>
           <Plus size={14} />
@@ -173,17 +180,21 @@ export function TripNotes({ tripId }: Props) {
                     {note.title || t('trips.notes.untitled', 'Untitled')}
                   </span>
                 </div>
-                <Badge variant="outline">{t(`trips.notes.category.${note.category || 'general'}`, note.category || 'general')}</Badge>
+                <Badge variant="outline">
+                  {t(
+                    `trips.notes.category.${note.category || 'general'}`,
+                    note.category || 'general',
+                  )}
+                </Badge>
               </div>
 
               {note.content && (
                 <p
-                  className="mt-1 text-xs text-muted-foreground"
+                  className="mt-1 text-xs text-muted-foreground overflow-hidden"
                   style={{
                     display: '-webkit-box',
                     WebkitLineClamp: 3,
                     WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
                   }}
                 >
                   {note.content}
@@ -210,7 +221,11 @@ export function TripNotes({ tripId }: Props) {
       <Dialog open={editOpen} onOpenChange={(o) => !o && setEditOpen(false)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingNote ? t('trips.notes.editNote', 'Edit Note') : t('trips.notes.newNote', 'New Note')}</DialogTitle>
+            <DialogTitle>
+              {editingNote
+                ? t('trips.notes.editNote', 'Edit Note')
+                : t('trips.notes.newNote', 'New Note')}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col gap-3 mt-2">
@@ -254,7 +269,11 @@ export function TripNotes({ tripId }: Props) {
                     onClick={() =>
                       togglePin.mutate({ id: editingNote.id, isPinned: editingNote.is_pinned })
                     }
-                    title={editingNote.is_pinned ? t('trips.notes.unpin', 'Unpin') : t('trips.notes.pin', 'Pin')}
+                    title={
+                      editingNote.is_pinned
+                        ? t('trips.notes.unpin', 'Unpin')
+                        : t('trips.notes.pin', 'Pin')
+                    }
                   >
                     {editingNote.is_pinned ? <PinOff size={16} /> : <Pin size={16} />}
                   </Button>
@@ -292,7 +311,10 @@ export function TripNotes({ tripId }: Props) {
             <DialogTitle>{t('trips.notes.deleteTitle', 'Delete Note')}</DialogTitle>
           </DialogHeader>
           <p className="text-sm mt-2">
-            {t('trips.notes.deleteConfirm', 'Are you sure you want to delete this note? This cannot be undone.')}
+            {t(
+              'trips.notes.deleteConfirm',
+              'Are you sure you want to delete this note? This cannot be undone.',
+            )}
           </p>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(null)}>

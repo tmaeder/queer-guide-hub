@@ -56,16 +56,15 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
         className="flex items-center w-full cursor-pointer text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
         style={{ gap: 4, paddingTop: 6, paddingBottom: 6 }}
       >
-        {expanded ? (
-          <ChevronDown size={14} />
-        ) : (
-          <ChevronRight size={14} />
-        )}
+        {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         Context & metadata
       </button>
 
       <CollapsibleContent className="space-y-4 pb-4">
-        <div className="grid grid-cols-2 gap-3 bg-muted" style={{ padding: 10, borderRadius: 'var(--radius-badge)' }}>
+        <div
+          className="grid grid-cols-2 gap-3 bg-muted p-2.5"
+          style={{ borderRadius: 'var(--radius-badge)' }}
+        >
           <MetaItem icon={ChevronUp} label="Votes" value={String(voteCount)} />
           <MetaItem icon={Clock} label="Submitted" value={timeAgo(submittedAt)} />
           {ctx.viewport && (
@@ -75,19 +74,15 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               value={`${ctx.viewport.width}×${ctx.viewport.height}`}
             />
           )}
-          {ctx.color_scheme && (
-            <MetaItem icon={Monitor} label="Theme" value={ctx.color_scheme} />
-          )}
+          {ctx.color_scheme && <MetaItem icon={Monitor} label="Theme" value={ctx.color_scheme} />}
         </div>
 
         {ctx.url && (
           <div>
             <span className="text-xs font-semibold block mb-1">Page URL</span>
             <div
-              className="flex items-center bg-muted"
+              className="flex items-center bg-muted gap-1.5 p-2"
               style={{
-                gap: 6,
-                padding: 8,
                 borderRadius: 'var(--radius-badge)',
                 fontFamily: 'monospace',
                 fontSize: '0.7rem',
@@ -97,14 +92,8 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 href={ctx.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{
-                  color: 'inherit',
-                  textDecoration: 'none',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  flex: 1,
-                }}
+                style={{ color: 'inherit', textOverflow: 'ellipsis', flex: 1 }}
+                className="no-underline overflow-hidden whitespace-nowrap"
               >
                 {ctx.url}
               </a>
@@ -117,9 +106,8 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
           <div>
             <span className="text-xs font-semibold block mb-1">User Agent</span>
             <span
-              className="block bg-muted"
+              className="block bg-muted p-2"
               style={{
-                padding: 8,
                 borderRadius: 'var(--radius-badge)',
                 fontFamily: 'monospace',
                 fontSize: '0.65rem',
@@ -133,7 +121,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
 
         {screenshotUrl && (
           <div>
-            <span className="text-xs font-semibold flex items-center mb-1" style={{ gap: 4 }}>
+            <span className="text-xs font-semibold flex items-center mb-1 gap-1">
               <Camera size={12} /> Screenshot
             </span>
             <div
@@ -157,7 +145,8 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               <img
                 src={screenshotUrl}
                 alt="Page screenshot"
-                style={{ width: '100%', display: 'block', maxHeight: 280, objectFit: 'cover' }}
+                style={{ width: '100%', maxHeight: 280, objectFit: 'cover' }}
+                className="block"
               />
             </div>
             <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
@@ -183,21 +172,14 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               className="flex items-center cursor-pointer"
               style={{ gap: 4, paddingTop: 4, paddingBottom: 4 }}
             >
-              {errorsOpen ? (
-                <ChevronDown size={14} />
-              ) : (
-                <ChevronRight size={14} />
-              )}
+              {errorsOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               <AlertTriangle size={12} className="text-destructive" />
-              <span className="text-xs font-semibold">
-                Console errors ({ctx.errors.length})
-              </span>
+              <span className="text-xs font-semibold">Console errors ({ctx.errors.length})</span>
             </button>
             <CollapsibleContent>
               <div
-                className="bg-muted"
+                className="bg-muted p-2"
                 style={{
-                  padding: 8,
                   borderRadius: 'var(--radius-badge)',
                   fontFamily: 'monospace',
                   fontSize: '0.65rem',
@@ -208,19 +190,16 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 {ctx.errors.map((err, i) => (
                   <div
                     key={i}
-                    style={{
-                      marginBottom: 8,
-                      paddingBottom: 8,
-                      borderBottom: '1px solid hsl(var(--border))',
-                    }}
+                    style={{ borderBottom: '1px solid hsl(var(--border))' }}
+                    className="mb-2 pb-2"
                   >
-                    <span className="block" style={{ color: 'hsl(var(--destructive))', fontSize: '0.65rem' }}>
+                    <span className="block text-destructive" style={{ fontSize: '0.65rem' }}>
                       {err.message}
                     </span>
                     {err.stack && (
                       <span
-                        className="block text-muted-foreground"
-                        style={{ fontSize: '0.6rem', marginTop: 2, whiteSpace: 'pre-wrap' }}
+                        className="block text-muted-foreground mt-0.5"
+                        style={{ fontSize: '0.6rem', whiteSpace: 'pre-wrap' }}
                       >
                         {err.stack.split('\n').slice(0, 3).join('\n')}
                       </span>
@@ -240,11 +219,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               className="flex items-center cursor-pointer"
               style={{ gap: 4, paddingTop: 4, paddingBottom: 4 }}
             >
-              {networkOpen ? (
-                <ChevronDown size={14} />
-              ) : (
-                <ChevronRight size={14} />
-              )}
+              {networkOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               <Wifi size={12} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
               <span className="text-xs font-semibold">
                 Network failures ({ctx.network_failures.length})
@@ -252,9 +227,8 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
             </button>
             <CollapsibleContent>
               <div
-                className="bg-muted"
+                className="bg-muted p-2"
                 style={{
-                  padding: 8,
                   borderRadius: 'var(--radius-badge)',
                   fontFamily: 'monospace',
                   fontSize: '0.65rem',
@@ -263,9 +237,14 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 }}
               >
                 {ctx.network_failures.map((nf, i) => (
-                  <div key={i} style={{ marginBottom: 4 }}>
+                  <div key={i} className="mb-1">
                     <span className="block" style={{ fontSize: '0.65rem' }}>
-                      <span style={{ color: 'hsl(var(--foreground) / 0.55)', fontWeight: 700 }}>{nf.status}</span>{' '}
+                      <span
+                        style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                        className="font-bold"
+                      >
+                        {nf.status}
+                      </span>{' '}
                       {nf.method} {nf.url}
                     </span>
                   </div>
@@ -289,15 +268,13 @@ function MetaItem({
   value: string;
 }) {
   return (
-    <div className="flex items-center" style={{ gap: 6 }}>
-      <Icon style={{ width: 13, height: 13, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+    <div className="flex items-center gap-1.5">
+      <Icon style={{ width: 13, height: 13 }} className="text-muted-foreground shrink-0" />
       <div style={{ minWidth: 0 }}>
         <span className="block text-muted-foreground" style={{ fontSize: '0.6rem', lineHeight: 1 }}>
           {label}
         </span>
-        <span className="block font-semibold text-xs">
-          {value}
-        </span>
+        <span className="block font-semibold text-xs">{value}</span>
       </div>
     </div>
   );

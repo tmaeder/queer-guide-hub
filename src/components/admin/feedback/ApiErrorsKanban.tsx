@@ -8,11 +8,7 @@ import {
   pointerWithin,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,13 +42,9 @@ interface Props {
 
 function extractTitle(item: ApiErrorSubmission): string {
   const msg = item.data.message ?? '';
-  const meta = item.data.metadata as
-    | { source?: string; advisor_type?: string }
-    | undefined;
+  const meta = item.data.metadata as { source?: string; advisor_type?: string } | undefined;
   if (meta?.source === 'supabase-advisor') {
-    const m = msg.match(
-      /Table\s+\\?[`"]?([\w.]+)\\?[`"]?.*role\s+\\?[`"]?([\w_]+)\\?[`"]?/,
-    );
+    const m = msg.match(/Table\s+\\?[`"]?([\w.]+)\\?[`"]?.*role\s+\\?[`"]?([\w_]+)\\?[`"]?/);
     if (m) return `${meta.advisor_type}: ${m[1]} · ${m[2]}`;
     return meta.advisor_type ?? msg;
   }
@@ -77,9 +69,7 @@ export function ApiErrorsKanban({
   onStatusChange,
   forwardingIds,
 }: Props) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const seriesBySubmission = useMemo(() => {
@@ -120,9 +110,7 @@ export function ApiErrorsKanban({
   }, [grouped]);
 
   if (errors.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground py-8 text-center">No API errors recorded</p>
-    );
+    return <p className="text-sm text-muted-foreground py-8 text-center">No API errors recorded</p>;
   }
 
   const handleDragEnd = (e: DragEndEvent) => {
@@ -141,20 +129,14 @@ export function ApiErrorsKanban({
       }
     }
     if (!targetCol) return;
-    const sourceCol = kanbanColumns.find((c) =>
-      idsByColumn[c.id].includes(String(active.id)),
-    )?.id;
+    const sourceCol = kanbanColumns.find((c) => idsByColumn[c.id].includes(String(active.id)))?.id;
     if (sourceCol && sourceCol !== targetCol) {
       onStatusChange(String(active.id), targetCol);
     }
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={pointerWithin}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
       <div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
         style={{
@@ -273,14 +255,9 @@ function SortableErrorCard({
   onStatusChange,
   isForwarding,
 }: CardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -331,16 +308,11 @@ function SortableErrorCard({
                 color,
                 fontSize: '0.7rem',
                 padding: '2px 6px',
-                display: 'inline-flex',
                 alignItems: 'center',
-                gap: 4,
               }}
+              className="inline-flex gap-1"
             >
-              {isAdvisor ? (
-                <ShieldAlert size={11} />
-              ) : (
-                <Server size={11} />
-              )}
+              {isAdvisor ? <ShieldAlert size={11} /> : <Server size={11} />}
               {isAdvisor ? `advisor · ${advisorMeta?.advisor_type}` : item.data.service}
             </Badge>
             {isAdvisor && advisorMeta?.severity && (
@@ -349,11 +321,10 @@ function SortableErrorCard({
                 style={{
                   borderColor: severityColor,
                   backgroundColor: severityColor,
-                  color: 'hsl(var(--background))',
                   fontSize: '0.7rem',
                   padding: '2px 6px',
-                  fontWeight: 700,
                 }}
+                className="text-background font-bold"
               >
                 {advisorMeta.severity}
               </Badge>
@@ -364,14 +335,11 @@ function SortableErrorCard({
                 style={{
                   borderColor: 'hsl(var(--foreground) / 0.55)',
                   backgroundColor: 'hsl(var(--foreground) / 0.55)',
-                  color: 'hsl(var(--background))',
                   fontSize: '0.7rem',
                   padding: '2px 6px',
-                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 4,
-                  fontWeight: 700,
                 }}
+                className="text-background inline-flex gap-1 font-bold"
               >
                 <Github size={11} />#{item.github_issue_number}
               </Badge>
@@ -387,13 +355,8 @@ function SortableErrorCard({
             </div>
             <Badge
               variant="secondary"
-              style={{
-                fontSize: '0.7rem',
-                padding: '2px 6px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
+              style={{ fontSize: '0.7rem', padding: '2px 6px', alignItems: 'center' }}
+              className="inline-flex gap-1"
             >
               <Hash size={11} />
               {item.occurrence_count}×
@@ -414,10 +377,7 @@ function SortableErrorCard({
           </p>
 
           <p className="text-muted-foreground block" style={{ fontSize: '0.72rem' }}>
-            <Zap size={11} style={{ display: 'inline',
-                verticalAlign: -2,
-                marginRight: 3 }}
-            />
+            <Zap size={11} style={{ display: 'inline', verticalAlign: -2, marginRight: 3 }} />
             {item.data.function_name}
             {item.data.status_code ? ` · ${item.data.status_code}` : ''}
             {' · '}last seen {timeAgo(item.last_seen_at)}

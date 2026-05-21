@@ -232,12 +232,15 @@ export default function TagRelationshipGraph({
               className="cursor-pointer"
               onClick={() => onTagClick({ id: node.id, name: node.name })}
             >
-              <CardContent style={{ padding: 12 }}>
+              <CardContent className="p-3">
                 <p className="text-sm font-semibold truncate" style={{ fontSize: '0.8rem' }}>
                   {node.name}
                 </p>
                 {node.category && (
-                  <span className="block text-xs text-muted-foreground mt-1" style={{ fontSize: '0.7rem' }}>
+                  <span
+                    className="block text-xs text-muted-foreground mt-1"
+                    style={{ fontSize: '0.7rem' }}
+                  >
                     {node.category}
                   </span>
                 )}
@@ -349,18 +352,12 @@ export default function TagRelationshipGraph({
             className="absolute bg-background p-3 pointer-events-none"
             style={{ top: 12, right: 12, maxWidth: 220 }}
           >
-            <p className="text-sm font-semibold mb-1">
-              {hoveredNode.name}
-            </p>
+            <p className="text-sm font-semibold mb-1">{hoveredNode.name}</p>
             {hoveredNode.category && (
-              <span className="block text-xs text-muted-foreground">
-                {hoveredNode.category}
-              </span>
+              <span className="block text-xs text-muted-foreground">{hoveredNode.category}</span>
             )}
             {hoveredNode.usage_count > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {hoveredNode.usage_count} uses
-              </span>
+              <span className="text-xs text-muted-foreground">{hoveredNode.usage_count} uses</span>
             )}
           </div>
         )}

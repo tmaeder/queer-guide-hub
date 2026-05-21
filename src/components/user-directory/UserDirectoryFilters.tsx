@@ -83,20 +83,19 @@ export const UserDirectoryFilters = ({
 }: UserDirectoryFiltersProps) => {
   return (
     <div className="border border-border rounded-element bg-background">
-      <CardContent style={{ padding: 20 }}>
+      <CardContent className="p-5">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search
                 style={{
-                  position: 'absolute',
                   left: 12,
                   top: '50%',
                   transform: 'translateY(-50%)',
                   height: 16,
                   width: 16,
-                  color: 'hsl(var(--muted-foreground))',
                 }}
+                className="absolute text-muted-foreground"
               />
               <Input
                 placeholder="Search by name, bio, location, or interests..."
@@ -145,19 +144,16 @@ export const UserDirectoryFilters = ({
                   <Badge
                     variant="secondary"
                     style={{
-                      position: 'absolute',
                       top: -8,
                       right: -8,
                       height: 20,
                       width: 20,
-                      padding: 0,
-                      fontSize: '0.75rem',
-                      display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       backgroundColor: '#333333',
                       color: '#ffffff',
                     }}
+                    className="absolute p-0 text-xs flex"
                   >
                     {activeFiltersCount}
                   </Badge>
@@ -169,7 +165,7 @@ export const UserDirectoryFilters = ({
           {showFilters && isAuthed && (
             <div>
               <Card style={{}}>
-                <CardContent style={{ padding: 24 }}>
+                <CardContent className="p-6">
                   <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -181,7 +177,7 @@ export const UserDirectoryFilters = ({
                           variant="ghost"
                           size="sm"
                           onClick={clearAllFilters}
-                          style={{ gap: 8 }}
+                          className="gap-2"
                         >
                           <X size={16} />
                           Clear All ({activeFiltersCount})
@@ -340,17 +336,15 @@ export const UserDirectoryFilters = ({
                               ? `${filters.interests.length} interest${filters.interests.length !== 1 ? 's' : ''} selected`
                               : 'Select interests...'}
                             <ChevronDown
-                              style={{
-                                marginLeft: 8,
-                                height: 16,
-                                width: 16,
-                                flexShrink: 0,
-                                color: 'hsl(var(--muted-foreground))',
-                              }}
+                              style={{ height: 16, width: 16 }}
+                              className="ml-2 shrink-0 text-muted-foreground"
                             />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent style={{ width: '100%', padding: 0, border: '2px solid' }}>
+                        <PopoverContent
+                          style={{ width: '100%', border: '2px solid' }}
+                          className="p-0"
+                        >
                           <Command>
                             <CommandInput placeholder="Search interests..." />
                             <CommandList>
@@ -364,13 +358,13 @@ export const UserDirectoryFilters = ({
                                   >
                                     <Check
                                       style={{
-                                        marginRight: 8,
                                         height: 16,
                                         width: 16,
                                         visibility: filters.interests.includes(interest)
                                           ? 'visible'
                                           : 'hidden',
                                       }}
+                                      className="mr-2"
                                     />
                                     {interest}
                                   </CommandItem>
@@ -383,10 +377,12 @@ export const UserDirectoryFilters = ({
                       {filters.interests.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
                           {filters.interests.map((interest) => (
-                            <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
+                            <Badge key={interest} variant="secondary" className="gap-1">
                               <Sparkles size={12} />
                               {interest}
-                              <X size={12} className="cursor-pointer"
+                              <X
+                                size={12}
+                                className="cursor-pointer"
                                 onClick={() => handleInterestToggle(interest)}
                               />
                             </Badge>
@@ -487,43 +483,43 @@ export const UserDirectoryFilters = ({
                 {nearMe && (
                   <Badge
                     variant="secondary"
-                    style={{
-                      gap: 4,
-                      backgroundColor: '#eff6ff',
-                      color: '#1d4ed8',
-                      borderColor: '#bfdbfe',
-                    }}
+                    style={{ backgroundColor: '#eff6ff', color: '#1d4ed8', borderColor: '#bfdbfe' }}
+                    className="gap-1"
                   >
                     <Navigation size={12} />
                     Near Me
-                    <X size={12} className="cursor-pointer"
-                      onClick={handleNearMeToggle}
-                    />
+                    <X size={12} className="cursor-pointer" onClick={handleNearMeToggle} />
                   </Badge>
                 )}
                 {filters.location && (
-                  <Badge variant="secondary" style={{ gap: 4 }}>
+                  <Badge variant="secondary" className="gap-1">
                     <MapPin size={12} />
                     {filters.location}
-                    <X size={12} className="cursor-pointer"
+                    <X
+                      size={12}
+                      className="cursor-pointer"
                       onClick={() => setFilters((prev) => ({ ...prev, location: '' }))}
                     />
                   </Badge>
                 )}
                 {filters.ageRange && filters.ageRange !== 'all' && (
-                  <Badge variant="secondary" style={{ gap: 4 }}>
+                  <Badge variant="secondary" className="gap-1">
                     <Calendar size={12} />
                     {filters.ageRange}
-                    <X size={12} className="cursor-pointer"
+                    <X
+                      size={12}
+                      className="cursor-pointer"
                       onClick={() => setFilters((prev) => ({ ...prev, ageRange: 'all' }))}
                     />
                   </Badge>
                 )}
                 {filters.interests.map((interest) => (
-                  <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
+                  <Badge key={interest} variant="secondary" className="gap-1">
                     <Sparkles size={12} />
                     {interest}
-                    <X size={12} className="cursor-pointer"
+                    <X
+                      size={12}
+                      className="cursor-pointer"
                       onClick={() => handleInterestToggle(interest)}
                     />
                   </Badge>

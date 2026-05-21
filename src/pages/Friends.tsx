@@ -87,7 +87,7 @@ export default function Friends() {
                       variant="destructive"
                       size="sm"
                       disabled={!canSend || sosLoading}
-                      style={{ gap: 6 }}
+                      className="gap-1.5"
                     >
                       <Siren size={16} />
                       {cooldownSeconds > 0
@@ -125,7 +125,7 @@ export default function Friends() {
           />
 
           <Tabs defaultValue="friends" style={{ width: '100%' }}>
-            <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr' }}>
+            <TabsList style={{ width: '100%', gridTemplateColumns: '1fr 1fr' }} className="grid">
               <TabsTrigger value="friends">
                 <div className="flex items-center gap-2">
                   <Users size={16} />

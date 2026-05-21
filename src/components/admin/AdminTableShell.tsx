@@ -5,16 +5,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import { type ReactNode } from "react";
+} from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { type ReactNode } from 'react';
 
 export interface AdminTableColumn {
   key: string;
   label: ReactNode;
   width?: string;
-  align?: "left" | "right" | "center";
+  align?: 'left' | 'right' | 'center';
 }
 
 export interface AdminTableShellProps<T> {
@@ -44,20 +44,15 @@ export function AdminTableShell<T>({
 }: AdminTableShellProps<T>) {
   const colCount = columns.length;
   return (
-    <div className={cn("flex flex-col border border-border bg-background", className)}>
+    <div className={cn('flex flex-col border border-border bg-background', className)}>
       <Table>
         <TableHeader>
           <TableRow>
             {columns.map((c) => (
               <TableHead
                 key={c.key}
-                style={{
-                  width: c.width,
-                  textAlign: c.align ?? "left",
-                  textTransform: "uppercase",
-                  fontSize: "0.6875rem",
-                  letterSpacing: "0.04em",
-                }}
+                style={{ width: c.width, textAlign: c.align ?? 'left', letterSpacing: '0.04em' }}
+                className="uppercase text-xs2"
               >
                 {c.label}
               </TableHead>
@@ -84,9 +79,7 @@ export function AdminTableShell<T>({
           ) : rows.length === 0 ? (
             <TableRow>
               <TableCell colSpan={colCount}>
-                <span className="text-sm text-muted-foreground">
-                  {empty ?? "No results."}
-                </span>
+                <span className="text-sm text-muted-foreground">{empty ?? 'No results.'}</span>
               </TableCell>
             </TableRow>
           ) : (

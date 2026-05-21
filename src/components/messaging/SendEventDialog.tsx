@@ -113,7 +113,10 @@ export function SendEventDialog({
       const conversationId = await startConversation(selectedMember.id);
       if (!conversationId) throw new Error('Failed to create conversation');
       await sendMessage(conversationId, buildEventMessage());
-      toast({ title: 'Sent', description: `Event sent to ${selectedMember.display_name || 'member'}` });
+      toast({
+        title: 'Sent',
+        description: `Event sent to ${selectedMember.display_name || 'member'}`,
+      });
       onOpenChange(false);
     } catch {
       toast({ title: 'Error', description: 'Failed to send event', variant: 'destructive' });
@@ -185,23 +188,26 @@ export function SendEventDialog({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'member' | 'group')}>
-          <TabsList style={{ width: '100%', marginTop: 8 }}>
-            <TabsTrigger value="member" style={{ flex: 1 }}>Member</TabsTrigger>
-            <TabsTrigger value="group" style={{ flex: 1 }}>Group</TabsTrigger>
+          <TabsList style={{ width: '100%' }} className="mt-2">
+            <TabsTrigger value="member" style={{ flex: 1 }}>
+              Member
+            </TabsTrigger>
+            <TabsTrigger value="group" style={{ flex: 1 }}>
+              Group
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="member">
             <div className="relative mt-3">
               <Search
                 style={{
-                  position: 'absolute',
                   left: 12,
                   top: '50%',
                   transform: 'translateY(-50%)',
                   width: 16,
                   height: 16,
-                  color: 'hsl(var(--muted-foreground))',
                 }}
+                className="absolute text-muted-foreground"
               />
               <Input
                 placeholder="Search members..."
@@ -210,7 +216,7 @@ export function SendEventDialog({
                 style={{ paddingLeft: 36 }}
               />
             </div>
-            <ScrollArea style={{ height: 220, marginTop: 8 }}>
+            <ScrollArea style={{ height: 220 }} className="mt-2">
               {loadingMembers && members.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
               ) : members.length === 0 ? (
@@ -226,11 +232,13 @@ export function SendEventDialog({
           </TabsContent>
 
           <TabsContent value="group">
-            <ScrollArea style={{ height: 264, marginTop: 8 }}>
+            <ScrollArea style={{ height: 264 }} className="mt-2">
               {loadingGroups && groups.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
               ) : groups.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No groups joined yet</p>
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No groups joined yet
+                </p>
               ) : (
                 groups.map((g) =>
                   renderRow(g.id, g.name, g.image_url, selectedGroup?.id === g.id, () =>

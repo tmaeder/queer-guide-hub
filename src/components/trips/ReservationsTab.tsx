@@ -112,14 +112,8 @@ export function ReservationsTab({ tripId }: Props) {
       );
     }
     if (status === 'cancelled')
-      return (
-        <Badge variant="destructive">
-          {t('trips.reservations.status.cancelled')}
-        </Badge>
-      );
-    return (
-      <Badge variant="outline">{t('trips.reservations.status.pending')}</Badge>
-    );
+      return <Badge variant="destructive">{t('trips.reservations.status.cancelled')}</Badge>;
+    return <Badge variant="outline">{t('trips.reservations.status.pending')}</Badge>;
   };
 
   if (items.length === 0) {
@@ -132,9 +126,7 @@ export function ReservationsTab({ tripId }: Props) {
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-element bg-[hsl(var(--foreground)/0.1)]">
             <Ticket size={26} className="text-foreground" />
           </div>
-          <h3 className="mb-1 text-lg font-bold">
-            {t('trips.reservations.emptyTitle')}
-          </h3>
+          <h3 className="mb-1 text-lg font-bold">{t('trips.reservations.emptyTitle')}</h3>
           <p className="mx-auto mb-6 max-w-[360px] text-sm text-muted-foreground">
             {t('trips.reservations.emptyDescription')}
           </p>
@@ -145,7 +137,7 @@ export function ReservationsTab({ tripId }: Props) {
               setAddOpen(true);
             }}
           >
-            <Plus size={16} style={{ marginRight: 6 }} />
+            <Plus size={16} className="mr-1.5" />
             {t('trips.reservations.add')}
           </Button>
         </div>
@@ -198,11 +190,7 @@ export function ReservationsTab({ tripId }: Props) {
               <div className="flex h-7 w-7 items-center justify-center rounded-badge bg-accent">
                 <Icon size={14} />
               </div>
-              <h4
-                className="text-sm font-bold"
-              >
-                {typeLabel(type)}
-              </h4>
+              <h4 className="text-sm font-bold">{typeLabel(type)}</h4>
               <Badge variant="secondary">{typeItems.length}</Badge>
             </div>
 
@@ -239,9 +227,7 @@ export function ReservationsTab({ tripId }: Props) {
                           {res.provider && <span>{res.provider}</span>}
                           {res.confirmation_code && (
                             <Badge variant="outline">
-                              <span className="font-mono text-2xs">
-                                {res.confirmation_code}
-                              </span>
+                              <span className="font-mono text-2xs">{res.confirmation_code}</span>
                             </Badge>
                           )}
                         </div>
@@ -303,7 +289,7 @@ export function ReservationsTab({ tripId }: Props) {
           setAddOpen(true);
         }}
       >
-        <Plus size={16} style={{ marginRight: 6 }} />
+        <Plus size={16} className="mr-1.5" />
         {t('trips.reservations.add')}
       </Button>
 
@@ -317,16 +303,11 @@ export function ReservationsTab({ tripId }: Props) {
         existing={editItem}
       />
 
-      <Dialog
-        open={!!deleteConfirmId}
-        onOpenChange={(open) => !open && setDeleteConfirmId(null)}
-      >
+      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('trips.reservations.deleteTitle')}</DialogTitle>
-            <DialogDescription>
-              {t('trips.reservations.deleteConfirm')}
-            </DialogDescription>
+            <DialogDescription>{t('trips.reservations.deleteConfirm')}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>

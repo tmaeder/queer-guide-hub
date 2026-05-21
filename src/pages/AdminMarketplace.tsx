@@ -176,9 +176,7 @@ export default function AdminMarketplace() {
         cell: (info) => (
           <div>
             <span className="font-medium">{info.getValue()}</span>
-            <p className="text-sm text-muted-foreground">
-              {info.row.original.business_name}
-            </p>
+            <p className="text-sm text-muted-foreground">{info.row.original.business_name}</p>
           </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -220,7 +218,12 @@ export default function AdminMarketplace() {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
+            <Badge
+              style={{
+                backgroundColor: 'hsl(var(--muted))',
+                color: 'hsl(var(--foreground) / 0.7)',
+              }}
+            >
               <Star size={12} className="mr-1" />
               Featured
             </Badge>
@@ -358,267 +361,281 @@ export default function AdminMarketplace() {
       config={tableConfig}
       afterTable={
         <>
-      {/* Create Listing Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent style={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
-          <DialogHeader>
-            <DialogTitle>Create New Listing</DialogTitle>
-          </DialogHeader>
-          <form
-            onSubmit={handleSubmit}
-            style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Title</Label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
-                  required
-                />
-              </div>
-              <div>
-                <Label>Business Name</Label>
-                <Input
-                  value={formData.business_name}
-                  onChange={(e) => setFormData((p) => ({ ...p, business_name: e.target.value }))}
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(v) => setFormData((p) => ({ ...p, category: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {formatCategory(c)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Subcategory</Label>
-                <Input
-                  value={formData.subcategory}
-                  onChange={(e) => setFormData((p) => ({ ...p, subcategory: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label>Business Type</Label>
-                <Select
-                  value={formData.business_type}
-                  onValueChange={(v) => setFormData((p) => ({ ...p, business_type: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {businessTypes.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {formatCategory(t)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Price</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData((p) => ({ ...p, price: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label>Price Type</Label>
-                <Select
-                  value={formData.price_type}
-                  onValueChange={(v) => setFormData((p) => ({ ...p, price_type: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fixed">Fixed</SelectItem>
-                    <SelectItem value="hourly">Hourly</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="negotiable">Negotiable</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Currency</Label>
-                <Select
-                  value={formData.currency}
-                  onValueChange={(v) => setFormData((p) => ({ ...p, currency: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="GBP">GBP</SelectItem>
-                    <SelectItem value="CAD">CAD</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Phone</Label>
-                <Input
-                  value={formData.contact_phone}
-                  onChange={(e) => setFormData((p) => ({ ...p, contact_phone: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={formData.contact_email}
-                  onChange={(e) => setFormData((p) => ({ ...p, contact_email: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label>Website</Label>
-                <Input
-                  value={formData.website}
-                  onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label>Location</Label>
-                <Input
-                  value={formData.location}
-                  onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
-                  placeholder="City, State"
-                />
-              </div>
-            </div>
-            <div className="flex gap-6">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={formData.shipping_available}
-                  onCheckedChange={(c) =>
-                    setFormData((p) => ({ ...p, shipping_available: c as boolean }))
-                  }
-                />
-                <Label>Shipping Available</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={formData.featured}
-                  onCheckedChange={(c) => setFormData((p) => ({ ...p, featured: c as boolean }))}
-                />
-                <Label>Featured</Label>
-              </div>
-            </div>
-            <Button type="submit" style={{ width: '100%' }}>
-              Create Listing
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Awin Import Dialog */}
-      <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
-        <DialogContent style={{ maxWidth: 672 }}>
-          <DialogHeader>
-            <DialogTitle>Import from Awin CSV Feed</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-4">
-            <div>
-              <Label>Custom CSV Feed URL (Optional)</Label>
-              <Input
-                placeholder="https://productdata.awin.com/datafeed/download/..."
-                value={importParams.csvUrl}
-                onChange={(e) => setImportParams((p) => ({ ...p, csvUrl: e.target.value }))}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Max Products</Label>
-                <Input
-                  type="number"
-                  value={importParams.maxProducts}
-                  onChange={(e) =>
-                    setImportParams((p) => ({
-                      ...p,
-                      maxProducts: parseInt(e.target.value) || 1000,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <Label>Skip Rows</Label>
-                <Input
-                  type="number"
-                  value={importParams.skipRows}
-                  onChange={(e) =>
-                    setImportParams((p) => ({ ...p, skipRows: parseInt(e.target.value) || 0 }))
-                  }
-                />
-              </div>
-              <div>
-                <Label>Batch Size</Label>
-                <Input
-                  type="number"
-                  value={importParams.batchSize}
-                  onChange={(e) =>
-                    setImportParams((p) => ({ ...p, batchSize: parseInt(e.target.value) || 100 }))
-                  }
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setIsAwinImportOpen(false)}
-                disabled={isImporting}
+          {/* Create Listing Dialog */}
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogContent style={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
+              <DialogHeader>
+                <DialogTitle>Create New Listing</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={handleSubmit}
+                style={{ flexDirection: 'column' }}
+                className="flex gap-6"
               >
-                Cancel
-              </Button>
-              <Button onClick={handleAwinImport} disabled={isImporting}>
-                {isImporting ? (
-                  <>
-                    <RefreshCw size={14} style={{ marginRight: 4,
-                        animation: 'spin 1s linear infinite' }}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Title</Label>
+                    <Input
+                      value={formData.title}
+                      onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+                      required
                     />
-                    Importing...
-                  </>
-                ) : (
-                  <>
-                    <Download size={14} className="mr-1" />
-                    Import
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+                  </div>
+                  <div>
+                    <Label>Business Name</Label>
+                    <Input
+                      value={formData.business_name}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, business_name: e.target.value }))
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Description</Label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label>Category</Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, category: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {formatCategory(c)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Subcategory</Label>
+                    <Input
+                      value={formData.subcategory}
+                      onChange={(e) => setFormData((p) => ({ ...p, subcategory: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Business Type</Label>
+                    <Select
+                      value={formData.business_type}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, business_type: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {businessTypes.map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {formatCategory(t)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label>Price</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={formData.price}
+                      onChange={(e) => setFormData((p) => ({ ...p, price: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Price Type</Label>
+                    <Select
+                      value={formData.price_type}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, price_type: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="fixed">Fixed</SelectItem>
+                        <SelectItem value="hourly">Hourly</SelectItem>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="negotiable">Negotiable</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Currency</Label>
+                    <Select
+                      value={formData.currency}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, currency: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD</SelectItem>
+                        <SelectItem value="EUR">EUR</SelectItem>
+                        <SelectItem value="GBP">GBP</SelectItem>
+                        <SelectItem value="CAD">CAD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Phone</Label>
+                    <Input
+                      value={formData.contact_phone}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, contact_phone: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={formData.contact_email}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, contact_email: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Website</Label>
+                    <Input
+                      value={formData.website}
+                      onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Location</Label>
+                    <Input
+                      value={formData.location}
+                      onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
+                      placeholder="City, State"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-6">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={formData.shipping_available}
+                      onCheckedChange={(c) =>
+                        setFormData((p) => ({ ...p, shipping_available: c as boolean }))
+                      }
+                    />
+                    <Label>Shipping Available</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={formData.featured}
+                      onCheckedChange={(c) =>
+                        setFormData((p) => ({ ...p, featured: c as boolean }))
+                      }
+                    />
+                    <Label>Featured</Label>
+                  </div>
+                </div>
+                <Button type="submit" style={{ width: '100%' }}>
+                  Create Listing
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Awin Import Dialog */}
+          <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
+            <DialogContent style={{ maxWidth: 672 }}>
+              <DialogHeader>
+                <DialogTitle>Import from Awin CSV Feed</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <Label>Custom CSV Feed URL (Optional)</Label>
+                  <Input
+                    placeholder="https://productdata.awin.com/datafeed/download/..."
+                    value={importParams.csvUrl}
+                    onChange={(e) => setImportParams((p) => ({ ...p, csvUrl: e.target.value }))}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label>Max Products</Label>
+                    <Input
+                      type="number"
+                      value={importParams.maxProducts}
+                      onChange={(e) =>
+                        setImportParams((p) => ({
+                          ...p,
+                          maxProducts: parseInt(e.target.value) || 1000,
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Skip Rows</Label>
+                    <Input
+                      type="number"
+                      value={importParams.skipRows}
+                      onChange={(e) =>
+                        setImportParams((p) => ({ ...p, skipRows: parseInt(e.target.value) || 0 }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Batch Size</Label>
+                    <Input
+                      type="number"
+                      value={importParams.batchSize}
+                      onChange={(e) =>
+                        setImportParams((p) => ({
+                          ...p,
+                          batchSize: parseInt(e.target.value) || 100,
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAwinImportOpen(false)}
+                    disabled={isImporting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAwinImport} disabled={isImporting}>
+                    {isImporting ? (
+                      <>
+                        <RefreshCw
+                          size={14}
+                          style={{ animation: 'spin 1s linear infinite' }}
+                          className="mr-1"
+                        />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <Download size={14} className="mr-1" />
+                        Import
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </>
       }
     />

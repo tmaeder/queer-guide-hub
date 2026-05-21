@@ -6,8 +6,17 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useImportHub, IngestionSource } from '@/hooks/useImportHub';
 import {
-  Play, RefreshCw, AlertTriangle, CheckCircle, Clock,
-  Database, Globe, Rss, FileText, Zap, Key
+  Play,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Database,
+  Globe,
+  Rss,
+  FileText,
+  Zap,
+  Key,
 } from 'lucide-react';
 
 const SOURCE_TYPE_ICONS: Record<string, React.ReactNode> = {
@@ -65,8 +74,8 @@ export const IngestionSourcesManager = () => {
     }
   };
 
-  const enabledCount = sources.filter(s => s.is_enabled).length;
-  const errorCount = sources.filter(s => s.last_error).length;
+  const enabledCount = sources.filter((s) => s.is_enabled).length;
+  const errorCount = sources.filter((s) => s.last_error).length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -114,8 +123,20 @@ export const IngestionSourcesManager = () => {
 
       {/* Refresh */}
       <div className="flex justify-end">
-        <Button variant="outline" size="sm" onClick={loadSources} disabled={loading} style={{ display: 'flex', gap: 8 }}>
-          <RefreshCw style={{ height: 16, width: 16, ...(loading ? { animation: 'spin 1s linear infinite' } : {}) }} />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={loadSources}
+          disabled={loading}
+          className="flex gap-2"
+        >
+          <RefreshCw
+            style={{
+              height: 16,
+              width: 16,
+              ...(loading ? { animation: 'spin 1s linear infinite' } : {}),
+            }}
+          />
           Refresh
         </Button>
       </div>
@@ -127,10 +148,13 @@ export const IngestionSourcesManager = () => {
           const isTriggering = triggeringId === source.id;
 
           return (
-            <Card key={source.id} style={{
-              backgroundColor: 'var(--card)',
-              borderLeft: `4px solid ${hasError ? 'hsl(var(--destructive))' : source.is_enabled ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))'}`,
-            }}>
+            <Card
+              key={source.id}
+              style={{
+                backgroundColor: 'var(--card)',
+                borderLeft: `4px solid ${hasError ? 'hsl(var(--destructive))' : source.is_enabled ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))'}`,
+              }}
+            >
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
@@ -146,18 +170,22 @@ export const IngestionSourcesManager = () => {
                         <Badge variant="secondary">{source.source_type}</Badge>
                         <Badge variant="outline">{source.target_table}</Badge>
                       </div>
-                      <div className="flex gap-6 text-muted-foreground" style={{ fontSize: '0.8rem' }}>
+                      <div
+                        className="flex gap-6 text-muted-foreground"
+                        style={{ fontSize: '0.8rem' }}
+                      >
                         <div className="flex items-center gap-1">
                           <Clock size={12} />
                           Last run: {formatRelativeTime(source.last_run_at)}
                         </div>
-                        {source.schedule && (
-                          <span>Schedule: {source.schedule}</span>
-                        )}
+                        {source.schedule && <span>Schedule: {source.schedule}</span>}
                         <span>Fetched: {(source.total_items_fetched || 0).toLocaleString()}</span>
                         <span>Approved: {(source.total_items_approved || 0).toLocaleString()}</span>
                         {source.requires_api_key && (
-                          <div className="flex items-center gap-1" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
+                          <div
+                            className="flex items-center gap-1"
+                            style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                          >
                             <Key size={12} />
                             {source.requires_api_key}
                           </div>
@@ -165,7 +193,7 @@ export const IngestionSourcesManager = () => {
                       </div>
 
                       {hasError && (
-                        <Alert style={{ marginTop: 8, padding: '4px 8px' }}>
+                        <Alert style={{ padding: '4px 8px' }} className="mt-2">
                           <AlertTriangle size={14} />
                           <AlertDescription className="text-xs">
                             {source.last_error}

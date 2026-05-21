@@ -58,10 +58,10 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
           style={{ width: '100%', height: 140, objectFit: 'cover' }}
         />
       )}
-      <CardContent style={{ padding: 16 }}>
+      <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Icon style={{ height: 16, width: 16, flexShrink: 0, color: 'var(--primary)' }} />
+            <Icon style={{ height: 16, width: 16 }} className="shrink-0 text-primary" />
             {result.vertical === 'flight' ? (
               <div className="flex items-center gap-1">
                 <span className="font-bold text-sm">{result.originIata}</span>
@@ -88,7 +88,12 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
             {result.starRating && result.starRating > 0 && (
               <div className="flex items-center gap-0.5">
                 {Array.from({ length: result.starRating }).map((_, i) => (
-                  <Star key={i} size={12} style={{ fill: 'currentColor', color: 'var(--primary)' }} />
+                  <Star
+                    key={i}
+                    size={12}
+                    style={{ fill: 'currentColor' }}
+                    className="text-primary"
+                  />
                 ))}
               </div>
             )}
@@ -114,17 +119,23 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
               </span>
             )}
             {result.airline && (
-              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>{result.airline}</Badge>
+              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+                {result.airline}
+              </Badge>
             )}
             {result.stops === 0 ? (
-              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>Direct</Badge>
+              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+                Direct
+              </Badge>
             ) : result.stops !== undefined ? (
               <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
                 {result.stops} stop{result.stops > 1 ? 's' : ''}
               </Badge>
             ) : null}
             {result.duration && (
-              <span className="text-xs text-muted-foreground">{formatDuration(result.duration)}</span>
+              <span className="text-xs text-muted-foreground">
+                {formatDuration(result.duration)}
+              </span>
             )}
           </div>
         )}
@@ -142,7 +153,9 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
         <div className="flex gap-2">
           <Button size="sm" className="flex-1" onClick={handleBook}>
             <ExternalLink size={14} className="mr-1.5" />
-            {result.supportsInApp ? 'Book Now' : `Book ${result.vertical === 'flight' ? 'Flight' : result.vertical === 'hotel' ? 'Hotel' : 'Activity'}`}
+            {result.supportsInApp
+              ? 'Book Now'
+              : `Book ${result.vertical === 'flight' ? 'Flight' : result.vertical === 'hotel' ? 'Hotel' : 'Activity'}`}
           </Button>
           {onAddToTrip && (
             <Button size="sm" variant="outline" onClick={() => onAddToTrip(result)}>

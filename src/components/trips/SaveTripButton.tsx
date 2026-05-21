@@ -47,9 +47,7 @@ export function SaveTripButton({ tripId, compact }: Props) {
   };
 
   const Icon = isSaved ? BookmarkCheck : Bookmark;
-  const label = isSaved
-    ? t('trips.save.saved', 'Saved')
-    : t('trips.save.save', 'Save');
+  const label = isSaved ? t('trips.save.saved', 'Saved') : t('trips.save.save', 'Save');
 
   if (compact) {
     return (
@@ -59,7 +57,11 @@ export function SaveTripButton({ tripId, compact }: Props) {
         size="sm"
         onClick={handleClick}
         disabled={toggle.isPending}
-        aria-label={isSaved ? t('trips.save.unsaveAria', 'Unsave trip') : t('trips.save.saveAria', 'Save trip')}
+        aria-label={
+          isSaved
+            ? t('trips.save.unsaveAria', 'Unsave trip')
+            : t('trips.save.saveAria', 'Save trip')
+        }
         aria-pressed={isSaved}
         className="h-8 w-8 p-0"
       >
@@ -77,7 +79,7 @@ export function SaveTripButton({ tripId, compact }: Props) {
       disabled={toggle.isPending}
       aria-pressed={isSaved}
     >
-      <Icon style={{ width: 14, height: 14, marginRight: 6 }} />
+      <Icon style={{ width: 14, height: 14 }} className="mr-1.5" />
       {label}
     </Button>
   );

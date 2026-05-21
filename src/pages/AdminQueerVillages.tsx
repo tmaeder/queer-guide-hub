@@ -5,11 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Command,
   CommandEmpty,
@@ -107,10 +103,7 @@ function IdNameCombobox({ options, value, onChange, placeholder, required }: IdN
           role="combobox"
           aria-expanded={open}
           aria-required={required}
-          className={cn(
-            'w-full justify-between font-normal',
-            !selected && 'text-muted-foreground',
-          )}
+          className={cn('w-full justify-between font-normal', !selected && 'text-muted-foreground')}
         >
           <span className="truncate">{selected ? selected.name : placeholder}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -132,10 +125,7 @@ function IdNameCombobox({ options, value, onChange, placeholder, required }: IdN
                   }}
                 >
                   <Check
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      value === o.id ? 'opacity-100' : 'opacity-0',
-                    )}
+                    className={cn('mr-2 h-4 w-4', value === o.id ? 'opacity-100' : 'opacity-0')}
                   />
                   {o.name}
                 </CommandItem>
@@ -323,9 +313,7 @@ export default function AdminQueerVillages() {
                 .filter(Boolean)
                 .join(', ')}
             </p>
-            <p className="text-xs text-muted-foreground">
-              /villages/{info.row.original.slug}
-            </p>
+            <p className="text-xs text-muted-foreground">/villages/{info.row.original.slug}</p>
           </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -464,7 +452,7 @@ export default function AdminQueerVillages() {
         <>
           {/* Create/Edit Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent style={{ maxWidth: 640, maxHeight: '80vh', overflow: 'auto' }}>
+            <DialogContent style={{ maxWidth: 640, maxHeight: '80vh' }} className="overflow-auto">
               <DialogHeader>
                 <DialogTitle>{editingId ? 'Edit Village' : 'Create Village'}</DialogTitle>
               </DialogHeader>
@@ -491,7 +479,8 @@ export default function AdminQueerVillages() {
                     variant="outline"
                     size="sm"
                     onClick={generateSlug}
-                    style={{ flexShrink: 0, height: 40 }}
+                    style={{ height: 40 }}
+                    className="shrink-0"
                   >
                     Generate
                   </Button>
@@ -573,9 +562,7 @@ export default function AdminQueerVillages() {
                   <Input
                     id="aqv-landmarks"
                     value={form.notable_landmarks}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, notable_landmarks: e.target.value }))
-                    }
+                    onChange={(e) => setForm((f) => ({ ...f, notable_landmarks: e.target.value }))}
                   />
                   <p className="text-xs text-muted-foreground">Comma-separated</p>
                 </div>
@@ -592,14 +579,12 @@ export default function AdminQueerVillages() {
                   <Switch
                     id="aqv-featured"
                     checked={form.featured}
-                    onCheckedChange={(checked) =>
-                      setForm((f) => ({ ...f, featured: checked }))
-                    }
+                    onCheckedChange={(checked) => setForm((f) => ({ ...f, featured: checked }))}
                   />
                   <Label htmlFor="aqv-featured">Featured</Label>
                 </div>
               </div>
-              <DialogFooter style={{ marginTop: 16 }}>
+              <DialogFooter className="mt-4">
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
@@ -617,10 +602,10 @@ export default function AdminQueerVillages() {
                 <DialogTitle>Delete Village</DialogTitle>
               </DialogHeader>
               <p className="text-sm text-muted-foreground">
-                Are you sure you want to delete <strong>{deleteTarget?.name}</strong>? This
-                action cannot be undone.
+                Are you sure you want to delete <strong>{deleteTarget?.name}</strong>? This action
+                cannot be undone.
               </p>
-              <DialogFooter style={{ marginTop: 16 }}>
+              <DialogFooter className="mt-4">
                 <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
                   Cancel
                 </Button>

@@ -62,9 +62,7 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
             Flights from {originCity || originIata}
             {destinationIata ? ` to ${destinationCity}` : ''}
           </h3>
-          <p className="text-xs text-muted-foreground">
-            Best deals based on your location
-          </p>
+          <p className="text-xs text-muted-foreground">Best deals based on your location</p>
         </div>
         <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
           <Button variant="ghost" size="sm">
@@ -92,12 +90,8 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
         </div>
       ) : (
         <div className="text-center py-6 bg-muted rounded-element">
-          <Plane size={24} style={{ margin: '0 auto 8px',
-              color: 'var(--muted-foreground)' }}
-          />
-          <p className="text-muted-foreground mb-2">
-            No deals available right now
-          </p>
+          <Plane size={24} style={{ margin: '0 auto 8px' }} className="text-muted-foreground" />
+          <p className="text-muted-foreground mb-2">No deals available right now</p>
           <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
             <Button variant="outline" size="sm">
               Search Flights to {destinationCity}

@@ -266,7 +266,8 @@ export function Header() {
                 <Button
                   variant="default"
                   size="sm"
-                  style={{ width: '100%', fontWeight: 600, height: 44 }}
+                  style={{ width: '100%', height: 44 }}
+                  className="font-semibold"
                   onClick={() => {
                     setDrawerOpen(false);
                     navigate('/auth?mode=signup');
@@ -277,7 +278,8 @@ export function Header() {
                 <Button
                   variant="outline"
                   size="sm"
-                  style={{ width: '100%', fontWeight: 600, height: 44 }}
+                  style={{ width: '100%', height: 44 }}
+                  className="font-semibold"
                   onClick={() => {
                     setDrawerOpen(false);
                     setAuthDialogOpen(true);
@@ -295,14 +297,8 @@ export function Header() {
             <Button
               variant="default"
               size="sm"
-              style={{
-                width: '100%',
-                fontWeight: 600,
-                height: 44,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
+              style={{ width: '100%', height: 44, alignItems: 'center' }}
+              className="font-semibold flex gap-2"
               onClick={() => handleDrawerNav(submitCta.route)}
             >
               <Plus size={18} />
@@ -319,7 +315,7 @@ export function Header() {
                 className={`w-full flex items-center gap-2 px-4 text-left ${active ? 'bg-muted' : 'hover:bg-muted'}`}
                 style={{ minHeight: 48 }}
               >
-                <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                <item.icon style={{ width: 18, height: 18 }} className="shrink-0" />
                 <span className={`text-sm ${active ? 'font-semibold' : 'font-normal'}`}>
                   {t(item.labelKey)}
                 </span>
@@ -340,7 +336,7 @@ export function Header() {
                     className="w-full flex items-center gap-2 px-4 hover:bg-muted text-left"
                     style={{ minHeight: 48 }}
                   >
-                    <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                    <item.icon style={{ width: 18, height: 18 }} className="shrink-0" />
                     <span className="text-sm flex-1">{t(item.labelKey)}</span>
                     {showBadge && (
                       <Badge variant="default" className="h-5" style={{ fontSize: '0.7rem' }}>
@@ -373,7 +369,7 @@ export function Header() {
               className="w-full flex items-center gap-2 px-4 hover:bg-muted text-left"
               style={{ minHeight: 44 }}
             >
-              <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+              <item.icon style={{ width: 16, height: 16 }} className="shrink-0" />
               <span className="text-sm">{t(item.labelKey)}</span>
             </button>
           ))}
@@ -414,13 +410,8 @@ export function Header() {
           {!(isMobile && mobileSearchOpen) && (
             <Link
               to="/"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                flexShrink: 0,
-                textDecoration: 'none',
-              }}
+              style={{ alignItems: 'center' }}
+              className="flex gap-2 shrink-0 no-underline"
             >
               <img
                 src="/images/logo.png"
@@ -431,8 +422,8 @@ export function Header() {
                 style={{ height: 28, width: 28 }}
               />
               <span
-                className="absolute"
-                style={{ width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+                className="absolute overflow-hidden"
+                style={{ width: 1, height: 1, clip: 'rect(0,0,0,0)' }}
               >
                 Queer Guide
               </span>
@@ -492,13 +483,8 @@ export function Header() {
                       <span
                         role="status"
                         aria-live="polite"
-                        className="absolute"
-                        style={{
-                          width: 1,
-                          height: 1,
-                          overflow: 'hidden',
-                          clip: 'rect(0,0,0,0)',
-                        }}
+                        className="absolute overflow-hidden"
+                        style={{ width: 1, height: 1, clip: 'rect(0,0,0,0)' }}
                       >
                         {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
                       </span>
@@ -545,7 +531,8 @@ export function Header() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        style={{ position: 'relative', height: 40, width: 40, padding: 0 }}
+                        style={{ height: 40, width: 40 }}
+                        className="relative p-0"
                         aria-label={t('header.openUserMenu', 'Open user menu')}
                       >
                         <Avatar style={{ height: 36, width: 36 }}>
@@ -559,15 +546,13 @@ export function Header() {
                         </Avatar>
                         {unreadCount > 0 && (
                           <span
-                            className="absolute inline-flex items-center justify-center bg-destructive text-destructive-foreground"
+                            className="absolute inline-flex items-center justify-center bg-destructive text-destructive-foreground pl-1 pr-1"
                             style={{
                               top: -4,
                               right: -4,
                               minWidth: '1.25rem',
                               height: 20,
                               fontSize: '10px',
-                              paddingLeft: 4,
-                              paddingRight: 4,
                             }}
                           >
                             <span className="absolute inset-0 animate-ping bg-destructive opacity-75" />
@@ -576,7 +561,11 @@ export function Header() {
                         )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" style={{ width: 320, padding: 16, zIndex: 50 }}>
+                    <DropdownMenuContent
+                      align="end"
+                      style={{ width: 320, zIndex: 50 }}
+                      className="p-4"
+                    >
                       <div className="mb-4">
                         <Select
                           value={profile?.user_mode || 'community'}
@@ -614,19 +603,22 @@ export function Header() {
                             variant="ghost"
                             size="sm"
                             style={{
-                              display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'flex-start',
                               width: '100%',
-                              gap: 8,
                               padding: '8px 12px',
                             }}
+                            className="flex gap-2"
                             onClick={() => navigate(item.to)}
                           >
                             <item.icon style={{ width: 16, height: 16 }} />
                             <span className="text-sm flex-1 text-left">{t(item.labelKey)}</span>
                             {showBadge && (
-                              <Badge variant="default" className="h-5" style={{ fontSize: '0.7rem' }}>
+                              <Badge
+                                variant="default"
+                                className="h-5"
+                                style={{ fontSize: '0.7rem' }}
+                              >
                                 {inboxBadgeCount}
                               </Badge>
                             )}
@@ -641,13 +633,12 @@ export function Header() {
                             variant="ghost"
                             size="sm"
                             style={{
-                              display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'flex-start',
                               width: '100%',
-                              gap: 8,
                               padding: '8px 12px',
                             }}
+                            className="flex gap-2"
                             onClick={() => navigate('/admin')}
                           >
                             <Shield size={16} />
@@ -663,11 +654,8 @@ export function Header() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        style={{
-                          width: '100%',
-                          justifyContent: 'flex-start',
-                          color: 'hsl(var(--destructive))',
-                        }}
+                        style={{ width: '100%', justifyContent: 'flex-start' }}
+                        className="text-destructive"
                         onClick={signOut}
                       >
                         <LogOut size={16} className="mr-2" />
@@ -730,7 +718,7 @@ export function Header() {
                   <ChevronDown size={14} />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" style={{ width: 220, padding: 4, zIndex: 50 }}>
+              <DropdownMenuContent align="start" style={{ width: 220, zIndex: 50 }} className="p-1">
                 {moreNav.map((item) => {
                   const active = isActiveRoute(item.to);
                   return (
@@ -741,7 +729,7 @@ export function Header() {
                         active ? 'bg-muted font-semibold' : 'hover:bg-muted'
                       }`}
                     >
-                      <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+                      <item.icon style={{ width: 16, height: 16 }} className="shrink-0" />
                       <span>{t(item.labelKey)}</span>
                     </button>
                   );

@@ -33,7 +33,9 @@ function PopupContent({ name, subtitle, category }: PopupContentProps) {
       {category && (
         <>
           <br />
-          <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))' }}>{category}</span>
+          <span style={{ fontSize: 11 }} className="text-muted-foreground">
+            {category}
+          </span>
         </>
       )}
     </div>
@@ -74,10 +76,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
   const [showEvents, setShowEvents] = useState(true);
   const visitedLookup = useVisitedPlaceLookup();
 
-  const sortedDays = useMemo(
-    () => [...days].sort((a, b) => a.date.localeCompare(b.date)),
-    [days],
-  );
+  const sortedDays = useMemo(() => [...days].sort((a, b) => a.date.localeCompare(b.date)), [days]);
 
   const dayIndexMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -98,20 +97,12 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
   );
 
   const hasUnassignedGeo = useMemo(
-    () =>
-      places.some(
-        (p) => p.latitude != null && p.longitude != null && !p.day_id,
-      ),
+    () => places.some((p) => p.latitude != null && p.longitude != null && !p.day_id),
     [places],
   );
 
   const cityIds = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          places.map((p) => p.city_id).filter((id): id is string => !!id),
-        ),
-      ),
+    () => Array.from(new Set(places.map((p) => p.city_id).filter((id): id is string => !!id))),
     [places],
   );
 
@@ -142,10 +133,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
     () =>
       showAttractions
         ? suggestedVenues.filter(
-            (v) =>
-              !existingVenueIds.has(v.id) &&
-              v.latitude != null &&
-              v.longitude != null,
+            (v) => !existingVenueIds.has(v.id) && v.latitude != null && v.longitude != null,
           )
         : [],
     [showAttractions, suggestedVenues, existingVenueIds],
@@ -155,10 +143,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
     () =>
       showEvents
         ? suggestedEvents.filter(
-            (e) =>
-              !existingEventIds.has(e.id) &&
-              e.latitude != null &&
-              e.longitude != null,
+            (e) => !existingEventIds.has(e.id) && e.latitude != null && e.longitude != null,
           )
         : [],
     [showEvents, suggestedEvents, existingEventIds],
@@ -209,7 +194,9 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    const existingSources = Object.keys((map.getStyle()?.sources) || {}).filter((s) => s.startsWith('route-day-'));
+    const existingSources = Object.keys(map.getStyle()?.sources || {}).filter((s) =>
+      s.startsWith('route-day-'),
+    );
     for (const src of existingSources) {
       if (map.getLayer(`${src}-line`)) map.removeLayer(`${src}-line`);
       if (map.getSource(src)) map.removeSource(src);
@@ -225,7 +212,11 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       const color = dayIdx != null ? dayColor(dayIdx) : disabledColor;
 
       const placeName =
-        place.venues?.name || place.events?.title || place.hotels?.name || place.custom_name || 'Place';
+        place.venues?.name ||
+        place.events?.title ||
+        place.hotels?.name ||
+        place.custom_name ||
+        'Place';
       const dayLabel =
         dayIdx != null
           ? t('trips.map.dayLabel', { number: dayIdx + 1 })
@@ -250,9 +241,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
 
       const popupEl = document.createElement('div');
       const root = createRoot(popupEl);
-      root.render(
-        <PopupContent name={placeName} subtitle={dayLabel} category={place.category} />,
-      );
+      root.render(<PopupContent name={placeName} subtitle={dayLabel} category={place.category} />);
 
       const popup = new maplibregl.Popup({ offset: 10, closeButton: false }).setDOMContent(popupEl);
 
@@ -317,11 +306,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
 
       const popupEl = document.createElement('div');
       createRoot(popupEl).render(
-        <PopupContent
-          name={event.title}
-          subtitle={dateLabel}
-          category={event.event_type}
-        />,
+        <PopupContent name={event.title} subtitle={dateLabel} category={event.event_type} />,
       );
       const popup = new maplibregl.Popup({ offset: 8, closeButton: false }).setDOMContent(popupEl);
 
@@ -355,7 +340,12 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
             type: 'line',
             source: sourceId,
             layout: { 'line-join': 'round', 'line-cap': 'round' },
-            paint: { 'line-color': color, 'line-width': 2, 'line-opacity': 0.6, 'line-dasharray': [2, 4] },
+            paint: {
+              'line-color': color,
+              'line-width': 2,
+              'line-opacity': 0.6,
+              'line-dasharray': [2, 4],
+            },
           });
         }
       });
@@ -436,11 +426,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
         )}
       </div>
 
-      <div
-        ref={containerRef}
-        key={places.length}
-        style={{ width: '100%', height: '100%' }}
-      />
+      <div ref={containerRef} key={places.length} style={{ width: '100%', height: '100%' }} />
 
       {/* Fit-all button */}
       <div className="absolute top-3 right-[52px] z-[2]">

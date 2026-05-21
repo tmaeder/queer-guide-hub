@@ -57,13 +57,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😠'];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: isOwn ? 'flex-end' : 'flex-start',
-        marginBottom: 16,
-      }}
-    >
+    <div style={{ justifyContent: isOwn ? 'flex-end' : 'flex-start' }} className="flex mb-4">
       <div style={{ maxWidth: '70%', order: isOwn ? 2 : 1 }}>
         {!isOwn && (
           <div className="flex items-center gap-2 mb-1">
@@ -91,7 +85,10 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
                     color: 'var(--primary-foreground)',
                     borderBottomRightRadius: 'var(--radius-element)',
                   }
-                : { backgroundColor: 'var(--muted)', borderBottomLeftRadius: 'var(--radius-element)' }),
+                : {
+                    backgroundColor: 'var(--muted)',
+                    borderBottomLeftRadius: 'var(--radius-element)',
+                  }),
               ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
             }}
           >
@@ -99,12 +96,8 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
           </div>
 
           <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginTop: 4,
-            }}
+            style={{ alignItems: 'center', justifyContent: 'space-between' }}
+            className="flex mt-1"
           >
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
@@ -117,7 +110,8 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
             <Button
               variant="ghost"
               size="sm"
-              style={{ height: 24, width: 24, padding: 0, opacity: 0, transition: 'opacity 0.2s' }}
+              style={{ height: 24, width: 24, opacity: 0, transition: 'opacity 0.2s' }}
+              className="p-0"
               onClick={() => setShowReactions(!showReactions)}
             >
               <Smile size={12} />
@@ -126,15 +120,8 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
 
           {showReactions && (
             <div
-              className="rounded-container shadow-[var(--shadow-aceternity-sm)] border border-border"
-              style={{
-                position: 'absolute',
-                top: '100%',
-                marginTop: 4,
-                backgroundColor: 'var(--popover)',
-                padding: 8,
-                zIndex: 10,
-              }}
+              className="rounded-container shadow-[var(--shadow-aceternity-sm)] border border-border absolute mt-1 p-2"
+              style={{ top: '100%', backgroundColor: 'var(--popover)', zIndex: 10 }}
             >
               <div className="flex gap-1">
                 {commonEmojis.map((emoji) => (
@@ -142,12 +129,8 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
                     key={emoji}
                     variant="ghost"
                     size="sm"
-                    style={{
-                      height: 32,
-                      width: 32,
-                      padding: 0,
-                      transition: 'background-color 0.2s',
-                    }}
+                    style={{ height: 32, width: 32, transition: 'background-color 0.2s' }}
+                    className="p-0"
                     onClick={() => {
                       onReaction(message.id, emoji);
                       setShowReactions(false);
@@ -161,7 +144,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
           )}
 
           {message.reactions && message.reactions.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+            <div style={{ flexWrap: 'wrap' }} className="flex gap-1 mt-2">
               {message.reactions.map((reaction) => (
                 <Badge key={reaction.id} variant="secondary" className="text-xs">
                   {reaction.emoji} 1
@@ -187,17 +170,8 @@ const TypingIndicatorComponent = ({ typingUsers }: TypingIndicatorProps) => {
 
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        paddingLeft: 16,
-        paddingRight: 16,
-        paddingTop: 8,
-        paddingBottom: 8,
-        fontSize: '0.875rem',
-        color: 'var(--muted-foreground)',
-      }}
+      style={{ alignItems: 'center' }}
+      className="flex gap-2 pl-4 pr-4 pt-2 pb-2 text-sm text-muted-foreground"
     >
       <Avatar style={{ height: 24, width: 24 }}>
         <AvatarFallback className="text-xs">
@@ -270,8 +244,8 @@ const ConversationList = ({
           }}
           onClick={() => onSelectConversation(conversation.id)}
         >
-          <CardContent style={{ padding: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 48 }}>
+          <CardContent className="p-3">
+            <div style={{ alignItems: 'center', minHeight: 48 }} className="flex gap-3">
               <Avatar>
                 <AvatarImage src={getConversationAvatar(conversation) || ''} />
                 <AvatarFallback>{getConversationTitle(conversation).charAt(0)}</AvatarFallback>
@@ -428,13 +402,11 @@ const MessageInput = ({
     <form
       onSubmit={handleSubmit}
       style={{
-        display: 'flex',
-        gap: 8,
-        padding: 12,
         borderTop: '1px solid var(--border)',
         backgroundColor: 'color-mix(in srgb, var(--background) 50%, transparent)',
         backdropFilter: 'blur(8px)',
       }}
+      className="flex gap-2 p-3"
     >
       <Input
         ref={inputRef}
@@ -455,14 +427,14 @@ const MessageInput = ({
             type="button"
             variant="ghost"
             size="sm"
-            className="rounded-element"
-            style={{ height: 44, width: 44, padding: 0 }}
+            className="rounded-element p-0"
+            style={{ height: 44, width: 44 }}
             disabled={disabled}
           >
             <Smile size={20} />
           </Button>
         </PopoverTrigger>
-        <PopoverContent style={{ width: 320, padding: 16 }} side="top">
+        <PopoverContent style={{ width: 320 }} className="p-4" side="top">
           <div className="flex flex-col gap-3">
             <p className="font-medium text-sm">Choose an emoji</p>
             <div className="grid grid-cols-8 md:grid-cols-10 gap-1">
@@ -471,7 +443,8 @@ const MessageInput = ({
                   key={index}
                   variant="ghost"
                   size="sm"
-                  style={{ height: 32, width: 32, padding: 0, transition: 'background-color 0.2s' }}
+                  style={{ height: 32, width: 32, transition: 'background-color 0.2s' }}
+                  className="p-0"
                   onClick={() => addEmoji(emoji)}
                 >
                   <span className="text-lg">{emoji}</span>
@@ -485,8 +458,8 @@ const MessageInput = ({
       <Button
         type="submit"
         disabled={disabled || !message.trim()}
-        className="rounded-element"
-        style={{ height: 44, width: 44, padding: 0, transition: 'all 0.2s' }}
+        className="rounded-element p-0"
+        style={{ height: 44, width: 44, transition: 'all 0.2s' }}
         size="sm"
       >
         <Send size={20} />
@@ -595,7 +568,7 @@ export const MessagingInterface = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384 }}>
+      <div style={{ alignItems: 'center', justifyContent: 'center', height: 384 }} className="flex">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">Loading messages...</p>
@@ -622,15 +595,8 @@ export const MessagingInterface = () => {
 
           <div className="relative">
             <Search
-              style={{
-                position: 'absolute',
-                left: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                height: 16,
-                width: 16,
-                color: 'hsl(var(--muted-foreground))',
-              }}
+              style={{ left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16 }}
+              className="absolute text-muted-foreground"
             />
             <Input
               placeholder="Search conversations..."
@@ -646,7 +612,10 @@ export const MessagingInterface = () => {
           <div className="p-3 md:p-4">
             {filteredConversations.length === 0 ? (
               <div className="text-center py-8">
-                <MessageCircle size={48} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
+                <MessageCircle
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
                 />
                 <p className="text-muted-foreground">No conversations yet</p>
               </div>
@@ -663,9 +632,7 @@ export const MessagingInterface = () => {
       </div>
 
       {/* Chat Area - Full width on mobile when conversation selected */}
-      <div
-        className={`flex-1 flex-col ${selectedConversation ? 'flex' : 'hidden md:flex'}`}
-      >
+      <div className={`flex-1 flex-col ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
         {selectedConversation ? (
           <>
             {/* Chat Header */}
@@ -682,7 +649,8 @@ export const MessagingInterface = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    style={{ height: 36, width: 36, padding: 0 }}
+                    style={{ height: 36, width: 36 }}
+                    className="p-0"
                     onClick={() => setSelectedConversation(null)}
                   >
                     <svg
@@ -718,9 +686,8 @@ export const MessagingInterface = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div
-                      className="rounded-full"
+                      className="rounded-full absolute"
                       style={{
-                        position: 'absolute',
                         bottom: -2,
                         right: -2,
                         width: 12,
@@ -737,17 +704,15 @@ export const MessagingInterface = () => {
                         ?.participants?.find((p) => p.user_id !== user?.id)?.profile
                         ?.display_name || 'Unknown User'}
                     </p>
-                    <p className="text-sm text-foreground">
-                      Online
-                    </p>
+                    <p className="text-sm text-foreground">Online</p>
                   </div>
                 </div>
 
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-element"
-                  style={{ height: 36, width: 36, padding: 0 }}
+                  className="rounded-element p-0"
+                  style={{ height: 36, width: 36 }}
                 >
                   <MoreVertical size={16} />
                 </Button>
@@ -765,7 +730,10 @@ export const MessagingInterface = () => {
               <div className="p-3 md:p-4">
                 {currentMessages.length === 0 ? (
                   <div className="text-center py-8">
-                    <MessageCircle size={48} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
+                    <MessageCircle
+                      size={48}
+                      style={{ margin: '0 auto 16px' }}
+                      className="text-muted-foreground"
                     />
                     <p className="text-muted-foreground">
                       No messages yet. Start the conversation!
@@ -807,7 +775,10 @@ export const MessagingInterface = () => {
             }}
           >
             <div className="text-center px-4">
-              <MessageCircle size={64} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
+              <MessageCircle
+                size={64}
+                style={{ margin: '0 auto 16px' }}
+                className="text-muted-foreground"
               />
               <h6 className="text-lg font-medium mb-2">Select a conversation</h6>
               <p className="text-muted-foreground text-sm md:text-base">

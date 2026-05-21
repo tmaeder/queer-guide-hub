@@ -84,13 +84,23 @@ export function AutoCleanDuplicatesTab() {
   };
 
   return (
-    <div className="flex flex-col" style={{ gap: 24 }}>
+    <div className="flex flex-col gap-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 md:grid-cols-6" style={{ gap: 12 }}>
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
         {ENTITY_TYPES.map(({ key, label, icon: Icon, color }) => {
           const count = (counts as unknown as Record<string, number>)?.[key] ?? 0;
-          const bg = count === 0 ? 'hsl(var(--foreground) / 0.08)' : count <= 5 ? 'hsl(var(--foreground) / 0.08)' : 'hsl(var(--destructive) / 0.08)';
-          const border = count === 0 ? 'hsl(var(--foreground) / 0.08)' : count <= 5 ? 'hsl(var(--foreground) / 0.08)' : 'hsl(var(--destructive) / 0.08)';
+          const bg =
+            count === 0
+              ? 'hsl(var(--foreground) / 0.08)'
+              : count <= 5
+                ? 'hsl(var(--foreground) / 0.08)'
+                : 'hsl(var(--destructive) / 0.08)';
+          const border =
+            count === 0
+              ? 'hsl(var(--foreground) / 0.08)'
+              : count <= 5
+                ? 'hsl(var(--foreground) / 0.08)'
+                : 'hsl(var(--destructive) / 0.08)';
           return (
             <div
               key={key}
@@ -103,10 +113,8 @@ export function AutoCleanDuplicatesTab() {
               }}
             >
               <Icon style={{ width: 18, height: 18, color, margin: '0 auto 4px' }} />
-              <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>{count}</p>
-              <span className="text-xs text-muted-foreground">
-                {label}
-              </span>
+              <p className="text-xl font-bold">{count}</p>
+              <span className="text-xs text-muted-foreground">{label}</span>
             </div>
           );
         })}
@@ -132,20 +140,16 @@ export function AutoCleanDuplicatesTab() {
         <Collapsible open={showHistory} onOpenChange={setShowHistory}>
           <button
             type="button"
-            className="flex items-center cursor-pointer w-full"
-            style={{ gap: 8, paddingTop: 8, paddingBottom: 8 }}
+            className="flex items-center cursor-pointer w-full gap-2 pt-2 pb-2"
             onClick={() => setShowHistory(!showHistory)}
           >
             <History size={16} className="text-muted-foreground" />
-            <span className="font-semibold text-sm">
-              Merge History
-            </span>
-            <span className="ml-auto inline-flex items-center justify-center" style={{ width: 28, height: 28 }}>
-              {showHistory ? (
-                <ChevronUp size={16} />
-              ) : (
-                <ChevronDown size={16} />
-              )}
+            <span className="font-semibold text-sm">Merge History</span>
+            <span
+              className="ml-auto inline-flex items-center justify-center"
+              style={{ width: 28, height: 28 }}
+            >
+              {showHistory ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </span>
           </button>
           <CollapsibleContent>
@@ -179,10 +183,10 @@ function ScanAndCleanSection({
   lastResult: AutoCleanResult | null;
 }) {
   return (
-    <div className="flex flex-col" style={{ gap: 24 }}>
+    <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
             <Zap size={18} />
             Auto Clean Duplicates
           </CardTitle>
@@ -195,11 +199,9 @@ function ScanAndCleanSection({
             Staging.
           </p>
 
-          <div className="flex flex-wrap items-center mb-4" style={{ gap: 16 }}>
-            <div className="flex items-center" style={{ gap: 8, width: 220 }}>
-              <span
-                className="text-xs whitespace-nowrap text-muted-foreground"
-              >
+          <div className="flex flex-wrap items-center mb-4 gap-4">
+            <div className="flex items-center gap-2" style={{ width: 220 }}>
+              <span className="text-xs whitespace-nowrap text-muted-foreground">
                 Auto-merge threshold: {(threshold * 100).toFixed(0)}%
               </span>
               <Slider
@@ -215,21 +217,22 @@ function ScanAndCleanSection({
 
             {!isRunning ? (
               <>
-                <Button onClick={onScanAll} variant="outline" style={{ display: 'flex', gap: 8 }}>
+                <Button onClick={onScanAll} variant="outline" className="flex gap-2">
                   <Search size={16} />
                   Scan All (Dry Run)
                 </Button>
 
                 <Button
                   onClick={onAutoClean}
-                  style={{ display: 'flex', gap: 8, backgroundColor: 'hsl(var(--foreground))', color: 'white' }}
+                  style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white' }}
+                  className="flex gap-2"
                 >
                   <Zap size={16} />
                   Auto Clean &ge;{(threshold * 100).toFixed(0)}%
                 </Button>
               </>
             ) : (
-              <Button onClick={onAbort} variant="destructive" style={{ display: 'flex', gap: 8 }}>
+              <Button onClick={onAbort} variant="destructive" className="flex gap-2">
                 <StopCircle size={16} />
                 Stop
               </Button>
@@ -269,12 +272,10 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
   const indeterminate = phase === 'processing';
 
   return (
-    <div style={{ marginBottom: 8 }}>
+    <div className="mb-2">
       {/* Progress info row */}
-      <div className="flex justify-between" style={{ marginBottom: 4 }}>
-        <span className="text-xs font-medium text-muted-foreground">
-          {message}
-        </span>
+      <div className="flex justify-between mb-1">
+        <span className="text-xs font-medium text-muted-foreground">{message}</span>
         <span className="text-xs text-muted-foreground">
           {totalScanned.toLocaleString()} scanned
         </span>
@@ -282,8 +283,8 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
 
       {/* Progress bar */}
       <div
-        className="bg-muted overflow-hidden"
-        style={{ borderRadius: 'var(--radius-badge)', height: 6, marginBottom: 12, position: 'relative' }}
+        className="bg-muted overflow-hidden mb-3 relative"
+        style={{ borderRadius: 'var(--radius-badge)', height: 6 }}
       >
         {indeterminate ? (
           <div
@@ -309,7 +310,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
       </div>
 
       {/* Per-type status chips */}
-      <div className="flex flex-wrap" style={{ gap: 8 }}>
+      <div className="flex flex-wrap gap-2">
         {ENTITY_TYPES.filter((e) => e.key in typeProgress).map(({ key, label, icon: Icon }) => {
           const tp = typeProgress[key];
           if (!tp) return null;
@@ -328,7 +329,11 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
                 paddingBottom: 2,
                 borderRadius: 'var(--radius-badge)',
                 fontSize: '0.75rem',
-                backgroundColor: isDone ? 'hsl(var(--foreground) / 0.08)' : isCurrent ? 'hsl(var(--muted-foreground) / 0.08)' : 'var(--muted)',
+                backgroundColor: isDone
+                  ? 'hsl(var(--foreground) / 0.08)'
+                  : isCurrent
+                    ? 'hsl(var(--muted-foreground) / 0.08)'
+                    : 'var(--muted)',
                 border: `1px solid ${isDone ? 'hsl(var(--foreground) / 0.08)' : isCurrent ? 'hsl(var(--muted-foreground) / 0.08)' : 'transparent'}`,
                 transition: 'all 0.2s',
               }}
@@ -338,11 +343,11 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               ) : isCurrent ? (
                 <Loader2 className="animate-spin" size={12} aria-label="Loading" />
               ) : (
-                <Icon style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }} />
+                <Icon style={{ width: 12, height: 12 }} className="text-muted-foreground" />
               )}
               <span>{label}</span>
               {tp.total > 0 && (
-                <span style={{ color: 'var(--muted-foreground)', marginLeft: 2 }}>
+                <span className="text-muted-foreground ml-0.5">
                   {isDone
                     ? tp.total.toLocaleString()
                     : `${tp.scanned.toLocaleString()}/${tp.total.toLocaleString()}`}
@@ -355,15 +360,9 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
         {/* Processing phase indicator */}
         {phase === 'processing' && (
           <div
-            className="flex items-center"
+            className="flex items-center gap-1 pl-2 pr-2 pt-0.5 pb-0.5 text-xs"
             style={{
-              gap: 4,
-              paddingLeft: 8,
-              paddingRight: 8,
-              paddingTop: 2,
-              paddingBottom: 2,
               borderRadius: 'var(--radius-badge)',
-              fontSize: '0.75rem',
               backgroundColor: 'hsl(var(--muted-foreground) / 0.08)',
               border: '1px solid hsl(var(--border))',
             }}
@@ -381,9 +380,9 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
 
 function ResultsSummary({ result }: { result: AutoCleanResult }) {
   return (
-    <div className="flex flex-col" style={{ gap: 16 }}>
+    <div className="flex flex-col gap-4">
       {/* Banner */}
-      <div className="flex flex-wrap" style={{ gap: 16 }}>
+      <div className="flex flex-wrap gap-4">
         {result.total_auto_merged > 0 && (
           <div
             className="flex items-center"
@@ -394,11 +393,17 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               paddingTop: 8,
               paddingBottom: 8,
               borderRadius: 'var(--radius-badge)',
-              backgroundColor: result.dry_run ? 'hsl(var(--muted-foreground) / 0.08)' : 'hsl(var(--foreground) / 0.08)',
+              backgroundColor: result.dry_run
+                ? 'hsl(var(--muted-foreground) / 0.08)'
+                : 'hsl(var(--foreground) / 0.08)',
               border: `1px solid ${result.dry_run ? 'hsl(var(--muted-foreground) / 0.08)' : 'hsl(var(--foreground) / 0.08)'}`,
             }}
           >
-            <CheckCircle size={16} style={{ color: result.dry_run ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))' }}
+            <CheckCircle
+              size={16}
+              style={{
+                color: result.dry_run ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
+              }}
             />
             <p className="text-sm font-semibold">
               {result.dry_run ? 'Would auto-merge' : 'Auto-merged'}: {result.total_auto_merged}
@@ -407,13 +412,8 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
         )}
         {result.total_flagged > 0 && (
           <div
-            className="flex items-center"
+            className="flex items-center gap-2 pl-4 pr-4 pt-2 pb-2"
             style={{
-              gap: 8,
-              paddingLeft: 16,
-              paddingRight: 16,
-              paddingTop: 8,
-              paddingBottom: 8,
               borderRadius: 'var(--radius-badge)',
               backgroundColor: 'hsl(var(--foreground) / 0.08)',
               border: '1px solid hsl(var(--border))',
@@ -425,13 +425,8 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
         )}
         {result.total_auto_merged === 0 && result.total_flagged === 0 && (
           <div
-            className="flex items-center"
+            className="flex items-center gap-2 pl-4 pr-4 pt-2 pb-2"
             style={{
-              gap: 8,
-              paddingLeft: 16,
-              paddingRight: 16,
-              paddingTop: 8,
-              paddingBottom: 8,
               borderRadius: 'var(--radius-badge)',
               backgroundColor: 'hsl(var(--foreground) / 0.08)',
               border: '1px solid hsl(var(--border))',
@@ -443,16 +438,8 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
         )}
         {/* Total scanned badge */}
         <div
-          className="flex items-center bg-muted"
-          style={{
-            gap: 8,
-            paddingLeft: 16,
-            paddingRight: 16,
-            paddingTop: 8,
-            paddingBottom: 8,
-            borderRadius: 'var(--radius-badge)',
-            border: '1px solid var(--border)',
-          }}
+          className="flex items-center bg-muted gap-2 pl-4 pr-4 pt-2 pb-2"
+          style={{ borderRadius: 'var(--radius-badge)', border: '1px solid var(--border)' }}
         >
           <Database size={16} className="text-muted-foreground" />
           <p className="text-sm font-semibold">
@@ -465,26 +452,17 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
       <Card>
         <CardContent>
           <div
-            className="grid bg-muted"
+            className="grid bg-muted gap-0 pl-4 pr-4 pt-2 pb-2"
             style={{
               gridTemplateColumns: '140px 130px 100px 100px 1fr',
-              gap: 0,
               borderBottom: '2px solid var(--border)',
-              paddingLeft: 16,
-              paddingRight: 16,
-              paddingTop: 8,
-              paddingBottom: 8,
             }}
           >
             {['Type', 'Scanned', 'Auto-merged', 'Flagged', 'Errors'].map((h) => (
               <span
                 key={h}
-                style={{
-                  fontWeight: 600,
-                  fontSize: '0.7rem',
-                  textTransform: 'uppercase',
-                  color: 'var(--muted-foreground)',
-                }}
+                style={{ fontSize: '0.7rem' }}
+                className="font-semibold uppercase text-muted-foreground"
               >
                 {h}
               </span>
@@ -499,22 +477,17 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
             return (
               <div
                 key={type}
-                className="grid"
+                className="grid gap-0 pl-4 pr-4 pt-2 pb-2"
                 style={{
                   gridTemplateColumns: '140px 130px 100px 100px 1fr',
-                  gap: 0,
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  paddingTop: 8,
-                  paddingBottom: 8,
                   borderBottom: isLast ? 'none' : '1px solid var(--border)',
                 }}
               >
-                <div className="flex items-center" style={{ gap: 8 }}>
+                <div className="flex items-center gap-2">
                   <Icon style={{ width: 14, height: 14, color: cfg?.color }} />
                   <p className="text-sm font-medium">{cfg?.label ?? type}</p>
                 </div>
-                <div className="flex items-center" style={{ gap: 4 }}>
+                <div className="flex items-center gap-1">
                   <p className="text-sm">
                     {data.scanned.toLocaleString()}
                     {hasTotal && (
@@ -524,10 +497,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
                       </span>
                     )}
                   </p>
-                  {allScanned && (
-                    <CheckCircle size={12} style={{ color: 'hsl(var(--foreground))', flexShrink: 0 }}
-                    />
-                  )}
+                  {allScanned && <CheckCircle size={12} className="text-foreground shrink-0" />}
                 </div>
                 <p
                   className="text-sm"
@@ -541,7 +511,8 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
                 <p
                   className="text-sm"
                   style={{
-                    color: data.flagged_for_review > 0 ? 'hsl(var(--foreground) / 0.55)' : undefined,
+                    color:
+                      data.flagged_for_review > 0 ? 'hsl(var(--foreground) / 0.55)' : undefined,
                     fontWeight: data.flagged_for_review > 0 ? 600 : 400,
                   }}
                 >
@@ -549,7 +520,10 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
                 </p>
                 <p
                   style={{
-                    color: data.errors?.length > 0 ? 'hsl(var(--destructive))' : 'var(--muted-foreground)',
+                    color:
+                      data.errors?.length > 0
+                        ? 'hsl(var(--destructive))'
+                        : 'var(--muted-foreground)',
                     fontSize: '0.8rem',
                   }}
                 >
@@ -580,11 +554,11 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
   return (
     <Card>
       <CardHeader>
-        <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.95rem' }}>
+        <CardTitle style={{ alignItems: 'center', fontSize: '0.95rem' }} className="flex gap-2">
           <Inbox size={16} className="text-muted-foreground" />
           Import Staging Cleanup
           {total > 0 && (
-            <Badge variant={dryRun ? 'secondary' : 'default'} style={{ marginLeft: 8 }}>
+            <Badge variant={dryRun ? 'secondary' : 'default'} className="ml-2">
               {dryRun ? `Would clear ${total}` : `Cleared ${total}`}
             </Badge>
           )}
@@ -592,11 +566,8 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
       </CardHeader>
       <CardContent>
         <div
-          className="grid"
-          style={{
-            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-            gap: 12,
-          }}
+          className="grid gap-3"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}
         >
           {staging.phase1_skipped_duplicates > 0 && (
             <StagingStat
@@ -648,10 +619,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
           )}
         </div>
         {staging.errors?.length > 0 && (
-          <span
-            className="text-xs block"
-            style={{ color: 'hsl(var(--destructive))', marginTop: 8 }}
-          >
+          <span className="text-xs block text-destructive mt-2">
             Errors: {staging.errors.slice(0, 3).join('; ')}
             {staging.errors.length > 3 && ` (+${staging.errors.length - 3} more)`}
           </span>
@@ -681,10 +649,10 @@ function StagingStat({
         border: `1px solid ${color}25`,
       }}
     >
-      <p style={{ fontSize: '1.25rem', fontWeight: 700, color }}>{value}</p>
-      <span className="text-xs text-muted-foreground">
-        {dryRun ? `Would: ${label}` : label}
-      </span>
+      <p style={{ color }} className="text-xl font-bold">
+        {value}
+      </p>
+      <span className="text-xs text-muted-foreground">{dryRun ? `Would: ${label}` : label}</span>
     </div>
   );
 }
@@ -708,9 +676,9 @@ function PendingReviewSection() {
   const lowConfidence = pairs.filter((p) => p.confidence < 0.7);
 
   return (
-    <div className="flex flex-col" style={{ gap: 16 }}>
+    <div className="flex flex-col gap-4">
       {/* Filter bar */}
-      <div className="flex items-center" style={{ gap: 16 }}>
+      <div className="flex items-center gap-4">
         <Select value={entityFilter} onValueChange={setEntityFilter}>
           <SelectTrigger style={{ width: 180 }}>
             <SelectValue />
@@ -738,26 +706,19 @@ function PendingReviewSection() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center" style={{ paddingTop: 32, paddingBottom: 32 }}>
+        <div className="flex justify-center pt-8 pb-8">
           <Loader2 className="animate-spin" size={28} aria-label="Loading" />
         </div>
       ) : pairs.length === 0 ? (
         <Card>
           <CardContent>
             <div
-              className="flex items-center justify-center bg-muted mx-auto"
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                marginBottom: 16,
-              }}
+              className="flex items-center justify-center bg-muted mx-auto mb-4"
+              style={{ width: 80, height: 80, borderRadius: '50%' }}
             >
               <CheckCircle size={40} className="text-foreground" />
             </div>
-            <h3 className="font-semibold mb-2 text-lg">
-              No Pending Duplicates
-            </h3>
+            <h3 className="font-semibold mb-2 text-lg">No Pending Duplicates</h3>
             <p className="text-muted-foreground">
               Run a scan from the "Scan & Clean" tab to detect duplicates.
             </p>
@@ -825,18 +786,15 @@ function DuplicateGroup({
     <div>
       <button
         type="button"
-        className="flex items-center cursor-pointer mb-2 w-full"
-        style={{ gap: 8 }}
+        className="flex items-center cursor-pointer mb-2 w-full gap-2"
         onClick={() => setExpanded(!expanded)}
       >
         <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: color }} />
-        <span className="font-semibold text-sm">
-          {label}
-        </span>
+        <span className="font-semibold text-sm">{label}</span>
         <Badge variant="secondary">{pairs.length}</Badge>
       </button>
       {expanded && (
-        <div className="flex flex-col" style={{ gap: 12 }}>
+        <div className="flex flex-col gap-3">
           {pairs.map((pair) => (
             <DuplicatePairCard key={pair.id} pair={pair} onMerge={onMerge} />
           ))}
@@ -854,36 +812,31 @@ function MergeHistorySection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
           <History size={18} />
           Merge History
         </CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="flex justify-center" style={{ paddingTop: 32, paddingBottom: 32 }}>
+          <div className="flex justify-center pt-8 pb-8">
             <Loader2 className="animate-spin" size={28} aria-label="Loading" />
           </div>
         ) : history.length === 0 ? (
-          <p className="text-center" style={{ color: 'var(--muted-foreground)', paddingTop: 32, paddingBottom: 32 }}>
+          <p className="text-center text-muted-foreground pt-8 pb-8">
             No merges have been performed yet.
           </p>
         ) : (
-          <div className="flex flex-col" style={{ gap: 8 }}>
+          <div className="flex flex-col gap-2">
             {history.map((entry: Record<string, unknown>) => {
               const details = (entry.details as Record<string, unknown>) || {};
               return (
                 <div
                   key={entry.id as string}
-                  className="flex items-center bg-muted"
-                  style={{
-                    gap: 16,
-                    padding: 12,
-                    borderRadius: 'var(--radius-badge)',
-                    fontSize: '0.85rem',
-                  }}
+                  className="flex items-center bg-muted gap-4 p-3"
+                  style={{ borderRadius: 'var(--radius-badge)', fontSize: '0.85rem' }}
                 >
-                  <Merge size={14} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Merge size={14} className="text-muted-foreground shrink-0" />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="text-sm font-medium">
                       {(details.entity_type as string) || 'unknown'}: Kept "
@@ -894,10 +847,7 @@ function MergeHistorySection() {
                       {(details.fk_updates as number) || 0} references updated
                     </span>
                   </div>
-                  <span
-                    className="text-xs"
-                    style={{ color: 'var(--muted-foreground)', flexShrink: 0 }}
-                  >
+                  <span className="text-xs text-muted-foreground shrink-0">
                     {new Date(entry.created_at as string).toLocaleString()}
                   </span>
                 </div>

@@ -25,7 +25,11 @@ export interface AddressComponents {
 
 interface LocationAutocompleteProps {
   value: string;
-  onChange: (address: string, coordinates?: { lat: number; lng: number }, components?: AddressComponents) => void;
+  onChange: (
+    address: string,
+    coordinates?: { lat: number; lng: number },
+    components?: AddressComponents,
+  ) => void;
   onValidation?: (isValid: boolean) => void;
   placeholder?: string;
   required?: boolean;
@@ -38,10 +42,10 @@ export function LocationAutocomplete({
   value,
   onChange,
   onValidation,
-  placeholder = "Search for an address...",
+  placeholder = 'Search for an address...',
   required = false,
   disabled = false,
-  label = "Address"
+  label = 'Address',
 }: LocationAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,8 +74,8 @@ export function LocationAutocomplete({
       const { data, error } = await supabase.functions.invoke('mapbox-geocoding', {
         body: {
           query,
-          types: ['address', 'poi']
-        }
+          types: ['address', 'poi'],
+        },
       });
 
       if (error) throw error;
@@ -82,9 +86,9 @@ export function LocationAutocomplete({
       console.error('Geocoding error:', error);
 
       toast({
-        title: "Search Error",
-        description: "Failed to search addresses. Please try again.",
-        variant: "destructive"
+        title: 'Search Error',
+        description: 'Failed to search addresses. Please try again.',
+        variant: 'destructive',
       });
 
       setSuggestions([]);
@@ -142,7 +146,7 @@ export function LocationAutocomplete({
   const handleSuggestionSelect = (suggestion: LocationSuggestion) => {
     const coordinates = {
       lat: suggestion.center[1],
-      lng: suggestion.center[0]
+      lng: suggestion.center[0],
     };
     const components = extractComponents(suggestion);
 
@@ -153,8 +157,8 @@ export function LocationAutocomplete({
     onValidation?.(true);
 
     toast({
-      title: "Address Selected",
-      description: "Location has been validated and coordinates updated.",
+      title: 'Address Selected',
+      description: 'Location has been validated and coordinates updated.',
     });
   };
 
@@ -164,15 +168,11 @@ export function LocationAutocomplete({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex(prev =>
-          prev < suggestions.length - 1 ? prev + 1 : 0
-        );
+        setSelectedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0));
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedIndex(prev =>
-          prev > 0 ? prev - 1 : suggestions.length - 1
-        );
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1));
         break;
       case 'Enter':
         e.preventDefault();
@@ -195,8 +195,8 @@ export function LocationAutocomplete({
       const { data, error } = await supabase.functions.invoke('mapbox-geocoding', {
         body: {
           query: inputValue,
-          types: ['address']
-        }
+          types: ['address'],
+        },
       });
 
       if (error) throw error;
@@ -205,7 +205,7 @@ export function LocationAutocomplete({
         const firstResult = data.features[0] as LocationSuggestion;
         const coordinates = {
           lat: firstResult.center[1],
-          lng: firstResult.center[0]
+          lng: firstResult.center[0],
         };
         const components = extractComponents(firstResult);
 
@@ -215,24 +215,24 @@ export function LocationAutocomplete({
         onValidation?.(true);
 
         toast({
-          title: "Address Validated",
-          description: "Address has been validated and coordinates updated.",
+          title: 'Address Validated',
+          description: 'Address has been validated and coordinates updated.',
         });
       } else {
         setIsValidated(false);
         onValidation?.(false);
         toast({
-          title: "Invalid Address",
-          description: "Could not validate this address. Please check and try again.",
-          variant: "destructive"
+          title: 'Invalid Address',
+          description: 'Could not validate this address. Please check and try again.',
+          variant: 'destructive',
         });
       }
     } catch (error) {
       console.error('Validation error:', error);
       toast({
-        title: "Validation Error",
-        description: "Failed to validate address. Please try again.",
-        variant: "destructive"
+        title: 'Validation Error',
+        description: 'Failed to validate address. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -242,9 +242,9 @@ export function LocationAutocomplete({
   const detectLocation = async () => {
     if (!navigator.geolocation) {
       toast({
-        title: "Location Error",
-        description: "Geolocation is not supported by this browser.",
-        variant: "destructive"
+        title: 'Location Error',
+        description: 'Geolocation is not supported by this browser.',
+        variant: 'destructive',
       });
       return;
     }
@@ -265,8 +265,8 @@ export function LocationAutocomplete({
       const { data, error } = await supabase.functions.invoke('mapbox-geocoding', {
         body: {
           query: `${longitude},${latitude}`,
-          isReverseGeocode: true
-        }
+          isReverseGeocode: true,
+        },
       });
 
       if (error) throw error;
@@ -275,7 +275,7 @@ export function LocationAutocomplete({
         const location = data.features[0] as LocationSuggestion;
         const coordinates = {
           lat: latitude,
-          lng: longitude
+          lng: longitude,
         };
         const components = extractComponents(location);
 
@@ -285,16 +285,16 @@ export function LocationAutocomplete({
         onValidation?.(true);
 
         toast({
-          title: "Location Detected",
-          description: "Your current location has been detected and validated.",
+          title: 'Location Detected',
+          description: 'Your current location has been detected and validated.',
         });
       }
     } catch (error) {
       console.error('Error detecting location:', error);
       toast({
-        title: "Location Error",
-        description: "Failed to detect your location. Please try again or enter manually.",
-        variant: "destructive"
+        title: 'Location Error',
+        description: 'Failed to detect your location. Please try again or enter manually.',
+        variant: 'destructive',
       });
     } finally {
       setIsDetectingLocation(false);
@@ -323,12 +323,14 @@ export function LocationAutocomplete({
   }, []);
 
   return (
-    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div style={{ flexDirection: 'column' }} className="relative flex gap-2">
       {label && (
-        <Label htmlFor="address">{label} {required && '*'}</Label>
+        <Label htmlFor="address">
+          {label} {required && '*'}
+        </Label>
       )}
-      <div style={{ display: 'flex', gap: 8 }}>
-        <div style={{ position: 'relative', flex: 1 }}>
+      <div className="flex gap-2">
+        <div style={{ flex: 1 }} className="relative">
           <Input
             ref={inputRef}
             id="address"
@@ -343,20 +345,17 @@ export function LocationAutocomplete({
               ...(isValidated ? { borderColor: 'hsl(var(--foreground))' } : {}),
             }}
           />
-          <div style={{
-            position: 'absolute',
-            right: 8,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-          }}>
-            {isValidated && (
-              <Check size={16} className="text-foreground" />
-            )}
+          <div
+            style={{ right: 8, top: '50%', transform: 'translateY(-50%)', alignItems: 'center' }}
+            className="absolute flex gap-1"
+          >
+            {isValidated && <Check size={16} className="text-foreground" />}
             {isLoading && (
-              <Loader2 size={12} style={{ color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />
+              <Loader2
+                size={12}
+                style={{ animation: 'spin 1s linear infinite' }}
+                className="text-muted-foreground"
+              />
             )}
             <Button
               type="button"
@@ -392,15 +391,14 @@ export function LocationAutocomplete({
         <div
           ref={suggestionsRef}
           style={{
-            position: 'absolute',
             zIndex: 50,
             width: '100%',
             top: '100%',
-            marginTop: 4,
             backgroundColor: 'hsl(var(--background))',
             maxHeight: 240,
             overflowY: 'auto',
           }}
+          className="absolute mt-1"
         >
           {suggestions.map((suggestion, index) => (
             <button
@@ -408,21 +406,27 @@ export function LocationAutocomplete({
               type="button"
               style={{
                 width: '100%',
-                textAlign: 'left',
                 padding: '8px 12px',
                 border: 'none',
                 background: index === selectedIndex ? 'hsl(var(--accent))' : 'transparent',
-                cursor: 'pointer',
-                display: 'block',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'hsl(var(--accent))'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = index === selectedIndex ? 'hsl(var(--accent))' : 'transparent'; }}
+              className="text-left cursor-pointer block"
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'hsl(var(--accent))';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor =
+                  index === selectedIndex ? 'hsl(var(--accent))' : 'transparent';
+              }}
               onClick={() => handleSuggestionSelect(suggestion)}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <MapPin size={16} style={{ color: 'hsl(var(--muted-foreground))', marginTop: 2, flexShrink: 0 }} />
+              <div style={{ alignItems: 'flex-start' }} className="flex gap-2">
+                <MapPin size={16} className="text-muted-foreground mt-0.5 shrink-0" />
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div
+                    style={{ textOverflow: 'ellipsis' }}
+                    className="text-sm font-medium overflow-hidden whitespace-nowrap"
+                  >
                     {suggestion.place_name}
                   </div>
                 </div>

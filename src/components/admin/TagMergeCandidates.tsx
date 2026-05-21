@@ -12,12 +12,19 @@ import { GitMerge, ChevronDown, ChevronUp } from 'lucide-react';
 // (venues/news_articles/personalities), marks duplicate as 'merged'.
 
 interface DupRow {
-  tag_a_id: string; tag_a_slug: string;
-  tag_b_id: string; tag_b_slug: string;
+  tag_a_id: string;
+  tag_a_slug: string;
+  tag_b_id: string;
+  tag_b_slug: string;
   similarity: number;
 }
 
-interface TagMeta { id: string; slug: string; name: string; usage_count: number | null }
+interface TagMeta {
+  id: string;
+  slug: string;
+  name: string;
+  usage_count: number | null;
+}
 
 export function TagMergeCandidates() {
   const [open, setOpen] = useState(false);
@@ -38,12 +45,17 @@ export function TagMergeCandidates() {
   });
 
   // Pull usage_count for both sides so admins know which to keep
-  const ids = (dups ?? []).flatMap(d => [d.tag_a_id, d.tag_b_id]);
+  const ids = (dups ?? []).flatMap((d) => [d.tag_a_id, d.tag_b_id]);
   const { data: tagMeta } = useQuery({
     queryKey: ['unified-tags-meta', ids.sort().join(',')],
     enabled: ids.length > 0,
     queryFn: async () => {
-      const data = await listFromIn<TagMeta>('unified_tags', 'id, slug, name, usage_count', 'id', ids);
+      const data = await listFromIn<TagMeta>(
+        'unified_tags',
+        'id, slug, name, usage_count',
+        'id',
+        ids,
+      );
       const map: Record<string, TagMeta> = {};
       for (const t of data) map[t.id] = t;
       return map;
@@ -51,7 +63,13 @@ export function TagMergeCandidates() {
   });
 
   const merge = useMutation({
-    mutationFn: async ({ canonicalId, duplicateId }: { canonicalId: string; duplicateId: string }) => {
+    mutationFn: async ({
+      canonicalId,
+      duplicateId,
+    }: {
+      canonicalId: string;
+      duplicateId: string;
+    }) => {
       const { error } = await supabase.rpc('merge_unified_tag', {
         p_canonical_id: canonicalId,
         p_duplicate_id: duplicateId,
@@ -68,27 +86,65 @@ export function TagMergeCandidates() {
   });
 
   return (
-    <div style={{ border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-element)', marginBottom: 16, background: 'hsl(var(--background))' }}>
+    <div
+      style={{
+        border: '1px solid hsl(var(--border))',
+        borderRadius: 'var(--radius-element)',
+        background: 'hsl(var(--background))',
+      }}
+      className="mb-4"
+    >
       <button
         onClick={() => setOpen(!open)}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: 12, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          width: '100%',
+          padding: 12,
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          fontWeight: 600,
+          fontSize: 14,
+        }}
       >
         <GitMerge size={16} />
         Tag merge candidates
         {dups && dups.length > 0 && (
-          <Badge variant="outline" style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)', borderColor: 'hsl(var(--muted))' }}>
+          <Badge
+            variant="outline"
+            style={{
+              background: 'hsl(var(--muted))',
+              color: 'hsl(var(--foreground) / 0.7)',
+              borderColor: 'hsl(var(--muted))',
+            }}
+          >
             {dups.length} pending
           </Badge>
         )}
-        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'hsl(var(--muted-foreground))', fontWeight: 400 }}>
+        <span
+          style={{ marginLeft: 'auto', alignItems: 'center', fontSize: 12 }}
+          className="flex gap-2 text-muted-foreground font-normal"
+        >
           {open && (
             <>
               <span>Threshold:</span>
               <input
-                type="number" step="0.05" min="0.3" max="0.95" value={threshold}
+                type="number"
+                step="0.05"
+                min="0.3"
+                max="0.95"
+                value={threshold}
                 onClick={(e) => e.stopPropagation()}
                 onChange={(e) => setThreshold(Number(e.target.value))}
-                style={{ width: 60, padding: '2px 6px', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-badge)', fontSize: 12 }}
+                style={{
+                  width: 60,
+                  padding: '2px 6px',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 'var(--radius-badge)',
+                  fontSize: 12,
+                }}
               />
             </>
           )}
@@ -97,17 +153,40 @@ export function TagMergeCandidates() {
       </button>
 
       {open && (
-        <div style={{ padding: 12, borderTop: '1px solid hsl(var(--border))' }}>
-          {isLoading && <div style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}>Finding candidates…</div>}
+        <div style={{ borderTop: '1px solid hsl(var(--border))' }} className="p-3">
+          {isLoading && (
+            <div style={{ fontSize: 13 }} className="text-muted-foreground">
+              Finding candidates…
+            </div>
+          )}
           {!isLoading && (!dups || dups.length === 0) && (
-            <div style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}>No candidates above threshold {threshold}.</div>
+            <div style={{ fontSize: 13 }} className="text-muted-foreground">
+              No candidates above threshold {threshold}.
+            </div>
           )}
           {!isLoading && dups && dups.length > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 60px 200px', gap: 8, fontSize: 13 }}>
-              <div style={{ fontWeight: 600, fontSize: 11, color: 'hsl(var(--muted-foreground))' }}>Tag A (usage)</div>
-              <div style={{ fontWeight: 600, fontSize: 11, color: 'hsl(var(--muted-foreground))' }}>Tag B (usage)</div>
-              <div style={{ fontWeight: 600, fontSize: 11, color: 'hsl(var(--muted-foreground))', textAlign: 'right' }}>Sim</div>
-              <div style={{ fontWeight: 600, fontSize: 11, color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>Action</div>
+            <div
+              style={{ gridTemplateColumns: '1fr 1fr 60px 200px', fontSize: 13 }}
+              className="grid gap-2"
+            >
+              <div style={{ fontSize: 11 }} className="font-semibold text-muted-foreground">
+                Tag A (usage)
+              </div>
+              <div style={{ fontSize: 11 }} className="font-semibold text-muted-foreground">
+                Tag B (usage)
+              </div>
+              <div
+                style={{ fontSize: 11 }}
+                className="font-semibold text-muted-foreground text-right"
+              >
+                Sim
+              </div>
+              <div
+                style={{ fontSize: 11 }}
+                className="font-semibold text-muted-foreground text-center"
+              >
+                Action
+              </div>
               {dups.map((d, i) => {
                 const a = tagMeta?.[d.tag_a_id];
                 const b = tagMeta?.[d.tag_b_id];
@@ -117,29 +196,60 @@ export function TagMergeCandidates() {
                 return (
                   <div key={i} style={{ display: 'contents' }}>
                     <div>
-                      <code style={{ background: aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))', padding: '2px 6px', borderRadius: 'var(--radius-badge)', fontSize: 12 }}>{d.tag_a_slug}</code>
-                      <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: 11, marginLeft: 4 }}>{aUsage}</span>
+                      <code
+                        style={{
+                          background: aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
+                          padding: '2px 6px',
+                          borderRadius: 'var(--radius-badge)',
+                          fontSize: 12,
+                        }}
+                      >
+                        {d.tag_a_slug}
+                      </code>
+                      <span style={{ fontSize: 11 }} className="text-muted-foreground ml-1">
+                        {aUsage}
+                      </span>
                     </div>
                     <div>
-                      <code style={{ background: !aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))', padding: '2px 6px', borderRadius: 'var(--radius-badge)', fontSize: 12 }}>{d.tag_b_slug}</code>
-                      <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: 11, marginLeft: 4 }}>{bUsage}</span>
+                      <code
+                        style={{
+                          background: !aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
+                          padding: '2px 6px',
+                          borderRadius: 'var(--radius-badge)',
+                          fontSize: 12,
+                        }}
+                      >
+                        {d.tag_b_slug}
+                      </code>
+                      <span style={{ fontSize: 11 }} className="text-muted-foreground ml-1">
+                        {bUsage}
+                      </span>
                     </div>
-                    <div style={{ textAlign: 'right', color: 'hsl(var(--muted-foreground))', fontFamily: 'monospace', fontSize: 11 }}>
+                    <div
+                      style={{ fontFamily: 'monospace', fontSize: 11 }}
+                      className="text-right text-muted-foreground"
+                    >
                       {(d.similarity * 100).toFixed(0)}%
                     </div>
-                    <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+                    <div style={{ justifyContent: 'center' }} className="flex gap-1">
                       <Button
-                        size="sm" variant="outline"
+                        size="sm"
+                        variant="outline"
                         disabled={merge.isPending}
-                        onClick={() => merge.mutate({ canonicalId: d.tag_a_id, duplicateId: d.tag_b_id })}
+                        onClick={() =>
+                          merge.mutate({ canonicalId: d.tag_a_id, duplicateId: d.tag_b_id })
+                        }
                         title={`Keep ${d.tag_a_slug}, merge ${d.tag_b_slug} into it`}
                       >
                         ← keep A
                       </Button>
                       <Button
-                        size="sm" variant="outline"
+                        size="sm"
+                        variant="outline"
                         disabled={merge.isPending}
-                        onClick={() => merge.mutate({ canonicalId: d.tag_b_id, duplicateId: d.tag_a_id })}
+                        onClick={() =>
+                          merge.mutate({ canonicalId: d.tag_b_id, duplicateId: d.tag_a_id })
+                        }
                         title={`Keep ${d.tag_b_slug}, merge ${d.tag_a_slug} into it`}
                       >
                         keep B →

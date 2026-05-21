@@ -4,7 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Globe, Image as ImageIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  ExternalLink,
+  Globe,
+  Image as ImageIcon,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface WikipediaInfo {
@@ -58,11 +65,11 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
       // Fetch Wikipedia info and Pexels images in parallel
       const [wikipediaResponse, imagesResponse] = await Promise.all([
         supabase.functions.invoke('get-wikipedia-info', {
-          body: { query: name, type }
+          body: { query: name, type },
         }),
         supabase.functions.invoke('get-pexels-images', {
-          body: { query: name, type }
-        })
+          body: { query: name, type },
+        }),
       ]);
 
       if (wikipediaResponse.error) {
@@ -96,11 +103,12 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
 
   const navigateImage = (direction: 'prev' | 'next') => {
     if (selectedImageIndex === null) return;
-    
-    const newIndex = direction === 'prev' 
-      ? (selectedImageIndex - 1 + images.length) % images.length
-      : (selectedImageIndex + 1) % images.length;
-    
+
+    const newIndex =
+      direction === 'prev'
+        ? (selectedImageIndex - 1 + images.length) % images.length
+        : (selectedImageIndex + 1) % images.length;
+
     setSelectedImageIndex(newIndex);
   };
 
@@ -108,7 +116,10 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
 
   if (loading) {
     return (
-      <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div
+        className={className}
+        style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+      >
         <Card>
           <CardHeader>
             <Skeleton />
@@ -121,13 +132,13 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <Skeleton />
           </CardHeader>
           <CardContent>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+            <div style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }} className="grid">
               {[...Array(6)].map((_, i) => (
                 <Skeleton key={i} />
               ))}
@@ -152,29 +163,34 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
           </CardHeader>
           <CardContent>
             {wikipediaInfo.description && (
-              <p style={{ fontSize: '1.125rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>
+              <p className="text-lg font-medium text-muted-foreground">
                 {wikipediaInfo.description}
               </p>
             )}
-            
-            <div className="prose" style={{ fontSize: '0.875rem', maxWidth: 'none' }}>
+
+            <div className="prose text-sm" style={{ maxWidth: 'none' }}>
               <p>{wikipediaInfo.content}</p>
             </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem' }}>
+
+            <div
+              style={{ alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem' }}
+              className="flex"
+            >
               <a
                 href={wikipediaInfo.pageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--primary)' }}
+                style={{ alignItems: 'center', gap: '0.5rem' }}
+                className="inline-flex text-sm text-primary"
               >
                 <ExternalLink size={16} />
                 Read more on Wikipedia
               </a>
-              
+
               {wikipediaInfo.coordinates && (
                 <span className="text-xs text-muted-foreground">
-                  {wikipediaInfo.coordinates.lat.toFixed(4)}°, {wikipediaInfo.coordinates.lon.toFixed(4)}°
+                  {wikipediaInfo.coordinates.lat.toFixed(4)}°,{' '}
+                  {wikipediaInfo.coordinates.lon.toFixed(4)}°
                 </span>
               )}
             </div>
@@ -192,44 +208,95 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+            <div
+              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}
+              className="grid"
+            >
               {images.map((image, index) => (
                 <div
                   key={image.id}
                   role="button"
                   tabIndex={0}
                   /* group removed */
-                  style={{ position: 'relative', cursor: 'pointer', overflow: 'hidden', transition: 'all 0.3s' }}
+                  style={{
+                    position: 'relative',
+                    cursor: 'pointer',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s',
+                  }}
                   onClick={() => openModal(index)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(index); } }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openModal(index);
+                    }
+                  }}
                 >
-                  <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
+                  <div style={{ aspectRatio: '16/9' }} className="relative overflow-hidden">
                     <img
                       src={image.thumbnail}
                       alt={image.alt || `Photo of ${name}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.5s' }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'all 0.5s',
+                      }}
                       loading="lazy"
                     />
                     <div
-                      style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent, transparent)', opacity: 0, transition: 'opacity 0.3s' }}
+                      style={{
+                        inset: 0,
+                        background:
+                          'linear-gradient(to top, rgba(0,0,0,0.6), transparent, transparent)',
+                        opacity: 0,
+                        transition: 'opacity 0.3s',
+                      }}
+                      className="absolute"
                     />
                   </div>
-                  
+
                   <div
-                    style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0.75rem', color: 'white', transform: 'translateY(100%)', transition: 'transform 0.3s' }}
+                    style={{
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: '0.75rem',
+                      color: 'white',
+                      transform: 'translateY(100%)',
+                      transition: 'transform 0.3s',
+                    }}
+                    className="absolute"
                   >
-                    <p style={{ fontSize: '0.75rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p
+                      style={{ textOverflow: 'ellipsis' }}
+                      className="text-xs font-medium overflow-hidden whitespace-nowrap"
+                    >
                       Photo by {image.photographer}
                     </p>
                   </div>
-                  
+
                   {/* Hover overlay */}
                   <div
-                    style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(var(--primary-rgb), 0.1)', opacity: 0, transition: 'opacity 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{
+                      inset: 0,
+                      backgroundColor: 'rgba(var(--primary-rgb), 0.1)',
+                      opacity: 0,
+                      transition: 'opacity 0.3s',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    className="absolute flex"
                   >
                     <div
                       className="rounded-full"
-                      style={{ backgroundColor: 'rgba(var(--background-rgb), 0.9)', backdropFilter: 'blur(4px)', padding: '0.5rem', transform: 'scale(0)', transition: 'transform 0.3s' }}
+                      style={{
+                        backgroundColor: 'rgba(var(--background-rgb), 0.9)',
+                        backdropFilter: 'blur(4px)',
+                        padding: '0.5rem',
+                        transform: 'scale(0)',
+                        transition: 'transform 0.3s',
+                      }}
                     >
                       <ImageIcon size={20} className="text-primary" />
                     </div>
@@ -237,8 +304,14 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                 </div>
               ))}
             </div>
-            
-            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--muted)' }}>
+
+            <div
+              style={{
+                marginTop: '1.5rem',
+                paddingTop: '1rem',
+                borderTop: '1px solid var(--muted)',
+              }}
+            >
               <p className="text-xs text-muted-foreground text-center">
                 Photos provided by{' '}
                 <a
@@ -251,7 +324,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                 </a>
               </p>
             </div>
-            
+
             {/* Enhanced Photo Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogContent>
@@ -261,19 +334,27 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, color: 'white' }}
+                      style={{ top: '1rem', right: '1rem', zIndex: 10, color: 'white' }}
+                      className="absolute"
                       onClick={closeModal}
                     >
                       <X size={24} />
                     </Button>
-                    
+
                     {/* Navigation buttons */}
                     {images.length > 1 && (
                       <>
                         <Button
                           variant="ghost"
                           size="icon"
-                          style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10, color: 'white' }}
+                          style={{
+                            left: '1rem',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            zIndex: 10,
+                            color: 'white',
+                          }}
+                          className="absolute"
                           onClick={() => navigateImage('prev')}
                         >
                           <ChevronLeft size={32} />
@@ -281,14 +362,21 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10, color: 'white' }}
+                          style={{
+                            right: '1rem',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            zIndex: 10,
+                            color: 'white',
+                          }}
+                          className="absolute"
                           onClick={() => navigateImage('next')}
                         >
                           <ChevronRight size={32} />
                         </Button>
                       </>
                     )}
-                    
+
                     {/* Main image */}
                     <div className="relative">
                       <img
@@ -298,22 +386,41 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                       />
 
                       {/* Image info overlay */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)', padding: '1.5rem' }}>
+                      <div
+                        style={{
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+                          padding: '1.5rem',
+                        }}
+                        className="absolute"
+                      >
                         <div className="text-white flex flex-col gap-2">
-                          <p style={{ fontSize: '0.875rem', opacity: 0.8 }}>
-                            {selectedImageIndex !== null && `${selectedImageIndex + 1} of ${images.length}`}
+                          <p style={{ opacity: 0.8 }} className="text-sm">
+                            {selectedImageIndex !== null &&
+                              `${selectedImageIndex + 1} of ${images.length}`}
                           </p>
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="font-medium">Photo by {selectedImage.photographer}</p>
-                              <p style={{ fontSize: '0.875rem', opacity: 0.8 }}>{selectedImage.alt || `Photo of ${name}`}</p>
+                              <p style={{ opacity: 0.8 }} className="text-sm">
+                                {selectedImage.alt || `Photo of ${name}`}
+                              </p>
                             </div>
                             <a
                               href={selectedImage.photographer_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="rounded-element"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.375rem 0.75rem', color: 'inherit', textDecoration: 'none', transition: 'background-color 0.2s' }}
+                              className="rounded-element inline-flex text-sm no-underline"
+                              style={{
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                backgroundColor: 'rgba(255,255,255,0.2)',
+                                padding: '0.375rem 0.75rem',
+                                color: 'inherit',
+                                transition: 'background-color 0.2s',
+                              }}
                             >
                               <ExternalLink size={16} />
                               View Profile

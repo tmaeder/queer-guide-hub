@@ -1,10 +1,22 @@
-import { MotionCard as Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  MotionCard as Card,
+  CardImage,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users, Globe, Building2, Crown, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
-import type {
-  CountryWithRegions as Country,
-  CityWithCountry as City,
-} from '@/hooks/usePlaces';
+import {
+  MapPin,
+  Users,
+  Globe,
+  Building2,
+  Crown,
+  ShieldCheck,
+  ShieldAlert,
+  Shield,
+} from 'lucide-react';
+import type { CountryWithRegions as Country, CityWithCountry as City } from '@/hooks/usePlaces';
 import { useState, useEffect, memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { supabase } from '@/integrations/supabase/client';
@@ -186,9 +198,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
       const city = data as City;
       return (
         <div className="flex flex-col gap-1">
-          {city.countries && (
-            <p className="text-sm text-muted-foreground">{city.countries.name}</p>
-          )}
+          {city.countries && <p className="text-sm text-muted-foreground">{city.countries.name}</p>}
           <div className="flex gap-2">
             {city.is_capital && (
               <div
@@ -211,8 +221,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
                   backgroundColor: 'rgba(var(--secondary-rgb, 107, 114, 128), 0.1)',
                 }}
               >
-                <Building2 size={12} style={{ color: 'var(--secondary-foreground)' }}
-                />
+                <Building2 size={12} style={{ color: 'var(--secondary-foreground)' }} />
               </div>
             )}
           </div>
@@ -238,12 +247,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   const cardContent = (
     <Card>
       {type === 'country' && (
-        <CardImage
-          src={countryImage}
-          alt={`${name} landscape`}
-          fallbackIcon={Globe}
-          height={200}
-        />
+        <CardImage src={countryImage} alt={`${name} landscape`} fallbackIcon={Globe} height={200} />
       )}
 
       {type === 'city' && (
@@ -290,7 +294,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
         </CardTitle>
       </CardHeader>
 
-      {getSubtitle() && <CardContent style={{ paddingTop: 0 }}>{getSubtitle()}</CardContent>}
+      {getSubtitle() && <CardContent className="pt-0">{getSubtitle()}</CardContent>}
     </Card>
   );
 
@@ -312,19 +316,43 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   }
 
   // For continents or items without detail pages, use onClick
-  return <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}>{cardContent}</div>;
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+    >
+      {cardContent}
+    </div>
+  );
 });
 
 const LEGALITY_ICON_STYLE: React.CSSProperties = { height: 12, width: 12 };
 
-function LegalityBadge({ legality }: { legality: { level: LegalityLevel; label: string; ariaLabel: string } }) {
-  const Icon = legality.level === 'protected' ? ShieldCheck : legality.level === 'restricted' ? ShieldAlert : Shield;
+function LegalityBadge({
+  legality,
+}: {
+  legality: { level: LegalityLevel; label: string; ariaLabel: string };
+}) {
+  const Icon =
+    legality.level === 'protected'
+      ? ShieldCheck
+      : legality.level === 'restricted'
+        ? ShieldAlert
+        : Shield;
   return (
     <Badge
       variant={legality.level === 'protected' ? 'secondary' : 'outline'}
       aria-label={legality.ariaLabel}
       data-testid={`legality-${legality.level}`}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.7rem', fontWeight: 500 }}
+      style={{ alignItems: 'center', fontSize: '0.7rem' }}
+      className="inline-flex gap-1 font-medium"
     >
       <Icon style={LEGALITY_ICON_STYLE} />
       <span>{legality.label}</span>

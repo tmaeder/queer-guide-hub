@@ -63,7 +63,9 @@ export function SpecialOffersSection() {
       <div className="mb-8">
         <Skeleton className="h-6 w-[180px] mb-2" />
         <div className="flex gap-3 overflow-x-auto">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="w-[200px] h-[100px] rounded shrink-0" />)}
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="w-[200px] h-[100px] rounded shrink-0" />
+          ))}
         </div>
       </div>
     );
@@ -79,8 +81,12 @@ export function SpecialOffersSection() {
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {offers.map((offer, i) => (
-          <Card key={`${offer.origin}-${offer.destination}-${i}`} style={{ minWidth: 200, flexShrink: 0 }}>
-            <CardContent style={{ padding: 12 }}>
+          <Card
+            key={`${offer.origin}-${offer.destination}-${i}`}
+            style={{ minWidth: 200 }}
+            className="shrink-0"
+          >
+            <CardContent className="p-3">
               <div className="flex items-center gap-1 mb-1">
                 {offer.airline && (
                   <img
@@ -88,7 +94,9 @@ export function SpecialOffersSection() {
                     alt={offer.airline}
                     role="presentation"
                     className="w-4 h-4 rounded-full"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 )}
                 <p className="font-bold text-sm">
@@ -97,14 +105,16 @@ export function SpecialOffersSection() {
               </div>
               {offer.departDate && (
                 <p className="text-xs2 text-muted-foreground mb-1">
-                  {new Date(offer.departDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  {offer.returnDate && ` - ${new Date(offer.returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                  {new Date(offer.departDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                  {offer.returnDate &&
+                    ` - ${new Date(offer.returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                 </p>
               )}
               <div className="flex justify-between items-center mt-2">
-                <p className="font-bold text-body-lg text-primary">
-                  €{Math.round(offer.price)}
-                </p>
+                <p className="font-bold text-body-lg text-primary">€{Math.round(offer.price)}</p>
                 <Button
                   size="sm"
                   onClick={() => {

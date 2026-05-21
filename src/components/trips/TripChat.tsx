@@ -45,7 +45,11 @@ export function TripChat({ tripId }: Props) {
       { content: text, replyTo: replyTo?.id },
       {
         onError: (err) =>
-          toast({ title: 'Failed to send message', description: String(err), variant: 'destructive' }),
+          toast({
+            title: 'Failed to send message',
+            description: String(err),
+            variant: 'destructive',
+          }),
       },
     );
     setInput('');
@@ -66,8 +70,7 @@ export function TripChat({ tripId }: Props) {
     return format(date, 'MMM d, HH:mm');
   };
 
-  const findReplyMessage = (id: string | null) =>
-    id ? messages?.find((m) => m.id === id) : null;
+  const findReplyMessage = (id: string | null) => (id ? messages?.find((m) => m.id === id) : null);
 
   if (isLoading) return <PageLoadingState count={3} variant="list" />;
 
@@ -99,7 +102,10 @@ export function TripChat({ tripId }: Props) {
             <div key={msg.id} className={cn('flex gap-2 group', isOwn && 'flex-row-reverse')}>
               <Avatar className="h-6 w-6 mt-0.5">
                 {msg.sender?.avatar_url && (
-                  <AvatarImage src={msg.sender.avatar_url} alt={msg.sender?.display_name || 'User'} />
+                  <AvatarImage
+                    src={msg.sender.avatar_url}
+                    alt={msg.sender?.display_name || 'User'}
+                  />
                 )}
                 <AvatarFallback className="text-2xs">{initial}</AvatarFallback>
               </Avatar>
@@ -151,14 +157,12 @@ export function TripChat({ tripId }: Props) {
       {/* Reply preview */}
       {replyTo && (
         <div className="flex items-center gap-2 px-3 py-1.5 border-t border-border bg-muted">
-          <Reply size={14} style={{ opacity: 0.5, flexShrink: 0 }} />
+          <Reply size={14} style={{ opacity: 0.5 }} className="shrink-0" />
           <div className="flex-1 min-w-0">
             <span className="block text-xs2 font-semibold">
               Replying to {replyTo.sender?.display_name || 'Unknown'}
             </span>
-            <span className="block text-xs2 text-muted-foreground truncate">
-              {replyTo.content}
-            </span>
+            <span className="block text-xs2 text-muted-foreground truncate">{replyTo.content}</span>
           </div>
           <Button
             variant="ghost"

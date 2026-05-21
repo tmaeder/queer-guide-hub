@@ -38,11 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
   DialogContent,
@@ -134,7 +130,12 @@ export function AutomationDashboard() {
           value={stats.pendingFlags}
           color={stats.pendingFlags > 0 ? 'hsl(var(--foreground) / 0.55)' : undefined}
         />
-        <StatCard icon={CheckCircle2} label="Applied" value={stats.appliedFlags} color="hsl(var(--foreground))" />
+        <StatCard
+          icon={CheckCircle2}
+          label="Applied"
+          value={stats.appliedFlags}
+          color="hsl(var(--foreground))"
+        />
         <StatCard
           icon={Link2}
           label="Dead Links"
@@ -177,11 +178,19 @@ export function AutomationDashboard() {
                     <div className="flex items-center gap-4">
                       <div
                         className="p-2 rounded-element flex"
-                        style={{ backgroundColor: mod.is_enabled ? 'hsl(var(--muted))' : 'hsl(var(--muted))' }}
+                        style={{
+                          backgroundColor: mod.is_enabled
+                            ? 'hsl(var(--muted))'
+                            : 'hsl(var(--muted))',
+                        }}
                       >
                         <CategoryIcon
                           size={20}
-                          style={{ color: mod.is_enabled ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
+                          style={{
+                            color: mod.is_enabled
+                              ? 'hsl(var(--foreground))'
+                              : 'hsl(var(--muted-foreground))',
+                          }}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -198,9 +207,7 @@ export function AutomationDashboard() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-13 text-muted-foreground mt-0.5">
-                          {mod.description}
-                        </p>
+                        <p className="text-13 text-muted-foreground mt-0.5">{mod.description}</p>
                         <div className="flex gap-4 mt-1 text-xs text-muted-foreground flex-wrap items-center">
                           <span>Confidence: {(mod.confidence_threshold * 100).toFixed(0)}%</span>
                           <span>Batch: {mod.batch_size}</span>
@@ -334,16 +341,12 @@ export function AutomationDashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            className={`text-2xs ${SEVERITY_CLASS[flag.severity] ?? ''}`}
-                          >
+                          <Badge className={`text-2xs ${SEVERITY_CLASS[flag.severity] ?? ''}`}>
                             {flag.severity}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {flag.confidence != null
-                            ? `${(flag.confidence * 100).toFixed(0)}%`
-                            : '—'}
+                          {flag.confidence != null ? `${(flag.confidence * 100).toFixed(0)}%` : '—'}
                         </TableCell>
                         <TableCell>
                           <span className="text-xs text-muted-foreground">
@@ -548,9 +551,7 @@ export function AutomationDashboard() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          {geo.confidence != null
-                            ? `${(geo.confidence * 100).toFixed(0)}%`
-                            : '—'}
+                          {geo.confidence != null ? `${(geo.confidence * 100).toFixed(0)}%` : '—'}
                         </TableCell>
                         <TableCell>
                           <span className="text-xs text-muted-foreground">
@@ -618,9 +619,7 @@ function StatCard({
         <p className="text-xl font-bold" style={{ color: color || 'inherit' }}>
           {value.toLocaleString()}
           {total != null && (
-            <span className="text-xs text-muted-foreground ml-1 font-normal">
-              / {total}
-            </span>
+            <span className="text-xs text-muted-foreground ml-1 font-normal">/ {total}</span>
           )}
         </p>
       </CardContent>
@@ -661,15 +660,11 @@ function FlagDetailDialog({
             <Badge variant="outline">{flag.content_type}</Badge>
             <Badge variant="outline">Module: {flag.module_name}</Badge>
             {flag.confidence != null && (
-              <Badge variant="outline">
-                Confidence: {(flag.confidence * 100).toFixed(0)}%
-              </Badge>
+              <Badge variant="outline">Confidence: {(flag.confidence * 100).toFixed(0)}%</Badge>
             )}
           </div>
 
-          {flag.description && (
-            <p className="text-sm text-muted-foreground">{flag.description}</p>
-          )}
+          {flag.description && <p className="text-sm text-muted-foreground">{flag.description}</p>}
 
           {flag.current_value && (
             <div>
@@ -706,7 +701,8 @@ function FlagDetailDialog({
           </Button>
           <Button
             variant="outline"
-            style={{ borderColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive))' }}
+            style={{ borderColor: 'hsl(var(--destructive))' }}
+            className="text-destructive"
             disabled={isReviewing}
             onClick={() => onReject(flag.id)}
           >
@@ -783,9 +779,7 @@ function ModuleConfigDialog({
 
           <div>
             <p className="text-sm font-medium mb-1">Batch Size: {batchSize}</p>
-            <p className="text-xs text-muted-foreground mb-2">
-              Number of items to process per run
-            </p>
+            <p className="text-xs text-muted-foreground mb-2">Number of items to process per run</p>
             <Slider
               value={[batchSize]}
               onValueChange={([v]) => setBatchSize(v)}

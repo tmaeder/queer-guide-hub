@@ -1,15 +1,28 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Settings, Filter, Shield, Zap, X } from "lucide-react";
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { Settings, Filter, Shield, Zap, X } from 'lucide-react';
 
 export interface ImportConfig {
   duplicateStrategy: 'skip' | 'update' | 'fail' | 'create_new';
@@ -48,39 +61,82 @@ const DEFAULT_CONFIG: ImportConfig = {
   validation: {
     strict: false,
     required_fields: [],
-    custom_validations: {}
+    custom_validations: {},
   },
   filters: {
-    limit: 1000
+    limit: 1000,
   },
   advanced: {
     enable_geocoding: false,
     enable_image_processing: true,
     enable_ai_enhancement: false,
     concurrent_limit: 3,
-    timeout_seconds: 60
-  }
+    timeout_seconds: 60,
+  },
 };
 
 const DUPLICATE_STRATEGIES = [
-  { value: 'skip', label: 'Skip Duplicates', description: 'Skip items that already exist in the database' },
-  { value: 'update', label: 'Update Existing', description: 'Update existing records with new data' },
-  { value: 'fail', label: 'Fail on Duplicate', description: 'Stop the import when duplicates are found' },
-  { value: 'create_new', label: 'Create New', description: 'Always create new records, ignore duplicates' }
+  {
+    value: 'skip',
+    label: 'Skip Duplicates',
+    description: 'Skip items that already exist in the database',
+  },
+  {
+    value: 'update',
+    label: 'Update Existing',
+    description: 'Update existing records with new data',
+  },
+  {
+    value: 'fail',
+    label: 'Fail on Duplicate',
+    description: 'Stop the import when duplicates are found',
+  },
+  {
+    value: 'create_new',
+    label: 'Create New',
+    description: 'Always create new records, ignore duplicates',
+  },
 ];
 
 const ERROR_STRATEGIES = [
-  { value: 'continue', label: 'Continue on Error', description: 'Skip failed items and continue importing' },
-  { value: 'stop', label: 'Stop on Error', description: 'Stop the entire import when an error occurs' },
-  { value: 'retry_batch', label: 'Retry Failed Batch', description: 'Retry the entire batch when errors occur' }
+  {
+    value: 'continue',
+    label: 'Continue on Error',
+    description: 'Skip failed items and continue importing',
+  },
+  {
+    value: 'stop',
+    label: 'Stop on Error',
+    description: 'Stop the entire import when an error occurs',
+  },
+  {
+    value: 'retry_batch',
+    label: 'Retry Failed Batch',
+    description: 'Retry the entire batch when errors occur',
+  },
 ];
 
 const COMMON_CATEGORIES = [
-  'Restaurant', 'Bar', 'Club', 'Hotel', 'Event', 'Pride', 'Community Center',
-  'Health', 'Entertainment', 'Shopping', 'Arts', 'Sports', 'Education'
+  'Restaurant',
+  'Bar',
+  'Club',
+  'Hotel',
+  'Event',
+  'Pride',
+  'Community Center',
+  'Health',
+  'Entertainment',
+  'Shopping',
+  'Arts',
+  'Sports',
+  'Education',
 ];
 
-export const AdvancedImportDialog = ({ importType, onImport, children }: AdvancedImportDialogProps) => {
+export const AdvancedImportDialog = ({
+  importType,
+  onImport,
+  children,
+}: AdvancedImportDialogProps) => {
   const [open, setOpen] = useState(false);
   const [config, setConfig] = useState<ImportConfig>(DEFAULT_CONFIG);
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -95,12 +151,12 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
       filters: {
         ...config.filters,
         keywords: keywords.length > 0 ? keywords : undefined,
-        categories: categories.length > 0 ? categories : undefined
+        categories: categories.length > 0 ? categories : undefined,
       },
       validation: {
         ...config.validation,
-        required_fields: requiredFields
-      }
+        required_fields: requiredFields,
+      },
     };
 
     onImport(finalConfig);
@@ -115,12 +171,12 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
   };
 
   const deleteKeyword = (keyword: string) => {
-    setKeywords(keywords.filter(k => k !== keyword));
+    setKeywords(keywords.filter((k) => k !== keyword));
   };
 
   const toggleCategory = (category: string) => {
     if (categories.includes(category)) {
-      setCategories(categories.filter(c => c !== category));
+      setCategories(categories.filter((c) => c !== category));
     } else {
       setCategories([...categories, category]);
     }
@@ -134,14 +190,12 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
   };
 
   const deleteRequiredField = (field: string) => {
-    setRequiredFields(requiredFields.filter(f => f !== field));
+    setRequiredFields(requiredFields.filter((f) => f !== field));
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -188,12 +242,43 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       key={strategy.value}
                       role="button"
                       tabIndex={0}
-                      style={{ padding: 16, borderRadius: 'var(--radius-element)', cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.duplicateStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
-                      onClick={() => setConfig(prev => ({ ...prev, duplicateStrategy: strategy.value as 'skip' | 'update' | 'merge' }))}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfig(prev => ({ ...prev, duplicateStrategy: strategy.value as 'skip' | 'update' | 'merge' })); } }}
+                      style={{
+                        borderRadius: 'var(--radius-element)',
+                        transition: 'opacity 0.2s',
+                        backgroundColor:
+                          config.duplicateStrategy === strategy.value
+                            ? 'rgba(var(--primary-rgb), 0.1)'
+                            : 'var(--muted)',
+                      }}
+                      className="p-4 cursor-pointer"
+                      onClick={() =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          duplicateStrategy: strategy.value as 'skip' | 'update' | 'merge',
+                        }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setConfig((prev) => ({
+                            ...prev,
+                            duplicateStrategy: strategy.value as 'skip' | 'update' | 'merge',
+                          }));
+                        }
+                      }}
                     >
                       <div className="flex items-center gap-2">
-                        <div style={{ height: 16, width: 16, borderRadius: 'var(--radius-badge)', backgroundColor: config.duplicateStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />
+                        <div
+                          style={{
+                            height: 16,
+                            width: 16,
+                            borderRadius: 'var(--radius-badge)',
+                            backgroundColor:
+                              config.duplicateStrategy === strategy.value
+                                ? 'hsl(var(--primary))'
+                                : 'var(--muted)',
+                          }}
+                        />
                         <div>
                           <p className="font-medium">{strategy.label}</p>
                           <p className="text-sm text-muted-foreground">{strategy.description}</p>
@@ -221,12 +306,43 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       key={strategy.value}
                       role="button"
                       tabIndex={0}
-                      style={{ padding: 16, borderRadius: 'var(--radius-element)', cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.errorStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
-                      onClick={() => setConfig(prev => ({ ...prev, errorStrategy: strategy.value as 'continue' | 'stop' | 'retry_batch' }))}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfig(prev => ({ ...prev, errorStrategy: strategy.value as 'continue' | 'stop' | 'retry_batch' })); } }}
+                      style={{
+                        borderRadius: 'var(--radius-element)',
+                        transition: 'opacity 0.2s',
+                        backgroundColor:
+                          config.errorStrategy === strategy.value
+                            ? 'rgba(var(--primary-rgb), 0.1)'
+                            : 'var(--muted)',
+                      }}
+                      className="p-4 cursor-pointer"
+                      onClick={() =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          errorStrategy: strategy.value as 'continue' | 'stop' | 'retry_batch',
+                        }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setConfig((prev) => ({
+                            ...prev,
+                            errorStrategy: strategy.value as 'continue' | 'stop' | 'retry_batch',
+                          }));
+                        }
+                      }}
                     >
                       <div className="flex items-center gap-2">
-                        <div style={{ height: 16, width: 16, borderRadius: 'var(--radius-badge)', backgroundColor: config.errorStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />
+                        <div
+                          style={{
+                            height: 16,
+                            width: 16,
+                            borderRadius: 'var(--radius-badge)',
+                            backgroundColor:
+                              config.errorStrategy === strategy.value
+                                ? 'hsl(var(--primary))'
+                                : 'var(--muted)',
+                          }}
+                        />
                         <div>
                           <p className="font-medium">{strategy.label}</p>
                           <p className="text-sm text-muted-foreground">{strategy.description}</p>
@@ -244,16 +360,17 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       id="strict"
                       checked={config.validation.strict}
                       onCheckedChange={(checked) =>
-                        setConfig(prev => ({
+                        setConfig((prev) => ({
                           ...prev,
-                          validation: { ...prev.validation, strict: checked as boolean }
+                          validation: { ...prev.validation, strict: checked as boolean },
                         }))
                       }
                     />
                     <Label htmlFor="strict">Strict Validation</Label>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Enable strict validation to ensure all data meets quality standards before import
+                    Enable strict validation to ensure all data meets quality standards before
+                    import
                   </p>
 
                   <div className="flex flex-col gap-2">
@@ -265,13 +382,17 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                         onChange={(e) => setNewRequiredField(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && addRequiredField()}
                       />
-                      <Button onClick={addRequiredField} size="sm">Add</Button>
+                      <Button onClick={addRequiredField} size="sm">
+                        Add
+                      </Button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {requiredFields.map((field) => (
                         <Badge key={field} variant="secondary">
                           {field}
-                          <X size={12} className="ml-1"
+                          <X
+                            size={12}
+                            className="ml-1"
                             onClick={() => deleteRequiredField(field)}
                           />
                         </Badge>
@@ -287,9 +408,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
             <Card>
               <CardHeader>
                 <CardTitle>Import Filters</CardTitle>
-                <CardDescription>
-                  Filter and limit the data to be imported
-                </CardDescription>
+                <CardDescription>Filter and limit the data to be imported</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -299,10 +418,12 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       id="location"
                       placeholder="e.g., San Francisco, CA"
                       value={config.filters.location || ''}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        filters: { ...prev.filters, location: e.target.value }
-                      }))}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          filters: { ...prev.filters, location: e.target.value },
+                        }))
+                      }
                     />
                   </div>
 
@@ -313,10 +434,15 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       type="number"
                       placeholder="1000"
                       value={config.filters.limit || ''}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        filters: { ...prev.filters, limit: parseInt(e.target.value) || undefined }
-                      }))}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          filters: {
+                            ...prev.filters,
+                            limit: parseInt(e.target.value) || undefined,
+                          },
+                        }))
+                      }
                     />
                   </div>
                 </div>
@@ -330,15 +456,15 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       onChange={(e) => setNewKeyword(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && addKeyword()}
                     />
-                    <Button onClick={addKeyword} size="sm">Add</Button>
+                    <Button onClick={addKeyword} size="sm">
+                      Add
+                    </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {keywords.map((keyword) => (
                       <Badge key={keyword} variant="secondary">
                         {keyword}
-                        <X size={12} className="ml-1"
-                          onClick={() => deleteKeyword(keyword)}
-                        />
+                        <X size={12} className="ml-1" onClick={() => deleteKeyword(keyword)} />
                       </Badge>
                     ))}
                   </div>
@@ -350,7 +476,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                     {COMMON_CATEGORIES.map((category) => (
                       <Badge
                         key={category}
-                        variant={categories.includes(category) ? "default" : "outline"}
+                        variant={categories.includes(category) ? 'default' : 'outline'}
                         onClick={() => toggleCategory(category)}
                       >
                         {category}
@@ -366,17 +492,19 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       id="start-date"
                       type="date"
                       value={config.filters.date_range?.start || ''}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        filters: {
-                          ...prev.filters,
-                          date_range: {
-                            ...prev.filters.date_range,
-                            start: e.target.value,
-                            end: prev.filters.date_range?.end || ''
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          filters: {
+                            ...prev.filters,
+                            date_range: {
+                              ...prev.filters.date_range,
+                              start: e.target.value,
+                              end: prev.filters.date_range?.end || '',
+                            },
+                          },
+                        }))
+                      }
                     />
                   </div>
 
@@ -386,16 +514,18 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       id="end-date"
                       type="date"
                       value={config.filters.date_range?.end || ''}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        filters: {
-                          ...prev.filters,
-                          date_range: {
-                            start: prev.filters.date_range?.start || '',
-                            end: e.target.value
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          filters: {
+                            ...prev.filters,
+                            date_range: {
+                              start: prev.filters.date_range?.start || '',
+                              end: e.target.value,
+                            },
+                          },
+                        }))
+                      }
                     />
                   </div>
                 </div>
@@ -418,9 +548,9 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       id="geocoding"
                       checked={config.advanced.enable_geocoding}
                       onCheckedChange={(checked) =>
-                        setConfig(prev => ({
+                        setConfig((prev) => ({
                           ...prev,
-                          advanced: { ...prev.advanced, enable_geocoding: checked as boolean }
+                          advanced: { ...prev.advanced, enable_geocoding: checked as boolean },
                         }))
                       }
                     />
@@ -435,9 +565,12 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       id="image-processing"
                       checked={config.advanced.enable_image_processing}
                       onCheckedChange={(checked) =>
-                        setConfig(prev => ({
+                        setConfig((prev) => ({
                           ...prev,
-                          advanced: { ...prev.advanced, enable_image_processing: checked as boolean }
+                          advanced: {
+                            ...prev.advanced,
+                            enable_image_processing: checked as boolean,
+                          },
                         }))
                       }
                     />
@@ -452,9 +585,9 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       id="ai-enhancement"
                       checked={config.advanced.enable_ai_enhancement}
                       onCheckedChange={(checked) =>
-                        setConfig(prev => ({
+                        setConfig((prev) => ({
                           ...prev,
-                          advanced: { ...prev.advanced, enable_ai_enhancement: checked as boolean }
+                          advanced: { ...prev.advanced, enable_ai_enhancement: checked as boolean },
                         }))
                       }
                     />
@@ -472,10 +605,12 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                     <Label htmlFor="concurrent-limit">Concurrent Processing Limit</Label>
                     <Select
                       value={config.advanced.concurrent_limit.toString()}
-                      onValueChange={(value) => setConfig(prev => ({
-                        ...prev,
-                        advanced: { ...prev.advanced, concurrent_limit: parseInt(value) }
-                      }))}
+                      onValueChange={(value) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          advanced: { ...prev.advanced, concurrent_limit: parseInt(value) },
+                        }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -493,10 +628,12 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                     <Label htmlFor="timeout">Timeout (seconds)</Label>
                     <Select
                       value={config.advanced.timeout_seconds.toString()}
-                      onValueChange={(value) => setConfig(prev => ({
-                        ...prev,
-                        advanced: { ...prev.advanced, timeout_seconds: parseInt(value) }
-                      }))}
+                      onValueChange={(value) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          advanced: { ...prev.advanced, timeout_seconds: parseInt(value) },
+                        }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -519,9 +656,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleImport}>
-            Start Advanced Import
-          </Button>
+          <Button onClick={handleImport}>Start Advanced Import</Button>
         </div>
       </DialogContent>
     </Dialog>

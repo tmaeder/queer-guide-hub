@@ -72,9 +72,7 @@ export default function UserProfile() {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
-          <User size={48} style={{ margin: '0 auto 16px',
-              color: 'var(--muted-foreground)' }}
-          />
+          <User size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
           <p className="text-base font-medium mb-2">Profile not found</p>
           <p className="text-muted-foreground mb-4">
             This user profile doesn't exist or has been removed.
@@ -105,13 +103,9 @@ export default function UserProfile() {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
-          <Shield size={48} style={{ margin: '0 auto 16px',
-              color: 'var(--muted-foreground)' }}
-          />
+          <Shield size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
           <p className="text-base font-medium mb-2">Private Profile</p>
-          <p className="text-muted-foreground mb-4">
-            This user has set their profile to private.
-          </p>
+          <p className="text-muted-foreground mb-4">This user has set their profile to private.</p>
           <Button onClick={() => navigate('/users')}>
             <ArrowLeft size={16} className="mr-2" />
             Back to Directory
@@ -147,9 +141,9 @@ export default function UserProfile() {
           <CardContent>
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex flex-col items-center text-center md:text-left">
-                <Avatar style={{ width: 128, height: 128, marginBottom: 16 }}>
+                <Avatar style={{ width: 128, height: 128 }} className="mb-4">
                   <AvatarImage src={profile.avatar_url || undefined} />
-                  <AvatarFallback style={{ fontSize: '1.5rem' }}>
+                  <AvatarFallback className="text-2xl">
                     {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
@@ -177,9 +171,7 @@ export default function UserProfile() {
                   </div>
 
                   <div className="flex flex-wrap gap-3 text-muted-foreground mb-3">
-                    {profile.pronouns && (
-                      <p className="text-sm">{profile.pronouns}</p>
-                    )}
+                    {profile.pronouns && <p className="text-sm">{profile.pronouns}</p>}
                     {(profile as unknown as Record<string, unknown>)?.age_range && (
                       <>
                         {profile.pronouns && <p className="text-sm">&#8226;</p>}
@@ -200,9 +192,7 @@ export default function UserProfile() {
                   </div>
 
                   {profile.bio && (
-                    <p className="text-muted-foreground mb-4 max-w-2xl">
-                      {profile.bio}
-                    </p>
+                    <p className="text-muted-foreground mb-4 max-w-2xl">{profile.bio}</p>
                   )}
 
                   <div className="flex items-center gap-2">
@@ -275,8 +265,10 @@ export default function UserProfile() {
           <TabsContent value="identity">
             <div className="flex flex-col gap-6">
               <div className="text-center py-8">
-                <Shield size={48} style={{ margin: '0 auto 16px',
-                    color: 'var(--muted-foreground)' }}
+                <Shield
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
                 />
                 <p className="text-base font-medium mb-2">Protected Information</p>
                 <p className="text-muted-foreground max-w-md mx-auto">
@@ -290,8 +282,10 @@ export default function UserProfile() {
           <TabsContent value="contact">
             <div className="flex flex-col gap-6">
               <div className="text-center py-8">
-                <Shield size={48} style={{ margin: '0 auto 16px',
-                    color: 'var(--muted-foreground)' }}
+                <Shield
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
                 />
                 <p className="text-base font-medium mb-2">Contact Privacy</p>
                 <p className="text-muted-foreground max-w-md mx-auto">

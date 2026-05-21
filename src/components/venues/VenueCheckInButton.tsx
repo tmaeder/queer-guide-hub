@@ -79,11 +79,9 @@ export function VenueCheckInButton({
         <div className="flex flex-col gap-6">
           <div className="p-4 bg-accent border border-border rounded">
             <div className="flex items-start gap-3">
-              <Shield size={20} style={{ marginTop: 2 }} />
+              <Shield size={20} className="mt-0.5" />
               <div className="flex flex-col gap-1">
-                <p className="text-sm font-medium">
-                  Enhanced Privacy Protection
-                </p>
+                <p className="text-sm font-medium">Enhanced Privacy Protection</p>
                 <p className="text-xs text-muted-foreground">
                   Your location is automatically anonymized after 24 hours. Choose your privacy
                   settings below.
@@ -94,7 +92,7 @@ export function VenueCheckInButton({
 
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <Label htmlFor="public-check-in" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
+              <Label htmlFor="public-check-in" className="text-sm font-medium">
                 Make check-in visible to others
               </Label>
               <Switch id="public-check-in" checked={isPublic} onCheckedChange={setIsPublic} />
@@ -102,7 +100,7 @@ export function VenueCheckInButton({
 
             {isPublic && (
               <div className="flex flex-col gap-2">
-                <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Location visibility</Label>
+                <Label className="text-sm font-medium">Location visibility</Label>
                 <Select
                   value={locationVisibility}
                   onValueChange={(value: 'private' | 'friends' | 'public') =>
@@ -140,13 +138,10 @@ export function VenueCheckInButton({
             <Button
               onClick={handleCheckIn}
               disabled={loading}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}
+              style={{ flex: 1, alignItems: 'center' }}
+              className="flex gap-2"
             >
-              {loading ? (
-                <Loader2 size={16} />
-              ) : (
-                <MapPin size={16} />
-              )}
+              {loading ? <Loader2 size={16} /> : <MapPin size={16} />}
               {loading ? 'Checking in...' : 'Check In'}
             </Button>
           </div>

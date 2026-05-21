@@ -48,11 +48,16 @@ export function SecurityMonitoring() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'destructive';
-      case 'high': return 'destructive';
-      case 'medium': return 'secondary';
-      case 'low': return 'outline';
-      default: return 'outline';
+      case 'critical':
+        return 'destructive';
+      case 'high':
+        return 'destructive';
+      case 'medium':
+        return 'secondary';
+      case 'low':
+        return 'outline';
+      default:
+        return 'outline';
     }
   };
 
@@ -109,7 +114,7 @@ export function SecurityMonitoring() {
       <div className="grid gap-4">
         {events.map((event) => (
           <Card key={event.id}>
-            <CardHeader style={{ paddingBottom: 12 }}>
+            <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
                   <div className="flex items-center gap-2">
@@ -155,7 +160,11 @@ export function SecurityMonitoring() {
         {events.length === 0 && !loading && (
           <Card>
             <CardContent className="text-center py-6">
-              <Shield size={48} style={{ margin: '0 auto 16px auto', display: 'block', color: 'var(--muted-foreground)' }} />
+              <Shield
+                size={48}
+                style={{ margin: '0 auto 16px auto' }}
+                className="block text-muted-foreground"
+              />
               <p className="text-muted-foreground">No security events found</p>
             </CardContent>
           </Card>

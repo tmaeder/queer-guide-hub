@@ -1,10 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { type CentralizedTag, type CategoryTreeNode } from '@/hooks/useCentralizedTags';
 import { TagListRenderer } from '@/components/resources/TagListRenderer';
-import {
-  getCategoryIcon,
-  getCategoryShortName,
-} from '@/components/resources/categoryMeta';
+import { getCategoryIcon, getCategoryShortName } from '@/components/resources/categoryMeta';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -117,50 +114,51 @@ export function ResourceCategory({
                   style={isEmpty ? { opacity: 0.45, cursor: 'default' } : undefined}
                   aria-disabled={isEmpty || undefined}
                 >
-                  <Icon style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.65 }} />
+                  <Icon style={{ width: 16, height: 16, opacity: 0.65 }} className="shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold" style={{ fontSize: '0.85rem' }}>
                       {getCategoryShortName(child.name)}
                     </p>
                     <span className="text-xs text-muted-foreground">
-                      {isEmpty ? t('resources.category.comingSoon') : t('resources.category.tagCount', { count: child.tag_count })}
+                      {isEmpty
+                        ? t('resources.category.comingSoon')
+                        : t('resources.category.tagCount', { count: child.tag_count })}
                     </span>
                   </div>
                   {!isEmpty && (
-                    <ChevronRight size={14} style={{ flexShrink: 0, opacity: 0.4 }}
-                    />
+                    <ChevronRight size={14} style={{ opacity: 0.4 }} className="shrink-0" />
                   )}
                 </button>
               );
             })}
           </div>
 
-          {allChildren.filter((c) => c.tag_count > 0).map((child) => {
-            const childTags = allTags
-              .filter((t) => t.categories?.some((c) => c.id === child.id))
-              .sort(
-                (a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0),
-              )
-              .slice(0, 10);
-            if (childTags.length === 0) return null;
-            return (
-              <div key={child.id}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold">{getCategoryShortName(child.name)}</p>
-                    <Badge variant="secondary">{child.tag_count}</Badge>
+          {allChildren
+            .filter((c) => c.tag_count > 0)
+            .map((child) => {
+              const childTags = allTags
+                .filter((t) => t.categories?.some((c) => c.id === child.id))
+                .sort((a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0))
+                .slice(0, 10);
+              if (childTags.length === 0) return null;
+              return (
+                <div key={child.id}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold">{getCategoryShortName(child.name)}</p>
+                      <Badge variant="secondary">{child.tag_count}</Badge>
+                    </div>
+                    <button
+                      onClick={() => onSelectSubcategory(child.name)}
+                      className="bg-transparent border-0 cursor-pointer p-0 text-primary text-xs hover:underline"
+                    >
+                      {t('resources.category.viewAll')}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => onSelectSubcategory(child.name)}
-                    className="bg-transparent border-0 cursor-pointer p-0 text-primary text-xs hover:underline"
-                  >
-                    {t('resources.category.viewAll')}
-                  </button>
+                  {renderTagList(childTags)}
                 </div>
-                {renderTagList(childTags)}
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       )}
     </div>

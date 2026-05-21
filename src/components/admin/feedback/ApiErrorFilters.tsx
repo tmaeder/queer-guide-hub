@@ -95,7 +95,10 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
 
       {/* Source chips */}
       <div className="inline-flex items-center gap-[6px]">
-        <span className="text-muted-foreground uppercase" style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}>
+        <span
+          className="text-muted-foreground uppercase"
+          style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}
+        >
           Source
         </span>
         {(Object.keys(SOURCE_LABELS) as ErrorSource[]).map((src) => {
@@ -115,7 +118,10 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
 
       {/* Severity chips */}
       <div className="inline-flex items-center gap-[6px]">
-        <span className="text-muted-foreground uppercase" style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}>
+        <span
+          className="text-muted-foreground uppercase"
+          style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}
+        >
           Severity
         </span>
         {(Object.keys(SEVERITY_COLORS) as ErrorSeverity[]).map((sev) => {
@@ -145,9 +151,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
       {hasActive && (
         <button
           type="button"
-          onClick={() =>
-            update({ q: '', sources: [], severities: [], hideResolved: true })
-          }
+          onClick={() => update({ q: '', sources: [], severities: [], hideResolved: true })}
           style={{
             border: 0,
             background: 'transparent',
@@ -186,18 +190,16 @@ function FilterChip({
         border: 0,
         background: 'transparent',
         padding: '2px 6px',
-        cursor: 'pointer',
         color: active ? 'hsl(var(--foreground))' : 'var(--muted-foreground)',
         fontWeight: active ? 700 : 500,
         fontSize: '0.72rem',
         letterSpacing: 0.2,
-        display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
         transition: 'color 0.15s, opacity 0.15s',
         opacity: active ? 1 : 0.85,
         borderBottom: active ? '2px solid currentColor' : '2px solid transparent',
       }}
+      className="cursor-pointer inline-flex gap-1"
       onMouseEnter={(e) => {
         if (!active) e.currentTarget.style.color = 'hsl(var(--foreground))';
       }}
@@ -207,18 +209,15 @@ function FilterChip({
     >
       {dotColor && (
         <span
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            backgroundColor: dotColor,
-            flexShrink: 0,
-          }}
+          style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: dotColor }}
+          className="shrink-0"
         />
       )}
       {label}
       {typeof count === 'number' && count > 0 && (
-        <span style={{ opacity: 0.6, fontWeight: 500 }}>{count}</span>
+        <span style={{ opacity: 0.6 }} className="font-medium">
+          {count}
+        </span>
       )}
     </button>
   );

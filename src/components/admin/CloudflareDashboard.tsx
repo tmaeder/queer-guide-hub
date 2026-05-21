@@ -4,7 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { cloudflareAPI, type CloudflareAnalytics, type CloudflareZoneInfo, type CloudflareSecuritySettings, type CloudflarePerformanceSettings } from '@/integrations/supabase/cloudflare';
+import {
+  cloudflareAPI,
+  type CloudflareAnalytics,
+  type CloudflareZoneInfo,
+  type CloudflareSecuritySettings,
+  type CloudflarePerformanceSettings,
+} from '@/integrations/supabase/cloudflare';
 import { InlineLoading } from '@/components/ui/loading';
 import {
   Cloud,
@@ -59,9 +65,11 @@ export function CloudflareDashboard() {
       });
 
       if (showRefreshToast) {
-        toast.success('Cloudflare Data Refreshed: Latest statistics have been loaded successfully.');
+        toast.success(
+          'Cloudflare Data Refreshed: Latest statistics have been loaded successfully.',
+        );
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error fetching Cloudflare data:', error);
 
@@ -102,16 +110,15 @@ export function CloudflareDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-element" style={{ backgroundColor: 'hsl(var(--foreground) / 0.55)' }}>
+          <div
+            className="p-2 rounded-element"
+            style={{ backgroundColor: 'hsl(var(--foreground) / 0.55)' }}
+          >
             <Cloud size={24} style={{ color: 'white' }} />
           </div>
           <div>
-            <h2 className="font-bold" style={{ fontSize: '1.5rem' }}>
-              Cloudflare Dashboard
-            </h2>
-            <p className="text-muted-foreground">
-              Zone: {zoneInfo?.result?.name || 'Loading...'}
-            </p>
+            <h2 className="font-bold text-2xl">Cloudflare Dashboard</h2>
+            <p className="text-muted-foreground">Zone: {zoneInfo?.result?.name || 'Loading...'}</p>
           </div>
         </div>
         <Button onClick={handleRefresh} disabled={refreshing}>
@@ -138,34 +145,24 @@ export function CloudflareDashboard() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex flex-col gap-2">
-                <p className="text-sm text-muted-foreground">
-                  Status
-                </p>
+                <p className="text-sm text-muted-foreground">Status</p>
                 <Badge variant={zoneInfo.result.status === 'active' ? 'default' : 'secondary'}>
                   {zoneInfo.result.status}
                 </Badge>
               </div>
               <div className="flex flex-col gap-2">
                 <p className="text-sm text-muted-foreground">Plan</p>
-                <p className="font-medium">
-                  {zoneInfo.result.plan?.name || 'Unknown'}
-                </p>
+                <p className="font-medium">{zoneInfo.result.plan?.name || 'Unknown'}</p>
               </div>
               <div className="flex flex-col gap-2">
-                <p className="text-sm text-muted-foreground">
-                  Development Mode
-                </p>
+                <p className="text-sm text-muted-foreground">Development Mode</p>
                 <Badge variant={zoneInfo.result.development_mode > 0 ? 'destructive' : 'secondary'}>
                   {zoneInfo.result.development_mode > 0 ? 'ON' : 'OFF'}
                 </Badge>
               </div>
               <div className="flex flex-col gap-2">
-                <p className="text-sm text-muted-foreground">
-                  Name Servers
-                </p>
-                <p className="text-sm">
-                  {zoneInfo.result.name_servers?.length || 0} configured
-                </p>
+                <p className="text-sm text-muted-foreground">Name Servers</p>
+                <p className="text-sm">{zoneInfo.result.name_servers?.length || 0} configured</p>
               </div>
             </div>
           </CardContent>
@@ -191,7 +188,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                  <div className="text-2xl font-bold">
                     {analytics.result?.totals?.requests?.all?.toLocaleString() || '0'}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -208,7 +205,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                  <div className="text-2xl font-bold">
                     {((analytics.result?.totals?.bandwidth?.all || 0) / 1024 / 1024 / 1024).toFixed(
                       2,
                     )}{' '}
@@ -234,12 +231,10 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                  <div className="text-2xl font-bold">
                     {analytics.result?.totals?.uniques?.all?.toLocaleString() || '0'}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Last 24 hours
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">Last 24 hours</p>
                 </CardContent>
               </Card>
 
@@ -251,12 +246,10 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                  <div className="text-2xl font-bold">
                     {analytics.result?.totals?.threats?.all?.toLocaleString() || '0'}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Security events
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">Security events</p>
                 </CardContent>
               </Card>
             </div>
@@ -439,32 +432,32 @@ export function CloudflareDashboard() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
-                  <h4 className="font-medium">
-                    API Status
-                  </h4>
+                  <h4 className="font-medium">API Status</h4>
                   <div className="flex items-center gap-2">
                     {stats.zoneInfo ? (
                       <>
                         <CheckCircle size={16} className="text-foreground" />
-                        <span className="text-sm">
-                          Connected
-                        </span>
+                        <span className="text-sm">Connected</span>
                       </>
                     ) : (
                       <>
                         <AlertTriangle size={16} className="text-destructive" />
-                        <span className="text-sm">
-                          Not Connected
-                        </span>
+                        <span className="text-sm">Not Connected</span>
                       </>
                     )}
                   </div>
                   {!stats.zoneInfo && (
                     <div
                       className="mt-4 p-4 rounded-element"
-                      style={{ backgroundColor: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
+                      style={{
+                        backgroundColor: 'hsl(var(--muted))',
+                        border: '1px solid hsl(var(--border))',
+                      }}
                     >
-                      <h5 className="font-medium mb-2" style={{ color: 'hsl(var(--foreground) / 0.7)' }}>
+                      <h5
+                        className="font-medium mb-2"
+                        style={{ color: 'hsl(var(--foreground) / 0.7)' }}
+                      >
                         Setup Required
                       </h5>
                       <p className="text-sm mb-3" style={{ color: 'hsl(var(--foreground) / 0.7)' }}>
@@ -472,7 +465,11 @@ export function CloudflareDashboard() {
                       </p>
                       <ol
                         className="text-sm flex flex-col gap-1"
-                        style={{ color: 'hsl(var(--foreground) / 0.7)', listStyleType: 'decimal', listStylePosition: 'inside' }}
+                        style={{
+                          color: 'hsl(var(--foreground) / 0.7)',
+                          listStyleType: 'decimal',
+                          listStylePosition: 'inside',
+                        }}
                       >
                         <li>Go to Cloudflare Dashboard → My Profile → API Tokens</li>
                         <li>Create a token with Zone:Read permissions for your zone</li>
@@ -486,12 +483,8 @@ export function CloudflareDashboard() {
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <h4 className="font-medium">
-                    Last Updated
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date().toLocaleString()}
-                  </p>
+                  <h4 className="font-medium">Last Updated</h4>
+                  <p className="text-sm text-muted-foreground">{new Date().toLocaleString()}</p>
                 </div>
               </div>
             </CardContent>

@@ -14,7 +14,14 @@ interface SimilarCitiesProps {
   limit?: number;
 }
 
-export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _latitude, limit = 6 }: SimilarCitiesProps) {
+export function SimilarCities({
+  cityId,
+  _cityName,
+  countryId,
+  equalityScore,
+  _latitude,
+  limit = 6,
+}: SimilarCitiesProps) {
   const { data: cities, isLoading } = useQuery({
     queryKey: ['similar-cities', cityId, countryId, limit],
     queryFn: async () => {
@@ -61,7 +68,9 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
       <div>
         <Skeleton className="h-6 w-[200px] mb-2" />
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-[70px] rounded" />)}
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-[70px] rounded" />
+          ))}
         </div>
       </div>
     );
@@ -73,15 +82,13 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
     <div>
       <div className="flex items-center gap-2 mb-3">
         <Sparkles size={18} className="text-primary" />
-        <p className="font-semibold text-15">
-          You might also like
-        </p>
+        <p className="font-semibold text-15">You might also like</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {cities.map((city) => (
           <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
             <Card>
-              <CardContent style={{ padding: 12 }}>
+              <CardContent className="p-3">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-semibold text-sm">{city.name}</p>
@@ -89,7 +96,17 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
                   </div>
                   {city.eq_score != null && (
                     <div className="flex items-center gap-0.5">
-                      <Shield size={12} style={{ color: city.eq_score >= 70 ? 'var(--success)' : city.eq_score >= 40 ? 'var(--warning)' : 'var(--destructive)' }} />
+                      <Shield
+                        size={12}
+                        style={{
+                          color:
+                            city.eq_score >= 70
+                              ? 'var(--success)'
+                              : city.eq_score >= 40
+                                ? 'var(--warning)'
+                                : 'var(--destructive)',
+                        }}
+                      />
                       <span className="text-2xs font-semibold">{city.eq_score}</span>
                     </div>
                   )}

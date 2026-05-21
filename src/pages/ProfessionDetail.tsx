@@ -20,7 +20,11 @@ export default function ProfessionDetail() {
   const navigate = useLocalizedNavigate();
   const [professionData, setProfessionData] = useState<ProfessionData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { data: personalities, isLoading: loading, error: queryError } = usePersonalitiesByProfession();
+  const {
+    data: personalities,
+    isLoading: loading,
+    error: queryError,
+  } = usePersonalitiesByProfession();
 
   useEffect(() => {
     if (!professionName) return;
@@ -30,15 +34,14 @@ export default function ProfessionDetail() {
     }
     if (!personalities) return;
     const decodedProfession = decodeURIComponent(professionName);
-    const filtered = (personalities as Array<{ profession?: string | null }>)
-      .filter(
-        (p) =>
-          p.profession &&
-          p.profession
-            .split(',')
-            .map((prof: string) => prof.trim().toLowerCase())
-            .includes(decodedProfession.toLowerCase()),
-      ) as Record<string, unknown>[];
+    const filtered = (personalities as Array<{ profession?: string | null }>).filter(
+      (p) =>
+        p.profession &&
+        p.profession
+          .split(',')
+          .map((prof: string) => prof.trim().toLowerCase())
+          .includes(decodedProfession.toLowerCase()),
+    ) as Record<string, unknown>[];
     setProfessionData({
       name: decodedProfession,
       personalities: filtered,
@@ -78,9 +81,9 @@ export default function ProfessionDetail() {
     return (
       <div className="container mx-auto py-6 px-4">
         <Card style={{ borderColor: 'var(--destructive)' }}>
-          <CardContent style={{ padding: 24, textAlign: 'center' }}>
+          <CardContent className="p-6 text-center">
             <p className="text-destructive">{error || 'Profession not found'}</p>
-            <Button variant="outline" onClick={handleBack} style={{ marginTop: 16 }}>
+            <Button variant="outline" onClick={handleBack} className="mt-4">
               <ArrowLeft size={16} className="mr-2" />
               Back to Resources
             </Button>
@@ -171,7 +174,7 @@ export default function ProfessionDetail() {
             </div>
           ) : (
             <Card>
-              <CardContent style={{ padding: 24, textAlign: 'center' }}>
+              <CardContent className="p-6 text-center">
                 <p className="text-muted-foreground">No people found for this profession.</p>
               </CardContent>
             </Card>

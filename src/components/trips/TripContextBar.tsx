@@ -39,10 +39,8 @@ export function TripContextBar() {
       style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}
     >
       <div className="flex items-center gap-3 mx-auto" style={{ maxWidth: 1400, minHeight: 28 }}>
-        <Luggage size={16} style={{ flexShrink: 0, opacity: 0.7 }} aria-hidden />
-        <p className="text-sm font-semibold min-w-0 truncate">
-          {displayTitle}
-        </p>
+        <Luggage size={16} style={{ opacity: 0.7 }} className="shrink-0" aria-hidden />
+        <p className="text-sm font-semibold min-w-0 truncate">{displayTitle}</p>
         <span className="text-xs hidden sm:inline flex-shrink-0" style={{ opacity: 0.7 }}>
           · {phaseLabel(phase, t)} · {status}
         </span>

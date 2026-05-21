@@ -113,90 +113,85 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       <CardHoverEffect>
-      {/* Image */}
-      <div
-        className="relative w-full overflow-hidden"
-        style={{
-          paddingTop: '133.33%',
-          background:
-            'linear-gradient(135deg, hsl(var(--foreground) / 0.18) 0%, hsl(var(--foreground) / 0.10) 100%)',
-        }}
-      >
-        {showImage ? (
-          <img
-            src={personality.image_url}
-            alt={personality.name}
-            role="presentation"
-            loading="lazy"
-            decoding="async"
-            draggable={false}
-            onError={() => setImgError(true)}
-            className="personality-card-image absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className="w-[72px] h-[72px] rounded-full bg-background flex items-center justify-center font-bold text-foreground shadow"
-            >
-              {getInitials(personality.name)}
-            </div>
-          </div>
-        )}
-
-        {personality.is_featured && (
-          <div
-            className="absolute top-2 right-2 flex items-center gap-1 px-2 py-[3px] rounded-full bg-background text-foreground shadow pointer-events-none select-none"
-            style={{ backdropFilter: 'blur(4px)', fontSize: '0.75rem', fontWeight: 600 }}
-          >
-            <Star size={12} fill="hsl(var(--foreground))" color="hsl(var(--foreground))" aria-hidden="true" />
-            <span>Featured</span>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-3 flex-grow">
-        <h3
-          className="text-foreground overflow-hidden text-ellipsis whitespace-nowrap"
+        {/* Image */}
+        <div
+          className="relative w-full overflow-hidden"
           style={{
-            fontWeight: 600,
-            fontSize: '0.95rem',
-            lineHeight: 1.3,
+            paddingTop: '133.33%',
+            background:
+              'linear-gradient(135deg, hsl(var(--foreground) / 0.18) 0%, hsl(var(--foreground) / 0.10) 100%)',
           }}
         >
-          {personality.name}
-        </h3>
-        {personality.profession && (
-          <p
-            className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13"
+          {showImage ? (
+            <img
+              src={personality.image_url}
+              alt={personality.name}
+              role="presentation"
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+              onError={() => setImgError(true)}
+              className="personality-card-image absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-[72px] h-[72px] rounded-full bg-background flex items-center justify-center font-bold text-foreground shadow">
+                {getInitials(personality.name)}
+              </div>
+            </div>
+          )}
+
+          {personality.is_featured && (
+            <div
+              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-[3px] rounded-full bg-background text-foreground shadow pointer-events-none select-none text-xs font-semibold"
+              style={{ backdropFilter: 'blur(4px)' }}
+            >
+              <Star
+                size={12}
+                fill="hsl(var(--foreground))"
+                color="hsl(var(--foreground))"
+                aria-hidden="true"
+              />
+              <span>Featured</span>
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="p-3 flex-grow">
+          <h3
+            className="text-foreground overflow-hidden text-ellipsis whitespace-nowrap font-semibold"
+            style={{ fontSize: '0.95rem', lineHeight: 1.3 }}
           >
-            {personality.profession}
-          </p>
-        )}
-        {metaParts.length > 0 && (
-          <p
-            className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap"
-            style={{ fontSize: '0.75rem', opacity: 0.85 }}
-          >
-            {metaParts.join(' · ')}
-          </p>
-        )}
-        {(personality.description || personality.bio) && (
-          <p
-            className="text-muted-foreground mt-1.5"
-            style={{
-              fontSize: '0.75rem',
-              lineHeight: 1.4,
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {personality.description || personality.bio}
-          </p>
-        )}
-      </div>
+            {personality.name}
+          </h3>
+          {personality.profession && (
+            <p className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13">
+              {personality.profession}
+            </p>
+          )}
+          {metaParts.length > 0 && (
+            <p
+              className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-xs"
+              style={{ opacity: 0.85 }}
+            >
+              {metaParts.join(' · ')}
+            </p>
+          )}
+          {(personality.description || personality.bio) && (
+            <p
+              className="text-muted-foreground mt-1.5 text-xs overflow-hidden"
+              style={{
+                lineHeight: 1.4,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
+              {personality.description || personality.bio}
+            </p>
+          )}
+        </div>
       </CardHoverEffect>
     </LocalizedLink>
   );
@@ -238,19 +233,12 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
             <div className="text-xs text-muted-foreground">{personality.profession}</div>
           )}
           {metaParts.length > 0 && (
-            <div className="text-xs2 text-muted-foreground/80">
-              {metaParts.join(' · ')}
-            </div>
+            <div className="text-xs2 text-muted-foreground/80">{metaParts.join(' · ')}</div>
           )}
           {previewText && (
             <p
-              className="text-xs text-muted-foreground pt-1"
-              style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 5,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
+              className="text-xs text-muted-foreground pt-1 overflow-hidden"
+              style={{ display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical' }}
             >
               {previewText}
             </p>

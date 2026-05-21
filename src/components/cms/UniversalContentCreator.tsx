@@ -4,10 +4,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { insertRow } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -36,13 +49,13 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
     { value: 'cities', label: 'Cities', icon: <Building size={16} /> },
     { value: 'countries', label: 'Countries', icon: <Globe size={16} /> },
     { value: 'marketplace_listings', label: 'Marketplace Listings', icon: <Building size={16} /> },
-    { value: 'news_articles', label: 'News Articles', icon: <Tag size={16} /> }
+    { value: 'news_articles', label: 'News Articles', icon: <Tag size={16} /> },
   ];
 
   const handleFieldChange = (field: string, value: unknown) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -55,18 +68,18 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
   const handleCreate = async () => {
     if (!user) {
       toast({
-        title: "Authentication required",
-        description: "You must be logged in to create content",
-        variant: "destructive",
+        title: 'Authentication required',
+        description: 'You must be logged in to create content',
+        variant: 'destructive',
       });
       return;
     }
 
     if (!contentType) {
       toast({
-        title: "Content type required",
-        description: "Please select a content type",
-        variant: "destructive",
+        title: 'Content type required',
+        description: 'Please select a content type',
+        variant: 'destructive',
       });
       return;
     }
@@ -78,22 +91,22 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
         ...formData,
         created_by: user.id,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       // Create table name mapping for type safety
       const validTables = {
-        'events': 'events',
-        'venues': 'venues',
-        'personalities': 'personalities',
-        'community_groups': 'community_groups',
-        'community_posts': 'community_posts',
-        'cms_content': 'cms_content',
-        'unified_tags': 'unified_tags',
-        'cities': 'cities',
-        'countries': 'countries',
-        'marketplace_listings': 'marketplace_listings',
-        'news_articles': 'news_articles'
+        events: 'events',
+        venues: 'venues',
+        personalities: 'personalities',
+        community_groups: 'community_groups',
+        community_posts: 'community_posts',
+        cms_content: 'cms_content',
+        unified_tags: 'unified_tags',
+        cities: 'cities',
+        countries: 'countries',
+        marketplace_listings: 'marketplace_listings',
+        news_articles: 'news_articles',
       } as const;
 
       const tableName = contentType === 'tags' ? 'unified_tags' : contentType;
@@ -185,8 +198,8 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
       if (error) throw error;
 
       toast({
-        title: "Content created",
-        description: `${contentTypes.find(ct => ct.value === contentType)?.label} created successfully`,
+        title: 'Content created',
+        description: `${contentTypes.find((ct) => ct.value === contentType)?.label} created successfully`,
       });
 
       resetForm();
@@ -195,9 +208,9 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
     } catch (error) {
       console.error('Error creating content:', error);
       toast({
-        title: "Error",
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to create content',
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -212,67 +225,78 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
             { key: 'title', label: 'Event Name', type: 'text', required: true },
             { key: 'description', label: 'Description', type: 'textarea' },
             { key: 'event_type', label: 'Event Type', type: 'text' },
-            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'cancelled'] }
+            {
+              key: 'status',
+              label: 'Status',
+              type: 'select',
+              options: ['active', 'inactive', 'cancelled'],
+            },
           ],
           datetime: [
             { key: 'start_date', label: 'Start Date', type: 'datetime-local' },
             { key: 'end_date', label: 'End Date', type: 'datetime-local' },
-            { key: 'is_recurring', label: 'Recurring Event', type: 'boolean' }
+            { key: 'is_recurring', label: 'Recurring Event', type: 'boolean' },
           ],
           location: [
             { key: 'address', label: 'Address', type: 'text' },
             { key: 'latitude', label: 'Latitude', type: 'number' },
-            { key: 'longitude', label: 'Longitude', type: 'number' }
-          ]
+            { key: 'longitude', label: 'Longitude', type: 'number' },
+          ],
         };
       case 'venues':
         return {
           basic: [
             { key: 'name', label: 'Venue Name', type: 'text', required: true },
             { key: 'description', label: 'Description', type: 'textarea' },
-            { key: 'venue_type', label: 'Venue Type', type: 'text' }
+            { key: 'venue_type', label: 'Venue Type', type: 'text' },
           ],
           location: [
             { key: 'address', label: 'Address', type: 'text' },
             { key: 'city', label: 'City', type: 'text' },
             { key: 'country', label: 'Country', type: 'text' },
             { key: 'latitude', label: 'Latitude', type: 'number' },
-            { key: 'longitude', label: 'Longitude', type: 'number' }
+            { key: 'longitude', label: 'Longitude', type: 'number' },
           ],
           contact: [
             { key: 'phone', label: 'Phone', type: 'tel' },
             { key: 'email', label: 'Email', type: 'email' },
-            { key: 'website', label: 'Website', type: 'url' }
-          ]
+            { key: 'website', label: 'Website', type: 'url' },
+          ],
         };
       case 'news_articles':
         return {
           basic: [
             { key: 'title', label: 'Article Title', type: 'text', required: true },
             { key: 'excerpt', label: 'Excerpt', type: 'textarea' },
-            { key: 'content', label: 'Article Content', type: 'textarea' }
+            { key: 'content', label: 'Article Content', type: 'textarea' },
           ],
           meta: [
             { key: 'author', label: 'Author', type: 'text' },
             { key: 'category', label: 'Category', type: 'text' },
-            { key: 'published_at', label: 'Published Date', type: 'datetime-local' }
+            { key: 'published_at', label: 'Published Date', type: 'datetime-local' },
           ],
           media: [
             { key: 'image_url', label: 'Featured Image', type: 'url' },
-            { key: 'source_url', label: 'Source URL', type: 'url' }
-          ]
+            { key: 'source_url', label: 'Source URL', type: 'url' },
+          ],
         };
       default:
         return {
           basic: [
             { key: 'name', label: 'Name', type: 'text', required: true },
-            { key: 'description', label: 'Description', type: 'textarea' }
-          ]
+            { key: 'description', label: 'Description', type: 'textarea' },
+          ],
         };
     }
   };
 
-  const renderField = (field: { key: string; label: string; type: string; required?: boolean; options?: string[] }) => {
+  const renderField = (field: {
+    key: string;
+    label: string;
+    type: string;
+    required?: boolean;
+    options?: string[];
+  }) => {
     const { key, label, type, required, options } = field;
     const fieldValue = formData[key];
 
@@ -315,7 +339,10 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               {label}
               {required && <span style={{ color: 'var(--destructive)' }}> *</span>}
             </Label>
-            <Select value={fieldValue || ''} onValueChange={(value) => handleFieldChange(key, value)}>
+            <Select
+              value={fieldValue || ''}
+              onValueChange={(value) => handleFieldChange(key, value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
               </SelectTrigger>
@@ -351,7 +378,9 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               id={key}
               type="number"
               value={fieldValue || ''}
-              onChange={(e) => handleFieldChange(key, e.target.value ? Number(e.target.value) : null)}
+              onChange={(e) =>
+                handleFieldChange(key, e.target.value ? Number(e.target.value) : null)
+              }
               required={required}
             />
           </div>
@@ -475,7 +504,10 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
           {contentType && (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="flex flex-col gap-4">
-                <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                <TabsList
+                  style={{ width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}
+                  className="grid"
+                >
                   {Object.keys(formFields).map((tab) => (
                     <TabsTrigger key={tab} value={tab} className="capitalize">
                       {tab}
@@ -506,10 +538,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               <X size={16} className="mr-2" />
               Cancel
             </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={loading || !contentType}
-            >
+            <Button onClick={handleCreate} disabled={loading || !contentType}>
               <Save size={16} className="mr-2" />
               {loading ? 'Creating...' : 'Create Content'}
             </Button>

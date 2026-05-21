@@ -59,7 +59,7 @@ export function DuplicateBanner({
 
       {suggestions.length > 0 && (
         <span className="text-xs font-bold block mb-1.5">
-          <Copy size={11} style={{ marginRight: 4, verticalAlign: '-1px' }} />
+          <Copy size={11} style={{ verticalAlign: '-1px' }} className="mr-1" />
           {suggestions.length === 1
             ? 'Possible duplicate'
             : `${suggestions.length} possible duplicates`}
@@ -112,7 +112,11 @@ export function DuplicateBanner({
                     suggestionId: s.suggestionId,
                   })
                 }
-                style={{ textTransform: 'none', fontSize: '0.7rem', backgroundColor: 'hsl(var(--foreground) / 0.55)' }}
+                style={{
+                  textTransform: 'none',
+                  fontSize: '0.7rem',
+                  backgroundColor: 'hsl(var(--foreground) / 0.55)',
+                }}
               >
                 <ArrowRightLeft size={12} className="mr-1" />
                 That's a dup of this

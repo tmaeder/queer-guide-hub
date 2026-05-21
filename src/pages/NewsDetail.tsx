@@ -89,7 +89,9 @@ export default function NewsDetail() {
   const [cityNames, setCityNames] = useState<Record<string, string>>({});
   const [countryNames, setCountryNames] = useState<Record<string, string>>({});
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
-  const [story, setStory] = useState<{ slug: string; title: string; article_count: number } | null>(null);
+  const [story, setStory] = useState<{ slug: string; title: string; article_count: number } | null>(
+    null,
+  );
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
 
   const articleIds = useMemo(() => (article ? [article.id] : []), [article]);
@@ -118,7 +120,9 @@ export default function NewsDetail() {
           headline: articleTitle,
           image: article.image_url ? [article.image_url] : undefined,
           datePublished: article.published_at || undefined,
-          author: article.author ? { '@type': 'Person', name: cleanAuthor(article.author) } : undefined,
+          author: article.author
+            ? { '@type': 'Person', name: cleanAuthor(article.author) }
+            : undefined,
           publisher: {
             '@type': 'Organization',
             name: 'Queer Guide',
@@ -186,13 +190,13 @@ export default function NewsDetail() {
 
         // Related
         if (data.category) {
-          fetchRelatedNewsArticles<RelatedArticle>(data.category, data.id).then(
-            setRelatedArticles,
-          );
+          fetchRelatedNewsArticles<RelatedArticle>(data.category, data.id).then(setRelatedArticles);
         }
 
         // Story membership
-        fetchStoryForArticle(data.id).then(setStory).catch(() => setStory(null));
+        fetchStoryForArticle(data.id)
+          .then(setStory)
+          .catch(() => setStory(null));
       } catch (err) {
         console.error('Error fetching article:', err);
         setArticle(null);
@@ -218,9 +222,11 @@ export default function NewsDetail() {
   };
 
   const getCategoryLabel = (category: string) => {
-    const dbCat = dbCategories.find(c => c.slug === category || c.name.toLowerCase() === category.toLowerCase());
+    const dbCat = dbCategories.find(
+      (c) => c.slug === category || c.name.toLowerCase() === category.toLowerCase(),
+    );
     if (dbCat) return dbCat.name;
-    return category?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return category?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   // Loading skeleton matching 2-column grid pattern
@@ -284,12 +290,8 @@ export default function NewsDetail() {
       <div className="flex items-center gap-1 mb-4 flex-wrap">
         <LocalizedLink
           to="/news"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            color: 'inherit',
-            textDecoration: 'none',
-          }}
+          style={{ alignItems: 'center', color: 'inherit' }}
+          className="inline-flex no-underline"
         >
           <ArrowLeft size={14} className="mr-1" />
           <span className="text-sm text-muted-foreground hover:text-primary">News</span>
@@ -347,7 +349,12 @@ export default function NewsDetail() {
               {decodeHtmlEntities(article.title)}
             </h1>
             {article.is_featured && (
-              <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>Featured</Badge>
+              <Badge
+                style={{ backgroundColor: 'hsl(var(--foreground))' }}
+                className="text-background"
+              >
+                Featured
+              </Badge>
             )}
           </div>
 
@@ -402,9 +409,7 @@ export default function NewsDetail() {
       {/* Category & Source badges */}
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         {article.category && article.category !== 'general' && (
-          <Badge
-            variant="outline" className="capitalize"
-          >
+          <Badge variant="outline" className="capitalize">
             {getCategoryLabel(article.category)}
           </Badge>
         )}
@@ -422,7 +427,10 @@ export default function NewsDetail() {
             </CardHeader>
             <CardContent>
               {contentText ? (
-                <p className="text-muted-foreground whitespace-pre-line" style={{ lineHeight: 1.8 }}>
+                <p
+                  className="text-muted-foreground whitespace-pre-line"
+                  style={{ lineHeight: 1.8 }}
+                >
                   {contentText}
                 </p>
               ) : excerptText ? (
@@ -478,7 +486,10 @@ export default function NewsDetail() {
                       to={`/news/${related.slug || related.id}`}
                       className="flex flex-col rounded overflow-hidden no-underline text-inherit transition-all duration-200 hover:bg-muted border border-border"
                     >
-                      <div className="overflow-hidden" style={{ height: 120, background: 'hsl(var(--muted))' }}>
+                      <div
+                        className="overflow-hidden"
+                        style={{ height: 120, background: 'hsl(var(--muted))' }}
+                      >
                         {related.image_url ? (
                           <img
                             src={related.image_url}
@@ -496,13 +507,12 @@ export default function NewsDetail() {
                       </div>
                       <div className="p-3">
                         <p
-                          className="text-sm font-semibold mb-1 overflow-hidden"
+                          className="text-sm font-semibold mb-1 overflow-hidden text-foreground"
                           style={{
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
                             textTransform: 'none',
-                            color: 'hsl(var(--foreground))',
                           }}
                         >
                           {decodeHtmlEntities(related.title)}
@@ -533,7 +543,7 @@ export default function NewsDetail() {
             <CardContent>
               {article.published_at && (
                 <div className="flex items-center gap-3">
-                  <Calendar size={16} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Calendar size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Published</p>
                     <p className="font-medium">
@@ -544,7 +554,7 @@ export default function NewsDetail() {
               )}
               {authorName && (
                 <div className="flex items-center gap-3">
-                  <User size={16} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <User size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Author</p>
                     <p className="font-medium">{authorName}</p>
@@ -553,7 +563,7 @@ export default function NewsDetail() {
               )}
               {sourceName && (
                 <div className="flex items-center gap-3">
-                  <Newspaper size={16} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Newspaper size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Source</p>
                     <p className="font-medium">{sourceName}</p>
@@ -562,7 +572,7 @@ export default function NewsDetail() {
               )}
               {article.views_count > 0 && (
                 <div className="flex items-center gap-3">
-                  <Eye size={16} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Eye size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Views</p>
                     <p className="font-medium">{article.views_count}</p>
@@ -576,7 +586,7 @@ export default function NewsDetail() {
           {tags.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CardTitle style={{ alignItems: 'center', gap: '8px' }} className="flex">
                   <Tag size={16} />
                   Tags
                 </CardTitle>
@@ -587,7 +597,8 @@ export default function NewsDetail() {
                     <Badge
                       key={tag}
                       variant="outline"
-                      style={{ fontSize: '0.75rem', cursor: 'pointer', padding: '4px 10px' }}
+                      style={{ padding: '4px 10px' }}
+                      className="text-xs cursor-pointer"
                       onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
                     >
                       {tag}
@@ -602,7 +613,7 @@ export default function NewsDetail() {
           {hasLocation && (
             <Card>
               <CardHeader>
-                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CardTitle style={{ alignItems: 'center', gap: '8px' }} className="flex">
                   <MapPin size={16} />
                   Location
                 </CardTitle>
@@ -662,7 +673,11 @@ export default function NewsDetail() {
           </Card>
         </div>
       </div>
-      <SimilarItems entity={{ type: 'news', id: article.id }} className="mt-8" title="Related news" />
+      <SimilarItems
+        entity={{ type: 'news', id: article.id }}
+        className="mt-8"
+        title="Related news"
+      />
       <MarketplaceRelated className="mt-10" />
     </TracingBeam>
   );

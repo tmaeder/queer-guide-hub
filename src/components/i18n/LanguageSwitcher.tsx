@@ -35,9 +35,7 @@ export function LanguageSwitcher() {
         : location.pathname;
 
     const newPath =
-      newLocale === DEFAULT_LOCALE
-        ? pathWithoutLocale
-        : `/${newLocale}${pathWithoutLocale}`;
+      newLocale === DEFAULT_LOCALE ? pathWithoutLocale : `/${newLocale}${pathWithoutLocale}`;
 
     i18n.changeLanguage(newLocale);
     navigate(newPath + location.search, { replace: true });
@@ -52,10 +50,10 @@ export function LanguageSwitcher() {
           minWidth: 0,
           height: 36,
           padding: '0 8px',
-          gap: 4,
           border: 'none',
           background: 'transparent',
         }}
+        className="gap-1"
       >
         <Globe size={16} className="shrink-0" />
         <SelectValue />

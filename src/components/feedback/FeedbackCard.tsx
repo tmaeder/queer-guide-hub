@@ -69,12 +69,18 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
               className="flex flex-col items-center gap-0.5 pt-0.5 cursor-pointer"
               style={{ minWidth: 36 }}
             >
-              <ChevronUp size={18} style={{ color: hasVoted ? 'hsl(var(--foreground))' : 'var(--muted-foreground)',
-                  transition: 'color 0.15s' }}
+              <ChevronUp
+                size={18}
+                style={{
+                  color: hasVoted ? 'hsl(var(--foreground))' : 'var(--muted-foreground)',
+                  transition: 'color 0.15s',
+                }}
               />
               <span
                 className="text-xs font-bold"
-                style={{ color: hasVoted ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
+                style={{
+                  color: hasVoted ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
+                }}
               >
                 {voteCount}
               </span>
@@ -92,12 +98,12 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
               style={{
                 borderColor: cat.color,
                 color: cat.color,
-                display: 'inline-flex',
                 alignItems: 'center',
                 gap: 3,
                 fontSize: '0.65rem',
                 padding: '1px 6px',
               }}
+              className="inline-flex"
             >
               <Icon style={{ width: 10, height: 10 }} />
               {cat.label}
@@ -105,12 +111,11 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
           </div>
           <p className="text-sm font-semibold mb-0.5 truncate">{item.data.title}</p>
           <p
-            className="text-xs text-muted-foreground"
+            className="text-xs text-muted-foreground overflow-hidden"
             style={{
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
               lineHeight: 1.4,
             }}
           >

@@ -11,7 +11,8 @@ const PROVIDERS = [
   {
     name: 'SafetyWing',
     url: 'https://safetywing.com/?referenceID=queerguide',
-    description: 'Nomad insurance. Covers 180+ countries, ongoing trips, pre-existing conditions after 364 days.',
+    description:
+      'Nomad insurance. Covers 180+ countries, ongoing trips, pre-existing conditions after 364 days.',
     lgbtqNote: 'Covers same-sex partners as dependents',
     price: 'From $42/month',
     badge: 'Digital Nomads',
@@ -38,10 +39,12 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
   if (compact) {
     return (
       <div className="flex items-center gap-3 p-4 bg-muted">
-        <Shield size={20} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+        <Shield size={20} className="text-primary shrink-0" />
         <div className="flex-1">
           <p className="font-semibold text-sm">Travel Insurance</p>
-          <p className="text-xs text-muted-foreground">LGBTQ+ friendly providers with partner coverage</p>
+          <p className="text-xs text-muted-foreground">
+            LGBTQ+ friendly providers with partner coverage
+          </p>
         </div>
         <Button size="sm" onClick={() => window.open(PROVIDERS[0].url, '_blank', 'noopener')}>
           Compare
@@ -57,25 +60,22 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
         <p className="font-semibold text-base">Travel Insurance</p>
       </div>
       <p className="text-sm text-muted-foreground mb-4">
-        LGBTQ+ friendly providers that cover same-sex partners, gender-affirming care, and HIV medication.
+        LGBTQ+ friendly providers that cover same-sex partners, gender-affirming care, and HIV
+        medication.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {PROVIDERS.map((p) => (
           <Card key={p.name}>
-            <CardContent style={{ padding: 16 }}>
+            <CardContent className="p-4">
               <div className="flex justify-between items-start mb-2">
                 <p className="font-bold text-base">{p.name}</p>
                 <Badge variant="outline">{p.badge}</Badge>
               </div>
-              <p className="text-xs text-muted-foreground mb-2">
-                {p.description}
-              </p>
+              <p className="text-xs text-muted-foreground mb-2">{p.description}</p>
               <div className="flex items-center gap-1 mb-3">
                 <Heart size={12} className="text-primary" />
-                <p className="text-xs text-primary font-medium">
-                  {p.lgbtqNote}
-                </p>
+                <p className="text-xs text-primary font-medium">{p.lgbtqNote}</p>
               </div>
               <div className="flex justify-between items-center">
                 <p className="font-bold text-sm">{p.price}</p>

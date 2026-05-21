@@ -53,7 +53,9 @@ function FilterControl({ config, value, onChange }: FilterControlProps) {
           checked={value === true}
           onCheckedChange={(checked) => onChange(checked || undefined)}
         />
-        <Label style={{ fontSize: 13, whiteSpace: 'nowrap' }}>{config.label}</Label>
+        <Label style={{ fontSize: 13 }} className="whitespace-nowrap">
+          {config.label}
+        </Label>
       </div>
     );
   }
@@ -150,9 +152,13 @@ function MultiSelectFilter({ config, value, onChange }: MultiSelectFilterProps) 
             size="sm"
             style={{ height: 36, fontSize: 13, justifyContent: 'space-between', width: '100%' }}
           >
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
+            <span style={{ textOverflow: 'ellipsis' }} className="overflow-hidden">
+              {label}
+            </span>
             {value.length > 0 && (
-              <X size={14} className="ml-1"
+              <X
+                size={14}
+                className="ml-1"
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange(undefined);
@@ -161,7 +167,7 @@ function MultiSelectFilter({ config, value, onChange }: MultiSelectFilterProps) 
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent style={{ width: 220, padding: 8, maxHeight: 320, overflow: 'auto' }}>
+        <PopoverContent style={{ width: 220, maxHeight: 320 }} className="p-2 overflow-auto">
           <div className="flex flex-col gap-1">
             {options.map((opt) => (
               <div
@@ -183,7 +189,7 @@ function MultiSelectFilter({ config, value, onChange }: MultiSelectFilterProps) 
               </div>
             ))}
             {options.length === 0 && (
-              <span style={{ fontSize: 13, color: 'var(--muted-foreground)', padding: 8 }}>
+              <span style={{ fontSize: 13 }} className="text-muted-foreground p-2">
                 No options
               </span>
             )}
@@ -234,9 +240,13 @@ function DateRangeFilter({ config, value, onChange }: DateRangeFilterProps) {
             style={{ height: 36, fontSize: 13, justifyContent: 'flex-start', width: '100%' }}
           >
             <CalendarIcon size={14} className="mr-1.5" />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
+            <span style={{ textOverflow: 'ellipsis' }} className="overflow-hidden">
+              {label}
+            </span>
             {(from || to) && (
-              <X size={14} style={{ marginLeft: 'auto' }}
+              <X
+                size={14}
+                style={{ marginLeft: 'auto' }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange(undefined);
@@ -245,7 +255,7 @@ function DateRangeFilter({ config, value, onChange }: DateRangeFilterProps) {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent style={{ width: 'auto', padding: 8 }}>
+        <PopoverContent style={{ width: 'auto' }} className="p-2">
           <div className="flex flex-col gap-2">
             <div className="flex gap-4">
               <div>
@@ -259,11 +269,7 @@ function DateRangeFilter({ config, value, onChange }: DateRangeFilterProps) {
               </div>
               <div>
                 <Label style={{ fontSize: 12 }}>To</Label>
-                <Calendar
-                  mode="single"
-                  selected={to}
-                  onSelect={(d) => update({ from, to: d })}
-                />
+                <Calendar mode="single" selected={to} onSelect={(d) => update({ from, to: d })} />
               </div>
             </div>
           </div>
@@ -298,7 +304,9 @@ function useFilterOptions(config: EntityFilterConfig): { value: string; label: s
           seen.add(val);
           options.push({
             value: val,
-            label: labelColumn ? (row as unknown as Record<string, string>)[labelColumn] || val : val,
+            label: labelColumn
+              ? (row as unknown as Record<string, string>)[labelColumn] || val
+              : val,
           });
         }
       }
@@ -312,7 +320,5 @@ function useFilterOptions(config: EntityFilterConfig): { value: string; label: s
     if (data) setDynamicOptions(data);
   }, [data]);
 
-  return isDynamic
-    ? dynamicOptions
-    : (config.options as { value: string; label: string }[]) || [];
+  return isDynamic ? dynamicOptions : (config.options as { value: string; label: string }[]) || [];
 }

@@ -22,10 +22,34 @@ export function QuickActions() {
   const navigate = useNavigate();
 
   const quickActions = [
-    { title: 'Add New Event', description: 'Create a new event', icon: Plus, action: () => navigate('/admin/content/events'), variant: 'default' as const },
-    { title: 'Add New Venue', description: 'Register a new venue', icon: Building, action: () => navigate('/admin/content/venues'), variant: 'outline' as const },
-    { title: 'Import Data', description: 'Bulk import content', icon: Upload, action: () => navigate('/admin/imports'), variant: 'outline' as const },
-    { title: 'Manage Users', description: 'View and manage users', icon: Users, action: () => navigate('/admin/users'), variant: 'outline' as const },
+    {
+      title: 'Add New Event',
+      description: 'Create a new event',
+      icon: Plus,
+      action: () => navigate('/admin/content/events'),
+      variant: 'default' as const,
+    },
+    {
+      title: 'Add New Venue',
+      description: 'Register a new venue',
+      icon: Building,
+      action: () => navigate('/admin/content/venues'),
+      variant: 'outline' as const,
+    },
+    {
+      title: 'Import Data',
+      description: 'Bulk import content',
+      icon: Upload,
+      action: () => navigate('/admin/imports'),
+      variant: 'outline' as const,
+    },
+    {
+      title: 'Manage Users',
+      description: 'View and manage users',
+      icon: Users,
+      action: () => navigate('/admin/users'),
+      variant: 'outline' as const,
+    },
   ];
 
   const managementSections = [
@@ -63,7 +87,7 @@ export function QuickActions() {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CardTitle style={{ alignItems: 'center' }} className="text-base flex gap-2">
             <Zap size={16} />
             Quick Actions
           </CardTitle>
@@ -80,7 +104,7 @@ export function QuickActions() {
                   style={{ height: 'auto', padding: '10px 12px', justifyContent: 'flex-start' }}
                 >
                   <div className="flex items-center gap-2">
-                    <Icon style={{ height: 18, width: 18, flexShrink: 0 }} />
+                    <Icon style={{ height: 18, width: 18 }} className="shrink-0" />
                     <div className="text-left min-w-0">
                       <div className="font-medium text-sm truncate">{action.title}</div>
                     </div>
@@ -95,10 +119,10 @@ export function QuickActions() {
       <div className="flex flex-col gap-4">
         {managementSections.map((section) => (
           <Card key={section.title}>
-            <CardHeader style={{ paddingBottom: 8 }}>
+            <CardHeader className="pb-2">
               <CardTitle className="text-13">{section.title}</CardTitle>
             </CardHeader>
-            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingTop: 0 }}>
+            <CardContent style={{ flexDirection: 'column' }} className="flex gap-0.5 pt-0">
               {section.items.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -109,7 +133,7 @@ export function QuickActions() {
                     onClick={() => navigate(item.path)}
                     style={{ width: '100%', justifyContent: 'flex-start', height: 32 }}
                   >
-                    <Icon style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <Icon style={{ height: 16, width: 16 }} className="mr-2" />
                     {item.label}
                   </Button>
                 );

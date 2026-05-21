@@ -34,7 +34,7 @@ export function SearchCategories({ selectedCategory, onSelectCategory }: SearchC
             <Icon className="h-4 w-4 mr-2" />
             {category.label}
             {selectedCategory === category.value && (
-              <Badge variant="outline" style={{ marginLeft: 'auto', fontSize: '0.75rem' }}>
+              <Badge variant="outline" style={{ marginLeft: 'auto' }} className="text-xs">
                 Selected
               </Badge>
             )}

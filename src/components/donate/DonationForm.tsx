@@ -73,9 +73,7 @@ export function DonationForm() {
       <CardContent className="p-6 space-y-5">
         {/* Amount selection */}
         <div>
-          <p className="font-semibold text-sm mb-3">
-            {t('donate.tipJar', 'Quick amounts')}
-          </p>
+          <p className="font-semibold text-sm mb-3">{t('donate.tipJar', 'Quick amounts')}</p>
           <div className="grid grid-cols-4 gap-2">
             {TIP_AMOUNTS.map((amount) => (
               <Button
@@ -96,9 +94,7 @@ export function DonationForm() {
             {t('donate.customAmount', 'Custom amount')} ({currency})
           </Label>
           <div className="relative mt-1">
-            <div
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none z-10"
-            >
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none z-10">
               {getCurrencySymbol(currency)}
             </div>
             <Input
@@ -116,9 +112,7 @@ export function DonationForm() {
 
         {/* Frequency */}
         <div>
-          <p className="font-semibold text-sm mb-3">
-            {t('donate.frequency', 'Frequency')}
-          </p>
+          <p className="font-semibold text-sm mb-3">{t('donate.frequency', 'Frequency')}</p>
           <div className="grid grid-cols-3 gap-2 p-1 rounded-element bg-muted">
             {FREQUENCY_OPTIONS.map((opt) => (
               <Button
@@ -142,9 +136,7 @@ export function DonationForm() {
         {/* Donor info */}
         <div className="flex flex-col gap-4">
           <div>
-            <Label htmlFor="donor-email">
-              {t('donate.email', 'Email')} *
-            </Label>
+            <Label htmlFor="donor-email">{t('donate.email', 'Email')} *</Label>
             <Input
               id="donor-email"
               type="email"
@@ -166,9 +158,7 @@ export function DonationForm() {
             />
           </div>
           <div>
-            <Label htmlFor="donor-message">
-              {t('donate.message', 'Message (optional)')}
-            </Label>
+            <Label htmlFor="donor-message">{t('donate.message', 'Message (optional)')}</Label>
             <Input
               id="donor-message"
               value={message}
@@ -178,11 +168,7 @@ export function DonationForm() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <Switch
-              id="anonymous"
-              checked={isAnonymous}
-              onCheckedChange={setIsAnonymous}
-            />
+            <Switch id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
             <Label htmlFor="anonymous" className="cursor-pointer">
               {t('donate.anonymous', 'Donate anonymously')}
             </Label>
@@ -191,7 +177,8 @@ export function DonationForm() {
 
         {/* Submit */}
         <Button
-          style={{ width: '100%', height: 48, fontSize: '1rem', fontWeight: 600 }}
+          style={{ width: '100%', height: 48 }}
+          className="text-base font-semibold"
           disabled={!isValid || checkout.isPending}
           onClick={handleSubmit}
         >
