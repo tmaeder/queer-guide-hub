@@ -60,6 +60,21 @@ jobs:
           fi
           echo "All pipeline-* functions declare verify_jwt=false."
 
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v1.x
+
+      - name: Run edge function tests
+        # Gate the deploy on the deno test suite under
+        # supabase/functions/_tests. Prevents production deploys when
+        # helper logic (sanitize/dedup/commit/stripe helpers/safety
+        # relevance/source adapter) regresses. The same job runs on
+        # every PR via ci.yml's edge-fn-tests; running it again here
+        # closes the gap where a PR is merged with a stale CI run.
+        run: deno task test
+        working-directory: supabase/functions/_tests
+
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v2
         with:

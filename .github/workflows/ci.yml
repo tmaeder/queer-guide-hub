@@ -1,10 +1,11 @@
 name: CI
 
-# Per-PR correctness gate. Three independent jobs run in parallel:
-# typecheck, lint, and unit tests. Each is a hard fail on the PR check.
+# Per-PR correctness gate. Independent jobs run in parallel:
+# typecheck, lint, frontend unit tests, scraper tests, worker tests,
+# and edge-function deno tests. Each is a hard fail on the PR check.
 # Bundle-shape and a11y gates live in their own workflows
 # (bundle-shape.yml, a11y.yml) with narrower path filters; this one
-# runs on every PR so anything that breaks tsc/eslint/vitest is caught
+# runs on every PR so anything that breaks tsc/eslint/tests is caught
 # before review.
 
 on:
@@ -61,3 +62,67 @@ jobs:
             coverage/lcov.info
           if-no-files-found: warn
           retention-days: 14
+
+  # Scraper unit tests (vitest in scraper/). Cheap to run; bugs here
+  # affect daily data ingestion, so we always run on every PR rather
+  # than gating on a path filter. Uses `npm install` to match the
+  # established extension-ci.yml pattern for sub-package installs.
+  scraper-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+        working-directory: scraper
+      - run: npm test
+        working-directory: scraper
+
+  # Worker tests for every workers/* that declares a `test` script.
+  # workers/submit is also covered by extension-ci.yml (path-filtered);
+  # running it here covers PRs that don't touch the extension paths.
+  # Workers without a test script are skipped (auto-picks up new
+  # workers as they bootstrap vitest setup).
+  worker-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run tests for each worker with a test script
+        # `npm install` (not `npm ci`) to match the established
+        # extension-ci.yml pattern for sub-package installs.
+        run: |
+          set -e
+          any_run=0
+          for pkg in workers/*/package.json; do
+            dir=$(dirname "$pkg")
+            if node -e "const p=require('./$pkg'); process.exit(p.scripts && p.scripts.test ? 0 : 1)"; then
+              echo "::group::$dir"
+              (cd "$dir" && npm install && npm test)
+              echo "::endgroup::"
+              any_run=1
+            else
+              echo "Skipping $dir (no test script)"
+            fi
+          done
+          if [ "$any_run" -eq 0 ]; then
+            echo "::error::No workers/* had a test script — check this job is still doing useful work."
+            exit 1
+          fi
+
+  # Deno tests for supabase/functions. Today the suite covers helper
+  # libs in _tests/ and _shared/news-quality/; this job ensures those
+  # actually run on every PR. Pipeline-node coverage is tracked
+  # separately (see docs/test-coverage-analysis.md).
+  edge-fn-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v1.x
+      - run: deno task test
+        working-directory: supabase/functions/_tests
