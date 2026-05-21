@@ -1,5 +1,5 @@
 import { defineConfig, type Plugin } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { visualizer } from "rollup-plugin-visualizer";
@@ -178,6 +178,12 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/recharts/') || id.includes('node_modules/victory-vendor/')) {
             return 'recharts';
           }
+          if (id.includes('node_modules/@xyflow/')) {
+            return 'xyflow';
+          }
+          if (id.includes('node_modules/@dnd-kit/')) {
+            return 'dnd-kit';
+          }
           // i18n locale JSON files: split per-language so only the active
           // locale ends up downloaded. src/i18n/locales/<lang>.json
           const localeMatch = id.match(/[\\/]src[\\/]i18n[\\/]locales[\\/]([a-z-]+)\.json$/);
@@ -214,7 +220,7 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       resolveDependencies(_filename, deps) {
         const skip =
-          /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|gsap|hls|framer-motion|boneyard)-[A-Za-z0-9_-]+\.js$/;
+          /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|gsap|hls|framer-motion|boneyard|xyflow|dnd-kit)-[A-Za-z0-9_-]+\.js$/;
         return deps.filter((d) => !skip.test(d));
       },
     },
