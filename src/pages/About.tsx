@@ -60,7 +60,7 @@ const features = [
     icon: Globe,
     title: 'Places',
     description:
-      'Explore queer-friendly cities and countries. Know before you go — safety info, rights, and local tips.',
+      'Queer-friendly cities and countries. Know before you go — safety info, rights, and local tips.',
     link: '/places',
   },
 ];
@@ -385,7 +385,7 @@ export default function About() {
           <div className="flex gap-4 flex-wrap">
             <LocalizedLink to="/venues" className="no-underline">
               <Button size="lg">
-                Explore Venues
+                Browse Venues
                 <ArrowRight size={18} className="ml-2" aria-hidden="true" />
               </Button>
             </LocalizedLink>

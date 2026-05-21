@@ -114,7 +114,7 @@ export const CreateGroupDialog = ({
             <TagSelector selectedTags={formData.tags} onTagsChange={tags => setFormData(prev => ({
             ...prev,
             tags
-          }))} placeholder="Add tags to help others discover your group..." maxTags={5} allowCustomTags={true} />
+          }))} placeholder="Add tags to help others find your group..." maxTags={5} allowCustomTags={true} />
           </div>
 
           <div className="flex items-center justify-between p-4">

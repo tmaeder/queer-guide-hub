@@ -461,7 +461,7 @@ export const UniversalSearchBar = () => {
                               t('search.placeholders.venues', 'Search venues...'),
                               t('search.placeholders.events', 'Find events...'),
                               t('search.placeholders.marketplace', 'Browse marketplace...'),
-                              t('search.placeholders.people', 'Discover people...'),
+                              t('search.placeholders.people', 'Find people...'),
                               t('search.placeholders.news', 'Read news...'),
                               t('search.placeholders.resources', 'Explore resources...'),
                               t('search.placeholders.personalities', 'Meet personalities...'),

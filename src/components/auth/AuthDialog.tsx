@@ -90,7 +90,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
           </div>
           <DialogTitle>Welcome Back</DialogTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Sign in to continue your journey
+            Sign in to continue
           </p>
         </DialogHeader>
 

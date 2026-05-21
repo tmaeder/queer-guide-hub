@@ -199,7 +199,7 @@ export default function Welcome() {
             <p className="text-muted-foreground leading-relaxed mb-6">
               {t(
                 'onboarding.trustBlurb',
-                'Everyone starts as a Visitor. Verify your email, complete your profile, and contribute to unlock Explorer, Resident, and finally Guardian — each tier opens more of the community.',
+                'Everyone starts as a Visitor. Verify your email, complete your profile, and contribute to earn Explorer, Resident, and finally Guardian — each tier opens more of the community.',
               )}
             </p>
             <div className="space-y-4 text-sm">

@@ -328,7 +328,7 @@ export const UserDirectoryGrid = ({
               <h6 className="font-semibold text-foreground text-xl">No members found</h6>
               <p className="text-muted-foreground mx-auto" style={{ maxWidth: '28rem' }}>
                 {filters.searchQuery || activeFiltersCount > 0
-                  ? 'Try adjusting your search terms or filters to discover more amazing people in our community.'
+                  ? 'Try adjusting your search terms or filters to find more people.'
                   : 'Be among the first to join our growing community of inclusive and welcoming members!'}
               </p>
             </div>

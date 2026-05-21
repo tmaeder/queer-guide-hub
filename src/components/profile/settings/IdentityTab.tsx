@@ -80,7 +80,7 @@ export function IdentityTab({ formData, onChange, onComingOutChange }: IdentityT
 
       <Card>
         <CardHeader>
-          <CardTitle>Coming Out Journey</CardTitle>
+          <CardTitle>Coming Out</CardTitle>
           <p className="text-sm text-muted-foreground">
             This information is private by default and only visible to people you choose.
           </p>

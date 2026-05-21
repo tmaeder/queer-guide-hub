@@ -62,7 +62,7 @@ export function TripTemplates() {
             Trip Templates
           </h5>
           <p className="text-sm text-muted-foreground mt-1">
-            Get inspired with curated LGBTQ+ travel itineraries
+            LGBTQ+ travel itineraries to start from
           </p>
         </div>
       </ScrollReveal>

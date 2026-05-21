@@ -51,14 +51,14 @@ export default function Feed() {
   return (
     <AuthGate
       title="Feed"
-      description="Sign in to share posts, connect with the community, and discover what's happening around you."
+      description="Sign in to share posts, connect with the community, and see what's happening around you."
     >
       <div className="relative">
         <SpotlightV2 anchor="top-center" intensity={0.10} />
       <div className="container mx-auto py-8 px-4 relative">
         <PageHeader
           title={<ColourfulText text="Feed" />}
-          subtitle="Stay connected with the latest posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and discover what's happening around you."
+          subtitle="Stay connected with the latest posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you."
           center
         />
 
