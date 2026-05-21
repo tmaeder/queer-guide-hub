@@ -7,8 +7,8 @@ interface MotionCardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean;
 }
 
-// Hover-lift card. Lives in its own file so consumers importing the plain
-// Card don't pull framer-motion into their bundle.
+// Hover-tint card (non-layout). Lives in its own file so consumers importing
+// the plain Card don't pull framer-motion into their bundle.
 export const MotionCard = React.forwardRef<HTMLDivElement, MotionCardProps>(
   ({ className, children, ...props }, ref) => {
     const reduced = useReducedMotion();
