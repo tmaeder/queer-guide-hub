@@ -169,7 +169,7 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                   badge adds nothing for the user. */}
                 {venue.category && venue.category !== 'other' && (
                   <div
-                    className="absolute top-2 left-2 px-2 py-0.5 rounded font-bold uppercase backdrop-blur-sm text-background"
+                    className="absolute top-2 left-2 px-2 py-0.5 rounded font-bold uppercase text-background"
                     style={{
                       backgroundColor: 'hsl(var(--foreground) / 0.6)',
                       fontSize: '0.65rem',
@@ -194,7 +194,7 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                     type="button"
                     onClick={handleShare}
                     aria-label={`Share ${venue.name}`}
-                    className="h-9 w-9 rounded-full inline-flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background"
+                    className="h-9 w-9 rounded-full inline-flex items-center justify-center bg-background/70 hover:bg-background"
                   >
                     <Share2 size={16} aria-hidden="true" />
                   </button>

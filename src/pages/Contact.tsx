@@ -28,7 +28,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ColourfulText } from '@/components/effects/ColourfulText';
-import { WordRotate } from '@/components/effects/WordRotate';
 
 const categories = [
   {
@@ -141,10 +140,7 @@ export default function Contact() {
           </h1>
           <div className="text-muted-foreground">
             <span className="mr-1.5">Send us a</span>
-            <WordRotate
-              className="text-foreground font-semibold"
-              words={['question', 'bug report', 'partnership', 'kind word']}
-            />
+            <span className="text-foreground font-semibold">question</span>
             <span className="ml-1.5">— we read everything.</span>
           </div>
         </div>

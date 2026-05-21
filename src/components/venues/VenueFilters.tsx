@@ -392,7 +392,7 @@ export function VenueFilters({
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-container border border-border bg-card/60 backdrop-blur-sm">
+    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-container border border-border bg-card/60">
       {/* Search Row */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -604,7 +604,7 @@ export function VenueFilters({
     return (
       <div className="flex flex-col gap-6">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-4">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
             Refine
           </span>

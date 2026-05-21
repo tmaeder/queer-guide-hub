@@ -21,12 +21,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
-import { TextGenerateEffect } from '@/components/effects/TextGenerateEffect';
-import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
 import { BackgroundDots } from '@/components/effects/BackgroundDots';
 import { Timeline } from '@/components/effects/Timeline';
 import { LampEffect } from '@/components/effects/LampEffect';
-import { WordRotate } from '@/components/effects/WordRotate';
 import { ShineButton } from '@/components/effects/ShineButton';
 import { HoverBorderGradient } from '@/components/effects/HoverBorderGradient';
 import { Sparkles as SparklesEffect } from '@/components/effects/Sparkles';
@@ -139,32 +136,27 @@ export default function About() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <SpotlightEffect className="relative py-14 sm:py-[72px] md:py-24 px-4 sm:px-6 md:px-8 bg-background overflow-hidden">
+      <section className="relative py-14 sm:py-[72px] md:py-24 px-4 sm:px-6 md:px-8 bg-background overflow-hidden">
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
           <SparklesEffect density={50} />
-          <div className="absolute inset-0 spotlight-radial" />
         </div>
         <div className="relative">
-          <TextGenerateEffect
-            words="Built by queers, for everyone."
+          <h1
             className="font-bold leading-[1.05] mb-4 md:mb-6 text-display sm:text-hero md:text-hero-xl"
             style={{ letterSpacing: '0.02em' }}
-            as="h1"
-            staggerDelay={0.07}
-          />
-          <div className="reveal-up reveal-delay-1 text-lg md:text-title text-muted-foreground mb-4">
+          >
+            Built by queers, for everyone.
+          </h1>
+          <div className="text-lg md:text-title text-muted-foreground mb-4">
             <span className="mr-1.5">A guide for queer</span>
-            <WordRotate
-              className="text-foreground font-semibold"
-              words={['travellers', 'locals', 'activists', 'researchers', 'allies']}
-            />
+            <span className="text-foreground font-semibold">travellers</span>
           </div>
-          <p className="reveal-up reveal-delay-2 text-body-lg sm:text-lg md:text-title text-muted-foreground leading-[1.7] max-w-[720px]">
+          <p className="text-body-lg sm:text-lg md:text-title text-muted-foreground leading-[1.7] max-w-[720px]">
             The Queer Guide connects LGBTQ+ people and allies with safe venues, vibrant events, and
             communities that get you — wherever you are in the world.
           </p>
         </div>
-      </SpotlightEffect>
+      </section>
 
       {/* Stats Strip */}
       <div className="py-10 md:py-14 px-4 sm:px-6 md:px-8 bg-foreground text-background">

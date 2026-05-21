@@ -326,7 +326,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
       </div>
 
       {/* Sticky auto-save status bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95">
         <div className="container mx-auto px-4 py-4 flex items-center justify-center gap-2 text-sm">
           {saveStatus === 'saving' && (
             <>
