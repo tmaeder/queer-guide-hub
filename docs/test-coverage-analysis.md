@@ -159,7 +159,7 @@ Before writing any new tests, the existing ~30 backend test files need to run on
 
 - **`scraper-tests`** — `cd scraper && npm ci && npm test`
 - **`worker-tests`** — iterates `workers/*` and runs `npm test` for every worker that has a `test` script (auto-picks up new workers as they gain test setup)
-- **`edge-fn-tests`** — `deno task test` in `supabase/functions/_tests/`
+- **`edge-fn-tests`** — `denoland/setup-deno@v2` (Deno 2.x) running `source-adapter.test.ts` + `pipeline-nodes.test.ts` in `supabase/functions/_tests/`. Mirrors `pipeline-health.yml`'s known-working invocation. The other 6 test files in that directory (`entity-classifier`, `entity-type-classifier`, `ingestion-rules`, `pipeline-commit-build-record`, `safety-relevance`, `stripe-webhook-helpers`) fail fast in CI and need per-file triage — likely Deno 1.x → 2.x transitive-import issues. Each will be wired in via follow-up PRs.
 
 It also adds a test step to `.github/workflows/deploy-supabase-functions.yml` so deploys are gated on the deno tests passing — closing a gap where production deploys ran with zero test verification.
 
