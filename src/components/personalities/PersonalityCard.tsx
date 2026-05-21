@@ -135,7 +135,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[72px] h-[72px] rounded-full bg-background flex items-center justify-center font-bold text-foreground shadow">
+              <div className="w-[72px] h-[72px] rounded-full bg-background flex items-center justify-center font-bold text-foreground border border-border">
                 {getInitials(personality.name)}
               </div>
             </div>
@@ -143,7 +143,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
 
           {personality.is_featured && (
             <div
-              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-[3px] rounded-full bg-background text-foreground shadow pointer-events-none select-none text-xs font-semibold"
+              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-[3px] rounded-full bg-background text-foreground border border-border pointer-events-none select-none text-xs font-semibold"
               style={{ backdropFilter: 'blur(4px)' }}
             >
               <Star

@@ -15,14 +15,14 @@ export const MotionCard = React.forwardRef<HTMLDivElement, MotionCardProps>(
     const hover = reduced
       ? {}
       : {
-          whileHover: { y: -3 },
+          whileHover: { backgroundColor: 'hsl(var(--muted) / 0.4)' },
           transition: springs.snappy,
         };
     return (
       <motion.div
         ref={ref}
         className={cn(
-          'bg-card text-card-foreground rounded-container border border-border/60 transition-shadow',
+          'bg-card text-card-foreground rounded-container border border-border/60',
           className,
         )}
         {...hover}

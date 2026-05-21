@@ -303,12 +303,11 @@ export function CMSShell() {
           role="button"
           tabIndex={0}
           aria-label="Open content hub menu"
-          className="fixed flex items-center gap-1.5 bg-background rounded-[10px] cursor-pointer transition-shadow"
+          className="fixed flex items-center gap-1.5 bg-background rounded-[10px] border border-border cursor-pointer"
           style={{
             top: 80,
             left: 8,
             zIndex: 1200,
-            boxShadow: '0 2px 12px hsl(var(--foreground) / 0.1)',
             paddingLeft: 8,
             paddingRight: 12,
             paddingTop: 6,

@@ -247,7 +247,7 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                     role="presentation"
                     loading="lazy"
                     decoding="async"
-                    className="absolute bottom-2 right-2 w-7 h-7 rounded-element bg-background object-contain shadow p-0.5"
+                    className="absolute bottom-2 right-2 w-7 h-7 rounded-element bg-background object-contain border border-border p-0.5"
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
