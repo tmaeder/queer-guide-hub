@@ -96,9 +96,9 @@ export function PersonalizedFeed() {
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-4">
         {isPersonalized ? (
-          <Sparkles style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+          <Sparkles size={20} style={{ color: 'var(--primary)' }} />
         ) : (
-          <TrendingUp style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+          <TrendingUp size={20} style={{ color: 'var(--primary)' }} />
         )}
         <h6 className="font-bold" style={{ fontSize: '1.1rem' }}>
           {isPersonalized ? 'Recommended for You' : 'Popular Destinations'}
@@ -130,11 +130,7 @@ export function PersonalizedFeed() {
                   </div>
                   {city.equality_score != null && (
                     <div className="flex items-center gap-1">
-                      <Shield
-                        style={{
-                          height: 14, width: 14,
-                          color: city.equality_score >= 70 ? 'var(--success)' : city.equality_score >= 40 ? 'var(--warning)' : 'var(--destructive)',
-                        }}
+                      <Shield size={14} style={{ color: city.equality_score >= 70 ? 'var(--success)' : city.equality_score >= 40 ? 'var(--warning)' : 'var(--destructive)' }}
                       />
                       <span className="font-semibold" style={{ fontSize: '0.7rem' }}>{city.equality_score}</span>
                     </div>

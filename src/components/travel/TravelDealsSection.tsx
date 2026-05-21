@@ -92,13 +92,8 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
         </div>
       ) : (
         <div className="text-center py-6 bg-muted rounded-element">
-          <Plane
-            style={{
-              height: 24,
-              width: 24,
-              margin: '0 auto 8px',
-              color: 'var(--muted-foreground)',
-            }}
+          <Plane size={24} style={{ margin: '0 auto 8px',
+              color: 'var(--muted-foreground)' }}
           />
           <p className="text-muted-foreground mb-2">
             No deals available right now

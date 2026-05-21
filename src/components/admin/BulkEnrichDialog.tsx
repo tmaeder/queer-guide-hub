@@ -201,32 +201,32 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           {result && !loading && (
             <div className="border border-border rounded-element p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <CheckCircle style={{ height: 18, width: 18, color: 'hsl(var(--foreground))' }} />
+                <CheckCircle size={18} style={{ color: 'hsl(var(--foreground))' }} />
                 <span className="text-sm font-semibold">Processing Complete</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-1">
-                  <FileText style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+                  <FileText size={14} style={{ color: 'var(--muted-foreground)' }} />
                   <span className="text-sm">
                     <strong>{result.items_processed}</strong> / {result.items_total} processed
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Zap style={{ height: 14, width: 14, color: 'hsl(var(--foreground) / 0.55)' }} />
+                  <Zap size={14} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                   <span className="text-sm">
                     <strong>{result.flags_created}</strong> flags created
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle style={{ height: 14, width: 14, color: 'hsl(var(--foreground))' }} />
+                  <CheckCircle size={14} style={{ color: 'hsl(var(--foreground))' }} />
                   <span className="text-sm">
                     <strong>{result.auto_approved}</strong> auto-approved
                   </span>
                 </div>
                 {result.items_failed > 0 && (
                   <div className="flex items-center gap-1">
-                    <AlertTriangle style={{ height: 14, width: 14, color: 'hsl(var(--destructive))' }} />
+                    <AlertTriangle size={14} style={{ color: 'hsl(var(--destructive))' }} />
                     <span className="text-sm">
                       <strong>{result.items_failed}</strong> failed
                     </span>

@@ -179,15 +179,15 @@ export const VenueImportQuickActions = () => {
 
   const getStatusIcon = (source: VenueSource) => {
     if (loadingStates[source.slug]) {
-      return <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite', color: 'hsl(var(--muted-foreground))' }} />;
+      return <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite', color: 'hsl(var(--muted-foreground))' }} />;
     }
     if (source.last_error) {
-      return <AlertCircle style={{ width: 16, height: 16, color: 'hsl(var(--destructive))' }} />;
+      return <AlertCircle size={16} style={{ color: 'hsl(var(--destructive))' }} />;
     }
     if (source.last_success_at) {
-      return <CheckCircle style={{ width: 16, height: 16, color: 'hsl(var(--foreground))' }} />;
+      return <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />;
     }
-    return <Clock style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />;
+    return <Clock size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />;
   };
 
   const getStatusText = (source: VenueSource) => {
@@ -271,7 +271,7 @@ export const VenueImportQuickActions = () => {
       <div className="flex flex-col gap-6">
         <h5 className="text-xl font-semibold">Venue Imports</h5>
         <div className="flex justify-center p-8">
-          <RefreshCw style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: 'hsl(var(--muted-foreground))' }} />
+          <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', color: 'hsl(var(--muted-foreground))' }} />
         </div>
       </div>
     );
@@ -398,7 +398,7 @@ export const VenueImportQuickActions = () => {
                 >
                   {loadingStates[source.slug] ? (
                     <>
-                      <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
+                      <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />
                       Importing...
                     </>
                   ) : (

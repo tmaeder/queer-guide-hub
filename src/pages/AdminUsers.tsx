@@ -133,7 +133,7 @@ export default function AdminUsers() {
                 fontSize: '0.7rem',
               }}
             >
-              <Shield style={{ height: 10, width: 10, marginRight: 3 }} />
+              <Shield size={10} style={{ marginRight: 3 }} />
               {primary}
             </Badge>
           );

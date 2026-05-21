@@ -37,7 +37,7 @@ export function OAuthButtons({ onError }: Props) {
 
       >
         {loading === 'google' ? (
-          <Loader2 style={{ width: 18, height: 18, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+          <Loader2 size={18} style={{ marginRight: 8, animation: 'spin 1s linear infinite' }} />
         ) : (
           <GoogleIcon />
         )}
@@ -51,7 +51,7 @@ export function OAuthButtons({ onError }: Props) {
 
       >
         {loading === 'apple' ? (
-          <Loader2 style={{ width: 18, height: 18, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+          <Loader2 size={18} style={{ marginRight: 8, animation: 'spin 1s linear infinite' }} />
         ) : (
           <AppleIcon />
         )}

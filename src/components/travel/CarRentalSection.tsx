@@ -39,7 +39,7 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
   if (compact) {
     return (
       <div className="flex items-center gap-3 p-4 bg-muted">
-        <Car style={{ height: 20, width: 20, color: 'var(--primary)', flexShrink: 0 }} />
+        <Car size={20} style={{ color: 'var(--primary)', flexShrink: 0 }} />
         <div className="flex-1">
           <p className="font-semibold text-sm">Rent a Car in {city}</p>
           <p className="text-xs text-muted-foreground">Compare prices from top providers</p>
@@ -55,7 +55,7 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Car style={{ height: 18, width: 18, color: 'var(--primary)' }} />
+        <Car size={18} style={{ color: 'var(--primary)' }} />
         <p className="font-semibold text-base">Rent a Car in {city}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

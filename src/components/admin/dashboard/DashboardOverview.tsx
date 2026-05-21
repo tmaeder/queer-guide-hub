@@ -157,7 +157,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
                       {card.change}
                     </Badge>
                     <span className="text-xs">{card.description}</span>
-                    <ArrowUpRight style={{ height: 12, width: 12, marginLeft: 'auto' }} />
+                    <ArrowUpRight size={12} style={{ marginLeft: 'auto' }} />
                   </div>
                 </CardContent>
               </Card>

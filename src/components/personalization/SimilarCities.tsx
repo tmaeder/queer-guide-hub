@@ -72,7 +72,7 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles style={{ height: 18, width: 18, color: 'var(--primary)' }} />
+        <Sparkles size={18} style={{ color: 'var(--primary)' }} />
         <p className="font-semibold text-15">
           You might also like
         </p>
@@ -89,10 +89,7 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
                   </div>
                   {city.eq_score != null && (
                     <div className="flex items-center gap-0.5">
-                      <Shield style={{
-                        height: 12, width: 12,
-                        color: city.eq_score >= 70 ? 'var(--success)' : city.eq_score >= 40 ? 'var(--warning)' : 'var(--destructive)',
-                      }} />
+                      <Shield size={12} style={{ color: city.eq_score >= 70 ? 'var(--success)' : city.eq_score >= 40 ? 'var(--warning)' : 'var(--destructive)' }} />
                       <span className="text-2xs font-semibold">{city.eq_score}</span>
                     </div>
                   )}

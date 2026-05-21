@@ -175,7 +175,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
 
         <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SortBy)}>
           <SelectTrigger style={{ width: 120, fontSize: '0.8125rem' }}>
-            <ArrowUpDown style={{ height: 12, width: 12, marginRight: 4, flexShrink: 0 }} />
+            <ArrowUpDown size={12} style={{ marginRight: 4, flexShrink: 0 }} />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

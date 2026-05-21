@@ -499,7 +499,7 @@ export const NewsCard = ({
         <div className="flex flex-wrap items-center gap-4">
           {article.published_at && (
             <div className="flex items-center gap-1">
-              <Clock style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+              <Clock size={14} style={{ color: 'var(--muted-foreground)' }} />
               <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
               </span>
@@ -507,13 +507,13 @@ export const NewsCard = ({
           )}
           {readingTime !== null && (
             <div className="flex items-center gap-1">
-              <BookOpen style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} aria-hidden="true" />
+              <BookOpen size={14} style={{ color: 'var(--muted-foreground)' }} aria-hidden="true" />
               <span className="text-xs text-muted-foreground">{readingTime} min read</span>
             </div>
           )}
           {typeof article.views_count === 'number' && article.views_count > 0 && (
             <div className="flex items-center gap-1">
-              <Eye style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+              <Eye size={14} style={{ color: 'var(--muted-foreground)' }} />
               <span className="text-xs text-muted-foreground">
                 {article.views_count} view{article.views_count !== 1 ? 's' : ''}
               </span>
@@ -547,7 +547,7 @@ export const NewsCard = ({
           if (displayTags.length === 0) return null;
           return (
             <div className="flex flex-wrap items-center gap-1.5">
-              <Tag style={{ height: 14, width: 14, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+              <Tag size={14} style={{ color: 'var(--muted-foreground)', flexShrink: 0 }} />
               {displayTags.slice(0, 4).map((tag) => (
                 <Badge
                   key={tag}

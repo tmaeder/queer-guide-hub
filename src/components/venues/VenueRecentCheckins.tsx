@@ -86,7 +86,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
         {header}
         <CardContent>
           <div className="text-center py-6 text-muted-foreground">
-            <TrendingUp style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+            <TrendingUp size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
             <p>No recent activity</p>
             <p className="text-sm">Check-in data is private and anonymized</p>
           </div>

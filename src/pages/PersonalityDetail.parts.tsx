@@ -485,7 +485,7 @@ export function PersonalitySidebar({
         <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {personality.birth_date && (
             <div className="flex items-center gap-3">
-              <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <Calendar size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
               <div>
                 <p className="text-sm text-muted-foreground">Born</p>
                 <p className="font-medium">
@@ -498,7 +498,7 @@ export function PersonalitySidebar({
           )}
           {personality.death_date && (
             <div className="flex items-center gap-3">
-              <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <Calendar size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
               <div>
                 <p className="text-sm text-muted-foreground">Died</p>
                 <p className="font-medium">
@@ -511,7 +511,7 @@ export function PersonalitySidebar({
           )}
           {personality.nationality && (
             <div className="flex items-center gap-3">
-              <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <MapPin size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
               <div>
                 <p className="text-sm text-muted-foreground">Nationality</p>
                 {countryId ? (
@@ -529,7 +529,7 @@ export function PersonalitySidebar({
           )}
           {personality.profession && (
             <div className="flex items-center gap-3">
-              <Briefcase style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <Briefcase size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
               <div>
                 <p className="text-sm text-muted-foreground">Profession</p>
                 <LocalizedLink
@@ -543,7 +543,7 @@ export function PersonalitySidebar({
           )}
           {personality.birth_place && (
             <div className="flex items-center gap-3">
-              <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <MapPin size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
               <div>
                 <p className="text-sm text-muted-foreground">Birth Place</p>
                 <p className="font-medium">{personality.birth_place}</p>

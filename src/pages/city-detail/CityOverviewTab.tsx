@@ -173,7 +173,7 @@ export function CityOverviewTab({
                 {city.climate_type && (
                   <div className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
-                      <Thermometer style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                      <Thermometer size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                       <span className="text-sm font-medium">Climate</span>
                     </div>
                     <span className="font-bold">{city.climate_type}</span>
@@ -182,7 +182,7 @@ export function CityOverviewTab({
                 {city.latitude && city.longitude && (
                   <div className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
-                      <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                      <MapPin size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                       <span className="text-sm font-medium">Coordinates</span>
                     </div>
                     <span className="font-mono text-sm">
@@ -234,7 +234,7 @@ export function CityOverviewTab({
                 {effectiveIata && (
                   <div className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
-                      <Plane style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                      <Plane size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                       <span className="text-sm font-medium">
                         {hasAirport ? 'Major Airport' : 'Nearest Airport'}
                       </span>

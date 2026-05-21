@@ -72,13 +72,8 @@ export default function UserProfile() {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
-          <User
-            style={{
-              width: 48,
-              height: 48,
-              margin: '0 auto 16px',
-              color: 'var(--muted-foreground)',
-            }}
+          <User size={48} style={{ margin: '0 auto 16px',
+              color: 'var(--muted-foreground)' }}
           />
           <p className="text-base font-medium mb-2">Profile not found</p>
           <p className="text-muted-foreground mb-4">
@@ -110,13 +105,8 @@ export default function UserProfile() {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
-          <Shield
-            style={{
-              width: 48,
-              height: 48,
-              margin: '0 auto 16px',
-              color: 'var(--muted-foreground)',
-            }}
+          <Shield size={48} style={{ margin: '0 auto 16px',
+              color: 'var(--muted-foreground)' }}
           />
           <p className="text-base font-medium mb-2">Private Profile</p>
           <p className="text-muted-foreground mb-4">
@@ -285,13 +275,8 @@ export default function UserProfile() {
           <TabsContent value="identity">
             <div className="flex flex-col gap-6">
               <div className="text-center py-8">
-                <Shield
-                  style={{
-                    width: 48,
-                    height: 48,
-                    margin: '0 auto 16px',
-                    color: 'var(--muted-foreground)',
-                  }}
+                <Shield size={48} style={{ margin: '0 auto 16px',
+                    color: 'var(--muted-foreground)' }}
                 />
                 <p className="text-base font-medium mb-2">Protected Information</p>
                 <p className="text-muted-foreground max-w-md mx-auto">
@@ -305,13 +290,8 @@ export default function UserProfile() {
           <TabsContent value="contact">
             <div className="flex flex-col gap-6">
               <div className="text-center py-8">
-                <Shield
-                  style={{
-                    width: 48,
-                    height: 48,
-                    margin: '0 auto 16px',
-                    color: 'var(--muted-foreground)',
-                  }}
+                <Shield size={48} style={{ margin: '0 auto 16px',
+                    color: 'var(--muted-foreground)' }}
                 />
                 <p className="text-base font-medium mb-2">Contact Privacy</p>
                 <p className="text-muted-foreground max-w-md mx-auto">

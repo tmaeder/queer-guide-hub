@@ -236,8 +236,7 @@ function DateRangeFilter({ config, value, onChange }: DateRangeFilterProps) {
             <CalendarIcon size={14} className="mr-1.5" />
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
             {(from || to) && (
-              <X
-                style={{ height: 14, width: 14, marginLeft: 'auto' }}
+              <X size={14} style={{ marginLeft: 'auto' }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange(undefined);

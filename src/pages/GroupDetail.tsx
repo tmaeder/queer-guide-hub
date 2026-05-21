@@ -177,9 +177,9 @@ export default function GroupDetail() {
                 <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
                   <h1 className="text-3xl font-bold">{group.name}</h1>
                   {group.is_private ? (
-                    <Lock style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
+                    <Lock size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
                   ) : (
-                    <Globe style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
+                    <Globe size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
                   )}
                 </div>
 
@@ -307,24 +307,24 @@ export default function GroupDetail() {
                 <h4 className="text-base font-semibold">Group Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <Users style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                    <Users size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                     <span>{group.member_count} members</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {group.is_private ? (
                       <>
-                        <Lock style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                        <Lock size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                         <span>Private group</span>
                       </>
                     ) : (
                       <>
-                        <Globe style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                        <Globe size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                         <span>Public group</span>
                       </>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                    <Clock size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                     <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
@@ -432,8 +432,7 @@ export default function GroupDetail() {
           ) : posts.length === 0 ? (
             <Card>
               <CardContent style={{ padding: '32px', textAlign: 'center' }}>
-                <MessageSquare
-                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' }}
+                <MessageSquare size={48} style={{ margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' }}
                 />
                 <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
                 <p className="text-muted-foreground mb-4">
@@ -491,8 +490,7 @@ export default function GroupDetail() {
           ) : events.length === 0 ? (
             <Card>
               <CardContent style={{ padding: '32px', textAlign: 'center' }}>
-                <Calendar
-                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' }}
+                <Calendar size={48} style={{ margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' }}
                 />
                 <h3 className="text-lg font-semibold mb-2">No events yet</h3>
                 <p className="text-muted-foreground mb-4">

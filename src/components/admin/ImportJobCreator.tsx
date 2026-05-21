@@ -748,8 +748,7 @@ export const ImportJobCreator = () => {
               <Button onClick={handleSubmit} disabled={loading}>
                 {loading ? (
                   <>
-                    <RefreshCw
-                      style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }}
+                    <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }}
                     />{' '}
                     Running...
                   </>

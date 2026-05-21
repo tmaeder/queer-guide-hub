@@ -127,8 +127,7 @@ export function ResourceCategory({
                     </span>
                   </div>
                   {!isEmpty && (
-                    <ChevronRight
-                      style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }}
+                    <ChevronRight size={14} style={{ flexShrink: 0, opacity: 0.4 }}
                     />
                   )}
                 </button>
@@ -213,7 +212,7 @@ export function ResourceSubcategory({
             <span className="text-sm">{getCategoryShortName(parent.name)}</span>
           </button>
         )}
-        <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
+        <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
         <Icon style={{ width: 18, height: 18 }} />
         <h6 className="text-base font-semibold">{getCategoryShortName(selectedSubcategory)}</h6>
         <Badge variant="secondary">{subTags.length}</Badge>

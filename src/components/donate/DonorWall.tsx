@@ -23,7 +23,7 @@ export function DonorWall() {
   if (!donors?.length) {
     return (
       <div className="py-8 text-center">
-        <Heart style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.3 }} />
+        <Heart size={32} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
         <p className="text-sm text-muted-foreground">
           {t('donate.noDonorsYet', 'Be the first to support queer.guide!')}
         </p>

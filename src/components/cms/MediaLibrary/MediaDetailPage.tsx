@@ -143,7 +143,7 @@ export function MediaDetailPage() {
             size="sm"
             onClick={() => mutations.toggleStar.mutate(detail as UnifiedMediaItem)}
           >
-            <Star style={{ height: 16, width: 16, fill: detail.starred ? 'currentColor' : 'none' }} />
+            <Star size={16} style={{ fill: detail.starred ? 'currentColor' : 'none' }} />
           </Button>
           {imageUrl && (
             <Button variant="outline" size="sm" asChild>

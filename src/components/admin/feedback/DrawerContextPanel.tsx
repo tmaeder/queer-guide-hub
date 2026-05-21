@@ -188,7 +188,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               ) : (
                 <ChevronRight size={14} />
               )}
-              <AlertTriangle style={{ width: 12, height: 12, color: 'hsl(var(--destructive))' }} />
+              <AlertTriangle size={12} style={{ color: 'hsl(var(--destructive))' }} />
               <span className="text-xs font-semibold">
                 Console errors ({ctx.errors.length})
               </span>
@@ -245,7 +245,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               ) : (
                 <ChevronRight size={14} />
               )}
-              <Wifi style={{ width: 12, height: 12, color: 'hsl(var(--foreground) / 0.55)' }} />
+              <Wifi size={12} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
               <span className="text-xs font-semibold">
                 Network failures ({ctx.network_failures.length})
               </span>

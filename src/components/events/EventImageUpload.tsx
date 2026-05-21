@@ -136,7 +136,7 @@ export const EventImageUpload = ({
             disabled={uploading || images.length >= maxImages}
           >
             <div className="mb-4">
-              <ImagePlus style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
+              <ImagePlus size={48} style={{ color: 'var(--muted-foreground)' }} />
             </div>
             <div className="text-center">
               <p className="text-sm font-medium">

@@ -179,7 +179,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
             }`}
           >
             <input {...getInputProps()} />
-            <Upload style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+            <Upload size={48} style={{ margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
             {isDragActive ? (
               <p className="text-base font-medium">Drop video files here...</p>
             ) : (
@@ -205,7 +205,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
                 <div className="flex items-start gap-4">
                   <div className="shrink-0">
                     <div className="w-16 h-16 bg-muted rounded-element flex items-center justify-center">
-                      <Video style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
+                      <Video size={32} style={{ color: 'var(--muted-foreground)' }} />
                     </div>
                   </div>
 

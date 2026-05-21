@@ -552,7 +552,7 @@ const Events = () => {
                           fontWeight: 400,
                         }}
                       >
-                        <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
+                        <CalendarIcon size={16} style={{ marginRight: 8 }} />
                         {startDate ? format(startDate, 'PPP') : <span>Pick start date</span>}
                       </Button>
                     </PopoverTrigger>
@@ -581,7 +581,7 @@ const Events = () => {
                           fontWeight: 400,
                         }}
                       >
-                        <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
+                        <CalendarIcon size={16} style={{ marginRight: 8 }} />
                         {endDate ? format(endDate, 'PPP') : <span>Pick end date</span>}
                       </Button>
                     </PopoverTrigger>
@@ -663,8 +663,7 @@ const Events = () => {
               {search && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {t('pages.events.filterSearch', { value: search, defaultValue: `Search: ${search}` })}
-                  <X
-                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
                     aria-label={t('pages.events.clearFilterSearch', 'Clear search')}
                     onClick={() => setSearch('')}
@@ -683,8 +682,7 @@ const Events = () => {
                         value: displayCityName(city, i18n.language),
                         defaultValue: `City: ${displayCityName(city, i18n.language)}`,
                       })}
-                  <X
-                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
                     aria-label={t('pages.events.clearFilterCity', 'Clear city filter')}
                     onClick={() => { setCity(''); setAutoLocationLabel(null); }}
@@ -694,8 +692,7 @@ const Events = () => {
               {eventType && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {eventType}
-                  <X
-                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
                     aria-label={t('pages.events.clearFilterEventType', 'Clear event type filter')}
                     onClick={() => setEventType('')}
@@ -708,8 +705,7 @@ const Events = () => {
                     value: format(startDate, 'PP', { locale: dfLocale }),
                     defaultValue: `From: ${format(startDate, 'PP', { locale: dfLocale })}`,
                   })}
-                  <X
-                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
                     aria-label={t('pages.events.clearFilterStartDate', 'Clear start date filter')}
                     onClick={() => setStartDate(undefined)}
@@ -722,8 +718,7 @@ const Events = () => {
                     value: format(endDate, 'PP', { locale: dfLocale }),
                     defaultValue: `To: ${format(endDate, 'PP', { locale: dfLocale })}`,
                   })}
-                  <X
-                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
                     aria-label={t('pages.events.clearFilterEndDate', 'Clear end date filter')}
                     onClick={() => setEndDate(undefined)}
@@ -733,8 +728,7 @@ const Events = () => {
               {nearMe && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {t('pages.events.filterNearMe', 'Near Me')}
-                  <X
-                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
                     aria-label={t('pages.events.clearFilterNearMe', 'Clear near me filter')}
                     onClick={() => setNearMe(false)}
@@ -744,8 +738,7 @@ const Events = () => {
               {showPast && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {t('pages.events.pastEvents', 'Past events')}
-                  <X
-                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
                     aria-label={t('pages.events.clearFilterPast', 'Clear past events filter')}
                     onClick={() => setShowPast(false)}
@@ -755,8 +748,7 @@ const Events = () => {
               {selectedTags.map((tag) => (
                 <Badge key={tag} variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {tag}
-                  <X
-                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                  <X size={12} style={{ cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
                     aria-label={`Remove ${tag} filter`}
                     onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))}

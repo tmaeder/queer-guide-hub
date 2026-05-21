@@ -38,7 +38,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
   if (compact) {
     return (
       <div className="flex items-center gap-3 p-4 bg-muted">
-        <Shield style={{ height: 20, width: 20, color: 'var(--primary)', flexShrink: 0 }} />
+        <Shield size={20} style={{ color: 'var(--primary)', flexShrink: 0 }} />
         <div className="flex-1">
           <p className="font-semibold text-sm">Travel Insurance</p>
           <p className="text-xs text-muted-foreground">LGBTQ+ friendly providers with partner coverage</p>
@@ -53,7 +53,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <Shield style={{ height: 18, width: 18, color: 'var(--primary)' }} />
+        <Shield size={18} style={{ color: 'var(--primary)' }} />
         <p className="font-semibold text-base">Travel Insurance</p>
       </div>
       <p className="text-sm text-muted-foreground mb-4">
@@ -72,7 +72,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
                 {p.description}
               </p>
               <div className="flex items-center gap-1 mb-3">
-                <Heart style={{ height: 12, width: 12, color: 'var(--primary)' }} />
+                <Heart size={12} style={{ color: 'var(--primary)' }} />
                 <p className="text-xs text-primary font-medium">
                   {p.lgbtqNote}
                 </p>

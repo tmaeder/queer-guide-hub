@@ -59,19 +59,13 @@ export function TripNewsSection({ countryIds }: Props) {
             className="flex items-start gap-3 p-3 no-underline text-inherit border-t border-border first-of-type:border-t-0 transition-colors hover:bg-muted"
           >
             {article.isSafetyFlagged ? (
-              <AlertTriangle
-                style={{
-                  width: 16,
-                  height: 16,
-                  flexShrink: 0,
+              <AlertTriangle size={16} style={{ flexShrink: 0,
                   marginTop: 3,
-                  color: 'hsl(var(--foreground))',
-                }}
+                  color: 'hsl(var(--foreground))' }}
                 aria-label={t('trips.news.safetyFlag', 'Safety-relevant')}
               />
             ) : (
-              <Newspaper
-                style={{ width: 16, height: 16, flexShrink: 0, marginTop: 3, opacity: 0.4 }}
+              <Newspaper size={16} style={{ flexShrink: 0, marginTop: 3, opacity: 0.4 }}
                 aria-hidden
               />
             )}
@@ -92,8 +86,7 @@ export function TripNewsSection({ countryIds }: Props) {
                 </span>
               </div>
             </div>
-            <ExternalLink
-              style={{ width: 12, height: 12, flexShrink: 0, marginTop: 5, opacity: 0.4 }}
+            <ExternalLink size={12} style={{ flexShrink: 0, marginTop: 5, opacity: 0.4 }}
               aria-hidden
             />
           </a>

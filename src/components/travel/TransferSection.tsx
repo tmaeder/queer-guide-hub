@@ -30,7 +30,7 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
         className="flex items-center gap-3 p-4"
         style={{ backgroundColor: isLowSafety ? 'hsl(var(--warning) / 0.15)' : 'hsl(var(--muted))' }}
       >
-        <Bus style={{ height: 20, width: 20, color: isLowSafety ? 'var(--warning)' : 'var(--primary)', flexShrink: 0 }} />
+        <Bus size={20} style={{ color: isLowSafety ? 'var(--warning)' : 'var(--primary)', flexShrink: 0 }} />
         <div className="flex-1">
           <p className="font-semibold text-sm">
             {isLowSafety ? 'Private Transfer Recommended' : `Airport Transfer in ${city}`}
@@ -51,13 +51,13 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Bus style={{ height: 18, width: 18, color: 'var(--primary)' }} />
+        <Bus size={18} style={{ color: 'var(--primary)' }} />
         <p className="font-semibold text-base">
           Airport Transfers{airportCode ? ` (${airportCode})` : ''}
         </p>
         {isLowSafety && (
           <div className="flex items-center gap-1 ml-2">
-            <Shield style={{ height: 14, width: 14, color: 'var(--warning)' }} />
+            <Shield size={14} style={{ color: 'var(--warning)' }} />
             <p className="text-xs font-semibold" style={{ color: 'var(--warning)' }}>Recommended</p>
           </div>
         )}

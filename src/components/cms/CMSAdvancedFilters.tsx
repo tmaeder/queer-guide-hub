@@ -184,7 +184,7 @@ export function CMSAdvancedFilters({
                             ...(!filters.dateRange.from ? { color: 'var(--muted-foreground)' } : {})
                           }}
                         >
-                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
+                          <CalendarIcon size={16} style={{ marginRight: 8 }} />
                           {filters.dateRange.from ? (
                             format(filters.dateRange.from, "MMM dd")
                           ) : (
@@ -214,7 +214,7 @@ export function CMSAdvancedFilters({
                             ...(!filters.dateRange.to ? { color: 'var(--muted-foreground)' } : {})
                           }}
                         >
-                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
+                          <CalendarIcon size={16} style={{ marginRight: 8 }} />
                           {filters.dateRange.to ? (
                             format(filters.dateRange.to, "MMM dd")
                           ) : (

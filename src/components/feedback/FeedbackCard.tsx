@@ -69,13 +69,8 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
               className="flex flex-col items-center gap-0.5 pt-0.5 cursor-pointer"
               style={{ minWidth: 36 }}
             >
-              <ChevronUp
-                style={{
-                  width: 18,
-                  height: 18,
-                  color: hasVoted ? 'hsl(var(--foreground))' : 'var(--muted-foreground)',
-                  transition: 'color 0.15s',
-                }}
+              <ChevronUp size={18} style={{ color: hasVoted ? 'hsl(var(--foreground))' : 'var(--muted-foreground)',
+                  transition: 'color 0.15s' }}
               />
               <span
                 className="text-xs font-bold"
@@ -122,7 +117,7 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
             {item.data.description}
           </p>
           <div className="flex items-center gap-1 mt-1.5">
-            <Clock style={{ width: 10, height: 10, color: 'var(--muted-foreground)' }} />
+            <Clock size={10} style={{ color: 'var(--muted-foreground)' }} />
             <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
               {timeAgo(item.submitted_at)}
             </span>

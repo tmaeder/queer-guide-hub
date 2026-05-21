@@ -151,7 +151,7 @@ export function AirportAutocomplete({
               aria-selected={false}
               className="px-4 py-2 cursor-pointer flex items-center gap-2 hover:bg-muted"
             >
-              <Plane style={{ height: 14, width: 14, flexShrink: 0, color: 'var(--muted-foreground)' }} />
+              <Plane size={14} style={{ flexShrink: 0, color: 'var(--muted-foreground)' }} />
               <div>
                 <p className="text-sm font-medium">
                   {airport.city_name || airport.name} ({airport.iata_code})

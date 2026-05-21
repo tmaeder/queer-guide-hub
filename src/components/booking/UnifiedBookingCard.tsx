@@ -88,7 +88,7 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
             {result.starRating && result.starRating > 0 && (
               <div className="flex items-center gap-0.5">
                 {Array.from({ length: result.starRating }).map((_, i) => (
-                  <Star key={i} style={{ height: 12, width: 12, fill: 'currentColor', color: 'var(--primary)' }} />
+                  <Star key={i} size={12} style={{ fill: 'currentColor', color: 'var(--primary)' }} />
                 ))}
               </div>
             )}

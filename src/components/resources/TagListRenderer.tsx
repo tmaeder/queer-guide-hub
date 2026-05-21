@@ -138,7 +138,7 @@ export function TagListRenderer({
               <Badge variant="secondary" style={{ flexShrink: 0 }}>
                 {getTagCategoryLabel(tag)}
               </Badge>
-              <ChevronRight style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }} />
+              <ChevronRight size={14} style={{ flexShrink: 0, opacity: 0.4 }} />
             </button>
           );
         })}
@@ -161,7 +161,7 @@ export function TagListRenderer({
             className="inline-flex items-center gap-1.5 rounded-full cursor-pointer bg-background border border-border transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary no-underline text-inherit"
             style={{ minHeight: 36, padding: '6px 12px' }}
           >
-            <Tag style={{ width: 12, height: 12, opacity: 0.55 }} />
+            <Tag size={12} style={{ opacity: 0.55 }} />
             <span style={{ fontWeight: 500, fontSize: '0.78rem' }}>{tag.name}</span>
             {uses > 0 && (
               <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>

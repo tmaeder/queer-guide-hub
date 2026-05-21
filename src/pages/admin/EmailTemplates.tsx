@@ -238,7 +238,7 @@ export default function EmailTemplates() {
             <Card>
               <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '24rem' }}>
                 <div className="text-center">
-                  <Mail style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px auto', display: 'block' }} />
+                  <Mail size={48} style={{ color: 'var(--muted-foreground)', margin: '0 auto 16px auto', display: 'block' }} />
                   <p className="text-base font-medium">No Template Selected</p>
                   <p className="text-muted-foreground">Select a template from the list to view or edit</p>
                 </div>

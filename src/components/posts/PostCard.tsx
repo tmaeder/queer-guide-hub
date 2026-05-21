@@ -204,8 +204,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 className="block -m-2 p-4 rounded-element transition-colors hover:bg-muted no-underline text-foreground"
               >
                 <div className="flex items-start gap-3">
-                  <ExternalLink
-                    style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))', marginTop: 4, flexShrink: 0 }}
+                  <ExternalLink size={20} style={{ color: 'hsl(var(--muted-foreground))', marginTop: 4, flexShrink: 0 }}
                   />
                   <div className="min-w-0 flex-1">
                     {post.link_title && (

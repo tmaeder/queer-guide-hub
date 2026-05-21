@@ -75,7 +75,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Zap style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
+              <Zap size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
               <span className="text-2xl font-bold">{sources.length}</span>
             </div>
             <p className="text-xs text-muted-foreground">Total Sources</p>
@@ -84,7 +84,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <CheckCircle style={{ height: 20, width: 20, color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={20} style={{ color: 'hsl(var(--foreground))' }} />
               <span className="text-2xl font-bold">{enabledCount}</span>
             </div>
             <p className="text-xs text-muted-foreground">Enabled</p>
@@ -93,7 +93,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <AlertTriangle style={{ height: 20, width: 20, color: 'hsl(var(--destructive))' }} />
+              <AlertTriangle size={20} style={{ color: 'hsl(var(--destructive))' }} />
               <span className="text-2xl font-bold">{errorCount}</span>
             </div>
             <p className="text-xs text-muted-foreground">Errors</p>
@@ -102,7 +102,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Database style={{ height: 20, width: 20, color: 'hsl(var(--foreground))' }} />
+              <Database size={20} style={{ color: 'hsl(var(--foreground))' }} />
               <span className="text-2xl font-bold">
                 {sources.reduce((sum, s) => sum + (s.total_items_fetched || 0), 0).toLocaleString()}
               </span>
@@ -188,7 +188,7 @@ export const IngestionSourcesManager = () => {
                       style={{ display: 'flex', gap: 6 }}
                     >
                       {isTriggering ? (
-                        <RefreshCw style={{ height: 14, width: 14, animation: 'spin 1s linear infinite' }} />
+                        <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
                       ) : (
                         <Play size={14} />
                       )}

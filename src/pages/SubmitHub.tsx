@@ -97,7 +97,7 @@ const SubmitHub = () => {
                 </p>
                 <div className="flex items-center gap-1">
                   <p className="text-sm font-semibold text-foreground">Get started</p>
-                  <ArrowRight style={{ width: 14, height: 14, color: type.color }} aria-hidden="true" />
+                  <ArrowRight size={14} style={{ color: type.color }} aria-hidden="true" />
                 </div>
               </CardContent>
             </Card>

@@ -124,7 +124,7 @@ export const UserDirectoryFilters = ({
                 }
               >
                 {isDetectingLocation ? (
-                  <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
+                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
                 ) : (
                   <Navigation size={16} />
                 )}
@@ -386,8 +386,7 @@ export const UserDirectoryFilters = ({
                             <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
                               <Sparkles size={12} />
                               {interest}
-                              <X
-                                style={{ height: 12, width: 12, cursor: 'pointer' }}
+                              <X size={12} style={{ cursor: 'pointer' }}
                                 onClick={() => handleInterestToggle(interest)}
                               />
                             </Badge>
@@ -497,8 +496,7 @@ export const UserDirectoryFilters = ({
                   >
                     <Navigation size={12} />
                     Near Me
-                    <X
-                      style={{ height: 12, width: 12, cursor: 'pointer' }}
+                    <X size={12} style={{ cursor: 'pointer' }}
                       onClick={handleNearMeToggle}
                     />
                   </Badge>
@@ -507,8 +505,7 @@ export const UserDirectoryFilters = ({
                   <Badge variant="secondary" style={{ gap: 4 }}>
                     <MapPin size={12} />
                     {filters.location}
-                    <X
-                      style={{ height: 12, width: 12, cursor: 'pointer' }}
+                    <X size={12} style={{ cursor: 'pointer' }}
                       onClick={() => setFilters((prev) => ({ ...prev, location: '' }))}
                     />
                   </Badge>
@@ -517,8 +514,7 @@ export const UserDirectoryFilters = ({
                   <Badge variant="secondary" style={{ gap: 4 }}>
                     <Calendar size={12} />
                     {filters.ageRange}
-                    <X
-                      style={{ height: 12, width: 12, cursor: 'pointer' }}
+                    <X size={12} style={{ cursor: 'pointer' }}
                       onClick={() => setFilters((prev) => ({ ...prev, ageRange: 'all' }))}
                     />
                   </Badge>
@@ -527,8 +523,7 @@ export const UserDirectoryFilters = ({
                   <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
                     <Sparkles size={12} />
                     {interest}
-                    <X
-                      style={{ height: 12, width: 12, cursor: 'pointer' }}
+                    <X size={12} style={{ cursor: 'pointer' }}
                       onClick={() => handleInterestToggle(interest)}
                     />
                   </Badge>

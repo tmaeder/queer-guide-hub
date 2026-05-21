@@ -603,13 +603,8 @@ export default function AdminMarketplace() {
               <Button onClick={handleAwinImport} disabled={isImporting}>
                 {isImporting ? (
                   <>
-                    <RefreshCw
-                      style={{
-                        height: 14,
-                        width: 14,
-                        marginRight: 4,
-                        animation: 'spin 1s linear infinite',
-                      }}
+                    <RefreshCw size={14} style={{ marginRight: 4,
+                        animation: 'spin 1s linear infinite' }}
                     />
                     Importing...
                   </>

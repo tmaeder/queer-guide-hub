@@ -300,7 +300,7 @@ export default function AdminQueerVillages() {
                 />
               ) : (
                 <div className="flex h-full items-center justify-center">
-                  <Landmark style={{ width: 16, height: 16, opacity: 0.3 }} />
+                  <Landmark size={16} style={{ opacity: 0.3 }} />
                 </div>
               )}
             </div>

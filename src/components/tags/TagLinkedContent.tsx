@@ -34,7 +34,7 @@ function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onCl
               backdropFilter: 'blur(4px)',
             }}
           >
-            <Star style={{ width: 12, height: 12, fill: 'hsl(var(--foreground))', color: 'hsl(var(--foreground))' }} />
+            <Star size={12} style={{ fill: 'hsl(var(--foreground))', color: 'hsl(var(--foreground))' }} />
             <span style={{ fontSize: '0.75rem', fontWeight: 700, lineHeight: 1 }}>
               {(v.foursquare_rating / 10).toFixed(1)}
             </span>
@@ -169,7 +169,7 @@ function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick
             {n.news_sources?.name && n.published_at && ' · '}
             {n.published_at && formatDistanceToNow(new Date(n.published_at), { addSuffix: true })}
           </span>
-          {n.url && <ExternalLink style={{ width: 14, height: 14, opacity: 0.3, flexShrink: 0 }} />}
+          {n.url && <ExternalLink size={14} style={{ opacity: 0.3, flexShrink: 0 }} />}
         </div>
       </div>
     </Card>
@@ -267,7 +267,7 @@ function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onCl
             className="bg-muted flex items-center justify-center flex-shrink-0 rounded-element"
             style={{ width: 48, height: 48 }}
           >
-            <UsersIcon style={{ width: 20, height: 20, opacity: 0.3 }} />
+            <UsersIcon size={20} style={{ opacity: 0.3 }} />
           </div>
         )}
         <div className="flex-1 min-w-0">

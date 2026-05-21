@@ -285,7 +285,7 @@ export function FeedbackCard({
             isForwarded && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Github style={{ width: 10, height: 10, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Github size={10} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                 </TooltipTrigger>
                 <TooltipContent>
                   {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}
@@ -500,7 +500,7 @@ export function FeedbackCard({
               isForwarded && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Github style={{ width: 10, height: 10, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                    <Github size={10} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   </TooltipTrigger>
                   <TooltipContent>
                     {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}

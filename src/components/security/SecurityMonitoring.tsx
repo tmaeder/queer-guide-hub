@@ -155,7 +155,7 @@ export function SecurityMonitoring() {
         {events.length === 0 && !loading && (
           <Card>
             <CardContent className="text-center py-6">
-              <Shield style={{ height: 48, width: 48, margin: '0 auto 16px auto', display: 'block', color: 'var(--muted-foreground)' }} />
+              <Shield size={48} style={{ margin: '0 auto 16px auto', display: 'block', color: 'var(--muted-foreground)' }} />
               <p className="text-muted-foreground">No security events found</p>
             </CardContent>
           </Card>

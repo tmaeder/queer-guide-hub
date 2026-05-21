@@ -64,9 +64,9 @@ export function TripDocExpiryBanner({ trip }: Props) {
       }}
     >
       {isSevere ? (
-        <AlertTriangle style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
+        <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: 2 }} />
       ) : (
-        <Clock style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
+        <Clock size={18} style={{ flexShrink: 0, marginTop: 2 }} />
       )}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold mb-1">

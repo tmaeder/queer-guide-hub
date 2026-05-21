@@ -140,7 +140,7 @@ export function EmailIngestionsManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Mail style={{ height: 24, width: 24, color: 'hsl(var(--foreground))' }} />
+          <Mail size={24} style={{ color: 'hsl(var(--foreground))' }} />
           <div>
             <h6 className="text-base font-semibold">Email Ingestions</h6>
             <p className="text-sm text-muted-foreground">Forwarded emails processed for LGBTQ+ events and venues</p>
@@ -214,7 +214,7 @@ export function EmailIngestionsManager() {
         <Card>
           <CardContent style={{ padding: 32 }}>
             <div className="text-center text-muted-foreground">
-              <Mail style={{ height: 40, width: 40, margin: '0 auto 12px', opacity: 0.4 }} />
+              <Mail size={40} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
               <p className="text-sm">
                 {ingestions.length === 0
                   ? 'No email ingestions yet. Forward emails to ingest@queer.guide to get started.'
@@ -256,13 +256,13 @@ export function EmailIngestionsManager() {
                         <div className="flex items-center gap-1">
                           {ing.extracted_events > 0 && (
                             <Badge variant="outline" style={{ fontSize: '0.7rem' }}>
-                              <Calendar style={{ height: 10, width: 10, marginRight: 3 }} />
+                              <Calendar size={10} style={{ marginRight: 3 }} />
                               {ing.extracted_events}
                             </Badge>
                           )}
                           {ing.extracted_venues > 0 && (
                             <Badge variant="outline" style={{ fontSize: '0.7rem' }}>
-                              <Building style={{ height: 10, width: 10, marginRight: 3 }} />
+                              <Building size={10} style={{ marginRight: 3 }} />
                               {ing.extracted_venues}
                             </Badge>
                           )}
@@ -271,7 +271,7 @@ export function EmailIngestionsManager() {
 
                       {ing.processing_ms != null && (
                         <span className="hidden sm:inline" title="Processing time">
-                          <Clock style={{ height: 10, width: 10, display: 'inline', marginRight: 2, verticalAlign: 'middle' }} />
+                          <Clock size={10} style={{ display: 'inline', marginRight: 2, verticalAlign: 'middle' }} />
                           {ing.processing_ms < 1000
                             ? `${ing.processing_ms}ms`
                             : `${(ing.processing_ms / 1000).toFixed(1)}s`}
@@ -331,7 +331,7 @@ export function EmailIngestionsManager() {
                               border: '1px solid hsl(var(--destructive) / 0.2)',
                             }}
                           >
-                            <AlertCircle style={{ height: 14, width: 14, color: 'hsl(var(--destructive))', marginTop: 2, flexShrink: 0 }} />
+                            <AlertCircle size={14} style={{ color: 'hsl(var(--destructive))', marginTop: 2, flexShrink: 0 }} />
                             <p className="text-sm break-words" style={{ color: 'hsl(var(--destructive))' }}>{ing.error_message}</p>
                           </div>
                         </div>

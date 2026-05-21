@@ -129,11 +129,11 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
   const getIcon = () => {
     switch (type) {
       case 'continent':
-        return <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
+        return <Globe size={20} style={{ color: 'var(--primary)' }} />;
       case 'country':
-        return <MapPin style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
+        return <MapPin size={20} style={{ color: 'var(--primary)' }} />;
       case 'city':
-        return <Building2 style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
+        return <Building2 size={20} style={{ color: 'var(--primary)' }} />;
       default:
         return null;
     }
@@ -182,7 +182,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                   backgroundColor: 'rgba(var(--primary-rgb), 0.1)',
                 }}
               >
-                <Crown style={{ height: 12, width: 12, color: 'var(--primary)' }} />
+                <Crown size={12} style={{ color: 'var(--primary)' }} />
               </div>
             )}
             {city.is_major_city && (
@@ -197,8 +197,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                   backgroundColor: 'rgba(var(--secondary-rgb), 0.1)',
                 }}
               >
-                <Building2
-                  style={{ height: 12, width: 12, color: 'var(--secondary-foreground)' }}
+                <Building2 size={12} style={{ color: 'var(--secondary-foreground)' }}
                 />
               </div>
             )}
@@ -300,13 +299,8 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                 justifyContent: 'center',
               }}
             >
-              <Loader2
-                style={{
-                  height: 24,
-                  width: 24,
-                  animation: 'spin 1s linear infinite',
-                  color: 'var(--muted-foreground)',
-                }}
+              <Loader2 size={24} style={{ animation: 'spin 1s linear infinite',
+                  color: 'var(--muted-foreground)' }}
               />
             </div>
           ) : cityImageUrl && !cityImageError ? (
@@ -329,7 +323,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                 justifyContent: 'center',
               }}
             >
-              <ImageIcon style={{ height: 32, width: 32, color: 'var(--muted-foreground)' }} />
+              <ImageIcon size={32} style={{ color: 'var(--muted-foreground)' }} />
             </div>
           )}
         </div>

@@ -39,11 +39,11 @@ interface MessageItemProps {
 const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
   switch (status) {
     case 'sending':
-      return <Clock style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />;
+      return <Clock size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />;
     case 'sent':
-      return <Check style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />;
+      return <Check size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />;
     case 'delivered':
-      return <CheckCheck style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />;
+      return <CheckCheck size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />;
     case 'read':
       return <Eye size={12} />;
     default:
@@ -646,8 +646,7 @@ export const MessagingInterface = () => {
           <div className="p-3 md:p-4">
             {filteredConversations.length === 0 ? (
               <div className="text-center py-8">
-                <MessageCircle
-                  style={{ height: 48, width: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
+                <MessageCircle size={48} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                 />
                 <p style={{ color: 'var(--muted-foreground)' }}>No conversations yet</p>
               </div>
@@ -766,8 +765,7 @@ export const MessagingInterface = () => {
               <div className="p-3 md:p-4">
                 {currentMessages.length === 0 ? (
                   <div className="text-center py-8">
-                    <MessageCircle
-                      style={{ height: 48, width: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
+                    <MessageCircle size={48} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                     />
                     <p style={{ color: 'var(--muted-foreground)' }}>
                       No messages yet. Start the conversation!
@@ -809,8 +807,7 @@ export const MessagingInterface = () => {
             }}
           >
             <div className="text-center px-4">
-              <MessageCircle
-                style={{ height: 64, width: 64, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
+              <MessageCircle size={64} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
               />
               <h6 className="text-lg font-medium mb-2">Select a conversation</h6>
               <p className="text-muted-foreground text-sm md:text-base">

@@ -211,8 +211,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
                   backgroundColor: 'rgba(var(--secondary-rgb, 107, 114, 128), 0.1)',
                 }}
               >
-                <Building2
-                  style={{ height: 12, width: 12, color: 'var(--secondary-foreground)' }}
+                <Building2 size={12} style={{ color: 'var(--secondary-foreground)' }}
                 />
               </div>
             )}

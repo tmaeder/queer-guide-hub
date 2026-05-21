@@ -133,13 +133,8 @@ export default function CountryDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center flex flex-col gap-4">
           <div className="animate-pulse">
-            <Globe
-              style={{
-                height: 48,
-                width: 48,
-                margin: '0 auto',
-                color: 'hsl(var(--muted-foreground))',
-              }}
+            <Globe size={48} style={{ margin: '0 auto',
+                color: 'hsl(var(--muted-foreground))' }}
             />
           </div>
           <p className="text-muted-foreground">Loading country details...</p>

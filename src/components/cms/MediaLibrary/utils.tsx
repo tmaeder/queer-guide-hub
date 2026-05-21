@@ -32,35 +32,35 @@ export const getOptimizationStatusBadge = (status: OptimizationStatus | undefine
     case 'optimized':
       return (
         <Badge variant="outline" style={s}>
-          <CheckCircle style={{ height: 10, width: 10, marginRight: 3 }} />
+          <CheckCircle size={10} style={{ marginRight: 3 }} />
           Optimized
         </Badge>
       );
     case 'cdn_optimized':
       return (
         <Badge variant="outline" style={s}>
-          <Globe style={{ height: 10, width: 10, marginRight: 3 }} />
+          <Globe size={10} style={{ marginRight: 3 }} />
           CDN
         </Badge>
       );
     case 'processing':
       return (
         <Badge variant="default" style={s}>
-          <Clock style={{ height: 10, width: 10, marginRight: 3 }} />
+          <Clock size={10} style={{ marginRight: 3 }} />
           Processing
         </Badge>
       );
     case 'pending':
       return (
         <Badge variant="secondary" style={s}>
-          <Clock style={{ height: 10, width: 10, marginRight: 3 }} />
+          <Clock size={10} style={{ marginRight: 3 }} />
           Pending
         </Badge>
       );
     case 'failed':
       return (
         <Badge variant="destructive" style={s}>
-          <AlertTriangle style={{ height: 10, width: 10, marginRight: 3 }} />
+          <AlertTriangle size={10} style={{ marginRight: 3 }} />
           Failed
         </Badge>
       );

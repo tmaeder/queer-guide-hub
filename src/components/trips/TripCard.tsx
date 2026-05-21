@@ -257,8 +257,7 @@ export function TripCard({ trip }: Props) {
 
           <div className="flex items-center gap-3 mb-3 flex-wrap text-muted-foreground">
             <span className="inline-flex items-center gap-1">
-              <Calendar
-                style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.7 }}
+              <Calendar size={14} style={{ flexShrink: 0, opacity: 0.7 }}
               />
               <span className="text-13">{dateRange}</span>
             </span>
@@ -299,8 +298,7 @@ export function TripCard({ trip }: Props) {
                   className="rounded-full"
                   style={{ width: 3, height: 3, background: 'hsl(var(--muted-foreground))', opacity: 0.5 }}
                 />
-                <MapPin
-                  style={{ width: 13, height: 13, flexShrink: 0, opacity: 0.7 }}
+                <MapPin size={13} style={{ flexShrink: 0, opacity: 0.7 }}
                 />
                 <span className="text-13">
                   {t('trips.card.placeCount', { count: placeCount })}

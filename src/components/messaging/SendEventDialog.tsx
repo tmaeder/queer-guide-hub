@@ -170,7 +170,7 @@ export function SendEventDialog({
         <AvatarFallback>{initials(name)}</AvatarFallback>
       </Avatar>
       <p className="text-sm flex-1">{name || 'Anonymous'}</p>
-      {selected && <Check style={{ width: 16, height: 16, color: 'hsl(var(--primary))' }} />}
+      {selected && <Check size={16} style={{ color: 'hsl(var(--primary))' }} />}
     </div>
   );
 

@@ -138,7 +138,7 @@ export function ResourcesFilterBar({
       <div className="flex flex-wrap gap-3 items-center">
         <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
           <SelectTrigger style={{ width: 220, height: 40 }} aria-label={t('resources.filter.filterAria')}>
-            <Filter style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+            <Filter size={16} style={{ marginRight: 8, flexShrink: 0 }} />
             <SelectValue placeholder={t('resources.filter.categoryPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
@@ -166,7 +166,7 @@ export function ResourcesFilterBar({
           onValueChange={(value: string) => onSortByChange(value as SortOption)}
         >
           <SelectTrigger style={{ width: 150, height: 40 }} aria-label={t('resources.filter.sortAria')}>
-            <TrendingUp style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+            <TrendingUp size={16} style={{ marginRight: 8, flexShrink: 0 }} />
             <SelectValue placeholder={t('resources.filter.sortPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
@@ -186,21 +186,16 @@ export function ResourcesFilterBar({
             >
               <Sliders size={14} className="mr-1.5" />
               {t('resources.filter.advanced')}
-              <ChevronDown
-                style={{
-                  width: 14,
-                  height: 14,
-                  marginLeft: 6,
+              <ChevronDown size={14} style={{ marginLeft: 6,
                   transition: 'transform 150ms',
-                  transform: advancedOpen ? 'rotate(180deg)' : 'rotate(0)',
-                }}
+                  transform: advancedOpen ? 'rotate(180deg)' : 'rotate(0)' }}
               />
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="w-full mt-3 flex flex-wrap gap-3 items-center">
             <Select value={usageFilter} onValueChange={onUsageFilterChange}>
               <SelectTrigger style={{ width: 140, height: 40 }} aria-label={t('resources.filter.usageAria')}>
-                <BarChart3 style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+                <BarChart3 size={16} style={{ marginRight: 8, flexShrink: 0 }} />
                 <SelectValue placeholder={t('resources.filter.usagePlaceholder')} />
               </SelectTrigger>
               <SelectContent>

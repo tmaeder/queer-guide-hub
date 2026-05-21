@@ -30,7 +30,7 @@ function PriceIndicator({ range }: { range: number | null }) {
       {Array.from({ length: 4 }, (_, i) => (
         <DollarSign
           key={i}
-          style={{ width: 12, height: 12, color: i < range ? 'currentColor' : 'hsl(var(--muted-foreground))' }}
+          size={12} style={{ color: i < range ? 'currentColor' : 'hsl(var(--muted-foreground))' }}
         />
       ))}
     </div>
@@ -40,7 +40,7 @@ function PriceIndicator({ range }: { range: number | null }) {
 const HotelCardFixture = () => (
   <div className="overflow-hidden rounded-container h-full flex flex-col bg-card border shadow-[var(--shadow-aceternity-sm)]">
     <div className="bg-accent flex items-center justify-center" style={{ height: 180 }}>
-      <MapPin style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))' }} />
+      <MapPin size={32} style={{ color: 'hsl(var(--muted-foreground))' }} />
     </div>
     <div className="p-4 flex-1 flex flex-col gap-1">
       <p className="font-semibold truncate">Sample Hotel</p>
@@ -154,7 +154,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
           <div className="flex items-center gap-2 mt-auto pt-2">
             {hasNumericRating && (
               <div className="flex items-center" style={{ gap: 1 }}>
-                <Star style={{ width: 14, height: 14, fill: 'currentColor' }} />
+                <Star size={14} style={{ fill: 'currentColor' }} />
                 <p className="text-sm font-semibold">
                   {hotel.star_rating}
                 </p>

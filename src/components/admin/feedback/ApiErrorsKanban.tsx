@@ -414,14 +414,9 @@ function SortableErrorCard({
           </p>
 
           <p className="text-muted-foreground block" style={{ fontSize: '0.72rem' }}>
-            <Zap
-              style={{
-                width: 11,
-                height: 11,
-                display: 'inline',
+            <Zap size={11} style={{ display: 'inline',
                 verticalAlign: -2,
-                marginRight: 3,
-              }}
+                marginRight: 3 }}
             />
             {item.data.function_name}
             {item.data.status_code ? ` · ${item.data.status_code}` : ''}

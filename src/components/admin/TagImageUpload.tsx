@@ -118,7 +118,7 @@ export const TagImageUpload = ({
       ) : (
         <div className="w-full">
           <div className="p-6 text-center bg-muted">
-            <Image style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+            <Image size={48} style={{ margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
             <div className="flex flex-col gap-2">
               <p className="text-sm text-muted-foreground">Upload an image for this tag</p>
               <span className="text-xs text-muted-foreground">PNG, JPG, WebP up to 20MB</span>

@@ -418,7 +418,7 @@ export default function SearchResults() {
               )}
               {result.rating && (
                 <div className="flex items-center" style={{ gap: 4 }}>
-                  <Star style={{ width: 12, height: 12, fill: 'currentColor' }} />
+                  <Star size={12} style={{ fill: 'currentColor' }} />
                   <span className="text-xs text-muted-foreground">{result.rating}</span>
                 </div>
               )}
@@ -522,8 +522,7 @@ export default function SearchResults() {
                     )}
                     {result.rating && (
                       <div className="flex items-center" style={{ gap: 4 }}>
-                        <Star
-                          style={{ width: 12, height: 12, fill: 'currentColor' }}
+                        <Star size={12} style={{ fill: 'currentColor' }}
                         />
                         <span className="text-sm text-muted-foreground">{result.rating}</span>
                       </div>
@@ -766,7 +765,7 @@ export default function SearchResults() {
                   </SelectItem>
                   <SelectItem value="oldest">
                     <span className="inline-flex items-center" style={{ gap: 8 }}>
-                      <Clock style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
+                      <Clock size={12} style={{ transform: 'rotate(180deg)' }} />
                       Oldest
                     </span>
                   </SelectItem>
@@ -796,7 +795,7 @@ export default function SearchResults() {
                   </SelectItem>
                   <SelectItem value="alpha-desc">
                     <span className="inline-flex items-center" style={{ gap: 8 }}>
-                      <ArrowUpDown style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
+                      <ArrowUpDown size={12} style={{ transform: 'rotate(180deg)' }} />
                       Z - A
                     </span>
                   </SelectItem>
@@ -847,8 +846,7 @@ export default function SearchResults() {
           className="flex flex-col items-center justify-center text-center"
           style={{ paddingTop: 48, paddingBottom: 48 }}
         >
-          <Search
-            style={{ width: 48, height: 48, color: 'hsl(var(--muted-foreground))', marginBottom: 16 }}
+          <Search size={48} style={{ color: 'hsl(var(--muted-foreground))', marginBottom: 16 }}
           />
           <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
             Keep typing
@@ -919,13 +917,8 @@ export default function SearchResults() {
               className="flex flex-col items-center justify-center text-center"
               style={{ paddingTop: 48, paddingBottom: 48 }}
             >
-              <Search
-                style={{
-                  width: 48,
-                  height: 48,
-                  color: 'hsl(var(--muted-foreground))',
-                  marginBottom: 16,
-                }}
+              <Search size={48} style={{ color: 'hsl(var(--muted-foreground))',
+                  marginBottom: 16 }}
               />
               <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
                 Search is temporarily unavailable
@@ -940,13 +933,8 @@ export default function SearchResults() {
               className="flex flex-col items-center justify-center text-center"
               style={{ paddingTop: 48, paddingBottom: 48 }}
             >
-              <Search
-                style={{
-                  width: 48,
-                  height: 48,
-                  color: 'hsl(var(--muted-foreground))',
-                  marginBottom: 16,
-                }}
+              <Search size={48} style={{ color: 'hsl(var(--muted-foreground))',
+                  marginBottom: 16 }}
               />
               <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
                 {t('search.noResultsFor', 'No results found for "{{q}}"', { q: query })}

@@ -181,7 +181,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
                   {Array.from({ length: hotel.starRating }).map((_, i) => (
                     <Star
                       key={i}
-                      style={{ height: 14, width: 14, fill: 'currentColor', color: 'hsl(var(--primary))' }}
+                      size={14} style={{ fill: 'currentColor', color: 'hsl(var(--primary))' }}
                     />
                   ))}
                 </div>

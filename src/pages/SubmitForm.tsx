@@ -173,8 +173,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       <div className="mx-auto py-12 px-4">
         <Card>
           <CardContent>
-            <CheckCircle
-              style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'hsl(var(--foreground))' }}
+            <CheckCircle size={48} style={{ margin: '0 auto 16px', color: 'hsl(var(--foreground))' }}
             />
             <h5 className="text-xl font-semibold mb-2">Thank you!</h5>
             <p className="text-muted-foreground mb-6">

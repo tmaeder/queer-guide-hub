@@ -22,14 +22,9 @@ export function CookieConsentBanner() {
       >
         <Card style={{ padding: 24, maxWidth: 896, margin: '0 auto' }}>
           <div className="flex items-start gap-4">
-            <Cookie
-              style={{
-                height: 24,
-                width: 24,
-                color: 'var(--muted-foreground)',
+            <Cookie size={24} style={{ color: 'var(--muted-foreground)',
                 marginTop: 4,
-                flexShrink: 0,
-              }}
+                flexShrink: 0 }}
             />
             <div className="flex-1 flex flex-col gap-4">
               <div>

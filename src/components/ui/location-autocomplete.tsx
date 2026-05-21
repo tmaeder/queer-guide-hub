@@ -353,10 +353,10 @@ export function LocationAutocomplete({
             gap: 4,
           }}>
             {isValidated && (
-              <Check style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
+              <Check size={16} style={{ color: 'hsl(var(--foreground))' }} />
             )}
             {isLoading && (
-              <Loader2 style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />
+              <Loader2 size={12} style={{ color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />
             )}
             <Button
               type="button"
@@ -381,7 +381,7 @@ export function LocationAutocomplete({
           title="Detect my location"
         >
           {isDetectingLocation ? (
-            <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
+            <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
           ) : (
             <Navigation size={16} />
           )}
@@ -420,7 +420,7 @@ export function LocationAutocomplete({
               onClick={() => handleSuggestionSelect(suggestion)}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))', marginTop: 2, flexShrink: 0 }} />
+                <MapPin size={16} style={{ color: 'hsl(var(--muted-foreground))', marginTop: 2, flexShrink: 0 }} />
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {suggestion.place_name}

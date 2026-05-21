@@ -103,7 +103,7 @@ export function CloudflareDashboard() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-element" style={{ backgroundColor: 'hsl(var(--foreground) / 0.55)' }}>
-            <Cloud style={{ height: 24, width: 24, color: 'white' }} />
+            <Cloud size={24} style={{ color: 'white' }} />
           </div>
           <div>
             <h2 className="font-bold" style={{ fontSize: '1.5rem' }}>
@@ -445,14 +445,14 @@ export function CloudflareDashboard() {
                   <div className="flex items-center gap-2">
                     {stats.zoneInfo ? (
                       <>
-                        <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
+                        <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
                         <span className="text-sm">
                           Connected
                         </span>
                       </>
                     ) : (
                       <>
-                        <AlertTriangle style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />
+                        <AlertTriangle size={16} style={{ color: 'hsl(var(--destructive))' }} />
                         <span className="text-sm">
                           Not Connected
                         </span>

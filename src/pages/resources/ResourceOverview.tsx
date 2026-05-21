@@ -81,7 +81,7 @@ export function ResourceOverview({
         >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Briefcase style={{ width: 18, height: 18, opacity: 0.75 }} />
+              <Briefcase size={18} style={{ opacity: 0.75 }} />
               <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
                 {t('resources.professions.title')}
               </span>

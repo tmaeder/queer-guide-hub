@@ -79,7 +79,7 @@ export function VenueCheckInButton({
         <div className="flex flex-col gap-6">
           <div className="p-4 bg-accent border border-border rounded">
             <div className="flex items-start gap-3">
-              <Shield style={{ width: 20, height: 20, marginTop: 2 }} />
+              <Shield size={20} style={{ marginTop: 2 }} />
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium">
                   Enhanced Privacy Protection

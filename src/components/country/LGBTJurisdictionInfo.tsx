@@ -219,7 +219,7 @@ export default function LGBTJurisdictionInfo({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>
-            <Shield style={{ height: 20, width: 20, color: 'hsl(var(--primary))' }} />
+            <Shield size={20} style={{ color: 'hsl(var(--primary))' }} />
             LGBTI Rights Overview
           </CardTitle>
           <EqualityScoreBadge score={country.equality_score} size="sm" />
@@ -236,7 +236,7 @@ export default function LGBTJurisdictionInfo({
           <SectionLabel>Criminalisation & Freedoms</SectionLabel>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-3 py-2">
-              <Scale style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+              <Scale size={16} style={{ color: '#6b7280', flexShrink: 0 }} />
               <div className="flex-1">
                 <p className="text-13 font-medium">Same-Sex Activity</p>
               </div>
@@ -324,7 +324,7 @@ export default function LGBTJurisdictionInfo({
           <SectionLabel>Family & Relationships</SectionLabel>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-3 py-2">
-              <Heart style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+              <Heart size={16} style={{ color: '#6b7280', flexShrink: 0 }} />
               <div className="flex-1">
                 <p className="text-13 font-medium">Same-Sex Unions</p>
               </div>
@@ -363,8 +363,7 @@ export default function LGBTJurisdictionInfo({
             {country.lgbti_gender_recognition &&
               Object.keys(country.lgbti_gender_recognition).length > 0 && (
                 <div className="flex items-start gap-3 py-2">
-                  <Fingerprint
-                    style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0, marginTop: 2 }}
+                  <Fingerprint size={16} style={{ color: '#6b7280', flexShrink: 0, marginTop: 2 }}
                   />
                   <div className="flex-1">
                     <p className="text-13 font-medium">Gender Recognition</p>

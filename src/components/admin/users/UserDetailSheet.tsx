@@ -313,7 +313,7 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
                               display: 'flex',
                             }}
                           >
-                            <Trash2 style={{ height: 10, width: 10, opacity: 0.6 }} />
+                            <Trash2 size={10} style={{ opacity: 0.6 }} />
                           </button>
                         )}
                       </Badge>

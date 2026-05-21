@@ -272,7 +272,7 @@ export function EditorHeader({
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader className="border-b border-border pb-3">
             <DialogTitle className="flex items-center gap-3">
-              <Eye style={{ width: 20, height: 20, opacity: 0.6 }} />
+              <Eye size={20} style={{ opacity: 0.6 }} />
               <span className="font-semibold">Content Preview</span>
             </DialogTitle>
           </DialogHeader>

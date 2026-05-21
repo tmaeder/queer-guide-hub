@@ -182,13 +182,8 @@ export function VenueHero({
             )}
           </div>
           <div className="flex items-center gap-1 mb-2">
-            <MapPin
-              style={{
-                width: 14,
-                height: 14,
-                color: 'hsl(var(--muted-foreground))',
-                flexShrink: 0,
-              }}
+            <MapPin size={14} style={{ color: 'hsl(var(--muted-foreground))',
+                flexShrink: 0 }}
             />
             <span className="text-sm text-muted-foreground">
               {cityLink ? (
@@ -285,7 +280,7 @@ export function VenueHero({
         )}
         {averageRating > 0 && (
           <Badge variant="outline" className="gap-1">
-            <Star style={{ width: 14, height: 14, fill: 'currentColor' }} />
+            <Star size={14} style={{ fill: 'currentColor' }} />
             {averageRating.toFixed(1)} ({reviewCount} review{reviewCount !== 1 ? 's' : ''})
           </Badge>
         )}
@@ -401,14 +396,9 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
             <CardContent>
               {venue.address && (
                 <div className="flex items-start gap-3">
-                  <MapPin
-                    style={{
-                      width: 16,
-                      height: 16,
-                      color: 'hsl(var(--muted-foreground))',
+                  <MapPin size={16} style={{ color: 'hsl(var(--muted-foreground))',
                       flexShrink: 0,
-                      marginTop: 2,
-                    }}
+                      marginTop: 2 }}
                   />
                   <div>
                     <p className="text-sm">
@@ -433,7 +423,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               )}
               {venue.phone && (
                 <div className="flex items-center gap-3">
-                  <Phone style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+                  <Phone size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                   <a
                     href={`tel:${venue.phone}`}
                     className="text-sm text-primary hover:underline"
@@ -444,7 +434,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               )}
               {venue.email && (
                 <div className="flex items-center gap-3">
-                  <Mail style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+                  <Mail size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                   <a
                     href={`mailto:${venue.email}`}
                     className="text-sm text-primary hover:underline"
@@ -455,7 +445,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               )}
               {venue.website && (
                 <div className="flex items-center gap-3">
-                  <Globe style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+                  <Globe size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                   <a
                     href={venue.website}
                     target="_blank"
@@ -468,8 +458,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               )}
               {venue.instagram && (
                 <div className="flex items-center gap-3">
-                  <Instagram
-                    style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }}
+                  <Instagram size={16} style={{ color: 'hsl(var(--muted-foreground))' }}
                   />
                   <a
                     href={`https://instagram.com/${venue.instagram}`}
@@ -633,13 +622,9 @@ export function VenueReviewsTab({ reviews }: VenueReviewsProps) {
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
                         key={i}
-                        style={{
-                          width: 13,
-                          height: 13,
-                          fill: i < review.rating ? 'currentColor' : 'none',
+                        size={13} style={{ fill: i < review.rating ? 'currentColor' : 'none',
                           // TODO(polish): no token match — star rating amber/gray
-                          color: i < review.rating ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                        }}
+                          color: i < review.rating ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
                       />
                     ))}
                   </div>

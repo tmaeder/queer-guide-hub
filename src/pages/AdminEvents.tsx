@@ -675,7 +675,7 @@ export default function AdminEvents() {
                             fontWeight: 'normal',
                           }}
                         >
-                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
+                          <CalendarIcon size={16} style={{ marginRight: 8 }} />
                           {startDate ? format(startDate, 'PPP') : 'Pick a date'}
                         </Button>
                       </PopoverTrigger>
@@ -702,7 +702,7 @@ export default function AdminEvents() {
                             fontWeight: 'normal',
                           }}
                         >
-                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
+                          <CalendarIcon size={16} style={{ marginRight: 8 }} />
                           {endDate ? format(endDate, 'PPP') : 'Pick a date'}
                         </Button>
                       </PopoverTrigger>

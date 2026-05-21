@@ -78,7 +78,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
       <CardContent>
         {activities.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <Clock style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+            <Clock size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
             <p>No recent activity</p>
           </div>
         ) : (

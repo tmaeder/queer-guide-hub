@@ -536,11 +536,11 @@ export function CMSListView({
                               }}
                             >
                               <DropdownMenuItem onClick={() => onEdit(item)}>
-                                <Edit style={{ marginRight: 8, height: 16, width: 16 }} />
+                                <Edit size={16} style={{ marginRight: 8 }} />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem disabled>
-                                <Eye style={{ marginRight: 8, height: 16, width: 16 }} />
+                                <Eye size={16} style={{ marginRight: 8 }} />
                                 Preview
                               </DropdownMenuItem>
                               {onDelete &&
@@ -550,7 +550,7 @@ export function CMSListView({
                                     onClick={() => onDelete(item.id)}
                                     style={{ color: 'var(--destructive)' }}
                                   >
-                                    <Trash2 style={{ marginRight: 8, height: 16, width: 16 }} />
+                                    <Trash2 size={16} style={{ marginRight: 8 }} />
                                     Delete
                                   </DropdownMenuItem>
                                 )}

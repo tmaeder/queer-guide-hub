@@ -50,7 +50,7 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
     return (
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <Calendar style={{ height: 18, width: 18, color: 'var(--primary)' }} />
+          <Calendar size={18} style={{ color: 'var(--primary)' }} />
           <span className="font-semibold" style={{ fontSize: '0.95rem' }}>
             Best Time to Fly to {destinationCity}
           </span>
@@ -93,7 +93,7 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <Calendar style={{ height: 18, width: 18, color: 'var(--primary)' }} />
+        <Calendar size={18} style={{ color: 'var(--primary)' }} />
         <span className="font-semibold" style={{ fontSize: '0.95rem' }}>
           Cheapest Days to Fly
         </span>

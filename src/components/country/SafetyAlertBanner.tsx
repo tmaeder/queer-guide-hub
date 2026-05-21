@@ -23,9 +23,9 @@ export default function SafetyAlertBanner({ criminalization, countryName }: Safe
         }}
       >
         {deathPenalty ? (
-          <Skull style={{ height: 24, width: 24, color: '#dc2626', flexShrink: 0, marginTop: 2 }} />
+          <Skull size={24} style={{ color: '#dc2626', flexShrink: 0, marginTop: 2 }} />
         ) : (
-          <AlertTriangle style={{ height: 24, width: 24, color: '#d97706', flexShrink: 0, marginTop: 2 }} />
+          <AlertTriangle size={24} style={{ color: '#d97706', flexShrink: 0, marginTop: 2 }} />
         )}
         <div>
           <p

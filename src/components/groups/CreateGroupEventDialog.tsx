@@ -139,7 +139,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                     variant="outline"
 
                   >
-                    <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
+                    <CalendarIcon size={16} style={{ marginRight: 8 }} />
                     {startDate ? format(startDate, "PPP") : "Select start date"}
                   </Button>
                 </PopoverTrigger>
@@ -163,7 +163,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                     variant="outline"
 
                   >
-                    <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
+                    <CalendarIcon size={16} style={{ marginRight: 8 }} />
                     {endDate ? format(endDate, "PPP") : "Select end date"}
                   </Button>
                 </PopoverTrigger>

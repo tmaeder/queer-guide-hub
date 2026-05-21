@@ -312,13 +312,8 @@ export function VillageVenuesTab({
         </div>
       ) : (
         <div className="py-16 text-center">
-          <Building
-            style={{
-              height: 48,
-              width: 48,
-              color: 'hsl(var(--muted-foreground))',
-              margin: '0 auto 16px',
-            }}
+          <Building size={48} style={{ color: 'hsl(var(--muted-foreground))',
+              margin: '0 auto 16px' }}
           />
           <h3 className="text-lg text-muted-foreground">No venues found</h3>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -358,13 +353,8 @@ export function VillageEventsTab({
         </div>
       ) : (
         <div className="py-16 text-center">
-          <Calendar
-            style={{
-              height: 48,
-              width: 48,
-              color: 'hsl(var(--muted-foreground))',
-              margin: '0 auto 16px',
-            }}
+          <Calendar size={48} style={{ color: 'hsl(var(--muted-foreground))',
+              margin: '0 auto 16px' }}
           />
           <h3 className="text-lg text-muted-foreground">No upcoming events</h3>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -395,13 +385,8 @@ export function VillagePhotosTab({ village }: { village: VillageWithRelations })
         </div>
       ) : (
         <div className="py-16 text-center">
-          <ImageIcon
-            style={{
-              height: 48,
-              width: 48,
-              color: 'hsl(var(--muted-foreground))',
-              margin: '0 auto 16px',
-            }}
+          <ImageIcon size={48} style={{ color: 'hsl(var(--muted-foreground))',
+              margin: '0 auto 16px' }}
           />
           <h3 className="text-lg text-muted-foreground">No photos yet</h3>
           <p className="mt-2 text-sm text-muted-foreground">

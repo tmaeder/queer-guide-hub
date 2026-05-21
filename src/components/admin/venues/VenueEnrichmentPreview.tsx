@@ -87,35 +87,35 @@ export function VenueEnrichmentPreview({
               <CardContent>
                 {result.data.address && (
                   <div className="flex items-start gap-2">
-                    <MapPin style={{ height: 16, width: 16, marginTop: 2, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+                    <MapPin size={16} style={{ marginTop: 2, color: 'var(--muted-foreground)', flexShrink: 0 }} />
                     <p className="text-sm">{result.data.address}</p>
                   </div>
                 )}
 
                 {result.data.phone && (
                   <div className="flex items-center gap-2">
-                    <Phone style={{ height: 16, width: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+                    <Phone size={16} style={{ color: 'var(--muted-foreground)', flexShrink: 0 }} />
                     <p className="text-sm">{result.data.phone}</p>
                   </div>
                 )}
 
                 {result.data.website && (
                   <div className="flex items-center gap-2">
-                    <Globe style={{ height: 16, width: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+                    <Globe size={16} style={{ color: 'var(--muted-foreground)', flexShrink: 0 }} />
                     <p className="text-sm truncate">{result.data.website}</p>
                   </div>
                 )}
 
                 {result.data.rating && (
                   <div className="flex items-center gap-2">
-                    <Star style={{ height: 16, width: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+                    <Star size={16} style={{ color: 'var(--muted-foreground)', flexShrink: 0 }} />
                     <p className="text-sm">{result.data.rating}/10</p>
                   </div>
                 )}
 
                 {result.data.hours && (
                   <div className="flex items-center gap-2">
-                    <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+                    <Clock size={16} style={{ color: 'var(--muted-foreground)', flexShrink: 0 }} />
                     <p className="text-sm">{result.data.hours}</p>
                   </div>
                 )}

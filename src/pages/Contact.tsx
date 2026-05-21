@@ -91,7 +91,7 @@ export default function Contact() {
             <CardContent>
               {submitted ? (
                 <div className="text-center py-8">
-                  <Mail style={{ width: 48, height: 48, margin: "0 auto 16px", opacity: 0.5 }} />
+                  <Mail size={48} style={{ margin: "0 auto 16px", opacity: 0.5 }} />
                   <h3 className="text-lg font-semibold mb-2">Message Sent</h3>
                   <p className="text-sm text-muted-foreground mb-6">
                     We'll respond as soon as possible.
@@ -141,7 +141,7 @@ export default function Contact() {
                       />
                     </div>
                     <Button type="submit" disabled={submitting || !form.name || !form.email || !form.category || !form.message}>
-                      {submitting ? <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: "spin 1s linear infinite" }} /> : <Send size={16} className="mr-2" />}
+                      {submitting ? <Loader2 size={16} style={{ marginRight: 8, animation: "spin 1s linear infinite" }} /> : <Send size={16} className="mr-2" />}
                       {submitting ? "Sending..." : "Send Message"}
                     </Button>
                   </div>

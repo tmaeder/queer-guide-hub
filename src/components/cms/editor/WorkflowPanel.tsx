@@ -329,19 +329,19 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
           <SelectContent>
             <SelectItem value="public">
               <div className="flex items-center gap-2">
-                <Globe style={{ width: 14, height: 14, color: 'hsl(var(--foreground))' }} />
+                <Globe size={14} style={{ color: 'hsl(var(--foreground))' }} />
                 <span>Public</span>
               </div>
             </SelectItem>
             <SelectItem value="private">
               <div className="flex items-center gap-2">
-                <EyeOff style={{ width: 14, height: 14, color: 'hsl(var(--foreground) / 0.55)' }} />
+                <EyeOff size={14} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                 <span>Private</span>
               </div>
             </SelectItem>
             <SelectItem value="restricted">
               <div className="flex items-center gap-2">
-                <Lock style={{ width: 14, height: 14, color: 'hsl(var(--destructive))' }} />
+                <Lock size={14} style={{ color: 'hsl(var(--destructive))' }} />
                 <span>Restricted</span>
               </div>
             </SelectItem>

@@ -31,7 +31,7 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
     if (!canGenerate) return null;
     return (
       <div className="p-5 mb-6 bg-muted flex items-start gap-3">
-        <Sparkles style={{ width: 18, height: 18, marginTop: 2, flexShrink: 0, opacity: 0.7 }} />
+        <Sparkles size={18} style={{ marginTop: 2, flexShrink: 0, opacity: 0.7 }} />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold mb-1">AI safety briefing</p>
           <span className="block text-xs text-muted-foreground mb-3">
@@ -56,7 +56,7 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
 
   return (
     <div className="p-5 mb-6 bg-muted flex items-start gap-3">
-      <Sparkles style={{ width: 18, height: 18, marginTop: 2, flexShrink: 0, opacity: 0.7 }} />
+      <Sparkles size={18} style={{ marginTop: 2, flexShrink: 0, opacity: 0.7 }} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1 gap-2">
           <p className="text-sm font-bold">AI safety briefing</p>

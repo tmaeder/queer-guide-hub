@@ -508,7 +508,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   />
                   {resolvedCountryName && (
                     <div className="flex items-center gap-1 mt-1">
-                      <Check style={{ width: 12, height: 12, color: '#22c55e' }} />
+                      <Check size={12} style={{ color: '#22c55e' }} />
                       <span className="text-xs" style={{ color: '#22c55e' }}>
                         Linked to {resolvedCountryName}
                       </span>
@@ -532,7 +532,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   </div>
                   {resolvedCityId && (
                     <div className="flex items-center gap-1 mt-1">
-                      <Check style={{ width: 12, height: 12, color: '#22c55e' }} />
+                      <Check size={12} style={{ color: '#22c55e' }} />
                       <span className="text-xs" style={{ color: '#22c55e' }}>
                         City linked in database
                       </span>

@@ -136,7 +136,7 @@ export function AutoCleanDuplicatesTab() {
             style={{ gap: 8, paddingTop: 8, paddingBottom: 8 }}
             onClick={() => setShowHistory(!showHistory)}
           >
-            <History style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+            <History size={16} style={{ color: 'var(--muted-foreground)' }} />
             <span className="font-semibold" style={{ fontSize: '0.875rem' }}>
               Merge History
             </span>
@@ -335,7 +335,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               }}
             >
               {isDone ? (
-                <CheckCircle style={{ width: 12, height: 12, color: 'hsl(var(--foreground))' }} />
+                <CheckCircle size={12} style={{ color: 'hsl(var(--foreground))' }} />
               ) : isCurrent ? (
                 <Loader2 className="animate-spin" size={12} aria-label="Loading" />
               ) : (
@@ -399,8 +399,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               border: `1px solid ${result.dry_run ? 'hsl(var(--muted-foreground) / 0.08)' : 'hsl(var(--foreground) / 0.08)'}`,
             }}
           >
-            <CheckCircle
-              style={{ width: 16, height: 16, color: result.dry_run ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))' }}
+            <CheckCircle size={16} style={{ color: result.dry_run ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))' }}
             />
             <p className="text-sm font-semibold">
               {result.dry_run ? 'Would auto-merge' : 'Auto-merged'}: {result.total_auto_merged}
@@ -421,7 +420,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               border: '1px solid hsl(var(--border))',
             }}
           >
-            <AlertTriangle style={{ width: 16, height: 16, color: 'hsl(var(--foreground) / 0.55)' }} />
+            <AlertTriangle size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
             <p className="text-sm font-semibold">Flagged for review: {result.total_flagged}</p>
           </div>
         )}
@@ -439,7 +438,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               border: '1px solid hsl(var(--border))',
             }}
           >
-            <CheckCircle style={{ width: 16, height: 16, color: 'hsl(var(--foreground))' }} />
+            <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
             <p className="text-sm font-semibold">No duplicates found</p>
           </div>
         )}
@@ -456,7 +455,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
             border: '1px solid var(--border)',
           }}
         >
-          <Database style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+          <Database size={16} style={{ color: 'var(--muted-foreground)' }} />
           <p className="text-sm font-semibold">
             Total scanned: {result.total_scanned.toLocaleString()}
           </p>
@@ -527,8 +526,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
                     )}
                   </p>
                   {allScanned && (
-                    <CheckCircle
-                      style={{ width: 12, height: 12, color: 'hsl(var(--foreground))', flexShrink: 0 }}
+                    <CheckCircle size={12} style={{ color: 'hsl(var(--foreground))', flexShrink: 0 }}
                     />
                   )}
                 </div>
@@ -584,7 +582,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
     <Card>
       <CardHeader>
         <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.95rem' }}>
-          <Inbox style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+          <Inbox size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
           Import Staging Cleanup
           {total > 0 && (
             <Badge variant={dryRun ? 'secondary' : 'default'} style={{ marginLeft: 8 }}>
@@ -756,7 +754,7 @@ function PendingReviewSection() {
                 marginBottom: 16,
               }}
             >
-              <CheckCircle style={{ width: 40, height: 40, color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={40} style={{ color: 'hsl(var(--foreground))' }} />
             </div>
             <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
               No Pending Duplicates
@@ -886,7 +884,7 @@ function MergeHistorySection() {
                     fontSize: '0.85rem',
                   }}
                 >
-                  <Merge style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Merge size={14} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="text-sm font-medium">
                       {(details.entity_type as string) || 'unknown'}: Kept "

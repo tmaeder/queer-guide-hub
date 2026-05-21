@@ -233,10 +233,9 @@ export default function AdminNewsSources() {
           return (
             <div className="flex items-center gap-1">
               {row.status === 'error' ? (
-                <AlertCircle style={{ height: 14, width: 14, color: 'hsl(var(--destructive))' }} />
+                <AlertCircle size={14} style={{ color: 'hsl(var(--destructive))' }} />
               ) : (
-                <CheckCircle
-                  style={{ height: 14, width: 14, color: active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
+                <CheckCircle size={14} style={{ color: active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
                 />
               )}
               <Badge

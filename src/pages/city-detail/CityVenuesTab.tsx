@@ -39,7 +39,7 @@ export function CityVenuesTab({
           <CardContent style={{ paddingTop: 20 }}>
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-3">
-                <Luggage style={{ width: 20, height: 20, opacity: 0.6 }} />
+                <Luggage size={20} style={{ opacity: 0.6 }} />
                 <p className="font-medium">Planning a trip to {city.name}?</p>
               </div>
               <Button variant="outline" size="sm" onClick={onCreateTrip}>

@@ -40,12 +40,7 @@ export const ChatGPTConnection = () => {
             </CardDescription>
           </div>
           <Button variant="ghost" size="sm" onClick={refresh} disabled={loading}>
-            <RefreshCw
-              style={{
-                width: 16,
-                height: 16,
-                animation: loading ? 'spin 1s linear infinite' : 'none',
-              }}
+            <RefreshCw size={16} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}
             />
           </Button>
         </div>
@@ -53,7 +48,7 @@ export const ChatGPTConnection = () => {
       <CardContent>
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'hsl(var(--muted-foreground))' }}>
-            <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
+            <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />
             Loading connection status...
           </div>
         ) : (
@@ -62,7 +57,7 @@ export const ChatGPTConnection = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {isConnected ? (
                 <>
-                  <CheckCircle style={{ width: 20, height: 20, color: 'hsl(var(--foreground))' }} />
+                  <CheckCircle size={20} style={{ color: 'hsl(var(--foreground))' }} />
                   <span style={{ fontWeight: 500, color: 'hsl(var(--foreground))' }}>Connected via OAuth</span>
                   {status?.expires_at && (
                     <Badge variant="secondary">Expires in {formatExpiry(status.expires_at)}</Badge>
@@ -73,13 +68,13 @@ export const ChatGPTConnection = () => {
                 </>
               ) : usingFallback ? (
                 <>
-                  <AlertTriangle style={{ width: 20, height: 20, color: 'hsl(var(--foreground) / 0.55)' }} />
+                  <AlertTriangle size={20} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                   <span style={{ fontWeight: 500, color: 'hsl(var(--foreground) / 0.55)' }}>Using API Key Fallback</span>
                   <Badge variant="secondary">ENV: OPENAI_API_KEY</Badge>
                 </>
               ) : (
                 <>
-                  <XCircle style={{ width: 20, height: 20, color: 'hsl(var(--destructive))' }} />
+                  <XCircle size={20} style={{ color: 'hsl(var(--destructive))' }} />
                   <span style={{ fontWeight: 500, color: 'hsl(var(--destructive))' }}>Not Connected</span>
                   {hasFallback && <Badge variant="outline">API key fallback available</Badge>}
                 </>
@@ -106,13 +101,8 @@ export const ChatGPTConnection = () => {
                 <>
                   <Button variant="outline" size="sm" onClick={testConnection} disabled={testing}>
                     {testing ? (
-                      <RefreshCw
-                        style={{
-                          width: 14,
-                          height: 14,
-                          marginRight: 6,
-                          animation: 'spin 1s linear infinite',
-                        }}
+                      <RefreshCw size={14} style={{ marginRight: 6,
+                          animation: 'spin 1s linear infinite' }}
                       />
                     ) : (
                       <Zap size={14} className="mr-1.5" />
@@ -133,13 +123,8 @@ export const ChatGPTConnection = () => {
                   {usingFallback && (
                     <Button variant="outline" size="sm" onClick={testConnection} disabled={testing}>
                       {testing ? (
-                        <RefreshCw
-                          style={{
-                            width: 14,
-                            height: 14,
-                            marginRight: 6,
-                            animation: 'spin 1s linear infinite',
-                          }}
+                        <RefreshCw size={14} style={{ marginRight: 6,
+                            animation: 'spin 1s linear infinite' }}
                         />
                       ) : (
                         <Zap size={14} className="mr-1.5" />

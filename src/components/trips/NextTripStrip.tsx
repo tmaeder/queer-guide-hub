@@ -88,7 +88,7 @@ export function NextTripStrip({ trips }: Props) {
           />
         ) : (
           <div className="md:w-64 h-40 md:h-auto bg-muted flex items-center justify-center shrink-0">
-            <Luggage style={{ width: 32, height: 32, opacity: 0.3 }} />
+            <Luggage size={32} style={{ opacity: 0.3 }} />
           </div>
         )}
         <div className="flex-1 p-5 md:p-6 flex flex-col gap-3 justify-between">
@@ -112,13 +112,13 @@ export function NextTripStrip({ trips }: Props) {
             <div className="flex items-center gap-4 flex-wrap text-muted-foreground text-sm">
               {dateRange && (
                 <span className="inline-flex items-center gap-1.5">
-                  <Calendar style={{ width: 14, height: 14, opacity: 0.7 }} />
+                  <Calendar size={14} style={{ opacity: 0.7 }} />
                   {dateRange}
                 </span>
               )}
               {trip.primary_city_name && (
                 <span className="inline-flex items-center gap-1.5">
-                  <MapPin style={{ width: 14, height: 14, opacity: 0.7 }} />
+                  <MapPin size={14} style={{ opacity: 0.7 }} />
                   {trip.primary_city_name}
                 </span>
               )}

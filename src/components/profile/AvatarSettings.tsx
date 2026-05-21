@@ -190,13 +190,8 @@ export const AvatarSettings = ({
             <div className="flex items-center justify-center w-full">
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground rounded-element cursor-pointer transition-colors hover:bg-muted">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload
-                    style={{
-                      width: 32,
-                      height: 32,
-                      marginBottom: 8,
-                      color: 'var(--muted-foreground)',
-                    }}
+                  <Upload size={32} style={{ marginBottom: 8,
+                      color: 'var(--muted-foreground)' }}
                   />
                   <p className="text-sm">
                     <span className="font-semibold">Click to upload</span>
@@ -279,13 +274,8 @@ export const AvatarSettings = ({
         <div className="flex justify-end pt-4 border-t border-border">
           <Button onClick={handleSave} disabled={saving} size="lg">
             {saving && (
-              <RefreshCw
-                style={{
-                  height: 16,
-                  width: 16,
-                  marginRight: 8,
-                  animation: 'spin 1s linear infinite',
-                }}
+              <RefreshCw size={16} style={{ marginRight: 8,
+                  animation: 'spin 1s linear infinite' }}
               />
             )}
             Save Avatar

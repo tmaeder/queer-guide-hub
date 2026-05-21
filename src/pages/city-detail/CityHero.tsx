@@ -156,7 +156,7 @@ export function CityHero({
         )}
         {city.lgbt_friendly_rating && (
           <Badge variant="outline" className="gap-1">
-            <Star style={{ height: 14, width: 14, fill: 'currentColor', color: 'inherit' }} />
+            <Star size={14} style={{ fill: 'currentColor', color: 'inherit' }} />
             {city.lgbt_friendly_rating}/5 LGBTQ+ Friendly
           </Badge>
         )}

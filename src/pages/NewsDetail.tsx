@@ -296,7 +296,7 @@ export default function NewsDetail() {
         </LocalizedLink>
         {article.category && article.category !== 'general' && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
+            <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
             <button
               type="button"
               className="text-sm text-muted-foreground capitalize hover:text-primary cursor-pointer bg-transparent border-0 p-0"
@@ -306,7 +306,7 @@ export default function NewsDetail() {
             </button>
           </>
         )}
-        <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
+        <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
         <span className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[300px]">
           {decodeHtmlEntities(article.title)}
         </span>
@@ -534,7 +534,7 @@ export default function NewsDetail() {
             <CardContent>
               {article.published_at && (
                 <div className="flex items-center gap-3">
-                  <Calendar style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Calendar size={16} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
                     <p className="text-sm text-muted-foreground">Published</p>
                     <p className="font-medium">
@@ -545,7 +545,7 @@ export default function NewsDetail() {
               )}
               {authorName && (
                 <div className="flex items-center gap-3">
-                  <User style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <User size={16} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
                     <p className="text-sm text-muted-foreground">Author</p>
                     <p className="font-medium">{authorName}</p>
@@ -554,7 +554,7 @@ export default function NewsDetail() {
               )}
               {sourceName && (
                 <div className="flex items-center gap-3">
-                  <Newspaper style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Newspaper size={16} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
                     <p className="text-sm text-muted-foreground">Source</p>
                     <p className="font-medium">{sourceName}</p>
@@ -563,7 +563,7 @@ export default function NewsDetail() {
               )}
               {article.views_count > 0 && (
                 <div className="flex items-center gap-3">
-                  <Eye style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                  <Eye size={16} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
                     <p className="text-sm text-muted-foreground">Views</p>
                     <p className="font-medium">{article.views_count}</p>

@@ -150,7 +150,7 @@ export function SearchPopoverResults({
 
         {!loading && !error && query.length >= 2 && suggestions.length === 0 && (
           <div style={{ padding: '32px 12px', textAlign: 'center' }}>
-            <Search style={{ height: 24, width: 24, opacity: 0.4, margin: '0 auto 8px' }} />
+            <Search size={24} style={{ opacity: 0.4, margin: '0 auto 8px' }} />
             <p className="text-sm">
               {activeScope
                 ? t('search.noScopeResults', { defaultValue: 'No {{scope}} for "{{query}}"', scope: scopeLabel, query })
@@ -249,7 +249,7 @@ export function SearchPopoverResults({
 
         {loading && suggestions.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 8 }}>
-            <Loader2 className="animate-spin" style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
+            <Loader2 className="animate-spin" size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
           </div>
         )}
       </div>

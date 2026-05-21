@@ -85,7 +85,7 @@ export function MediaGrid(props: MediaGridProps) {
   if (items.length === 0) {
     return (
       <div className="border border-border p-12 text-center">
-        <ImageIcon style={{ height: 48, width: 48, margin: '0 auto 16px' }} className="text-muted-foreground" />
+        <ImageIcon size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
         <p className="text-muted-foreground">No media found.</p>
       </div>
     );
@@ -140,7 +140,7 @@ export function MediaGrid(props: MediaGridProps) {
                   style={{ color: 'white' }}
                   onClick={(e) => { e.stopPropagation(); onStar(item); }}
                 >
-                  <Star style={{ height: 14, width: 14, fill: item.starred ? 'currentColor' : 'none' }} />
+                  <Star size={14} style={{ fill: item.starred ? 'currentColor' : 'none' }} />
                 </Button>
                 {item.usage_count > 0 && (
                   <Badge variant="secondary" style={{ fontSize: '0.625rem' }}>
@@ -203,7 +203,7 @@ export function MediaGrid(props: MediaGridProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p className="text-sm truncate">{item.display_name}</p>
-              {item.starred && <Star style={{ height: 12, width: 12, fill: 'currentColor' }} />}
+              {item.starred && <Star size={12} style={{ fill: 'currentColor' }} />}
               {item.is_flagged && <Flag size={12} />}
             </div>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -226,7 +226,7 @@ export function MediaGrid(props: MediaGridProps) {
               className="h-6 w-6 p-0"
               onClick={(e) => { e.stopPropagation(); onStar(item); }}
             >
-              <Star style={{ height: 14, width: 14, fill: item.starred ? 'currentColor' : 'none' }} />
+              <Star size={14} style={{ fill: item.starred ? 'currentColor' : 'none' }} />
             </Button>
           </div>
         </div>

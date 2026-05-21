@@ -330,7 +330,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         <div className="container mx-auto px-4 py-3 flex items-center justify-center gap-2 text-sm">
           {saveStatus === 'saving' && (
             <>
-              <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
+              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
               <span className="text-muted-foreground">Saving…</span>
             </>
           )}

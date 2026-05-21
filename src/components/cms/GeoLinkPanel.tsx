@@ -62,7 +62,7 @@ export function GeoLinkPanel({
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
-            <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--primary))' }} />
+            <MapPin size={16} style={{ color: 'hsl(var(--primary))' }} />
             Geo Location
           </div>
         </CardTitle>
@@ -71,7 +71,7 @@ export function GeoLinkPanel({
         <div className="flex items-center gap-2 flex-wrap">
           {isFullyLinked ? (
             <>
-              <Check style={{ height: 14, width: 14, color: 'hsl(var(--foreground))' }} />
+              <Check size={14} style={{ color: 'hsl(var(--foreground))' }} />
               <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>Linked</p>
               {locationDisplay && (
                 <p className="text-sm text-muted-foreground">{locationDisplay}</p>
@@ -79,7 +79,7 @@ export function GeoLinkPanel({
             </>
           ) : isPartiallyLinked ? (
             <>
-              <AlertCircle style={{ height: 14, width: 14, color: 'hsl(var(--foreground) / 0.55)' }} />
+              <AlertCircle size={14} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
               <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>Partially linked</p>
               {locationDisplay && (
                 <p className="text-sm text-muted-foreground">{locationDisplay}</p>
@@ -87,7 +87,7 @@ export function GeoLinkPanel({
             </>
           ) : locationDisplay ? (
             <>
-              <AlertCircle style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+              <AlertCircle size={14} style={{ color: 'var(--muted-foreground)' }} />
               <p className="text-sm text-muted-foreground">{locationDisplay}</p>
               <Badge variant="outline" style={{ fontSize: '0.625rem', padding: '0 4px' }}>
                 Not linked
@@ -95,7 +95,7 @@ export function GeoLinkPanel({
             </>
           ) : (
             <>
-              <AlertCircle style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+              <AlertCircle size={14} style={{ color: 'var(--muted-foreground)' }} />
               <span className="text-xs text-muted-foreground">No location data</span>
             </>
           )}
@@ -111,7 +111,7 @@ export function GeoLinkPanel({
         {linked && resultItem && !loading && (
           <div className="bg-muted p-2 flex flex-col gap-1">
             <div className="flex items-center gap-1">
-              <Check style={{ height: 12, width: 12, color: 'hsl(var(--foreground))' }} />
+              <Check size={12} style={{ color: 'hsl(var(--foreground))' }} />
               <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                 {resultItem.status === 'linked' ? 'Fully linked' : 'Partially linked'}
               </span>

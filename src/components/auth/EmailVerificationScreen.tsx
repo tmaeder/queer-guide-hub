@@ -85,7 +85,7 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
 
           >
             {status === 'sending' && (
-              <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+              <Loader2 size={16} style={{ marginRight: 8, animation: 'spin 1s linear infinite' }} />
             )}
             {cooldown > 0
               ? t('auth.verifyEmail.resendIn', { defaultValue: 'Resend in {{seconds}}s', seconds: cooldown })

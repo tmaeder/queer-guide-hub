@@ -34,7 +34,7 @@ export function DatePickerWithRange({
               ...(!date ? { color: 'hsl(var(--muted-foreground))' } : {}),
             }}
           >
-            <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
+            <CalendarIcon size={16} style={{ marginRight: 8 }} />
             {date?.from ? (
               date.to ? (
                 <>

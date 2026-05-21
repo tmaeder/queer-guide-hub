@@ -67,13 +67,13 @@ const PREDEFINED_KEY_NAMES: Record<string, string[]> = {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'configured':
-      return <CheckCircle style={{ width: 18, height: 18, color: 'hsl(var(--foreground))' }} />;
+      return <CheckCircle size={18} style={{ color: 'hsl(var(--foreground))' }} />;
     case 'missing':
-      return <XCircle style={{ width: 18, height: 18, color: 'hsl(var(--destructive))' }} />;
+      return <XCircle size={18} style={{ color: 'hsl(var(--destructive))' }} />;
     case 'error':
-      return <AlertTriangle style={{ width: 18, height: 18, color: 'hsl(var(--foreground) / 0.55)' }} />;
+      return <AlertTriangle size={18} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
     default:
-      return <Key style={{ width: 18, height: 18, color: 'hsl(var(--muted-foreground))' }} />;
+      return <Key size={18} style={{ color: 'hsl(var(--muted-foreground))' }} />;
   }
 };
 
@@ -311,14 +311,9 @@ export const ApiKeysManager = () => {
       {loading ? (
         <Card>
           <CardContent>
-            <RefreshCw
-              style={{
-                height: 32,
-                width: 32,
-                animation: 'spin 1s linear infinite',
+            <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite',
                 margin: '0 auto 16px',
-                color: 'var(--muted-foreground)',
-              }}
+                color: 'var(--muted-foreground)' }}
             />
             <p style={{ color: 'var(--muted-foreground)' }}>Loading API keys...</p>
           </CardContent>
@@ -433,13 +428,8 @@ export const ApiKeysManager = () => {
             <CardContent>
               {keys.length === 0 ? (
                 <div className="text-center py-6">
-                  <Key
-                    style={{
-                      height: 32,
-                      width: 32,
-                      margin: '0 auto 12px',
-                      color: 'var(--muted-foreground)',
-                    }}
+                  <Key size={32} style={{ margin: '0 auto 12px',
+                      color: 'var(--muted-foreground)' }}
                   />
                   <p className="text-muted-foreground text-sm">
                     No custom API keys. Use the "+ Add API Key" button to store additional keys.
@@ -453,12 +443,7 @@ export const ApiKeysManager = () => {
                       className="flex items-center justify-between p-4 rounded border border-border"
                     >
                       <div className="flex items-center gap-3">
-                        <Key
-                          style={{
-                            width: 16,
-                            height: 16,
-                            color: key.is_active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                          }}
+                        <Key size={16} style={{ color: key.is_active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
                         />
                         <div>
                           <p className="font-semibold text-sm">

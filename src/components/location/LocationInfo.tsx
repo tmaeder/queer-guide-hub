@@ -231,7 +231,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                       className="rounded-full"
                       style={{ backgroundColor: 'rgba(var(--background-rgb), 0.9)', backdropFilter: 'blur(4px)', padding: '0.5rem', transform: 'scale(0)', transition: 'transform 0.3s' }}
                     >
-                      <ImageIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+                      <ImageIcon size={20} style={{ color: 'var(--primary)' }} />
                     </div>
                   </div>
                 </div>

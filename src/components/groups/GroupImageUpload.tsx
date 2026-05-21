@@ -157,7 +157,7 @@ export const GroupImageUpload = ({
 
       {currentImages.length === 0 && (
         <div className="border-2 border-dashed p-8 text-center" style={{ borderColor: 'hsl(var(--muted-foreground) / 0.3)' }}>
-          <ImageIcon style={{ width: 48, height: 48, margin: '0 auto', marginBottom: 16, opacity: 0.5 }} />
+          <ImageIcon size={48} style={{ margin: '0 auto', marginBottom: 16, opacity: 0.5 }} />
           <p className="text-muted-foreground">No images uploaded yet</p>
           <p className="text-sm text-muted-foreground">Upload images to showcase your group</p>
         </div>

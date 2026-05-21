@@ -95,7 +95,7 @@ export function TagSuggestionsQueue() {
     return (
       <div className="text-center py-16">
         <div className="mx-auto w-20 h-20 bg-foreground rounded-full flex items-center justify-center mb-4 opacity-90">
-          <Tag style={{ width: 40, height: 40, color: 'hsl(var(--background))' }} />
+          <Tag size={40} style={{ color: 'hsl(var(--background))' }} />
         </div>
         <h3 className="text-lg font-semibold mb-1">No pending suggestions</h3>
         <p className="text-sm text-muted-foreground max-w-[320px] mx-auto">

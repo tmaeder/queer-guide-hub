@@ -371,7 +371,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         <div className="[&>*]:border-b [&>*]:border-border">
           {comments.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              <MessageCircle style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+              <MessageCircle size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
               <p className="text-sm">No comments yet. Be the first to comment!</p>
             </div>
           ) : (

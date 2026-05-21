@@ -230,7 +230,7 @@ function ExistingDedupSection() {
         <Card>
           <CardContent>
             <div className="mx-auto w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Search style={{ width: 40, height: 40, color: 'var(--muted-foreground)' }} />
+              <Search size={40} style={{ color: 'var(--muted-foreground)' }} />
             </div>
             <h6 className="text-base font-semibold mb-2">No Duplicate Pairs</h6>
             <p className="text-muted-foreground">
@@ -336,7 +336,7 @@ function MergeHistorySection() {
                     className="flex items-center gap-4 p-3 rounded bg-muted"
                     style={{ fontSize: '0.85rem' }}
                   >
-                    <Merge style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                    <Merge size={14} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">
                         {details.entity_type || 'unknown'}: Kept "{details.keep_name || '?'}", removed "{details.remove_name || '?'}"

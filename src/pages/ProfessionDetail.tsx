@@ -100,7 +100,7 @@ export default function ProfessionDetail() {
             Back
           </Button>
           <div className="flex items-center gap-3">
-            <User style={{ width: 32, height: 32, color: 'var(--primary)' }} />
+            <User size={32} style={{ color: 'var(--primary)' }} />
             <h4 className="text-2xl font-bold">{professionData.name}</h4>
             <Badge variant="secondary">
               {professionData.totalCount} {professionData.totalCount === 1 ? 'person' : 'people'}
@@ -113,7 +113,7 @@ export default function ProfessionDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total People</CardTitle>
-              <Users style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+              <Users size={16} style={{ color: 'var(--muted-foreground)' }} />
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold">{professionData.totalCount}</p>
@@ -123,7 +123,7 @@ export default function ProfessionDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Locations</CardTitle>
-              <MapPin style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+              <MapPin size={16} style={{ color: 'var(--muted-foreground)' }} />
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold">
@@ -138,7 +138,7 @@ export default function ProfessionDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Age Range</CardTitle>
-              <Calendar style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+              <Calendar size={16} style={{ color: 'var(--muted-foreground)' }} />
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold">

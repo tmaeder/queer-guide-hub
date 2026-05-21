@@ -175,7 +175,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
             <DialogTitle>{t('trips.addTo.title', 'Add to Trip')}</DialogTitle>
           </DialogHeader>
           <div className="py-8 text-center">
-            <Luggage style={{ width: 40, height: 40, margin: '0 auto 12px', opacity: 0.4 }} />
+            <Luggage size={40} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
             <p className="text-base mb-1">
               {t('trips.addTo.signInPrompt', 'Sign in to plan trips')}
             </p>
@@ -245,14 +245,9 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                       <div className="flex items-center gap-3 mt-1">
                         {trip.start_date && (
                           <span className="text-xs text-muted-foreground">
-                            <Calendar
-                              style={{
-                                width: 12,
-                                height: 12,
-                                display: 'inline',
+                            <Calendar size={12} style={{ display: 'inline',
                                 verticalAlign: -1,
-                                marginRight: 4,
-                              }}
+                                marginRight: 4 }}
                             />
                             {new Date(trip.start_date).toLocaleDateString(undefined, {
                               month: 'short',
@@ -263,14 +258,9 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                           </span>
                         )}
                         <span className="text-xs text-muted-foreground">
-                          <Users
-                            style={{
-                              width: 12,
-                              height: 12,
-                              display: 'inline',
+                          <Users size={12} style={{ display: 'inline',
                               verticalAlign: -1,
-                              marginRight: 4,
-                            }}
+                              marginRight: 4 }}
                           />
                           {trip.member_count}
                         </span>

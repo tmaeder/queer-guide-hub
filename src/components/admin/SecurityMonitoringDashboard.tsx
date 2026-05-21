@@ -124,7 +124,7 @@ export function SecurityMonitoringDashboard() {
         <Card>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--destructive-rgb), 0.1)' }}>
-              <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
+              <AlertTriangle size={16} style={{ color: 'var(--destructive)' }} />
             </div>
             <div>
               <p className="text-sm font-medium">Failed Login Attempts</p>
@@ -137,7 +137,7 @@ export function SecurityMonitoringDashboard() {
         <Card>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--success-rgb), 0.1)' }}>
-              <Shield style={{ height: 16, width: 16, color: 'var(--success)' }} />
+              <Shield size={16} style={{ color: 'var(--success)' }} />
             </div>
             <div>
               <p className="text-sm font-medium">CAPTCHA Verifications</p>
@@ -199,7 +199,7 @@ export function SecurityMonitoringDashboard() {
             <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
               {auditLogs.map((log: Record<string, unknown>) => (
                 <div key={log.id as string} className="flex items-start gap-3 p-3 border border-border rounded-element">
-                  <Users style={{ height: 16, width: 16, marginTop: 4 }} />
+                  <Users size={16} style={{ marginTop: 4 }} />
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">
@@ -233,7 +233,7 @@ export function SecurityMonitoringDashboard() {
             <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
               {recentFailedLogins.map((attempt: Record<string, unknown>) => (
                 <div key={attempt.id as string} className="flex items-start gap-3 p-3 border border-border rounded-element">
-                  <AlertTriangle style={{ height: 16, width: 16, marginTop: 4, color: 'var(--destructive)' }} />
+                  <AlertTriangle size={16} style={{ marginTop: 4, color: 'var(--destructive)' }} />
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">{(attempt.attempt_type as string).toUpperCase()} Failed</span>

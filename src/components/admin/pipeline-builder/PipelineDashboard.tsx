@@ -74,35 +74,35 @@ export default function PipelineDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <Play style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+            <Play size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
             <span style={statValue}>{runningCount}</span>
           </div>
           <p style={statLabel}>Running</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <CheckCircle style={{ width: 16, height: 16, color: 'hsl(var(--foreground))' }} />
+            <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
             <span style={statValue}>{recentCompleted}</span>
           </div>
           <p style={statLabel}>Completed</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <XCircle style={{ width: 16, height: 16, color: 'hsl(var(--destructive))' }} />
+            <XCircle size={16} style={{ color: 'hsl(var(--destructive))' }} />
             <span style={statValue}>{recentFailed}</span>
           </div>
           <p style={statLabel}>Failed</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <Database style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+            <Database size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
             <span style={statValue}>{totalStaging}</span>
           </div>
           <p style={statLabel}>Staging Items</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            {openCircuits > 0 ? <AlertTriangle style={{ width: 16, height: 16, color: 'hsl(var(--destructive))' }} /> : <Shield style={{ width: 16, height: 16, color: 'hsl(var(--foreground))' }} />}
+            {openCircuits > 0 ? <AlertTriangle size={16} style={{ color: 'hsl(var(--destructive))' }} /> : <Shield size={16} style={{ color: 'hsl(var(--foreground))' }} />}
             <span style={statValue}>{openCircuits}</span>
           </div>
           <p style={statLabel}>Open Circuits</p>

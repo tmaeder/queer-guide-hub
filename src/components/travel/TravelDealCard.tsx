@@ -97,7 +97,7 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }}
               />
             ) : (
-              <Plane style={{ height: 16, width: 16, flexShrink: 0, color: 'var(--primary)' }} />
+              <Plane size={16} style={{ flexShrink: 0, color: 'var(--primary)' }} />
             )}
             <div className="flex items-center gap-1 flex-wrap min-w-0">
               <span className="font-bold text-sm">

@@ -279,8 +279,7 @@ export function DraggableItinerary({
                 style={{ backgroundColor: 'hsl(var(--foreground))' }}
                 aria-hidden="true"
               />
-              <MapIcon
-                style={{ width: 28, height: 28, color: 'hsl(var(--foreground))' }}
+              <MapIcon size={28} style={{ color: 'hsl(var(--foreground))' }}
                 aria-hidden="true"
                 className="absolute inset-0 m-auto"
               />

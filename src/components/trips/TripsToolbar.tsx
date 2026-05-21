@@ -48,8 +48,7 @@ export function TripsToolbar({
     <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-6">
       {/* Search */}
       <div className="flex items-center gap-2 bg-muted rounded-element px-3 h-10 min-w-full md:min-w-[260px] md:flex-none transition-colors focus-within:bg-accent">
-        <Search
-          style={{ width: 16, height: 16, opacity: 0.6, flexShrink: 0 }}
+        <Search size={16} style={{ opacity: 0.6, flexShrink: 0 }}
           aria-hidden="true"
         />
         <input

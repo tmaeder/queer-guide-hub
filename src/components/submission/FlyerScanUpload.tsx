@@ -120,8 +120,7 @@ export function FlyerScanUpload({
       <Card>
         <CardContent>
           <div className="flex items-start gap-3">
-            <AlertCircle
-              style={{ width: 20, height: 20, color: '#ef4444', flexShrink: 0, marginTop: 2 }}
+            <AlertCircle size={20} style={{ color: '#ef4444', flexShrink: 0, marginTop: 2 }}
             />
             <div className="flex-1">
               <p className="text-sm font-semibold mb-1">
@@ -208,9 +207,9 @@ export function FlyerScanUpload({
             style={{ backgroundColor: '#ec489915' }}
           >
             {isMobile ? (
-              <Camera style={{ width: 20, height: 20, color: '#ec4899' }} />
+              <Camera size={20} style={{ color: '#ec4899' }} />
             ) : (
-              <Upload style={{ width: 20, height: 20, color: '#ec4899' }} />
+              <Upload size={20} style={{ color: '#ec4899' }} />
             )}
           </div>
           <div>
@@ -224,8 +223,7 @@ export function FlyerScanUpload({
             </p>
           </div>
           {!isMobile && (
-            <FileText
-              style={{ width: 16, height: 16, color: '#9ca3af', flexShrink: 0, marginLeft: 'auto' }}
+            <FileText size={16} style={{ color: '#9ca3af', flexShrink: 0, marginLeft: 'auto' }}
             />
           )}
         </div>
@@ -238,8 +236,7 @@ export function FlyerScanUpload({
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <AlertCircle
-              style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 2 }}
+            <AlertCircle size={16} style={{ color: '#ef4444', flexShrink: 0, marginTop: 2 }}
             />
             <p className="text-xs" style={{ color: '#ef4444' }}>
               {rejectionMessage}

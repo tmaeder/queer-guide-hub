@@ -56,16 +56,16 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
   const getStatusIcon = (status: ImportJob['status']) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle style={{ height: 20, width: 20, color: 'var(--success)' }} />;
+        return <CheckCircle size={20} style={{ color: 'var(--success)' }} />;
       case 'failed':
-        return <XCircle style={{ height: 20, width: 20, color: 'var(--destructive)' }} />;
+        return <XCircle size={20} style={{ color: 'var(--destructive)' }} />;
       case 'processing':
       case 'validating':
-        return <Clock style={{ height: 20, width: 20, color: 'var(--primary)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />;
+        return <Clock size={20} style={{ color: 'var(--primary)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />;
       case 'cancelled':
-        return <XCircle style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />;
+        return <XCircle size={20} style={{ color: 'var(--muted-foreground)' }} />;
       default:
-        return <AlertCircle style={{ height: 20, width: 20, color: 'var(--warning)' }} />;
+        return <AlertCircle size={20} style={{ color: 'var(--warning)' }} />;
     }
   };
 
@@ -220,7 +220,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
               <CardContent>
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.1)' }}>
-                    <TrendingUp style={{ height: 16, width: 16, color: 'var(--success)' }} />
+                    <TrendingUp size={16} style={{ color: 'var(--success)' }} />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Success Rate</p>
@@ -235,7 +235,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
               <CardContent>
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.1)' }}>
-                    <TrendingDown style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
+                    <TrendingDown size={16} style={{ color: 'var(--destructive)' }} />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Error Rate</p>
@@ -250,7 +250,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
               <CardContent>
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.1)' }}>
-                    <AlertTriangle style={{ height: 16, width: 16, color: 'var(--warning)' }} />
+                    <AlertTriangle size={16} style={{ color: 'var(--warning)' }} />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Duplicates</p>

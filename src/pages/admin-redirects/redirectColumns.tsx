@@ -42,7 +42,7 @@ export function getRedirectColumns() {
               {source}
             </span>
             {(row.start_at || row.end_at) && (
-              <Clock style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />
+              <Clock size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />
             )}
           </div>
         );

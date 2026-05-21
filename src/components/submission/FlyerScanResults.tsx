@@ -166,7 +166,7 @@ function ItemDetail({
           className="flex items-center gap-2 p-3 mb-4 rounded-element"
           style={{ backgroundColor: '#fef3c7' }}
         >
-          <AlertTriangle style={{ width: 16, height: 16, color: '#d97706', flexShrink: 0 }} />
+          <AlertTriangle size={16} style={{ color: '#d97706', flexShrink: 0 }} />
           <span className="text-xs" style={{ color: '#92400e' }}>
             {matches.duplicate_events.length > 0
               ? `Similar event found: "${matches.duplicate_events[0].title}"`
@@ -428,9 +428,9 @@ export function FlyerScanResults({
                     )}
                   </div>
                   {isExpanded ? (
-                    <ChevronUp style={{ width: 16, height: 16, color: '#999', flexShrink: 0 }} />
+                    <ChevronUp size={16} style={{ color: '#999', flexShrink: 0 }} />
                   ) : (
-                    <ChevronDown style={{ width: 16, height: 16, color: '#999', flexShrink: 0 }} />
+                    <ChevronDown size={16} style={{ color: '#999', flexShrink: 0 }} />
                   )}
                 </div>
 

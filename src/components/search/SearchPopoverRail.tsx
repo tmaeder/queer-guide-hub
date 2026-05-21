@@ -84,7 +84,7 @@ export function SearchPopoverRail({
                   </button>
                 }
               >
-                <Clock style={{ height: 13, width: 13, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                <Clock size={13} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                 <span
                   className="text-xs"
                   style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
@@ -149,13 +149,13 @@ export function SearchPopoverRail({
       <div style={{ borderTop: '1px solid hsl(var(--border))' }}>
         {!hasQuery && nearMeSupported && (
           <RailRow id="rail-nearme" onClick={onNearMe}>
-            <Navigation style={{ height: 13, width: 13, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+            <Navigation size={13} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
             <span className="text-xs" style={{ flex: 1 }}>{t('search.nearMe', 'Near me')}</span>
             {nearMeLoading && <Loader2 className="animate-spin" size={11} />}
           </RailRow>
         )}
         <RailRow id="rail-browse" onClick={onBrowseAll}>
-          <LayoutGrid style={{ height: 13, width: 13, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+          <LayoutGrid size={13} style={{ color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
           <span className="text-xs" style={{ flex: 1 }}>{t('search.browseAll', 'Browse all')}</span>
           <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: '0.7rem' }}>→</span>
         </RailRow>

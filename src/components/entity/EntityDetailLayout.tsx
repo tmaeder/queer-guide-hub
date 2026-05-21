@@ -132,8 +132,7 @@ export function EntityDetailLayout({
             return (
               <span key={i} className="inline-flex items-center gap-1">
                 {i > 0 && (
-                  <ChevronRight
-                    style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }}
+                  <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }}
                   />
                 )}
                 {label}

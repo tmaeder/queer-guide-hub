@@ -575,7 +575,7 @@ export function AdminEditDialog({
             />
             {resolvedFields[field.name] && (
               <div className="flex items-center gap-1 mt-1">
-                <Check style={{ width: 14, height: 14, color: 'hsl(var(--foreground))' }} />
+                <Check size={14} style={{ color: 'hsl(var(--foreground))' }} />
                 <span className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>
                   City & country linked
                 </span>

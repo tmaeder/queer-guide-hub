@@ -52,7 +52,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
     return (
       <Card>
         <CardContent>
-          <Users style={{ width: 48, height: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+          <Users size={48} style={{ color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
           <h6 className="text-base font-medium mb-2">
             {isOwnProfile ? "You haven't posted anything yet" : "No posts yet"}
           </h6>

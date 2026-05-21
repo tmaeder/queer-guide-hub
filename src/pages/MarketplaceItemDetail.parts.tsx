@@ -123,7 +123,7 @@ export function MarketplaceHero({
               {listing.business_type && getBusinessTypeIcon(listing.business_type)}
               {listing.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin style={{ width: 12, height: 12, color: 'hsl(var(--muted-foreground))' }} />
+                  <MapPin size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />
                   <p className="text-sm text-muted-foreground">{listing.location}</p>
                 </div>
               )}
@@ -134,14 +134,14 @@ export function MarketplaceHero({
               {listing.subcategory && <Badge variant="outline">{listing.subcategory}</Badge>}
               {averageRating > 0 && (
                 <div className="flex items-center gap-1">
-                  <Star style={{ width: 16, height: 16, fill: 'currentColor', color: 'inherit' }} />
+                  <Star size={16} style={{ fill: 'currentColor', color: 'inherit' }} />
                   <p className="text-sm font-medium">{averageRating.toFixed(1)}</p>
                   <p className="text-sm text-muted-foreground">({reviewsCount} reviews)</p>
                 </div>
               )}
               {listing.views_count && listing.views_count > 0 && (
                 <div className="flex items-center gap-1">
-                  <Eye style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+                  <Eye size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                   <p className="text-sm text-muted-foreground">{listing.views_count} views</p>
                 </div>
               )}
@@ -162,14 +162,9 @@ export function MarketplaceHero({
               onSaved={() => window.location.reload()}
             />
                           <Button variant="outline" size="sm" onClick={onToggleFavorite}>
-                <Heart
-                  style={{
-                    width: 16,
-                    height: 16,
-                    marginRight: 8,
+                <Heart size={16} style={{ marginRight: 8,
                     fill: isFavorited ? 'currentColor' : 'none',
-                    color: 'inherit',
-                  }}
+                    color: 'inherit' }}
                 />
                 {isFavorited ? 'Favorited' : 'Favorite'}
               </Button>
@@ -294,12 +289,8 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
                           {Array.from({ length: 5 }).map((_, i) => (
                             <Star
                               key={i}
-                              style={{
-                                width: 12,
-                                height: 12,
-                                fill: i < review.rating ? 'currentColor' : 'none',
-                                color: i < review.rating ? 'inherit' : 'hsl(var(--muted-foreground))',
-                              }}
+                              size={12} style={{ fill: i < review.rating ? 'currentColor' : 'none',
+                                color: i < review.rating ? 'inherit' : 'hsl(var(--muted-foreground))' }}
                             />
                           ))}
                         </div>
