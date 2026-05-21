@@ -117,7 +117,7 @@ export const SourceRawEntitySchema = z.object({
   source_id: z.string(),
   entity_type: EntityType,
   url: z.string().url(),
-  raw_data: z.record(z.unknown()),
+  raw_data: z.record(z.string(), z.unknown()),
   fetched_at: z.date(),
 });
 export type SourceRawEntity = z.infer<typeof SourceRawEntitySchema>;
