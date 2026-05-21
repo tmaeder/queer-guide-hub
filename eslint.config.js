@@ -54,6 +54,21 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // eslint-plugin-react-hooks v7 ships a richer recommended set than v5.
+      // Adopting v7 surfaces ~340 new errors across the app — mostly
+      // set-state-in-effect, refs, immutability, and static-components patterns
+      // that require app-wide refactor. Demote to warn for now so the plugin
+      // upgrade lands cleanly; ratchet rules back to error one at a time as
+      // sites are fixed.
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/refs": "warn",
+      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/immutability": "warn",
+      "react-hooks/static-components": "warn",
+      "react-hooks/purity": "warn",
+      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/incompatible-library": "warn",
+      "react-hooks/error-boundaries": "warn",
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },

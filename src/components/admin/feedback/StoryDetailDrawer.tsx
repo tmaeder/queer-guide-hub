@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,14 +113,14 @@ export function StoryDetailDrawer({
   const [handoffExpanded, setHandoffExpanded] = useState(false);
   const [handoffStatus, setHandoffStatus] = useState<string | null>(null);
 
-  useMemo(() => {
+  useEffect(() => {
     if (story) {
       setTitleDraft(story.title);
       setSummaryDraft(story.summary ?? '');
       setBriefDraft(story.brief_title ?? '');
       setNarrativeDraft(story.narrative ?? '');
     }
-  }, [story?.id, story?.title, story?.summary, story?.brief_title, story?.narrative]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [story?.id, story?.title, story?.summary, story?.brief_title, story?.narrative]);
 
   if (!story) return null;
 
