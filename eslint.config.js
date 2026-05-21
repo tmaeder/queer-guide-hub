@@ -206,6 +206,12 @@ export default tseslint.config(
           message:
             "Hardcoded color literal — use design tokens (hsl(var(--foreground)), hsl(var(--muted)), etc.).",
         },
+        {
+          selector:
+            "Literal[value=/shadow-\\[var\\(--shadow-(aceternity|glow)|shadow-aceternity/]",
+          message:
+            "Shadow tokens were removed 2026-05-21 (P1 normalize). Use `border` or `bg-muted` for depth.",
+        },
       ],
     },
   },

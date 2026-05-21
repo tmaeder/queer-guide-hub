@@ -120,7 +120,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
 
           {showReactions && (
             <div
-              className="rounded-container shadow-[var(--shadow-aceternity-sm)] border border-border absolute mt-1 p-2"
+              className="rounded-container border border-border absolute mt-1 p-2"
               style={{ top: '100%', backgroundColor: 'var(--popover)', zIndex: 10 }}
             >
               <div className="flex gap-1">

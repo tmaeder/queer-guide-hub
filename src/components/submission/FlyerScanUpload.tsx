@@ -156,7 +156,7 @@ export function FlyerScanUpload({
           <div className="flex flex-col items-center gap-4 py-2">
             <Loader2
               className="animate-spin h-8 w-8"
-              style={{ color: '#ec4899' }}
+              style={{ color: 'hsl(var(--foreground))' }}
               aria-label="Loading"
             />
             <p className="text-sm font-medium">{progressText}</p>
@@ -164,7 +164,7 @@ export function FlyerScanUpload({
               <div className="w-full h-1 bg-muted rounded overflow-hidden">
                 <div
                   className="h-full transition-[width]"
-                  style={{ width: `${pct}%`, backgroundColor: '#ec4899' }}
+                  style={{ width: `${pct}%`, backgroundColor: 'hsl(var(--foreground))' }}
                 />
               </div>
             )}
@@ -202,12 +202,12 @@ export function FlyerScanUpload({
         <div className="flex items-center gap-4">
           <div
             className="w-10 h-10 rounded-element flex items-center justify-center shrink-0"
-            style={{ backgroundColor: '#ec489915' }}
+            style={{ backgroundColor: 'hsl(var(--muted))' }}
           >
             {isMobile ? (
-              <Camera size={20} style={{ color: '#ec4899' }} />
+              <Camera size={20} style={{ color: 'hsl(var(--foreground))' }} />
             ) : (
-              <Upload size={20} style={{ color: '#ec4899' }} />
+              <Upload size={20} style={{ color: 'hsl(var(--foreground))' }} />
             )}
           </div>
           <div>

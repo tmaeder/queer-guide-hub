@@ -113,16 +113,11 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  /* ── Box shadow — monochrome Aceternity-style depth ─────────────
-     Inset 1px hairline ring removed from aceternity-* to avoid
-     doubling up with `border border-border` on consumers. Resting
-     edge = border class. Elevation = pure drop shadow. */
+  /* ── Box shadow — disabled per design system (border-only depth).
+     Shadows removed 2026-05-21 (P1 normalize). Use `border` or
+     `bg-muted` for depth cues. */
   --shadow-none: none;
   --shadow-hairline: 0 1px 0 hsl(var(--border));
-  --shadow-aceternity-sm: 0 2px 8px hsl(0 0% 0% / 0.04);
-  --shadow-aceternity: 0 8px 30px hsl(0 0% 0% / 0.06);
-  --shadow-aceternity-lg: 0 24px 60px hsl(0 0% 0% / 0.10);
-  --shadow-glow: 0 0 40px hsl(0 0% 0% / 0.04);
 }
 
 /* ── Self-hosted fonts (Inter only) ───────────────────────────────────
@@ -336,11 +331,6 @@
   --cat-travel:      var(--foreground);
   --cat-news:        var(--foreground);
   --cat-community:   var(--foreground);
-
-  /* Dark mode shadow overrides — soft glow on dark surfaces. */
-  --shadow-aceternity-sm: 0 2px 10px hsl(0 0% 0% / 0.35);
-  --shadow-aceternity: 0 8px 30px hsl(0 0% 0% / 0.50);
-  --shadow-aceternity-lg: 0 24px 60px hsl(0 0% 0% / 0.60);
 }
 
 /* ── MapLibre popup theme (Aceternity card vibe) ───────────────────── */
@@ -349,7 +339,6 @@
   color: hsl(var(--popover-foreground)) !important;
   border: 1px solid hsl(var(--border)) !important;
   border-radius: var(--radius-container) !important;
-  box-shadow: var(--shadow-aceternity) !important;
 }
 .maplibregl-popup-anchor-top .maplibregl-popup-tip,
 .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
@@ -633,14 +622,6 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(to top, hsl(0 0% 0% / 0.70) 0%, hsl(0 0% 0% / 0.30) 50%, transparent 100%);
 }
 
-/* Aceternity glow ring on hover (monochrome). */
-.glow-ring {
-  position: relative;
-  transition: box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.glow-ring:hover {
-  box-shadow: var(--shadow-aceternity);
-}
 
 /* Animated border-conic for "moving border" cards (monochrome). */
 @keyframes border-rotate {

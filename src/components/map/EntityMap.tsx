@@ -422,7 +422,7 @@ export const EntityMap = ({
 
       <div
         ref={tooltipRef}
-        className="rounded-element shadow-[var(--shadow-aceternity-sm)] hidden absolute whitespace-nowrap"
+        className="rounded-element hidden absolute whitespace-nowrap"
         style={{
           pointerEvents: 'none',
           zIndex: 20,

@@ -255,7 +255,7 @@ export const EventCard = memo(function EventCard({
                       role="presentation"
                       loading="lazy"
                       decoding="async"
-                      className="absolute bottom-3 left-3 w-8 h-8 rounded-element bg-background object-contain shadow-[var(--shadow-aceternity-sm)] z-20 p-0.5"
+                      className="absolute bottom-3 left-3 w-8 h-8 rounded-element bg-background object-contain z-20 p-0.5"
                       onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}

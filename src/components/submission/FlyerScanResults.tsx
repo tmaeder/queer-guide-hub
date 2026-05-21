@@ -135,7 +135,7 @@ function ItemDetail({
               fontWeight: 600,
               fontSize: '0.75rem',
               cursor: 'pointer',
-              ...(detected_type === 'event' ? { backgroundColor: '#ec4899', color: '#fff' } : {}),
+              ...(detected_type === 'event' ? { backgroundColor: 'hsl(var(--foreground))', color: '#fff' } : {}),
             }}
             variant={detected_type === 'event' ? 'default' : 'secondary'}
           >
@@ -222,7 +222,7 @@ function ItemDetail({
                   cursor: 'pointer',
                   ...(selectedVenueId === v.id
                     ? {
-                        backgroundColor: '#DB277720',
+                        backgroundColor: 'hsl(var(--muted))',
                         borderColor: 'hsl(var(--foreground))',
                         borderWidth: 1,
                         borderStyle: 'solid',
@@ -244,7 +244,7 @@ function ItemDetail({
         onClick={onApply}
         style={{
           width: '100%',
-          backgroundColor: detected_type === 'event' ? '#ec4899' : 'hsl(var(--foreground))',
+          backgroundColor: 'hsl(var(--foreground))',
           color: '#fff',
         }}
       >
@@ -378,7 +378,7 @@ export function FlyerScanResults({
                   border: '1px solid',
                   borderColor: isExpanded
                     ? effectiveType === 'event'
-                      ? '#ec4899'
+                      ? 'hsl(var(--foreground))'
                       : 'hsl(var(--foreground))'
                     : 'hsl(var(--border))',
                   transition: 'border-color 0.2s',
@@ -403,8 +403,8 @@ export function FlyerScanResults({
                     style={{
                       fontSize: '0.7rem',
                       height: 22,
-                      backgroundColor: effectiveType === 'event' ? '#ec489920' : '#DB277720',
-                      color: effectiveType === 'event' ? '#ec4899' : 'hsl(var(--foreground))',
+                      backgroundColor: effectiveType === 'event' ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
+                      color: effectiveType === 'event' ? 'hsl(var(--foreground))' : 'hsl(var(--foreground))',
                     }}
                     className="font-semibold"
                     variant="outline"

@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         // Solid foreground CTA with subtle lift on hover.
-        default: "bg-foreground text-background shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)] hover:-translate-y-px",
+        default: "bg-foreground text-background hover:-translate-y-px",
         // Hairline border, transparent fill — fills on hover.
         outline: "border border-foreground/15 bg-transparent text-foreground hover:bg-foreground hover:text-background hover:border-foreground",
         // No chrome until hover — useful in headers / menus.

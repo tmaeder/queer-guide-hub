@@ -36,7 +36,7 @@ export const PageHeader = ({
   return (
     <motion.div
       {...base}
-      className="rounded-container border border-border/60 bg-card/60 backdrop-blur-sm p-6 sm:p-8 mb-6 shadow-[var(--shadow-aceternity-sm)]"
+      className="rounded-container border border-border/60 bg-card/60 backdrop-blur-sm p-6 sm:p-8 mb-6"
     >
       <div
         className={`flex flex-col gap-4 justify-between sm:flex-row sm:items-center ${

@@ -22,7 +22,7 @@ export const MotionCard = React.forwardRef<HTMLDivElement, MotionCardProps>(
       <motion.div
         ref={ref}
         className={cn(
-          'bg-card text-card-foreground rounded-container border border-border/60 transition-shadow hover:shadow-[var(--shadow-aceternity)]',
+          'bg-card text-card-foreground rounded-container border border-border/60 transition-shadow',
           className,
         )}
         {...hover}

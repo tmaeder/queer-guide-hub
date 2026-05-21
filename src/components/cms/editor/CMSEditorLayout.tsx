@@ -392,7 +392,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
         <>
           <Button
             onClick={() => setAiOpen(true)}
-            className="fixed bottom-6 right-6 z-30 normal-case font-semibold shadow-[var(--shadow-aceternity-lg)]"
+            className="fixed bottom-6 right-6 z-30 normal-case font-semibold"
           >
             <Sparkles size={16} className="mr-1" />
             AI Assist

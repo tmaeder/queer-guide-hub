@@ -133,7 +133,7 @@ export function AirportAutocomplete({
         placeholder={placeholder}
       />
       {open && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-background max-h-80 overflow-auto mt-1 border border-border rounded-element shadow-[var(--shadow-aceternity-sm)]">
+        <div className="absolute top-full left-0 right-0 z-50 bg-background max-h-80 overflow-auto mt-1 border border-border rounded-element">
           {results.map((airport) => (
             <div
               key={airport.iata_code}
@@ -164,7 +164,7 @@ export function AirportAutocomplete({
         </div>
       )}
       {open && loading && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-background p-4 mt-1 border border-border rounded-element shadow-[var(--shadow-aceternity-sm)]">
+        <div className="absolute top-full left-0 right-0 z-50 bg-background p-4 mt-1 border border-border rounded-element">
           <p className="text-sm text-muted-foreground text-center">Searching...</p>
         </div>
       )}

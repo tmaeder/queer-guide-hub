@@ -775,7 +775,7 @@ function FilterDropdown({
         </PopoverTrigger>
         <PopoverContent
           align="start"
-          className="border-border shadow-[var(--shadow-aceternity)] p-0"
+          className="border-border p-0"
         >
           <Command>
             <CommandInput placeholder={searchPlaceholder} />

@@ -76,7 +76,7 @@ const HTML_BODY_CSS = `
 .qg-cms-body a { color: inherit; text-decoration: underline; }
 .qg-cms-body a:hover { opacity: 0.85; }
 .qg-cms-body img { max-width: 100%; height: auto; margin: 1rem 0; }
-.qg-cms-body pre { background-color: #111; color: #f5f5f5; padding: 1rem; overflow: auto; margin: 1rem 0; font-size: 0.875rem; }
+.qg-cms-body pre { background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground)); padding: 1rem; overflow: auto; margin: 1rem 0; font-size: 0.875rem; }
 .qg-cms-body code { background-color: hsl(var(--accent)); padding: 0.125rem 0.375rem; font-size: 0.875em; }
 .qg-cms-body table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
 .qg-cms-body th, .qg-cms-body td { border: 1px solid hsl(var(--border)); padding: 0.5rem 0.75rem; text-align: left; }

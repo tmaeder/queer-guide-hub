@@ -57,7 +57,7 @@ export function AppleCardsCarousel({ items, className }: AppleCardsCarouselProps
           <a
             key={i}
             href={card.href ?? '#'}
-            className="snap-start shrink-0 w-64 h-80 md:w-80 md:h-96 relative rounded-container overflow-hidden group ring-1 ring-border/60 shadow-[var(--shadow-aceternity-sm)]"
+            className="snap-start shrink-0 w-64 h-80 md:w-80 md:h-96 relative rounded-container overflow-hidden group ring-1 ring-border/60"
           >
             <motion.img
               src={card.src}
@@ -80,7 +80,7 @@ export function AppleCardsCarousel({ items, className }: AppleCardsCarouselProps
           aria-label="Scroll left"
           onClick={() => scrollBy(-320)}
           disabled={!canL}
-          className="pointer-events-auto h-10 w-10 rounded-full bg-background/80 backdrop-blur border border-border/60 shadow-[var(--shadow-aceternity-sm)] flex items-center justify-center disabled:opacity-30 transition-opacity hover:bg-background"
+          className="pointer-events-auto h-10 w-10 rounded-full bg-background/80 backdrop-blur border border-border/60 flex items-center justify-center disabled:opacity-30 transition-opacity hover:bg-background"
         >
           <ChevronLeft size={18} />
         </button>
@@ -89,7 +89,7 @@ export function AppleCardsCarousel({ items, className }: AppleCardsCarouselProps
           aria-label="Scroll right"
           onClick={() => scrollBy(320)}
           disabled={!canR}
-          className="pointer-events-auto h-10 w-10 rounded-full bg-background/80 backdrop-blur border border-border/60 shadow-[var(--shadow-aceternity-sm)] flex items-center justify-center disabled:opacity-30 transition-opacity hover:bg-background"
+          className="pointer-events-auto h-10 w-10 rounded-full bg-background/80 backdrop-blur border border-border/60 flex items-center justify-center disabled:opacity-30 transition-opacity hover:bg-background"
         >
           <ChevronRight size={18} />
         </button>
