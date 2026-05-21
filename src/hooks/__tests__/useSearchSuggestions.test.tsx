@@ -39,19 +39,21 @@ describe('useSearchSuggestions', () => {
     expect(result.current.suggestions).toHaveLength(2);
   });
 
-  it('should cap at 2 per type', async () => {
+  it('should cap at 4 per type (unscoped)', async () => {
     mockFetchAutocomplete.mockResolvedValue([
       { id: '1', type: 'event', title: 'Event A', city: 'Berlin' },
       { id: '2', type: 'event', title: 'Event B', city: 'Berlin' },
       { id: '3', type: 'event', title: 'Event C', city: 'Munich' },
-      { id: '4', type: 'city', title: 'Berlin' },
+      { id: '4', type: 'event', title: 'Event D', city: 'Hamburg' },
+      { id: '5', type: 'event', title: 'Event E', city: 'Köln' },
+      { id: '6', type: 'city', title: 'Berlin' },
     ]);
 
     const { result } = renderHook(() => useSearchSuggestions('Berlin'));
     await waitFor(() => expect(result.current.suggestions.length).toBeGreaterThan(0));
 
     const eventSuggestions = result.current.suggestions.filter((s) => s.type === 'event');
-    expect(eventSuggestions).toHaveLength(2);
+    expect(eventSuggestions).toHaveLength(4);
   });
 
   it('should include slug from autocomplete response', async () => {
