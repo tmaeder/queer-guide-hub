@@ -117,7 +117,7 @@ export function EntityDetailLayout({
             const isLast = i === breadcrumbs.length - 1;
             const label =
               crumb.href && !isLast ? (
-                <LocalizedLink to={crumb.href} style={{ textDecoration: 'none' }}>
+                <LocalizedLink to={crumb.href} className="no-underline">
                   <span className="text-sm text-muted-foreground hover:text-primary">
                     {crumb.label}
                   </span>
@@ -132,7 +132,7 @@ export function EntityDetailLayout({
             return (
               <span key={i} className="inline-flex items-center gap-1">
                 {i > 0 && (
-                  <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }}
+                  <ChevronRight size={14} className="text-muted-foreground"
                   />
                 )}
                 {label}

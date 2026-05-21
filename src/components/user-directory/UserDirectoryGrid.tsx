@@ -55,7 +55,7 @@ export const UserDirectoryGrid = ({
                 {profiles.length} member{profiles.length !== 1 ? 's' : ''} found
               </span>
               {activeFiltersCount > 0 && (
-                <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                <Badge variant="outline" className="text-xs">
                   Filtered
                 </Badge>
               )}
@@ -124,12 +124,12 @@ export const UserDirectoryGrid = ({
                           animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         }}
                       >
-                        <Check size={12} style={{ color: 'hsl(var(--background))' }} />
+                        <Check size={12} className="text-background" />
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h6 className="font-bold text-foreground truncate" style={{ fontSize: '1.125rem' }}>
+                    <h6 className="font-bold text-foreground truncate text-lg">
                       {profile.display_name || 'Anonymous User'}
                     </h6>
                     {isAuthed && (
@@ -346,7 +346,7 @@ export const UserDirectoryGrid = ({
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <h6 className="font-semibold text-foreground" style={{ fontSize: '1.25rem' }}>
+              <h6 className="font-semibold text-foreground text-xl">
                 No members found
               </h6>
               <p className="text-muted-foreground mx-auto" style={{ maxWidth: '28rem' }}>

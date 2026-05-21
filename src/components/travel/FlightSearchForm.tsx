@@ -69,7 +69,7 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
       <Card>
         <CardHeader>
           <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Plane size={20} style={{ color: 'var(--primary)' }} />
+            <Plane size={20} className="text-primary" />
             Search Flights
           </CardTitle>
         </CardHeader>

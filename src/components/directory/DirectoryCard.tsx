@@ -129,11 +129,11 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
   const getIcon = () => {
     switch (type) {
       case 'continent':
-        return <Globe size={20} style={{ color: 'var(--primary)' }} />;
+        return <Globe size={20} className="text-primary" />;
       case 'country':
-        return <MapPin size={20} style={{ color: 'var(--primary)' }} />;
+        return <MapPin size={20} className="text-primary" />;
       case 'city':
-        return <Building2 size={20} style={{ color: 'var(--primary)' }} />;
+        return <Building2 size={20} className="text-primary" />;
       default:
         return null;
     }
@@ -182,7 +182,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                   backgroundColor: 'rgba(var(--primary-rgb), 0.1)',
                 }}
               >
-                <Crown size={12} style={{ color: 'var(--primary)' }} />
+                <Crown size={12} className="text-primary" />
               </div>
             )}
             {city.is_major_city && (
@@ -227,7 +227,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     return null;
   };
   const cardContent = (
-    <Card className="group transition-colors duration-300 hover:border-foreground/40" style={{ cursor: 'pointer' }}>
+    <Card className="group transition-colors duration-300 hover:border-foreground/40 cursor-pointer">
       {/* Country Image */}
       {type === 'country' && (
         <div
@@ -323,7 +323,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                 justifyContent: 'center',
               }}
             >
-              <ImageIcon size={32} style={{ color: 'var(--muted-foreground)' }} />
+              <ImageIcon size={32} className="text-muted-foreground" />
             </div>
           )}
         </div>

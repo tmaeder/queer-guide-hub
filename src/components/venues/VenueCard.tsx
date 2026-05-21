@@ -93,7 +93,7 @@ interface VenueCardProps {
 }
 
 const VenueCardFixture = () => (
-  <Card hoverable style={{ overflow: 'hidden' }}>
+  <Card hoverable className="overflow-hidden">
     <CardImage src="" alt="Venue" fallbackIcon={MapPin} />
     <div className="p-4">
       <div className="flex flex-col gap-1.5">
@@ -163,7 +163,7 @@ export function VenueCard({
           style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
         >
           <CardHoverEffect>
-          <Card hoverable className="group" style={{ overflow: 'hidden' }}>
+          <Card hoverable className="group overflow-hidden">
             <div className="relative overflow-hidden">
               <CardImage
                 src={venueImage}

@@ -445,14 +445,14 @@ export function CloudflareDashboard() {
                   <div className="flex items-center gap-2">
                     {stats.zoneInfo ? (
                       <>
-                        <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
+                        <CheckCircle size={16} className="text-foreground" />
                         <span className="text-sm">
                           Connected
                         </span>
                       </>
                     ) : (
                       <>
-                        <AlertTriangle size={16} style={{ color: 'hsl(var(--destructive))' }} />
+                        <AlertTriangle size={16} className="text-destructive" />
                         <span className="text-sm">
                           Not Connected
                         </span>

@@ -123,7 +123,7 @@ export function AiPlanTab({ trip }: Props) {
   return (
     <div className="flex flex-col h-[520px] md:h-[640px]">
       <div className="flex items-center gap-2 mb-2">
-        <Sparkles size={18} style={{ color: 'var(--primary)' }} />
+        <Sparkles size={18} className="text-primary" />
         <h6 className="font-bold text-lg">
           {t('trips.ai.conciergeTitle', 'AI concierge')}
         </h6>

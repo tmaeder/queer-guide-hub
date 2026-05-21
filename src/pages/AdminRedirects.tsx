@@ -242,7 +242,7 @@ export default function AdminRedirects() {
           <h1 style={{ fontSize: '1.875rem', fontWeight: 700 }}>
             Redirects & Short Links
           </h1>
-          <p style={{ color: 'var(--muted-foreground)' }}>
+          <p className="text-muted-foreground">
             Manage URL redirects, short links, and analytics
           </p>
         </div>

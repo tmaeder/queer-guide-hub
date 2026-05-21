@@ -74,7 +74,7 @@ export function TripDocExpiryBanner({ trip }: Props) {
             ? t('trips.docs.expiredTitle', 'Document expired')
             : t('trips.docs.expiringTitle', 'Document expires before trip ends')}
         </p>
-        <ul className="m-0 pl-4" style={{ fontSize: '0.8125rem' }}>
+        <ul className="m-0 pl-4 text-13">
           {flags.map((f) => (
             <li key={f.doc.id}>
               <strong>{f.doc.title}</strong>{' '}

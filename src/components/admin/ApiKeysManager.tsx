@@ -67,13 +67,13 @@ const PREDEFINED_KEY_NAMES: Record<string, string[]> = {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'configured':
-      return <CheckCircle size={18} style={{ color: 'hsl(var(--foreground))' }} />;
+      return <CheckCircle size={18} className="text-foreground" />;
     case 'missing':
-      return <XCircle size={18} style={{ color: 'hsl(var(--destructive))' }} />;
+      return <XCircle size={18} className="text-destructive" />;
     case 'error':
       return <AlertTriangle size={18} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
     default:
-      return <Key size={18} style={{ color: 'hsl(var(--muted-foreground))' }} />;
+      return <Key size={18} className="text-muted-foreground" />;
   }
 };
 
@@ -315,7 +315,7 @@ export const ApiKeysManager = () => {
                 margin: '0 auto 16px',
                 color: 'var(--muted-foreground)' }}
             />
-            <p style={{ color: 'var(--muted-foreground)' }}>Loading API keys...</p>
+            <p className="text-muted-foreground">Loading API keys...</p>
           </CardContent>
         </Card>
       ) : (
@@ -324,18 +324,18 @@ export const ApiKeysManager = () => {
           {requiredKeys.length > 0 && (
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 rounded-element" style={{ background: 'hsl(var(--muted))' }}>
-                <div className="text-2xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                <div className="text-2xl font-semibold text-foreground">
                   {configuredCount}
                 </div>
-                <div className="text-sm" style={{ color: 'hsl(var(--foreground))' }}>
+                <div className="text-sm text-foreground">
                   Configured
                 </div>
               </div>
               <div className="text-center p-4 rounded-element" style={{ background: 'hsl(var(--muted))' }}>
-                <div className="text-2xl font-semibold" style={{ color: 'hsl(var(--destructive))' }}>
+                <div className="text-2xl font-semibold text-destructive">
                   {missingCount}
                 </div>
-                <div className="text-sm" style={{ color: 'hsl(var(--destructive))' }}>
+                <div className="text-sm text-destructive">
                   Missing
                 </div>
               </div>

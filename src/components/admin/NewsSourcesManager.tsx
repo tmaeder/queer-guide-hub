@@ -382,7 +382,7 @@ export function NewsSourcesManager() {
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>{activeSourcesCount}</div>
+            <div className="text-2xl font-bold text-foreground">{activeSourcesCount}</div>
             <span className="text-xs text-muted-foreground">Active</span>
           </CardContent>
         </Card>
@@ -425,7 +425,7 @@ export function NewsSourcesManager() {
                             {source.source_type === 'rss' || source.url?.includes('feed') ? (
                               <Rss className="h-4 w-4" style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                             ) : (
-                              <Globe className="h-4 w-4" style={{ color: 'hsl(var(--muted-foreground))' }} />
+                              <Globe className="h-4 w-4 text-muted-foreground" />
                             )}
                             <span className="font-medium">{source.name}</span>
                           </div>
@@ -596,7 +596,7 @@ export function NewsSourcesManager() {
 
             <div className="flex flex-wrap gap-2">
               {editingKeywords.map((keyword, index) => (
-                <Badge key={index} variant="secondary" style={{ cursor: 'pointer' }}>
+                <Badge key={index} variant="secondary" className="cursor-pointer">
                   {keyword}
                   <button
                     onClick={() => removeKeyword(keyword)}

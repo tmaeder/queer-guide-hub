@@ -182,7 +182,7 @@ export default function AdminCountries() {
               <span style={{ fontSize: 18, lineHeight: 1 }}>{info.row.original.flag_emoji}</span>
             )}
             <div>
-              <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+              <span className="font-medium">{info.getValue()}</span>
               {info.row.original.code && (
                 <p className="text-sm text-muted-foreground">{info.row.original.code}</p>
               )}

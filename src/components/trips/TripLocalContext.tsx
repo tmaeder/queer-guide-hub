@@ -30,7 +30,7 @@ export function TripLocalContext({ trip }: Props) {
       {personalities.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Users size={16} style={{ color: 'hsl(var(--foreground))' }} />
+            <Users size={16} className="text-foreground" />
             <span className="font-bold text-base">
               {t('trips.localContext.personalitiesTitle', "Notable from where you're going")}
             </span>
@@ -68,7 +68,7 @@ export function TripLocalContext({ trip }: Props) {
       {villages.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <MapIcon size={16} style={{ color: 'hsl(var(--foreground))' }} />
+            <MapIcon size={16} className="text-foreground" />
             <span className="font-bold text-base">
               {t('trips.localContext.villagesTitle', 'Queer neighborhoods')}
             </span>

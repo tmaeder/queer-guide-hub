@@ -69,7 +69,7 @@ export default function AdminUsers() {
             <div className="flex items-center gap-3">
               <Avatar style={{ width: 32, height: 32, flexShrink: 0 }}>
                 <AvatarImage src={row.avatar_url ?? undefined} alt={name} />
-                <AvatarFallback style={{ fontSize: '0.75rem' }}>
+                <AvatarFallback className="text-xs">
                   {name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

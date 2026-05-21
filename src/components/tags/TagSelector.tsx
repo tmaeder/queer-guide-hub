@@ -137,15 +137,15 @@ export const TagSelector = ({
                       <div className="flex items-center gap-2 flex-1">
                         <div style={{ width: 12, height: 12, backgroundColor: tag.color }} />
                         <div className="flex-1">
-                          <p className="font-medium" style={{ fontSize: '0.875rem' }}>{tag.name}</p>
+                          <p className="font-medium text-sm">{tag.name}</p>
                           {tag.description && <p style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
                               {tag.description}
                             </p>}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 text-muted-foreground" style={{ fontSize: '0.75rem' }}>
-                        <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                      <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                        <Badge variant="outline" className="text-xs">
                           {tag.category}
                         </Badge>
                         {tag.usage_count > 0 && <span>({tag.usage_count})</span>}
@@ -157,7 +157,7 @@ export const TagSelector = ({
 
             {/* Custom Tag Input (if enabled) */}
             {allowCustomTags && <div className="pt-4">
-                <Label style={{ fontSize: '0.875rem' }}>Create custom tag</Label>
+                <Label className="text-sm">Create custom tag</Label>
                 <div className="flex gap-2 mt-2">
                   <Input placeholder="Tag name..." onKeyPress={e => {
                 if (e.key === 'Enter') {

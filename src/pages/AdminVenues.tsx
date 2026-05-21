@@ -278,7 +278,7 @@ export default function AdminVenues() {
       toolbarActions: (
         <div className="flex gap-1 flex-wrap">
           {(['foursquare', 'tripadvisor', 'tomtom', 'google-places'] as const).map((provider) => (
-            <Button key={provider} variant="secondary" size="sm" disabled={!!isImporting[provider]} style={{ fontSize: '0.75rem' }} onClick={() => setImportDialog({ open: true, provider })}>
+            <Button key={provider} variant="secondary" size="sm" disabled={!!isImporting[provider]} className="text-xs" onClick={() => setImportDialog({ open: true, provider })}>
               <Search size={12} className="mr-1" />
               {isImporting[provider] ? 'Importing...' : provider.charAt(0).toUpperCase() + provider.slice(1).replace('-', ' ')}
             </Button>

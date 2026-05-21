@@ -313,7 +313,7 @@ export default function AdminQueerVillages() {
         cell: (info) => (
           <div>
             <div className="flex items-center gap-1">
-              <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+              <span className="font-medium">{info.getValue()}</span>
               {info.row.original.featured && (
                 <Badge style={{ fontSize: '0.6rem', padding: '1px 5px' }}>Featured</Badge>
               )}

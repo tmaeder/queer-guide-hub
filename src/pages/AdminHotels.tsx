@@ -219,7 +219,7 @@ export default function AdminHotels() {
         header: 'Name',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
             <p className="text-sm text-muted-foreground">
               {HOTEL_TYPES.find((t) => t.value === info.row.original.hotel_type)?.label ||
                 info.row.original.hotel_type}

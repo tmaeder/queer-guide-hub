@@ -225,11 +225,11 @@ export function PrivacyControlCenter() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'basic':
-        return <Eye size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />;
+        return <Eye size={16} className="text-muted-foreground" />;
       case 'sensitive':
         return <Shield size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
       case 'financial':
-        return <Lock size={16} style={{ color: 'hsl(var(--destructive))' }} />;
+        return <Lock size={16} className="text-destructive" />;
       default:
         return <Eye size={16} />;
     }

@@ -61,7 +61,7 @@ export function EmailForwardingSettings() {
   return (
     <div className="mt-8 p-6 bg-muted">
       <div className="flex items-center gap-2 mb-2">
-        <Mail size={18} style={{ color: 'var(--primary)' }} />
+        <Mail size={18} className="text-primary" />
         <p className="font-bold">{t('settings.email.title', 'Trip-email forwarding')}</p>
       </div>
       <p className="text-sm text-muted-foreground mb-4">

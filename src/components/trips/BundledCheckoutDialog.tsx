@@ -211,8 +211,7 @@ export function BundledCheckoutDialog({
             {/* Current card */}
             <div className="p-5 bg-muted flex items-start gap-3 rounded">
               <div
-                className="shrink-0 w-10 h-10 flex items-center justify-center bg-background rounded"
-                style={{ color: 'hsl(var(--foreground))' }}
+                className="shrink-0 w-10 h-10 flex items-center justify-center bg-background rounded text-foreground"
               >
                 {current?.kind === 'hotel' ? <Hotel size={20} /> : <Ticket size={20} />}
               </div>

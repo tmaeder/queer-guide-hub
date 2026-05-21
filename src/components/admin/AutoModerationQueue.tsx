@@ -248,7 +248,7 @@ export function AutoModerationQueue() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
               <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="w-[18px] h-[18px]" style={{ color: 'hsl(var(--foreground))' }} />
+                <ShieldCheck className="w-[18px] h-[18px] text-foreground" />
                 <div className="text-sm font-semibold">Auto-Approve High Confidence</div>
               </div>
               <p className="text-xs text-muted-foreground">

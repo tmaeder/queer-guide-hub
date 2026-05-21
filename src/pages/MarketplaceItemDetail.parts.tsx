@@ -123,7 +123,7 @@ export function MarketplaceHero({
               {listing.business_type && getBusinessTypeIcon(listing.business_type)}
               {listing.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                  <MapPin size={12} className="text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">{listing.location}</p>
                 </div>
               )}
@@ -141,7 +141,7 @@ export function MarketplaceHero({
               )}
               {listing.views_count && listing.views_count > 0 && (
                 <div className="flex items-center gap-1">
-                  <Eye size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                  <Eye size={16} className="text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">{listing.views_count} views</p>
                 </div>
               )}
@@ -298,7 +298,7 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
                     </div>
                     <div className="flex items-center gap-2">
                       {review.purchase_verified && (
-                        <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                        <Badge variant="outline" className="text-xs">
                           <Shield size={12} className="mr-1" />
                           Verified Purchase
                         </Badge>

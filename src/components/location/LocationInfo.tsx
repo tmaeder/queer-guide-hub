@@ -231,7 +231,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                       className="rounded-full"
                       style={{ backgroundColor: 'rgba(var(--background-rgb), 0.9)', backdropFilter: 'blur(4px)', padding: '0.5rem', transform: 'scale(0)', transition: 'transform 0.3s' }}
                     >
-                      <ImageIcon size={20} style={{ color: 'var(--primary)' }} />
+                      <ImageIcon size={20} className="text-primary" />
                     </div>
                   </div>
                 </div>
@@ -256,7 +256,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogContent>
                 {selectedImage && (
-                  <div style={{ position: 'relative' }}>
+                  <div className="relative">
                     {/* Close button */}
                     <Button
                       variant="ghost"
@@ -290,7 +290,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                     )}
                     
                     {/* Main image */}
-                    <div style={{ position: 'relative' }}>
+                    <div className="relative">
                       <img
                         src={selectedImage.url}
                         alt={selectedImage.alt || `Photo of ${name}`}

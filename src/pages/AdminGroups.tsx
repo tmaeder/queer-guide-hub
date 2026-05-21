@@ -57,7 +57,7 @@ export default function AdminGroups() {
               {info.getValue().charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <div style={{ fontWeight: 500 }}>{info.getValue()}</div>
+              <div className="font-medium">{info.getValue()}</div>
               {info.row.original.description && (
                 <p
                   className="text-muted-foreground truncate"

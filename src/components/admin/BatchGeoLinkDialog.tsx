@@ -147,7 +147,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                     {item.count > 0 ? (
                       <AlertCircle size={12} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                     ) : (
-                      <CheckCircle size={12} style={{ color: 'hsl(var(--foreground))' }} />
+                      <CheckCircle size={12} className="text-foreground" />
                     )}
                     <span className="text-xs">
                       <strong>{item.count}</strong> {item.label}
@@ -221,19 +221,19 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           {totals && !loading && (
             <div className="border border-border rounded-element p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <CheckCircle size={18} style={{ color: 'hsl(var(--foreground))' }} />
+                <CheckCircle size={18} className="text-foreground" />
                 <span className="text-sm font-semibold">Geo-Link Complete</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-1">
-                  <MapPin size={14} style={{ color: 'var(--muted-foreground)' }} />
+                  <MapPin size={14} className="text-muted-foreground" />
                   <span className="text-sm">
                     <strong>{totals.processed}</strong> processed
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle size={14} style={{ color: 'hsl(var(--foreground))' }} />
+                  <CheckCircle size={14} className="text-foreground" />
                   <span className="text-sm">
                     <strong>{totals.linked}</strong> fully linked
                   </span>
@@ -245,7 +245,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <AlertCircle size={14} style={{ color: 'var(--muted-foreground)' }} />
+                  <AlertCircle size={14} className="text-muted-foreground" />
                   <span className="text-sm">
                     <strong>{totals.skipped}</strong> skipped
                   </span>

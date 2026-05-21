@@ -225,7 +225,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <div className="w-16 h-16 bg-muted rounded-element flex items-center justify-center">
-                      <Music size={32} style={{ color: 'var(--muted-foreground)' }} />
+                      <Music size={32} className="text-muted-foreground" />
                     </div>
                   </div>
 

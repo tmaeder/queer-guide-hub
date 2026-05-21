@@ -215,7 +215,7 @@ export function DuplicateFinderPanel() {
                     <img src={pair.thumb_a || pair.url_a} alt="" className="w-full h-full object-cover" loading="lazy" />
                   </div>
                   <div className="flex flex-col items-center gap-1">
-                    <Badge variant="outline" style={{ fontSize: '0.625rem' }}>
+                    <Badge variant="outline" className="text-2xs">
                       dist: {pair.hamming_distance}
                     </Badge>
                   </div>

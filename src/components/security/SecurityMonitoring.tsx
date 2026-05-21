@@ -111,7 +111,7 @@ export function SecurityMonitoring() {
           <Card key={event.id}>
             <CardHeader style={{ paddingBottom: 12 }}>
               <div className="flex items-center justify-between">
-                <CardTitle style={{ fontSize: '1.125rem' }}>
+                <CardTitle className="text-lg">
                   <div className="flex items-center gap-2">
                     {getSeverityIcon(event.severity)}
                     {event.event_type.replace(/_/g, ' ')}

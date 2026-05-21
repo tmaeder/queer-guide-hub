@@ -433,7 +433,7 @@ export const ImportJobCreator = () => {
                             checked={routingAcknowledged}
                             onCheckedChange={(v) => setRoutingAcknowledged(!!v)}
                           />
-                          <Label htmlFor="ack-routing" style={{ fontSize: '0.75rem' }}>
+                          <Label htmlFor="ack-routing" className="text-xs">
                             I understand mixed-type rows will be staged as{' '}
                             {expectedType ?? 'the selected type'}.
                           </Label>

@@ -158,7 +158,7 @@ function Breadcrumb({ parent, current }: { parent: CMSPage; current: CMSPage }) 
       >
         {parent.title}
       </LocalizedLink>
-      <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+      <ChevronRight size={14} className="text-muted-foreground" />
       <span className="font-semibold text-foreground">{current.title}</span>
     </nav>
   );

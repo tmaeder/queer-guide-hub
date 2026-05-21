@@ -361,7 +361,7 @@ const Marketplace = () => {
                 }}
               >
                 {categories.map((category) => (
-                  <TabsTrigger key={category.id} value={category.id} style={{ fontSize: '0.75rem' }}>
+                  <TabsTrigger key={category.id} value={category.id} className="text-xs">
                     {category.label}
                   </TabsTrigger>
                 ))}

@@ -96,7 +96,7 @@ export function CityTravelTab({
                 {Object.entries(city.transportation_info).map(([key, value]) => (
                   <div key={key} className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
-                      <Bus size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                      <Bus size={16} className="text-muted-foreground" />
                       <span className="text-sm font-medium capitalize">
                         {key.replace(/_/g, ' ')}
                       </span>

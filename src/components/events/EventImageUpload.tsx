@@ -125,7 +125,7 @@ export const EventImageUpload = ({
             accept="image/*"
             multiple
             onChange={handleFileSelect}
-            style={{ display: 'none' }}
+            className="hidden"
             disabled={uploading || images.length >= maxImages}
           />
 
@@ -136,7 +136,7 @@ export const EventImageUpload = ({
             disabled={uploading || images.length >= maxImages}
           >
             <div className="mb-4">
-              <ImagePlus size={48} style={{ color: 'var(--muted-foreground)' }} />
+              <ImagePlus size={48} className="text-muted-foreground" />
             </div>
             <div className="text-center">
               <p className="text-sm font-medium">

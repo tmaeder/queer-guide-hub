@@ -140,7 +140,7 @@ export function EmailIngestionsManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Mail size={24} style={{ color: 'hsl(var(--foreground))' }} />
+          <Mail size={24} className="text-foreground" />
           <div>
             <h6 className="text-base font-semibold">Email Ingestions</h6>
             <p className="text-sm text-muted-foreground">Forwarded emails processed for LGBTQ+ events and venues</p>
@@ -162,13 +162,13 @@ export function EmailIngestionsManager() {
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>{completedCount}</div>
+            <div className="text-2xl font-bold text-foreground">{completedCount}</div>
             <span className="text-xs text-muted-foreground">Completed</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--destructive))' }}>{failedCount}</div>
+            <div className="text-2xl font-bold text-destructive">{failedCount}</div>
             <span className="text-xs text-muted-foreground">Failed</span>
           </CardContent>
         </Card>
@@ -332,7 +332,7 @@ export function EmailIngestionsManager() {
                             }}
                           >
                             <AlertCircle size={14} style={{ color: 'hsl(var(--destructive))', marginTop: 2, flexShrink: 0 }} />
-                            <p className="text-sm break-words" style={{ color: 'hsl(var(--destructive))' }}>{ing.error_message}</p>
+                            <p className="text-sm break-words text-destructive">{ing.error_message}</p>
                           </div>
                         </div>
                       )}

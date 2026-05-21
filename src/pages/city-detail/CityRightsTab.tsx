@@ -38,7 +38,7 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
       </div>
 
       <div className="p-4 rounded-element bg-muted">
-        <p className="text-sm text-muted-foreground" style={{ fontSize: '0.8125rem' }}>
+        <p className="text-sm text-muted-foreground text-13">
           The rights information below applies to {city.countries?.name || 'this country'} at the
           national level. Local laws and enforcement in {city.name} may vary.
         </p>

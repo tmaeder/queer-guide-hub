@@ -164,7 +164,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
               <Badge
                 key={type.id}
                 variant={(filters.types && filters.types.includes(type.id)) ? "default" : "outline"}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
                 onClick={() => toggleContentType(type.id)}
               >
                 <IconComponent style={{ height: 12, width: 12, marginRight: 4 }} />
@@ -321,8 +321,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
       <div className="flex items-center justify-between pt-2">
         <Button
           variant="ghost"
-          size="sm"
-          style={{ fontSize: '0.75rem' }}
+          size="sm" className="text-xs"
           onClick={() => setShowAdvanced(!showAdvanced)}
         >
           <Filter size={12} className="mr-1" />
@@ -424,7 +423,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
                   onFiltersChange({ ...filters, featured: checked })
                 }
               />
-              <Label htmlFor="featured" style={{ fontSize: '0.875rem' }}>Featured only</Label>
+              <Label htmlFor="featured" className="text-sm">Featured only</Label>
             </div>
 
             <div className="flex items-center gap-2">
@@ -435,7 +434,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
                   onFiltersChange({ ...filters, verified: checked })
                 }
               />
-              <Label htmlFor="verified" style={{ fontSize: '0.875rem' }}>Verified only</Label>
+              <Label htmlFor="verified" className="text-sm">Verified only</Label>
             </div>
           </div>
         </motion.div>

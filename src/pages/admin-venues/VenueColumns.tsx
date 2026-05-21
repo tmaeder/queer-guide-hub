@@ -14,7 +14,7 @@ export function useVenueColumns() {
         header: 'Name',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
             {info.row.original.address && (
               <p className="text-xs text-muted-foreground">
                 {info.row.original.address}

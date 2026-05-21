@@ -94,12 +94,12 @@ function ChangeRow({ keyName, change }: { keyName: string; change: AxisChange })
       {change.kind === 'changed' && (change.added?.length || change.removed?.length) ? (
         <div className="flex flex-row gap-4 ml-[208px] mt-1">
           {change.added && change.added.length > 0 && (
-            <span className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>
+            <span className="text-xs text-foreground">
               +{change.added.map((a) => JSON.stringify(a)).join(', ')}
             </span>
           )}
           {change.removed && change.removed.length > 0 && (
-            <span className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>
+            <span className="text-xs text-destructive">
               −{change.removed.map((a) => JSON.stringify(a)).join(', ')}
             </span>
           )}

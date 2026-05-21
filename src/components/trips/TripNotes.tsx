@@ -168,7 +168,7 @@ export function TripNotes({ tripId }: Props) {
             <CardContent>
               <div className="flex items-start justify-between gap-1">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  {note.is_pinned && <Pin size={12} style={{ flexShrink: 0 }} />}
+                  {note.is_pinned && <Pin size={12} className="shrink-0" />}
                   <span className="text-sm font-semibold truncate">
                     {note.title || t('trips.notes.untitled', 'Untitled')}
                   </span>

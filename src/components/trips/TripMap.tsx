@@ -29,7 +29,7 @@ function PopupContent({ name, subtitle, category }: PopupContentProps) {
     <div style={{ fontSize: 13, lineHeight: 1.4 }}>
       <strong>{name}</strong>
       <br />
-      <span style={{ color: 'hsl(var(--muted-foreground))' }}>{subtitle}</span>
+      <span className="text-muted-foreground">{subtitle}</span>
       {category && (
         <>
           <br />

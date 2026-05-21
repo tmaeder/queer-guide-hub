@@ -138,7 +138,7 @@ export function CityTravelHub({ destinationIata, destinationCity, equalityScore 
         ) : (
           <div className="text-center py-4 bg-accent rounded">
             <p className="text-muted-foreground text-sm">
-              No activities found. Check <LocalizedLink to="/events" style={{ textDecoration: 'underline' }}>events</LocalizedLink> for things happening in {destinationCity}.
+              No activities found. Check <LocalizedLink to="/events" className="underline">events</LocalizedLink> for things happening in {destinationCity}.
             </p>
           </div>
         )}

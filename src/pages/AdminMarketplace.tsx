@@ -175,7 +175,7 @@ export default function AdminMarketplace() {
         header: 'Title',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
             <p className="text-sm text-muted-foreground">
               {info.row.original.business_name}
             </p>

@@ -477,7 +477,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               <div className="flex flex-col gap-4">
                 <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
                   {Object.keys(formFields).map((tab) => (
-                    <TabsTrigger key={tab} value={tab} style={{ textTransform: 'capitalize' }}>
+                    <TabsTrigger key={tab} value={tab} className="capitalize">
                       {tab}
                     </TabsTrigger>
                   ))}

@@ -354,7 +354,7 @@ export default function AdminEvents() {
         header: 'Title',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
             {info.row.original.venue_name && (
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <MapPin size={11} />
@@ -431,7 +431,7 @@ export default function AdminEvents() {
           info.getValue() ? (
             <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>Free</Badge>
           ) : (
-            <span style={{ color: 'var(--muted-foreground)' }}>
+            <span className="text-muted-foreground">
               {info.row.original.price_min ? formatCurrency(info.row.original.price_min) : '-'}
             </span>
           ),

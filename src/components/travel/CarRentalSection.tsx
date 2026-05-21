@@ -55,7 +55,7 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Car size={18} style={{ color: 'var(--primary)' }} />
+        <Car size={18} className="text-primary" />
         <p className="font-semibold text-base">Rent a Car in {city}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -170,8 +170,8 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
         {applied && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 py-2">
-              <Check size={14} style={{ color: 'hsl(var(--foreground))' }} />
-              <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+              <Check size={14} className="text-foreground" />
+              <span className="text-xs font-medium text-foreground">
                 Tags applied successfully
               </span>
             </div>

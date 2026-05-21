@@ -51,7 +51,7 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Bus size={18} style={{ color: 'var(--primary)' }} />
+        <Bus size={18} className="text-primary" />
         <p className="font-semibold text-base">
           Airport Transfers{airportCode ? ` (${airportCode})` : ''}
         </p>

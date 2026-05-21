@@ -208,7 +208,7 @@ export function PersonalityHero({
           {personality.fields.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {personality.fields.map((field, index) => (
-                <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                <Badge key={index} variant="outline" className="text-xs">
                   {field}
                 </Badge>
               ))}
@@ -360,7 +360,7 @@ export function PersonalityOverview({
             <CardTitle>About</CardTitle>
           </CardHeader>
           <CardContent>
-            <p style={{ color: 'hsl(var(--muted-foreground))' }}>{personality.description}</p>
+            <p className="text-muted-foreground">{personality.description}</p>
           </CardContent>
         </Card>
       )}
@@ -375,7 +375,7 @@ export function PersonalityOverview({
               {personality.bio.split('\n').map(
                 (paragraph, index) =>
                   paragraph.trim() && (
-                    <p key={index} style={{ color: 'hsl(var(--muted-foreground))' }}>
+                    <p key={index} className="text-muted-foreground">
                       {paragraph}
                     </p>
                   ),
@@ -398,7 +398,7 @@ export function PersonalityOverview({
                     className="bg-primary rounded-full mt-2 flex-shrink-0"
                     style={{ height: 8, width: 8 }}
                   />
-                  <span style={{ color: 'hsl(var(--muted-foreground))' }}>{achievement}</span>
+                  <span className="text-muted-foreground">{achievement}</span>
                 </li>
               ))}
             </ul>
@@ -427,7 +427,7 @@ export function PersonalityOverview({
                       alt={similar.name}
                       style={{ objectFit: 'cover' }}
                     />
-                    <AvatarFallback style={{ fontSize: '0.75rem' }}>
+                    <AvatarFallback className="text-xs">
                       {getInitials(similar.name)}
                     </AvatarFallback>
                   </Avatar>
@@ -485,7 +485,7 @@ export function PersonalitySidebar({
         <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {personality.birth_date && (
             <div className="flex items-center gap-3">
-              <Calendar size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <Calendar size={16} className="text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Born</p>
                 <p className="font-medium">
@@ -498,7 +498,7 @@ export function PersonalitySidebar({
           )}
           {personality.death_date && (
             <div className="flex items-center gap-3">
-              <Calendar size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <Calendar size={16} className="text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Died</p>
                 <p className="font-medium">
@@ -511,7 +511,7 @@ export function PersonalitySidebar({
           )}
           {personality.nationality && (
             <div className="flex items-center gap-3">
-              <MapPin size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <MapPin size={16} className="text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Nationality</p>
                 {countryId ? (
@@ -529,7 +529,7 @@ export function PersonalitySidebar({
           )}
           {personality.profession && (
             <div className="flex items-center gap-3">
-              <Briefcase size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <Briefcase size={16} className="text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Profession</p>
                 <LocalizedLink
@@ -543,7 +543,7 @@ export function PersonalitySidebar({
           )}
           {personality.birth_place && (
             <div className="flex items-center gap-3">
-              <MapPin size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <MapPin size={16} className="text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Birth Place</p>
                 <p className="font-medium">{personality.birth_place}</p>

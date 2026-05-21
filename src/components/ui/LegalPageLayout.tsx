@@ -135,7 +135,7 @@ export const LegalPageLayout = ({
           <div className="mt-12 pt-6 border-t border-border">
             <p className="text-sm text-muted-foreground">
               Questions? We're real humans at{' '}
-              <a href="mailto:legal@queer.guide" className="hover:opacity-85" style={{ color: 'hsl(var(--foreground))' }}>
+              <a href="mailto:legal@queer.guide" className="hover:opacity-85 text-foreground">
                 legal@queer.guide
               </a>
             </p>

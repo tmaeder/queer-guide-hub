@@ -23,7 +23,7 @@ export function SparklineCell({ data, color = 'hsl(var(--muted-foreground))', wi
   const lastX = (data.length - 1) * step;
   const lastY = height - (last / max) * height;
   return (
-    <svg width={width} height={height} aria-hidden style={{ display: 'block' }}>
+    <svg width={width} height={height} aria-hidden className="block">
       <path d={areaPath} fill={color} fillOpacity={0.18} stroke="none" />
       <polyline fill="none" stroke={color} strokeWidth={1.2} points={points} />
       <circle cx={lastX} cy={lastY} r={1.8} fill={color} />

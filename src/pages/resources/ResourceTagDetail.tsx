@@ -66,7 +66,7 @@ export function ResourceTagDetail({
         </button>
         {parentName && (
           <>
-            <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+            <ChevronRight size={14} className="text-muted-foreground" />
             <button
               onClick={() => {
                 onSetSelectedCategory(parentName);
@@ -82,7 +82,7 @@ export function ResourceTagDetail({
         )}
         {childName && (
           <>
-            <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+            <ChevronRight size={14} className="text-muted-foreground" />
             <button
               onClick={() => {
                 onSetSelectedCategory(parentName || childName);
@@ -96,7 +96,7 @@ export function ResourceTagDetail({
             </button>
           </>
         )}
-        <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+        <ChevronRight size={14} className="text-muted-foreground" />
         <span className="text-sm font-medium">{selectedTag.name}</span>
       </div>
 

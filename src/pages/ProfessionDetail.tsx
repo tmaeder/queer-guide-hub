@@ -60,7 +60,7 @@ export default function ProfessionDetail() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} style={{ overflow: 'hidden' }}>
+              <Card key={i} className="overflow-hidden">
                 <Skeleton style={{ aspectRatio: '1/1', width: '100%' }} />
                 <div className="p-4 flex flex-col gap-2">
                   <Skeleton style={{ height: 16, width: '100%' }} />
@@ -95,12 +95,12 @@ export default function ProfessionDetail() {
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={handleBack} style={{ flexShrink: 0 }}>
+          <Button variant="outline" onClick={handleBack} className="shrink-0">
             <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
           <div className="flex items-center gap-3">
-            <User size={32} style={{ color: 'var(--primary)' }} />
+            <User size={32} className="text-primary" />
             <h4 className="text-2xl font-bold">{professionData.name}</h4>
             <Badge variant="secondary">
               {professionData.totalCount} {professionData.totalCount === 1 ? 'person' : 'people'}
@@ -113,7 +113,7 @@ export default function ProfessionDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total People</CardTitle>
-              <Users size={16} style={{ color: 'var(--muted-foreground)' }} />
+              <Users size={16} className="text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold">{professionData.totalCount}</p>
@@ -123,7 +123,7 @@ export default function ProfessionDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Locations</CardTitle>
-              <MapPin size={16} style={{ color: 'var(--muted-foreground)' }} />
+              <MapPin size={16} className="text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold">
@@ -138,7 +138,7 @@ export default function ProfessionDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Age Range</CardTitle>
-              <Calendar size={16} style={{ color: 'var(--muted-foreground)' }} />
+              <Calendar size={16} className="text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold">

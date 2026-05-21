@@ -307,8 +307,8 @@ export function CMSDuplicateManager() {
                   {Math.round(candidate.matching_criteria.title_similarity * 100)}%
                 </p>
                 {candidate.matching_criteria.title_similarity > 0.8 ?
-                  <Check size={16} style={{ color: 'hsl(var(--foreground))' }} /> :
-                  <X size={16} style={{ color: 'hsl(var(--destructive))' }} />
+                  <Check size={16} className="text-foreground" /> :
+                  <X size={16} className="text-destructive" />
                 }
               </div>
             </div>
@@ -316,24 +316,24 @@ export function CMSDuplicateManager() {
             <div className="flex items-center justify-between">
               <p className="text-sm">Location Match</p>
               {candidate.matching_criteria.location_match ?
-                <Check size={16} style={{ color: 'hsl(var(--foreground))' }} /> :
-                <X size={16} style={{ color: 'hsl(var(--destructive))' }} />
+                <Check size={16} className="text-foreground" /> :
+                <X size={16} className="text-destructive" />
               }
             </div>
 
             <div className="flex items-center justify-between">
               <p className="text-sm">Date Overlap</p>
               {candidate.matching_criteria.date_overlap ?
-                <Check size={16} style={{ color: 'hsl(var(--foreground))' }} /> :
-                <X size={16} style={{ color: 'hsl(var(--destructive))' }} />
+                <Check size={16} className="text-foreground" /> :
+                <X size={16} className="text-destructive" />
               }
             </div>
 
             <div className="flex items-center justify-between">
               <p className="text-sm">External ID Match</p>
               {candidate.matching_criteria.external_id_match ?
-                <Check size={16} style={{ color: 'hsl(var(--foreground))' }} /> :
-                <X size={16} style={{ color: 'hsl(var(--destructive))' }} />
+                <Check size={16} className="text-foreground" /> :
+                <X size={16} className="text-destructive" />
               }
             </div>
           </div>

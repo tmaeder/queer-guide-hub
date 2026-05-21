@@ -39,11 +39,11 @@ interface MessageItemProps {
 const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
   switch (status) {
     case 'sending':
-      return <Clock size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />;
+      return <Clock size={12} className="text-muted-foreground" />;
     case 'sent':
-      return <Check size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />;
+      return <Check size={12} className="text-muted-foreground" />;
     case 'delivered':
-      return <CheckCheck size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />;
+      return <CheckCheck size={12} className="text-muted-foreground" />;
     case 'read':
       return <Eye size={12} />;
     default:
@@ -163,7 +163,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
           {message.reactions && message.reactions.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
               {message.reactions.map((reaction) => (
-                <Badge key={reaction.id} variant="secondary" style={{ fontSize: '0.75rem' }}>
+                <Badge key={reaction.id} variant="secondary" className="text-xs">
                   {reaction.emoji} 1
                 </Badge>
               ))}
@@ -200,7 +200,7 @@ const TypingIndicatorComponent = ({ typingUsers }: TypingIndicatorProps) => {
       }}
     >
       <Avatar style={{ height: 24, width: 24 }}>
-        <AvatarFallback style={{ fontSize: '0.75rem' }}>
+        <AvatarFallback className="text-xs">
           {typingUsers[0]?.display_name?.charAt(0) || 'U'}
         </AvatarFallback>
       </Avatar>
@@ -474,7 +474,7 @@ const MessageInput = ({
                   style={{ height: 32, width: 32, padding: 0, transition: 'background-color 0.2s' }}
                   onClick={() => addEmoji(emoji)}
                 >
-                  <span style={{ fontSize: '1.125rem' }}>{emoji}</span>
+                  <span className="text-lg">{emoji}</span>
                 </Button>
               ))}
             </div>
@@ -598,7 +598,7 @@ export const MessagingInterface = () => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384 }}>
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p style={{ color: 'var(--muted-foreground)' }}>Loading messages...</p>
+          <p className="text-muted-foreground">Loading messages...</p>
         </div>
       </div>
     );
@@ -648,7 +648,7 @@ export const MessagingInterface = () => {
               <div className="text-center py-8">
                 <MessageCircle size={48} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                 />
-                <p style={{ color: 'var(--muted-foreground)' }}>No conversations yet</p>
+                <p className="text-muted-foreground">No conversations yet</p>
               </div>
             ) : (
               <ConversationList
@@ -767,7 +767,7 @@ export const MessagingInterface = () => {
                   <div className="text-center py-8">
                     <MessageCircle size={48} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                     />
-                    <p style={{ color: 'var(--muted-foreground)' }}>
+                    <p className="text-muted-foreground">
                       No messages yet. Start the conversation!
                     </p>
                   </div>

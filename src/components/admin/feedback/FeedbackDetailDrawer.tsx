@@ -199,8 +199,7 @@ export function FeedbackDetailDrawer({
                 <a
                   href={item.github_issue_url!}
                   target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontWeight: 600 }}
+                  rel="noopener noreferrer" className="font-semibold"
                 >
                   #{item.github_issue_number}
                 </a>

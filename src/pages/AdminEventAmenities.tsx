@@ -121,7 +121,7 @@ export default function AdminEventAmenities() {
     () => [
       columnHelper.accessor('name', {
         header: 'Name',
-        cell: (info) => <span style={{ fontWeight: 500 }}>{info.getValue()}</span>,
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('category', {

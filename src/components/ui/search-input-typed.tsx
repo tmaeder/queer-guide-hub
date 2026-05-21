@@ -73,7 +73,7 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
       !inputValue && !isFocused && safePlaceholders.length > 0;
 
     return (
-      <div style={{ position: 'relative' }}>
+      <div className="relative">
         <Input
           ref={inputRef}
           style={{
@@ -109,8 +109,7 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
               showCursor={showCursor}
               cursorCharacter={cursorCharacter}
               loop={true}
-              as="span"
-              style={{ fontSize: '0.875rem' }}
+              as="span" className="text-sm"
             />
           </div>
         )}

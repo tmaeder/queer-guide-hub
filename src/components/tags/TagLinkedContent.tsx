@@ -22,7 +22,7 @@ interface TagLinkedContentProps {
 
 function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onClick: () => void }) {
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
       <CardImage src={v.image_url} alt={v.name} fallbackIcon={MapPin} height={160}>
         {v.foursquare_rating && (
           <div
@@ -73,7 +73,7 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
   const day = date?.getDate();
 
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
       <CardImage src={e.image_url} alt={e.title} fallbackIcon={Calendar} height={140}>
         {e.event_type && (
           <div
@@ -134,7 +134,7 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
 
 function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick: () => void }) {
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
       <CardImage src={n.image_url} alt={n.title} fallbackIcon={Newspaper} height={140} />
       <div className="p-4">
         <p
@@ -187,7 +187,7 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
     .toUpperCase();
 
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
       <div
         className="relative bg-muted overflow-hidden"
         style={{ paddingTop: '133.33%' }}
@@ -249,7 +249,7 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
 
 function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onClick: () => void }) {
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
       <div className="p-4 flex items-center gap-4">
         {g.avatar_url ? (
           <img

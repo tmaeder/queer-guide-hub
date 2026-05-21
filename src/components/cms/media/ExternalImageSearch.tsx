@@ -290,8 +290,7 @@ export default function ExternalImageSearch({
                       <a
                         href={selectedImage.source_page_url}
                         target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ display: 'flex' }}
+                        rel="noopener noreferrer" className="flex"
                       >
                         <ExternalLink size={12} className="text-muted-foreground" />
                       </a>

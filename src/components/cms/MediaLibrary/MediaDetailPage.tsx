@@ -286,12 +286,12 @@ export function MediaDetailPage() {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" style={{ fontSize: '0.625rem' }}>
+                      <Badge variant="outline" className="text-2xs">
                         {entityTypeLabel(link.entity_type)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" style={{ fontSize: '0.625rem' }}>
+                      <Badge variant="secondary" className="text-2xs">
                         {link.role}
                       </Badge>
                     </TableCell>

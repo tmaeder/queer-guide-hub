@@ -423,7 +423,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               )}
               {venue.phone && (
                 <div className="flex items-center gap-3">
-                  <Phone size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                  <Phone size={16} className="text-muted-foreground" />
                   <a
                     href={`tel:${venue.phone}`}
                     className="text-sm text-primary hover:underline"
@@ -434,7 +434,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               )}
               {venue.email && (
                 <div className="flex items-center gap-3">
-                  <Mail size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                  <Mail size={16} className="text-muted-foreground" />
                   <a
                     href={`mailto:${venue.email}`}
                     className="text-sm text-primary hover:underline"
@@ -445,7 +445,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               )}
               {venue.website && (
                 <div className="flex items-center gap-3">
-                  <Globe size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                  <Globe size={16} className="text-muted-foreground" />
                   <a
                     href={venue.website}
                     target="_blank"
@@ -458,7 +458,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               )}
               {venue.instagram && (
                 <div className="flex items-center gap-3">
-                  <Instagram size={16} style={{ color: 'hsl(var(--muted-foreground))' }}
+                  <Instagram size={16} className="text-muted-foreground"
                   />
                   <a
                     href={`https://instagram.com/${venue.instagram}`}

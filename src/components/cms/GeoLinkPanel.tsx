@@ -71,8 +71,8 @@ export function GeoLinkPanel({
         <div className="flex items-center gap-2 flex-wrap">
           {isFullyLinked ? (
             <>
-              <Check size={14} style={{ color: 'hsl(var(--foreground))' }} />
-              <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>Linked</p>
+              <Check size={14} className="text-foreground" />
+              <p className="text-sm font-medium text-foreground">Linked</p>
               {locationDisplay && (
                 <p className="text-sm text-muted-foreground">{locationDisplay}</p>
               )}
@@ -87,7 +87,7 @@ export function GeoLinkPanel({
             </>
           ) : locationDisplay ? (
             <>
-              <AlertCircle size={14} style={{ color: 'var(--muted-foreground)' }} />
+              <AlertCircle size={14} className="text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{locationDisplay}</p>
               <Badge variant="outline" style={{ fontSize: '0.625rem', padding: '0 4px' }}>
                 Not linked
@@ -95,7 +95,7 @@ export function GeoLinkPanel({
             </>
           ) : (
             <>
-              <AlertCircle size={14} style={{ color: 'var(--muted-foreground)' }} />
+              <AlertCircle size={14} className="text-muted-foreground" />
               <span className="text-xs text-muted-foreground">No location data</span>
             </>
           )}
@@ -111,8 +111,8 @@ export function GeoLinkPanel({
         {linked && resultItem && !loading && (
           <div className="bg-muted p-2 flex flex-col gap-1">
             <div className="flex items-center gap-1">
-              <Check size={12} style={{ color: 'hsl(var(--foreground))' }} />
-              <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+              <Check size={12} className="text-foreground" />
+              <span className="text-xs font-medium text-foreground">
                 {resultItem.status === 'linked' ? 'Fully linked' : 'Partially linked'}
               </span>
             </div>

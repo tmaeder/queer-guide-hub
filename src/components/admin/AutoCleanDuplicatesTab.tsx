@@ -104,7 +104,7 @@ export function AutoCleanDuplicatesTab() {
             >
               <Icon style={{ width: 18, height: 18, color, margin: '0 auto 4px' }} />
               <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>{count}</p>
-              <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+              <span className="text-xs text-muted-foreground">
                 {label}
               </span>
             </div>
@@ -136,8 +136,8 @@ export function AutoCleanDuplicatesTab() {
             style={{ gap: 8, paddingTop: 8, paddingBottom: 8 }}
             onClick={() => setShowHistory(!showHistory)}
           >
-            <History size={16} style={{ color: 'var(--muted-foreground)' }} />
-            <span className="font-semibold" style={{ fontSize: '0.875rem' }}>
+            <History size={16} className="text-muted-foreground" />
+            <span className="font-semibold text-sm">
               Merge History
             </span>
             <span className="ml-auto inline-flex items-center justify-center" style={{ width: 28, height: 28 }}>
@@ -188,7 +188,7 @@ function ScanAndCleanSection({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>
+          <p className="text-sm mb-4 text-muted-foreground">
             Scans all content types for duplicates in batches of 500. High-confidence matches (above
             threshold) are auto-merged keeping the richer record. Lower-confidence pairs are flagged
             for manual review. Also clears duplicate and high-score merge candidates from Import
@@ -198,8 +198,7 @@ function ScanAndCleanSection({
           <div className="flex flex-wrap items-center mb-4" style={{ gap: 16 }}>
             <div className="flex items-center" style={{ gap: 8, width: 220 }}>
               <span
-                className="text-xs whitespace-nowrap"
-                style={{ color: 'var(--muted-foreground)' }}
+                className="text-xs whitespace-nowrap text-muted-foreground"
               >
                 Auto-merge threshold: {(threshold * 100).toFixed(0)}%
               </span>
@@ -273,10 +272,10 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
     <div style={{ marginBottom: 8 }}>
       {/* Progress info row */}
       <div className="flex justify-between" style={{ marginBottom: 4 }}>
-        <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+        <span className="text-xs font-medium text-muted-foreground">
           {message}
         </span>
-        <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+        <span className="text-xs text-muted-foreground">
           {totalScanned.toLocaleString()} scanned
         </span>
       </div>
@@ -335,7 +334,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               }}
             >
               {isDone ? (
-                <CheckCircle size={12} style={{ color: 'hsl(var(--foreground))' }} />
+                <CheckCircle size={12} className="text-foreground" />
               ) : isCurrent ? (
                 <Loader2 className="animate-spin" size={12} aria-label="Loading" />
               ) : (
@@ -438,7 +437,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               border: '1px solid hsl(var(--border))',
             }}
           >
-            <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
+            <CheckCircle size={16} className="text-foreground" />
             <p className="text-sm font-semibold">No duplicates found</p>
           </div>
         )}
@@ -455,7 +454,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
             border: '1px solid var(--border)',
           }}
         >
-          <Database size={16} style={{ color: 'var(--muted-foreground)' }} />
+          <Database size={16} className="text-muted-foreground" />
           <p className="text-sm font-semibold">
             Total scanned: {result.total_scanned.toLocaleString()}
           </p>
@@ -519,7 +518,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
                   <p className="text-sm">
                     {data.scanned.toLocaleString()}
                     {hasTotal && (
-                      <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                      <span className="text-sm text-muted-foreground">
                         {' / '}
                         {data.total!.toLocaleString()}
                       </span>
@@ -582,7 +581,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
     <Card>
       <CardHeader>
         <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.95rem' }}>
-          <Inbox size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+          <Inbox size={16} className="text-muted-foreground" />
           Import Staging Cleanup
           {total > 0 && (
             <Badge variant={dryRun ? 'secondary' : 'default'} style={{ marginLeft: 8 }}>
@@ -683,7 +682,7 @@ function StagingStat({
       }}
     >
       <p style={{ fontSize: '1.25rem', fontWeight: 700, color }}>{value}</p>
-      <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+      <span className="text-xs text-muted-foreground">
         {dryRun ? `Would: ${label}` : label}
       </span>
     </div>
@@ -733,7 +732,7 @@ function PendingReviewSection() {
         >
           <RefreshCw size={14} />
         </Button>
-        <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+        <p className="text-sm text-muted-foreground">
           {pairs.length} pending pair{pairs.length !== 1 ? 's' : ''}
         </p>
       </div>
@@ -754,12 +753,12 @@ function PendingReviewSection() {
                 marginBottom: 16,
               }}
             >
-              <CheckCircle size={40} style={{ color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={40} className="text-foreground" />
             </div>
-            <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
+            <h3 className="font-semibold mb-2 text-lg">
               No Pending Duplicates
             </h3>
-            <p style={{ color: 'var(--muted-foreground)' }}>
+            <p className="text-muted-foreground">
               Run a scan from the "Scan & Clean" tab to detect duplicates.
             </p>
           </CardContent>
@@ -831,7 +830,7 @@ function DuplicateGroup({
         onClick={() => setExpanded(!expanded)}
       >
         <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: color }} />
-        <span className="font-semibold" style={{ fontSize: '0.875rem' }}>
+        <span className="font-semibold text-sm">
           {label}
         </span>
         <Badge variant="secondary">{pairs.length}</Badge>
@@ -891,7 +890,7 @@ function MergeHistorySection() {
                       {(details.keep_name as string) || '?'}", removed "
                       {(details.remove_name as string) || '?'}"
                     </p>
-                    <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                    <span className="text-xs text-muted-foreground">
                       {(details.fk_updates as number) || 0} references updated
                     </span>
                   </div>

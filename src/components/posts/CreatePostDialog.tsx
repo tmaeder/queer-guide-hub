@@ -235,11 +235,11 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
             <div className="flex-1">
               <p>{profile?.display_name || 'User'}</p>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                <Badge variant="outline" className="text-xs">
                   {getVisibilityIcon()}
                   <span style={{ marginLeft: 4, textTransform: 'capitalize' }}>{visibility}</span>
                 </Badge>
-                <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                <Badge variant="outline" className="text-xs">
                   {getPostTypeIcon()}
                   <span style={{ marginLeft: 4, textTransform: 'capitalize' }}>{postType}</span>
                 </Badge>

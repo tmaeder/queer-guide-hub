@@ -176,7 +176,7 @@ export function FeedbackButton() {
           {status === 'submitted' ? (
             <div className="text-center py-8">
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-foreground">
-                <Check size={24} style={{ color: 'hsl(var(--background))' }} />
+                <Check size={24} className="text-background" />
               </div>
               <h6 className="text-base font-semibold mb-2">Thank you!</h6>
               <p className="text-sm text-muted-foreground mb-6">

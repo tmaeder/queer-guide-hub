@@ -113,7 +113,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
   return (
     <div className="mt-8">
       <div className="flex items-center gap-2 mb-4">
-        <Scale size={18} style={{ color: 'var(--primary)' }} />
+        <Scale size={18} className="text-primary" />
         <p className="text-base font-bold">
           {t('trips.split.title', 'Settle up')}
         </p>
@@ -147,7 +147,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
           {settlements.map((s, i) => (
             <div key={i} className="flex items-center gap-2 p-2 bg-muted text-sm">
               <p className="text-sm">{displayName(s.from_user_id)}</p>
-              <ArrowRight size={14} style={{ color: 'var(--muted-foreground)' }} />
+              <ArrowRight size={14} className="text-muted-foreground" />
               <p className="text-sm">{displayName(s.to_user_id)}</p>
               <div className="flex-1" />
               <p className="text-sm font-bold tabular-nums">{fmt(s.amount)}</p>

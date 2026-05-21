@@ -25,10 +25,10 @@ type NewsArticle = Tables<'news_articles'> & {
 const NewsCardFixture = () => (
   <Card>
     <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <h3 className="text-base font-semibold" style={{ fontSize: '1.125rem' }}>Sample News Headline</h3>
+      <h3 className="text-base font-semibold text-lg">Sample News Headline</h3>
       <div className="flex items-center gap-2">
         <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>Politics</Badge>
-        <Badge variant="outline" style={{ fontSize: '0.75rem' }}>Source</Badge>
+        <Badge variant="outline" className="text-xs">Source</Badge>
       </div>
     </CardHeader>
     <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -499,7 +499,7 @@ export const NewsCard = ({
         <div className="flex flex-wrap items-center gap-4">
           {article.published_at && (
             <div className="flex items-center gap-1">
-              <Clock size={14} style={{ color: 'var(--muted-foreground)' }} />
+              <Clock size={14} className="text-muted-foreground" />
               <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
               </span>
@@ -507,13 +507,13 @@ export const NewsCard = ({
           )}
           {readingTime !== null && (
             <div className="flex items-center gap-1">
-              <BookOpen size={14} style={{ color: 'var(--muted-foreground)' }} aria-hidden="true" />
+              <BookOpen size={14} className="text-muted-foreground" aria-hidden="true" />
               <span className="text-xs text-muted-foreground">{readingTime} min read</span>
             </div>
           )}
           {typeof article.views_count === 'number' && article.views_count > 0 && (
             <div className="flex items-center gap-1">
-              <Eye size={14} style={{ color: 'var(--muted-foreground)' }} />
+              <Eye size={14} className="text-muted-foreground" />
               <span className="text-xs text-muted-foreground">
                 {article.views_count} view{article.views_count !== 1 ? 's' : ''}
               </span>
@@ -523,8 +523,7 @@ export const NewsCard = ({
             onFilterByAuthor ? (
               <button
                 type="button"
-                className="text-xs text-muted-foreground"
-                style={{ cursor: 'pointer' }}
+                className="text-xs text-muted-foreground cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); onFilterByAuthor(authorName); }}
               >
                 By {authorName}

@@ -329,7 +329,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
           <SelectContent>
             <SelectItem value="public">
               <div className="flex items-center gap-2">
-                <Globe size={14} style={{ color: 'hsl(var(--foreground))' }} />
+                <Globe size={14} className="text-foreground" />
                 <span>Public</span>
               </div>
             </SelectItem>
@@ -341,7 +341,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
             </SelectItem>
             <SelectItem value="restricted">
               <div className="flex items-center gap-2">
-                <Lock size={14} style={{ color: 'hsl(var(--destructive))' }} />
+                <Lock size={14} className="text-destructive" />
                 <span>Restricted</span>
               </div>
             </SelectItem>

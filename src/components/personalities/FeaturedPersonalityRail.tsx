@@ -85,7 +85,7 @@ export function FeaturedPersonalityRail() {
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-3">
-        <Star size={18} style={{ color: 'hsl(var(--foreground))' }} fill="hsl(var(--foreground))" aria-hidden="true" />
+        <Star size={18} className="text-foreground" fill="hsl(var(--foreground))" aria-hidden="true" />
         <h2
           style={{
             fontWeight: 700,

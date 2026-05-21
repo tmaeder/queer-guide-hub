@@ -109,7 +109,7 @@ export function CMSAdvancedFilters({
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
                   {filterOptions.contentTypes.map(type => (
-                    <SelectItem key={type} value={type} style={{ textTransform: 'capitalize' }}>
+                    <SelectItem key={type} value={type} className="capitalize">
                       {type.replace('_', ' ')}
                     </SelectItem>
                   ))}
@@ -127,7 +127,7 @@ export function CMSAdvancedFilters({
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
                   {filterOptions.statuses.map(status => (
-                    <SelectItem key={status} value={status} style={{ textTransform: 'capitalize' }}>
+                    <SelectItem key={status} value={status} className="capitalize">
                       {status}
                     </SelectItem>
                   ))}

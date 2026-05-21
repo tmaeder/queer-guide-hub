@@ -132,7 +132,7 @@ export default function AdminVenueCategories() {
               style={{ backgroundColor: info.row.original.color || 'hsl(var(--muted-foreground))' }}
             />
             <div>
-              <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+              <span className="font-medium">{info.getValue()}</span>
               <span className="block text-xs text-muted-foreground">
                 {info.row.original.slug}
               </span>

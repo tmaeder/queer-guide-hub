@@ -201,13 +201,13 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           {result && !loading && (
             <div className="border border-border rounded-element p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <CheckCircle size={18} style={{ color: 'hsl(var(--foreground))' }} />
+                <CheckCircle size={18} className="text-foreground" />
                 <span className="text-sm font-semibold">Processing Complete</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-1">
-                  <FileText size={14} style={{ color: 'var(--muted-foreground)' }} />
+                  <FileText size={14} className="text-muted-foreground" />
                   <span className="text-sm">
                     <strong>{result.items_processed}</strong> / {result.items_total} processed
                   </span>
@@ -219,14 +219,14 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle size={14} style={{ color: 'hsl(var(--foreground))' }} />
+                  <CheckCircle size={14} className="text-foreground" />
                   <span className="text-sm">
                     <strong>{result.auto_approved}</strong> auto-approved
                   </span>
                 </div>
                 {result.items_failed > 0 && (
                   <div className="flex items-center gap-1">
-                    <AlertTriangle size={14} style={{ color: 'hsl(var(--destructive))' }} />
+                    <AlertTriangle size={14} className="text-destructive" />
                     <span className="text-sm">
                       <strong>{result.items_failed}</strong> failed
                     </span>

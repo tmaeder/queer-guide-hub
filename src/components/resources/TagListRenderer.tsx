@@ -135,7 +135,7 @@ export function TagListRenderer({
                   {uses} uses
                 </span>
               )}
-              <Badge variant="secondary" style={{ flexShrink: 0 }}>
+              <Badge variant="secondary" className="shrink-0">
                 {getTagCategoryLabel(tag)}
               </Badge>
               <ChevronRight size={14} style={{ flexShrink: 0, opacity: 0.4 }} />

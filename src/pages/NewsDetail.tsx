@@ -296,7 +296,7 @@ export default function NewsDetail() {
         </LocalizedLink>
         {article.category && article.category !== 'general' && (
           <>
-            <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+            <ChevronRight size={14} className="text-muted-foreground" />
             <button
               type="button"
               className="text-sm text-muted-foreground capitalize hover:text-primary cursor-pointer bg-transparent border-0 p-0"
@@ -306,7 +306,7 @@ export default function NewsDetail() {
             </button>
           </>
         )}
-        <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+        <ChevronRight size={14} className="text-muted-foreground" />
         <span className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[300px]">
           {decodeHtmlEntities(article.title)}
         </span>
@@ -403,8 +403,7 @@ export default function NewsDetail() {
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         {article.category && article.category !== 'general' && (
           <Badge
-            variant="outline"
-            style={{ textTransform: 'capitalize' }}
+            variant="outline" className="capitalize"
           >
             {getCategoryLabel(article.category)}
           </Badge>

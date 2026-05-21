@@ -96,7 +96,7 @@ export function QuickActions() {
         {managementSections.map((section) => (
           <Card key={section.title}>
             <CardHeader style={{ paddingBottom: 8 }}>
-              <CardTitle style={{ fontSize: '0.8125rem' }}>{section.title}</CardTitle>
+              <CardTitle className="text-13">{section.title}</CardTitle>
             </CardHeader>
             <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingTop: 0 }}>
               {section.items.map((item) => {

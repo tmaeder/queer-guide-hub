@@ -53,7 +53,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <Shield size={18} style={{ color: 'var(--primary)' }} />
+        <Shield size={18} className="text-primary" />
         <p className="font-semibold text-base">Travel Insurance</p>
       </div>
       <p className="text-sm text-muted-foreground mb-4">
@@ -72,7 +72,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
                 {p.description}
               </p>
               <div className="flex items-center gap-1 mb-3">
-                <Heart size={12} style={{ color: 'var(--primary)' }} />
+                <Heart size={12} className="text-primary" />
                 <p className="text-xs text-primary font-medium">
                   {p.lgbtqNote}
                 </p>

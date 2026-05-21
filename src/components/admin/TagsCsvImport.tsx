@@ -181,9 +181,9 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
               <CardContent>
                 <div className="flex items-center gap-2 mb-3">
                   {importResult.success ? (
-                    <CheckCircle size={20} style={{ color: 'hsl(var(--foreground))' }} />
+                    <CheckCircle size={20} className="text-foreground" />
                   ) : (
-                    <AlertCircle size={20} style={{ color: 'hsl(var(--destructive))' }} />
+                    <AlertCircle size={20} className="text-destructive" />
                   )}
                   <p className="text-sm font-semibold">
                     {importResult.success ? 'Import Successful' : 'Import Failed'}

@@ -201,8 +201,7 @@ export const AvatarSettings = ({
                   </p>
                 </div>
                 <input
-                  type="file"
-                  style={{ display: 'none' }}
+                  type="file" className="hidden"
                   accept="image/*"
                   onChange={handleFileSelect}
                 />

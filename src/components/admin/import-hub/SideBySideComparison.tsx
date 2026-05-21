@@ -125,11 +125,11 @@ export function SideBySideComparison({
           {/* Column Headers */}
           <div className="grid border-b-2 border-border bg-muted" style={gridCols}>
             <div className="p-3 font-semibold text-xs uppercase text-muted-foreground">Field</div>
-            <div className="p-3 font-semibold text-xs uppercase" style={{ color: 'hsl(var(--muted-foreground))' }}>{leftLabel}</div>
+            <div className="p-3 font-semibold text-xs uppercase text-muted-foreground">{leftLabel}</div>
             <div className="p-3 flex items-center justify-center">
               <ArrowRight size={14} className="text-muted-foreground" />
             </div>
-            <div className="p-3 font-semibold text-xs uppercase" style={{ color: 'hsl(var(--foreground))' }}>{rightLabel}</div>
+            <div className="p-3 font-semibold text-xs uppercase text-foreground">{rightLabel}</div>
           </div>
 
           {/* Rows */}

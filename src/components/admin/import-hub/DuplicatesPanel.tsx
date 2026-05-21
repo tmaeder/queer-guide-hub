@@ -230,7 +230,7 @@ function ExistingDedupSection() {
         <Card>
           <CardContent>
             <div className="mx-auto w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Search size={40} style={{ color: 'var(--muted-foreground)' }} />
+              <Search size={40} className="text-muted-foreground" />
             </div>
             <h6 className="text-base font-semibold mb-2">No Duplicate Pairs</h6>
             <p className="text-muted-foreground">

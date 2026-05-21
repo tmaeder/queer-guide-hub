@@ -86,7 +86,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
     return (
       <Card>
         <CardContent>
-          <p style={{ color: 'var(--muted-foreground)' }}>No content selected for editing</p>
+          <p className="text-muted-foreground">No content selected for editing</p>
           <Button onClick={onClose}>
             <ArrowLeft size={16} className="mr-2" />
             Back

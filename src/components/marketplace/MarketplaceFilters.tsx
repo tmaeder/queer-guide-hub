@@ -277,37 +277,37 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
           {search && (
             <Badge variant="secondary">
               Search: {search}
-              <X size={12} style={{ cursor: 'pointer' }} onClick={() => setSearch('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setSearch('')} />
             </Badge>
           )}
           {category && category !== 'all' && (
             <Badge variant="secondary">
               {category}
-              <X size={12} style={{ cursor: 'pointer' }} onClick={() => setCategory('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setCategory('')} />
             </Badge>
           )}
           {subcategory && subcategory !== 'all' && (
             <Badge variant="secondary">
               {subcategory}
-              <X size={12} style={{ cursor: 'pointer' }} onClick={() => setSubcategory('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setSubcategory('')} />
             </Badge>
           )}
           {location && (
             <Badge variant="secondary">
               Location: {location}
-              <X size={12} style={{ cursor: 'pointer' }} onClick={() => setLocation('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setLocation('')} />
             </Badge>
           )}
           {businessType && businessType !== 'all' && (
             <Badge variant="secondary">
               {businessType}
-              <X size={12} style={{ cursor: 'pointer' }} onClick={() => setBusinessType('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setBusinessType('')} />
             </Badge>
           )}
           {priceTouched && (
             <Badge variant="secondary">
               Price: ${priceMin} – {priceMax >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${priceMax}`}
-              <X size={12} style={{ cursor: 'pointer' }}
+              <X size={12} className="cursor-pointer"
                 onClick={() => {
                   setPriceMin(PRICE_MIN);
                   setPriceMax(PRICE_MAX);
@@ -319,7 +319,7 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
            {selectedTags.map((tag) => (
              <Badge key={tag} variant="secondary">
                {tag}
-               <X size={12} style={{ cursor: 'pointer' }}
+               <X size={12} className="cursor-pointer"
                  onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
                />
              </Badge>

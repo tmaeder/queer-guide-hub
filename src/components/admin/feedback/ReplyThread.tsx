@@ -90,15 +90,14 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                   )}
                   {r.email_error && (
                     <span title={r.email_error}>
-                      <AlertTriangle size={11} style={{ color: 'hsl(var(--destructive))' }} />
+                      <AlertTriangle size={11} className="text-destructive" />
                     </span>
                   )}
                   {r.github_url && (
                     <a
                       href={r.github_url}
                       target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ display: 'inline-flex' }}
+                      rel="noopener noreferrer" className="inline-flex"
                       aria-label="Open on GitHub"
                     >
                       <Github size={11} />

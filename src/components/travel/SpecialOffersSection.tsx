@@ -74,7 +74,7 @@ export function SpecialOffersSection() {
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles size={18} style={{ color: 'var(--primary)' }} />
+        <Sparkles size={18} className="text-primary" />
         <p className="font-bold text-base">Hot Deals</p>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2">

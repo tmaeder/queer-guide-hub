@@ -45,7 +45,7 @@ export default function AdminFeedback() {
           title="Keyboard shortcuts (?)"
           className="border-0 bg-transparent p-0 cursor-pointer text-xs text-muted-foreground inline-flex items-center gap-1 mt-2.5 tracking-wide transition-colors hover:text-primary active:opacity-70"
         >
-          press <strong style={{ fontWeight: 700 }}>?</strong> for shortcuts
+          press <strong className="font-bold">?</strong> for shortcuts
         </button>
       </div>
 

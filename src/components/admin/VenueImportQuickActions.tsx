@@ -182,12 +182,12 @@ export const VenueImportQuickActions = () => {
       return <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite', color: 'hsl(var(--muted-foreground))' }} />;
     }
     if (source.last_error) {
-      return <AlertCircle size={16} style={{ color: 'hsl(var(--destructive))' }} />;
+      return <AlertCircle size={16} className="text-destructive" />;
     }
     if (source.last_success_at) {
-      return <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />;
+      return <CheckCircle size={16} className="text-foreground" />;
     }
-    return <Clock size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />;
+    return <Clock size={16} className="text-muted-foreground" />;
   };
 
   const getStatusText = (source: VenueSource) => {
@@ -298,24 +298,24 @@ export const VenueImportQuickActions = () => {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--muted-foreground))' }}>{totalVenues.toLocaleString()}</div>
-              <div className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>Total Venues</div>
+              <div className="text-xl font-semibold text-muted-foreground">{totalVenues.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">Total Venues</div>
             </div>
             <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{(manualCount + nullCount).toLocaleString()}</div>
-              <div className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>Manual / Other</div>
+              <div className="text-xl font-semibold text-foreground">{(manualCount + nullCount).toLocaleString()}</div>
+              <div className="text-xs text-foreground">Manual / Other</div>
             </div>
             <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
               <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>{importedCount.toLocaleString()}</div>
               <div className="text-xs" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>Imported</div>
             </div>
             <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{activeSources}</div>
-              <div className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>Active Sources</div>
+              <div className="text-xl font-semibold text-foreground">{activeSources}</div>
+              <div className="text-xs text-foreground">Active Sources</div>
             </div>
             <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--destructive))' }}>{venueSources.length}</div>
-              <div className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>Registered Sources</div>
+              <div className="text-xl font-semibold text-destructive">{venueSources.length}</div>
+              <div className="text-xs text-destructive">Registered Sources</div>
             </div>
           </div>
         </CardContent>
@@ -375,7 +375,7 @@ export const VenueImportQuickActions = () => {
                     className="p-2 rounded"
                     style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)', border: '1px solid hsl(var(--destructive) / 0.2)' }}
                   >
-                    <span className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>
+                    <span className="text-xs text-destructive">
                       {source.last_error.slice(0, 80)}{source.last_error.length > 80 ? '...' : ''}
                     </span>
                   </div>

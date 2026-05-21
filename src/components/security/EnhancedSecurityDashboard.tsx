@@ -285,7 +285,7 @@ export function EnhancedSecurityDashboard() {
                     {event.metadata && Object.keys(event.metadata).length > 0 && (
                       <div className="mt-2 text-xs text-muted-foreground">
                         <details>
-                          <summary style={{ cursor: 'pointer' }}>Event details</summary>
+                          <summary className="cursor-pointer">Event details</summary>
                           <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-auto">
                             {JSON.stringify(event.metadata, null, 2)}
                           </pre>

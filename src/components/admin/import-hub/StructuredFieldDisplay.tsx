@@ -170,10 +170,9 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
             <a
               href={String(value)}
               target="_blank"
-              rel="noopener noreferrer"
-              style={{ flexShrink: 0 }}
+              rel="noopener noreferrer" className="shrink-0"
             >
-              <ExternalLink size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <ExternalLink size={12} className="text-muted-foreground" />
             </a>
           </span>
         );

@@ -108,7 +108,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
                   <CardContent>
                     {entityA ? (
                       <>
-                        <p className="mb-2 text-sm font-semibold" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                        <p className="mb-2 text-sm font-semibold text-muted-foreground">
                           Record A: {String(entityA[nameField] || 'Unknown')}
                         </p>
                         <StructuredFieldDisplay entityType={pair.entity_type} data={entityA} />
@@ -124,7 +124,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
                   <CardContent>
                     {entityB ? (
                       <>
-                        <p className="mb-2 text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                        <p className="mb-2 text-sm font-semibold text-foreground">
                           Record B: {String(entityB[nameField] || 'Unknown')}
                         </p>
                         <StructuredFieldDisplay entityType={pair.entity_type} data={entityB} />

@@ -82,8 +82,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
         <DialogHeader>
           <div className="flex items-center justify-center gap-2 mb-3">
             <Heart
-              className="w-7 h-7 fill-current animate-pulse"
-              style={{ color: 'var(--primary)' }}
+              className="w-7 h-7 fill-current animate-pulse text-primary"
             />
             <h6 className="text-base font-bold gradient-text">
               The Queer Guide

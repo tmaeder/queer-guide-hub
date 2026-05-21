@@ -188,7 +188,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               ) : (
                 <ChevronRight size={14} />
               )}
-              <AlertTriangle size={12} style={{ color: 'hsl(var(--destructive))' }} />
+              <AlertTriangle size={12} className="text-destructive" />
               <span className="text-xs font-semibold">
                 Console errors ({ctx.errors.length})
               </span>
@@ -295,7 +295,7 @@ function MetaItem({
         <span className="block text-muted-foreground" style={{ fontSize: '0.6rem', lineHeight: 1 }}>
           {label}
         </span>
-        <span className="block font-semibold" style={{ fontSize: '0.75rem' }}>
+        <span className="block font-semibold text-xs">
           {value}
         </span>
       </div>

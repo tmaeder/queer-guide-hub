@@ -93,7 +93,7 @@ export function VenueIngestStatsPanel() {
                 const anyStuck = h.stuck_normalize + h.stuck_validate + h.stuck_dedup + h.stuck_commit + h.review_stale;
                 return (
                   <div key={h.target_table} className="grid gap-2 text-sm py-1.5 border-t border-border" style={{ gridTemplateColumns: '1.2fr repeat(9, 1fr)' }}>
-                    <span style={{ fontWeight: 500 }}>{h.target_table}</span>
+                    <span className="font-medium">{h.target_table}</span>
                     <span>{h.total.toLocaleString()}</span>
                     <span>{h.pending}</span>
                     <span style={{ color: h.rejected > 0 ? 'hsl(var(--destructive))' : undefined }}>{h.rejected}</span>

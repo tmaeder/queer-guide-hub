@@ -196,11 +196,11 @@ export function ImageOptimizationManager() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />;
+      case 'completed': return <CheckCircle size={16} className="text-foreground" />;
       case 'processing': return <RefreshCw size={16} style={{ color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />;
-      case 'failed': return <AlertCircle size={16} style={{ color: 'hsl(var(--destructive))' }} />;
+      case 'failed': return <AlertCircle size={16} className="text-destructive" />;
       case 'pending': return <Clock size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
-      default: return <FileImage size={16} style={{ color: 'var(--muted-foreground)' }} />;
+      default: return <FileImage size={16} className="text-muted-foreground" />;
     }
   };
 
@@ -272,7 +272,7 @@ export function ImageOptimizationManager() {
             <Card>
               <CardContent>
                 <FileImage size={48} style={{ margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>No Images Found</h3>
+                <h3 className="font-semibold mb-2 text-lg">No Images Found</h3>
                 <p className="text-muted-foreground mb-4">Click "Scan Images" to find images in your project</p>
                 <Button onClick={scanForImages} disabled={isScanning}>
                   <FolderOpen size={16} className="mr-2" />
@@ -287,7 +287,7 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent>
                     <div className="flex items-center gap-2">
-                      <FileImage size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                      <FileImage size={20} className="text-muted-foreground" />
                       <div>
                         <p className="font-bold" style={{ fontSize: '1.5rem' }}>{images.length}</p>
                         <p className="text-sm text-muted-foreground">Total Images</p>
@@ -299,7 +299,7 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent>
                     <div className="flex items-center gap-2">
-                      <HardDrive size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                      <HardDrive size={20} className="text-muted-foreground" />
                       <div>
                         <p className="font-bold" style={{ fontSize: '1.5rem' }}>
                           {formatFileSize(images.reduce((sum, img) => sum + img.originalSize, 0))}
@@ -313,7 +313,7 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent>
                     <div className="flex items-center gap-2">
-                      <Server size={20} style={{ color: 'hsl(var(--foreground))' }} />
+                      <Server size={20} className="text-foreground" />
                       <div>
                         <p className="font-bold" style={{ fontSize: '1.5rem' }}>
                           {jobs.filter(job => job.status === 'completed').length}
@@ -378,7 +378,7 @@ export function ImageOptimizationManager() {
             <Card>
               <CardContent>
                 <Server size={48} style={{ margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>No Background Jobs</h3>
+                <h3 className="font-semibold mb-2 text-lg">No Background Jobs</h3>
                 <p className="text-muted-foreground mb-4">Start an optimization job to see it here</p>
                 <Button onClick={startOptimizationJob}>
                   <Server size={16} className="mr-2" />

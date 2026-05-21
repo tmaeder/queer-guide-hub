@@ -117,7 +117,7 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
             {item.data.description}
           </p>
           <div className="flex items-center gap-1 mt-1.5">
-            <Clock size={10} style={{ color: 'var(--muted-foreground)' }} />
+            <Clock size={10} className="text-muted-foreground" />
             <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
               {timeAgo(item.submitted_at)}
             </span>

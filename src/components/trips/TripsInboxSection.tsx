@@ -110,7 +110,7 @@ export function TripsInboxSection() {
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-4">
-        <InboxIcon size={20} style={{ color: 'var(--primary)' }} />
+        <InboxIcon size={20} className="text-primary" />
         <h2 className="text-base font-bold">
           {t('pages.inbox.title', 'Travel inbox')}
           {orphanReservations.length > 0 && (
@@ -141,7 +141,7 @@ export function TripsInboxSection() {
       {suggestions.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles size={16} style={{ color: 'var(--primary)' }} />
+            <Sparkles size={16} className="text-primary" />
             <p className="font-bold text-15">
               {t('pages.inbox.suggestions.title', 'Suggested trips')}
             </p>
@@ -285,7 +285,7 @@ function OrphanRow({
         </p>
         {range && (
           <div className="flex items-center gap-1 mt-1">
-            <Calendar size={13} style={{ color: 'var(--muted-foreground)' }} />
+            <Calendar size={13} className="text-muted-foreground" />
             <span className="text-xs text-muted-foreground">{range}</span>
           </div>
         )}
@@ -360,7 +360,7 @@ function ForwardingAddressCard() {
   return (
     <div className="mt-4 p-6 bg-muted">
       <div className="flex items-center gap-2 mb-2">
-        <Mail size={18} style={{ color: 'var(--primary)' }} />
+        <Mail size={18} className="text-primary" />
         <p className="font-bold">
           {t('pages.inbox.forwarding.title', 'Forward bookings here')}
         </p>

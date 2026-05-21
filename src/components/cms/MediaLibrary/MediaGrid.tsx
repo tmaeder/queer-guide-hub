@@ -40,9 +40,9 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
       }
       return (
         <div
-          className="w-full h-full flex items-center justify-center bg-muted"
+          className="w-full h-full flex items-center justify-center bg-muted overflow-hidden"
           dangerouslySetInnerHTML={{ __html: svgContent }}
-          style={{ overflow: 'hidden' }}
+         
         />
       );
     } catch {
@@ -143,7 +143,7 @@ export function MediaGrid(props: MediaGridProps) {
                   <Star size={14} style={{ fill: item.starred ? 'currentColor' : 'none' }} />
                 </Button>
                 {item.usage_count > 0 && (
-                  <Badge variant="secondary" style={{ fontSize: '0.625rem' }}>
+                  <Badge variant="secondary" className="text-2xs">
                     {item.usage_count} use{item.usage_count !== 1 ? 's' : ''}
                   </Badge>
                 )}
@@ -215,7 +215,7 @@ export function MediaGrid(props: MediaGridProps) {
 
           <div className="flex items-center gap-2">
             {item.usage_count > 0 && (
-              <Badge variant="secondary" style={{ fontSize: '0.625rem' }}>
+              <Badge variant="secondary" className="text-2xs">
                 {item.usage_count}
               </Badge>
             )}

@@ -386,7 +386,7 @@ export const UserDirectoryFilters = ({
                             <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
                               <Sparkles size={12} />
                               {interest}
-                              <X size={12} style={{ cursor: 'pointer' }}
+                              <X size={12} className="cursor-pointer"
                                 onClick={() => handleInterestToggle(interest)}
                               />
                             </Badge>
@@ -496,7 +496,7 @@ export const UserDirectoryFilters = ({
                   >
                     <Navigation size={12} />
                     Near Me
-                    <X size={12} style={{ cursor: 'pointer' }}
+                    <X size={12} className="cursor-pointer"
                       onClick={handleNearMeToggle}
                     />
                   </Badge>
@@ -505,7 +505,7 @@ export const UserDirectoryFilters = ({
                   <Badge variant="secondary" style={{ gap: 4 }}>
                     <MapPin size={12} />
                     {filters.location}
-                    <X size={12} style={{ cursor: 'pointer' }}
+                    <X size={12} className="cursor-pointer"
                       onClick={() => setFilters((prev) => ({ ...prev, location: '' }))}
                     />
                   </Badge>
@@ -514,7 +514,7 @@ export const UserDirectoryFilters = ({
                   <Badge variant="secondary" style={{ gap: 4 }}>
                     <Calendar size={12} />
                     {filters.ageRange}
-                    <X size={12} style={{ cursor: 'pointer' }}
+                    <X size={12} className="cursor-pointer"
                       onClick={() => setFilters((prev) => ({ ...prev, ageRange: 'all' }))}
                     />
                   </Badge>
@@ -523,7 +523,7 @@ export const UserDirectoryFilters = ({
                   <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
                     <Sparkles size={12} />
                     {interest}
-                    <X size={12} style={{ cursor: 'pointer' }}
+                    <X size={12} className="cursor-pointer"
                       onClick={() => handleInterestToggle(interest)}
                     />
                   </Badge>

@@ -161,7 +161,7 @@ export function ImageUpload({
         <Label htmlFor={id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <ImageIcon size={16} />
           {label}
-          {required && <span style={{ color: 'hsl(var(--destructive))' }}>*</span>}
+          {required && <span className="text-destructive">*</span>}
         </Label>
       )}
 
@@ -170,16 +170,15 @@ export function ImageUpload({
         type="file"
         accept={accept}
         onChange={handleFileSelect}
-        style={{ display: 'none' }}
+        className="hidden"
         id={id}
       />
 
       {preview ? (
-        <Card style={{ position: 'relative' }}>
+        <Card className="relative">
           <CardContent style={{ padding: 16 }}>
             <div
-              role="presentation"
-              style={{ position: 'relative' }}
+              role="presentation" className="relative"
               onMouseEnter={(e) => {
                 const overlay = e.currentTarget.querySelector('[data-overlay]') as HTMLElement;
                 if (overlay) overlay.style.opacity = '1';
@@ -244,7 +243,7 @@ export function ImageUpload({
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <Upload size={32} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                <Upload size={32} className="text-muted-foreground" />
                 <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', margin: 0 }}>
                   Click to upload an image
                 </p>

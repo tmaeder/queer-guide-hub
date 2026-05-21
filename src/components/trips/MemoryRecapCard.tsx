@@ -109,7 +109,7 @@ export function MemoryRecapCard({ tripId }: Props) {
     <Card>
       <CardContent>
         <div className="flex justify-between items-start gap-2 mb-3">
-          <span className="uppercase tracking-wider font-bold text-xs" style={{ color: 'hsl(var(--foreground))' }}>
+          <span className="uppercase tracking-wider font-bold text-xs text-foreground">
             {t('trips.recap.badge', 'Trip recap')}
           </span>
           <Button

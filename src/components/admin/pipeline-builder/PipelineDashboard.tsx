@@ -74,35 +74,35 @@ export default function PipelineDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <Play size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+            <Play size={16} className="text-muted-foreground" />
             <span style={statValue}>{runningCount}</span>
           </div>
           <p style={statLabel}>Running</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
+            <CheckCircle size={16} className="text-foreground" />
             <span style={statValue}>{recentCompleted}</span>
           </div>
           <p style={statLabel}>Completed</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <XCircle size={16} style={{ color: 'hsl(var(--destructive))' }} />
+            <XCircle size={16} className="text-destructive" />
             <span style={statValue}>{recentFailed}</span>
           </div>
           <p style={statLabel}>Failed</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <Database size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+            <Database size={16} className="text-muted-foreground" />
             <span style={statValue}>{totalStaging}</span>
           </div>
           <p style={statLabel}>Staging Items</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            {openCircuits > 0 ? <AlertTriangle size={16} style={{ color: 'hsl(var(--destructive))' }} /> : <Shield size={16} style={{ color: 'hsl(var(--foreground))' }} />}
+            {openCircuits > 0 ? <AlertTriangle size={16} className="text-destructive" /> : <Shield size={16} className="text-foreground" />}
             <span style={statValue}>{openCircuits}</span>
           </div>
           <p style={statLabel}>Open Circuits</p>

@@ -216,7 +216,7 @@ function Column({
         style={{ borderColor: col.color }}
       >
         <p className="text-sm font-bold">{col.label}</p>
-        <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
+        <Badge variant="secondary" className="text-xs">
           {items.length}
         </Badge>
       </div>

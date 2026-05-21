@@ -77,7 +77,7 @@ export function VenueEnrichmentPreview({
             <Card key={index} className="cursor-pointer transition-colors hover:bg-muted/40">
               <CardHeader style={{ paddingBottom: 12 }}>
                 <div className="flex items-center justify-between">
-                  <CardTitle style={{ fontSize: '1.125rem' }}>{result.data.name || venueName}</CardTitle>
+                  <CardTitle className="text-lg">{result.data.name || venueName}</CardTitle>
                   <Badge variant={getSourceBadgeVariant(result.source)}>
                     {formatSourceName(result.source)}
                   </Badge>
@@ -121,7 +121,7 @@ export function VenueEnrichmentPreview({
                 )}
 
                 {result.data.category && (
-                  <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                  <Badge variant="outline" className="text-xs">
                     {result.data.category}
                   </Badge>
                 )}

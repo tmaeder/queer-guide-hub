@@ -438,7 +438,7 @@ export default function EmailTemplates() {
                       </div>
                     </CardTitle>
                     <CardDescription>
-                      Template Key: <code style={{ fontSize: '0.75rem' }}>{selectedTemplate.template_key}</code>
+                      Template Key: <code className="text-xs">{selectedTemplate.template_key}</code>
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -528,7 +528,7 @@ export default function EmailTemplates() {
                   <div className="flex flex-col gap-2">
                     <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Subject Line</Label>
                     <div className="rounded-element bg-muted" style={{ padding: 12 }}>
-                      <code style={{ fontSize: '0.875rem' }}>{selectedTemplate.subject}</code>
+                      <code className="text-sm">{selectedTemplate.subject}</code>
                     </div>
                   </div>
 
@@ -554,7 +554,7 @@ export default function EmailTemplates() {
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         {selectedTemplate.variables.map((variable) => (
                           <div key={variable.name} className="flex flex-col gap-1">
-                            <Label htmlFor={`preview-${variable.name}`} style={{ fontSize: '0.75rem' }}>
+                            <Label htmlFor={`preview-${variable.name}`} className="text-xs">
                               {variable.name}
                             </Label>
                             <Input

@@ -96,9 +96,9 @@ export function PersonalizedFeed() {
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-4">
         {isPersonalized ? (
-          <Sparkles size={20} style={{ color: 'var(--primary)' }} />
+          <Sparkles size={20} className="text-primary" />
         ) : (
-          <TrendingUp size={20} style={{ color: 'var(--primary)' }} />
+          <TrendingUp size={20} className="text-primary" />
         )}
         <h6 className="font-bold" style={{ fontSize: '1.1rem' }}>
           {isPersonalized ? 'Recommended for You' : 'Popular Destinations'}
@@ -126,7 +126,7 @@ export function PersonalizedFeed() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <p className="font-bold" style={{ fontSize: '0.95rem' }}>{city.name}</p>
-                    <p className="text-muted-foreground" style={{ fontSize: '0.75rem' }}>{city.country_name}</p>
+                    <p className="text-muted-foreground text-xs">{city.country_name}</p>
                   </div>
                   {city.equality_score != null && (
                     <div className="flex items-center gap-1">

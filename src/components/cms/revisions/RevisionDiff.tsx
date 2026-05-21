@@ -224,7 +224,7 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
                       border: '1px solid hsl(var(--foreground) / 0.2)',
                     }}
                   >
-                    <span className="block mb-1 text-xs font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                    <span className="block mb-1 text-xs font-semibold text-foreground">
                       Added
                     </span>
                     <div

@@ -240,7 +240,7 @@ export default function AdminPersonalities() {
         header: 'Name',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
             {info.row.original.pronouns && (
               <p className="text-sm text-muted-foreground">
                 {info.row.original.pronouns}

@@ -75,7 +75,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Zap size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <Zap size={20} className="text-muted-foreground" />
               <span className="text-2xl font-bold">{sources.length}</span>
             </div>
             <p className="text-xs text-muted-foreground">Total Sources</p>
@@ -84,7 +84,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <CheckCircle size={20} style={{ color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={20} className="text-foreground" />
               <span className="text-2xl font-bold">{enabledCount}</span>
             </div>
             <p className="text-xs text-muted-foreground">Enabled</p>
@@ -93,7 +93,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <AlertTriangle size={20} style={{ color: 'hsl(var(--destructive))' }} />
+              <AlertTriangle size={20} className="text-destructive" />
               <span className="text-2xl font-bold">{errorCount}</span>
             </div>
             <p className="text-xs text-muted-foreground">Errors</p>
@@ -102,7 +102,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Database size={20} style={{ color: 'hsl(var(--foreground))' }} />
+              <Database size={20} className="text-foreground" />
               <span className="text-2xl font-bold">
                 {sources.reduce((sum, s) => sum + (s.total_items_fetched || 0), 0).toLocaleString()}
               </span>
@@ -167,7 +167,7 @@ export const IngestionSourcesManager = () => {
                       {hasError && (
                         <Alert style={{ marginTop: 8, padding: '4px 8px' }}>
                           <AlertTriangle size={14} />
-                          <AlertDescription style={{ fontSize: '0.75rem' }}>
+                          <AlertDescription className="text-xs">
                             {source.last_error}
                           </AlertDescription>
                         </Alert>

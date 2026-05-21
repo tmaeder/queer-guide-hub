@@ -212,7 +212,7 @@ export function ResourceSubcategory({
             <span className="text-sm">{getCategoryShortName(parent.name)}</span>
           </button>
         )}
-        <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+        <ChevronRight size={14} className="text-muted-foreground" />
         <Icon style={{ width: 18, height: 18 }} />
         <h6 className="text-base font-semibold">{getCategoryShortName(selectedSubcategory)}</h6>
         <Badge variant="secondary">{subTags.length}</Badge>

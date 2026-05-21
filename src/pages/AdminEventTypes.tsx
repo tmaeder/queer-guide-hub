@@ -115,7 +115,7 @@ export default function AdminEventTypes() {
               className="w-4 h-4 rounded-badge flex-shrink-0"
               style={{ backgroundColor: info.row.original.color }}
             />
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
           </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,

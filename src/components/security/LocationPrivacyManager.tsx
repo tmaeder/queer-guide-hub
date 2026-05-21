@@ -34,7 +34,7 @@ export function LocationPrivacyManager() {
             {/* Precise Location Setting */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Eye size={16} style={{ color: 'var(--muted-foreground)' }} />
+                <Eye size={16} className="text-muted-foreground" />
                 <div>
                   <p className="font-medium">Precise Location Sharing</p>
                   <p className="text-sm text-muted-foreground">
@@ -61,7 +61,7 @@ export function LocationPrivacyManager() {
             {/* Region-Only Setting */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Shield size={16} style={{ color: 'var(--muted-foreground)' }} />
+                <Shield size={16} className="text-muted-foreground" />
                 <div>
                   <p className="font-medium">Region-Only Sharing</p>
                   <p className="text-sm text-muted-foreground">
@@ -88,7 +88,7 @@ export function LocationPrivacyManager() {
             {/* Auto-Anonymize Setting */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Clock size={16} style={{ color: 'var(--muted-foreground)' }} />
+                <Clock size={16} className="text-muted-foreground" />
                 <div>
                   <p className="font-medium">Automatic Data Anonymization</p>
                   <p className="text-sm text-muted-foreground">

@@ -68,7 +68,7 @@ export function PageLoading({ text = "Loading..." }: PageLoadingProps) {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Main loading animation */}
-        <div style={{ position: 'relative' }}>
+        <div className="relative">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             {[0, 1, 2, 3, 4].map((i) => (
               <div

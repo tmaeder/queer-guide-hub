@@ -177,7 +177,7 @@ export default function AdminIngestionRules() {
           <h4 className="text-xl font-bold">
             Ingestion Rules & URL Import
           </h4>
-          <p style={{ color: 'var(--muted-foreground)' }}>
+          <p className="text-muted-foreground">
             Auto-tag/route community submissions; paste a URL to seed an inbox row.
           </p>
         </div>
@@ -285,7 +285,7 @@ export default function AdminIngestionRules() {
                       if (confirm(`Delete rule "${r.name}"?`)) deleteMut.mutate(r.id);
                     }}
                   >
-                    <Trash2 size={14} style={{ color: 'hsl(var(--destructive))' }} />
+                    <Trash2 size={14} className="text-destructive" />
                   </Button>
                 </div>
               ))}

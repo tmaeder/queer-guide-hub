@@ -195,7 +195,7 @@ export default function AdminNewsSources() {
         header: 'Name',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
             <p className="text-sm text-muted-foreground">
               {info.row.original.url}
             </p>
@@ -233,7 +233,7 @@ export default function AdminNewsSources() {
           return (
             <div className="flex items-center gap-1">
               {row.status === 'error' ? (
-                <AlertCircle size={14} style={{ color: 'hsl(var(--destructive))' }} />
+                <AlertCircle size={14} className="text-destructive" />
               ) : (
                 <CheckCircle size={14} style={{ color: active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
                 />

@@ -122,7 +122,7 @@ export function SearchPopoverResults({
           <SlidersHorizontal size={12} />
           {t('search.filters', 'Filters')}
           {activeFiltersCount > 0 && (
-            <span style={{ color: 'hsl(var(--muted-foreground))' }}>· {activeFiltersCount}</span>
+            <span className="text-muted-foreground">· {activeFiltersCount}</span>
           )}
         </button>
       </div>
@@ -249,7 +249,7 @@ export function SearchPopoverResults({
 
         {loading && suggestions.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 8 }}>
-            <Loader2 className="animate-spin" size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+            <Loader2 className="animate-spin text-muted-foreground" size={14} />
           </div>
         )}
       </div>

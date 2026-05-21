@@ -115,11 +115,11 @@ export function SecurityDashboard() {
     switch (severity) {
       case 'critical':
       case 'high':
-        return <AlertTriangle size={16} style={{ color: 'hsl(var(--destructive))' }} />;
+        return <AlertTriangle size={16} className="text-destructive" />;
       case 'medium':
         return <Eye size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
       default:
-        return <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />;
+        return <CheckCircle size={16} className="text-foreground" />;
     }
   };
 
@@ -147,7 +147,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Events (24h)</p>
                 <p className="text-2xl font-bold">{metrics.totalEvents}</p>
               </div>
-              <Eye size={32} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <Eye size={32} className="text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -159,7 +159,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Critical Events</p>
                 <p className="text-2xl font-bold text-destructive">{metrics.criticalEvents}</p>
               </div>
-              <AlertTriangle size={32} style={{ color: 'hsl(var(--destructive))' }} />
+              <AlertTriangle size={32} className="text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -171,7 +171,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Admin Access</p>
                 <p className="text-2xl font-bold">{metrics.recentAdminAccess}</p>
               </div>
-              <Lock size={32} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <Lock size={32} className="text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -236,27 +236,27 @@ export function SecurityDashboard() {
         <CardContent>
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Profile data encryption and RLS policies hardened</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Location privacy lockdown implemented</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Financial data security enhanced</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Credential storage security implemented</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Content sanitization enhanced</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle size={16} style={{ color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Admin access logging and monitoring active</span>
             </div>
           </div>

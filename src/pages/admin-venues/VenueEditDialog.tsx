@@ -42,7 +42,7 @@ export function VenueEditDialog({
                 variant="outline"
                 onClick={onEnrich}
                 disabled={isEnriching || !formData.name.trim()}
-                style={{ fontSize: '0.875rem' }}
+                className="text-sm"
               >
                 {isEnriching ? 'Enriching...' : 'Enrich Venue'}
               </Button>

@@ -455,7 +455,7 @@ export default function TodayModePage() {
                         <p className="text-sm text-muted-foreground">{item.subtitle}</p>
                       )}
                       <div className="flex items-center gap-1 mt-1">
-                        <Clock size={12} style={{ color: 'var(--muted-foreground)' }} />
+                        <Clock size={12} className="text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">
                           {item.start
                             ? item.start.toLocaleTimeString(undefined, {

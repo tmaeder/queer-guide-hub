@@ -279,9 +279,9 @@ export function DraggableItinerary({
                 style={{ backgroundColor: 'hsl(var(--foreground))' }}
                 aria-hidden="true"
               />
-              <MapIcon size={28} style={{ color: 'hsl(var(--foreground))' }}
+              <MapIcon size={28}
                 aria-hidden="true"
-                className="absolute inset-0 m-auto"
+                className="absolute inset-0 m-auto text-foreground"
               />
             </div>
             <h6 className="font-bold mb-2 text-xl tracking-tight">{t('trips.itinerary.emptyTitle')}</h6>

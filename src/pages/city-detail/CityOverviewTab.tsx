@@ -173,7 +173,7 @@ export function CityOverviewTab({
                 {city.climate_type && (
                   <div className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
-                      <Thermometer size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                      <Thermometer size={16} className="text-muted-foreground" />
                       <span className="text-sm font-medium">Climate</span>
                     </div>
                     <span className="font-bold">{city.climate_type}</span>
@@ -182,7 +182,7 @@ export function CityOverviewTab({
                 {city.latitude && city.longitude && (
                   <div className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
-                      <MapPin size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                      <MapPin size={16} className="text-muted-foreground" />
                       <span className="text-sm font-medium">Coordinates</span>
                     </div>
                     <span className="font-mono text-sm">
@@ -206,12 +206,12 @@ export function CityOverviewTab({
                     <span className="text-sm font-medium mb-2 block">Postal Codes</span>
                     <div className="flex flex-wrap gap-1">
                       {city.postal_codes.slice(0, 3).map((code: string, index: number) => (
-                        <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                        <Badge key={index} variant="outline" className="text-xs">
                           {code}
                         </Badge>
                       ))}
                       {city.postal_codes.length > 3 && (
-                        <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                        <Badge variant="outline" className="text-xs">
                           +{city.postal_codes.length - 3} more
                         </Badge>
                       )}
@@ -223,7 +223,7 @@ export function CityOverviewTab({
                     <span className="text-sm font-medium mb-2 block">Area Codes</span>
                     <div className="flex flex-wrap gap-1">
                       {city.area_codes.map((code: string, index: number) => (
-                        <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                        <Badge key={index} variant="outline" className="text-xs">
                           <Phone size={12} className="mr-1" />
                           {code}
                         </Badge>
@@ -234,7 +234,7 @@ export function CityOverviewTab({
                 {effectiveIata && (
                   <div className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
-                      <Plane size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                      <Plane size={16} className="text-muted-foreground" />
                       <span className="text-sm font-medium">
                         {hasAirport ? 'Major Airport' : 'Nearest Airport'}
                       </span>
@@ -285,7 +285,7 @@ export function CityOverviewTab({
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {city.economy_sectors.map((sector: string, index: number) => (
-                        <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                        <Badge key={index} variant="outline" className="text-xs">
                           {sector}
                         </Badge>
                       ))}

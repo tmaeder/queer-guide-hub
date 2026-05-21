@@ -42,7 +42,7 @@ export function getRedirectColumns() {
               {source}
             </span>
             {(row.start_at || row.end_at) && (
-              <Clock size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <Clock size={12} className="text-muted-foreground" />
             )}
           </div>
         );
@@ -87,7 +87,7 @@ export function getRedirectColumns() {
         return (
           <span>
             {info.getValue().toLocaleString()}
-            {row.click_limit ? <span style={{ color: 'hsl(var(--muted-foreground))' }}> / {row.click_limit}</span> : null}
+            {row.click_limit ? <span className="text-muted-foreground"> / {row.click_limit}</span> : null}
           </span>
         );
       },

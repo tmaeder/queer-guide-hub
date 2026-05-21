@@ -205,7 +205,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
                 <div className="flex items-start gap-4">
                   <div className="shrink-0">
                     <div className="w-16 h-16 bg-muted rounded-element flex items-center justify-center">
-                      <Video size={32} style={{ color: 'var(--muted-foreground)' }} />
+                      <Video size={32} className="text-muted-foreground" />
                     </div>
                   </div>
 

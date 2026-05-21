@@ -129,7 +129,7 @@ export default function GroupDetail() {
       <div className="mx-auto py-8">
         <div className="text-center flex flex-col gap-4">
           <h1 className="text-2xl font-bold">Group not found</h1>
-          <p style={{ color: 'hsl(var(--muted-foreground))' }}>
+          <p className="text-muted-foreground">
             The group you're looking for doesn't exist or you don't have access to it.
           </p>
           <Button asChild>
@@ -177,9 +177,9 @@ export default function GroupDetail() {
                 <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
                   <h1 className="text-3xl font-bold">{group.name}</h1>
                   {group.is_private ? (
-                    <Lock size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                    <Lock size={20} className="text-muted-foreground" />
                   ) : (
-                    <Globe size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                    <Globe size={20} className="text-muted-foreground" />
                   )}
                 </div>
 
@@ -211,7 +211,7 @@ export default function GroupDetail() {
                 )}
               </div>
 
-              {group.description && <p style={{ color: 'hsl(var(--muted-foreground))' }}>{group.description}</p>}
+              {group.description && <p className="text-muted-foreground">{group.description}</p>}
 
               {group.tags && group.tags.length > 0 && (
                 <div className="flex flex-col gap-2">
@@ -307,24 +307,24 @@ export default function GroupDetail() {
                 <h4 className="text-base font-semibold">Group Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <Users size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                    <Users size={16} className="text-muted-foreground" />
                     <span>{group.member_count} members</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {group.is_private ? (
                       <>
-                        <Lock size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                        <Lock size={16} className="text-muted-foreground" />
                         <span>Private group</span>
                       </>
                     ) : (
                       <>
-                        <Globe size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                        <Globe size={16} className="text-muted-foreground" />
                         <span>Public group</span>
                       </>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                    <Clock size={16} className="text-muted-foreground" />
                     <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
@@ -339,8 +339,7 @@ export default function GroupDetail() {
                       {group.tags.map((tag) => (
                         <Badge
                           key={tag}
-                          variant="outline"
-                          style={{ cursor: 'pointer' }}
+                          variant="outline" className="cursor-pointer"
                           onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
                         >
                           {tag}

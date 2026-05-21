@@ -199,7 +199,7 @@ export function FlyerScanUpload({
           multiple={!isMobile}
           capture={isMobile ? 'environment' : undefined}
           onChange={handleInputChange}
-          style={{ display: 'none' }}
+          className="hidden"
         />
         <div className="flex items-center gap-3">
           <div

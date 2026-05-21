@@ -237,7 +237,7 @@ export function EventHero({
           </div>
           {event.festivals?.id && (
             <div className="flex items-center gap-1 mb-1">
-              <Music size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <Music size={14} className="text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
                 Part of <span className="text-sm font-semibold">{event.festivals.name}</span>
               </span>
@@ -527,20 +527,20 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-3">
-            <Calendar size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+            <Calendar size={16} className="text-muted-foreground" />
             <span className="text-sm">{formatEventDate(event.start_date, event.end_date)}</span>
           </div>
           <div className="flex items-center gap-3">
-            <Clock size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+            <Clock size={16} className="text-muted-foreground" />
             <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
           </div>
           <div className="flex items-center gap-3">
-            <DollarSign size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+            <DollarSign size={16} className="text-muted-foreground" />
             <span className="text-sm font-medium">{getPriceDisplay(event)}</span>
           </div>
           {event.max_attendees && (
             <div className="flex items-center gap-3">
-              <Users size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+              <Users size={16} className="text-muted-foreground" />
               <span className="text-sm">Max {event.max_attendees} attendees</span>
             </div>
           )}

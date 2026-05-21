@@ -229,7 +229,7 @@ export default function TagRelationshipGraph({
           {topNodes.map((node) => (
             <Card
               key={node.id}
-              style={{ cursor: 'pointer' }}
+              className="cursor-pointer"
               onClick={() => onTagClick({ id: node.id, name: node.name })}
             >
               <CardContent style={{ padding: 12 }}>

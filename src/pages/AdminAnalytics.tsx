@@ -97,7 +97,7 @@ export default function AdminAnalytics() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                    <Users size={16} style={{ color: 'var(--muted-foreground)' }} />
+                    <Users size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <p className="text-xl font-bold">{stats.totalUsers.toLocaleString()}</p>
@@ -108,7 +108,7 @@ export default function AdminAnalytics() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Active Events</CardTitle>
-                    <Calendar size={16} style={{ color: 'var(--muted-foreground)' }} />
+                    <Calendar size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <p className="text-xl font-bold">{stats.totalEvents.toLocaleString()}</p>
@@ -119,7 +119,7 @@ export default function AdminAnalytics() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Venues</CardTitle>
-                    <Building size={16} style={{ color: 'var(--muted-foreground)' }} />
+                    <Building size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <p className="text-xl font-bold">{stats.totalVenues.toLocaleString()}</p>
@@ -130,7 +130,7 @@ export default function AdminAnalytics() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Community Groups</CardTitle>
-                    <Users size={16} style={{ color: 'var(--muted-foreground)' }} />
+                    <Users size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <p className="text-xl font-bold">{stats.totalGroups.toLocaleString()}</p>
@@ -143,7 +143,7 @@ export default function AdminAnalytics() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Marketplace Items</CardTitle>
-                    <Star size={16} style={{ color: 'var(--muted-foreground)' }} />
+                    <Star size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <p className="text-xl font-bold">{stats.marketplaceItems.toLocaleString()}</p>
@@ -154,7 +154,7 @@ export default function AdminAnalytics() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">News Articles</CardTitle>
-                    <MessageSquare size={16} style={{ color: 'var(--muted-foreground)' }} />
+                    <MessageSquare size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <p className="text-xl font-bold">{stats.newsArticles.toLocaleString()}</p>
@@ -165,7 +165,7 @@ export default function AdminAnalytics() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Engagement</CardTitle>
-                    <TrendingUp size={16} style={{ color: 'var(--muted-foreground)' }} />
+                    <TrendingUp size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <p className="text-xl font-bold">{stats.totalEngagement.toLocaleString()}</p>

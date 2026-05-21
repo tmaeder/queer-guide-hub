@@ -167,7 +167,7 @@ export function MergeDuplicatesDialog({
                   }}
                 >
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <span style={{ fontWeight: 500 }}>{titleOf(row)}</span>
+                    <span className="font-medium">{titleOf(row)}</span>
                     <Badge variant="outline">{row.status}</Badge>
                     {row.platform && <Badge variant="secondary">{row.platform}</Badge>}
                   </div>

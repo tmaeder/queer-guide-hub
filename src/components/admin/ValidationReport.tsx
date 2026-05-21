@@ -63,7 +63,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
       case 'validating':
         return <Clock size={20} style={{ color: 'var(--primary)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />;
       case 'cancelled':
-        return <XCircle size={20} style={{ color: 'var(--muted-foreground)' }} />;
+        return <XCircle size={20} className="text-muted-foreground" />;
       default:
         return <AlertCircle size={20} style={{ color: 'var(--warning)' }} />;
     }
@@ -161,7 +161,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
           {/* Job Overview */}
           <Card>
             <CardHeader>
-              <CardTitle style={{ fontSize: '1.125rem' }}>Job Overview</CardTitle>
+              <CardTitle className="text-lg">Job Overview</CardTitle>
               <CardDescription>Basic information about this import job</CardDescription>
             </CardHeader>
             <CardContent>

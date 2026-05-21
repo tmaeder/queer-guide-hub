@@ -293,7 +293,7 @@ export default function About() {
                   }}
                 >
                   <p className="font-bold">{member.name}</p>
-                  <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                  <p className="text-sm font-semibold text-foreground">
                     {member.role}
                   </p>
                   <p className="text-sm text-muted-foreground leading-[1.6]">{member.description}</p>
@@ -333,7 +333,7 @@ export default function About() {
           </div>
 
           <div className="flex gap-4 flex-wrap">
-            <LocalizedLink to="/venues" style={{ textDecoration: 'none' }}>
+            <LocalizedLink to="/venues" className="no-underline">
               <Button size="lg">
                 Explore Venues
                 <ArrowRight size={18} className="ml-2" aria-hidden="true" />
@@ -405,10 +405,10 @@ export default function About() {
           Every verified entry has a story behind it. Add yours.
         </p>
         <div className="mt-6 flex flex-wrap gap-3 justify-center">
-          <LocalizedLink to="/submit" style={{ textDecoration: 'none' }}>
+          <LocalizedLink to="/submit" className="no-underline">
             <ShineButton>Submit a venue</ShineButton>
           </LocalizedLink>
-          <LocalizedLink to="/donate" style={{ textDecoration: 'none' }}>
+          <LocalizedLink to="/donate" className="no-underline">
             <HoverBorderGradient>Support us</HoverBorderGradient>
           </LocalizedLink>
         </div>

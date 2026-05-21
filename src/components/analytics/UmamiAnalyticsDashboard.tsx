@@ -436,7 +436,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Page Views</CardTitle>
-            <Eye size={16} style={{ color: 'var(--muted-foreground)' }} />
+            <Eye size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.totalPageViews.toLocaleString()}</p>
@@ -447,7 +447,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Sessions</CardTitle>
-            <Users size={16} style={{ color: 'var(--muted-foreground)' }} />
+            <Users size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.totalSessions.toLocaleString()}</p>
@@ -458,7 +458,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Unique Visitors</CardTitle>
-            <Monitor size={16} style={{ color: 'var(--muted-foreground)' }} />
+            <Monitor size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.uniqueVisitors.toLocaleString()}</p>
@@ -469,7 +469,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Avg. Duration</CardTitle>
-            <Clock size={16} style={{ color: 'var(--muted-foreground)' }} />
+            <Clock size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{Math.round(stats.avgSessionDuration / 60)}m</p>
@@ -480,7 +480,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Bounce Rate</CardTitle>
-            <TrendingUp size={16} style={{ color: 'var(--muted-foreground)' }} />
+            <TrendingUp size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.bounceRate}%</p>
@@ -491,7 +491,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Conversion</CardTitle>
-            <Globe size={16} style={{ color: 'var(--muted-foreground)' }} />
+            <Globe size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.conversionRate}%</p>
@@ -737,7 +737,7 @@ export const UmamiAnalyticsDashboard = () => {
                   {stats.topDevices.map((device, _index) => (
                     <div key={device.device} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
-                        <Smartphone size={16} style={{ color: 'var(--muted-foreground)' }}
+                        <Smartphone size={16} className="text-muted-foreground"
                         />
                         <span className="text-sm">{device.device}</span>
                       </div>
@@ -762,7 +762,7 @@ export const UmamiAnalyticsDashboard = () => {
                   {stats.topScreens.map((screen, _index) => (
                     <div key={screen.screen} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
-                        <Monitor size={16} style={{ color: 'var(--muted-foreground)' }}
+                        <Monitor size={16} className="text-muted-foreground"
                         />
                         <span className="text-sm font-mono">{screen.screen}</span>
                       </div>

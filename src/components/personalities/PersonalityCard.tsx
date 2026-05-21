@@ -168,8 +168,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
         </h3>
         {personality.profession && (
           <p
-            className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap"
-            style={{ fontSize: '0.8125rem' }}
+            className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13"
           >
             {personality.profession}
           </p>

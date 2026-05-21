@@ -205,8 +205,7 @@ const Index = React.memo(() => {
               <li key={feature.titleKey} className="bg-background">
                 <LocalizedLink
                   to={feature.link}
-                  className="flex h-full items-start gap-3 p-6 transition-colors hover:bg-muted/40"
-                  style={{ textDecoration: 'none' }}
+                  className="flex h-full items-start gap-3 p-6 transition-colors hover:bg-muted/40 no-underline"
                 >
                   <Icon size={20} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
                   <div>
@@ -250,15 +249,13 @@ const Index = React.memo(() => {
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <LocalizedLink
             to="/submit"
-            className="inline-flex items-center justify-center rounded-full bg-background text-foreground px-7 py-4 text-sm font-bold tracking-tight hover:opacity-90 transition-opacity"
-            style={{ textDecoration: 'none' }}
+            className="inline-flex items-center justify-center rounded-full bg-background text-foreground px-7 py-4 text-sm font-bold tracking-tight hover:opacity-90 transition-opacity no-underline"
           >
             {t('home.cta.submit', 'Add a venue')}
           </LocalizedLink>
           <LocalizedLink
             to="/about"
-            className="inline-flex items-center justify-center rounded-full border border-background text-background px-7 py-4 text-sm font-bold tracking-tight hover:bg-background hover:text-foreground transition-colors"
-            style={{ textDecoration: 'none' }}
+            className="inline-flex items-center justify-center rounded-full border border-background text-background px-7 py-4 text-sm font-bold tracking-tight hover:bg-background hover:text-foreground transition-colors no-underline"
           >
             {t('home.cta.about', 'Read the mission')}
           </LocalizedLink>

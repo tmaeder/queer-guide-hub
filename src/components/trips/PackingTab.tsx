@@ -137,7 +137,7 @@ export function PackingTab({ tripId }: Props) {
           className="w-14 h-14 rounded-element flex items-center justify-center mx-auto mb-3"
           style={{ background: 'hsl(var(--foreground) / 0.1)' }}
         >
-          <CheckSquare size={26} style={{ color: 'hsl(var(--foreground))' }} />
+          <CheckSquare size={26} className="text-foreground" />
         </div>
         <h3 className="text-lg font-bold mb-1">{t('trips.packing.emptyTitle')}</h3>
         <p className="text-sm text-muted-foreground mb-6 max-w-[360px] mx-auto">

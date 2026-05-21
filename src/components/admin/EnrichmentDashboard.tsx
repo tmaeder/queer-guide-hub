@@ -98,7 +98,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
           className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
-          <Activity size={15} style={{ color: 'hsl(var(--foreground))' }} />
+          <Activity size={15} className="text-foreground" />
         </div>
         <h3 className="text-sm font-semibold">Pipeline Health (24h)</h3>
         {health.queueDepth > 0 && (
@@ -188,7 +188,7 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
           className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
-          <BarChart3 size={15} style={{ color: 'hsl(var(--foreground))' }} />
+          <BarChart3 size={15} className="text-foreground" />
         </div>
         <h3 className="text-sm font-semibold">Quality Scores</h3>
       </div>
@@ -245,14 +245,14 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
               </div>
 
               <div className="flex gap-4 mt-1">
-                <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+                <span className="text-xs font-medium text-foreground">
                   {q.excellent.toLocaleString()} excellent
                 </span>
-                <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+                <span className="text-xs font-medium text-foreground">
                   {q.good.toLocaleString()} good
                 </span>
                 {q.needsAttention > 0 && (
-                  <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+                  <span className="text-xs font-medium text-foreground">
                     {q.needsAttention.toLocaleString()} attention
                   </span>
                 )}
@@ -301,7 +301,7 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
           className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
-          <AlertTriangle size={15} style={{ color: 'hsl(var(--foreground))' }} />
+          <AlertTriangle size={15} className="text-foreground" />
         </div>
         <h3 className="text-sm font-semibold">Needs Attention</h3>
         {needsAttention.total > 0 && (
@@ -319,8 +319,8 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
           className="flex items-center gap-2 p-4 rounded-element"
           style={{ background: 'hsl(var(--muted))' }}
         >
-          <CheckCircle2 size={16} style={{ color: 'hsl(var(--foreground))' }} />
-          <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+          <CheckCircle2 size={16} className="text-foreground" />
+          <span className="text-sm font-medium text-foreground">
             All content is above quality threshold
           </span>
         </div>
@@ -387,7 +387,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
           className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
-          <Inbox size={15} style={{ color: 'hsl(var(--foreground))' }} />
+          <Inbox size={15} className="text-foreground" />
         </div>
         <h3 className="text-sm font-semibold">Review Queue</h3>
         <Badge
@@ -406,8 +406,8 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
           className="flex items-center gap-2 p-4 rounded-element"
           style={{ background: 'hsl(var(--muted))' }}
         >
-          <CheckCircle2 size={16} style={{ color: 'hsl(var(--foreground))' }} />
-          <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+          <CheckCircle2 size={16} className="text-foreground" />
+          <span className="text-sm font-medium text-foreground">
             No items pending review
           </span>
         </div>
@@ -538,7 +538,7 @@ function FailedEnrichmentsCard() {
           className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
-          <XCircle size={15} style={{ color: 'hsl(var(--foreground))' }} />
+          <XCircle size={15} className="text-foreground" />
         </div>
         <h3 className="text-sm font-semibold">Failed Enrichments (7d)</h3>
         <Badge
@@ -557,8 +557,8 @@ function FailedEnrichmentsCard() {
           className="flex items-center gap-2 p-4 rounded-element"
           style={{ background: 'hsl(var(--muted))' }}
         >
-          <CheckCircle2 size={16} style={{ color: 'hsl(var(--foreground))' }} />
-          <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+          <CheckCircle2 size={16} className="text-foreground" />
+          <span className="text-sm font-medium text-foreground">
             No failed enrichments
           </span>
         </div>

@@ -366,7 +366,7 @@ export default function SearchResults() {
                 </div>
                 {result.metadata?.featured && (
                   <div className="absolute" style={{ top: 8, right: 8 }}>
-                    <Badge style={{ fontSize: '0.75rem' }}>
+                    <Badge className="text-xs">
                       <Sparkles size={12} className="mr-1" />
                       Featured
                     </Badge>
@@ -478,17 +478,17 @@ export default function SearchResults() {
                 <div className="flex-1">
                   <div className="flex items-center mb-2" style={{ gap: 8 }}>
                     <Icon style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-                    <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
+                    <Badge variant="secondary" className="text-xs">
                       {result.type}
                     </Badge>
                     {result.metadata?.featured && (
-                      <Badge style={{ fontSize: '0.75rem' }}>
+                      <Badge className="text-xs">
                         <Sparkles size={12} className="mr-1" />
                         Featured
                       </Badge>
                     )}
                   </div>
-                  <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
+                  <h3 className="font-semibold mb-2 text-lg">
                     {result.title}
                   </h3>
                   {result.description && (
@@ -539,12 +539,12 @@ export default function SearchResults() {
                   {result.metadata?.tags && result.metadata.tags.length > 0 && (
                     <div className="flex flex-wrap" style={{ gap: 4 }}>
                       {result.metadata.tags.slice(0, 4).map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                        <Badge key={index} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
                       {result.metadata.tags.length > 4 && (
-                        <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                        <Badge variant="outline" className="text-xs">
                           +{result.metadata.tags.length - 4} more
                         </Badge>
                       )}
@@ -848,7 +848,7 @@ export default function SearchResults() {
         >
           <Search size={48} style={{ color: 'hsl(var(--muted-foreground))', marginBottom: 16 }}
           />
-          <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
+          <h3 className="font-semibold mb-2 text-lg">
             Keep typing
           </h3>
           <p className="text-muted-foreground">
@@ -861,7 +861,7 @@ export default function SearchResults() {
           {(!query || query.trim() === '') && (
             <Card>
               <CardContent>
-                <h3 className="font-semibold mb-4" style={{ fontSize: '1.125rem' }}>
+                <h3 className="font-semibold mb-4 text-lg">
                   Try searching for...
                 </h3>
                 <div className="flex flex-wrap mb-6" style={{ gap: 8 }}>
@@ -920,7 +920,7 @@ export default function SearchResults() {
               <Search size={48} style={{ color: 'hsl(var(--muted-foreground))',
                   marginBottom: 16 }}
               />
-              <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
+              <h3 className="font-semibold mb-2 text-lg">
                 Search is temporarily unavailable
               </h3>
               <p className="text-muted-foreground mb-4">
@@ -936,7 +936,7 @@ export default function SearchResults() {
               <Search size={48} style={{ color: 'hsl(var(--muted-foreground))',
                   marginBottom: 16 }}
               />
-              <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
+              <h3 className="font-semibold mb-2 text-lg">
                 {t('search.noResultsFor', 'No results found for "{{q}}"', { q: query })}
               </h3>
               {dymHit && (dymHit.title || dymHit.name) && (
@@ -1038,15 +1038,14 @@ export default function SearchResults() {
                         <h2 className="font-semibold inline-flex items-center" style={{ fontSize: '1rem', gap: 8 }}>
                           <Icon style={{ width: 16, height: 16 }} />
                           {label}
-                          <span className="text-muted-foreground" style={{ fontWeight: 400 }}>
+                          <span className="text-muted-foreground font-normal">
                             ({typeResults.length})
                           </span>
                         </h2>
                         {typeResults.length > topN.length && (
                           <Button
                             variant="ghost"
-                            size="sm"
-                            style={{ fontSize: '0.75rem' }}
+                            size="sm" className="text-xs"
                             onClick={() => setSelectedTab(type)}
                           >
                             See all {typeResults.length} →

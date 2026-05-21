@@ -164,11 +164,11 @@ export function AutomatedSecurityScheduler() {
   const getStatusIcon = (status: ScheduledTask['status']) => {
     switch (status) {
       case 'active':
-        return <Shield size={16} style={{ color: 'hsl(var(--foreground))' }} />;
+        return <Shield size={16} className="text-foreground" />;
       case 'pending':
         return <Clock size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
       case 'error':
-        return <AlertCircle size={16} style={{ color: 'hsl(var(--destructive))' }} />;
+        return <AlertCircle size={16} className="text-destructive" />;
     }
   };
 

@@ -353,7 +353,7 @@ export function LocationAutocomplete({
             gap: 4,
           }}>
             {isValidated && (
-              <Check size={16} style={{ color: 'hsl(var(--foreground))' }} />
+              <Check size={16} className="text-foreground" />
             )}
             {isLoading && (
               <Loader2 size={12} style={{ color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />

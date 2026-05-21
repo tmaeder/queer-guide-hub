@@ -57,7 +57,7 @@ export const ChatGPTConnection = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {isConnected ? (
                 <>
-                  <CheckCircle size={20} style={{ color: 'hsl(var(--foreground))' }} />
+                  <CheckCircle size={20} className="text-foreground" />
                   <span style={{ fontWeight: 500, color: 'hsl(var(--foreground))' }}>Connected via OAuth</span>
                   {status?.expires_at && (
                     <Badge variant="secondary">Expires in {formatExpiry(status.expires_at)}</Badge>
@@ -74,7 +74,7 @@ export const ChatGPTConnection = () => {
                 </>
               ) : (
                 <>
-                  <XCircle size={20} style={{ color: 'hsl(var(--destructive))' }} />
+                  <XCircle size={20} className="text-destructive" />
                   <span style={{ fontWeight: 500, color: 'hsl(var(--destructive))' }}>Not Connected</span>
                   {hasFallback && <Badge variant="outline">API key fallback available</Badge>}
                 </>

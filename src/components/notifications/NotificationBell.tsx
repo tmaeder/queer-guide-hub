@@ -26,7 +26,7 @@ export const NotificationBell = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" style={{ position: 'relative' }} aria-label="Notifications">
+        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           {unreadCount > 0 ? (
             <BellRing size={20} />
           ) : (

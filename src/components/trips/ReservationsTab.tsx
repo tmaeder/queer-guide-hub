@@ -130,7 +130,7 @@ export function ReservationsTab({ tripId }: Props) {
         </div>
         <div className="rounded-container border border-dashed border-muted px-6 py-12 text-center md:py-20">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-element bg-[hsl(var(--foreground)/0.1)]">
-            <Ticket size={26} style={{ color: 'hsl(var(--foreground))' }} />
+            <Ticket size={26} className="text-foreground" />
           </div>
           <h3 className="mb-1 text-lg font-bold">
             {t('trips.reservations.emptyTitle')}
