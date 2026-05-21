@@ -251,7 +251,7 @@ function SharedTripPage() {
         />
         <div className="relative z-[1] w-full px-[1.25rem] md:px-4 py-[1.25rem] md:py-4">
           <div
-            className="inline-flex items-center gap-0.5 px-[0.625rem] rounded-full text-white text-xs2 font-bold uppercase tracking-[0.04em] mb-[0.3125rem]"
+            className="inline-flex items-center gap-0.5 px-[0.625rem] rounded-full text-white text-xs2 font-bold uppercase tracking-label mb-[0.3125rem]"
             style={{ backgroundColor: 'rgba(255,255,255,0.18)', padding: '1px 10px' }}
           >
             <Sparkles size={12} />

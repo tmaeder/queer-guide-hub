@@ -99,7 +99,7 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
 
       {report.crossBorderWarnings.length > 0 && (
         <div className="mb-4">
-          <p className="font-bold mb-1 uppercase tracking-[0.04em] text-xs2 text-muted-foreground">
+          <p className="font-bold mb-1 uppercase tracking-label text-xs2 text-muted-foreground">
             {t('trips.safety.crossBorderHeading')}
           </p>
           {report.crossBorderWarnings.map((w, i) => (
@@ -113,7 +113,7 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
       )}
 
       <p
-        className={`font-bold mb-1.5 uppercase tracking-[0.04em] text-xs2 text-muted-foreground ${tripId && tripDays ? 'mt-4' : ''}`}
+        className={`font-bold mb-1.5 uppercase tracking-label text-xs2 text-muted-foreground ${tripId && tripDays ? 'mt-4' : ''}`}
       >
         {t('trips.safety.countriesHeading')}
       </p>
@@ -380,7 +380,7 @@ function DetailRow({
         />
       )}
       <div className="flex-1 min-w-0">
-        <span className="block uppercase tracking-[0.04em] font-bold text-muted-foreground text-2xs">
+        <span className="block uppercase tracking-label font-bold text-muted-foreground text-2xs">
           {label}
         </span>
         <p

@@ -59,7 +59,7 @@ function CellTitle({
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center gap-2">
         <Icon size={14} className="text-muted-foreground" aria-hidden />
-        <h3 className="text-xs font-medium uppercase tracking-[0.04em] text-muted-foreground">
+        <h3 className="text-xs font-medium uppercase tracking-label text-muted-foreground">
           {label}
         </h3>
       </div>
@@ -81,7 +81,7 @@ function CellTitle({
 function Metric({ label, value, ok }: { label: string; value: string; ok: boolean }) {
   return (
     <div className="p-2 bg-muted">
-      <div className="text-2xs font-medium uppercase tracking-[0.04em] text-muted-foreground">
+      <div className="text-2xs font-medium uppercase tracking-label text-muted-foreground">
         {label}
       </div>
       <div className={`text-base font-bold leading-none mt-1 ${ok ? '' : 'text-destructive'}`}>
@@ -259,7 +259,7 @@ function ContentOverviewCell({ stats }: { stats: CockpitData['stats'] }) {
       span={12}
       title={
         <div className="flex items-center justify-between w-full">
-          <h3 className="text-xs font-medium uppercase tracking-[0.04em] text-muted-foreground">
+          <h3 className="text-xs font-medium uppercase tracking-label text-muted-foreground">
             Content Overview
           </h3>
           <span className="text-xs2 text-muted-foreground">

@@ -49,6 +49,13 @@
   --text-body-lg: 1.0625rem;
   --text-body-lg--line-height: 1.7;
 
+  /* ── Letter-spacing — semantic label tracking ────────────────────
+     +1.6% letter-spacing for uppercase metadata labels (admin h3,
+     safety briefing headers, trip status chips). Replaces the raw
+     `tracking-wide` literal flagged in UI audit P8 §5 and the
+     `tracking-[0.04em]` arbitraries scattered across admin + trips. */
+  --tracking-label: 0.04em;
+
   /* ── Border radius — semantic 3-tier system + flat + full ──────────
      Legacy --radius-{xs..4xl} ladder retired 2026-05-20 (UI audit P6);
      no consumers remain. The semantic trio is the public API.
