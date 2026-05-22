@@ -34,8 +34,7 @@ export function useMyPlaceMarks() {
     queryKey: user ? QK.all(user.id) : ['place_marks', 'anon'],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_place_marks')
+      const { data, error } = await untypedFrom('user_place_marks')
         .select('*')
         .order('marked_at', { ascending: false });
       if (error) throw error;
@@ -50,8 +49,7 @@ export function useEntityMarks(entity_type: PlaceMarkEntity, entity_id: string |
     queryKey: user && entity_id ? QK.forEntity(user.id, entity_type, entity_id) : ['place_marks', 'noop'],
     enabled: !!user && !!entity_id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_place_marks')
+      const { data, error } = await untypedFrom('user_place_marks')
         .select('*')
         .eq('entity_type', entity_type)
         .eq('entity_id', entity_id!);
@@ -73,8 +71,7 @@ export function useTogglePlaceMark() {
       note?: string;
     }) => {
       if (!user) throw new Error('Not signed in');
-      const { data: existing } = await supabase
-        .from('user_place_marks')
+      const { data: existing } = await untypedFrom('user_place_marks')
         .select('id')
         .eq('user_id', user.id)
         .eq('entity_type', input.entity_type)
