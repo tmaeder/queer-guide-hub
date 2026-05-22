@@ -44,6 +44,7 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 2024,
       globals: globals.browser,
+      parserOptions: { tsconfigRootDir: import.meta.dirname },
     },
     plugins: {
       "react-hooks": reactHooks,
