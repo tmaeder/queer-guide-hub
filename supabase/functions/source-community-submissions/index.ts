@@ -4,6 +4,20 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // Stages pending community_submissions (including flyer scan results) into
 // ingestion_staging so they flow through the full pipeline.
 
+// Maps community_submissions.content_type (written by workers/submit) to the
+// canonical target_table that pipeline-validate / pipeline-commit expect.
+// Keep in sync with CONTENT_TYPE_BY_ENTITY in workers/submit/src/supabase.ts.
+const TARGET_TABLE: Record<string, string> = {
+  venue:       'venues',
+  event:       'events',
+  hotel:       'venues',                // accommodation_type marks it as a hotel downstream
+  place:       'venues',                // place is a venue subtype
+  product:     'marketplace_listings',
+  news:        'news_articles',
+  personality: 'personalities',
+}
+const INGESTIBLE_CONTENT_TYPES = Object.keys(TARGET_TABLE)
+
 Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
@@ -26,11 +40,12 @@ Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
       .order('submitted_at', { ascending: true })
       .limit(batchLimit)
 
+    // Restrict to ingestible entity types in both branches — feedback /
+    // pipeline_failure / api_error rows share this table but don't belong in
+    // the ingestion pipeline.
+    q = q.in('content_type', INGESTIBLE_CONTENT_TYPES).not('data', 'is', null)
     if (platformIn?.length) {
       q = q.in('platform', platformIn)
-    } else {
-      // Legacy / non-social pipeline: keep the old behaviour (event/venue only).
-      q = q.in('content_type', ['event', 'venue']).not('data', 'is', null)
     }
 
     if (requireRelevance) {
@@ -49,9 +64,9 @@ Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
     const stagedIds: string[] = []
 
     for (const row of rows) {
-      // Default to events when content_type is null (social-ingestion path —
-      // extraction will refine after dedup).
-      const targetTable = row.content_type === 'venue' ? 'venues' : 'events'
+      // INGESTIBLE_CONTENT_TYPES filter guarantees a match; defensive fallback
+      // just so a future content_type addition doesn't silently misroute.
+      const targetTable = TARGET_TABLE[row.content_type ?? ''] ?? 'events'
       stagingRows.push({
         source_type:     row.platform ? `community-${row.platform}` : 'community-submission',
         target_table:    targetTable,
