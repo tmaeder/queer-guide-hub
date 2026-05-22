@@ -10,6 +10,7 @@
  */
 import { fetchRows, type Env } from './sitemap';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
+import { safeOgImage } from './safeOgImage';
 
 export type DetailResult = {
   meta: RouteMeta;
@@ -114,7 +115,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
         `${name}${city ? ` in ${city}` : ''} — LGBTQ+ ${subtype.toLowerCase()} on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: (arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -147,8 +148,12 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     name,
     url: `${SITE_ORIGIN}${pathname}`,
     description: description || undefined,
+    // P2.3 — only emit PostalAddress when we have a real streetAddress.
+    // Schema.org/Google flags PostalAddress entries without streetAddress
+    // as invalid LocalBusiness markup. City + country alone go into the
+    // areaServed field below; they don't pretend to be a postal address.
     address:
-      address || city
+      address
         ? {
             '@type': 'PostalAddress',
             streetAddress: address,
@@ -157,6 +162,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
             addressCountry: country,
           }
         : undefined,
+    areaServed: !address && (city || country) ? [city, country].filter(Boolean).join(', ') : undefined,
     geo:
       numField(row, 'latitude') !== undefined && numField(row, 'longitude') !== undefined
         ? {
@@ -219,7 +225,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
         } on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: (arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -298,7 +304,10 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
   if (!row) return null;
 
   const title = stringField(row, 'title') ?? slug;
-  const excerpt = stringField(row, 'excerpt') ?? '';
+  // P2.4 — excerpt occasionally contains inline HTML (anchors, em). The
+  // meta description tag must be plain text or social previews render
+  // raw tags. Strip + collapse whitespace before truncating.
+  const excerpt = collapseWs(stripHtml(stringField(row, 'excerpt') ?? ''));
   const author = stringField(row, 'author');
   const publisher = stringField(row, 'publisher_name');
   const image = stringField(row, 'image_url');
@@ -306,7 +315,7 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
   const meta: RouteMeta = {
     title: truncate(`${title}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(excerpt || `${title} — LGBTQ+ news on Queer Guide.`, MAX_DESC),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const sourceLink = stringField(row, 'url');
@@ -350,7 +359,10 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     isBasedOn: sourceLink,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(articleLd)) };
+  // P1.2 / P1.1 — /news/:slug is hard-removed at the CDN (public/_redirects
+  // serves 410 Gone). This codepath only runs if the redirect rule somehow
+  // misses; mark the row noindex as defense-in-depth.
+  return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: false };
 }
 
 // Personalities
@@ -383,7 +395,7 @@ async function personalityDetail(
       description || bio || `${name} — notable LGBTQ+ figure on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -469,7 +481,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
         `Queer venues, events, hotels and travel tips for ${name}. ${venues.length} venues, ${events.length} upcoming events on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const venuesList = venues
@@ -575,7 +587,7 @@ async function countryDetail(env: Env, slug: string, pathname: string): Promise<
         `LGBTQ+ legal status, safety, venues and travel guide for ${name}. ${legal ? `Legal status: ${legal}.` : ''}`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -633,7 +645,7 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
       description || `LGBTQ+ friendly hotel${city ? ` in ${city}` : ''} on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: (arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -712,7 +724,7 @@ async function villageDetail(env: Env, slug: string, pathname: string): Promise<
       description || `${name} — historic queer neighborhood and travel destination on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const landmarksList = landmarks
@@ -782,7 +794,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
       description || `Articles, venues and events about ${name} on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
