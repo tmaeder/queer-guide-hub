@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import * as Sentry from '@sentry/react';
 import { supabase } from '@/integrations/supabase/client';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
@@ -365,6 +366,15 @@ export function useViewportPoints({
       }
 
       mapDebug('fetch:resolve', { gen, features: allFeatures.length, counts });
+      // Diagnostic breadcrumb. If pins ever silently stop rendering in
+      // prod, the Sentry trail will show "fetch returned N venues" so
+      // we know whether the bug is in the data path or the renderer.
+      Sentry.addBreadcrumb({
+        category: 'venues-map',
+        level: 'info',
+        message: 'viewport-fetch',
+        data: { features: allFeatures.length, zoom, counts },
+      });
       setGeojson({ type: 'FeatureCollection', features: allFeatures });
       setLayerCounts(counts);
       lastRawBboxRef.current = bbox;
