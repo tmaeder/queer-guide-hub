@@ -102,7 +102,7 @@ function MainGridSection({
             : undefined
         }
       >
-        {visible.map((listing) => (
+        {visible.map((listing, index) => (
           <div key={listing.id}>
             <MarketplaceCard
               listing={listing}
@@ -111,6 +111,7 @@ function MainGridSection({
               showFavoriteButton={userPresent}
               searchQuery={searchQuery}
               imageAsset={listingAssets.get(listing.id)}
+              priority={index < 8}
             />
           </div>
         ))}

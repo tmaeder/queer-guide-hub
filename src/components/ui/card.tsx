@@ -38,6 +38,13 @@ interface CardImageProps {
   fallbackIcon?: LucideIcon;
   children?: React.ReactNode;
   className?: string;
+  /**
+   * Eager-load (above-the-fold). Sets loading="eager" +
+   * fetchpriority="high" so the browser can't skip the request when
+   * the card lives inside a transformed parent (CardHoverEffect's
+   * translateZ) that confuses native lazy loading.
+   */
+  priority?: boolean;
 }
 
 /**
@@ -71,6 +78,7 @@ const CardImage = ({
   fallbackIcon: _FallbackIcon,
   children,
   className,
+  priority = false,
 }: CardImageProps) => {
   const [error, setError] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
@@ -96,13 +104,14 @@ const CardImage = ({
   const referrerPolicy = isTrustedSrc(effectiveSrc) ? undefined : 'no-referrer';
 
   return (
-    <div className="relative overflow-hidden rounded-t-container" style={{ height }}>
+    <div className="relative overflow-hidden rounded-t-container bg-muted" style={{ height }}>
       <img
         src={effectiveSrc}
         alt={alt}
         role="presentation"
-        loading="lazy"
-        decoding="async"
+        loading={priority ? 'eager' : 'lazy'}
+        decoding={priority ? 'sync' : 'async'}
+        fetchPriority={priority ? 'high' : 'auto'}
         referrerPolicy={referrerPolicy}
         onLoad={() => setLoaded(true)}
         onError={() => {

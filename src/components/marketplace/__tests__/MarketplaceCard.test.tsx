@@ -77,6 +77,50 @@ describe('MarketplaceCard', () => {
     expect(cta!.style.backgroundColor).toMatch(/var\(--foreground\)/);
   });
 
+  it('priority={true} sets loading="eager" + fetchpriority="high"', () => {
+    const { container } = render(
+      wrap(
+        <MarketplaceCard
+          listing={
+            {
+              id: 'p1',
+              title: 'P1',
+              slug: 'p1',
+              price: 5,
+              currency: 'USD',
+              images: ['https://queer.guide/img.png'],
+            } as never
+          }
+          priority
+        />,
+      ),
+    );
+    const img = container.querySelector('img') as HTMLImageElement | null;
+    expect(img?.getAttribute('loading')).toBe('eager');
+    expect(img?.getAttribute('fetchpriority')).toBe('high');
+  });
+
+  it('priority={false} keeps native loading="lazy"', () => {
+    const { container } = render(
+      wrap(
+        <MarketplaceCard
+          listing={
+            {
+              id: 'p2',
+              title: 'P2',
+              slug: 'p2',
+              price: 5,
+              currency: 'USD',
+              images: ['https://queer.guide/img.png'],
+            } as never
+          }
+        />,
+      ),
+    );
+    const img = container.querySelector('img') as HTMLImageElement | null;
+    expect(img?.getAttribute('loading')).toBe('lazy');
+  });
+
   it('shows ≈ in selected display currency (GBP), not USD, for a non-USD listing', () => {
     const { getByText } = render(
       wrap(

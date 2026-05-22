@@ -118,9 +118,9 @@ export function MarketplaceFilteredView({
       {!error && accumulated.length > 0 && (
         <>
           <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
-            {accumulated.map((listing) => (
+            {accumulated.map((listing, index) => (
               <div key={listing.id}>
-                <MarketplaceCard listing={listing} />
+                <MarketplaceCard listing={listing} priority={index < 8} />
               </div>
             ))}
           </StaggerGrid>

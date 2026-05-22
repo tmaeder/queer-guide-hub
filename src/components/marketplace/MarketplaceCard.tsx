@@ -45,6 +45,8 @@ interface MarketplaceCardProps {
   loading?: boolean;
   searchQuery?: string;
   imageAsset?: EntityImageAsset;
+  /** Eager-load the image (above-the-fold cards). */
+  priority?: boolean;
 }
 
 function HighlightedText({ text, query }: { text: string; query?: string }) {
@@ -70,6 +72,7 @@ function MarketplaceCardImpl({
   showFavoriteButton = false,
   searchQuery,
   imageAsset,
+  priority = false,
 }: MarketplaceCardProps) {
   const { currency } = useCurrency();
   const { data: rates } = useFxRates();
@@ -105,7 +108,13 @@ function MarketplaceCardImpl({
     <CardHoverEffect>
       <Card className="group transition-colors duration-300 hover:border-foreground/40">
         <div className="relative">
-          <CardImage src={listingImage} alt={listing.title} fallbackIcon={Store} height={160} />
+          <CardImage
+            src={listingImage}
+            alt={listing.title}
+            fallbackIcon={Store}
+            height={160}
+            priority={priority}
+          />
           {listing.featured && (
             <div className="absolute top-2 left-2 z-10">
               <Badge>Featured</Badge>
