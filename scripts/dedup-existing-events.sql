@@ -1,32 +1,26 @@
--- D2 backfill — link existing event near-duplicates.
+-- D2 backfill — link existing event near-duplicates using the SAFE rules.
 --
--- Run AFTER `20260522000000_events_dedupe_language_variants.sql` is applied.
--- This script walks every non-archived event without a duplicate_of_id, calls
--- find_event_duplicate_candidates() for it, and (in the second pass) sets
--- duplicate_of_id on the newer of any high-confidence match.
+-- The proposed `language_variant` rule was reverted after preview against
+-- prod data showed it over-matched (different parallel parties at the
+-- same venue / within 500m on the same day). The existing rules
+-- (venue_date_exact, title_city_time, title_geo_time, recurring_series)
+-- already require title trigram similarity, so they're safe to backfill.
 --
--- Run in two passes so you can review the candidates before mutating data:
---   1. SELECT-only preview (run as-is below).
---   2. Comment out the preview, uncomment the UPDATE block, run again.
---
--- All operations are idempotent. Always run on a branch (`supabase branches create`)
--- first if you want a sandbox.
---
--- Usage via Supabase MCP:
---   mcp__supabase__execute_sql(query=<this-file>)
+-- Run via Supabase MCP:
+--   mcp__supabase__execute_sql(project_id=..., query=<this-file>)
 -- Or via psql:
 --   psql "$DATABASE_URL" -f scripts/dedup-existing-events.sql
+--
+-- Two passes: PASS 1 previews, PASS 2 applies.
 
 -- ============================================================
--- PASS 1: preview candidates (no writes)
+-- PASS 1: preview (no writes)
 -- ============================================================
-
 WITH targets AS (
   SELECT id, title, start_date, venue_id, city, latitude, longitude, created_at
   FROM public.events
   WHERE duplicate_of_id IS NULL
     AND status <> 'archived'
-    -- Limit the scan window to keep the query bounded; widen if needed.
     AND start_date > now() - interval '180 days'
 ),
 matches AS (
@@ -42,7 +36,7 @@ matches AS (
          t.title, t.start_date, t.venue_id, t.city, t.latitude, t.longitude, NULL, 5
        ) c
   WHERE c.event_id <> t.id
-    AND c.score >= 0.85
+    AND c.score >= 0.93   -- safe threshold; recurring_series (0.75) intentionally skipped
 )
 SELECT m.source_id, m.source_title, m.source_start,
        m.match_id, e2.title AS match_title, e2.start_date AS match_start,
@@ -53,9 +47,8 @@ ORDER BY m.score DESC, m.source_id
 LIMIT 500;
 
 -- ============================================================
--- PASS 2: apply links — uncomment when you've reviewed the preview
+-- PASS 2: apply — uncomment after reviewing.
 -- ============================================================
---
 -- WITH targets AS (
 --   SELECT id, title, start_date, venue_id, city, latitude, longitude, created_at
 --   FROM public.events
@@ -74,10 +67,9 @@ LIMIT 500;
 --          t.title, t.start_date, t.venue_id, t.city, t.latitude, t.longitude, NULL, 5
 --        ) c
 --   WHERE c.event_id <> t.id
---     AND c.score >= 0.88
+--     AND c.score >= 0.93
 -- ),
 -- paired AS (
---   -- For each pair, pick the canonical (older created_at) and the duplicate (newer).
 --   SELECT
 --     m.source_id, m.match_id, e2.created_at AS match_created, m.source_created, m.score
 --   FROM matches m
