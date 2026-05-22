@@ -196,15 +196,20 @@ export const EntityMap = ({
       zoom,
       attributionControl: false,
     });
+    // Set ref immediately so re-renders bail at the early-return above
+    // and so the long-tail load timeout below doesn't race construction
+    // on slow networks / heavy detail pages.
+    mapRef.current = map;
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
     if (!scrollZoom) map.scrollZoom.disable();
 
+    let loaded = false;
     map.on('load', () => {
+      loaded = true;
       setMapReady(true);
-      mapRef.current = map;
     });
     map.on('error', () => setMapError(true));
     if (onMoveEnd) {
@@ -224,11 +229,12 @@ export const EntityMap = ({
       });
     }
 
-    // Hard timeout: if tiles can't load (blocked by network policy, CDN
-    // outage), show a fallback rather than spin forever.
+    // Defense-in-depth: if neither `load` nor `error` fires within 15 s,
+    // surface the OSM fallback. The previous 5 s blanket timeout fired
+    // before tiles could finish loading on heavy detail pages.
     const timeoutId = window.setTimeout(() => {
-      setMapError((prev) => (mapRef.current ? prev : true));
-    }, 5000);
+      if (!loaded) setMapError(true);
+    }, 15000);
 
     return () => {
       window.clearTimeout(timeoutId);
