@@ -3,6 +3,21 @@ import { formatCurrency } from '@/lib/currency';
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
+export type FxRates = Record<string, number>;
+
+/**
+ * Convert a USD amount into a target currency using fx_rates (where
+ * rate_to_usd is the native→USD multiplier).
+ */
+function convertFromUsd(usdAmount: number, target: string, rates: FxRates | undefined): number | null {
+  if (!rates) return null;
+  const code = target.toUpperCase();
+  if (code === 'USD') return usdAmount;
+  const rate = rates[code];
+  if (!rate || rate <= 0) return null;
+  return usdAmount / rate;
+}
+
 const AFFILIATE_SOURCES = new Set(['awin', 'shopify', 'etsy', 'amazon']);
 
 export interface OutboundLink {
@@ -86,22 +101,37 @@ export interface PriceDisplay {
   modifier: string | null;
 }
 
+export interface FormatPriceOpts {
+  /** User's selected display currency (e.g. 'GBP'). Defaults to 'USD'. */
+  displayCurrency?: string;
+  /** Live fx_rates map. When undefined, the secondary line is suppressed. */
+  rates?: FxRates;
+}
+
 /**
- * Format the listing price with optional native + USD line.
- * If currency is already USD, only the primary line is returned.
+ * Format the listing price with optional native + display-currency line.
+ *
+ * Primary: the listing's native currency (e.g. €32).
+ * Secondary: ≈ converted to the user's selected display currency
+ * (e.g. ≈ £27). Omitted when native == display, or when no fx rate is
+ * available for the requested display currency.
  */
-export function formatListingPrice(listing: MarketplaceListing): PriceDisplay {
+export function formatListingPrice(listing: MarketplaceListing, opts: FormatPriceOpts = {}): PriceDisplay {
   if (!listing.price && listing.price_type !== 'free') {
     return { primary: 'Price varies', secondary: null, modifier: null };
   }
   if (listing.price_type === 'free') {
     return { primary: 'Free', secondary: null, modifier: null };
   }
-  const currency = (listing.currency || 'USD').toUpperCase();
-  const primary = formatCurrency(listing.price!, currency);
+  const nativeCurrency = (listing.currency || 'USD').toUpperCase();
+  const displayCurrency = (opts.displayCurrency || 'USD').toUpperCase();
+  const primary = formatCurrency(listing.price!, nativeCurrency);
   let secondary: string | null = null;
-  if (currency !== 'USD' && listing.price_usd && Math.abs(listing.price_usd - listing.price!) > 0.01) {
-    secondary = `≈ ${formatCurrency(listing.price_usd, 'USD')}`;
+  if (nativeCurrency !== displayCurrency && typeof listing.price_usd === 'number') {
+    const converted = convertFromUsd(listing.price_usd, displayCurrency, opts.rates);
+    if (converted != null && Math.abs(converted - listing.price!) > 0.01) {
+      secondary = `≈ ${formatCurrency(converted, displayCurrency)}`;
+    }
   }
   let modifier: string | null = null;
   if (listing.price_type === 'starting_at') modifier = 'from';

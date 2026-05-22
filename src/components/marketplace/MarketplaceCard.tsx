@@ -11,6 +11,8 @@ import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
+import { useCurrency } from '@/hooks/useCurrency';
+import { useFxRates } from '@/hooks/useFxRates';
 import {
   formatListingPrice,
   getOutboundLink,
@@ -68,6 +70,9 @@ function MarketplaceCardImpl({
   searchQuery,
   imageAsset,
 }: MarketplaceCardProps) {
+  const { currency } = useCurrency();
+  const { data: rates } = useFxRates();
+
   if (loading || !listing) {
     return (
       <Skeleton name="marketplace-card" loading={true} fallback={<PageLoadingState count={1} />}>
@@ -81,7 +86,7 @@ function MarketplaceCardImpl({
       listing.marketplace_reviews.length
     : 0;
 
-  const price = formatListingPrice(listing);
+  const price = formatListingPrice(listing, { displayCurrency: currency, rates });
   const listingImage = resolveImageUrl({
     imageUrl: listing.images?.[0] ?? null,
     optimizedUrl: imageAsset?.optimized_url ?? null,
