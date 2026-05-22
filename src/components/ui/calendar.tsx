@@ -28,9 +28,26 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
           --rdp-day_button-height: 36px;
           --rdp-day_button-width: 36px;
         }
+        /* D3: explicit 7-col grid. Without this the weekday header and
+           day rows collapse to content width inside constrained containers
+           (the EventsCalendarView panel), producing "SUMOTUWETHFRSA" and
+           "2627 2829 30" runs reported in QA. */
+        .rdp-month_grid { width: 100%; border-collapse: separate; }
+        .rdp-weekdays,
+        .rdp-week {
+          display: grid;
+          grid-template-columns: repeat(7, minmax(0, 1fr));
+        }
+        .rdp-weekday,
+        .rdp-day {
+          text-align: center;
+        }
+        .rdp-day { padding: 0; }
         .rdp-day_button {
           border-radius: 0;
           font-size: 0.875rem;
+          width: 100%;
+          margin: 0 auto;
         }
         .rdp-day_button:hover:not([disabled]) {
           background-color: hsl(var(--muted));

@@ -69,9 +69,17 @@ export const EventsCalendarView = ({
       const eventDate = parseISO(event.start_date);
       return eventDate >= monthStart && eventDate <= monthEnd;
     });
+    // D3: filter null/empty event_type so the "Categories" stat reflects
+    // real types only. Previously a single null in the Set inflated the
+    // count and produced misleading values.
+    const distinctTypes = new Set(
+      monthEvents
+        .map((e) => e.event_type)
+        .filter((t): t is string => typeof t === 'string' && t.trim().length > 0),
+    );
     return {
       totalEvents: monthEvents.length,
-      eventTypes: [...new Set(monthEvents.map((e) => e.event_type))].length,
+      eventTypes: distinctTypes.size,
       freeEvents: monthEvents.filter((e) => e.is_free).length,
     };
   }, [events, currentMonth]);
@@ -338,13 +346,18 @@ export const EventsCalendarView = ({
                                     >
                                       Interested
                                     </Button>
+                                    {/* D4: rename "Not Going" → "Clear RSVP".
+                                        Status 'not_going' is the schema's
+                                        third valid value and preserves
+                                        history while removing the user
+                                        from going/interested counts. */}
                                     <Button
                                       size="sm"
                                       variant="ghost"
                                       className="w-full text-muted-foreground"
                                       onClick={() => onAttendanceUpdate(event.id, 'not_going')}
                                     >
-                                      Not Going
+                                      Clear RSVP
                                     </Button>
                                   </div>
                                 </PopoverContent>
