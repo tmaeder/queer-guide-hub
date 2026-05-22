@@ -12,7 +12,8 @@
  * regular <a href> to a real SPA route.
  */
 import { fetchRows, type Env } from './sitemap';
-import { SITE_ORIGIN, DEFAULT_OG_IMAGE, SUPPORTED_LOCALES, DEFAULT_LOCALE, localizedUrl } from './routeMeta';
+import { SITE_ORIGIN, DEFAULT_OG_IMAGE, DEFAULT_LOCALE, localizedUrl } from './routeMeta';
+import { LOCALISED_LOCALES } from './localisedLocales';
 
 const escape = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -62,6 +63,13 @@ const IDENTITY_TAGS: Record<
 const PRIDE_YEAR_MIN = 2024;
 const PRIDE_YEAR_MAX = 2030;
 
+// P1.3 — content-quality gates. Below the threshold the landing still
+// renders (so the URL doesn't 404), but emits noindex so Google doesn't
+// surface thin pages and the sitemap (sitemap-landings.xml.ts) drops
+// them. Auto-promote once the row count crosses the bar.
+export const MIN_LANDING_VENUES = 6;
+export const MIN_LANDING_EVENTS = 3;
+
 const layoutHtml = ({
   title,
   description,
@@ -70,6 +78,8 @@ const layoutHtml = ({
   hreflangs,
   jsonLd,
   bodyHtml,
+  noindex = false,
+  locale = 'en',
 }: {
   title: string;
   description: string;
@@ -78,15 +88,18 @@ const layoutHtml = ({
   hreflangs: string;
   jsonLd: string;
   bodyHtml: string;
+  noindex?: boolean;
+  locale?: string;
 }) => `<!DOCTYPE html>
-<html lang="en">
+<html lang="${escape(locale)}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+${noindex ? '<meta name="robots" content="noindex,nofollow">' : ''}
 <title>${escape(title)}</title>
 <meta name="description" content="${escape(description)}">
 <link rel="canonical" href="${escape(canonical)}">
-${hreflangs}
+${noindex ? '' : hreflangs}
 <meta property="og:title" content="${escape(title)}">
 <meta property="og:description" content="${escape(description)}">
 <meta property="og:type" content="website">
@@ -137,7 +150,8 @@ ${bodyHtml}
 </html>`;
 
 const buildHreflang = (basePath: string): string => {
-  const links = SUPPORTED_LOCALES.map(
+  // P3.1 — only emit hreflang for locales that are actually translated.
+  const links = LOCALISED_LOCALES.map(
     (l) => `<link rel="alternate" hreflang="${l}" href="${escape(localizedUrl(l, basePath))}">`,
   );
   links.push(
@@ -204,6 +218,12 @@ async function identityLanding(env: Env, tag: string): Promise<Response | null> 
     ],
   };
 
+  // P1.3 — noindex thin landings (fewer than MIN_LANDING_VENUES rows).
+  // The URL still resolves so existing inbound links don't break; we
+  // just don't promote it to Google. Auto-promotes once the threshold
+  // is crossed.
+  const noindex = venues.length < MIN_LANDING_VENUES;
+
   const html = layoutHtml({
     title,
     description: meta.description,
@@ -211,6 +231,7 @@ async function identityLanding(env: Env, tag: string): Promise<Response | null> 
     ogImage: DEFAULT_OG_IMAGE,
     hreflangs: buildHreflang(basePath),
     jsonLd: renderLd(itemList) + '\n' + renderLd(breadcrumb),
+    noindex,
     bodyHtml: `<nav class="crumbs"><a href="/">Home</a> · <a href="/venues">Venues</a> · ${escape(meta.label)}</nav>
 <h1>${escape(meta.label.charAt(0).toUpperCase() + meta.label.slice(1))} LGBTQ+ venues</h1>
 <p>${escape(meta.description)}</p>
@@ -299,6 +320,11 @@ async function prideYearLanding(env: Env, year: number): Promise<Response> {
     ],
   };
 
+  // P1.3 — Pride year hub is indexable as long as we have at least one
+  // event on file for the year (otherwise the page is just the editorial
+  // shell with no content).
+  const noindex = events.length < MIN_LANDING_EVENTS;
+
   const html = layoutHtml({
     title,
     description,
@@ -306,6 +332,7 @@ async function prideYearLanding(env: Env, year: number): Promise<Response> {
     ogImage: DEFAULT_OG_IMAGE,
     hreflangs: buildHreflang(basePath),
     jsonLd: renderLd(breadcrumb),
+    noindex,
     bodyHtml: `<nav class="crumbs"><a href="/">Home</a> · <a href="/events">Events</a> · Pride ${year}</nav>
 <h1>Pride ${year}</h1>
 <p>${escape(description)}</p>
@@ -319,6 +346,85 @@ ${events.length ? `<h2>Featured Pride events</h2>\n${eventListHtml}` : ''}
   <li><a href="/events">All LGBTQ+ events</a></li>
   <li><a href="/travel">Country safety guide</a></li>
   <li><a href="/places">Cities and queer villages</a></li>
+</ul>`,
+  });
+
+  return new Response(html, {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, s-maxage=600, max-age=120',
+      Vary: 'User-Agent',
+    },
+  });
+}
+
+/**
+ * P4.2 — WorldPride host-year hub. /pride/:year/world is reserved for the
+ * worldwide WorldPride convergence (2026 = Washington DC, 2027 = Amsterdam,
+ * etc). It's an editorial anchor page that pulls all Pride events for the
+ * year regardless of host city, so the hub stays useful even before the
+ * city pages have content.
+ */
+async function worldPrideLanding(env: Env, year: number): Promise<Response> {
+  const start = `${year}-01-01`;
+  const end = `${year + 1}-01-01`;
+  const events = await fetchRows(
+    env,
+    'events',
+    'title,slug,city,country,start_date',
+    `event_type=eq.pride&status=neq.cancelled&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
+    50,
+  ).catch(() => []);
+
+  const basePath = `/pride/${year}/world`;
+  const canonical = `${SITE_ORIGIN}${basePath}`;
+  const title = `WorldPride ${year} — global hub | Queer Guide`;
+  const description = `WorldPride ${year} — the worldwide LGBTQ+ Pride convergence. Dates, host city, and curated global Pride events on Queer Guide.`;
+
+  const eventsHtml = events.length
+    ? events
+        .filter((e) => typeof e.slug === 'string')
+        .slice(0, 25)
+        .map((e) => {
+          const name = escape(String(e.title ?? ''));
+          const slug = escape(String(e.slug));
+          const date = typeof e.start_date === 'string' ? escape(e.start_date.slice(0, 10)) : '';
+          const city = e.city ? ` · ${escape(String(e.city))}` : '';
+          return `<div class="card"><h3><a href="/events/${slug}">${name}</a></h3><div class="meta">${date}${city}</div></div>`;
+        })
+        .join('\n')
+    : '<p class="muted">Detailed event listings will appear as they are confirmed.</p>';
+
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Queer Guide', item: SITE_ORIGIN },
+      { '@type': 'ListItem', position: 2, name: `Pride ${year}`, item: `${SITE_ORIGIN}/pride/${year}` },
+      { '@type': 'ListItem', position: 3, name: 'WorldPride' },
+    ],
+  };
+
+  const html = layoutHtml({
+    title,
+    description,
+    canonical,
+    ogImage: DEFAULT_OG_IMAGE,
+    hreflangs: buildHreflang(basePath),
+    jsonLd: renderLd(breadcrumb),
+    // The hub stays indexable even when the event list is light — it's
+    // editorial anchor copy, not a thin listing.
+    noindex: false,
+    bodyHtml: `<nav class="crumbs"><a href="/">Home</a> · <a href="/pride/${year}">Pride ${year}</a> · WorldPride</nav>
+<h1>WorldPride ${year}</h1>
+<p>${escape(description)}</p>
+<h2>Featured global Pride events</h2>
+${eventsHtml}
+<h2>Plan your trip</h2>
+<ul>
+  <li><a href="/travel">Country safety guide</a></li>
+  <li><a href="/hotels">LGBTQ+ friendly hotels</a></li>
+  <li><a href="/pride/${year}">All Pride events in ${year}</a></li>
 </ul>`,
   });
 
@@ -391,6 +497,11 @@ async function prideCityLanding(
     ],
   };
 
+  // P1.3 — pride city pages need at least one event listed before they
+  // earn an index slot. Below the threshold the URL still resolves but
+  // emits noindex.
+  const noindex = events.length < MIN_LANDING_EVENTS;
+
   const html = layoutHtml({
     title,
     description,
@@ -398,6 +509,7 @@ async function prideCityLanding(
     ogImage: DEFAULT_OG_IMAGE,
     hreflangs: buildHreflang(basePath),
     jsonLd: renderLd(breadcrumb),
+    noindex,
     bodyHtml: `<nav class="crumbs"><a href="/">Home</a> · <a href="/pride/${year}">Pride ${year}</a> · ${escape(cityName)}</nav>
 <h1>Pride ${year} in ${escape(cityName)}</h1>
 <p>${escape(description)}</p>
@@ -437,7 +549,10 @@ export async function resolveLandingRoute(
   if (prideCityMatch) {
     const year = isValidPrideYear(prideCityMatch[1]);
     if (!year) return null;
-    return prideCityLanding(env, year, decodeURIComponent(prideCityMatch[2]));
+    const slug = decodeURIComponent(prideCityMatch[2]);
+    // P4.2 — reserved /pride/:year/world WorldPride hub.
+    if (slug === 'world') return worldPrideLanding(env, year);
+    return prideCityLanding(env, year, slug);
   }
 
   const prideYearMatch = pathname.match(/^\/pride\/(\d+)\/?$/);
