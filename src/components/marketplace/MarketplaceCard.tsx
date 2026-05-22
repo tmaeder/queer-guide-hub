@@ -259,13 +259,22 @@ function MarketplaceCardImpl({
 
             <div className="flex items-center gap-2">
               {outbound ? (
+                // `style` is non-negotiable: a Tailwind preflight `a { color:
+                // inherit }` rule beats the layered `.text-background`
+                // utility, so without explicit inline color the label
+                // renders foreground-on-foreground (invisible). The inline
+                // CSS-variable refs follow the active light/dark theme.
                 <a
                   href={outbound.url}
                   target="_blank"
                   rel={outbound.rel}
                   onClick={(e) => e.stopPropagation()}
                   data-affiliate={outbound.isAffiliate ? 'true' : undefined}
-                  className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                  style={{
+                    backgroundColor: 'hsl(var(--foreground))',
+                    color: 'hsl(var(--background))',
+                  }}
                   aria-label={`${outbound.label} (opens in new tab)`}
                 >
                   {outbound.label}

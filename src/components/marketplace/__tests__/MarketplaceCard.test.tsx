@@ -50,6 +50,33 @@ describe('MarketplaceCard', () => {
     expect(container).toBeTruthy();
   });
 
+  it('outbound CTA renders with explicit inverted color (label legible)', () => {
+    const { container } = render(
+      wrap(
+        <MarketplaceCard
+          listing={
+            {
+              id: 'm3',
+              title: 'Aff Item',
+              slug: 'aff',
+              price: 10,
+              currency: 'USD',
+              source_type: 'awin',
+              external_url: 'https://example.com/aff',
+            } as never
+          }
+        />,
+      ),
+    );
+    const cta = container.querySelector('a[aria-label*="opens in new tab"]') as HTMLAnchorElement | null;
+    expect(cta).toBeTruthy();
+    expect(cta!.textContent?.toLowerCase()).toMatch(/shop|visit/);
+    // Inline style guarantees color won't be clobbered by Tailwind preflight
+    // `a { color: inherit }`. We assert both inline declarations are present.
+    expect(cta!.style.color).toMatch(/var\(--background\)/);
+    expect(cta!.style.backgroundColor).toMatch(/var\(--foreground\)/);
+  });
+
   it('shows ≈ in selected display currency (GBP), not USD, for a non-USD listing', () => {
     const { getByText } = render(
       wrap(
