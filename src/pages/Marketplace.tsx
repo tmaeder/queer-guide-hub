@@ -398,10 +398,13 @@ const Marketplace = () => {
                   ))}
                 </TabsList>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                   <SavedSearchesButton />
                   <Select value={sortBy} onValueChange={handleSortChange}>
-                    <SelectTrigger style={{ width: 200 }} aria-label="Sort listings">
+                    <SelectTrigger
+                      className="w-[160px] sm:w-[200px]"
+                      aria-label="Sort listings"
+                    >
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>

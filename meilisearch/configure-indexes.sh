@@ -95,9 +95,16 @@ meili PUT "/indexes/news/settings" '{
 }'
 
 echo "=== Configuring marketplace ==="
+# Filterable attributes power the marketplace filter panel. Added 2026-05:
+#   subcategory   — real category buckets (fetish_gear, sex_toys, …)
+#   business_type — queer-owned / online / physical / both
+#   tags          — multi-tag filtering
+#   merchant_domain — single-merchant detail pages
+# Searchable attributes broadened to include business_name and brand so
+# product-code queries (e.g. "M2193") and brand queries match titles too.
 meili PUT "/indexes/marketplace/settings" '{
-  "searchableAttributes": ["title", "description", "category"],
-  "filterableAttributes": ["category", "featured", "price", "type"],
+  "searchableAttributes": ["title", "description", "business_name", "brand", "category", "subcategory"],
+  "filterableAttributes": ["category", "subcategory", "business_type", "merchant_domain", "tags", "featured", "price", "type"],
   "sortableAttributes": ["price", "title"],
   "displayedAttributes": ["*"],
   "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"],
