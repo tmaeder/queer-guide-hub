@@ -4,9 +4,36 @@ import tailwindcss from "@tailwindcss/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Pinned per build. Used by src/utils/buildVersion.ts to detect that a
+// new version has shipped while a tab is open. Prefer the CF Pages
+// commit SHA so two builds of the same source share a version; fall
+// back to a build-time timestamp for local builds.
+const BUILD_ID = process.env.CF_PAGES_COMMIT_SHA || `local-${Date.now()}`;
+
+// Emit /build-id.txt into the build output so the running app can
+// fetch it on visibilitychange and compare against the build it booted
+// with. Served by CF Pages with the default /*.txt cache rule (5 min).
+function emitBuildIdFile(): Plugin {
+  return {
+    name: 'emit-build-id-file',
+    apply: 'build',
+    closeBundle() {
+      const outDir = path.resolve(__dirname, 'dist');
+      try {
+        fs.mkdirSync(outDir, { recursive: true });
+        fs.writeFileSync(path.join(outDir, 'build-id.txt'), BUILD_ID + '\n', 'utf8');
+      } catch {
+        // Best-effort: if the dist dir isn't writable the version-check
+        // util simply gets a 404 and skips its notification.
+      }
+    },
+  };
+}
 
 // Prevent Cloudflare Rocket Loader from mangling ES module script tags
 function cfRocketLoaderBypass(): Plugin {
@@ -61,6 +88,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     tailwindcss(),
     cfRocketLoaderBypass(),
+    emitBuildIdFile(),
     mode === 'production' && sentryVitePlugin({
       org: process.env.SENTRY_ORG || 'maedertobiassimon',
       project: process.env.SENTRY_PROJECT || 'javascript-react',
@@ -83,6 +111,7 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   define: {
     'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(process.env.CF_PAGES_COMMIT_SHA || ''),
+    __BUILD_ID__: JSON.stringify(BUILD_ID),
   },
   resolve: {
     alias: {
