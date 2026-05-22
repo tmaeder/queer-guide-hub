@@ -6,12 +6,9 @@
 /tags  /resources  301
 /tags/*  /resources/:splat  301
 
-# P1.2 — /news/:slug is hard-removed (410 Gone). The news index page
-# at /news survives as a curated headline list; individual article pages
-# never had editorial content of our own and were thin SEO liability.
-# /news/410 is the static 410 stub served by sitemap-news.xml's empty
-# urlset + this rule. Order matters — must come before the SPA catch-all.
-/news/*  /410.html  410
+# P1.2 — /news/:slug → HTTP 410 Gone is served by functions/news/[slug].ts
+# (CF Pages _redirects doesn't support 410). The news index page at /news
+# survives as a curated headline list rendered by the SPA.
 
 # P1.5 — /places was deprecated in favor of /city. Keep the index alive
 # as a redirect so old inbound links don't 404.

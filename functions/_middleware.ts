@@ -192,6 +192,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const response = await next();
   const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.includes('text/html')) return response;
+  // Bail on non-200 responses — error pages, redirects, and 410 Gone
+  // (functions/news/[slug].ts) ship complete HTML that the head-rewriter
+  // would clobber.
+  if (response.status !== 200) return response;
 
   const pathIndexable = isIndexable(basePath);
 
