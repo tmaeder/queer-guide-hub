@@ -72,17 +72,48 @@ export function getPriceRange(range: number | null) {
   return '$'.repeat(range);
 }
 
+const HOURS_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const HOURS_DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+// Hours rows can be a free-text string ("9am-5pm"), an object
+// ({open: "0900", close: "1700"} from Google Places), or absent.
+// Returns the rendered label or null when the day has no usable data.
+function renderHoursRow(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed.toLowerCase() === 'closed') return null;
+    return trimmed;
+  }
+  if (typeof value === 'object') {
+    const obj = value as { open?: unknown; close?: unknown };
+    const open = typeof obj.open === 'string' ? obj.open : null;
+    const close = typeof obj.close === 'string' ? obj.close : null;
+    if (!open || !close) return null;
+    const fmt = (t: string) => (/^\d{4}$/.test(t) ? `${t.slice(0, 2)}:${t.slice(2)}` : t);
+    return `${fmt(open)}–${fmt(close)}`;
+  }
+  return null;
+}
+
+export function hasUsableHours(hours: unknown): boolean {
+  if (!hours || typeof hours !== 'object') return false;
+  const rec = hours as Record<string, unknown>;
+  return HOURS_DAYS.some((day) => renderHoursRow(rec[day]) !== null);
+}
+
 export function formatHours(hours: Record<string, unknown>) {
-  if (!hours || typeof hours !== 'object')
+  if (!hasUsableHours(hours))
     return <p className="text-sm text-muted-foreground">Hours not available</p>;
-  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return days.map((day, index) => (
-    <div key={day} className="flex justify-between">
-      <span className="text-sm font-medium">{dayNames[index]}</span>
-      <span className="text-sm text-muted-foreground">{(hours[day] as string) || 'Closed'}</span>
-    </div>
-  ));
+  return HOURS_DAYS.map((day, index) => {
+    const label = renderHoursRow(hours[day]);
+    return (
+      <div key={day} className="flex justify-between">
+        <span className="text-sm font-medium">{HOURS_DAY_NAMES[index]}</span>
+        <span className="text-sm text-muted-foreground">{label ?? 'Closed'}</span>
+      </div>
+    );
+  });
 }
 
 interface VenueHeroProps {
@@ -459,7 +490,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
           </Card>
 
           {/* Hours */}
-          {venue.hours && (
+          {hasUsableHours(venue.hours) && (
             <Card>
               <CardHeader>
                 <CardTitle>
