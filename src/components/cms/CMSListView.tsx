@@ -102,17 +102,17 @@ export function CMSListView({
 
   const getSortIcon = (column: string) => {
     if (filters.sortBy !== column) {
-      return <ArrowUpDown style={{ height: 16, width: 16 }} />;
+      return <ArrowUpDown size={16} />;
     }
-    return filters.sortOrder === 'asc' ? (
-      <ArrowUp style={{ height: 16, width: 16 }} />
-    ) : (
-      <ArrowDown style={{ height: 16, width: 16 }} />
-    );
+    return filters.sortOrder === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />;
   };
 
   const SortableHeader = ({ column, children }: { column: string; children: React.ReactNode }) => (
-    <TableHead style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => updateSort(column)}>
+    <TableHead
+      style={{ userSelect: 'none' }}
+      className="cursor-pointer"
+      onClick={() => updateSort(column)}
+    >
       <div className="flex items-center gap-2 hover:text-foreground">
         {children}
         {getSortIcon(column)}
@@ -167,7 +167,11 @@ export function CMSListView({
     const { error } = await updateRow(tableName, item.id, { [titleField]: newVal });
     setEditingId(null);
     if (error) {
-      toast({ title: 'Save failed', description: (error as { message: string }).message, variant: 'destructive' });
+      toast({
+        title: 'Save failed',
+        description: (error as { message: string }).message,
+        variant: 'destructive',
+      });
     } else {
       toast({ title: 'Saved' });
       onRefresh();
@@ -178,30 +182,50 @@ export function CMSListView({
     switch (status?.toLowerCase()) {
       case 'active':
       case 'published':
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
       case 'draft':
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
       case 'inactive':
       case 'archived':
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--destructive))', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--destructive))',
+          borderColor: 'hsl(var(--muted))',
+        };
       case 'pending':
       case 'review':
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground) / 0.7)',
+          borderColor: 'hsl(var(--muted))',
+        };
       default:
-        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          borderColor: 'hsl(var(--muted))',
+        };
     }
   };
 
   const getContentTypeIcon = (type: string) => {
     switch (type) {
       case 'events':
-        return <Calendar style={{ height: 16, width: 16 }} />;
+        return <Calendar size={16} />;
       case 'venues':
-        return <ExternalLink style={{ height: 16, width: 16 }} />;
+        return <ExternalLink size={16} />;
       case 'personalities':
-        return <User style={{ height: 16, width: 16 }} />;
+        return <User size={16} />;
       default:
-        return <Tag style={{ height: 16, width: 16 }} />;
+        return <Tag size={16} />;
     }
   };
 
@@ -219,9 +243,7 @@ export function CMSListView({
         <Card>
           <CardContent>
             <div className="p-8 text-center">
-              <div className="animate-pulse">
-                Loading content...
-              </div>
+              <div className="animate-pulse">Loading content...</div>
             </div>
           </CardContent>
         </Card>
@@ -243,9 +265,7 @@ export function CMSListView({
         <Card>
           <CardContent>
             <div className="p-8 text-center">
-              <p className="text-destructive mb-4">
-                {error}
-              </p>
+              <p className="text-destructive mb-4">{error}</p>
               <Button onClick={onRefresh}>Retry</Button>
             </div>
           </CardContent>
@@ -271,9 +291,7 @@ export function CMSListView({
         <div className="flex items-center gap-4">
           {selectedItems.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {selectedItems.length} selected
-              </span>
+              <span className="text-sm text-muted-foreground">{selectedItems.length} selected</span>
               <Button variant="outline" size="sm">
                 Bulk Actions
               </Button>
@@ -287,14 +305,14 @@ export function CMSListView({
             size="sm"
             onClick={() => onViewModeChange('grid')}
           >
-            <Grid3X3 style={{ height: 16, width: 16 }} />
+            <Grid3X3 size={16} />
           </Button>
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => onViewModeChange('list')}
           >
-            <List style={{ height: 16, width: 16 }} />
+            <List size={16} />
           </Button>
         </div>
       </div>
@@ -307,9 +325,7 @@ export function CMSListView({
         <CardContent>
           {filteredData.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                No content found matching your criteria.
-              </p>
+              <p className="text-muted-foreground">No content found matching your criteria.</p>
             </div>
           ) : (
             <div className="overflow-auto">
@@ -356,7 +372,7 @@ export function CMSListView({
                       </TableCell>
 
                       <TableCell>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                           {item.image_url && (
                             <Avatar style={{ height: 32, width: 32 }}>
                               <AvatarImage src={item.image_url} alt={item.title} />
@@ -401,9 +417,8 @@ export function CMSListView({
                             )}
                             {item.description && (
                               <p
-                                className="text-sm text-muted-foreground"
+                                className="text-sm text-muted-foreground overflow-hidden"
                                 style={{
-                                  overflow: 'hidden',
                                   display: '-webkit-box',
                                   WebkitLineClamp: 1,
                                   WebkitBoxOrient: 'vertical',
@@ -518,13 +533,17 @@ export function CMSListView({
                             onClick={() => onEdit(item)}
                             style={{ height: 32, paddingLeft: 8, paddingRight: 8 }}
                           >
-                            <Edit style={{ height: 16, width: 16 }} />
+                            <Edit size={16} />
                           </Button>
 
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" style={{ height: 32, width: 32, padding: 0 }}>
-                                <MoreHorizontal style={{ height: 16, width: 16 }} />
+                              <Button
+                                variant="ghost"
+                                style={{ height: 32, width: 32 }}
+                                className="p-0"
+                              >
+                                <MoreHorizontal size={16} />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
@@ -536,11 +555,11 @@ export function CMSListView({
                               }}
                             >
                               <DropdownMenuItem onClick={() => onEdit(item)}>
-                                <Edit style={{ marginRight: 8, height: 16, width: 16 }} />
+                                <Edit size={16} className="mr-2" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem disabled>
-                                <Eye style={{ marginRight: 8, height: 16, width: 16 }} />
+                                <Eye size={16} className="mr-2" />
                                 Preview
                               </DropdownMenuItem>
                               {onDelete &&
@@ -550,7 +569,7 @@ export function CMSListView({
                                     onClick={() => onDelete(item.id)}
                                     style={{ color: 'var(--destructive)' }}
                                   >
-                                    <Trash2 style={{ marginRight: 8, height: 16, width: 16 }} />
+                                    <Trash2 size={16} className="mr-2" />
                                     Delete
                                   </DropdownMenuItem>
                                 )}
@@ -590,9 +609,7 @@ export function CMSListView({
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-            <span className="text-sm text-muted-foreground">
-              per page
-            </span>
+            <span className="text-sm text-muted-foreground">per page</span>
           </div>
 
           <Pagination>

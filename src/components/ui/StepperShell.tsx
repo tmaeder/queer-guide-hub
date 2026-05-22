@@ -60,7 +60,7 @@ export function StepperShell({
       <div className={cn('min-h-screen bg-background flex flex-col', className)}>
         <div className="border-b border-border">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
-            <div className="flex items-baseline gap-3">
+            <div className="flex items-baseline gap-4">
               <span className="text-xs tracking-widest uppercase text-muted-foreground">
                 {String(current + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
               </span>
@@ -113,7 +113,7 @@ export function StepperShell({
               <ArrowLeft className="w-4 h-4 mr-2" />
               {prevLabel}
             </Button>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               {footerExtra}
               <Button
                 onClick={onNext}
@@ -242,7 +242,7 @@ export function StepperShell({
                   </Button>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 {footerExtra}
                 <Button onClick={onNext} disabled={!canGoNext}>
                   {nextLabel}

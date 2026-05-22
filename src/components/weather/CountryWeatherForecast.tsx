@@ -74,16 +74,16 @@ export default function CountryWeatherForecast({
   };
 
   const getWeatherIcon = (iconCode: string) => {
-    if (iconCode.includes('01')) return <Sun style={{ height: 16, width: 16 }} />;
-    if (iconCode.includes('02') || iconCode.includes('03') || iconCode.includes('04')) return <Cloud style={{ height: 16, width: 16 }} />;
-    if (iconCode.includes('09') || iconCode.includes('10') || iconCode.includes('11')) return <CloudRain style={{ height: 16, width: 16 }} />;
-    return <Cloud style={{ height: 16, width: 16 }} />;
+    if (iconCode.includes('01')) return <Sun size={16} />;
+    if (iconCode.includes('02') || iconCode.includes('03') || iconCode.includes('04')) return <Cloud size={16} />;
+    if (iconCode.includes('09') || iconCode.includes('10') || iconCode.includes('11')) return <CloudRain size={16} />;
+    return <Cloud size={16} />;
   };
 
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Thermometer style={{ height: 16, width: 16 }} />
+        <Thermometer size={16} />
         Loading weather...
       </div>
     );

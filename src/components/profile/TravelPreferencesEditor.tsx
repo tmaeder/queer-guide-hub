@@ -161,7 +161,7 @@ export function TravelPreferencesEditor() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <DollarSign style={{ width: 18, height: 18 }} />
+              <DollarSign size={18} />
               Budget Level
             </div>
           </CardTitle>
@@ -188,7 +188,7 @@ export function TravelPreferencesEditor() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <Shield style={{ width: 18, height: 18 }} />
+              <Shield size={18} />
               Safety Threshold
             </div>
           </CardTitle>
@@ -221,7 +221,7 @@ export function TravelPreferencesEditor() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <Compass style={{ width: 18, height: 18 }} />
+              <Compass size={18} />
               Travel Interests
             </div>
           </CardTitle>
@@ -247,7 +247,7 @@ export function TravelPreferencesEditor() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <Home style={{ width: 18, height: 18 }} />
+              <Home size={18} />
               Preferred Accommodation
             </div>
           </CardTitle>
@@ -273,7 +273,7 @@ export function TravelPreferencesEditor() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <Users style={{ width: 18, height: 18 }} />
+              <Users size={18} />
               Travel Style
             </div>
           </CardTitle>
@@ -298,7 +298,7 @@ export function TravelPreferencesEditor() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <Accessibility style={{ width: 18, height: 18 }} />
+              <Accessibility size={18} />
               Accessibility Needs
             </div>
           </CardTitle>
@@ -327,7 +327,7 @@ export function TravelPreferencesEditor() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <Plane style={{ width: 18, height: 18 }} />
+              <Plane size={18} />
               Preferred Transport
             </div>
           </CardTitle>
@@ -355,7 +355,7 @@ export function TravelPreferencesEditor() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <MapPin style={{ width: 18, height: 18 }} />
+              <MapPin size={18} />
               Home City
             </div>
           </CardTitle>

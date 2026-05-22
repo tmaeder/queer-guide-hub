@@ -183,18 +183,20 @@ export function VenueFilters({
 
   // Build current filters object
   const buildFilters = useCallback(
-    (overrides?: Partial<{
-      search: string;
-      city: string;
-      category: string;
-      tags: string[];
-      amenities: string[];
-      services: string[];
-      accessibilityAttributes: string[];
-      targetGroups: string[];
-      nearMe: boolean;
-      userLocation: { latitude: number; longitude: number } | null;
-    }>) => {
+    (
+      overrides?: Partial<{
+        search: string;
+        city: string;
+        category: string;
+        tags: string[];
+        amenities: string[];
+        services: string[];
+        accessibilityAttributes: string[];
+        targetGroups: string[];
+        nearMe: boolean;
+        userLocation: { latitude: number; longitude: number } | null;
+      }>,
+    ) => {
       const s = overrides?.search ?? search;
       const c = overrides?.city ?? city;
       const cat = overrides?.category ?? category;
@@ -219,7 +221,18 @@ export function VenueFilters({
         nearMe: nm || undefined,
       };
     },
-    [search, city, category, selectedTags, selectedAmenities, selectedServices, selectedAccessibilityAttributes, selectedTargetGroups, nearMe, userLocation],
+    [
+      search,
+      city,
+      category,
+      selectedTags,
+      selectedAmenities,
+      selectedServices,
+      selectedAccessibilityAttributes,
+      selectedTargetGroups,
+      nearMe,
+      userLocation,
+    ],
   );
 
   // Auto-apply debounce for advanced filter changes
@@ -369,32 +382,31 @@ export function VenueFilters({
   ].filter(Boolean).length;
 
   // Shared remove-badge X style
-  const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
+  const xStyle = {
+    width: 12,
+    height: 12,
+    cursor: 'pointer',
+    padding: 8,
+    margin: -8,
+    boxSizing: 'content-box' as const,
+  };
 
   return (
-    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-container border border-border bg-card/60 backdrop-blur-sm">
+    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-container border border-border bg-card/60">
       {/* Search Row */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search
-            style={{
-              position: 'absolute',
-              left: 14,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 16,
-              height: 16,
-              color: 'hsl(var(--muted-foreground))',
-            }}
+            style={{ left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16 }}
             aria-hidden="true"
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground absolute text-muted-foreground"
           />
           <Input
             placeholder="Search venues & organizations..."
             value={search}
             onChange={(e) => handleSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-11 h-11 rounded-element"
+            className="pl-12 h-11 rounded-element"
           />
         </div>
         <div className="flex gap-2">
@@ -406,11 +418,7 @@ export function VenueFilters({
             className="h-11 w-11 rounded-element"
             aria-label="Find near me"
           >
-            {isDetectingLocation ? (
-              <Loader2 style={{ width: 16, height: 16 }} />
-            ) : (
-              <Navigation style={{ width: 16, height: 16 }} />
-            )}
+            {isDetectingLocation ? <Loader2 size={16} /> : <Navigation size={16} />}
           </Button>
           <Button
             onClick={handleSearch}
@@ -418,7 +426,7 @@ export function VenueFilters({
             className="h-11 w-11 rounded-element"
             aria-label="Search"
           >
-            <Search style={{ width: 16, height: 16 }} />
+            <Search size={16} />
           </Button>
           <Button
             variant={showAdvanced ? 'default' : 'outline'}
@@ -426,12 +434,14 @@ export function VenueFilters({
             className="h-11 rounded-element gap-2"
             aria-label="Toggle filters"
           >
-            <Filter style={{ width: 16, height: 16 }} />
+            <Filter size={16} />
             {activeFilterCount > 0 && (
               <span
                 className="rounded-full inline-flex items-center justify-center font-semibold"
                 style={{
-                  backgroundColor: showAdvanced ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
+                  backgroundColor: showAdvanced
+                    ? 'hsl(var(--primary-foreground))'
+                    : 'hsl(var(--primary))',
                   color: showAdvanced ? 'hsl(var(--primary))' : 'hsl(var(--primary-foreground))',
                   minWidth: 20,
                   height: 20,
@@ -455,7 +465,7 @@ export function VenueFilters({
             variant={category === cat ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleCategoryClick(cat)}
-            className="rounded-full h-8 px-3.5 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
+            className="rounded-full h-8 px-4.5 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
           >
             {categoryLabels[cat] ?? cat}
           </Button>
@@ -468,49 +478,95 @@ export function VenueFilters({
           {search && (
             <Badge variant="secondary">
               &ldquo;{search}&rdquo;
-              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => { setSearch(''); autoApply({ search: '' }); }} />
+              <X
+                style={xStyle}
+                role="button"
+                aria-label="Remove filter"
+                onClick={() => {
+                  setSearch('');
+                  autoApply({ search: '' });
+                }}
+              />
             </Badge>
           )}
           {city && (
             <Badge variant="secondary">
               {city}
-              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => { setCity(''); autoApply({ city: '' }); }} />
+              <X
+                style={xStyle}
+                role="button"
+                aria-label="Remove filter"
+                onClick={() => {
+                  setCity('');
+                  autoApply({ city: '' });
+                }}
+              />
             </Badge>
           )}
           {selectedTags.map((tag) => (
             <Badge key={tag} variant="secondary">
               {tag}
-              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleTagToggle(tag)} />
+              <X
+                style={xStyle}
+                role="button"
+                aria-label="Remove filter"
+                onClick={() => handleTagToggle(tag)}
+              />
             </Badge>
           ))}
           {selectedAmenities.map((a) => (
             <Badge key={a} variant="secondary">
               {a}
-              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleAmenityToggle(a)} />
+              <X
+                style={xStyle}
+                role="button"
+                aria-label="Remove filter"
+                onClick={() => handleAmenityToggle(a)}
+              />
             </Badge>
           ))}
           {selectedServices.map((s) => (
             <Badge key={s} variant="secondary">
               {s}
-              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleServiceToggle(s)} />
+              <X
+                style={xStyle}
+                role="button"
+                aria-label="Remove filter"
+                onClick={() => handleServiceToggle(s)}
+              />
             </Badge>
           ))}
           {selectedAccessibilityAttributes.map((a) => (
             <Badge key={a} variant="secondary">
               {a}
-              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleAccessibilityToggle(a)} />
+              <X
+                style={xStyle}
+                role="button"
+                aria-label="Remove filter"
+                onClick={() => handleAccessibilityToggle(a)}
+              />
             </Badge>
           ))}
           {selectedTargetGroups.map((g) => (
             <Badge key={g} variant="secondary">
               {g}
-              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleTargetGroupToggle(g)} />
+              <X
+                style={xStyle}
+                role="button"
+                aria-label="Remove filter"
+                onClick={() => handleTargetGroupToggle(g)}
+              />
             </Badge>
           ))}
           {nearMe && (
             <Badge variant="secondary">
               Near Me
-              <X style={xStyle} role="button" aria-label="Remove filter" onClick={handleNearMeToggle} />
+              <X
+                style={xStyle}
+                role="button"
+                aria-label="Remove filter"
+                onClick={handleNearMeToggle}
+              />
             </Badge>
           )}
           <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -523,10 +579,7 @@ export function VenueFilters({
       {showAdvanced && (
         <>
           {/* Mobile: bottom sheet */}
-          <Sheet
-            open={showAdvanced}
-            onOpenChange={(o) => !o && setShowAdvanced(false)}
-          >
+          <Sheet open={showAdvanced} onOpenChange={(o) => !o && setShowAdvanced(false)}>
             <SheetContent side="bottom" className="md:hidden max-h-[85dvh] overflow-y-auto p-4">
               <SheetHeader>
                 <SheetTitle>Refine</SheetTitle>
@@ -538,7 +591,7 @@ export function VenueFilters({
           {/* Desktop: inline */}
           <nav
             aria-label="Venue filters"
-            className="hidden md:flex flex-col gap-6 pt-5 mt-1 border-t border-border"
+            className="hidden md:flex flex-col gap-6 pt-6 mt-1 border-t border-border"
           >
             {renderAdvancedPanel()}
           </nav>
@@ -551,7 +604,7 @@ export function VenueFilters({
     return (
       <div className="flex flex-col gap-6">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
             Refine
           </span>
@@ -559,97 +612,99 @@ export function VenueFilters({
 
         {/* City input */}
         <div className="max-w-[400px] flex flex-col gap-1.5">
-            <Label htmlFor="city" className="text-[11px] uppercase tracking-wider text-muted-foreground">City</Label>
-            <Input
-              id="city"
-              placeholder="Enter city..."
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="h-11 rounded-element"
-            />
+          <Label htmlFor="city" className="text-xs2 uppercase tracking-wider text-muted-foreground">
+            City
+          </Label>
+          <Input
+            id="city"
+            placeholder="Enter city..."
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            className="h-11 rounded-element"
+          />
+        </div>
+
+        {/* Filter dropdowns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Tags */}
+          <FilterDropdown
+            label="Tags"
+            open={tagsOpen}
+            onOpenChange={setTagsOpen}
+            selected={selectedTags}
+            loading={tagsLoading}
+            items={unifiedTags.map((t) => ({ key: t.id, label: t.name }))}
+            onToggle={handleTagToggle}
+            placeholder="Select tags..."
+            searchPlaceholder="Search tags..."
+            emptyMessage="No tags found."
+          />
+
+          {/* Amenities */}
+          <FilterDropdown
+            label="Amenities"
+            open={amenitiesOpen}
+            onOpenChange={setAmenitiesOpen}
+            selected={selectedAmenities}
+            items={commonAmenities.map((a) => ({ key: a, label: a }))}
+            onToggle={handleAmenityToggle}
+            placeholder="Select amenities..."
+            searchPlaceholder="Search amenities..."
+            emptyMessage="No amenities found."
+          />
+
+          {/* Services */}
+          <FilterDropdown
+            label="Services"
+            open={servicesOpen}
+            onOpenChange={setServicesOpen}
+            selected={selectedServices}
+            items={commonServices.map((s) => ({ key: s, label: s }))}
+            onToggle={handleServiceToggle}
+            placeholder="Select services..."
+            searchPlaceholder="Search services..."
+            emptyMessage="No services found."
+          />
+
+          {/* Accessibility */}
+          <FilterDropdown
+            label="Accessibility"
+            open={accessibilityOpen}
+            onOpenChange={setAccessibilityOpen}
+            selected={selectedAccessibilityAttributes}
+            loading={accessibilityLoading}
+            items={accessibilityAttributes.map((a) => ({ key: a.id, label: a.name }))}
+            onToggle={handleAccessibilityToggle}
+            placeholder="Select accessibility..."
+            searchPlaceholder="Search accessibility..."
+            emptyMessage="No accessibility features found."
+          />
+
+          {/* Target Groups */}
+          <FilterDropdown
+            label="Target Groups"
+            open={targetGroupsOpen}
+            onOpenChange={setTargetGroupsOpen}
+            selected={selectedTargetGroups}
+            loading={targetGroupsLoading}
+            items={targetGroups.map((g) => ({ key: g.id, label: g.name, color: g.color }))}
+            onToggle={handleTargetGroupToggle}
+            placeholder="Select target groups..."
+            searchPlaceholder="Search target groups..."
+            emptyMessage="No target groups found."
+          />
+        </div>
+
+        {/* Clear button */}
+        {hasActiveFilters && (
+          <div className="flex gap-4">
+            <Button variant="outline" onClick={clearFilters} size="sm">
+              <X size={14} />
+              Clear All
+            </Button>
           </div>
-
-          {/* Filter dropdowns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {/* Tags */}
-            <FilterDropdown
-              label="Tags"
-              open={tagsOpen}
-              onOpenChange={setTagsOpen}
-              selected={selectedTags}
-              loading={tagsLoading}
-              items={unifiedTags.map((t) => ({ key: t.id, label: t.name }))}
-              onToggle={handleTagToggle}
-              placeholder="Select tags..."
-              searchPlaceholder="Search tags..."
-              emptyMessage="No tags found."
-            />
-
-            {/* Amenities */}
-            <FilterDropdown
-              label="Amenities"
-              open={amenitiesOpen}
-              onOpenChange={setAmenitiesOpen}
-              selected={selectedAmenities}
-              items={commonAmenities.map((a) => ({ key: a, label: a }))}
-              onToggle={handleAmenityToggle}
-              placeholder="Select amenities..."
-              searchPlaceholder="Search amenities..."
-              emptyMessage="No amenities found."
-            />
-
-            {/* Services */}
-            <FilterDropdown
-              label="Services"
-              open={servicesOpen}
-              onOpenChange={setServicesOpen}
-              selected={selectedServices}
-              items={commonServices.map((s) => ({ key: s, label: s }))}
-              onToggle={handleServiceToggle}
-              placeholder="Select services..."
-              searchPlaceholder="Search services..."
-              emptyMessage="No services found."
-            />
-
-            {/* Accessibility */}
-            <FilterDropdown
-              label="Accessibility"
-              open={accessibilityOpen}
-              onOpenChange={setAccessibilityOpen}
-              selected={selectedAccessibilityAttributes}
-              loading={accessibilityLoading}
-              items={accessibilityAttributes.map((a) => ({ key: a.id, label: a.name }))}
-              onToggle={handleAccessibilityToggle}
-              placeholder="Select accessibility..."
-              searchPlaceholder="Search accessibility..."
-              emptyMessage="No accessibility features found."
-            />
-
-            {/* Target Groups */}
-            <FilterDropdown
-              label="Target Groups"
-              open={targetGroupsOpen}
-              onOpenChange={setTargetGroupsOpen}
-              selected={selectedTargetGroups}
-              loading={targetGroupsLoading}
-              items={targetGroups.map((g) => ({ key: g.id, label: g.name, color: g.color }))}
-              onToggle={handleTargetGroupToggle}
-              placeholder="Select target groups..."
-              searchPlaceholder="Search target groups..."
-              emptyMessage="No target groups found."
-            />
-          </div>
-
-          {/* Clear button */}
-          {hasActiveFilters && (
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={clearFilters} size="sm">
-                <X style={{ width: 14, height: 14 }} />
-                Clear All
-              </Button>
-            </div>
-          )}
+        )}
       </div>
     );
   }
@@ -679,16 +734,23 @@ function FilterDropdown({
   searchPlaceholder: string;
   emptyMessage: string;
 }) {
-  const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
+  const xStyle = {
+    width: 12,
+    height: 12,
+    cursor: 'pointer',
+    padding: 8,
+    margin: -8,
+    boxSizing: 'content-box' as const,
+  };
 
   return (
     <div className="flex flex-col gap-2">
-      <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+      <Label className="text-xs2 uppercase tracking-wider text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
           {label}
           {selected.length > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-[10px] font-semibold normal-case tracking-normal">
+            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-2xs font-semibold normal-case tracking-normal">
               {selected.length}
             </span>
           )}
@@ -703,16 +765,18 @@ function FilterDropdown({
             className="h-11 w-full justify-between rounded-element font-normal"
           >
             <span className="truncate text-sm">
-              {selected.length > 0
-                ? `${selected.length} selected`
-                : placeholder}
+              {selected.length > 0 ? `${selected.length} selected` : placeholder}
             </span>
             <ChevronDown
-              style={{ marginLeft: 8, width: 14, height: 14, flexShrink: 0, opacity: 0.5 }}
+              style={{ width: 14, height: 14, opacity: 0.5 }}
+              className="ml-2 shrink-0"
             />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="border-border shadow-[var(--shadow-aceternity)] p-0">
+        <PopoverContent
+          align="start"
+          className="border-border p-0"
+        >
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
             <CommandList>
@@ -720,7 +784,7 @@ function FilterDropdown({
               <CommandGroup>
                 {loading ? (
                   <div className="flex items-center justify-center p-4">
-                    <Loader2 style={{ width: 16, height: 16 }} />
+                    <Loader2 size={16} />
                   </div>
                 ) : (
                   items.map((item) => (
@@ -731,11 +795,11 @@ function FilterDropdown({
                     >
                       <Check
                         style={{
-                          marginRight: 8,
                           width: 16,
                           height: 16,
                           opacity: selected.includes(item.label) ? 1 : 0,
                         }}
+                        className="mr-2"
                       />
                       <div className="flex items-center gap-2">
                         {item.color && (
@@ -759,7 +823,12 @@ function FilterDropdown({
           {selected.map((val) => (
             <Badge key={val} variant="secondary">
               {val}
-              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => onToggle(val)} />
+              <X
+                style={xStyle}
+                role="button"
+                aria-label="Remove filter"
+                onClick={() => onToggle(val)}
+              />
             </Badge>
           ))}
         </div>

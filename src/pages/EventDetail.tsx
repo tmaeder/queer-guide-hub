@@ -201,7 +201,7 @@ export default function EventDetail() {
         </p>
         <LocalizedLink to="/events">
           <Button>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back to Events
           </Button>
         </LocalizedLink>

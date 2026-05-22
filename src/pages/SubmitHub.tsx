@@ -24,13 +24,13 @@ const SubmitHub = () => {
         onClick={() => navigate(-1)}
         style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}
       >
-        <ArrowLeft style={{ width: 16, height: 16 }} />
+        <ArrowLeft size={16} />
         Back
       </Button>
 
       <div className="text-center mb-8">
-        <div className="flex justify-center mb-3">
-          <Heart style={{ width: 32, height: 32 }} />
+        <div className="flex justify-center mb-4">
+          <Heart size={32} />
         </div>
         <h4 className="text-2xl font-bold mb-2">
           {t('pages.submit.title', 'Contribute to Queer Guide')}
@@ -66,7 +66,7 @@ const SubmitHub = () => {
                 className="flex items-center justify-center flex-shrink-0 bg-muted"
                 style={{ width: 44, height: 44 }}
               >
-                <Camera style={{ width: 22, height: 22 }} />
+                <Camera size={22} />
               </div>
               <div>
                 <p className="text-base font-semibold mb-0.5">Scan a Flyer</p>
@@ -75,7 +75,7 @@ const SubmitHub = () => {
                   automatically.
                 </p>
               </div>
-              <ArrowRight style={{ width: 18, height: 18, flexShrink: 0 }} />
+              <ArrowRight size={18} className="shrink-0" />
             </div>
           </CardContent>
         </Card>
@@ -86,18 +86,18 @@ const SubmitHub = () => {
             <Card key={type.id} onClick={() => navigate(`/submit/${type.id}`)}>
               <CardContent>
                 <div
-                  className="flex items-center justify-center mb-3"
+                  className="flex items-center justify-center mb-4"
                   style={{ width: 44, height: 44, backgroundColor: `${type.color}15` }}
                 >
                   <Icon style={{ width: 22, height: 22, color: type.color }} />
                 </div>
                 <p className="text-base font-semibold mb-1">Submit {type.label}</p>
-                <p className="text-sm text-muted-foreground mb-3" style={{ minHeight: '2.5em' }}>
+                <p className="text-sm text-muted-foreground mb-4" style={{ minHeight: '2.5em' }}>
                   {type.description}
                 </p>
                 <div className="flex items-center gap-1">
                   <p className="text-sm font-semibold text-foreground">Get started</p>
-                  <ArrowRight style={{ width: 14, height: 14, color: type.color }} aria-hidden="true" />
+                  <ArrowRight size={14} style={{ color: type.color }} aria-hidden="true" />
                 </div>
               </CardContent>
             </Card>

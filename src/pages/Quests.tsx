@@ -100,7 +100,7 @@ function QuestCard({ quest, highlight, muted }: { quest: Quest; highlight?: bool
         muted ? 'opacity-80' : ''
       }`}
     >
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-4 flex items-center justify-between gap-2">
         <Badge variant={highlight ? 'default' : 'outline'}>
           {bucket === 'active' ? 'Live now' : bucket === 'upcoming' ? 'Soon' : 'Recap'}
         </Badge>
@@ -113,7 +113,7 @@ function QuestCard({ quest, highlight, muted }: { quest: Quest; highlight?: bool
         <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">{quest.theme}</p>
       )}
       {quest.brief_md && (
-        <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">
+        <p className="mt-4 line-clamp-3 text-sm text-muted-foreground">
           {quest.brief_md.replace(/^#.*$/gm, '').trim().slice(0, 180)}
         </p>
       )}

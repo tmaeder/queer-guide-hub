@@ -1,8 +1,8 @@
-import * as React from "react"
-import { Command as CommandPrimitive } from "cmdk"
-import { Search } from "lucide-react"
+import * as React from 'react';
+import { Command as CommandPrimitive } from 'cmdk';
+import { Search } from 'lucide-react';
 
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 /* ── Inline styles replacing Tailwind classes ────────────────────────── */
 
@@ -38,7 +38,7 @@ const cmdkStyles = {
     padding: '6px 8px',
     fontSize: '0.875rem',
     outline: 'none',
-    borderRadius: 0,
+    borderRadius: 'var(--radius-none)',
   },
   separator: {
     marginLeft: -4,
@@ -97,10 +97,7 @@ const CmdkGlobalStyles = () => (
   `}</style>
 );
 
-function mergeStyles(
-  base: React.CSSProperties,
-  extra?: React.CSSProperties
-): React.CSSProperties {
+function mergeStyles(base: React.CSSProperties, extra?: React.CSSProperties): React.CSSProperties {
   return extra ? { ...base, ...extra } : base;
 }
 
@@ -119,8 +116,8 @@ const Command = React.forwardRef<
       {...props}
     />
   </>
-))
-Command.displayName = CommandPrimitive.displayName
+));
+Command.displayName = CommandPrimitive.displayName;
 
 interface CommandDialogProps {
   children?: React.ReactNode;
@@ -131,12 +128,12 @@ interface CommandDialogProps {
 const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
   return (
     <Dialog {...props}>
-      <DialogContent style={{ overflow: 'hidden', padding: 0 }}>
+      <DialogContent className="overflow-hidden p-0">
         <Command>{children}</Command>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
@@ -151,9 +148,9 @@ const CommandInput = React.forwardRef<
       {...props}
     />
   </div>
-))
+));
 
-CommandInput.displayName = CommandPrimitive.Input.displayName
+CommandInput.displayName = CommandPrimitive.Input.displayName;
 
 const CommandList = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.List>,
@@ -165,22 +162,18 @@ const CommandList = React.forwardRef<
     style={mergeStyles(cmdkStyles.list, style)}
     {...props}
   />
-))
+));
 
-CommandList.displayName = CommandPrimitive.List.displayName
+CommandList.displayName = CommandPrimitive.List.displayName;
 
 const CommandEmpty = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Empty>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
 >(({ style, ...props }, ref) => (
-  <CommandPrimitive.Empty
-    ref={ref}
-    style={mergeStyles(cmdkStyles.empty, style)}
-    {...props}
-  />
-))
+  <CommandPrimitive.Empty ref={ref} style={mergeStyles(cmdkStyles.empty, style)} {...props} />
+));
 
-CommandEmpty.displayName = CommandPrimitive.Empty.displayName
+CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
 
 const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
@@ -192,9 +185,9 @@ const CommandGroup = React.forwardRef<
     style={mergeStyles(cmdkStyles.group, style)}
     {...props}
   />
-))
+));
 
-CommandGroup.displayName = CommandPrimitive.Group.displayName
+CommandGroup.displayName = CommandPrimitive.Group.displayName;
 
 const CommandSeparator = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Separator>,
@@ -209,8 +202,8 @@ const CommandSeparator = React.forwardRef<
     role="none"
     {...props}
   />
-))
-CommandSeparator.displayName = CommandPrimitive.Separator.displayName
+));
+CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
 const CommandItem = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Item>,
@@ -222,24 +215,14 @@ const CommandItem = React.forwardRef<
     style={mergeStyles(cmdkStyles.item, style)}
     {...props}
   />
-))
+));
 
-CommandItem.displayName = CommandPrimitive.Item.displayName
+CommandItem.displayName = CommandPrimitive.Item.displayName;
 
-const CommandShortcut = ({
-  className,
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLSpanElement>) => {
-  return (
-    <span
-      className={className}
-      style={mergeStyles(cmdkStyles.shortcut, style)}
-      {...props}
-    />
-  )
-}
-CommandShortcut.displayName = "CommandShortcut"
+const CommandShortcut = ({ className, style, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
+  return <span className={className} style={mergeStyles(cmdkStyles.shortcut, style)} {...props} />;
+};
+CommandShortcut.displayName = 'CommandShortcut';
 
 export {
   Command,
@@ -251,4 +234,4 @@ export {
   CommandItem,
   CommandShortcut,
   CommandSeparator,
-}
+};

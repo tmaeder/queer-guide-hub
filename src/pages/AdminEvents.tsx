@@ -191,12 +191,16 @@ export default function AdminEvents() {
     }
   };
 
-
   const organizers = useMemo(() => venues.filter((v) => v.is_organizer), [venues]);
 
   const handleOrganizerSelect = (organizerId: string) => {
     if (organizerId === 'custom' || !organizerId) {
-      setFormData((prev) => ({ ...prev, organizer_id: '', organizer_name: '', organizer_contact: '' }));
+      setFormData((prev) => ({
+        ...prev,
+        organizer_id: '',
+        organizer_name: '',
+        organizer_contact: '',
+      }));
       return;
     }
     const org = venues.find((v) => v.id === organizerId);
@@ -354,10 +358,10 @@ export default function AdminEvents() {
         header: 'Title',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
             {info.row.original.venue_name && (
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <MapPin style={{ height: 11, width: 11 }} />
+                <MapPin size={11} />
                 {info.row.original.venue_name}
               </div>
             )}
@@ -385,7 +389,7 @@ export default function AdminEvents() {
           const d = info.getValue();
           return d ? (
             <div className="flex items-center gap-1">
-              <CalendarIcon style={{ height: 12, width: 12 }} />
+              <CalendarIcon size={12} />
               {format(new Date(d), 'MMM d, yyyy HH:mm')}
             </div>
           ) : (
@@ -400,7 +404,7 @@ export default function AdminEvents() {
           const d = info.getValue();
           return d ? (
             <div className="flex items-center gap-1">
-              <CalendarIcon style={{ height: 12, width: 12 }} />
+              <CalendarIcon size={12} />
               {format(new Date(d), 'MMM d, yyyy HH:mm')}
             </div>
           ) : (
@@ -429,9 +433,11 @@ export default function AdminEvents() {
         header: 'Free',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>Free</Badge>
+            <Badge style={{ backgroundColor: 'hsl(var(--muted))' }} className="text-foreground">
+              Free
+            </Badge>
           ) : (
-            <span style={{ color: 'var(--muted-foreground)' }}>
+            <span className="text-muted-foreground">
               {info.row.original.price_min ? formatCurrency(info.row.original.price_min) : '-'}
             </span>
           ),
@@ -441,8 +447,13 @@ export default function AdminEvents() {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
-              <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+            <Badge
+              style={{
+                backgroundColor: 'hsl(var(--muted))',
+                color: 'hsl(var(--foreground) / 0.7)',
+              }}
+            >
+              <Star size={12} className="mr-1" />
               Featured
             </Badge>
           ) : null,
@@ -578,345 +589,354 @@ export default function AdminEvents() {
       config={tableConfig}
       afterTable={
         <>
-      {/* Create/Edit Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent style={{ maxWidth: 896, maxHeight: '90vh', overflow: 'auto' }}>
-          <DialogHeader>
-            <DialogTitle>{editingEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-6">
-              {/* Basic Info */}
-              <div className="flex flex-col gap-4">
-                <h3 className="font-semibold">Event Details
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="title">Event Title</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
-                      required
-                    />
+          {/* Create/Edit Dialog */}
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogContent style={{ maxWidth: 896, maxHeight: '90vh' }} className="overflow-auto">
+              <DialogHeader>
+                <DialogTitle>{editingEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit}>
+                <div className="flex flex-col gap-6">
+                  {/* Basic Info */}
+                  <div className="flex flex-col gap-4">
+                    <h3 className="font-semibold">Event Details</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="title">Event Title</Label>
+                        <Input
+                          id="title"
+                          value={formData.title}
+                          onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label>Event Type</Label>
+                        <Select
+                          value={formData.event_type}
+                          onValueChange={(v) => setFormData((p) => ({ ...p, event_type: v }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {eventTypes.map((t) => (
+                              <SelectItem key={t} value={t}>
+                                {t.charAt(0).toUpperCase() + t.slice(1)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    {formData.event_type === 'pride' && (
+                      <div>
+                        <Label>Pride type</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {PRIDE_SUBTYPES.map(({ tag, label }) => {
+                            const active = formData.tags.includes(tag);
+                            return (
+                              <Button
+                                key={tag}
+                                type="button"
+                                size="sm"
+                                variant={active ? 'default' : 'outline'}
+                                onClick={() =>
+                                  setFormData((p) => ({
+                                    ...p,
+                                    tags: active
+                                      ? p.tags.filter((x) => x !== tag)
+                                      : [...p.tags, tag],
+                                  }))
+                                }
+                                aria-pressed={active}
+                              >
+                                {label}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <Label>Description</Label>
+                      <Textarea
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData((p) => ({ ...p, description: e.target.value }))
+                        }
+                        rows={3}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label>Event Type</Label>
-                    <Select
-                      value={formData.event_type}
-                      onValueChange={(v) => setFormData((p) => ({ ...p, event_type: v }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {eventTypes.map((t) => (
-                          <SelectItem key={t} value={t}>
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+
+                  {/* Date & Time */}
+                  <div className="flex flex-col gap-4">
+                    <h3 className="font-semibold">Date & Time</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Start Date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              style={{
+                                width: '100%',
+                                justifyContent: 'flex-start',
+                                fontWeight: 'normal',
+                              }}
+                            >
+                              <CalendarIcon size={16} className="mr-2" />
+                              {startDate ? format(startDate, 'PPP') : 'Pick a date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent style={{ width: 'auto' }} className="p-0">
+                            <Calendar
+                              mode="single"
+                              selected={startDate}
+                              onSelect={setStartDate}
+                              initialFocus
+                              style={{ pointerEvents: 'auto' }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div>
+                        <Label>End Date (Optional)</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              style={{
+                                width: '100%',
+                                justifyContent: 'flex-start',
+                                fontWeight: 'normal',
+                              }}
+                            >
+                              <CalendarIcon size={16} className="mr-2" />
+                              {endDate ? format(endDate, 'PPP') : 'Pick a date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent style={{ width: 'auto' }} className="p-0">
+                            <Calendar
+                              mode="single"
+                              selected={endDate}
+                              onSelect={setEndDate}
+                              initialFocus
+                              style={{ pointerEvents: 'auto' }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                {formData.event_type === 'pride' && (
-                  <div>
-                    <Label>Pride type</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {PRIDE_SUBTYPES.map(({ tag, label }) => {
-                        const active = formData.tags.includes(tag);
-                        return (
-                          <Button
-                            key={tag}
-                            type="button"
-                            size="sm"
-                            variant={active ? 'default' : 'outline'}
-                            onClick={() =>
-                              setFormData((p) => ({
-                                ...p,
-                                tags: active
-                                  ? p.tags.filter((x) => x !== tag)
-                                  : [...p.tags, tag],
-                              }))
+
+                  {/* Location */}
+                  <div className="flex flex-col gap-4">
+                    <h3 className="font-semibold">Location</h3>
+                    <div>
+                      <Label>Select Venue (Optional)</Label>
+                      <VenueCombobox
+                        venues={venues}
+                        value={formData.venue_id}
+                        onValueChange={handleVenueSelect}
+                        placeholder="Search and select venue"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Venue Name</Label>
+                        <Input
+                          value={formData.venue_name}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, venue_name: e.target.value }))
+                          }
+                          disabled={!!formData.venue_id}
+                        />
+                      </div>
+                      <LocationAutocomplete
+                        value={formData.address}
+                        onChange={handleAddressChange}
+                        placeholder={formData.venue_id ? 'From venue' : 'Search address...'}
+                        disabled={!!formData.venue_id}
+                        label="Address"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label>City</Label>
+                        <Input
+                          value={formData.city}
+                          onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
+                          required
+                          disabled={!!formData.venue_id}
+                        />
+                      </div>
+                      <div>
+                        <Label>State</Label>
+                        <Input
+                          value={formData.state}
+                          onChange={(e) => setFormData((p) => ({ ...p, state: e.target.value }))}
+                          disabled={!!formData.venue_id}
+                        />
+                      </div>
+                      <div>
+                        <Label>Country</Label>
+                        <Input
+                          value={formData.country}
+                          onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
+                          disabled={!!formData.venue_id}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pricing & Capacity */}
+                  <div className="flex flex-col gap-4">
+                    <h3 className="font-semibold">Pricing & Capacity</h3>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="is_free"
+                        checked={formData.is_free}
+                        onCheckedChange={(c) =>
+                          setFormData((p) => ({ ...p, is_free: c as boolean }))
+                        }
+                      />
+                      <Label htmlFor="is_free">Free Event</Label>
+                    </div>
+                    {!formData.is_free && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Min Price</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={formData.price_min}
+                            onChange={(e) =>
+                              setFormData((p) => ({ ...p, price_min: e.target.value }))
                             }
-                            aria-pressed={active}
-                          >
-                            {label}
-                          </Button>
-                        );
-                      })}
+                          />
+                        </div>
+                        <div>
+                          <Label>Max Price</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={formData.price_max}
+                            onChange={(e) =>
+                              setFormData((p) => ({ ...p, price_max: e.target.value }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Max Attendees</Label>
+                        <Input
+                          type="number"
+                          value={formData.max_attendees}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, max_attendees: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label>Age Restriction</Label>
+                        <Select
+                          value={formData.age_restriction}
+                          onValueChange={(v) => setFormData((p) => ({ ...p, age_restriction: v }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No Restriction</SelectItem>
+                            <SelectItem value="18+">18+</SelectItem>
+                            <SelectItem value="21+">21+</SelectItem>
+                            <SelectItem value="all_ages">All Ages</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
-                )}
-                <div>
-                  <Label>Description</Label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
-              </div>
 
-              {/* Date & Time */}
-              <div className="flex flex-col gap-4">
-                <h3 className="font-semibold">Date & Time
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Start Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          style={{
-                            width: '100%',
-                            justifyContent: 'flex-start',
-                            fontWeight: 'normal',
-                          }}
-                        >
-                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
-                          {startDate ? format(startDate, 'PPP') : 'Pick a date'}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent style={{ width: 'auto', padding: 0 }}>
-                        <Calendar
-                          mode="single"
-                          selected={startDate}
-                          onSelect={setStartDate}
-                          initialFocus
-                          style={{ pointerEvents: 'auto' }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div>
-                    <Label>End Date (Optional)</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          style={{
-                            width: '100%',
-                            justifyContent: 'flex-start',
-                            fontWeight: 'normal',
-                          }}
-                        >
-                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
-                          {endDate ? format(endDate, 'PPP') : 'Pick a date'}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent style={{ width: 'auto', padding: 0 }}>
-                        <Calendar
-                          mode="single"
-                          selected={endDate}
-                          onSelect={setEndDate}
-                          initialFocus
-                          style={{ pointerEvents: 'auto' }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="flex flex-col gap-4">
-                <h3 className="font-semibold">Location
-                </h3>
-                <div>
-                  <Label>Select Venue (Optional)</Label>
-                  <VenueCombobox
-                    venues={venues}
-                    value={formData.venue_id}
-                    onValueChange={handleVenueSelect}
-                    placeholder="Search and select venue"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Venue Name</Label>
-                    <Input
-                      value={formData.venue_name}
-                      onChange={(e) => setFormData((p) => ({ ...p, venue_name: e.target.value }))}
-                      disabled={!!formData.venue_id}
-                    />
-                  </div>
-                  <LocationAutocomplete
-                    value={formData.address}
-                    onChange={handleAddressChange}
-                    placeholder={formData.venue_id ? 'From venue' : 'Search address...'}
-                    disabled={!!formData.venue_id}
-                    label="Address"
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>City</Label>
-                    <Input
-                      value={formData.city}
-                      onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
-                      required
-                      disabled={!!formData.venue_id}
-                    />
-                  </div>
-                  <div>
-                    <Label>State</Label>
-                    <Input
-                      value={formData.state}
-                      onChange={(e) => setFormData((p) => ({ ...p, state: e.target.value }))}
-                      disabled={!!formData.venue_id}
-                    />
-                  </div>
-                  <div>
-                    <Label>Country</Label>
-                    <Input
-                      value={formData.country}
-                      onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
-                      disabled={!!formData.venue_id}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Pricing & Capacity */}
-              <div className="flex flex-col gap-4">
-                <h3 className="font-semibold">Pricing & Capacity
-                </h3>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="is_free"
-                    checked={formData.is_free}
-                    onCheckedChange={(c) => setFormData((p) => ({ ...p, is_free: c as boolean }))}
-                  />
-                  <Label htmlFor="is_free">Free Event</Label>
-                </div>
-                {!formData.is_free && (
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Additional Info */}
+                  <div className="flex flex-col gap-4">
+                    <h3 className="font-semibold">Additional Information</h3>
                     <div>
-                      <Label>Min Price</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={formData.price_min}
-                        onChange={(e) => setFormData((p) => ({ ...p, price_min: e.target.value }))}
+                      <Label>Select Organizer (Optional)</Label>
+                      <VenueCombobox
+                        venues={organizers}
+                        value={formData.organizer_id}
+                        onValueChange={handleOrganizerSelect}
+                        placeholder="Search organizers..."
                       />
                     </div>
-                    <div>
-                      <Label>Max Price</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={formData.price_max}
-                        onChange={(e) => setFormData((p) => ({ ...p, price_max: e.target.value }))}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Organizer Name</Label>
+                        <Input
+                          value={formData.organizer_name}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, organizer_name: e.target.value }))
+                          }
+                          disabled={!!formData.organizer_id}
+                        />
+                      </div>
+                      <div>
+                        <Label>Organizer Contact</Label>
+                        <Input
+                          value={formData.organizer_contact}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, organizer_contact: e.target.value }))
+                          }
+                          disabled={!!formData.organizer_id}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Website</Label>
+                        <Input
+                          value={formData.website}
+                          onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label>Ticket URL</Label>
+                        <Input
+                          value={formData.ticket_url}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, ticket_url: e.target.value }))
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="is_featured"
+                        checked={formData.is_featured}
+                        onCheckedChange={(c) =>
+                          setFormData((p) => ({ ...p, is_featured: c as boolean }))
+                        }
                       />
+                      <Label htmlFor="is_featured">Featured Event</Label>
                     </div>
                   </div>
-                )}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Max Attendees</Label>
-                    <Input
-                      type="number"
-                      value={formData.max_attendees}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, max_attendees: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label>Age Restriction</Label>
-                    <Select
-                      value={formData.age_restriction}
-                      onValueChange={(v) => setFormData((p) => ({ ...p, age_restriction: v }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No Restriction</SelectItem>
-                        <SelectItem value="18+">18+</SelectItem>
-                        <SelectItem value="21+">21+</SelectItem>
-                        <SelectItem value="all_ages">All Ages</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
 
-              {/* Additional Info */}
-              <div className="flex flex-col gap-4">
-                <h3 className="font-semibold">Additional Information
-                </h3>
-                <div>
-                  <Label>Select Organizer (Optional)</Label>
-                  <VenueCombobox
-                    venues={organizers}
-                    value={formData.organizer_id}
-                    onValueChange={handleOrganizerSelect}
-                    placeholder="Search organizers..."
+                  <EventImageUpload
+                    images={formData.images}
+                    onChange={(images) => setFormData((p) => ({ ...p, images }))}
+                    maxImages={5}
                   />
+                  <Button type="submit" style={{ width: '100%' }}>
+                    {editingEvent ? 'Update Event' : 'Create Event'}
+                  </Button>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Organizer Name</Label>
-                    <Input
-                      value={formData.organizer_name}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, organizer_name: e.target.value }))
-                      }
-                      disabled={!!formData.organizer_id}
-                    />
-                  </div>
-                  <div>
-                    <Label>Organizer Contact</Label>
-                    <Input
-                      value={formData.organizer_contact}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, organizer_contact: e.target.value }))
-                      }
-                      disabled={!!formData.organizer_id}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Website</Label>
-                    <Input
-                      value={formData.website}
-                      onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label>Ticket URL</Label>
-                    <Input
-                      value={formData.ticket_url}
-                      onChange={(e) => setFormData((p) => ({ ...p, ticket_url: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="is_featured"
-                    checked={formData.is_featured}
-                    onCheckedChange={(c) => setFormData((p) => ({ ...p, is_featured: c as boolean }))}
-                  />
-                  <Label htmlFor="is_featured">Featured Event</Label>
-                </div>
-              </div>
-
-              <EventImageUpload
-                images={formData.images}
-                onChange={(images) => setFormData((p) => ({ ...p, images }))}
-                maxImages={5}
-              />
-              <Button type="submit" style={{ width: '100%' }}>
-                {editingEvent ? 'Update Event' : 'Create Event'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+              </form>
+            </DialogContent>
+          </Dialog>
         </>
       }
     />

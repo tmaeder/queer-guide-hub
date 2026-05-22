@@ -48,7 +48,7 @@ export const SDGDataPanel = ({ data, countryName: _countryName }: SDGDataPanelPr
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
-            <Target style={{ height: 20, width: 20 }} />
+            <Target size={20} />
             UN Sustainable Development Goals
           </div>
           {data.lastSyncedAt && (
@@ -67,7 +67,7 @@ export const SDGDataPanel = ({ data, countryName: _countryName }: SDGDataPanelPr
             return (
               <div
                 key={goal.number}
-                className="flex flex-col gap-1 p-4 bg-muted transition-shadow hover:shadow-sm"
+                className="flex flex-col gap-1 p-4 bg-muted"
                 style={{ borderLeft: `4px solid ${goal.color}` }}
               >
                 <div className="flex items-center justify-between">

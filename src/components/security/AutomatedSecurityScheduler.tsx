@@ -164,11 +164,11 @@ export function AutomatedSecurityScheduler() {
   const getStatusIcon = (status: ScheduledTask['status']) => {
     switch (status) {
       case 'active':
-        return <Shield style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />;
+        return <Shield size={16} className="text-foreground" />;
       case 'pending':
-        return <Clock style={{ height: 16, width: 16, color: 'hsl(var(--foreground) / 0.55)' }} />;
+        return <Clock size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
       case 'error':
-        return <AlertCircle style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />;
+        return <AlertCircle size={16} className="text-destructive" />;
     }
   };
 
@@ -181,7 +181,7 @@ export function AutomatedSecurityScheduler() {
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
-            <Calendar style={{ height: 20, width: 20 }} />
+            <Calendar size={20} />
             <span>Automated Security Tasks</span>
           </div>
         </CardTitle>
@@ -216,24 +216,24 @@ export function AutomatedSecurityScheduler() {
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-muted-foreground mb-4">
                 {task.description}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center">
-                  <Clock style={{ height: 12, width: 12, marginRight: 4 }} />
+                  <Clock size={12} className="mr-1" />
                   <span>Frequency: {task.frequency}</span>
                 </div>
                 {task.lastRun && (
                   <div className="flex items-center">
-                    <Database style={{ height: 12, width: 12, marginRight: 4 }} />
+                    <Database size={12} className="mr-1" />
                     <span>Last Run: {new Date(task.lastRun).toLocaleString()}</span>
                   </div>
                 )}
                 {task.nextRun && (
                   <div className="flex items-center">
-                    <Calendar style={{ height: 12, width: 12, marginRight: 4 }} />
+                    <Calendar size={12} className="mr-1" />
                     <span>Next Run: {new Date(task.nextRun).toLocaleString()}</span>
                   </div>
                 )}
@@ -244,7 +244,7 @@ export function AutomatedSecurityScheduler() {
 
         <div className="mt-6 p-4 bg-muted rounded-element">
           <p className="font-medium mb-2 flex items-center">
-            <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Shield size={16} className="mr-2" />
             Security Automation Status
           </p>
           <p className="text-sm text-muted-foreground">

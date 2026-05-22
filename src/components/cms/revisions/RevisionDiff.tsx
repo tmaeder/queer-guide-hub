@@ -5,12 +5,7 @@
  */
 
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { X } from 'lucide-react';
 
 interface RevisionDiffProps {
@@ -50,9 +45,7 @@ function computeInlineDiff(oldStr: string, newStr: string): DiffSegment[] {
     return segments;
   }
 
-  const dp: number[][] = Array.from({ length: m + 1 }, () =>
-    Array(n + 1).fill(0)
-  );
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
@@ -101,7 +94,12 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
   return (
     <div
       className="text-sm"
-      style={{ fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}
+      style={{
+        fontFamily: 'monospace',
+        fontSize: '0.8rem',
+        lineHeight: 1.6,
+        whiteSpace: 'pre-wrap',
+      }}
     >
       {segments.map((seg, idx) => {
         if (seg.type === 'removed') {
@@ -110,11 +108,11 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
               key={idx}
               style={{
                 backgroundColor: 'hsl(var(--destructive) / 0.15)',
-                color: 'hsl(var(--destructive))',
                 textDecoration: 'line-through',
-                borderRadius: '2px',
+                borderRadius: 'var(--radius-badge)',
                 padding: '0 2px',
               }}
+              className="text-destructive"
             >
               {seg.text}
             </span>
@@ -126,10 +124,10 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
               key={idx}
               style={{
                 backgroundColor: 'hsl(var(--foreground) / 0.15)',
-                color: 'hsl(var(--foreground))',
-                borderRadius: '2px',
+                borderRadius: 'var(--radius-badge)',
                 padding: '0 2px',
               }}
+              className="text-foreground"
             >
               {seg.text}
             </span>
@@ -181,8 +179,7 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
           const { old: oldVal, new: newVal } = changes[field];
           const oldStr = formatValue(oldVal);
           const newStr = formatValue(newVal);
-          const isStringDiff =
-            typeof oldVal === 'string' && typeof newVal === 'string';
+          const isStringDiff = typeof oldVal === 'string' && typeof newVal === 'string';
 
           return (
             <div key={field} className="pt-4 first:pt-0">
@@ -195,7 +192,7 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
               ) : (
                 <div className="flex flex-col gap-2">
                   <div
-                    className="rounded p-3"
+                    className="rounded p-4"
                     style={{
                       backgroundColor: 'hsl(var(--destructive) / 0.08)',
                       border: '1px solid hsl(var(--destructive) / 0.2)',
@@ -218,15 +215,13 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
                   </div>
 
                   <div
-                    className="rounded p-3"
+                    className="rounded p-4"
                     style={{
                       backgroundColor: 'hsl(var(--foreground) / 0.08)',
                       border: '1px solid hsl(var(--foreground) / 0.2)',
                     }}
                   >
-                    <span className="block mb-1 text-xs font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-                      Added
-                    </span>
+                    <span className="block mb-1 text-xs font-semibold text-foreground">Added</span>
                     <div
                       className="text-sm"
                       style={{

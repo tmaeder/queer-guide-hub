@@ -44,7 +44,7 @@ function MobileHeader({ title, sub }) {
       <Logo size={16} />
       <div style={{ display: "flex", gap: 8 }}>
         <span className="pill" style={{ padding: "3px 8px", fontSize: 11 }}>EN</span>
-        <div style={{ width: 26, height: 26, borderRadius: 2, background: "var(--ink)" }} />
+        <div style={{ width: 26, height: 26, borderRadius: 'var(--radius-badge)', background: "var(--ink)" }} />
       </div>
     </div>
   );
@@ -60,14 +60,14 @@ export function PatternHomeMobile() {
         <div style={{ padding: "16px 18px 8px" }}>
           <div className="eyebrow">Spring · 64 destinations</div>
           <div className="h-d" style={{ fontSize: 36, lineHeight: 1.0, marginTop: 8 }}>Travel as your <em style={{ color: "var(--accent)" }}>whole</em> self.</div>
-          <div style={{ padding: "10px 12px", border: "1px solid var(--line-strong)", borderRadius: 2, marginTop: 12, fontSize: 12, color: "var(--muted)" }}>⌕ Cities, venues, events…</div>
+          <div style={{ padding: "10px 12px", border: "1px solid var(--line-strong)", borderRadius: 'var(--radius-badge)', marginTop: 12, fontSize: 12, color: "var(--muted)" }}>⌕ Cities, venues, events…</div>
         </div>
         <div style={{ padding: "8px 18px" }}>
           <div className="lbl">Trending</div>
           <div style={{ display: "flex", gap: 10, overflowX: "hidden", marginTop: 8 }}>
             {[["Berlin", "DE"], ["Lisbon", "PT"], ["Mexico City", "MX"], ["Bangkok", "TH"]].map(([n, c]) => (
               <div key={n} style={{ flex: "0 0 110px" }}>
-                <div className="ph" style={{ height: 130, borderRadius: 10 }} data-ph={n} />
+                <div className="ph" style={{ height: 130, borderRadius: 'var(--radius-element)' }} data-ph={n} />
                 <div style={{ marginTop: 6, fontFamily: "var(--font-display)", fontSize: 18 }}>{n}</div>
                 <div className="mono" style={{ color: "var(--muted)" }}>{c}</div>
               </div>
@@ -82,7 +82,7 @@ export function PatternHomeMobile() {
             ["Sober Brunch", "Madrid · Sun 11h", "var(--c4)"],
           ].map(([t, sub, c]) => (
             <div key={t} className="card" style={{ padding: 12, marginTop: 8, display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 12, alignItems: "center" }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: c }} />
+              <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-element)', background: c }} />
               <div>
                 <div style={{ fontWeight: 500, fontSize: 13 }}>{t}</div>
                 <div className="mono" style={{ color: "var(--muted)" }}>{sub}</div>
@@ -110,11 +110,11 @@ export function PatternSignInMobile() {
           </div>
           <div>
             <div className="lbl">Email</div>
-            <div style={{ marginTop: 6, padding: "11px 12px", border: "1px solid var(--line-strong)", borderRadius: 3, background: "#fff", fontSize: 13 }}>alex@example.com</div>
+            <div style={{ marginTop: 6, padding: "11px 12px", border: "1px solid var(--line-strong)", borderRadius: 'var(--radius-badge)', background: "#fff", fontSize: 13 }}>alex@example.com</div>
           </div>
           <div>
             <div className="lbl">Password</div>
-            <div style={{ marginTop: 6, padding: "11px 12px", border: "1px solid var(--line-strong)", borderRadius: 3, background: "#fff", fontSize: 13 }}>••••••••</div>
+            <div style={{ marginTop: 6, padding: "11px 12px", border: "1px solid var(--line-strong)", borderRadius: 'var(--radius-badge)', background: "#fff", fontSize: 13 }}>••••••••</div>
           </div>
           <button className="btn btn--accent" style={{ height: 44, justifyContent: "center" }}>Sign in →</button>
           <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--muted)", fontSize: 11, justifyContent: "center" }}>
@@ -166,7 +166,7 @@ export function PatternCityMobile() {
             ["Construction", "Cais do Sodré · Club", "★ 4.5", "var(--c6)"],
           ].map(([n, sub, r, c], i) => (
             <div key={i} className="card" style={{ padding: 10, display: "grid", gridTemplateColumns: "44px 1fr auto", gap: 10, alignItems: "center", marginBottom: 8 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 8, background: c }} />
+              <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-element)', background: c }} />
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 500, fontSize: 13 }}>{n}</div>
                 <div className="mono" style={{ color: "var(--muted)", fontSize: 10 }}>{sub}</div>
@@ -242,7 +242,7 @@ export function PatternEventsMobile() {
             ["Sunday Brunch", "Sun 11:00 · Silo Coffee", "var(--c4)", "Free"],
           ].map(([t, sub, c, p], i) => (
             <div key={i} className="card" style={{ padding: 12, marginBottom: 8, display: "grid", gridTemplateColumns: "4px 1fr auto", gap: 12 }}>
-              <div style={{ background: c, borderRadius: 2 }} />
+              <div style={{ background: c, borderRadius: 'var(--radius-badge)' }} />
               <div>
                 <div style={{ fontWeight: 500, fontSize: 13 }}>{t}</div>
                 <div className="mono" style={{ color: "var(--muted)", fontSize: 10, marginTop: 3 }}>{sub}</div>
@@ -264,13 +264,13 @@ export function PatternMapMobile() {
       <Phone>
         <div className="ph" style={{ flex: 1, height: 480, position: "relative" }} data-ph="map · Lisbon">
           <div style={{ position: "absolute", left: 12, top: 12, right: 12 }}>
-            <div style={{ padding: "10px 14px", borderRadius: 2, background: "#fff", border: "1px solid var(--line-strong)", fontSize: 12, color: "var(--muted)" }}>⌕ Search this area</div>
+            <div style={{ padding: "10px 14px", borderRadius: 'var(--radius-badge)', background: "#fff", border: "1px solid var(--line-strong)", fontSize: 12, color: "var(--muted)" }}>⌕ Search this area</div>
           </div>
           {[[40, 35, "var(--c1)", 8], [60, 45, "var(--c2)", 12], [50, 65, "var(--accent)", 18], [30, 55, "var(--c4)", 4]].map(([x, y, c, n], i) => (
-            <div key={i} style={{ position: "absolute", left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)", width: 32, height: 32, borderRadius: 2, background: c, color: "#fff", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 11, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>{n}</div>
+            <div key={i} style={{ position: "absolute", left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)", width: 32, height: 32, borderRadius: 'var(--radius-badge)', background: c, color: "#fff", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 11, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>{n}</div>
           ))}
-          <div style={{ position: "absolute", left: 12, right: 12, bottom: 12, padding: 12, background: "#fff", borderRadius: 4, display: "grid", gridTemplateColumns: "44px 1fr auto", gap: 10, alignItems: "center", boxShadow: "0 6px 24px rgba(0,0,0,0.18)" }}>
-            <div style={{ width: 44, height: 44, borderRadius: 8, background: "var(--accent)" }} />
+          <div style={{ position: "absolute", left: 12, right: 12, bottom: 12, padding: 12, background: "#fff", borderRadius: 'var(--radius-badge)', display: "grid", gridTemplateColumns: "44px 1fr auto", gap: 10, alignItems: "center", boxShadow: "0 6px 24px rgba(0,0,0,0.18)" }}>
+            <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-element)', background: "var(--accent)" }} />
             <div>
               <div style={{ fontWeight: 500, fontSize: 13 }}>Finalmente</div>
               <div className="mono" style={{ color: "var(--muted)", fontSize: 10 }}>★ 4.9 · Drag · 0.3 km</div>

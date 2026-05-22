@@ -287,9 +287,9 @@ export const UmamiAnalyticsDashboard = () => {
       <div className="flex flex-col gap-6">
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <div className="p-2 bg-destructive/10 rounded-element">
-                <Activity style={{ height: 24, width: 24 }} />
+                <Activity size={24} />
               </div>
               <div>
                 <CardTitle>Analytics Unavailable</CardTitle>
@@ -313,7 +313,8 @@ export const UmamiAnalyticsDashboard = () => {
                   variant="outline"
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+                  style={{ alignItems: 'center' }}
+                  className="flex gap-2"
                 >
                   <RefreshCw
                     style={{
@@ -360,7 +361,7 @@ export const UmamiAnalyticsDashboard = () => {
             Refresh
           </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download style={{ height: 12, width: 12 }} />
+            <Download size={12} />
             Export
           </Button>
         </div>
@@ -370,7 +371,7 @@ export const UmamiAnalyticsDashboard = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Filter style={{ height: 16, width: 16 }} />
+            <Filter size={16} />
             Filters & Controls
           </CardTitle>
         </CardHeader>
@@ -436,7 +437,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Page Views</CardTitle>
-            <Eye style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+            <Eye size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.totalPageViews.toLocaleString()}</p>
@@ -447,7 +448,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Sessions</CardTitle>
-            <Users style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+            <Users size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.totalSessions.toLocaleString()}</p>
@@ -458,7 +459,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Unique Visitors</CardTitle>
-            <Monitor style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+            <Monitor size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.uniqueVisitors.toLocaleString()}</p>
@@ -469,7 +470,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Avg. Duration</CardTitle>
-            <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+            <Clock size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{Math.round(stats.avgSessionDuration / 60)}m</p>
@@ -480,7 +481,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Bounce Rate</CardTitle>
-            <TrendingUp style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+            <TrendingUp size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.bounceRate}%</p>
@@ -491,7 +492,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Conversion</CardTitle>
-            <Globe style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+            <Globe size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.conversionRate}%</p>
@@ -559,7 +560,12 @@ export const UmamiAnalyticsDashboard = () => {
                   <XAxis dataKey="hour" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="views" fill="hsl(var(--primary))" animationDuration={800} animationEasing="ease-out" />
+                  <Bar
+                    dataKey="views"
+                    fill="hsl(var(--primary))"
+                    animationDuration={800}
+                    animationEasing="ease-out"
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -576,7 +582,7 @@ export const UmamiAnalyticsDashboard = () => {
               <div className="flex flex-col gap-4">
                 {stats.topPages.map((page, index) => (
                   <div key={page.path} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
+                    <div className="flex items-center gap-4 flex-1">
                       <Badge variant="secondary">{index + 1}</Badge>
                       <div className="flex-1">
                         <p className="font-mono text-sm font-medium">{page.path}</p>
@@ -674,13 +680,13 @@ export const UmamiAnalyticsDashboard = () => {
               <CardDescription>Detailed breakdown of visitors by country</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 {stats.topCountries.map((country, index) => (
                   <div
                     key={country.country}
-                    className="flex items-center justify-between p-3 rounded-element border"
+                    className="flex items-center justify-between p-4 rounded-element border"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <Badge variant="outline">{index + 1}</Badge>
                       <div>
                         <p className="font-medium">{country.country}</p>
@@ -709,7 +715,7 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Most used browsers</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {stats.topBrowsers.map((browser, index) => (
                     <div key={browser.browser} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
@@ -733,13 +739,11 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Device types</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {stats.topDevices.map((device, _index) => (
                     <div key={device.device} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
-                        <Smartphone
-                          style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }}
-                        />
+                        <Smartphone size={16} className="text-muted-foreground" />
                         <span className="text-sm">{device.device}</span>
                       </div>
                       <div className="text-right">
@@ -759,13 +763,11 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Most common screen resolutions</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {stats.topScreens.map((screen, _index) => (
                     <div key={screen.screen} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
-                        <Monitor
-                          style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }}
-                        />
+                        <Monitor size={16} className="text-muted-foreground" />
                         <span className="text-sm font-mono">{screen.screen}</span>
                       </div>
                       <div className="text-right">
@@ -829,18 +831,15 @@ export const UmamiAnalyticsDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <Activity style={{ height: 16, width: 16 }} />
+                  <Activity size={16} />
                   Recent Activity
                 </CardTitle>
                 <CardDescription>Latest page views and events</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3 max-h-80 overflow-y-auto">
+                <div className="flex flex-col gap-4 max-h-80 overflow-y-auto">
                   {stats.recentEvents.slice(0, 10).map((event) => (
-                    <div
-                      key={event.event_id}
-                      className="flex items-center justify-between text-sm"
-                    >
+                    <div key={event.event_id} className="flex items-center justify-between text-sm">
                       <div className="flex-1 min-w-0">
                         <p className="overflow-hidden text-ellipsis whitespace-nowrap font-mono">
                           {event.url_path}

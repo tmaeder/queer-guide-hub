@@ -152,7 +152,7 @@ export default function VenueDetail() {
         <p className="text-muted-foreground mb-6">
           Could not load venue details. Check your connection and try again.
         </p>
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-4 justify-center">
           <Button onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Try Again

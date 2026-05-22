@@ -26,28 +26,28 @@ import { ConfirmBulkActionDialog } from './ConfirmBulkActionDialog';
 import { ScanResultDialog } from './ScanResultDialog';
 
 const VERDICT_BADGE: Record<string, { className: string; label: string }> = {
-  benign: { className: 'bg-green-100 text-green-700 border-green-300', label: 'Safe' },
-  malicious: { className: 'bg-red-100 text-red-700 border-red-300', label: 'Malicious' },
-  suspicious: { className: 'bg-amber-100 text-amber-700 border-amber-300', label: 'Suspicious' },
+  benign: { className: 'bg-muted text-foreground border-foreground/40', label: 'Safe' },
+  malicious: { className: 'bg-destructive/10 text-destructive border-destructive', label: 'Malicious' },
+  suspicious: { className: 'bg-muted text-foreground border-border', label: 'Suspicious' },
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  OK: 'bg-green-100 text-green-700 border-green-300',
-  BROKEN: 'bg-red-100 text-red-700 border-red-300',
-  REDIRECT: 'bg-amber-100 text-amber-700 border-amber-300',
+  OK: 'bg-muted text-foreground border-foreground/40',
+  BROKEN: 'bg-destructive/10 text-destructive border-destructive',
+  REDIRECT: 'bg-muted text-foreground border-border',
   PENDING: 'bg-muted text-muted-foreground',
-  BLOCKED: 'bg-red-100 text-red-700 border-red-300',
-  TIMEOUT: 'bg-amber-100 text-amber-700 border-amber-300',
-  DISMISSED: 'bg-blue-100 text-blue-700 border-blue-300',
+  BLOCKED: 'bg-destructive/10 text-destructive border-destructive',
+  TIMEOUT: 'bg-muted text-foreground border-border',
+  DISMISSED: 'bg-muted text-foreground border-foreground/40',
   AUTO_REMOVED: 'bg-muted text-muted-foreground',
 };
 
 const PROGRESS_COLOR: Record<string, string> = {
-  broken: 'bg-red-500',
-  malicious: 'bg-red-500',
-  ok: 'bg-green-500',
-  dismissed: 'bg-blue-500',
-  auto_removed: 'bg-blue-500',
+  broken: 'bg-destructive',
+  malicious: 'bg-destructive',
+  ok: 'bg-foreground',
+  dismissed: 'bg-foreground',
+  auto_removed: 'bg-foreground',
 };
 
 const CONTENT_TYPES = ['all', 'venues', 'events', 'hotels', 'festivals', 'news_articles', 'personalities'];
@@ -305,10 +305,10 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
   };
 
   return (
-    <div className={embedded ? '' : 'p-3 max-w-[1200px] mx-auto'}>
+    <div className={embedded ? '' : 'p-4 max-w-[1200px] mx-auto'}>
       {/* Header */}
       {!embedded && (
-        <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
           <h5 className="text-2xl flex items-center gap-1">
             <Link2 className="w-6 h-6" />
             Link Health
@@ -357,7 +357,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
             </RouterLink>
           </Button>
           {autoFlagCount > 0 && (
-            <Button asChild variant="outline" size="sm" className="text-xs h-7 bg-amber-100 text-amber-800 border-amber-300">
+            <Button asChild variant="outline" size="sm" className="text-xs h-7 bg-muted text-foreground border-border">
               <RouterLink to="/admin/review?tab=automation">
                 <Flag className="w-3.5 h-3.5 mr-1" />
                 {`${autoFlagCount} automation flag${autoFlagCount !== 1 ? 's' : ''} pending`}
@@ -369,14 +369,14 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2 mb-3">
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2 mb-4">
           {STAT_KEYS.map(key => {
             const isActive = statusFilter === key.toUpperCase();
             const colorClass =
               key === 'broken' || key === 'malicious' ? 'text-destructive'
-              : key === 'ok' ? 'text-green-600'
-              : key === 'dismissed' || key === 'auto_removed' ? 'text-blue-600'
-              : key === 'suspicious' ? 'text-amber-600'
+              : key === 'ok' ? 'text-foreground'
+              : key === 'dismissed' || key === 'auto_removed' ? 'text-foreground'
+              : key === 'suspicious' ? 'text-foreground'
               : 'text-foreground';
             return (
               // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex conditionally applied when key !== 'total'
@@ -405,7 +405,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
                 {stats.total > 0 && key !== 'total' && (
                   <div className="mt-1 h-1 rounded bg-muted overflow-hidden">
                     <div
-                      className={`h-full rounded ${PROGRESS_COLOR[key] || 'bg-amber-500'}`}
+                      className={`h-full rounded ${PROGRESS_COLOR[key] || 'bg-foreground'}`}
                       style={{ width: `${(stats[key] / stats.total) * 100}%` }}
                     />
                   </div>
@@ -417,7 +417,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
       )}
 
       {/* Filters */}
-      <div className="flex gap-2 mb-3 flex-wrap items-center">
+      <div className="flex gap-2 mb-4 flex-wrap items-center">
         <Select value={statusFilter} onValueChange={handleFilterChange}>
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
@@ -535,7 +535,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
                     {link.status === 'AUTO_REMOVED' ? 'Removed' : link.status}
                   </Badge>
                   {link.status === 'BROKEN' && (link.check_count ?? 0) >= 1 && (link.check_count ?? 0) <= 3 && (
-                    <Badge variant="outline" className="text-[0.7rem] bg-amber-50 text-amber-700 border-amber-300">
+                    <Badge variant="outline" className="text-xs2 bg-muted text-foreground border-border">
                       Recheck {link.check_count}/3
                     </Badge>
                   )}
@@ -549,7 +549,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
                   )}
                   <Badge variant="outline">{link.content_type}</Badge>
                   <Badge variant="outline">{link.field_name}</Badge>
-                  {link.is_social && <Badge className="bg-blue-100 text-blue-700 border-blue-300">Social</Badge>}
+                  {link.is_social && <Badge className="bg-muted text-foreground border-foreground/40">Social</Badge>}
                   {link.is_scraped_source && <Badge variant="secondary">Scraped</Badge>}
                   {link.scan_verdict ? (
                     <button
@@ -574,7 +574,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
                     </button>
                   ) : null}
                 </div>
-                <p className="text-sm font-mono text-[0.8rem] truncate" title={link.original_url}>
+                <p className="text-sm font-mono text-13 truncate" title={link.original_url}>
                   {link.original_url}
                 </p>
                 {link.final_url && link.final_url !== link.original_url && (

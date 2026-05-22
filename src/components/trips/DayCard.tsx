@@ -3,11 +3,19 @@
 import { useMemo, useState } from 'react';
 import { format, differenceInCalendarDays, isSameDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { Plus, Pencil, Check, ChevronDown, ChevronUp, MapPin, Sun, Sunrise, Sunset, Moon } from 'lucide-react';
 import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+  Plus,
+  Pencil,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Sun,
+  Sunrise,
+  Sunset,
+  Moon,
+} from 'lucide-react';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -76,9 +84,7 @@ export function autoTheme(args: {
 }): string | null {
   const { isFirst, isLast, places } = args;
   const titles = places
-    .map((p) =>
-      [p.events?.title, p.venues?.name, p.custom_name].filter(Boolean).join(' '),
-    )
+    .map((p) => [p.events?.title, p.venues?.name, p.custom_name].filter(Boolean).join(' '))
     .join(' ')
     .toLowerCase();
 
@@ -139,10 +145,7 @@ export function DayCard({
     return map;
   }, [places]);
 
-  const theme = useMemo(
-    () => autoTheme({ isFirst, isLast, places }),
-    [isFirst, isLast, places],
-  );
+  const theme = useMemo(() => autoTheme({ isFirst, isLast, places }), [isFirst, isLast, places]);
 
   const dimClass = isPast ? 'opacity-60' : '';
   const cardBorder = isToday ? 'border-foreground' : 'border-border/70';
@@ -151,33 +154,26 @@ export function DayCard({
     <Card
       data-day-id={day.id}
       data-day-today={isToday ? 'true' : undefined}
-      className={`mb-3 rounded-container overflow-hidden border ${cardBorder} ${dimClass}`}
+      className={`mb-4 rounded-container overflow-hidden border ${cardBorder} ${dimClass}`}
     >
       <CardContent>
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 gap-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-4 gap-4">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             <div
-              className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-element"
-              style={{
-                backgroundColor: 'hsl(var(--foreground))',
-                color: 'hsl(var(--background))',
-              }}
+              className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-element text-background"
+              style={{ backgroundColor: 'hsl(var(--foreground))' }}
               aria-hidden="true"
             >
               <span
-                className="text-[9px] font-semibold uppercase opacity-70"
+                className="text-3xs font-semibold uppercase opacity-70"
                 style={{ letterSpacing: '0.18em', lineHeight: 1 }}
               >
                 {t('trips.itinerary.dayShort')}
               </span>
               <span
-                style={{
-                  fontSize: 22,
-                  fontWeight: 700,
-                  lineHeight: 1.1,
-                  letterSpacing: '-0.02em',
-                }}
+                style={{ fontSize: 22, lineHeight: 1.1, letterSpacing: '-0.02em' }}
+                className="font-bold"
               >
                 {dayNumber}
               </span>
@@ -189,7 +185,7 @@ export function DayCard({
                   {format(new Date(day.date), 'EEEE, MMM d')}
                 </p>
                 {isToday && (
-                  <Badge variant="default" className="rounded-full text-[10px]">
+                  <Badge variant="default" className="rounded-full text-2xs">
                     {t('trips.timeline.today', 'Today')}
                   </Badge>
                 )}
@@ -220,7 +216,7 @@ export function DayCard({
                     onClick={onSaveTitle}
                     aria-label={t('trips.itinerary.saveDayTitle')}
                   >
-                    <Check style={{ width: 14, height: 14 }} />
+                    <Check size={14} />
                   </Button>
                 </div>
               ) : (
@@ -237,7 +233,7 @@ export function DayCard({
                     onClick={onStartEditTitle}
                     aria-label={t('trips.itinerary.editDayTitle')}
                   >
-                    <Pencil style={{ width: 12, height: 12 }} />
+                    <Pencil size={12} />
                   </Button>
                 </div>
               )}
@@ -257,20 +253,11 @@ export function DayCard({
               aria-label={t('trips.timeline.toggleMap', 'Toggle day map')}
               aria-expanded={mapOpen}
             >
-              <MapPin style={{ width: 14, height: 14, marginRight: 4 }} />
-              {mapOpen ? (
-                <ChevronUp style={{ width: 14, height: 14 }} />
-              ) : (
-                <ChevronDown style={{ width: 14, height: 14 }} />
-              )}
+              <MapPin size={14} className="mr-1" />
+              {mapOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAddPlace()}
-              className="rounded-full"
-            >
-              <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
+            <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
+              <Plus size={14} className="mr-1" />
               {t('trips.itinerary.add')}
             </Button>
           </div>
@@ -289,22 +276,15 @@ export function DayCard({
         )}
 
         {/* Time slots */}
-        <SortableContext
-          items={places.map((p) => p.id)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={places.map((p) => p.id)} strategy={verticalListSortingStrategy}>
           {places.length === 0 ? (
             <div
               className="border border-dashed rounded-container py-6 text-center min-h-[56px] transition-colors bg-muted/20"
               style={{
-                borderColor: activeDragId
-                  ? 'hsl(var(--foreground))'
-                  : 'hsl(var(--border))',
+                borderColor: activeDragId ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
               }}
             >
-              <p className="text-xs text-muted-foreground">
-                {t('trips.itinerary.dropHere')}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('trips.itinerary.dropHere')}</p>
             </div>
           ) : (
             SLOT_ORDER.map((slot) => {
@@ -314,7 +294,7 @@ export function DayCard({
               return (
                 <div key={slot} className="mb-2 last:mb-0">
                   <div className="flex items-center justify-between mb-1.5 px-1">
-                    <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    <div className="inline-flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                       <Icon style={{ width: 11, height: 11 }} aria-hidden />
                       {t(`trips.timeline.slot.${slot}`, defaultSlotLabel(slot))}
                     </div>
@@ -322,12 +302,12 @@ export function DayCard({
                       variant="ghost"
                       size="sm"
                       onClick={() => onAddPlace(slot)}
-                      className="h-6 px-2 text-[11px] opacity-60 hover:opacity-100"
+                      className="h-6 px-2 text-xs2 opacity-60 hover:opacity-100"
                       aria-label={t('trips.timeline.addToSlot', 'Add to {{slot}}', {
                         slot,
                       })}
                     >
-                      <Plus style={{ width: 11, height: 11 }} />
+                      <Plus size={11} />
                     </Button>
                   </div>
                   {slotPlaces.map((place) => (

@@ -82,22 +82,21 @@ export function DataTableToolbar({
   const hideableColumns = columns.filter((c) => c.hideable);
 
   return (
-    <div className="flex flex-col gap-3 p-4">
+    <div className="flex flex-col gap-4 p-4">
       {/* Top row: search + actions */}
       <div className="flex items-center gap-2 flex-wrap">
         {enableSearch && (
           <div className="relative max-w-[320px]" style={{ flex: '1 1 200px' }}>
             <Search
               style={{
-                position: 'absolute',
                 left: 10,
                 top: '50%',
                 transform: 'translateY(-50%)',
                 height: 16,
                 width: 16,
-                color: 'var(--muted-foreground)',
                 pointerEvents: 'none',
               }}
+              className="absolute text-muted-foreground"
             />
             <Input
               placeholder="Search..."
@@ -121,7 +120,7 @@ export function DataTableToolbar({
                   color: 'var(--muted-foreground)',
                 }}
               >
-                <X style={{ height: 14, width: 14 }} />
+                <X size={14} />
               </button>
             )}
           </div>
@@ -133,9 +132,9 @@ export function DataTableToolbar({
         {/* Clear filters */}
         {activeFilterCount > 0 && (
           <Button variant="ghost" size="sm" onClick={onClearFilters}>
-            <RotateCcw style={{ height: 14, width: 14, marginRight: 4 }} />
+            <RotateCcw size={14} className="mr-1" />
             Clear
-            <Badge variant="secondary" style={{ marginLeft: 4 }}>
+            <Badge variant="secondary" className="ml-1">
               {activeFilterCount}
             </Badge>
           </Button>
@@ -148,7 +147,7 @@ export function DataTableToolbar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <BookmarkCheck style={{ height: 14, width: 14, marginRight: 4 }} />
+                <BookmarkCheck size={14} className="mr-1" />
                 Presets
               </Button>
             </DropdownMenuTrigger>
@@ -184,7 +183,7 @@ export function DataTableToolbar({
                         color: 'var(--muted-foreground)',
                       }}
                     >
-                      <X style={{ height: 12, width: 12 }} />
+                      <X size={12} />
                     </button>
                   )}
                 </div>
@@ -195,7 +194,7 @@ export function DataTableToolbar({
 
         {onSavePreset && (
           <Button variant="outline" size="sm" onClick={() => setPresetDialogOpen(true)}>
-            <Save style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Save size={14} className="mr-1" />
             Save
           </Button>
         )}
@@ -205,10 +204,10 @@ export function DataTableToolbar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant={grouping.length > 0 ? 'default' : 'outline'} size="sm">
-                <Layers style={{ height: 14, width: 14, marginRight: 4 }} />
+                <Layers size={14} className="mr-1" />
                 Group
                 {grouping.length > 0 && (
-                  <Badge variant="secondary" style={{ marginLeft: 4 }}>
+                  <Badge variant="secondary" className="ml-1">
                     {groupableColumns.find((c) => c.id === grouping[0])?.label ?? grouping[0]}
                   </Badge>
                 )}
@@ -241,7 +240,7 @@ export function DataTableToolbar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <Columns3 style={{ height: 14, width: 14, marginRight: 4 }} />
+                <Columns3 size={14} className="mr-1" />
                 Columns
               </Button>
             </DropdownMenuTrigger>

@@ -180,7 +180,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   ) : (
     <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground gap-2">
       <p>Select an item to preview</p>
-      <p className="text-[10px]">
+      <p className="text-2xs">
         <kbd className="px-1 border">j</kbd>/<kbd className="px-1 border">k</kbd> navigate
         {' · '}
         <kbd className="px-1 border">a</kbd> approve

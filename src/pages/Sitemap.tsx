@@ -109,9 +109,7 @@ export default function Sitemap() {
     return (
       <div className="container mx-auto py-8 px-4">
         <h4 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h4>
-        <p className="text-muted-foreground">
-          Failed to load sitemap. Please try again later.
-        </p>
+        <p className="text-muted-foreground">Failed to load sitemap. Please try again later.</p>
       </div>
     );
   }
@@ -126,7 +124,7 @@ export default function Sitemap() {
       <header className="py-8">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
-            <LocalizedLink to="/" style={{ marginLeft: -8, fontWeight: 700 }}>
+            <LocalizedLink to="/" style={{ marginLeft: -8 }} className="font-bold">
               Queer Guide
             </LocalizedLink>
             <a
@@ -177,7 +175,10 @@ export default function Sitemap() {
       <div className="container mx-auto px-4">
         <main className="grid gap-6 md:grid-cols-[240px_1fr]">
           <aside className="md:sticky md:top-24">
-            <nav aria-label="Section jump navigation" className="p-3 bg-card rounded-container border border-border">
+            <nav
+              aria-label="Section jump navigation"
+              className="p-4 bg-card rounded-container border border-border"
+            >
               <p className="text-sm font-semibold mb-2 flex items-center gap-2">
                 <Hash className="w-4 h-4" /> Sections
               </p>
@@ -205,13 +206,14 @@ export default function Sitemap() {
               {filtered.map((section) => {
                 const id = slugify(section.title);
                 return (
-                  <article key={section.title} id={id} className="p-4 bg-card rounded-container border border-border">
-                    <header className="flex items-center justify-between gap-3 mb-3">
+                  <article
+                    key={section.title}
+                    id={id}
+                    className="p-4 bg-card rounded-container border border-border"
+                  >
+                    <header className="flex items-center justify-between gap-4 mb-4">
                       <h6 className="text-base font-semibold">
-                        <a
-                          href={`#${id}`}
-                          className="underline-offset-4 hover:underline"
-                        >
+                        <a href={`#${id}`} className="underline-offset-4 hover:underline">
                           {section.title}
                         </a>
                       </h6>
@@ -224,7 +226,9 @@ export default function Sitemap() {
                         >
                           <Link2 className="w-4 h-4" />
                         </Button>
-                        <span className="text-sm text-muted-foreground">{section.links.length}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {section.links.length}
+                        </span>
                       </div>
                     </header>
 
@@ -266,7 +270,7 @@ export default function Sitemap() {
                               <li key={link.to}>
                                 <LocalizedLink
                                   to={link.to}
-                                  style={{ display: 'block', borderRadius: 4 }}
+                                  className="block rounded-badge"
                                   aria-label={`${link.label} page in ${section.title}`}
                                   aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                                 >
@@ -286,7 +290,7 @@ export default function Sitemap() {
                             <li key={link.to}>
                               <LocalizedLink
                                 to={link.to}
-                                style={{ display: 'block', borderRadius: 4 }}
+                                className="block rounded-badge"
                                 aria-label={`${link.label} hub in ${section.title}`}
                                 aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                               >
@@ -304,7 +308,7 @@ export default function Sitemap() {
                                   <li key={cl.to}>
                                     <LocalizedLink
                                       to={cl.to}
-                                      style={{ display: 'block', borderRadius: 4 }}
+                                      className="block rounded-badge"
                                       aria-label={`${cl.label} page under ${link.label} in ${section.title}`}
                                       aria-describedby={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`}
                                     >
@@ -331,10 +335,7 @@ export default function Sitemap() {
             </div>
 
             <div className="pt-2">
-              <a
-                href="#top"
-                className="text-sm underline-offset-4 hover:underline"
-              >
+              <a href="#top" className="text-sm underline-offset-4 hover:underline">
                 Back to top
               </a>
             </div>

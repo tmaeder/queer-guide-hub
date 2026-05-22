@@ -62,8 +62,10 @@ export function SpecialOffersSection() {
     return (
       <div className="mb-8">
         <Skeleton className="h-6 w-[180px] mb-2" />
-        <div className="flex gap-3 overflow-x-auto">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="w-[200px] h-[100px] rounded shrink-0" />)}
+        <div className="flex gap-4 overflow-x-auto">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="w-[200px] h-[100px] rounded shrink-0" />
+          ))}
         </div>
       </div>
     );
@@ -73,14 +75,18 @@ export function SpecialOffersSection() {
 
   return (
     <div className="mb-8">
-      <div className="flex items-center gap-2 mb-3">
-        <Sparkles style={{ height: 18, width: 18, color: 'var(--primary)' }} />
+      <div className="flex items-center gap-2 mb-4">
+        <Sparkles size={18} className="text-primary" />
         <p className="font-bold text-base">Hot Deals</p>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex gap-4 overflow-x-auto pb-2">
         {offers.map((offer, i) => (
-          <Card key={`${offer.origin}-${offer.destination}-${i}`} className="hover:shadow-sm transition-shadow" style={{ minWidth: 200, flexShrink: 0 }}>
-            <CardContent style={{ padding: 12 }}>
+          <Card
+            key={`${offer.origin}-${offer.destination}-${i}`}
+            style={{ minWidth: 200 }}
+            className="shrink-0"
+          >
+            <CardContent className="p-4">
               <div className="flex items-center gap-1 mb-1">
                 {offer.airline && (
                   <img
@@ -88,23 +94,27 @@ export function SpecialOffersSection() {
                     alt={offer.airline}
                     role="presentation"
                     className="w-4 h-4 rounded-full"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 )}
-                <p className="font-bold text-[0.85rem]">
+                <p className="font-bold text-sm">
                   {offer.origin} → {offer.destination}
                 </p>
               </div>
               {offer.departDate && (
-                <p className="text-[0.7rem] text-muted-foreground mb-1">
-                  {new Date(offer.departDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  {offer.returnDate && ` - ${new Date(offer.returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                <p className="text-xs2 text-muted-foreground mb-1">
+                  {new Date(offer.departDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                  {offer.returnDate &&
+                    ` - ${new Date(offer.returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                 </p>
               )}
               <div className="flex justify-between items-center mt-2">
-                <p className="font-extrabold text-[1.1rem] text-primary">
-                  €{Math.round(offer.price)}
-                </p>
+                <p className="font-bold text-body-lg text-primary">€{Math.round(offer.price)}</p>
                 <Button
                   size="sm"
                   onClick={() => {
@@ -112,7 +122,7 @@ export function SpecialOffersSection() {
                     window.open(url, '_blank', 'noopener');
                   }}
                 >
-                  <ExternalLink style={{ height: 12, width: 12 }} />
+                  <ExternalLink size={12} />
                 </Button>
               </div>
             </CardContent>

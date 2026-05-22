@@ -128,57 +128,10 @@ async function serveThumb(req: Request, env: Env, ctx: ExecutionContext, key: st
     });
   }
 
-  // Use CF Image Resizing if available (Pro+ zones)
-  // Falls back to serving original if not available
-  const thumbWidth = parseInt(env.THUMB_WIDTH || '400');
-  const thumbQuality = parseInt(env.THUMB_QUALITY || '80');
-
-  try {
-    // Attempt CF Image Resizing via subrequest
-    const originalBytes = await original.arrayBuffer();
-    const blob = new Blob([originalBytes], { type: ct });
-    const blobUrl = URL.createObjectURL(blob);
-
-    // Try using the transform API
-    const transformedRes = await fetch(blobUrl, {
-      cf: {
-        image: {
-          width: thumbWidth,
-          quality: thumbQuality,
-          format: 'webp',
-          fit: 'cover',
-        },
-      },
-    } as RequestInit);
-
-    if (transformedRes.ok) {
-      const thumbBytes = await transformedRes.arrayBuffer();
-
-      // Store thumbnail in R2 for future requests
-      ctx.waitUntil(
-        env.IMAGES.put(thumbKey, thumbBytes, {
-          httpMetadata: { contentType: 'image/webp' },
-        })
-      );
-
-      return new Response(thumbBytes, {
-        headers: {
-          ...corsHeaders(req, env),
-          'Content-Type': 'image/webp',
-          'Cache-Control': `public, max-age=${CACHE_TTL}, immutable`,
-          'X-Thumb': 'generated',
-        },
-      });
-    }
-  } catch {
-    // CF Image Resizing not available — serve original
-  }
-
-  // Fallback: serve original as-is
-  const fallbackBytes = await env.IMAGES.get(key);
-  if (!fallbackBytes) return new Response('Not found', { status: 404 });
-
-  return new Response(fallbackBytes.body, {
+  // On-the-fly resizing is not implemented here — CF Image Resizing requires
+  // either a public URL of the source or the paid Images product. Serve the
+  // original; switch to Images / a dedicated transform Worker when needed.
+  return new Response(original.body, {
     headers: {
       ...corsHeaders(req, env),
       'Content-Type': ct,

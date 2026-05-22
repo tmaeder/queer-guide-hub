@@ -1,6 +1,30 @@
 const LETTERS = [
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'H',
+  'I',
+  'J',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'P',
+  'Q',
+  'R',
+  'S',
+  'T',
+  'U',
+  'V',
+  'W',
+  'X',
+  'Y',
+  'Z',
 ];
 
 interface Props {
@@ -20,8 +44,8 @@ export function StickyLetterBar({ letter, onChange, stickyTop = 64 }: Props) {
   return (
     <nav
       aria-label="Jump to letter"
-      className="z-10 bg-background backdrop-blur-md px-2 py-2 mb-4 overflow-x-auto"
-      style={{ position: 'sticky', top: stickyTop }}
+      className="z-10 bg-background backdrop-blur-md px-2 py-2 mb-4 overflow-x-auto sticky"
+      style={{ top: stickyTop }}
     >
       <div className="flex gap-0.5 items-center" style={{ minWidth: 'max-content' }}>
         {entries.map(({ value, label }) => {

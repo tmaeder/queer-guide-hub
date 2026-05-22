@@ -1,6 +1,4 @@
-export { TextGenerateEffect } from './TextGenerateEffect';
 export { BackgroundDots } from './BackgroundDots';
-export { SpotlightEffect } from './SpotlightEffect';
 export { BentoGrid, BentoGridItem } from './BentoGrid';
 export { CardHoverEffect } from './CardHoverEffect';
 export { GrainOverlay } from './GrainOverlay';
@@ -13,7 +11,6 @@ export { Sparkles } from './Sparkles';
 export { HoverBorderGradient } from './HoverBorderGradient';
 export { Lens } from './Lens';
 export { ShineButton } from './ShineButton';
-export { WordRotate } from './WordRotate';
 export { Marquee } from './Marquee';
 export { TracingBeam } from './TracingBeam';
 export { BackgroundLines } from './BackgroundLines';

@@ -40,7 +40,7 @@ function CommentNode({ data, selected, id }: NodeProps) {
 
   return (
     <div
-      className={`rounded-element shadow-sm w-full h-full min-w-[180px] min-h-[80px] transition-all ${
+      className={`rounded-element border w-full h-full min-w-[180px] min-h-[80px] transition-all ${
         selected ? 'ring-2 ring-ring' : ''
       }`}
       style={{

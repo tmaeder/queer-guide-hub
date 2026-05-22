@@ -47,7 +47,9 @@ function StatusIcon({
     value === 'Protected' ||
     value === 'Banned'
   ) {
-    return <CheckCircle style={{ height: size, width: size, color: '#22c55e', flexShrink: 0 }} />;
+    return (
+      <CheckCircle style={{ height: size, width: size, color: '#22c55e' }} className="shrink-0" />
+    );
   }
   if (
     value === false ||
@@ -56,7 +58,7 @@ function StatusIcon({
     value === 'Prohibited' ||
     value === 'Not banned'
   ) {
-    return <XCircle style={{ height: size, width: size, color: '#ef4444', flexShrink: 0 }} />;
+    return <XCircle style={{ height: size, width: size, color: '#ef4444' }} className="shrink-0" />;
   }
   if (
     typeof value === 'string' &&
@@ -65,9 +67,11 @@ function StatusIcon({
       value.includes('Varies') ||
       value.includes('Civil Union'))
   ) {
-    return <AlertTriangle style={{ height: size, width: size, color: '#eab308', flexShrink: 0 }} />;
+    return (
+      <AlertTriangle style={{ height: size, width: size, color: '#eab308' }} className="shrink-0" />
+    );
   }
-  return <Clock style={{ height: size, width: size, color: '#9ca3af', flexShrink: 0 }} />;
+  return <Clock style={{ height: size, width: size, color: '#9ca3af' }} className="shrink-0" />;
 }
 
 function statusBadgeStyle(value: string | null | undefined): React.CSSProperties {
@@ -114,10 +118,10 @@ function ProtectionRow({
 
   const _yesCount = [status.so, status.gi, status.ge, status.sc].filter((s) => s === 'Yes').length;
   return (
-    <div className="flex items-center gap-3 py-2">
-      <Icon style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+    <div className="flex items-center gap-4 py-2">
+      <Icon style={{ height: 16, width: 16, color: '#6b7280' }} className="shrink-0" />
       <div className="min-w-0 flex-1">
-        <p className="text-[0.8125rem] font-medium leading-snug">{label}</p>
+        <p className="text-13 font-medium leading-snug">{label}</p>
       </div>
       <div className="flex flex-shrink-0 gap-1">
         {['SO', 'GI', 'GE', 'SC'].map((dim) => {
@@ -128,7 +132,7 @@ function ProtectionRow({
             <div
               key={dim}
               title={`${dim}: ${val}`}
-              className="flex h-5 w-6 items-center justify-center rounded-badge text-[0.625rem] font-semibold"
+              className="flex h-5 w-6 items-center justify-center rounded-badge text-2xs font-semibold"
               style={{
                 backgroundColor: isYes ? '#dcfce7' : isNo ? '#fee2e2' : '#f3f4f6',
                 color: isYes ? '#166534' : isNo ? '#991b1b' : '#9ca3af',
@@ -140,9 +144,7 @@ function ProtectionRow({
           );
         })}
       </div>
-      {since && (
-        <span className="flex-shrink-0 text-[0.6875rem] text-[#9ca3af]">{since}</span>
-      )}
+      {since && <span className="flex-shrink-0 text-xs2 text-[#9ca3af]">{since}</span>}
     </div>
   );
 }
@@ -160,17 +162,18 @@ function SimpleRow({
   const displayValue = value && value !== 'No data' ? value : null;
 
   return (
-    <div className="flex items-center gap-3 py-2">
-      <Icon style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+    <div className="flex items-center gap-4 py-2">
+      <Icon style={{ height: 16, width: 16, color: '#6b7280' }} className="shrink-0" />
       <div className="min-w-0 flex-1">
-        <p className="text-[0.8125rem] font-medium leading-snug">{label}</p>
+        <p className="text-13 font-medium leading-snug">{label}</p>
       </div>
       {displayValue ? (
         <div className="flex flex-shrink-0 items-center gap-2">
           <StatusIcon value={displayValue} size={14} />
           <Badge
             variant="outline"
-            style={{ ...statusBadgeStyle(displayValue), fontSize: '0.6875rem', padding: '1px 6px' }}
+            style={{ ...statusBadgeStyle(displayValue), padding: '1px 6px' }}
+            className="text-xs2"
           >
             {displayValue}
           </Badge>
@@ -184,7 +187,7 @@ function SimpleRow({
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <p
-    className="mb-2 text-[0.6875rem] font-bold uppercase text-[#6b7280]"
+    className="mb-2 text-xs2 font-bold uppercase text-[#6b7280]"
     style={{ letterSpacing: '0.05em' }}
   >
     {children}
@@ -219,7 +222,7 @@ export default function LGBTJurisdictionInfo({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>
-            <Shield style={{ height: 20, width: 20, color: 'hsl(var(--primary))' }} />
+            <Shield size={20} style={{ color: 'hsl(var(--primary))' }} />
             LGBTI Rights Overview
           </CardTitle>
           <EqualityScoreBadge score={country.equality_score} size="sm" />
@@ -235,20 +238,17 @@ export default function LGBTJurisdictionInfo({
         <div>
           <SectionLabel>Criminalisation & Freedoms</SectionLabel>
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3 py-2">
-              <Scale style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+            <div className="flex items-center gap-4 py-2">
+              <Scale size={16} style={{ color: '#6b7280' }} className="shrink-0" />
               <div className="flex-1">
-                <p className="text-[0.8125rem] font-medium">Same-Sex Activity</p>
+                <p className="text-13 font-medium">Same-Sex Activity</p>
               </div>
               <div className="flex flex-shrink-0 items-center gap-2">
                 <StatusIcon value={crimLegal} />
                 <Badge
                   variant="outline"
-                  style={{
-                    ...statusBadgeStyle(crimStatus),
-                    fontSize: '0.6875rem',
-                    padding: '1px 6px',
-                  }}
+                  style={{ ...statusBadgeStyle(crimStatus), padding: '1px 6px' }}
+                  className="text-xs2"
                 >
                   {crimStatus}
                 </Badge>
@@ -279,30 +279,51 @@ export default function LGBTJurisdictionInfo({
         <div>
           <div className="mb-2 flex items-center justify-between">
             <p
-              className="text-[0.6875rem] font-bold uppercase text-[#6b7280]"
+              className="text-xs2 font-bold uppercase text-[#6b7280]"
               style={{ letterSpacing: '0.05em' }}
             >
               Anti-Discrimination Protection
             </p>
             <div className="flex gap-1">
               {['SO', 'GI', 'GE', 'SC'].map((dim) => (
-                <span
-                  key={dim}
-                  className="w-6 text-center text-[0.5625rem] font-semibold text-[#9ca3af]"
-                >
+                <span key={dim} className="w-6 text-center text-3xs font-semibold text-[#9ca3af]">
                   {dim}
                 </span>
               ))}
             </div>
           </div>
           <div className="flex flex-col">
-            <ProtectionRow label="Constitutional" icon={Shield} data={country.lgbti_constitutional_protection} />
-            <ProtectionRow label="Employment" icon={Briefcase} data={country.lgbti_employment_protection} />
+            <ProtectionRow
+              label="Constitutional"
+              icon={Shield}
+              data={country.lgbti_constitutional_protection}
+            />
+            <ProtectionRow
+              label="Employment"
+              icon={Briefcase}
+              data={country.lgbti_employment_protection}
+            />
             <ProtectionRow label="Housing" icon={Home} data={country.lgbti_housing_protection} />
-            <ProtectionRow label="Education" icon={GraduationCap} data={country.lgbti_education_protection} />
-            <ProtectionRow label="Health" icon={Stethoscope} data={country.lgbti_health_protection} />
-            <ProtectionRow label="Goods & Services" icon={ShoppingBag} data={country.lgbti_goods_services_protection} />
-            <ProtectionRow label="Bullying" icon={AlertTriangle} data={country.lgbti_bullying_protection} />
+            <ProtectionRow
+              label="Education"
+              icon={GraduationCap}
+              data={country.lgbti_education_protection}
+            />
+            <ProtectionRow
+              label="Health"
+              icon={Stethoscope}
+              data={country.lgbti_health_protection}
+            />
+            <ProtectionRow
+              label="Goods & Services"
+              icon={ShoppingBag}
+              data={country.lgbti_goods_services_protection}
+            />
+            <ProtectionRow
+              label="Bullying"
+              icon={AlertTriangle}
+              data={country.lgbti_bullying_protection}
+            />
           </div>
         </div>
 
@@ -312,8 +333,16 @@ export default function LGBTJurisdictionInfo({
         <div>
           <SectionLabel>Criminal Justice</SectionLabel>
           <div className="flex flex-col">
-            <ProtectionRow label="Hate Crime Laws" icon={Gavel} data={country.lgbti_hate_crime_law} />
-            <ProtectionRow label="Incitement Prohibition" icon={Ban} data={country.lgbti_incitement_prohibition} />
+            <ProtectionRow
+              label="Hate Crime Laws"
+              icon={Gavel}
+              data={country.lgbti_hate_crime_law}
+            />
+            <ProtectionRow
+              label="Incitement Prohibition"
+              icon={Ban}
+              data={country.lgbti_incitement_prohibition}
+            />
           </div>
         </div>
 
@@ -323,20 +352,17 @@ export default function LGBTJurisdictionInfo({
         <div>
           <SectionLabel>Family & Relationships</SectionLabel>
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3 py-2">
-              <Heart style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+            <div className="flex items-center gap-4 py-2">
+              <Heart size={16} style={{ color: '#6b7280' }} className="shrink-0" />
               <div className="flex-1">
-                <p className="text-[0.8125rem] font-medium">Same-Sex Unions</p>
+                <p className="text-13 font-medium">Same-Sex Unions</p>
               </div>
               <div className="flex flex-shrink-0 items-center gap-2">
                 <StatusIcon value={ssuDetails.summary} />
                 <Badge
                   variant="outline"
-                  style={{
-                    ...statusBadgeStyle(ssuDetails.summary),
-                    fontSize: '0.6875rem',
-                    padding: '1px 6px',
-                  }}
+                  style={{ ...statusBadgeStyle(ssuDetails.summary), padding: '1px 6px' }}
+                  className="text-xs2"
                 >
                   {ssuDetails.summary}
                 </Badge>
@@ -362,21 +388,19 @@ export default function LGBTJurisdictionInfo({
           <div className="flex flex-col gap-1">
             {country.lgbti_gender_recognition &&
               Object.keys(country.lgbti_gender_recognition).length > 0 && (
-                <div className="flex items-start gap-3 py-2">
-                  <Fingerprint
-                    style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0, marginTop: 2 }}
-                  />
+                <div className="flex items-start gap-4 py-2">
+                  <Fingerprint size={16} style={{ color: '#6b7280' }} className="shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-[0.8125rem] font-medium">Gender Recognition</p>
+                    <p className="text-13 font-medium">Gender Recognition</p>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {country.lgbti_gender_recognition.gender_marker && (
                         <Badge
                           variant="outline"
                           style={{
                             ...statusBadgeStyle(country.lgbti_gender_recognition.gender_marker),
-                            fontSize: '0.625rem',
                             padding: '0px 4px',
                           }}
+                          className="text-2xs"
                         >
                           Marker: {country.lgbti_gender_recognition.gender_marker}
                         </Badge>
@@ -388,9 +412,9 @@ export default function LGBTJurisdictionInfo({
                             backgroundColor: '#dcfce7',
                             color: '#166534',
                             borderColor: '#bbf7d0',
-                            fontSize: '0.625rem',
                             padding: '0px 4px',
                           }}
+                          className="text-2xs"
                         >
                           Self-ID
                         </Badge>
@@ -402,9 +426,9 @@ export default function LGBTJurisdictionInfo({
                             backgroundColor: '#fee2e2',
                             color: '#991b1b',
                             borderColor: '#fecaca',
-                            fontSize: '0.625rem',
                             padding: '0px 4px',
                           }}
+                          className="text-2xs"
                         >
                           Requires Surgery
                         </Badge>
@@ -416,9 +440,9 @@ export default function LGBTJurisdictionInfo({
                             backgroundColor: '#fef9c3',
                             color: '#854d0e',
                             borderColor: '#fde68a',
-                            fontSize: '0.625rem',
                             padding: '0px 4px',
                           }}
+                          className="text-2xs"
                         >
                           Requires Diagnosis
                         </Badge>
@@ -447,9 +471,9 @@ export default function LGBTJurisdictionInfo({
             href="https://database.ilga.org/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[0.6875rem] text-primary hover:underline"
+            className="flex items-center gap-1 text-xs2 text-primary hover:underline"
           >
-            <ExternalLink style={{ height: 10, width: 10 }} />
+            <ExternalLink size={10} />
             ILGA World Database
           </a>
         </div>

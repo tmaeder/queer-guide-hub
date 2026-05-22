@@ -65,9 +65,7 @@ export function FlyerScanUpload({
 
       const parts: string[] = [];
       if (unsupported.length > 0) {
-        parts.push(
-          t('submission.errors.unsupportedTypeNamed', { names: unsupported.join(', ') }),
-        );
+        parts.push(t('submission.errors.unsupportedTypeNamed', { names: unsupported.join(', ') }));
       }
       if (oversized.length > 0) {
         parts.push(
@@ -119,26 +117,21 @@ export function FlyerScanUpload({
     return (
       <Card>
         <CardContent>
-          <div className="flex items-start gap-3">
-            <AlertCircle
-              style={{ width: 20, height: 20, color: '#ef4444', flexShrink: 0, marginTop: 2 }}
-            />
+          <div className="flex items-start gap-4">
+            <AlertCircle size={20} style={{ color: '#ef4444' }} className="shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-semibold mb-1">
-                {t('submission.errors.title')}
-              </p>
-              <p className="text-xs text-muted-foreground whitespace-pre-line">
-                {errorCopy}
-              </p>
+              <p className="text-sm font-semibold mb-1">{t('submission.errors.title')}</p>
+              <p className="text-xs text-muted-foreground whitespace-pre-line">{errorCopy}</p>
             </div>
             {showRetry && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onReset}
-                style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                style={{ alignItems: 'center' }}
+                className="flex gap-1"
               >
-                <RotateCcw style={{ width: 14, height: 14 }} />
+                <RotateCcw size={14} />
                 {t('submission.errors.retry')}
               </Button>
             )}
@@ -160,14 +153,18 @@ export function FlyerScanUpload({
     return (
       <Card>
         <CardContent>
-          <div className="flex flex-col items-center gap-3 py-2">
-            <Loader2 className="animate-spin h-8 w-8" style={{ color: '#ec4899' }} aria-label="Loading" />
+          <div className="flex flex-col items-center gap-4 py-2">
+            <Loader2
+              className="animate-spin h-8 w-8"
+              style={{ color: 'hsl(var(--foreground))' }}
+              aria-label="Loading"
+            />
             <p className="text-sm font-medium">{progressText}</p>
             {totalFiles > 1 && (
               <div className="w-full h-1 bg-muted rounded overflow-hidden">
                 <div
                   className="h-full transition-[width]"
-                  style={{ width: `${pct}%`, backgroundColor: '#ec4899' }}
+                  style={{ width: `${pct}%`, backgroundColor: 'hsl(var(--foreground))' }}
                 />
               </div>
             )}
@@ -200,17 +197,17 @@ export function FlyerScanUpload({
           multiple={!isMobile}
           capture={isMobile ? 'environment' : undefined}
           onChange={handleInputChange}
-          style={{ display: 'none' }}
+          className="hidden"
         />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div
             className="w-10 h-10 rounded-element flex items-center justify-center shrink-0"
-            style={{ backgroundColor: '#ec489915' }}
+            style={{ backgroundColor: 'hsl(var(--muted))' }}
           >
             {isMobile ? (
-              <Camera style={{ width: 20, height: 20, color: '#ec4899' }} />
+              <Camera size={20} style={{ color: 'hsl(var(--foreground))' }} />
             ) : (
-              <Upload style={{ width: 20, height: 20, color: '#ec4899' }} />
+              <Upload size={20} style={{ color: 'hsl(var(--foreground))' }} />
             )}
           </div>
           <div>
@@ -225,7 +222,9 @@ export function FlyerScanUpload({
           </div>
           {!isMobile && (
             <FileText
-              style={{ width: 16, height: 16, color: '#9ca3af', flexShrink: 0, marginLeft: 'auto' }}
+              size={16}
+              style={{ color: '#9ca3af', marginLeft: 'auto' }}
+              className="shrink-0"
             />
           )}
         </div>
@@ -234,13 +233,11 @@ export function FlyerScanUpload({
           <div
             role="alert"
             aria-live="polite"
-            className="flex items-start gap-2 mt-3"
+            className="flex items-start gap-2 mt-4"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <AlertCircle
-              style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 2 }}
-            />
+            <AlertCircle size={16} style={{ color: '#ef4444' }} className="shrink-0 mt-0.5" />
             <p className="text-xs" style={{ color: '#ef4444' }}>
               {rejectionMessage}
             </p>

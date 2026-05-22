@@ -89,7 +89,7 @@ export function EditLinkDialog({ open, link, onClose, onSave }: EditLinkDialogPr
         {link.final_url && link.final_url !== link.original_url && (
           <>
             <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-              <ArrowRight style={{ width: 14, height: 14 }} /> Redirects to
+              <ArrowRight size={14} /> Redirects to
             </p>
             <div className="flex items-center gap-2 mb-4">
               <p className="font-mono text-xs break-all flex-1 p-2 bg-muted rounded">

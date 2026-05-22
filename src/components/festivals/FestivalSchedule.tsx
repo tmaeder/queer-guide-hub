@@ -14,7 +14,13 @@ interface FestivalScheduleProps {
   timezone?: string | null;
 }
 
-function MetaChip({ icon: Icon, label }: { icon?: React.ComponentType<{ style?: React.CSSProperties }>; label: string }) {
+function MetaChip({
+  icon: Icon,
+  label,
+}: {
+  icon?: React.ComponentType<{ style?: React.CSSProperties }>;
+  label: string;
+}) {
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs border border-border">
       {Icon && <Icon style={{ width: 12, height: 12 }} />}
@@ -45,7 +51,7 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
     <div className="flex flex-col gap-6">
       {sortedDays.map((day, dayIdx) => (
         <div key={day}>
-          <h6 className="text-base font-semibold mb-3 flex items-center gap-2">
+          <h6 className="text-base font-semibold mb-4 flex items-center gap-2">
             {format(parseISO(day), 'EEEE, MMMM d, yyyy')}
             <Badge variant="secondary">
               {`${grouped[day].length} event${grouped[day].length !== 1 ? 's' : ''}`}
@@ -53,13 +59,16 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
           </h6>
           <div className="flex flex-col gap-2 pl-4 border-l-[3px] border-primary">
             {grouped[day].map((event) => (
-              <LocalizedLink key={event.id} to={`/events/${event.slug}`} style={{ textDecoration: 'none' }}>
+              <LocalizedLink key={event.id} to={`/events/${event.slug}`} className="no-underline">
                 <div className="p-4 transition-colors hover:bg-muted">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold">{event.title}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <MetaChip icon={Clock} label={formatEventTime(event.start_date, event.end_date, timezone)} />
+                        <MetaChip
+                          icon={Clock}
+                          label={formatEventTime(event.start_date, event.end_date, timezone)}
+                        />
                         {event.venues?.name && <MetaChip icon={MapPin} label={event.venues.name} />}
                         {event.event_type && <MetaChip label={event.event_type} />}
                       </div>

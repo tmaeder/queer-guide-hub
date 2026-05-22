@@ -49,7 +49,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
         disabled={loading}
 
       >
-        <ShieldCheck style={{ height: 16, width: 16 }} />
+        <ShieldCheck size={16} />
         Unblock
       </Button>
     );
@@ -65,7 +65,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
         disabled={loading}
 
       >
-        <UserMinus style={{ height: 16, width: 16 }} />
+        <UserMinus size={16} />
         Cancel Request
       </Button>
     );
@@ -82,7 +82,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
             onClick={handleAccept}
             disabled={loading}
           >
-            <Check style={{ height: 16, width: 16 }} />
+            <Check size={16} />
           </Button>
           <Button
             variant="outline"
@@ -90,7 +90,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
             onClick={handleReject}
             disabled={loading}
           >
-            <X style={{ height: 16, width: 16 }} />
+            <X size={16} />
           </Button>
         </div>
       );
@@ -99,11 +99,11 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
     return (
       <div className="flex gap-2">
         <Button variant="default" onClick={handleAccept} disabled={loading}>
-          <Check style={{ height: 16, width: 16 }} />
+          <Check size={16} />
           Accept
         </Button>
         <Button variant="outline" onClick={handleReject} disabled={loading}>
-          <X style={{ height: 16, width: 16 }} />
+          <X size={16} />
           Reject
         </Button>
       </div>
@@ -121,17 +121,17 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
             disabled={loading}
 
           >
-            <UserMinus style={{ height: 16, width: 16 }} />
+            <UserMinus size={16} />
             Friends
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={handleRemove}>
-            <UserMinus style={{ height: 16, width: 16, marginRight: 8 }} />
+            <UserMinus size={16} className="mr-2" />
             Unfriend
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleBlock}>
-            <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Shield size={16} className="mr-2" />
             Block
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -149,17 +149,17 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
           disabled={loading}
 
         >
-          <UserPlus style={{ height: 16, width: 16 }} />
+          <UserPlus size={16} />
           Add Friend
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={handleAddFriend}>
-          <UserPlus style={{ height: 16, width: 16, marginRight: 8 }} />
+          <UserPlus size={16} className="mr-2" />
           Send Friend Request
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleBlock}>
-          <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Shield size={16} className="mr-2" />
           Block User
         </DropdownMenuItem>
       </DropdownMenuContent>

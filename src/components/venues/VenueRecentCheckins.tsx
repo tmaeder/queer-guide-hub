@@ -36,7 +36,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
   const header = (
     <CardHeader>
       <CardTitle>
-        <BarChart3 style={{ width: 20, height: 20 }} />
+        <BarChart3 size={20} />
         Venue Activity
       </CardTitle>
     </CardHeader>
@@ -51,7 +51,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
             role="status"
             aria-label="Loading venue activity"
             aria-busy="true"
-            className="flex flex-col gap-3 animate-pulse"
+            className="flex flex-col gap-4 animate-pulse"
           >
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center justify-between">
@@ -86,7 +86,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
         {header}
         <CardContent>
           <div className="text-center py-6 text-muted-foreground">
-            <TrendingUp style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+            <TrendingUp size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
             <p>No recent activity</p>
             <p className="text-sm">Check-in data is private and anonymized</p>
           </div>
@@ -114,14 +114,14 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
           {recentActivity.length > 0 && (
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium flex items-center gap-2">
-                <Clock style={{ width: 16, height: 16 }} />
+                <Clock size={16} />
                 Recent Activity Hours
               </p>
               {recentActivity.map((stat, index) => {
                 const hour = stat.checkin_hour as string | undefined;
                 const count = Number(stat.total_checkins) || 0;
                 return (
-                  <div key={index} className="flex items-center justify-between py-2 px-3 bg-muted">
+                  <div key={index} className="flex items-center justify-between py-2 px-4 bg-muted">
                     <p className="text-sm">
                       {hour ? new Date(hour).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit' }) : ''}
                     </p>

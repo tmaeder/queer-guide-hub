@@ -29,7 +29,24 @@ interface EmailIngestion {
   extracted_venues: number;
   inserted_event_ids: string[];
   inserted_venue_ids: string[];
-  ai_extraction: { events?: Array<{ title: string; city: string; country: string; start_date?: string; event_type?: string }>; venues?: Array<{ name: string; city: string; country: string; venue_type?: string; address?: string; category?: string }>; summary?: string };
+  ai_extraction: {
+    events?: Array<{
+      title: string;
+      city: string;
+      country: string;
+      start_date?: string;
+      event_type?: string;
+    }>;
+    venues?: Array<{
+      name: string;
+      city: string;
+      country: string;
+      venue_type?: string;
+      address?: string;
+      category?: string;
+    }>;
+    summary?: string;
+  };
   status: string;
   error_message: string | null;
   processing_ms: number | null;
@@ -139,15 +156,17 @@ export function EmailIngestionsManager() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Mail style={{ height: 24, width: 24, color: 'hsl(var(--foreground))' }} />
+        <div className="flex items-center gap-4">
+          <Mail size={24} className="text-foreground" />
           <div>
             <h6 className="text-base font-semibold">Email Ingestions</h6>
-            <p className="text-sm text-muted-foreground">Forwarded emails processed for LGBTQ+ events and venues</p>
+            <p className="text-sm text-muted-foreground">
+              Forwarded emails processed for LGBTQ+ events and venues
+            </p>
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={fetchIngestions}>
-          <RefreshCw style={{ height: 14, width: 14, marginRight: 6 }} />
+          <RefreshCw size={14} className="mr-1.5" />
           Refresh
         </Button>
       </div>
@@ -155,35 +174,40 @@ export function EmailIngestionsManager() {
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent style={{ padding: 16 }}>
+          <CardContent className="p-4">
             <div className="text-2xl font-bold">{totalCount}</div>
             <span className="text-xs text-muted-foreground">Total</span>
           </CardContent>
         </Card>
         <Card>
-          <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>{completedCount}</div>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-foreground">{completedCount}</div>
             <span className="text-xs text-muted-foreground">Completed</span>
           </CardContent>
         </Card>
         <Card>
-          <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--destructive))' }}>{failedCount}</div>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-destructive">{failedCount}</div>
             <span className="text-xs text-muted-foreground">Failed</span>
           </CardContent>
         </Card>
         <Card>
-          <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>{processingCount}</div>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
+              {processingCount}
+            </div>
             <span className="text-xs text-muted-foreground">Processing</span>
           </CardContent>
         </Card>
       </div>
 
       {/* Search and filters */}
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-wrap gap-4 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
+          <Search
+            style={{ left: 10, top: '50%', transform: 'translateY(-50%)', height: 14, width: 14 }}
+            className="absolute text-muted-foreground"
+          />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -212,9 +236,9 @@ export function EmailIngestionsManager() {
       {/* Ingestion list */}
       {filtered.length === 0 ? (
         <Card>
-          <CardContent style={{ padding: 32 }}>
+          <CardContent className="p-8">
             <div className="text-center text-muted-foreground">
-              <Mail style={{ height: 40, width: 40, margin: '0 auto 12px', opacity: 0.4 }} />
+              <Mail size={40} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
               <p className="text-sm">
                 {ingestions.length === 0
                   ? 'No email ingestions yet. Forward emails to ingest@queer.guide to get started.'
@@ -224,7 +248,7 @@ export function EmailIngestionsManager() {
           </CardContent>
         </Card>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {filtered.map((ing) => (
             <Collapsible key={ing.id}>
               <Card
@@ -233,10 +257,10 @@ export function EmailIngestionsManager() {
                   transition: 'border-color 0.2s',
                 }}
               >
-                <CardContent style={{ padding: 14 }}>
+                <CardContent className="p-4.5">
                   {/* Summary row */}
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
                       <Badge variant={STATUS_BADGE_VARIANT[ing.status] || 'outline'}>
                         {ing.status === 'no_content' ? 'no content' : ing.status}
                       </Badge>
@@ -245,7 +269,7 @@ export function EmailIngestionsManager() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 flex-shrink-0 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-4 flex-shrink-0 text-xs text-muted-foreground">
                       <span className="hidden md:inline" title={ing.from_address}>
                         {ing.from_address.length > 24
                           ? ing.from_address.slice(0, 24) + '...'
@@ -256,13 +280,13 @@ export function EmailIngestionsManager() {
                         <div className="flex items-center gap-1">
                           {ing.extracted_events > 0 && (
                             <Badge variant="outline" style={{ fontSize: '0.7rem' }}>
-                              <Calendar style={{ height: 10, width: 10, marginRight: 3 }} />
+                              <Calendar size={10} style={{ marginRight: 3 }} />
                               {ing.extracted_events}
                             </Badge>
                           )}
                           {ing.extracted_venues > 0 && (
                             <Badge variant="outline" style={{ fontSize: '0.7rem' }}>
-                              <Building style={{ height: 10, width: 10, marginRight: 3 }} />
+                              <Building size={10} style={{ marginRight: 3 }} />
                               {ing.extracted_venues}
                             </Badge>
                           )}
@@ -271,7 +295,11 @@ export function EmailIngestionsManager() {
 
                       {ing.processing_ms != null && (
                         <span className="hidden sm:inline" title="Processing time">
-                          <Clock style={{ height: 10, width: 10, display: 'inline', marginRight: 2, verticalAlign: 'middle' }} />
+                          <Clock
+                            size={10}
+                            style={{ display: 'inline', verticalAlign: 'middle' }}
+                            className="mr-0.5"
+                          />
                           {ing.processing_ms < 1000
                             ? `${ing.processing_ms}ms`
                             : `${(ing.processing_ms / 1000).toFixed(1)}s`}
@@ -290,9 +318,9 @@ export function EmailIngestionsManager() {
                           style={{ padding: 4 }}
                         >
                           {expandedRows.has(ing.id) ? (
-                            <ChevronUp style={{ height: 16, width: 16 }} />
+                            <ChevronUp size={16} />
                           ) : (
-                            <ChevronDown style={{ height: 16, width: 16 }} />
+                            <ChevronDown size={16} />
                           )}
                         </Button>
                       </CollapsibleTrigger>
@@ -300,15 +328,17 @@ export function EmailIngestionsManager() {
                   </div>
 
                   {/* Expanded detail */}
-                  <CollapsibleContent style={{ marginTop: 16 }}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[0.85rem]">
+                  <CollapsibleContent className="mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="font-medium">From:</span>
                         <p className="text-sm text-muted-foreground">{ing.from_address}</p>
                       </div>
                       <div>
                         <span className="font-medium">Received:</span>
-                        <p className="text-sm text-muted-foreground">{new Date(ing.received_at).toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(ing.received_at).toLocaleString()}
+                        </p>
                       </div>
                       <div className="md:col-span-2">
                         <span className="font-medium">Subject:</span>
@@ -318,37 +348,49 @@ export function EmailIngestionsManager() {
                       {ing.ai_extraction?.summary && (
                         <div className="md:col-span-2">
                           <span className="font-medium">AI Summary:</span>
-                          <p className="text-sm text-muted-foreground">{ing.ai_extraction.summary}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {ing.ai_extraction.summary}
+                          </p>
                         </div>
                       )}
 
                       {ing.error_message && (
                         <div className="md:col-span-2">
                           <div
-                            className="flex items-start gap-2 p-3 rounded"
+                            className="flex items-start gap-2 p-4 rounded"
                             style={{
                               backgroundColor: 'hsl(var(--destructive) / 0.08)',
                               border: '1px solid hsl(var(--destructive) / 0.2)',
                             }}
                           >
-                            <AlertCircle style={{ height: 14, width: 14, color: 'hsl(var(--destructive))', marginTop: 2, flexShrink: 0 }} />
-                            <p className="text-sm break-words" style={{ color: 'hsl(var(--destructive))' }}>{ing.error_message}</p>
+                            <AlertCircle size={14} className="text-destructive mt-0.5 shrink-0" />
+                            <p className="text-sm break-words text-destructive">
+                              {ing.error_message}
+                            </p>
                           </div>
                         </div>
                       )}
 
                       {ing.ai_extraction?.events && ing.ai_extraction.events.length > 0 && (
                         <div className="md:col-span-2">
-                          <span className="font-medium">Extracted Events ({ing.ai_extraction.events.length}):</span>
+                          <span className="font-medium">
+                            Extracted Events ({ing.ai_extraction.events.length}):
+                          </span>
                           <div className="flex flex-col gap-1 mt-1">
                             {ing.ai_extraction.events.map((ev, i: number) => (
-                              <div key={i} className="flex items-center gap-2 text-[0.8rem] text-muted-foreground">
-                                <Calendar style={{ height: 12, width: 12, flexShrink: 0 }} />
+                              <div
+                                key={i}
+                                className="flex items-center gap-2 text-13 text-muted-foreground"
+                              >
+                                <Calendar size={12} className="shrink-0" />
                                 <span>
                                   <strong>{ev.title}</strong> — {ev.city}, {ev.country}
-                                  {ev.start_date && ` (${new Date(ev.start_date).toLocaleDateString()})`}
+                                  {ev.start_date &&
+                                    ` (${new Date(ev.start_date).toLocaleDateString()})`}
                                 </span>
-                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>{ev.event_type}</Badge>
+                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>
+                                  {ev.event_type}
+                                </Badge>
                               </div>
                             ))}
                           </div>
@@ -357,15 +399,22 @@ export function EmailIngestionsManager() {
 
                       {ing.ai_extraction?.venues && ing.ai_extraction.venues.length > 0 && (
                         <div className="md:col-span-2">
-                          <span className="font-medium">Extracted Venues ({ing.ai_extraction.venues.length}):</span>
+                          <span className="font-medium">
+                            Extracted Venues ({ing.ai_extraction.venues.length}):
+                          </span>
                           <div className="flex flex-col gap-1 mt-1">
                             {ing.ai_extraction.venues.map((v, i: number) => (
-                              <div key={i} className="flex items-center gap-2 text-[0.8rem] text-muted-foreground">
-                                <Building style={{ height: 12, width: 12, flexShrink: 0 }} />
+                              <div
+                                key={i}
+                                className="flex items-center gap-2 text-13 text-muted-foreground"
+                              >
+                                <Building size={12} className="shrink-0" />
                                 <span>
                                   <strong>{v.name}</strong> — {v.address}, {v.city}
                                 </span>
-                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>{v.category}</Badge>
+                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>
+                                  {v.category}
+                                </Badge>
                               </div>
                             ))}
                           </div>
@@ -377,7 +426,11 @@ export function EmailIngestionsManager() {
                           <span className="font-medium">Body Preview:</span>
                           <p
                             className="text-sm text-muted-foreground mt-1 p-2 rounded overflow-auto whitespace-pre-wrap"
-                            style={{ maxHeight: 200, fontSize: '0.8rem', backgroundColor: 'hsl(var(--foreground) / 0.03)' }}
+                            style={{
+                              maxHeight: 200,
+                              fontSize: '0.8rem',
+                              backgroundColor: 'hsl(var(--foreground) / 0.03)',
+                            }}
                           >
                             {ing.body_text.slice(0, 1000)}
                             {ing.body_text.length > 1000 && '...'}
@@ -395,18 +448,17 @@ export function EmailIngestionsManager() {
                           >
                             {expandedJson.has(ing.id) ? 'Hide' : 'Show'} Raw AI Response
                             {expandedJson.has(ing.id) ? (
-                              <ChevronUp style={{ height: 12, width: 12, marginLeft: 4 }} />
+                              <ChevronUp size={12} className="ml-1" />
                             ) : (
-                              <ChevronDown style={{ height: 12, width: 12, marginLeft: 4 }} />
+                              <ChevronDown size={12} className="ml-1" />
                             )}
                           </Button>
                           {expandedJson.has(ing.id) && (
                             <pre
-                              className="mt-2 p-3 rounded overflow-auto"
+                              className="mt-2 p-4 rounded overflow-auto text-xs"
                               style={{
                                 backgroundColor: 'hsl(var(--foreground) / 0.05)',
                                 maxHeight: 400,
-                                fontSize: '0.75rem',
                                 lineHeight: 1.4,
                               }}
                             >

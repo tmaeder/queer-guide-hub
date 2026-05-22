@@ -371,7 +371,7 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
           {importResult && (
             <Card>
               <CardContent>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-4">
                   {importResult.success ? <CheckCircle /> : <AlertCircle />}
                   <h6 className="text-base font-semibold">
                     {importResult.success ? 'Import Successful' : 'Import Failed'}

@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         // Solid foreground CTA with subtle lift on hover.
-        default: "bg-foreground text-background shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)] hover:-translate-y-px",
+        default: "bg-foreground text-background hover:opacity-90",
         // Hairline border, transparent fill — fills on hover.
         outline: "border border-foreground/15 bg-transparent text-foreground hover:bg-foreground hover:text-background hover:border-foreground",
         // No chrome until hover — useful in headers / menus.
@@ -20,16 +20,16 @@ const buttonVariants = cva(
         // Single chromatic exception: irreversible / destructive actions.
         destructive: "bg-destructive text-destructive-foreground hover:opacity-90",
         // Aceternity-style soft surface — subtle bg, hairline border.
-        soft: "bg-muted text-foreground border border-border/60 hover:bg-accent hover:-translate-y-px",
+        soft: "bg-muted text-foreground border border-border/60 hover:bg-accent",
         // Legacy aliases retained for compat. Slated for removal next major
         // (2026-05-19) — both collapse to `default`. Use variant="default".
         secondary: "bg-foreground text-background hover:opacity-85",
         brand: "bg-foreground text-background hover:opacity-85",
       },
       size: {
-        default: "h-10 px-5",
+        default: "h-10 px-6",
         sm: "h-9 px-4 text-xs",
-        lg: "h-12 px-7 text-sm",
+        lg: "h-12 px-8 text-sm",
         icon: "h-10 w-10",
       },
     },

@@ -36,7 +36,7 @@ function IconBadge({ icon: Icon, size = 16 }: { icon: React.ComponentType<{ size
 function CountBadge({ count }: { count: number | undefined }) {
   if (count === undefined) return null;
   return (
-    <span className="bg-muted text-muted-foreground inline-flex items-center justify-center rounded h-5 min-w-7 px-1.5 text-[0.65rem] font-semibold">
+    <span className="bg-muted text-muted-foreground inline-flex items-center justify-center rounded h-5 min-w-7 px-1.5 text-2xs font-semibold">
       {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
     </span>
   );
@@ -135,14 +135,14 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
     <TooltipProvider>
     <div className="w-[260px] min-h-full border-r border-border bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-5 border-b border-border">
-        <div className="flex items-center gap-3">
+      <div className="px-6 py-6 border-b border-border">
+        <div className="flex items-center gap-4">
           <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 bg-foreground text-background">
             <Layers size={16} />
           </div>
           <div>
             <p className="text-sm font-bold tracking-tight leading-tight">Admin Console</p>
-            <p className="text-[0.7rem] text-muted-foreground/70">Manage everything</p>
+            <p className="text-xs2 text-muted-foreground/70">Manage everything</p>
           </div>
           {isAdmin && (
             <Tooltip>
@@ -166,7 +166,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
 
           return (
             <div key={section.id}>
-              {sectionIdx > 0 && <div className="my-1.5 mx-3 border-t border-border" />}
+              {sectionIdx > 0 && <div className="my-1.5 mx-4 border-t border-border" />}
 
               <Collapsible open={isOpen} onOpenChange={() => toggleSection(section.id)}>
                 <CollapsibleTrigger asChild>
@@ -179,11 +179,11 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                     <span className={`flex items-center transition-transform ${isOpen ? '' : '-rotate-90'}`}>
                       <ChevronDown size={14} />
                     </span>
-                    <span className="flex-1 text-left text-[0.65rem] font-bold tracking-[0.08em] text-muted-foreground/70">
+                    <span className="flex-1 text-left text-2xs font-bold tracking-[0.08em] text-muted-foreground/70">
                       {section.label.toUpperCase()}
                     </span>
                     {!countsLoading && (
-                      <span className="text-[0.6rem] font-medium text-muted-foreground/70">
+                      <span className="text-2xs font-medium text-muted-foreground/70">
                         {filteredItems.length}
                       </span>
                     )}
@@ -200,12 +200,12 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                           key={item.id}
                           type="button"
                           onClick={() => navigate(item.route)}
-                          className={`rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 ${active ? 'bg-muted font-semibold border-l-2 border-foreground pl-3' : 'pl-3.5 border-l-2 border-transparent'}`}
+                          className={`rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 ${active ? 'bg-muted font-semibold border-l-2 border-foreground pl-4' : 'pl-4.5 border-l-2 border-transparent'}`}
                         >
                           <span className="min-w-9 flex">
                             <IconBadge icon={item.icon} size={15} />
                           </span>
-                          <span className="flex-1 text-left text-[0.85rem]">
+                          <span className="flex-1 text-left text-sm">
                             {item.label}
                           </span>
                           {hasCount &&
@@ -226,18 +226,18 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
       </div>
 
       {/* User info footer */}
-      <div className="border-t border-border px-4 py-3 flex items-center gap-3 bg-muted/40">
+      <div className="border-t border-border px-4 py-4 flex items-center gap-4 bg-muted/40">
         <Avatar className="h-8 w-8">
           <AvatarImage src={user?.user_metadata?.avatar_url as string | undefined} />
-          <AvatarFallback className="bg-foreground text-background text-[0.8rem] font-semibold">
+          <AvatarFallback className="bg-foreground text-background text-13 font-semibold">
             {userInitial}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[0.8rem] leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+          <p className="font-semibold text-13 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
             {userDisplayName}
           </p>
-          <p className="text-[0.65rem] text-muted-foreground/70 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+          <p className="text-2xs text-muted-foreground/70 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
             {userEmail}
           </p>
         </div>

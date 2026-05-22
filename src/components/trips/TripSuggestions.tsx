@@ -195,7 +195,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
       ))}
 
       {/* Category filter */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
+      <div className="flex flex-wrap gap-1.5 mb-4">
         {filters.map((label, i) => (
           <Badge
             key={label}
@@ -231,7 +231,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
               {cityVenues.map((venue) => (
                 <div
                   key={venue.id}
-                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-[44px]"
+                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-11"
                 >
                   <MapPin size={13} className="text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -241,7 +241,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
                       {venue.foursquare_rating && (
                         <div className="flex items-center gap-0.5">
                           <Star size={10} className="text-foreground" />
-                          <span className="text-[11px]">{venue.foursquare_rating}</span>
+                          <span className="text-xs2">{venue.foursquare_rating}</span>
                         </div>
                       )}
                     </div>
@@ -265,7 +265,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
               {cityEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-[44px]"
+                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-11"
                 >
                   <Calendar size={13} className="text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -273,7 +273,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
                     <div className="flex items-center gap-1.5">
                       {event.event_type && <Badge variant="outline">{event.event_type}</Badge>}
                       {event.start_date && (
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-xs2 text-muted-foreground">
                           {new Date(event.start_date).toLocaleDateString(undefined, {
                             month: 'short',
                             day: 'numeric',

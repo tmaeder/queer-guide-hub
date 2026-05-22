@@ -78,10 +78,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-semibold text-foreground">Meta Title</span>
           <span
-            className={cn(
-              'text-[0.7rem]',
-              titleOver ? 'text-destructive' : 'text-muted-foreground',
-            )}
+            className={cn('text-xs2', titleOver ? 'text-destructive' : 'text-muted-foreground')}
           >
             {metaTitle.length}/{META_TITLE_MAX}
           </span>
@@ -100,12 +97,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
       <div>
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-semibold text-foreground">Meta Description</span>
-          <span
-            className={cn(
-              'text-[0.7rem]',
-              descOver ? 'text-destructive' : 'text-muted-foreground',
-            )}
-          >
+          <span className={cn('text-xs2', descOver ? 'text-destructive' : 'text-muted-foreground')}>
             {metaDescription.length}/{META_DESCRIPTION_MAX}
           </span>
         </div>
@@ -123,7 +115,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
       {/* Canonical URL */}
       <div>
         <div className="flex items-center gap-1 mb-1">
-          <Globe style={{ width: 12, height: 12 }} className="text-muted-foreground" />
+          <Globe size={12} className="text-muted-foreground" />
           <span className="text-xs font-semibold text-foreground">Canonical URL</span>
         </div>
         <Input
@@ -141,31 +133,30 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
       {/* Google SERP Preview */}
       <div>
         <div className="flex items-center gap-1.5 mb-2">
-          <Search style={{ width: 14, height: 14 }} className="text-muted-foreground" />
+          <Search size={14} className="text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground">Google Preview</span>
         </div>
-        <div className={cn('rounded-element border border-gray-200 p-3 bg-white')}>
+        <div className={cn('rounded-element border border-border p-4 bg-white')}>
           {/* Title line */}
           <p
-            className="text-base font-medium leading-snug overflow-hidden text-ellipsis whitespace-nowrap"
-            style={{ color: 'hsl(var(--muted-foreground))', fontFamily: 'Arial, sans-serif' }}
+            className="text-base font-medium leading-snug overflow-hidden text-ellipsis whitespace-nowrap text-muted-foreground"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
             {truncatedTitle}
           </p>
 
           {/* URL line */}
           <span
-            className="block mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-[0.8rem]"
-            style={{ color: 'hsl(var(--foreground))', fontFamily: 'Arial, sans-serif' }}
+            className="block mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13 text-foreground"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
             {previewUrl}
           </span>
 
           {/* Description */}
           <span
-            className="mt-1 overflow-hidden text-[0.8rem] leading-snug"
+            className="mt-1 overflow-hidden text-13 leading-snug text-muted-foreground"
             style={{
-              color: 'hsl(var(--muted-foreground))',
               fontFamily: 'Arial, sans-serif',
               display: '-webkit-box',
               WebkitLineClamp: 3,

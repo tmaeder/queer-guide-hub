@@ -54,7 +54,7 @@ interface CMSSidebarProps {
 function SectionLabel({ children }: { children: string }) {
   return (
     <p
-      className="block px-5 pt-4 pb-1 text-[0.65rem] font-bold text-muted-foreground/60 uppercase select-none"
+      className="block px-6 pt-4 pb-1 text-2xs font-bold text-muted-foreground/60 uppercase select-none"
       style={{ letterSpacing: '0.08em' }}
     >
       {children}
@@ -95,7 +95,7 @@ function NavItem({ isActive, accentColor, onClick, className, children }: NavIte
       type="button"
       onClick={onClick}
       className={cn(
-        'flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-3 relative transition-all hover:translate-x-0.5',
+        'flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-4 relative transition-all hover:translate-x-0.5',
         className,
       )}
       style={{
@@ -118,7 +118,7 @@ function CountBadge({ count, color }: { count: number | undefined; color?: strin
   return (
     <Badge
       variant="secondary"
-      className="h-5 text-[0.65rem] font-semibold min-w-[28px] px-1.5"
+      className="h-5 text-2xs font-semibold min-w-[28px] px-1.5"
       style={{
         backgroundColor: color ? color + '14' : undefined,
         color: color || undefined,
@@ -186,12 +186,12 @@ export function CMSSidebar({
     <div className="w-[260px] min-h-full border-r border-border bg-background flex flex-col overflow-hidden">
       {/* Gradient Header */}
       <div
-        className="px-5 py-5 border-b border-border"
+        className="px-6 py-6 border-b border-border"
         style={{
           background: `linear-gradient(135deg, ${brandColors.main}14 0%, ${brandColors.light}0A 50%, transparent 100%)`,
         }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div
             className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0"
             style={{
@@ -213,7 +213,7 @@ export function CMSSidebar({
             >
               Content Hub
             </p>
-            <p className="text-muted-foreground/60 text-[0.7rem]">Manage all content</p>
+            <p className="text-muted-foreground/60 text-xs2">Manage all content</p>
           </div>
         </div>
       </div>
@@ -232,7 +232,7 @@ export function CMSSidebar({
               <IconBadge icon={LayoutDashboard} color="hsl(var(--foreground))" size={15} />
             </span>
             <span
-              className={cn('text-[0.85rem] flex-1', activeView === 'overview' ? 'font-semibold' : 'font-normal')}
+              className={cn('text-sm flex-1', activeView === 'overview' ? 'font-semibold' : 'font-normal')}
             >
               Dashboard
             </span>
@@ -241,7 +241,7 @@ export function CMSSidebar({
           <button
             type="button"
             onClick={() => setContentOpen(!contentOpen)}
-            className="flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-3 transition-all hover:translate-x-0.5"
+            className="flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-4 transition-all hover:translate-x-0.5"
           >
             <span className="min-w-9 mr-2 flex">
               <span
@@ -251,9 +251,9 @@ export function CMSSidebar({
                 <ChevronDown size={16} />
               </span>
             </span>
-            <span className="text-[0.85rem] font-semibold flex-1">Content</span>
+            <span className="text-sm font-semibold flex-1">Content</span>
             {!countsLoading && (
-              <span className="text-muted-foreground/60 text-[0.65rem] font-medium">
+              <span className="text-muted-foreground/60 text-2xs font-medium">
                 {contentTypes.length} types
               </span>
             )}
@@ -269,7 +269,7 @@ export function CMSSidebar({
               >
                 <span
                   className={cn(
-                    'text-[0.82rem] flex-1 ml-9',
+                    'text-13 flex-1 ml-10',
                     activeView === 'content' && !activeContentType ? 'font-semibold' : 'font-normal',
                   )}
                 >
@@ -287,13 +287,13 @@ export function CMSSidebar({
                     isActive={isActive}
                     accentColor={ct.color}
                     onClick={() => onNavigate('content', ct.id)}
-                    className="!py-1 !pl-7"
+                    className="!py-1 !pl-8"
                   >
                     <span className="min-w-9 mr-2 flex">
                       <IconBadge icon={Icon} color={ct.color} size={14} />
                     </span>
                     <span
-                      className={cn('text-[0.82rem] flex-1', isActive ? 'font-semibold' : 'font-normal')}
+                      className={cn('text-13 flex-1', isActive ? 'font-semibold' : 'font-normal')}
                     >
                       {ct.label.plural}
                     </span>
@@ -321,7 +321,7 @@ export function CMSSidebar({
               <IconBadge icon={FileText} color="hsl(var(--muted-foreground))" size={15} />
             </span>
             <span
-              className={cn('text-[0.85rem] flex-1', activeView === 'pages' ? 'font-semibold' : 'font-normal')}
+              className={cn('text-sm flex-1', activeView === 'pages' ? 'font-semibold' : 'font-normal')}
             >
               Pages
             </span>
@@ -336,7 +336,7 @@ export function CMSSidebar({
               <IconBadge icon={Image} color="hsl(var(--muted-foreground))" size={15} />
             </span>
             <span
-              className={cn('text-[0.85rem] flex-1', activeView === 'media' ? 'font-semibold' : 'font-normal')}
+              className={cn('text-sm flex-1', activeView === 'media' ? 'font-semibold' : 'font-normal')}
             >
               Media Library
             </span>
@@ -351,13 +351,13 @@ export function CMSSidebar({
               <IconBadge icon={ClipboardCheck} color="hsl(var(--foreground) / 0.55)" size={15} />
             </span>
             <span
-              className={cn('text-[0.85rem] flex-1', activeView === 'review' ? 'font-semibold' : 'font-normal')}
+              className={cn('text-sm flex-1', activeView === 'review' ? 'font-semibold' : 'font-normal')}
             >
               Review Queue
             </span>
             {reviewCount > 0 && (
               <Badge
-                className="h-5 text-[0.65rem] font-bold min-w-[24px] px-1.5"
+                className="h-5 text-2xs font-bold min-w-[24px] px-1.5"
                 style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}
               >
                 {reviewCount}
@@ -374,7 +374,7 @@ export function CMSSidebar({
               <IconBadge icon={Activity} color="hsl(var(--foreground))" size={15} />
             </span>
             <span
-              className={cn('text-[0.85rem] flex-1', activeView === 'quality' ? 'font-semibold' : 'font-normal')}
+              className={cn('text-sm flex-1', activeView === 'quality' ? 'font-semibold' : 'font-normal')}
             >
               Data Quality
             </span>
@@ -389,7 +389,7 @@ export function CMSSidebar({
               <IconBadge icon={ShieldAlert} color="hsl(var(--destructive))" size={15} />
             </span>
             <span
-              className={cn('text-[0.85rem] flex-1', activeView === 'moderation' ? 'font-semibold' : 'font-normal')}
+              className={cn('text-sm flex-1', activeView === 'moderation' ? 'font-semibold' : 'font-normal')}
             >
               Moderation
             </span>
@@ -404,13 +404,13 @@ export function CMSSidebar({
               <IconBadge icon={History} color="hsl(var(--muted-foreground))" size={15} />
             </span>
             <span
-              className={cn('text-[0.85rem] flex-1', activeView === 'audit' ? 'font-semibold' : 'font-normal')}
+              className={cn('text-sm flex-1', activeView === 'audit' ? 'font-semibold' : 'font-normal')}
             >
               Audit Log
             </span>
           </NavItem>
 
-          <hr className="my-1.5 mx-3 border-border" />
+          <hr className="my-1.5 mx-4 border-border" />
 
           <NavItem
             isActive={activeView === 'settings'}
@@ -421,7 +421,7 @@ export function CMSSidebar({
               <IconBadge icon={Settings} color="hsl(var(--muted-foreground))" size={15} />
             </span>
             <span
-              className={cn('text-[0.85rem] flex-1', activeView === 'settings' ? 'font-semibold' : 'font-normal')}
+              className={cn('text-sm flex-1', activeView === 'settings' ? 'font-semibold' : 'font-normal')}
             >
               Settings
             </span>
@@ -430,7 +430,7 @@ export function CMSSidebar({
       </div>
 
       {/* User info footer */}
-      <div className="border-t border-border px-4 py-3 flex items-center gap-3 bg-muted/30">
+      <div className="border-t border-border px-4 py-4 flex items-center gap-4 bg-muted/30">
         <Avatar className="w-8 h-8">
           <AvatarImage src={user?.user_metadata?.avatar_url as string | undefined} />
           <AvatarFallback
@@ -441,8 +441,8 @@ export function CMSSidebar({
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[0.8rem] leading-tight truncate">{userDisplayName}</p>
-          <p className="text-muted-foreground/60 text-[0.65rem] leading-tight truncate block">
+          <p className="font-semibold text-13 leading-tight truncate">{userDisplayName}</p>
+          <p className="text-muted-foreground/60 text-2xs leading-tight truncate block">
             {userEmail}
           </p>
         </div>

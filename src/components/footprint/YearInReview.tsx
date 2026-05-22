@@ -56,7 +56,7 @@ export function YearInReview({ data }: { data: YearReviewData }) {
           <div className="text-sm">Events attended: {data.events}</div>
           {data.topCity && <div className="text-sm">Top destination: {data.topCity}</div>}
         </div>
-        <div className="mt-3">
+        <div className="mt-4">
           <Button size="sm" variant="outline" onClick={handleShare}>
             Share
           </Button>

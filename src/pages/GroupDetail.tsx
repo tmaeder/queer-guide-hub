@@ -106,7 +106,9 @@ export default function GroupDetail() {
     return (
       <div className="mx-auto py-8">
         <Alert>
-          <AlertDescription>{t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}</AlertDescription>
+          <AlertDescription>
+            {t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}
+          </AlertDescription>
         </Alert>
       </div>
     );
@@ -129,12 +131,12 @@ export default function GroupDetail() {
       <div className="mx-auto py-8">
         <div className="text-center flex flex-col gap-4">
           <h1 className="text-2xl font-bold">Group not found</h1>
-          <p style={{ color: 'hsl(var(--muted-foreground))' }}>
+          <p className="text-muted-foreground">
             The group you're looking for doesn't exist or you don't have access to it.
           </p>
           <Button asChild>
             <LocalizedLink to="/groups">
-              <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+              <ArrowLeft size={16} className="mr-2" />
               Back to Groups
             </LocalizedLink>
           </Button>
@@ -150,7 +152,7 @@ export default function GroupDetail() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+          <ArrowLeft size={16} className="mr-2" />
           Back
         </Button>
       </div>
@@ -160,13 +162,10 @@ export default function GroupDetail() {
         <CardContent style={{ padding: '32px' }}>
           <div className="flex flex-col md:flex-row gap-6">
             <Avatar style={{ height: 96, width: 96 }}>
-              <AvatarImage src={group.image_url || undefined} />
+              <AvatarImage src={group.image_url || undefined} alt={group.name} />
               <AvatarFallback
-                style={{
-                  background: 'var(--gradient-primary)',
-                  color: 'white',
-                  fontSize: '1.5rem',
-                }}
+                style={{ background: 'var(--gradient-primary)', color: 'white' }}
+                className="text-2xl"
               >
                 {group.name.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -174,22 +173,22 @@ export default function GroupDetail() {
 
             <div className="flex-1 text-center md:text-left flex flex-col gap-4">
               <div>
-                <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
+                <div className="flex items-center gap-4 justify-center md:justify-start mb-2">
                   <h1 className="text-3xl font-bold">{group.name}</h1>
                   {group.is_private ? (
-                    <Lock style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
+                    <Lock size={20} className="text-muted-foreground" />
                   ) : (
-                    <Globe style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
+                    <Globe size={20} className="text-muted-foreground" />
                   )}
                 </div>
 
                 <div className="flex items-center gap-4 justify-center md:justify-start text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <Users style={{ height: 16, width: 16 }} />
+                    <Users size={16} />
                     <span>{group.member_count} members</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Clock style={{ height: 16, width: 16 }} />
+                    <Clock size={16} />
                     <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
@@ -198,20 +197,19 @@ export default function GroupDetail() {
                   <div className="flex justify-center md:justify-start mt-2">
                     <Badge
                       variant="secondary"
-                      style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                      style={{ alignItems: 'center', gap: '4px' }}
+                      className="flex"
                     >
-                      {group.user_role === 'admin' && <Crown style={{ height: 12, width: 12 }} />}
-                      {group.user_role === 'moderator' && (
-                        <Shield style={{ height: 12, width: 12 }} />
-                      )}
-                      {group.user_role === 'member' && <User style={{ height: 12, width: 12 }} />}
+                      {group.user_role === 'admin' && <Crown size={12} />}
+                      {group.user_role === 'moderator' && <Shield size={12} />}
+                      {group.user_role === 'member' && <User size={12} />}
                       {group.user_role}
                     </Badge>
                   </div>
                 )}
               </div>
 
-              {group.description && <p style={{ color: 'hsl(var(--muted-foreground))' }}>{group.description}</p>}
+              {group.description && <p className="text-muted-foreground">{group.description}</p>}
 
               {group.tags && group.tags.length > 0 && (
                 <div className="flex flex-col gap-2">
@@ -221,7 +219,7 @@ export default function GroupDetail() {
                       <Badge
                         key={tag}
                         variant="outline"
-                        style={{ fontSize: '0.75rem', cursor: 'pointer' }}
+                        className="text-xs cursor-pointer"
                         onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
                       >
                         {tag}
@@ -238,19 +236,19 @@ export default function GroupDetail() {
                     disabled={isJoining}
                     style={{ background: 'var(--gradient-primary)' }}
                   >
-                    <UserPlus style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <UserPlus size={16} className="mr-2" />
                     {isJoining ? 'Joining...' : 'Join Group'}
                   </Button>
                 ) : (
                   <Button onClick={handleLeave} disabled={isLeaving} variant="outline">
-                    <UserMinus style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <UserMinus size={16} className="mr-2" />
                     {isLeaving ? 'Leaving...' : 'Leave Group'}
                   </Button>
                 )}
 
                 {canManage && (
                   <Button variant="outline" onClick={() => setActiveTab('members')}>
-                    <Settings style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <Settings size={16} className="mr-2" />
                     Manage Group
                   </Button>
                 )}
@@ -262,37 +260,39 @@ export default function GroupDetail() {
 
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <TabsTrigger value="about" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Users style={{ height: 16, width: 16 }} />
+        <TabsList style={{ width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }} className="grid">
+          <TabsTrigger value="about" style={{ alignItems: 'center', gap: '8px' }} className="flex">
+            <Users size={16} />
             About
           </TabsTrigger>
           <TabsTrigger
             value="members"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            style={{ alignItems: 'center', gap: '8px' }}
+            className="flex"
           >
-            <Users style={{ height: 16, width: 16 }} />
+            <Users size={16} />
             Members
           </TabsTrigger>
-          <TabsTrigger value="posts" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <MessageSquare style={{ height: 16, width: 16 }} />
+          <TabsTrigger value="posts" style={{ alignItems: 'center', gap: '8px' }} className="flex">
+            <MessageSquare size={16} />
             Posts
           </TabsTrigger>
-          <TabsTrigger value="events" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Calendar style={{ height: 16, width: 16 }} />
+          <TabsTrigger value="events" style={{ alignItems: 'center', gap: '8px' }} className="flex">
+            <Calendar size={16} />
             Events
           </TabsTrigger>
         </TabsList>
 
         <TabsContent
           value="about"
-          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+          style={{ flexDirection: 'column', gap: '24px' }}
+          className="flex"
         >
           <Card>
             <CardHeader>
               <CardTitle>About this group</CardTitle>
             </CardHeader>
-            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <CardContent style={{ flexDirection: 'column', gap: '16px' }} className="flex">
               {group.description ? (
                 <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
                   {group.description}
@@ -303,28 +303,28 @@ export default function GroupDetail() {
 
               <Separator />
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 <h4 className="text-base font-semibold">Group Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <Users style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                    <Users size={16} className="text-muted-foreground" />
                     <span>{group.member_count} members</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {group.is_private ? (
                       <>
-                        <Lock style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                        <Lock size={16} className="text-muted-foreground" />
                         <span>Private group</span>
                       </>
                     ) : (
                       <>
-                        <Globe style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                        <Globe size={16} className="text-muted-foreground" />
                         <span>Public group</span>
                       </>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                    <Clock size={16} className="text-muted-foreground" />
                     <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
@@ -333,14 +333,14 @@ export default function GroupDetail() {
               {group.tags && group.tags.length > 0 && (
                 <>
                   <Separator />
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     <h4 className="text-base font-semibold">Tags</h4>
                     <div className="flex flex-wrap gap-2">
                       {group.tags.map((tag) => (
                         <Badge
                           key={tag}
                           variant="outline"
-                          style={{ cursor: 'pointer' }}
+                          className="cursor-pointer"
                           onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
                         >
                           {tag}
@@ -354,7 +354,7 @@ export default function GroupDetail() {
               {group.rules && (
                 <>
                   <Separator />
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     <h4 className="text-base font-semibold">Group Rules</h4>
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                       {group.rules}
@@ -368,7 +368,8 @@ export default function GroupDetail() {
 
         <TabsContent
           value="members"
-          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+          style={{ flexDirection: 'column', gap: '24px' }}
+          className="flex"
         >
           <Card>
             <CardHeader>
@@ -377,8 +378,10 @@ export default function GroupDetail() {
                 {canManage && groupId && (
                   <AddMemberDialog
                     groupId={groupId}
-                    existingMemberIds={groupMembers.map(m => m.user_id)}
-                    onMemberAdded={() => queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })}
+                    existingMemberIds={groupMembers.map((m) => m.user_id)}
+                    onMemberAdded={() =>
+                      queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })
+                    }
                   />
                 )}
               </div>
@@ -397,7 +400,9 @@ export default function GroupDetail() {
                       description: 'Direct messaging is not yet available.',
                     });
                   }}
-                  onMembersChanged={() => queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })}
+                  onMembersChanged={() =>
+                    queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })
+                  }
                 />
               )}
             </CardContent>
@@ -406,7 +411,8 @@ export default function GroupDetail() {
 
         <TabsContent
           value="posts"
-          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+          style={{ flexDirection: 'column', gap: '24px' }}
+          className="flex"
         >
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Group Posts</h3>
@@ -431,9 +437,11 @@ export default function GroupDetail() {
             </div>
           ) : posts.length === 0 ? (
             <Card>
-              <CardContent style={{ padding: '32px', textAlign: 'center' }}>
+              <CardContent style={{ padding: '32px' }} className="text-center">
                 <MessageSquare
-                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' }}
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
                 />
                 <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
                 <p className="text-muted-foreground mb-4">
@@ -471,7 +479,8 @@ export default function GroupDetail() {
 
         <TabsContent
           value="events"
-          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+          style={{ flexDirection: 'column', gap: '24px' }}
+          className="flex"
         >
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Group Events</h3>
@@ -490,9 +499,11 @@ export default function GroupDetail() {
             </div>
           ) : events.length === 0 ? (
             <Card>
-              <CardContent style={{ padding: '32px', textAlign: 'center' }}>
+              <CardContent style={{ padding: '32px' }} className="text-center">
                 <Calendar
-                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' }}
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
                 />
                 <h3 className="text-lg font-semibold mb-2">No events yet</h3>
                 <p className="text-muted-foreground mb-4">

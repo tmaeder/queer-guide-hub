@@ -40,9 +40,9 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
       }
       return (
         <div
-          className="w-full h-full flex items-center justify-center bg-muted"
+          className="w-full h-full flex items-center justify-center bg-muted overflow-hidden"
           dangerouslySetInnerHTML={{ __html: svgContent }}
-          style={{ overflow: 'hidden' }}
+         
         />
       );
     } catch {
@@ -85,7 +85,7 @@ export function MediaGrid(props: MediaGridProps) {
   if (items.length === 0) {
     return (
       <div className="border border-border p-12 text-center">
-        <ImageIcon style={{ height: 48, width: 48, margin: '0 auto 16px' }} className="text-muted-foreground" />
+        <ImageIcon size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
         <p className="text-muted-foreground">No media found.</p>
       </div>
     );
@@ -93,7 +93,7 @@ export function MediaGrid(props: MediaGridProps) {
 
   if (viewMode === 'grid') {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {items.map((item) => (
           <Card
             key={item.id}
@@ -126,7 +126,7 @@ export function MediaGrid(props: MediaGridProps) {
               {/* Status indicators */}
               <div className="absolute top-1.5 right-1.5 flex gap-1">
                 {item.is_flagged && (
-                  <Flag style={{ height: 12, width: 12 }} />
+                  <Flag size={12} />
                 )}
                 {getOptimizationIcon(item.optimization_status)}
               </div>
@@ -140,10 +140,10 @@ export function MediaGrid(props: MediaGridProps) {
                   style={{ color: 'white' }}
                   onClick={(e) => { e.stopPropagation(); onStar(item); }}
                 >
-                  <Star style={{ height: 14, width: 14, fill: item.starred ? 'currentColor' : 'none' }} />
+                  <Star size={14} style={{ fill: item.starred ? 'currentColor' : 'none' }} />
                 </Button>
                 {item.usage_count > 0 && (
-                  <Badge variant="secondary" style={{ fontSize: '0.625rem' }}>
+                  <Badge variant="secondary" className="text-2xs">
                     {item.usage_count} use{item.usage_count !== 1 ? 's' : ''}
                   </Badge>
                 )}
@@ -166,7 +166,7 @@ export function MediaGrid(props: MediaGridProps) {
       {items.map((item) => (
         <div
           key={item.id}
-          className="p-3 flex items-center gap-3 hover:bg-muted cursor-pointer"
+          className="p-4 flex items-center gap-4 hover:bg-muted cursor-pointer"
           onClick={() => navigate(`/admin/media/${item.id}`)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -203,10 +203,10 @@ export function MediaGrid(props: MediaGridProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p className="text-sm truncate">{item.display_name}</p>
-              {item.starred && <Star style={{ height: 12, width: 12, fill: 'currentColor' }} />}
-              {item.is_flagged && <Flag style={{ height: 12, width: 12 }} />}
+              {item.starred && <Star size={12} style={{ fill: 'currentColor' }} />}
+              {item.is_flagged && <Flag size={12} />}
             </div>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span>{formatFileSize(item.file_size)}</span>
               {item.width && item.height && <span>{item.width}×{item.height}</span>}
               <span>{new Date(item.created_at).toLocaleDateString()}</span>
@@ -215,7 +215,7 @@ export function MediaGrid(props: MediaGridProps) {
 
           <div className="flex items-center gap-2">
             {item.usage_count > 0 && (
-              <Badge variant="secondary" style={{ fontSize: '0.625rem' }}>
+              <Badge variant="secondary" className="text-2xs">
                 {item.usage_count}
               </Badge>
             )}
@@ -226,7 +226,7 @@ export function MediaGrid(props: MediaGridProps) {
               className="h-6 w-6 p-0"
               onClick={(e) => { e.stopPropagation(); onStar(item); }}
             >
-              <Star style={{ height: 14, width: 14, fill: item.starred ? 'currentColor' : 'none' }} />
+              <Star size={14} style={{ fill: item.starred ? 'currentColor' : 'none' }} />
             </Button>
           </div>
         </div>

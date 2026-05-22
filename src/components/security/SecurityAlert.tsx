@@ -10,11 +10,11 @@ interface SecurityAlertProps {
 export function SecurityAlert({ level, title, description }: SecurityAlertProps) {
   const getIcon = () => {
     switch (level) {
-      case 'info': return <Info style={{ height: 16, width: 16 }} />;
-      case 'warning': return <AlertTriangle style={{ height: 16, width: 16 }} />;
-      case 'error': return <Shield style={{ height: 16, width: 16 }} />;
-      case 'success': return <CheckCircle style={{ height: 16, width: 16 }} />;
-      default: return <Info style={{ height: 16, width: 16 }} />;
+      case 'info': return <Info size={16} />;
+      case 'warning': return <AlertTriangle size={16} />;
+      case 'error': return <Shield size={16} />;
+      case 'success': return <CheckCircle size={16} />;
+      default: return <Info size={16} />;
     }
   };
 

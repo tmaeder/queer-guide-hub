@@ -53,11 +53,11 @@ export function PersonalitySelectionDialog({
           </p>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {candidates.map((candidate) => (
             <Card key={candidate.id} onClick={() => setSelectedCandidate(candidate)}>
               <CardHeader>
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-4">
                   <div className="mt-1">
                     <User />
                   </div>
@@ -104,10 +104,10 @@ export function PersonalitySelectionDialog({
                   </div>
                   <div className="flex items-center">
                     <div
+                      className="rounded-full"
                       style={{
                         width: 16,
                         height: 16,
-                        borderRadius: '50%',
                         border: '2px solid',
                         borderColor: selectedCandidate?.id === candidate.id ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
                         backgroundColor: selectedCandidate?.id === candidate.id ? 'hsl(var(--primary))' : 'transparent',

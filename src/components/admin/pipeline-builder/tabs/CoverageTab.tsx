@@ -19,9 +19,9 @@ function sloBadge(s: HotelStats) {
   const success = s.committed / total;
   const dupeRatio = s.duplicates / total;
   const className =
-    success >= 0.7 && dupeRatio < 0.5 ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
-    : success >= 0.4                  ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'
-    : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300';
+    success >= 0.7 && dupeRatio < 0.5 ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
+    : success >= 0.4                  ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
+    : 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive';
   return (
     <span className={`inline-block text-2xs px-2 py-0.5 rounded-full font-medium ${className}`}>
       {(success * 100).toFixed(0)}% commit
@@ -32,7 +32,7 @@ function sloBadge(s: HotelStats) {
 function RatioBar({ actual, expected }: { actual: number; expected: number | null }) {
   if (!expected || expected <= 0) return <span className="text-muted-foreground">—</span>;
   const pct = Math.min(1, actual / expected);
-  const bg = pct >= 0.8 ? 'bg-green-500' : pct >= 0.4 ? 'bg-yellow-500' : 'bg-destructive';
+  const bg = pct >= 0.8 ? 'bg-foreground' : pct >= 0.4 ? 'bg-foreground' : 'bg-destructive';
   return (
     <div className="flex items-center gap-2">
       <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
@@ -118,7 +118,7 @@ export default function CoverageTab() {
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
                 {['Source', 'Staged', 'Validated', 'Unique', 'Dupes', 'Committed', 'Rejected', 'Review', 'SLO'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -127,15 +127,15 @@ export default function CoverageTab() {
                 <tr><td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">No hotel/B&B ingestion yet</td></tr>
               ) : bySource.map(s => (
                 <tr key={s.source} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                  <td className="px-3 py-2 font-medium">{s.source}</td>
-                  <td className="px-3 py-2 tabular-nums">{s.staged}</td>
-                  <td className="px-3 py-2 tabular-nums">{s.validated}</td>
-                  <td className="px-3 py-2 tabular-nums">{s.unique_items}</td>
-                  <td className={`px-3 py-2 tabular-nums ${s.duplicates ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>{s.duplicates}</td>
-                  <td className={`px-3 py-2 tabular-nums ${s.committed ? 'text-green-700 dark:text-green-300 font-semibold' : 'text-muted-foreground'}`}>{s.committed}</td>
-                  <td className={`px-3 py-2 tabular-nums ${s.rejected ? 'text-destructive' : 'text-muted-foreground'}`}>{s.rejected}</td>
-                  <td className={`px-3 py-2 tabular-nums ${s.pending_review ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>{s.pending_review}</td>
-                  <td className="px-3 py-2">{sloBadge(s)}</td>
+                  <td className="px-4 py-2 font-medium">{s.source}</td>
+                  <td className="px-4 py-2 tabular-nums">{s.staged}</td>
+                  <td className="px-4 py-2 tabular-nums">{s.validated}</td>
+                  <td className="px-4 py-2 tabular-nums">{s.unique_items}</td>
+                  <td className={`px-4 py-2 tabular-nums ${s.duplicates ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{s.duplicates}</td>
+                  <td className={`px-4 py-2 tabular-nums ${s.committed ? 'text-foreground dark:text-foreground font-semibold' : 'text-muted-foreground'}`}>{s.committed}</td>
+                  <td className={`px-4 py-2 tabular-nums ${s.rejected ? 'text-destructive' : 'text-muted-foreground'}`}>{s.rejected}</td>
+                  <td className={`px-4 py-2 tabular-nums ${s.pending_review ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{s.pending_review}</td>
+                  <td className="px-4 py-2">{sloBadge(s)}</td>
                 </tr>
               ))}
             </tbody>
@@ -153,7 +153,7 @@ export default function CoverageTab() {
             <thead className="bg-muted/40 sticky top-[37px] z-10">
               <tr className="border-b border-border">
                 {['Source', 'City', 'Type', 'Coverage', 'Last run', 'Enabled'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -164,8 +164,8 @@ export default function CoverageTab() {
                 <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">No targets configured</td></tr>
               ) : coverage.map(r => (
                 <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                  <td className="px-3 py-2 font-mono text-xs">{r.source_slug}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-2 font-mono text-xs">{r.source_slug}</td>
+                  <td className="px-4 py-2">
                     {r.city_id ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -175,14 +175,14 @@ export default function CoverageTab() {
                       </Tooltip>
                     ) : <span className="text-muted-foreground">—</span>}
                   </td>
-                  <td className="px-3 py-2 text-xs">{r.accommodation_type ?? '—'}</td>
-                  <td className="px-3 py-2"><RatioBar actual={r.actual_count} expected={r.expected_count} /></td>
-                  <td className="px-3 py-2 text-muted-foreground text-xs"
+                  <td className="px-4 py-2 text-xs">{r.accommodation_type ?? '—'}</td>
+                  <td className="px-4 py-2"><RatioBar actual={r.actual_count} expected={r.expected_count} /></td>
+                  <td className="px-4 py-2 text-muted-foreground text-xs"
                       title={r.last_run_at ? new Date(r.last_run_at).toISOString() : ''}>
                     {r.last_run_at ? formatDistanceToNow(new Date(r.last_run_at), { addSuffix: true }) : '—'}
                   </td>
-                  <td className="px-3 py-2">
-                    {r.is_enabled ? <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" /> : <span className="text-muted-foreground">—</span>}
+                  <td className="px-4 py-2">
+                    {r.is_enabled ? <Check className="h-3.5 w-3.5 text-foreground dark:text-foreground" /> : <span className="text-muted-foreground">—</span>}
                   </td>
                 </tr>
               ))}

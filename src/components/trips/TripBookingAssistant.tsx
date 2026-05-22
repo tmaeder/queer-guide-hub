@@ -39,7 +39,11 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
   const [addingId, setAddingId] = useState<string | null>(null);
 
   const tabs = [
-    { key: 'suggestions' as const, label: t('trips.bookingAssistant.tabs.suggestions', 'Suggestions'), icon: MapPin },
+    {
+      key: 'suggestions' as const,
+      label: t('trips.bookingAssistant.tabs.suggestions', 'Suggestions'),
+      icon: MapPin,
+    },
     { key: 'booking' as const, label: t('trips.bookingAssistant.tabs.book', 'Book'), icon: Hotel },
   ];
 
@@ -100,7 +104,15 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
     (c) => c.countries?.equality_score != null && (c.countries?.equality_score ?? 100) < 40,
   );
 
-  const handleAddVenue = async (venue: { id: string; name: string; address: string | null; latitude: number | null; longitude: number | null; city_id: string | null; country_id: string | null }) => {
+  const handleAddVenue = async (venue: {
+    id: string;
+    name: string;
+    address: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    city_id: string | null;
+    country_id: string | null;
+  }) => {
     setAddingId(venue.id);
     try {
       await addPlace.mutateAsync({
@@ -125,7 +137,11 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
       });
       toast({ title: t('trips.bookingAssistant.addedToast', 'Added to trip') });
     } catch (err) {
-      toast({ title: t('trips.bookingAssistant.addFailedToast', 'Failed to add'), description: String(err), variant: 'destructive' });
+      toast({
+        title: t('trips.bookingAssistant.addFailedToast', 'Failed to add'),
+        description: String(err),
+        variant: 'destructive',
+      });
     } finally {
       setAddingId(null);
     }
@@ -136,7 +152,10 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
       <Card>
         <CardContent>
           <p className="text-sm text-muted-foreground text-center">
-            {t('trips.bookingAssistant.emptyHint', 'Add places to see suggestions and booking options')}
+            {t(
+              'trips.bookingAssistant.emptyHint',
+              'Add places to see suggestions and booking options',
+            )}
           </p>
         </CardContent>
       </Card>
@@ -168,9 +187,15 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
               className="flex items-start gap-2 -mx-4 -mt-2 -mb-2 p-4 rounded"
               style={{ backgroundColor: 'hsl(var(--warning) / 0.2)' }}
             >
-              <Shield size={16} style={{ color: 'hsl(var(--warning))', flexShrink: 0, marginTop: 2 }} />
+              <Shield
+                size={16}
+                style={{ color: 'hsl(var(--warning))' }}
+                className="shrink-0 mt-0.5"
+              />
               <p className="text-sm">
-                <strong>{city.name}</strong> {t('trips.bookingAssistant.lowerEquality', 'has a lower equality score')} ({city.countries?.equality_score}).
+                <strong>{city.name}</strong>{' '}
+                {t('trips.bookingAssistant.lowerEquality', 'has a lower equality score')} (
+                {city.countries?.equality_score}).
               </p>
             </div>
           </CardContent>
@@ -196,20 +221,31 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
               return (
                 <div key={cityId} className="mb-4">
                   <span className="text-xs text-muted-foreground font-semibold mb-1 block">
-                    {t('trips.bookingAssistant.suggestedFor', 'Suggested for {{city}}', { city: city?.name || t('trips.bookingAssistant.unknownCity', 'Unknown') })}
+                    {t('trips.bookingAssistant.suggestedFor', 'Suggested for {{city}}', {
+                      city: city?.name || t('trips.bookingAssistant.unknownCity', 'Unknown'),
+                    })}
                   </span>
                   {cityVenues.map((venue) => (
                     <div
                       key={venue.id}
-                      className="flex items-center gap-2 py-1.5 border-b border-border min-h-[44px]"
+                      className="flex items-center gap-2 py-1.5 border-b border-border min-h-11"
                     >
                       <MapPin size={13} className="text-muted-foreground flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm truncate font-medium">{venue.name}</p>
                         {venue.category && <Badge variant="outline">{venue.category}</Badge>}
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => handleAddVenue(venue)} disabled={addingId === venue.id}>
-                        {addingId === venue.id ? <Loader2 size={12} className="animate-spin" aria-label="Loading" /> : <Plus size={12} />}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleAddVenue(venue)}
+                        disabled={addingId === venue.id}
+                      >
+                        {addingId === venue.id ? (
+                          <Loader2 size={12} className="animate-spin" aria-label="Loading" />
+                        ) : (
+                          <Plus size={12} />
+                        )}
                         {t('trips.bookingAssistant.add', 'Add')}
                       </Button>
                     </div>
@@ -230,36 +266,46 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
           </span>
 
           {!hasFlightBooked && (
-            <div className="flex items-center gap-2 p-3 bg-muted rounded">
+            <div className="flex items-center gap-2 p-4 bg-muted rounded">
               <Plane size={16} className="text-muted-foreground" />
               <p className="text-sm flex-1">{t('trips.bookingAssistant.flights', 'Flights')}</p>
               <LocalizedLink to="/travel?tab=flights">
-                <Button variant="outline" size="sm">{t('trips.bookingAssistant.search', 'Search')}</Button>
+                <Button variant="outline" size="sm">
+                  {t('trips.bookingAssistant.search', 'Search')}
+                </Button>
               </LocalizedLink>
             </div>
           )}
           {hasFlightBooked && (
-            <div className="flex items-center gap-2 p-3 opacity-60">
+            <div className="flex items-center gap-2 p-4 opacity-60">
               <Check size={16} style={{ color: 'hsl(var(--success))' }} />
-              <p className="text-sm">{t('trips.bookingAssistant.flightsBooked', 'Flights booked')}</p>
+              <p className="text-sm">
+                {t('trips.bookingAssistant.flightsBooked', 'Flights booked')}
+              </p>
             </div>
           )}
 
           {!hasHotelBooked && (
-            <div className="flex items-center gap-2 p-3 bg-muted rounded">
+            <div className="flex items-center gap-2 p-4 bg-muted rounded">
               <Hotel size={16} className="text-muted-foreground" />
               <p className="text-sm flex-1">
                 {firstCity
-                  ? t('trips.bookingAssistant.hotelIn', 'Hotel in {{city}}', { city: firstCity.name })
+                  ? t('trips.bookingAssistant.hotelIn', 'Hotel in {{city}}', {
+                      city: firstCity.name,
+                    })
                   : t('trips.bookingAssistant.hotel', 'Hotel')}
               </p>
-              <LocalizedLink to={`/travel?tab=hotels${firstCity ? `&city=${encodeURIComponent(firstCity.name)}` : ''}`}>
-                <Button variant="outline" size="sm">{t('trips.bookingAssistant.search', 'Search')}</Button>
+              <LocalizedLink
+                to={`/travel?tab=hotels${firstCity ? `&city=${encodeURIComponent(firstCity.name)}` : ''}`}
+              >
+                <Button variant="outline" size="sm">
+                  {t('trips.bookingAssistant.search', 'Search')}
+                </Button>
               </LocalizedLink>
             </div>
           )}
           {hasHotelBooked && (
-            <div className="flex items-center gap-2 p-3 opacity-60">
+            <div className="flex items-center gap-2 p-4 opacity-60">
               <Check size={16} style={{ color: 'hsl(var(--success))' }} />
               <p className="text-sm">{t('trips.bookingAssistant.hotelBooked', 'Hotel booked')}</p>
             </div>
@@ -269,18 +315,22 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
           {!hasHotelBooked && firstCity && (
             <div>
               <span className="text-xs text-muted-foreground font-semibold mb-2 block">
-                {t('trips.bookingAssistant.hotelsIn', 'Hotels in {{city}}', { city: firstCity.name })}
+                {t('trips.bookingAssistant.hotelsIn', 'Hotels in {{city}}', {
+                  city: firstCity.name,
+                })}
               </span>
               {hotelsLoading ? (
                 <div className="flex flex-col gap-2">
-                  {[1, 2].map((i) => <Skeleton key={i} className="h-20 rounded" />)}
+                  {[1, 2].map((i) => (
+                    <Skeleton key={i} className="h-20 rounded" />
+                  ))}
                 </div>
               ) : hotelResults && hotelResults.length > 0 ? (
                 <div className="flex flex-col gap-2">
                   {hotelResults.slice(0, 2).map((hotel) => (
                     <div
                       key={hotel.id}
-                      className="flex items-center gap-3 p-3 bg-muted rounded cursor-pointer"
+                      className="flex items-center gap-4 p-4 bg-muted rounded cursor-pointer"
                       onClick={() => setBookingHotel(hotel)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -292,15 +342,27 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                       tabIndex={0}
                     >
                       {hotel.imageUrl && (
-                        <img src={hotel.imageUrl} alt={hotel.title} className="w-14 h-14 object-cover rounded" />
+                        <img
+                          src={hotel.imageUrl}
+                          alt={hotel.title}
+                          className="w-14 h-14 object-cover rounded"
+                        />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate">{hotel.title}</p>
                         <div className="flex items-center gap-1">
-                          {hotel.starRating && Array.from({ length: hotel.starRating }).map((_, i) => (
-                            <Star key={i} size={10} style={{ fill: 'currentColor', color: 'var(--primary)' }} />
-                          ))}
-                          {hotel.rating && <span className="text-xs">{hotel.rating.toFixed(1)}</span>}
+                          {hotel.starRating &&
+                            Array.from({ length: hotel.starRating }).map((_, i) => (
+                              <Star
+                                key={i}
+                                size={10}
+                                style={{ fill: 'currentColor' }}
+                                className="text-primary"
+                              />
+                            ))}
+                          {hotel.rating && (
+                            <span className="text-xs">{hotel.rating.toFixed(1)}</span>
+                          )}
                         </div>
                       </div>
                       <p className="text-sm font-bold text-primary">
@@ -310,7 +372,9 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">{t('trips.bookingAssistant.noHotelsFound', 'No hotels found')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('trips.bookingAssistant.noHotelsFound', 'No hotels found')}
+                </p>
               )}
             </div>
           )}

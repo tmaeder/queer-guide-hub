@@ -36,7 +36,7 @@ const DataRow = ({
 }) => {
   if (value == null || value === '') return null;
   return (
-    <div className="flex justify-between items-center p-3 rounded-element bg-muted">
+    <div className="flex justify-between items-center p-4 rounded-element bg-muted">
       <div className="flex items-center gap-2">
         {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
         <span className="text-sm font-medium">{label}</span>
@@ -107,7 +107,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
     <div className="flex flex-col gap-6">
       {/* Income Level Badge */}
       {data.wb_income_level && (
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-4 flex-wrap">
           <Badge
             variant="secondary"
             style={{
@@ -138,7 +138,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
           <Card>
             <CardHeader>
               <CardTitle>
-                <TrendingUp style={{ height: 20, width: 20 }} />
+                <TrendingUp size={20} />
                 Economy
               </CardTitle>
             </CardHeader>
@@ -199,7 +199,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
           <Card>
             <CardHeader>
               <CardTitle>
-                <Users style={{ height: 20, width: 20 }} />
+                <Users size={20} />
                 Demographics
               </CardTitle>
             </CardHeader>
@@ -252,7 +252,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
           <Card>
             <CardHeader>
               <CardTitle>
-                <GraduationCap style={{ height: 20, width: 20 }} />
+                <GraduationCap size={20} />
                 Society
               </CardTitle>
             </CardHeader>
@@ -304,7 +304,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
           <Card>
             <CardHeader>
               <CardTitle>
-                <Leaf style={{ height: 20, width: 20 }} />
+                <Leaf size={20} />
                 Environment & Health
               </CardTitle>
             </CardHeader>

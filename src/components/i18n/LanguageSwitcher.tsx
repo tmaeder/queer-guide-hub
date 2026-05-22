@@ -35,9 +35,7 @@ export function LanguageSwitcher() {
         : location.pathname;
 
     const newPath =
-      newLocale === DEFAULT_LOCALE
-        ? pathWithoutLocale
-        : `/${newLocale}${pathWithoutLocale}`;
+      newLocale === DEFAULT_LOCALE ? pathWithoutLocale : `/${newLocale}${pathWithoutLocale}`;
 
     i18n.changeLanguage(newLocale);
     navigate(newPath + location.search, { replace: true });
@@ -52,18 +50,18 @@ export function LanguageSwitcher() {
           minWidth: 0,
           height: 36,
           padding: '0 8px',
-          gap: 4,
           border: 'none',
           background: 'transparent',
         }}
+        className="gap-1"
       >
-        <Globe style={{ width: 16, height: 16, flexShrink: 0 }} />
+        <Globe size={16} className="shrink-0" />
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {SUPPORTED_LOCALES.map((lang) => (
           <SelectItem key={lang} value={lang}>
-            <span className="text-[0.8125rem]">{LANGUAGE_NAMES[lang]}</span>
+            <span className="text-13">{LANGUAGE_NAMES[lang]}</span>
           </SelectItem>
         ))}
       </SelectContent>

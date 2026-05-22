@@ -22,10 +22,7 @@ interface Props {
  */
 export function EmptyTripsCleanupBanner({ trips, onCleanup }: Props) {
   const { t } = useTranslation();
-  const emptyTrips = useMemo(
-    () => trips.filter((trip) => !isMeaningfulTrip(trip)),
-    [trips],
-  );
+  const emptyTrips = useMemo(() => trips.filter((trip) => !isMeaningfulTrip(trip)), [trips]);
   const count = emptyTrips.length;
 
   const [dismissedAt, setDismissedAt] = useState<number | null>(null);
@@ -70,12 +67,8 @@ export function EmptyTripsCleanupBanner({ trips, onCleanup }: Props) {
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onCleanup(emptyTrips.map((t) => t.id))}
-        >
-          <Trash2 size={14} style={{ marginRight: 6 }} aria-hidden />
+        <Button size="sm" variant="outline" onClick={() => onCleanup(emptyTrips.map((t) => t.id))}>
+          <Trash2 size={14} className="mr-1.5" aria-hidden />
           {t('pages.trips.emptyTripsBanner.cta', 'Review')}
         </Button>
         <button

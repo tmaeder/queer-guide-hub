@@ -88,11 +88,11 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
   const getVisibilityIcon = () => {
     switch (post.visibility) {
       case 'friends':
-        return <Users style={{ height: 12, width: 12 }} />;
+        return <Users size={12} />;
       case 'private':
-        return <Lock style={{ height: 12, width: 12 }} />;
+        return <Lock size={12} />;
       default:
-        return <Globe style={{ height: 12, width: 12 }} />;
+        return <Globe size={12} />;
     }
   };
 
@@ -150,11 +150,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {post.tags.map((tag, index) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                style={{ fontSize: '0.75rem', cursor: 'pointer' }}
-              >
+              <Badge key={index} variant="secondary" className="text-xs cursor-pointer">
                 #{tag}
               </Badge>
             ))}
@@ -196,26 +192,23 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {/* Link Preview */}
         {post.post_type === 'link' && post.link_url && (
           <Card>
-            <CardContent style={{ padding: 16 }}>
+            <CardContent className="p-4">
               <a
                 href={post.link_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block -m-2 p-4 rounded-element transition-colors hover:bg-muted no-underline text-foreground"
               >
-                <div className="flex items-start gap-3">
-                  <ExternalLink
-                    style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))', marginTop: 4, flexShrink: 0 }}
-                  />
+                <div className="flex items-start gap-4">
+                  <ExternalLink size={20} className="text-muted-foreground mt-1 shrink-0" />
                   <div className="min-w-0 flex-1">
                     {post.link_title && (
                       <p
-                        className="font-medium text-foreground mb-1"
+                        className="font-medium text-foreground mb-1 overflow-hidden"
                         style={{
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
                         }}
                       >
                         {post.link_title}
@@ -223,12 +216,11 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                     )}
                     {post.link_description && (
                       <p
-                        className="text-sm text-muted-foreground mb-1"
+                        className="text-sm text-muted-foreground mb-1 overflow-hidden"
                         style={{
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
                         }}
                       >
                         {post.link_description}
@@ -247,43 +239,32 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {/* Poll */}
         {post.post_type === 'poll' && post.poll_options && (
           <Card>
-            <CardContent style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <p className="font-medium">
-                Poll
-              </p>
+            <CardContent style={{ flexDirection: 'column' }} className="p-4 flex gap-4">
+              <p className="font-medium">Poll</p>
               <div className="flex flex-col gap-2">
-                {(post.poll_options as { options?: string[] })?.options?.map((option: string, index: number) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    style={{
-                      width: '100%',
-                      justifyContent: 'flex-start',
-                      textAlign: 'left',
-                      height: 'auto',
-                      paddingTop: 12,
-                      paddingBottom: 12,
-                    }}
-                    disabled
-                  >
-                    <span
-                      style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: '50%',
-                        border: '2px solid var(--muted-foreground)',
-                        marginRight: 12,
-                        flexShrink: 0,
-                        display: 'inline-block',
-                      }}
-                    ></span>
-                    {option}
-                  </Button>
-                )) || []}
+                {(post.poll_options as { options?: string[] })?.options?.map(
+                  (option: string, index: number) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      style={{ width: '100%', justifyContent: 'flex-start', height: 'auto' }}
+                      className="text-left pt-4 pb-4"
+                      disabled
+                    >
+                      <span
+                        className="rounded-full mr-4 shrink-0 inline-block"
+                        style={{
+                          width: 24,
+                          height: 24,
+                          border: '2px solid var(--muted-foreground)',
+                        }}
+                      ></span>
+                      {option}
+                    </Button>
+                  ),
+                ) || []}
               </div>
-              <span className="text-xs text-muted-foreground">
-                Voting not yet implemented
-              </span>
+              <span className="text-xs text-muted-foreground">Voting not yet implemented</span>
             </CardContent>
           </Card>
         )}
@@ -295,9 +276,9 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
 
   return (
     <Card>
-      <CardHeader style={{ paddingBottom: 16 }}>
+      <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Avatar style={{ height: 40, width: 40 }}>
               <AvatarImage src={post.profiles?.avatar_url || undefined} />
               <AvatarFallback>
@@ -307,7 +288,8 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
             <div>
               <LocalizedLink
                 to={`/user/${post.user_id}`}
-                style={{ fontWeight: 500, textDecoration: 'none', color: 'inherit' }}
+                style={{ color: 'inherit' }}
+                className="font-medium no-underline"
               >
                 {post.profiles?.display_name || 'Unknown User'}
               </LocalizedLink>
@@ -321,10 +303,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 {post.post_type !== 'text' && (
                   <>
                     <span>&bull;</span>
-                    <Badge
-                      variant="outline"
-                      style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}
-                    >
+                    <Badge variant="outline" className="text-xs capitalize">
                       {post.post_type}
                     </Badge>
                   </>
@@ -342,21 +321,21 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                   style={{ height: 32, width: 32 }}
                   aria-label="More options"
                 >
-                  <MoreHorizontal style={{ height: 16, width: 16 }} />
+                  <MoreHorizontal size={16} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {isOwnPost && (
                   <>
                     <DropdownMenuItem>
-                      <Edit style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Edit size={16} className="mr-2" />
                       Edit Post
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive"
                       onClick={() => setShowDeleteDialog(true)}
                     >
-                      <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Trash2 size={16} className="mr-2" />
                       Delete Post
                     </DropdownMenuItem>
                   </>
@@ -368,7 +347,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         </div>
       </CardHeader>
 
-      <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
         {renderPostContent()}
 
         {/* Actions */}
@@ -398,18 +377,18 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               onClick={() => setShowComments(!showComments)}
               disabled={!user}
             >
-              <MessageCircle style={{ height: 16, width: 16, marginRight: 4 }} />
+              <MessageCircle size={16} className="mr-1" />
               <span>{post.comments_count || 0}</span>
               {showComments ? (
-                <ChevronUp style={{ height: 16, width: 16, marginLeft: 4 }} />
+                <ChevronUp size={16} className="ml-1" />
               ) : (
-                <ChevronDown style={{ height: 16, width: 16, marginLeft: 4 }} />
+                <ChevronDown size={16} className="ml-1" />
               )}
             </Button>
           </div>
 
           <Button variant="ghost" size="sm" onClick={handleShare}>
-            <Share2 style={{ height: 16, width: 16 }} />
+            <Share2 size={16} />
           </Button>
         </div>
 

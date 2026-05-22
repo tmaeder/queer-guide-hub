@@ -26,11 +26,17 @@ export function ExportExcelButton({ onExport, label = 'Export Excel' }: ExportEx
   };
 
   return (
-    <Button onClick={handleExport} variant="outline" disabled={isExporting} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+    <Button
+      onClick={handleExport}
+      variant="outline"
+      disabled={isExporting}
+      style={{ alignItems: 'center' }}
+      className="inline-flex gap-1.5"
+    >
       {isExporting ? (
-        <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
+        <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
       ) : (
-        <Download style={{ height: 16, width: 16 }} />
+        <Download size={16} />
       )}
       {isExporting ? 'Exporting...' : label}
     </Button>

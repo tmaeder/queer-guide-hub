@@ -41,7 +41,7 @@ export function ModernAudioPlayer({
   muted = false,
   controls = true,
   onTimeUpdate,
-  onEnded
+  onEnded,
 }: ModernAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -58,9 +58,9 @@ export function ModernAudioPlayer({
     const audioElement = audioRef.current;
 
     // Find renditions by preference: Opus > AAC > MP3
-    const opusRendition = audio.renditions.find(r => r.codec === 'opus');
-    const aacRendition = audio.renditions.find(r => r.codec === 'aac');
-    const mp3Rendition = audio.renditions.find(r => r.codec === 'mp3');
+    const opusRendition = audio.renditions.find((r) => r.codec === 'opus');
+    const aacRendition = audio.renditions.find((r) => r.codec === 'aac');
+    const mp3Rendition = audio.renditions.find((r) => r.codec === 'mp3');
 
     // Securely clear existing sources without innerHTML
     while (audioElement.firstChild) {
@@ -87,9 +87,9 @@ export function ModernAudioPlayer({
 
     function supportsCodec(codec: string): boolean {
       const audio = document.createElement('audio');
-      return codec === 'opus' ?
-        audio.canPlayType('audio/webm; codecs="opus"') !== '' :
-        audio.canPlayType('audio/mp4') !== '';
+      return codec === 'opus'
+        ? audio.canPlayType('audio/webm; codecs="opus"') !== ''
+        : audio.canPlayType('audio/mp4') !== '';
     }
 
     // Set Media Session API metadata for lock screen controls
@@ -98,11 +98,15 @@ export function ModernAudioPlayer({
         title: audio.title,
         artist: audio.artist || 'Unknown Artist',
         album: audio.album || 'Unknown Album',
-        artwork: audio.poster_image_path ? [{
-          src: getAudioUrl(audio.poster_image_path),
-          sizes: '512x512',
-          type: 'image/webp'
-        }] : []
+        artwork: audio.poster_image_path
+          ? [
+              {
+                src: getAudioUrl(audio.poster_image_path),
+                sizes: '512x512',
+                type: 'image/webp',
+              },
+            ]
+          : [],
       });
 
       // Set up media session action handlers
@@ -122,7 +126,6 @@ export function ModernAudioPlayer({
 
     // Load the audio
     audioElement.load();
-
   }, [audio]);
 
   const getAudioUrl = (path: string): string => {
@@ -174,7 +177,10 @@ export function ModernAudioPlayer({
 
   const skipForward = () => {
     if (!audioRef.current) return;
-    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 10);
+    audioRef.current.currentTime = Math.min(
+      audioRef.current.duration,
+      audioRef.current.currentTime + 10,
+    );
   };
 
   const formatTime = (seconds: number): string => {
@@ -185,17 +191,15 @@ export function ModernAudioPlayer({
 
   const getBestQualityDownload = (): AudioRendition | undefined => {
     // Prefer highest bitrate MP3 for download compatibility
-    return audio.renditions
-      .filter(r => r.codec === 'mp3')
-      .sort((a, b) => (b.bitrate_kbps || 0) - (a.bitrate_kbps || 0))[0] ||
-      audio.renditions[0];
+    return (
+      audio.renditions
+        .filter((r) => r.codec === 'mp3')
+        .sort((a, b) => (b.bitrate_kbps || 0) - (a.bitrate_kbps || 0))[0] || audio.renditions[0]
+    );
   };
 
   return (
-    <div style={{
-      backgroundColor: 'hsl(var(--background))',
-      overflow: 'hidden',
-    }}>
+    <div style={{ backgroundColor: 'hsl(var(--background))' }} className="overflow-hidden">
       <audio
         ref={audioRef}
         autoPlay={autoplay}
@@ -215,7 +219,7 @@ export function ModernAudioPlayer({
             navigator.mediaSession.setPositionState({
               duration: audioRef.current?.duration || 0,
               playbackRate: audioRef.current?.playbackRate || 1,
-              position: currentTime
+              position: currentTime,
             });
           }
         }}
@@ -237,7 +241,7 @@ export function ModernAudioPlayer({
           {getBestQualityDownload() && (
             <a
               href={getAudioUrl(getBestQualityDownload()!.file_path)}
-              style={{ color: 'hsl(var(--foreground))', textDecoration: 'underline', marginLeft: 8 }}
+              className="text-foreground underline ml-2"
               download
             >
               Download MP3
@@ -248,31 +252,40 @@ export function ModernAudioPlayer({
 
       {/* Album Art / Poster */}
       {audio.poster_image_path && (
-        <div style={{ aspectRatio: '1/1', width: '100%', maxWidth: 320, margin: '0 auto', padding: 16 }}>
+        <div
+          style={{ aspectRatio: '1/1', width: '100%', maxWidth: 320, margin: '0 auto' }}
+          className="p-4"
+        >
           <img
             src={getAudioUrl(audio.poster_image_path)}
             alt={`${audio.title} artwork`}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, boxShadow: '0 10px 15px -3px hsl(var(--foreground) / 0.1)' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: 'var(--radius-element)',
+              boxShadow: '0 10px 15px -3px hsl(var(--foreground) / 0.1)',
+            }}
           />
         </div>
       )}
 
       {/* Track Info */}
-      <div style={{ padding: 16, textAlign: 'center' }}>
-        <h3 style={{ fontWeight: 600, fontSize: '1.125rem', marginBottom: 4, margin: 0 }}>{audio.title}</h3>
+      <div className="p-4 text-center">
+        <h3 className="font-semibold text-lg mb-1 m-0">{audio.title}</h3>
         {audio.artist && (
-          <p style={{ color: 'hsl(var(--muted-foreground))', marginBottom: 8, margin: '4px 0' }}>{audio.artist}</p>
+          <p style={{ margin: '4px 0' }} className="text-muted-foreground mb-2">
+            {audio.artist}
+          </p>
         )}
-        {audio.album && (
-          <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', margin: 0 }}>{audio.album}</p>
-        )}
+        {audio.album && <p className="text-sm text-muted-foreground m-0">{audio.album}</p>}
       </div>
 
       {/* Controls */}
       {controls && !isLoading && (
-        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ flexDirection: 'column' }} className="p-4 flex gap-4">
           {/* Progress Bar */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ flexDirection: 'column' }} className="flex gap-2">
             <Slider
               value={[currentTime]}
               max={duration}
@@ -280,14 +293,17 @@ export function ModernAudioPlayer({
               onValueChange={handleSeek}
               style={{ width: '100%' }}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))' }}>
+            <div
+              style={{ justifyContent: 'space-between' }}
+              className="flex text-sm text-muted-foreground"
+            >
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
           </div>
 
           {/* Playback Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+          <div style={{ alignItems: 'center', justifyContent: 'center' }} className="flex gap-4">
             <Button
               variant="ghost"
               size="sm"
@@ -295,7 +311,7 @@ export function ModernAudioPlayer({
               style={{ borderRadius: '50%' }}
               aria-label="Skip backward"
             >
-              <SkipBack style={{ height: 20, width: 20 }} />
+              <SkipBack size={20} />
             </Button>
 
             <Button
@@ -305,7 +321,7 @@ export function ModernAudioPlayer({
               style={{ borderRadius: '50%', width: 48, height: 48 }}
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? <Pause style={{ height: 24, width: 24 }} /> : <Play style={{ height: 24, width: 24 }} />}
+              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
             </Button>
 
             <Button
@@ -315,24 +331,20 @@ export function ModernAudioPlayer({
               style={{ borderRadius: '50%' }}
               aria-label="Skip forward"
             >
-              <SkipForward style={{ height: 20, width: 20 }} />
+              <SkipForward size={20} />
             </Button>
           </div>
 
           {/* Volume & Download */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+          <div style={{ alignItems: 'center', justifyContent: 'space-between' }} className="flex">
+            <div style={{ alignItems: 'center', flex: 1 }} className="flex gap-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleMute}
                 aria-label={isMuted || volume === 0 ? 'Unmute' : 'Mute'}
               >
-                {isMuted || volume === 0 ? (
-                  <VolumeX style={{ height: 16, width: 16 }} />
-                ) : (
-                  <Volume2 style={{ height: 16, width: 16 }} />
-                )}
+                {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </Button>
               <Slider
                 value={[isMuted ? 0 : volume]}
@@ -344,25 +356,21 @@ export function ModernAudioPlayer({
             </div>
 
             {getBestQualityDownload() && (
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-              >
+              <Button variant="ghost" size="sm" asChild>
                 <a
                   href={getAudioUrl(getBestQualityDownload()!.file_path)}
                   download={`${audio.title}.mp3`}
                   aria-label="Download audio"
                 >
-                  <Download style={{ height: 16, width: 16 }} />
+                  <Download size={16} />
                 </a>
               </Button>
             )}
           </div>
 
           {/* Format Info */}
-          <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>
-            Available: {audio.renditions.map(r => r.codec.toUpperCase()).join(', ')}
+          <div className="text-xs text-muted-foreground text-center">
+            Available: {audio.renditions.map((r) => r.codec.toUpperCase()).join(', ')}
           </div>
         </div>
       )}

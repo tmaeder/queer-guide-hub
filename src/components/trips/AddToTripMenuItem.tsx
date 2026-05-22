@@ -21,7 +21,7 @@ export function AddToTripMenuItem({ entity, onClose }: AddToTripMenuItemProps) {
   return (
     <>
       <DropdownMenuItem onClick={handleClick} disabled={!user} className="gap-2">
-        <Luggage style={{ width: 18, height: 18 }} />
+        <Luggage size={18} />
         <span>{user ? 'Add to Trip' : 'Sign in to add to trip'}</span>
       </DropdownMenuItem>
       <AddToTripDialog

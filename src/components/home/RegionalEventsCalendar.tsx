@@ -98,13 +98,13 @@ const RegionalEventsCalendar = () => {
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-4">
         <div className="flex flex-wrap items-baseline gap-4">
           <h2
-            className="m-0 text-[1.75rem] font-extrabold leading-[1.1] tracking-tight md:text-[2.25rem]"
+            className="m-0 text-headline font-bold leading-[1.1] tracking-tight md:text-4xl"
             style={{ fontFamily: DISPLAY }}
           >
             {headline}
           </h2>
           <div
-            className="text-[0.8125rem] uppercase text-muted-foreground md:text-sm"
+            className="text-13 uppercase text-muted-foreground md:text-sm"
             style={{ fontFamily: BODY, letterSpacing: '0.08em' }}
           >
             {monthLabel}
@@ -112,7 +112,7 @@ const RegionalEventsCalendar = () => {
         </div>
         <LocalizedLink
           to="/events"
-          className="whitespace-nowrap text-[0.8125rem] text-foreground no-underline transition-opacity hover:opacity-70 md:text-sm"
+          className="whitespace-nowrap text-13 text-foreground no-underline transition-opacity hover:opacity-70 md:text-sm"
           style={{ fontFamily: BODY }}
         >
           {t('common.browseAll', 'Browse all')} →
@@ -140,7 +140,7 @@ const RegionalEventsCalendar = () => {
               />
             </div>
           <div
-            className="mb-2 text-sm font-extrabold uppercase text-[hsl(var(--foreground))] md:text-base"
+            className="mb-2 text-sm font-bold uppercase text-[hsl(var(--foreground))] md:text-base"
             style={{
               fontFamily: DISPLAY,
               letterSpacing: '0.04em',
@@ -150,7 +150,7 @@ const RegionalEventsCalendar = () => {
             {format(new Date(hero.start_date), 'dd MMM').toUpperCase()}
           </div>
           <h3
-            className="m-0 mb-3 overflow-hidden font-bold leading-[1.15]"
+            className="m-0 mb-4 overflow-hidden font-bold leading-[1.15]"
             style={{
               fontFamily: DISPLAY,
               fontSize: 'clamp(1.5rem, 3.2vw, 2.5rem)',
@@ -163,7 +163,7 @@ const RegionalEventsCalendar = () => {
           </h3>
           {(hero.venue_name || hero.city) && (
             <div
-              className="text-sm text-muted-foreground md:text-[0.9375rem]"
+              className="text-sm text-muted-foreground md:text-15"
               style={{ fontFamily: BODY }}
             >
               {[hero.venue_name, hero.city].filter(Boolean).join(' · ')}
@@ -179,7 +179,7 @@ const RegionalEventsCalendar = () => {
                 {idx > 0 && <Hairline />}
                 <LocalizedLink
                   to={`/events/${ev.slug}`}
-                  className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-x-4 py-3 text-foreground no-underline md:py-4"
+                  className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-x-4 py-4 text-foreground no-underline md:py-4"
                 >
                   <div
                     className="whitespace-nowrap text-xs font-medium uppercase text-muted-foreground"
@@ -192,7 +192,7 @@ const RegionalEventsCalendar = () => {
                     {format(new Date(ev.start_date), 'dd MMM').toUpperCase()}
                   </div>
                   <div
-                    className="overflow-hidden whitespace-nowrap text-ellipsis text-[0.9375rem] font-semibold leading-[1.3] transition-opacity group-hover:opacity-70 md:text-base"
+                    className="overflow-hidden whitespace-nowrap text-ellipsis text-15 font-semibold leading-[1.3] transition-opacity group-hover:opacity-70 md:text-base"
                     style={{ fontFamily: DISPLAY }}
                   >
                     {ev.title}
@@ -220,7 +220,7 @@ const RegionalEventsCalendar = () => {
             {t('home.upcoming.next14', 'Next 14 days')}
           </div>
           <div
-            className="grid gap-x-3 gap-y-6 md:gap-x-4"
+            className="grid gap-x-4 gap-y-6 md:gap-x-4"
             style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))' }}
           >
             {activeDays.map((day) => {
@@ -234,14 +234,14 @@ const RegionalEventsCalendar = () => {
                   className="block min-w-0 text-foreground no-underline transition-opacity hover:opacity-70"
                 >
                   <div
-                    className="text-[0.6875rem] font-medium uppercase text-muted-foreground"
+                    className="text-xs2 font-medium uppercase text-muted-foreground"
                     style={{ fontFamily: BODY, letterSpacing: '0.08em' }}
                   >
                     {format(day, 'EEE')}
                   </div>
                   <div
                     className={cn(
-                      'mb-2 text-2xl font-light leading-none md:text-[1.75rem]',
+                      'mb-2 text-2xl font-light leading-none md:text-headline',
                       isToday && 'text-[hsl(var(--foreground))]',
                     )}
                     style={{ fontFamily: DISPLAY, fontVariantNumeric: 'tabular-nums' }}
@@ -249,7 +249,7 @@ const RegionalEventsCalendar = () => {
                     {format(day, 'd')}
                   </div>
                   <div
-                    className="overflow-hidden text-[0.8125rem] font-semibold leading-[1.3]"
+                    className="overflow-hidden text-13 font-semibold leading-[1.3]"
                     style={{
                       fontFamily: DISPLAY,
                       display: '-webkit-box',
@@ -261,7 +261,7 @@ const RegionalEventsCalendar = () => {
                   </div>
                   {items.length > 1 && (
                     <div
-                      className="mt-1 text-[0.6875rem] text-muted-foreground"
+                      className="mt-1 text-xs2 text-muted-foreground"
                       style={{ fontFamily: BODY }}
                     >
                       +{items.length - 1}

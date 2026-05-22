@@ -86,7 +86,7 @@ export function getWeatherIcon(condition: string) {
 
 export function SectionLoader({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 gap-3">
+    <div className="flex flex-col items-center justify-center py-12 gap-4">
       <Loader2 className="h-6 w-6 animate-spin text-primary" />
       <p className="text-sm text-muted-foreground">Loading {label}...</p>
     </div>
@@ -110,16 +110,14 @@ export function CountryHero({ country, cities, weatherData }: CountryHeroProps) 
         <CountryHeroImages country={country} />
       </div>
 
-      <div className="flex items-start justify-between flex-wrap gap-4 mb-3">
+      <div className="flex items-start justify-between flex-wrap gap-4 mb-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-4">
             <h3 className="text-3xl lg:text-5xl font-bold text-foreground">
               {country.flag_emoji} {country.name}
             </h3>
           </div>
-          {subtitle && (
-            <p className="text-lg text-muted-foreground">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
         </div>
 
         {weatherData?.current && (
@@ -149,25 +147,25 @@ export function CountryHero({ country, cities, weatherData }: CountryHeroProps) 
         />
         {country.capital && (
           <Badge variant="outline" className="gap-1">
-            <Star style={{ height: 14, width: 14 }} />
+            <Star size={14} />
             Capital: {country.capital}
           </Badge>
         )}
         {country.population && (
           <Badge variant="outline" className="gap-1">
-            <Users style={{ height: 14, width: 14 }} />
+            <Users size={14} />
             {(country.population / 1e6).toFixed(1)}M people
           </Badge>
         )}
         {country.area_km2 && (
           <Badge variant="outline" className="gap-1">
-            <MapIcon style={{ height: 14, width: 14 }} />
+            <MapIcon size={14} />
             {country.area_km2.toLocaleString()} km²
           </Badge>
         )}
         {cities.length > 0 && (
           <Badge variant="outline" className="gap-1">
-            <Building2 style={{ height: 14, width: 14 }} />
+            <Building2 size={14} />
             {cities.length} cities
           </Badge>
         )}
@@ -182,11 +180,7 @@ export interface CountryOverviewTabProps {
   sdgData: SDGDataType;
 }
 
-export function CountryOverviewTab({
-  country,
-  worldBankData,
-  sdgData,
-}: CountryOverviewTabProps) {
+export function CountryOverviewTab({ country, worldBankData, sdgData }: CountryOverviewTabProps) {
   return (
     <div className="flex flex-col gap-6">
       <ScrollReveal direction="up">
@@ -194,7 +188,7 @@ export function CountryOverviewTab({
           <Card>
             <CardHeader>
               <CardTitle>
-                <Globe style={{ height: 20, width: 20 }} />
+                <Globe size={20} />
                 About {country.name}
               </CardTitle>
             </CardHeader>
@@ -209,14 +203,12 @@ export function CountryOverviewTab({
           <Card>
             <CardHeader>
               <CardTitle>
-                <Star style={{ height: 20, width: 20 }} />
+                <Star size={20} />
                 Quick Facts
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {country.capital && (
-                <FactRow icon={Star} label="Capital" value={country.capital} />
-              )}
+              {country.capital && <FactRow icon={Star} label="Capital" value={country.capital} />}
               {country.currency && (
                 <FactRow icon={TrendingUp} label="Currency" value={country.currency} />
               )}
@@ -282,9 +274,9 @@ interface FactRowProps {
 
 function FactRow({ icon: Icon, label, value, alignRight }: FactRowProps) {
   return (
-    <div className="flex items-center justify-between p-3 rounded-element bg-muted">
+    <div className="flex items-center justify-between p-4 rounded-element bg-muted">
       <div className="flex items-center gap-2">
-        <Icon style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
+        <Icon style={{ height: 14, width: 14 }} className="text-muted-foreground" />
         <span className="text-sm font-medium">{label}</span>
       </div>
       <span
@@ -333,11 +325,9 @@ export function CountryCitiesTab({ country, cities, citiesLoading }: CountryCiti
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Major Cities</h2>
-          <p className="text-muted-foreground mt-1">
-            Major cities in {country.name}
-          </p>
+          <p className="text-muted-foreground mt-1">Major cities in {country.name}</p>
         </div>
-        <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
+        <Badge variant="secondary" style={{ padding: '4px 12px' }} className="text-sm">
           {cities.length} cities
         </Badge>
       </div>
@@ -383,11 +373,9 @@ export function CountryVenuesTab({ country, venues, loading }: CountryVenuesTabP
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Local Venues</h2>
-          <p className="text-muted-foreground mt-1">
-            Places to visit in {country.name}
-          </p>
+          <p className="text-muted-foreground mt-1">Places to visit in {country.name}</p>
         </div>
-        <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
+        <Badge variant="secondary" style={{ padding: '4px 12px' }} className="text-sm">
           {venues.length} venues
         </Badge>
       </div>
@@ -397,10 +385,7 @@ export function CountryVenuesTab({ country, venues, loading }: CountryVenuesTabP
       ) : venues.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {venues.map((venue: VenueRelation) => (
-            <div
-              key={venue.id}
-              className="transition-transform duration-200 hover:scale-[1.03]"
-            >
+            <div key={venue.id} className="transition-transform duration-200 hover:scale-[1.03]">
               <VenueCard venue={venue} />
             </div>
           ))}
@@ -432,7 +417,7 @@ export function CountryEventsTab({ country, events, eventsLoading }: CountryEven
             Don't miss out on exciting events happening in {country.name}
           </p>
         </div>
-        <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
+        <Badge variant="secondary" style={{ padding: '4px 12px' }} className="text-sm">
           {events.length} events
         </Badge>
       </div>
@@ -442,10 +427,7 @@ export function CountryEventsTab({ country, events, eventsLoading }: CountryEven
       ) : events.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event: EventRelation) => (
-            <div
-              key={event.id}
-              className="transition-transform duration-200 hover:scale-[1.03]"
-            >
+            <div key={event.id} className="transition-transform duration-200 hover:scale-[1.03]">
               <EventCard event={event} />
             </div>
           ))}
@@ -470,9 +452,7 @@ export function CountryTravelTab({ country }: CountryTravelTabProps) {
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Travel & Tours</h2>
-        <p className="text-muted-foreground mt-1">
-          Find flights and experiences in {country.name}
-        </p>
+        <p className="text-muted-foreground mt-1">Find flights and experiences in {country.name}</p>
       </div>
 
       <TravelDealsSection
@@ -483,7 +463,7 @@ export function CountryTravelTab({ country }: CountryTravelTabProps) {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Activity style={{ height: 20, width: 20 }} />
+            <Activity size={20} />
             Activities & Tours
           </CardTitle>
           <CardDescription>Experiences in {country.name}</CardDescription>
@@ -521,7 +501,7 @@ export function CountryNewsTab({
             Stay updated with the latest news from {country.name}
           </p>
         </div>
-        <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
+        <Badge variant="secondary" style={{ padding: '4px 12px' }} className="text-sm">
           {articles.length} articles
         </Badge>
       </div>
@@ -531,10 +511,7 @@ export function CountryNewsTab({
       ) : articles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.map((article: ArticleRelation) => (
-            <div
-              key={article.id}
-              className="transition-transform duration-200 hover:scale-[1.03]"
-            >
+            <div key={article.id} className="transition-transform duration-200 hover:scale-[1.03]">
               <NewsCard article={article} onViewArticle={onViewArticle} />
             </div>
           ))}
@@ -562,13 +539,7 @@ export function CountryMapTab({ country, ExploreMap, Suspense }: CountryMapTabPr
 
   if (MAP_SHELL_ENABLED) {
     return (
-      <MapShell
-        surface="country"
-        height={500}
-        initialCenter={center}
-        initialZoom={5}
-        skipAutoFly
-      />
+      <MapShell surface="country" height={500} initialCenter={center} initialZoom={5} skipAutoFly />
     );
   }
 
@@ -605,7 +576,7 @@ function EmptyCard({ icon: Icon, title, description }: EmptyCardProps) {
       <CardContent>
         <div className="flex flex-col gap-4">
           <div className="p-4 bg-muted rounded-full w-20 h-20 mx-auto flex items-center justify-center">
-            <Icon style={{ height: 40, width: 40, color: 'hsl(var(--muted-foreground))' }} />
+            <Icon style={{ height: 40, width: 40 }} className="text-muted-foreground" />
           </div>
           <div>
             <p className="text-lg font-semibold">{title}</p>

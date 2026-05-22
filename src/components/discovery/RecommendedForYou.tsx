@@ -116,14 +116,14 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 
 	return (
 		<section className={className} aria-label="Recommended for you">
-			<h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+			<h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
 				<Sparkles className="h-5 w-5 text-foreground" />
 				Recommended for you
 			</h2>
 			<SkeletonCrossfade
 				loading={!items}
 				skeleton={
-					<div className="flex gap-3 pb-3">
+					<div className="flex gap-4 pb-4">
 						{Array.from({ length: limit }).map((_, i) => (
 							<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-element" />
 						))}
@@ -131,7 +131,7 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 				}
 			>
 				<ScrollArea className="w-full whitespace-nowrap">
-					<div className="flex gap-3 pb-3">
+					<div className="flex gap-4 pb-4">
 						{items
 							?.map((it) => {
 								const slug = it.slug || it.id;

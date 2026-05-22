@@ -13,7 +13,7 @@ export function DetailHero({ imageUrl, alt, heightClassName = 'h-64 md:h-80' }: 
     <Lens
       zoom={1.6}
       size={220}
-      className={`group w-full ${heightClassName} rounded-container mb-6 ring-1 ring-border/60 shadow-[var(--shadow-aceternity)]`}
+      className={`group w-full ${heightClassName} rounded-container mb-6 ring-1 ring-border/60`}
     >
       <img
         src={imageUrl || getRandomFallbackImage()}

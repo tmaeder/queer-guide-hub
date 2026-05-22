@@ -155,7 +155,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex flex-col gap-5 mt-6">
+            <div className="flex flex-col gap-6 mt-6">
               {/* 1) City + Country — REQUIRED, anchors everything downstream */}
               <CityCountryAutocomplete
                 value={geo}
@@ -220,7 +220,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
                     id="trip-title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="pl-9"
+                    className="pl-10"
                     placeholder={
                       geo
                         ? t('trips.dialog.create.defaultTitle', { city: geo.cityName })

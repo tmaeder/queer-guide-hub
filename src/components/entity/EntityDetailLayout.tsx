@@ -91,11 +91,11 @@ export function EntityDetailLayout({
   if (loading) {
     return (
       <div className="container mx-auto py-8" data-testid="entity-detail-loading">
-        <Skeleton variant="rectangular" height={32} style={{ marginBottom: 16, width: '40%' }} />
-        <Skeleton variant="rectangular" height={192} style={{ marginBottom: 24, borderRadius: 12 }} />
+        <Skeleton variant="rectangular" height={32} style={{ width: '40%' }} className="mb-4" />
+        <Skeleton variant="rectangular" height={192} className="mb-6 rounded-container" />
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6">
-          <Skeleton variant="rectangular" height={320} style={{ borderRadius: 12 }} />
-          <Skeleton variant="rectangular" height={240} style={{ borderRadius: 12 }} />
+          <Skeleton variant="rectangular" height={320} className="rounded-container" />
+          <Skeleton variant="rectangular" height={240} className="rounded-container" />
         </div>
       </div>
     );
@@ -103,82 +103,75 @@ export function EntityDetailLayout({
 
   return (
     <>
-    <motion.div
-      style={{ scaleX, transformOrigin: '0%' }}
-      className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
-    />
-    <div className="container mx-auto py-8" data-testid="entity-detail-layout">
-      {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav
-          aria-label="Breadcrumb"
-          className="flex items-center gap-1 mb-4 flex-wrap"
-        >
-          {breadcrumbs.map((crumb, i) => {
-            const isLast = i === breadcrumbs.length - 1;
-            const label =
-              crumb.href && !isLast ? (
-                <LocalizedLink to={crumb.href} style={{ textDecoration: 'none' }}>
-                  <span className="text-sm text-muted-foreground hover:text-primary">
+      <motion.div
+        style={{ scaleX, transformOrigin: '0%' }}
+        className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
+      />
+      <div className="container mx-auto py-8" data-testid="entity-detail-layout">
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1 mb-4 flex-wrap">
+            {breadcrumbs.map((crumb, i) => {
+              const isLast = i === breadcrumbs.length - 1;
+              const label =
+                crumb.href && !isLast ? (
+                  <LocalizedLink to={crumb.href} className="no-underline">
+                    <span className="text-sm text-muted-foreground hover:text-primary">
+                      {crumb.label}
+                    </span>
+                  </LocalizedLink>
+                ) : (
+                  <span
+                    className={`text-sm ${isLast ? 'font-medium text-foreground' : 'text-muted-foreground'}`}
+                  >
                     {crumb.label}
                   </span>
-                </LocalizedLink>
-              ) : (
-                <span
-                  className={`text-sm ${isLast ? 'font-medium text-foreground' : 'text-muted-foreground'}`}
-                >
-                  {crumb.label}
+                );
+              return (
+                <span key={i} className="inline-flex items-center gap-1">
+                  {i > 0 && <ChevronRight size={14} className="text-muted-foreground" />}
+                  {label}
                 </span>
               );
-            return (
-              <span key={i} className="inline-flex items-center gap-1">
-                {i > 0 && (
-                  <ChevronRight
-                    style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }}
-                  />
-                )}
-                {label}
-              </span>
-            );
-          })}
-        </nav>
-      )}
+            })}
+          </nav>
+        )}
 
-      <div className="mb-6">{hero}</div>
+        <div className="mb-6">{hero}</div>
 
-      <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
-        <div>
-          {tabs.length > 0 && (
-            <Tabs value={activeTab} onValueChange={handleTabChange}>
-              <TabsList>
-                {tabs.map((tab) => (
-                  <TabsTrigger key={tab.id} value={tab.id}>
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <AnimatePresence mode="wait" initial={false}>
-                {tabs.map((tab) =>
-                  tab.id === activeTab ? (
-                    <TabsContent key={tab.id} value={tab.id} forceMount>
-                      <motion.div
-                        key={tab.id}
-                        initial={{ opacity: 0, filter: 'blur(4px)' }}
-                        animate={{ opacity: 1, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, filter: 'blur(4px)' }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {tab.content}
-                      </motion.div>
-                    </TabsContent>
-                  ) : null,
-                )}
-              </AnimatePresence>
-            </Tabs>
-          )}
+        <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
+          <div>
+            {tabs.length > 0 && (
+              <Tabs value={activeTab} onValueChange={handleTabChange}>
+                <TabsList>
+                  {tabs.map((tab) => (
+                    <TabsTrigger key={tab.id} value={tab.id}>
+                      {tab.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                <AnimatePresence mode="wait" initial={false}>
+                  {tabs.map((tab) =>
+                    tab.id === activeTab ? (
+                      <TabsContent key={tab.id} value={tab.id} forceMount>
+                        <motion.div
+                          key={tab.id}
+                          initial={{ opacity: 0, filter: 'blur(4px)' }}
+                          animate={{ opacity: 1, filter: 'blur(0px)' }}
+                          exit={{ opacity: 0, filter: 'blur(4px)' }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {tab.content}
+                        </motion.div>
+                      </TabsContent>
+                    ) : null,
+                  )}
+                </AnimatePresence>
+              </Tabs>
+            )}
+          </div>
+          {sidebar && <div>{sidebar}</div>}
         </div>
-        {sidebar && <div>{sidebar}</div>}
       </div>
-    </div>
     </>
   );
 }

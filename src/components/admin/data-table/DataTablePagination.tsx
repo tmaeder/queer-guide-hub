@@ -32,7 +32,7 @@ export function DataTablePagination({
   const to = Math.min(page * pageSize, totalCount);
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-border flex-wrap gap-2">
+    <div className="flex items-center justify-between px-4 py-4 border-t border-border flex-wrap gap-2">
       <div className="flex items-center gap-4">
         {selectedCount > 0 && (
           <p className="text-sm font-medium">
@@ -71,7 +71,7 @@ export function DataTablePagination({
             onClick={() => onPageChange(1)}
             disabled={page <= 1}
           >
-            <ChevronsLeft style={{ height: 14, width: 14 }} />
+            <ChevronsLeft size={14} />
           </Button>
           <Button
             variant="outline"
@@ -80,7 +80,7 @@ export function DataTablePagination({
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
           >
-            <ChevronLeft style={{ height: 14, width: 14 }} />
+            <ChevronLeft size={14} />
           </Button>
           <p className="text-sm px-2 min-w-[60px] text-center">
             {page} / {totalPages || 1}
@@ -92,7 +92,7 @@ export function DataTablePagination({
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
           >
-            <ChevronRight style={{ height: 14, width: 14 }} />
+            <ChevronRight size={14} />
           </Button>
           <Button
             variant="outline"
@@ -101,7 +101,7 @@ export function DataTablePagination({
             onClick={() => onPageChange(totalPages)}
             disabled={page >= totalPages}
           >
-            <ChevronsRight style={{ height: 14, width: 14 }} />
+            <ChevronsRight size={14} />
           </Button>
         </div>
       </div>

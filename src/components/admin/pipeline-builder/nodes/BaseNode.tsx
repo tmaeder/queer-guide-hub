@@ -24,10 +24,10 @@ interface BaseNodeData {
 
 const statusConfig: Record<string, { className: string; icon: string }> = {
   pending:   { className: 'bg-muted text-muted-foreground', icon: 'Clock' },
-  running:   { className: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 animate-pulse', icon: 'Loader2' },
-  completed: { className: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300', icon: 'CheckCircle2' },
-  failed:    { className: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300', icon: 'XCircle' },
-  skipped:   { className: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400', icon: 'SkipForward' },
+  running:   { className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground animate-pulse', icon: 'Loader2' },
+  completed: { className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground', icon: 'CheckCircle2' },
+  failed:    { className: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive', icon: 'XCircle' },
+  skipped:   { className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground', icon: 'SkipForward' },
 };
 
 function portPosition(index: number, total: number): string {
@@ -52,8 +52,8 @@ function BaseNode({ data, selected }: NodeProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <div
-        className={`rounded-element border-2 bg-background shadow-sm min-w-[200px] max-w-[280px] transition-all ${
-          selected ? 'ring-2 ring-ring shadow-md scale-[1.02]' : 'hover:shadow-md'
+        className={`rounded-element border-2 bg-background min-w-[200px] max-w-[280px] transition-all ${
+          selected ? 'ring-2 ring-ring scale-[1.02]' : 'hover:border-foreground/40'
         } ${status === 'failed' ? 'border-destructive' : ''}`}
         style={{ borderColor: status === 'failed' ? undefined : color }}
       >
@@ -80,7 +80,7 @@ function BaseNode({ data, selected }: NodeProps) {
 
         {/* Header */}
         <div
-          className="flex items-center gap-2 px-3 py-2.5 rounded-t-md"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-t-element"
           style={{ backgroundColor: `${color}12` }}
         >
           {IconComponent && <IconComponent className="h-4 w-4 shrink-0" />}
@@ -98,7 +98,7 @@ function BaseNode({ data, selected }: NodeProps) {
           {d.hasValidationIssue && !sc && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 ml-auto shrink-0" />
+                <AlertCircle className="h-3.5 w-3.5 text-foreground dark:text-foreground ml-auto shrink-0" />
               </TooltipTrigger>
               <TooltipContent className="text-xs">Missing required config</TooltipContent>
             </Tooltip>
@@ -113,7 +113,7 @@ function BaseNode({ data, selected }: NodeProps) {
 
         {/* Metrics bar */}
         {(d.itemsOut !== undefined || d.itemsIn !== undefined || d.durationMs) && (
-          <div className="flex items-center gap-3 px-3 py-1.5 text-xs2 font-mono border-t border-border/50">
+          <div className="flex items-center gap-4 px-4 py-1.5 text-xs2 font-mono border-t border-border/50">
             {d.itemsIn !== undefined && (
               <span className="text-muted-foreground" title="items in">
                 <ArrowDownToLine className="h-3 w-3 inline mr-0.5" />{d.itemsIn}
@@ -136,7 +136,7 @@ function BaseNode({ data, selected }: NodeProps) {
         {d.errorMessage && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="px-3 py-1.5 text-2xs text-destructive bg-destructive/5 border-t border-destructive/20 truncate cursor-help">
+              <div className="px-4 py-1.5 text-2xs text-destructive bg-destructive/5 border-t border-destructive/20 truncate cursor-help">
                 {d.errorMessage}
               </div>
             </TooltipTrigger>

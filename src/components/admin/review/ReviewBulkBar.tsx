@@ -30,7 +30,7 @@ export const ReviewBulkBar = ({
 
   return (
     <div
-      className="sticky bottom-4 mx-4 px-4 py-3 flex items-center gap-4 bg-background z-50"
+      className="sticky bottom-4 mx-4 px-4 py-4 flex items-center gap-4 bg-background z-50"
       style={{ boxShadow: '0 8px 16px hsl(var(--foreground) / 0.15)' }}
     >
       <Badge>{selectedCount} selected</Badge>
@@ -42,7 +42,12 @@ export const ReviewBulkBar = ({
         </Button>
       )}
 
-      <Button size="sm" variant="ghost" onClick={onClearSelection} style={{ textTransform: 'none' }}>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={onClearSelection}
+        style={{ textTransform: 'none' }}
+      >
         Clear
       </Button>
 
@@ -53,7 +58,8 @@ export const ReviewBulkBar = ({
         variant="outline"
         onClick={onBulkReject}
         disabled={loading}
-        style={{ textTransform: 'none', borderColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive))' }}
+        style={{ textTransform: 'none', borderColor: 'hsl(var(--destructive))' }}
+        className="text-destructive"
       >
         <X size={14} className="mr-1" />
         Reject

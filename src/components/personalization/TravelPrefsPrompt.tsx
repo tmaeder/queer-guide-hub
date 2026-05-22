@@ -42,7 +42,13 @@ export function TravelPrefsPrompt() {
       <LocalizedLink to="/profile/settings?tab=travel">
         <Button size="sm">Set up</Button>
       </LocalizedLink>
-      <Button variant="ghost" size="sm" onClick={handleDismiss} style={{ padding: 4, minWidth: 0 }}>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleDismiss}
+        style={{ minWidth: 0 }}
+        className="p-1"
+      >
         <X className="h-4 w-4" />
       </Button>
     </div>

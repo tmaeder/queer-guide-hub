@@ -147,7 +147,6 @@ async function handleCallback(supabase: unknown, body: unknown, userId: string) 
   }
 
   // Verify HMAC-signed state to prevent CSRF and extract PKCE code verifier
-  let codeVerifier = ''
   if (!statePayload) {
     return errorResponse('Missing state parameter', 400)
   }
@@ -155,7 +154,7 @@ async function handleCallback(supabase: unknown, body: unknown, userId: string) 
   if (!stateData) {
     return errorResponse('Invalid or tampered state parameter', 400)
   }
-  codeVerifier = stateData.codeVerifier || ''
+  const codeVerifier = stateData.codeVerifier || ''
 
   // Exchange authorization code for tokens
   const tokenParams: Record<string, string> = {

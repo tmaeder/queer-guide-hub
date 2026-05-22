@@ -71,7 +71,7 @@ export function DataTableBulkActions({
         <p className="text-sm font-semibold">{selectedCount} selected</p>
 
         <Button variant="ghost" size="sm" onClick={onClearSelection}>
-          <X style={{ height: 14, width: 14, marginRight: 4 }} />
+          <X size={14} className="mr-1" />
           Clear
         </Button>
 
@@ -79,7 +79,7 @@ export function DataTableBulkActions({
 
         {bulkEditFields && bulkEditFields.length > 0 && (
           <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-            <Pencil style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Pencil size={14} className="mr-1" />
             Bulk Edit
           </Button>
         )}
@@ -92,7 +92,7 @@ export function DataTableBulkActions({
           onClick={() => setDeleteOpen(true)}
           style={{ color: 'var(--destructive)', borderColor: 'var(--destructive)' }}
         >
-          <Trash2 style={{ height: 14, width: 14, marginRight: 4 }} />
+          <Trash2 size={14} className="mr-1" />
           Delete
         </Button>
       </div>

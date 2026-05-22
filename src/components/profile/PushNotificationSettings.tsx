@@ -35,7 +35,7 @@ export function PushNotificationSettings() {
               )}
             </p>
             {error && (
-              <p className="text-destructive text-[0.8125rem] mb-2">{error}</p>
+              <p className="text-destructive text-13 mb-2">{error}</p>
             )}
           </div>
           <Button

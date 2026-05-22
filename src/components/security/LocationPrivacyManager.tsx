@@ -21,7 +21,7 @@ export function LocationPrivacyManager() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <MapPin style={{ height: 20, width: 20 }} />
+              <MapPin size={20} />
               Location Privacy Settings
             </div>
           </CardTitle>
@@ -33,8 +33,8 @@ export function LocationPrivacyManager() {
           <div className="flex flex-col gap-6">
             {/* Precise Location Setting */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Eye style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+              <div className="flex items-center gap-4">
+                <Eye size={16} className="text-muted-foreground" />
                 <div>
                   <p className="font-medium">Precise Location Sharing</p>
                   <p className="text-sm text-muted-foreground">
@@ -60,8 +60,8 @@ export function LocationPrivacyManager() {
 
             {/* Region-Only Setting */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Shield style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+              <div className="flex items-center gap-4">
+                <Shield size={16} className="text-muted-foreground" />
                 <div>
                   <p className="font-medium">Region-Only Sharing</p>
                   <p className="text-sm text-muted-foreground">
@@ -87,8 +87,8 @@ export function LocationPrivacyManager() {
 
             {/* Auto-Anonymize Setting */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+              <div className="flex items-center gap-4">
+                <Clock size={16} className="text-muted-foreground" />
                 <div>
                   <p className="font-medium">Automatic Data Anonymization</p>
                   <p className="text-sm text-muted-foreground">
@@ -115,7 +115,7 @@ export function LocationPrivacyManager() {
 
       {/* Privacy Information */}
       <Alert>
-        <Shield style={{ height: 16, width: 16 }} />
+        <Shield size={16} />
         <AlertDescription>
           <strong>Privacy Protection:</strong> Your location data is automatically anonymized after {locationSettings.anonymizationDays} days.
           Even when sharing is enabled, precise coordinates are reduced to approximate regions for older data.
@@ -127,7 +127,7 @@ export function LocationPrivacyManager() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <EyeOff style={{ height: 20, width: 20 }} />
+              <EyeOff size={20} />
               Data Protection Actions
             </div>
           </CardTitle>

@@ -88,10 +88,10 @@ async function searchWikipediaData(query: string, language = 'en'): Promise<Wiki
   let summaryData;
   try {
     summaryData = await fetchWikipediaSummary(query, language);
-  } catch (_error) {
+  } catch (error) {
     // If exact match fails, try search API
     console.log('Exact match failed, trying search API...');
-    
+
     const searchUrl = `https://${language}.wikipedia.org/api/rest_v1/page/search/${encodeURIComponent(query)}`;
     const searchResponse = await fetch(searchUrl, {
       headers: {
@@ -99,15 +99,15 @@ async function searchWikipediaData(query: string, language = 'en'): Promise<Wiki
         'Accept': 'application/json'
       }
     });
-    
+
     if (!searchResponse.ok) {
-      throw new Error(`Wikipedia search API error: ${searchResponse.status}`);
+      throw new Error(`Wikipedia search API error: ${searchResponse.status}`, { cause: error });
     }
-    
+
     const searchData = await searchResponse.json();
-    
+
     if (!searchData.pages || searchData.pages.length === 0) {
-      throw new Error(`No Wikipedia pages found for: ${query}`);
+      throw new Error(`No Wikipedia pages found for: ${query}`, { cause: error });
     }
     
     // Use the first search result

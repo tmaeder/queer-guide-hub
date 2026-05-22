@@ -132,7 +132,7 @@ export default function IntegrationsTab() {
                   Forward data ops alerts to Slack, Discord, or a custom endpoint.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
                   <label htmlFor="integration-name" className="text-xs font-medium">Name</label>
                   <Input
@@ -204,28 +204,28 @@ export default function IntegrationsTab() {
               <thead className="bg-muted/40">
                 <tr className="border-b border-border">
                   {['Name', 'Type', 'Min severity', 'URL', 'Sent', 'Last triggered', 'Enabled', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {integrations.map(i => (
                   <tr key={i.id} className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${!i.enabled ? 'opacity-50' : ''}`}>
-                    <td className="px-3 py-2 font-medium">{i.name}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-2 font-medium">{i.name}</td>
+                    <td className="px-4 py-2">
                       <Badge variant="outline" className="text-2xs px-1.5 py-0">{KIND_LABEL[i.kind]}</Badge>
                     </td>
-                    <td className="px-3 py-2 text-xs capitalize">{i.min_severity}</td>
-                    <td className="px-3 py-2 text-xs2 font-mono text-muted-foreground truncate max-w-[280px]" title={i.webhook_url}>
+                    <td className="px-4 py-2 text-xs capitalize">{i.min_severity}</td>
+                    <td className="px-4 py-2 text-xs2 font-mono text-muted-foreground truncate max-w-[280px]" title={i.webhook_url}>
                       {i.webhook_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}/…
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-xs">{i.total_sent}</td>
-                    <td className="px-3 py-2 text-xs2 text-muted-foreground">
+                    <td className="px-4 py-2 tabular-nums text-xs">{i.total_sent}</td>
+                    <td className="px-4 py-2 text-xs2 text-muted-foreground">
                       {i.last_triggered_at ? (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="flex items-center gap-1 cursor-help">
-                              {i.last_error ? <XCircle className="h-3 w-3 text-destructive" /> : <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />}
+                              {i.last_error ? <XCircle className="h-3 w-3 text-destructive" /> : <CheckCircle2 className="h-3 w-3 text-foreground dark:text-foreground" />}
                               {formatDistanceToNow(new Date(i.last_triggered_at), { addSuffix: true })}
                             </span>
                           </TooltipTrigger>
@@ -235,13 +235,13 @@ export default function IntegrationsTab() {
                         </Tooltip>
                       ) : '—'}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-2">
                       <Switch
                         checked={i.enabled}
                         onCheckedChange={(enabled) => toggle.mutate({ id: i.id, enabled })}
                       />
                     </td>
-                    <td className="px-3 py-2 flex gap-1">
+                    <td className="px-4 py-2 flex gap-1">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button

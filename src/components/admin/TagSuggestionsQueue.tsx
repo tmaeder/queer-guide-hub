@@ -94,8 +94,8 @@ export function TagSuggestionsQueue() {
   if (items.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="mx-auto w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mb-4 opacity-90">
-          <Tag style={{ width: 40, height: 40, color: 'hsl(var(--background))' }} />
+        <div className="mx-auto w-20 h-20 bg-foreground rounded-full flex items-center justify-center mb-4 opacity-90">
+          <Tag size={40} className="text-background" />
         </div>
         <h3 className="text-lg font-semibold mb-1">No pending suggestions</h3>
         <p className="text-sm text-muted-foreground max-w-[320px] mx-auto">
@@ -132,7 +132,7 @@ export function TagSuggestionsQueue() {
                 onClick={() => approveMutation.mutate(Array.from(selectedIds))}
                 style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white', display: 'flex', gap: 6 }}
               >
-                <CheckCircle style={{ height: 14, width: 14 }} /> Approve Selected
+                <CheckCircle size={14} /> Approve Selected
               </Button>
               <Button
                 variant="destructive"
@@ -141,7 +141,7 @@ export function TagSuggestionsQueue() {
                 onClick={() => rejectMutation.mutate(Array.from(selectedIds))}
                 style={{ display: 'flex', gap: 6 }}
               >
-                <XCircle style={{ height: 14, width: 14 }} /> Reject Selected
+                <XCircle size={14} /> Reject Selected
               </Button>
             </>
           )}
@@ -151,7 +151,7 @@ export function TagSuggestionsQueue() {
             onClick={() => approveMutation.mutate(items.map((i) => i.id))}
             style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white', display: 'flex', gap: 6 }}
           >
-            <CheckCircle style={{ height: 14, width: 14 }} /> Approve All ({items.length})
+            <CheckCircle size={14} /> Approve All ({items.length})
           </Button>
         </div>
       </div>
@@ -175,14 +175,14 @@ export function TagSuggestionsQueue() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <p className="font-semibold text-[0.9rem]">{item.suggested_tag_name}</p>
+                    <p className="font-semibold text-sm">{item.suggested_tag_name}</p>
                     <Badge variant="outline">{item.entity_type}</Badge>
-                    <Badge variant="outline" className="text-[0.7rem] gap-1">
+                    <Badge variant="outline" className="text-xs2 gap-1">
                       <SourceIcon style={{ width: 12, height: 12 }} />
                       {sourceInfo.label}
                     </Badge>
                     <span
-                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.7rem] font-semibold"
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs2 font-semibold"
                       style={{ backgroundColor: `${confidenceColor}15`, color: confidenceColor }}
                     >
                       {(item.confidence * 100).toFixed(0)}%
@@ -201,7 +201,7 @@ export function TagSuggestionsQueue() {
                     onClick={() => approveMutation.mutate([item.id])}
                     style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white', padding: '4px 8px' }}
                   >
-                    <CheckCircle style={{ height: 14, width: 14 }} />
+                    <CheckCircle size={14} />
                   </Button>
                   <Button
                     variant="destructive"
@@ -210,7 +210,7 @@ export function TagSuggestionsQueue() {
                     onClick={() => rejectMutation.mutate([item.id])}
                     style={{ padding: '4px 8px' }}
                   >
-                    <XCircle style={{ height: 14, width: 14 }} />
+                    <XCircle size={14} />
                   </Button>
                 </div>
               </div>

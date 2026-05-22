@@ -13,9 +13,9 @@ export function getRedirectColumns() {
       cell: (info) => (
         <Badge variant={info.getValue() === 'SHORT' ? 'default' : 'secondary'}>
           {info.getValue() === 'SHORT' ? (
-            <Link2 style={{ height: 12, width: 12, marginRight: 4 }} />
+            <Link2 size={12} className="mr-1" />
           ) : (
-            <ArrowRight style={{ height: 12, width: 12, marginRight: 4 }} />
+            <ArrowRight size={12} className="mr-1" />
           )}
           {info.getValue()}
         </Badge>
@@ -28,22 +28,19 @@ export function getRedirectColumns() {
         const row = info.row.original;
         const source = row.type === 'SHORT' ? `/go/${row.slug}` : row.source_path;
         return (
-          <div className="flex items-center" style={{ gap: 4 }}>
+          <div className="flex items-center gap-1">
             <span
               style={{
                 fontFamily: 'monospace',
                 fontSize: '0.8rem',
                 maxWidth: 200,
-                overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
               }}
+              className="overflow-hidden whitespace-nowrap"
             >
               {source}
             </span>
-            {(row.start_at || row.end_at) && (
-              <Clock style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />
-            )}
+            {(row.start_at || row.end_at) && <Clock size={12} className="text-muted-foreground" />}
           </div>
         );
       },
@@ -57,11 +54,9 @@ export function getRedirectColumns() {
             fontFamily: 'monospace',
             fontSize: '0.8rem',
             maxWidth: 240,
-            overflow: 'hidden',
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            display: 'block',
           }}
+          className="overflow-hidden whitespace-nowrap block"
         >
           {info.getValue()}
         </span>
@@ -73,7 +68,10 @@ export function getRedirectColumns() {
       cell: (info) => (
         <Badge
           variant="outline"
-          style={{ color: info.getValue() === 301 ? 'hsl(var(--foreground))' : 'hsl(var(--foreground) / 0.55)' }}
+          style={{
+            color:
+              info.getValue() === 301 ? 'hsl(var(--foreground))' : 'hsl(var(--foreground) / 0.55)',
+          }}
         >
           {info.getValue()}
         </Badge>
@@ -87,7 +85,9 @@ export function getRedirectColumns() {
         return (
           <span>
             {info.getValue().toLocaleString()}
-            {row.click_limit ? <span style={{ color: 'hsl(var(--muted-foreground))' }}> / {row.click_limit}</span> : null}
+            {row.click_limit ? (
+              <span className="text-muted-foreground"> / {row.click_limit}</span>
+            ) : null}
           </span>
         );
       },

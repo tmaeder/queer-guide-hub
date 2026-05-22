@@ -218,7 +218,7 @@ export default function Hotels() {
       <VibeChipsRow active={vibe} onChange={setVibe} />
 
       {showDiscovery && topCities.length > 0 && (
-        <section className="space-y-3">
+        <section className="space-y-4">
           <h3 className="text-lg font-semibold">Top cities for queer stays</h3>
           <DestinationTiles cities={topCities} />
         </section>
@@ -240,7 +240,7 @@ export default function Hotels() {
       )}
 
       <section className="space-y-4">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <h3 className="text-lg font-semibold">
             {hasActiveFilters ? 'Matching hotels' : 'All hotels'}
           </h3>
@@ -250,7 +250,7 @@ export default function Hotels() {
               onClick={() => setView('grid')}
               aria-pressed={view === 'grid'}
               className={
-                'px-3 py-2 text-sm inline-flex items-center gap-1.5 ' +
+                'px-4 py-2 text-sm inline-flex items-center gap-1.5 ' +
                 (view === 'grid'
                   ? 'bg-foreground text-background'
                   : 'bg-background hover:bg-muted')
@@ -263,7 +263,7 @@ export default function Hotels() {
               onClick={() => setView('map')}
               aria-pressed={view === 'map'}
               className={
-                'px-3 py-2 text-sm inline-flex items-center gap-1.5 border-l border-foreground/20 ' +
+                'px-4 py-2 text-sm inline-flex items-center gap-1.5 border-l border-foreground/20 ' +
                 (view === 'map'
                   ? 'bg-foreground text-background'
                   : 'bg-background hover:bg-muted')

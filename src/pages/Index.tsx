@@ -3,15 +3,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTranslation } from 'react-i18next';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import {
-  MapPin,
-  Calendar,
-  Store,
-  Plane,
-  Users,
-  BookOpen,
-  Building,
-} from 'lucide-react';
+import { MapPin, Calendar, Store, Plane, Users, BookOpen, Building } from 'lucide-react';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
@@ -22,18 +14,51 @@ import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
-const RegionalEventsCalendar = React.lazy(
-  () => import('@/components/home/RegionalEventsCalendar'),
-);
+const RegionalEventsCalendar = React.lazy(() => import('@/components/home/RegionalEventsCalendar'));
 
 const featureDefs = [
-  { icon: MapPin, titleKey: 'home.features.venues', descKey: 'home.features.venuesDesc', link: '/venues' },
-  { icon: Calendar, titleKey: 'home.features.events', descKey: 'home.features.eventsDesc', link: '/events' },
-  { icon: Store, titleKey: 'home.features.marketplace', descKey: 'home.features.marketplaceDesc', link: '/marketplace' },
-  { icon: Plane, titleKey: 'home.features.places', descKey: 'home.features.placesDesc', link: '/places' },
-  { icon: Building, titleKey: 'home.features.hotels', descKey: 'home.features.hotelsDesc', link: '/hotels' },
-  { icon: Users, titleKey: 'home.features.community', descKey: 'home.features.communityDesc', link: '/groups' },
-  { icon: BookOpen, titleKey: 'home.features.resources', descKey: 'home.features.resourcesDesc', link: '/resources' },
+  {
+    icon: MapPin,
+    titleKey: 'home.features.venues',
+    descKey: 'home.features.venuesDesc',
+    link: '/venues',
+  },
+  {
+    icon: Calendar,
+    titleKey: 'home.features.events',
+    descKey: 'home.features.eventsDesc',
+    link: '/events',
+  },
+  {
+    icon: Store,
+    titleKey: 'home.features.marketplace',
+    descKey: 'home.features.marketplaceDesc',
+    link: '/marketplace',
+  },
+  {
+    icon: Plane,
+    titleKey: 'home.features.places',
+    descKey: 'home.features.placesDesc',
+    link: '/places',
+  },
+  {
+    icon: Building,
+    titleKey: 'home.features.hotels',
+    descKey: 'home.features.hotelsDesc',
+    link: '/hotels',
+  },
+  {
+    icon: Users,
+    titleKey: 'home.features.community',
+    descKey: 'home.features.communityDesc',
+    link: '/groups',
+  },
+  {
+    icon: BookOpen,
+    titleKey: 'home.features.resources',
+    descKey: 'home.features.resourcesDesc',
+    link: '/resources',
+  },
 ];
 
 const Index = React.memo(() => {
@@ -62,23 +87,25 @@ const Index = React.memo(() => {
         {/* Text panel */}
         <div className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0">
           <h1
-            className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] mb-4 text-foreground"
+            className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold leading-[1.05] mb-4 text-foreground"
             style={{ letterSpacing: '-0.04em' }}
           >
-            {t('home.heroLine1', 'Queer venues,')}{' '}
-            {t('home.heroLine2', 'events, and people.')}{' '}
+            {t('home.heroLine1', 'Queer venues,')} {t('home.heroLine2', 'events, and people.')}{' '}
             {t('home.heroLine3', 'Worldwide.')}
           </h1>
 
           <p className="text-base md:text-lg text-muted-foreground mb-6 leading-[1.6] max-w-md">
-            {t('home.subtitle', 'Verified safe places, real events, and the people behind them. Built by the community.')}
+            {t(
+              'home.subtitle',
+              'Verified safe places, real events, and the people behind them. Built by the community.',
+            )}
           </p>
 
           <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
               onClick={() => navigate('/directory')}
-              className="inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-background transition-transform duration-200 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-opacity duration-200 hover:opacity-90"
             >
               <Calendar size={16} aria-hidden="true" />
               {t('home.browseDirectory', 'Browse the directory')}
@@ -119,15 +146,12 @@ const Index = React.memo(() => {
           data-testid="homepage-stats-strip"
           className="bg-foreground text-background py-10 md:py-14 px-4 sm:px-6 md:px-8"
         >
-          <StaggerGrid
-            stagger={0.1}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
-          >
+          <StaggerGrid stagger={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {stats.map((stat, i) => {
               const inner = (
                 <>
                   <div
-                    className="font-extrabold text-[2.5rem] sm:text-[3rem] md:text-[4rem] leading-[1.1]"
+                    className="font-bold text-display sm:text-5xl md:text-hero leading-[1.1]"
                     style={{
                       letterSpacing: '-0.03em',
                     }}
@@ -153,7 +177,8 @@ const Index = React.memo(() => {
                   {stat.link ? (
                     <LocalizedLink
                       to={stat.link}
-                      style={{ color: 'inherit', textDecoration: 'none', display: 'block' }}
+                      style={{ color: 'inherit' }}
+                      className="no-underline block"
                     >
                       {inner}
                     </LocalizedLink>
@@ -171,31 +196,76 @@ const Index = React.memo(() => {
       <section className="px-4 sm:px-6 md:px-8 py-10 md:py-14">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end justify-between mb-4">
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               {t('home.trendingCities', 'Trending cities')}
             </h2>
-            <LocalizedLink to="/cities" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <LocalizedLink
+              to="/cities"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
               {t('home.viewAll', 'View all')} →
             </LocalizedLink>
           </div>
           <AppleCardsCarousel
-            items={[
-              { title: 'Berlin', category: 'Germany', href: '/city/berlin', src: getRandomFallbackImage() },
-              { title: 'New York', category: 'United States', href: '/city/new-york', src: getRandomFallbackImage() },
-              { title: 'Mexico City', category: 'Mexico', href: '/city/mexico-city', src: getRandomFallbackImage() },
-              { title: 'Bangkok', category: 'Thailand', href: '/city/bangkok', src: getRandomFallbackImage() },
-              { title: 'Tel Aviv', category: 'Israel', href: '/city/tel-aviv', src: getRandomFallbackImage() },
-              { title: 'Buenos Aires', category: 'Argentina', href: '/city/buenos-aires', src: getRandomFallbackImage() },
-              { title: 'Cape Town', category: 'South Africa', href: '/city/cape-town', src: getRandomFallbackImage() },
-              { title: 'Tokyo', category: 'Japan', href: '/city/tokyo', src: getRandomFallbackImage() },
-            ] satisfies CarouselCard[]}
+            items={
+              [
+                {
+                  title: 'Berlin',
+                  category: 'Germany',
+                  href: '/city/berlin',
+                  src: getRandomFallbackImage(),
+                },
+                {
+                  title: 'New York',
+                  category: 'United States',
+                  href: '/city/new-york',
+                  src: getRandomFallbackImage(),
+                },
+                {
+                  title: 'Mexico City',
+                  category: 'Mexico',
+                  href: '/city/mexico-city',
+                  src: getRandomFallbackImage(),
+                },
+                {
+                  title: 'Bangkok',
+                  category: 'Thailand',
+                  href: '/city/bangkok',
+                  src: getRandomFallbackImage(),
+                },
+                {
+                  title: 'Tel Aviv',
+                  category: 'Israel',
+                  href: '/city/tel-aviv',
+                  src: getRandomFallbackImage(),
+                },
+                {
+                  title: 'Buenos Aires',
+                  category: 'Argentina',
+                  href: '/city/buenos-aires',
+                  src: getRandomFallbackImage(),
+                },
+                {
+                  title: 'Cape Town',
+                  category: 'South Africa',
+                  href: '/city/cape-town',
+                  src: getRandomFallbackImage(),
+                },
+                {
+                  title: 'Tokyo',
+                  category: 'Japan',
+                  href: '/city/tokyo',
+                  src: getRandomFallbackImage(),
+                },
+              ] satisfies CarouselCard[]
+            }
           />
         </div>
       </section>
 
       {/* ── Browse categories ───────────────────────────────────────── */}
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8">
+        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-8">
           {t('home.browse', 'Browse')}
         </h2>
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border">
@@ -205,8 +275,7 @@ const Index = React.memo(() => {
               <li key={feature.titleKey} className="bg-background">
                 <LocalizedLink
                   to={feature.link}
-                  className="flex h-full items-start gap-3 p-6 transition-colors hover:bg-muted/40"
-                  style={{ textDecoration: 'none' }}
+                  className="flex h-full items-start gap-4 p-6 transition-colors hover:bg-muted/40 no-underline"
                 >
                   <Icon size={20} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
                   <div>
@@ -239,26 +308,25 @@ const Index = React.memo(() => {
       {/* ── Final CTA — plain monochrome ─────────────────────────── */}
       <section className="px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background text-center">
         <h2
-          className="text-3xl md:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto"
+          className="text-3xl md:text-5xl font-bold tracking-tight max-w-3xl mx-auto"
           style={{ letterSpacing: '-0.03em' }}
         >
-          {t('home.cta.title', 'Built by the community,')} {t('home.cta.title2', 'for the community.')}
+          {t('home.cta.title', 'Built by the community,')}{' '}
+          {t('home.cta.title2', 'for the community.')}
         </h2>
         <p className="mt-4 text-sm md:text-base opacity-70 max-w-xl mx-auto">
           {t('home.cta.subtitle', 'Verified safe spaces, real reviews, no paywalls.')}
         </p>
-        <div className="mt-8 flex flex-wrap gap-3 justify-center">
+        <div className="mt-8 flex flex-wrap gap-4 justify-center">
           <LocalizedLink
             to="/submit"
-            className="inline-flex items-center justify-center rounded-full bg-background text-foreground px-7 py-4 text-sm font-extrabold tracking-tight hover:opacity-90 transition-opacity"
-            style={{ textDecoration: 'none' }}
+            className="inline-flex items-center justify-center rounded-full bg-background text-foreground px-8 py-4 text-sm font-bold tracking-tight hover:opacity-90 transition-opacity no-underline"
           >
             {t('home.cta.submit', 'Add a venue')}
           </LocalizedLink>
           <LocalizedLink
             to="/about"
-            className="inline-flex items-center justify-center rounded-full border border-background text-background px-7 py-4 text-sm font-extrabold tracking-tight hover:bg-background hover:text-foreground transition-colors"
-            style={{ textDecoration: 'none' }}
+            className="inline-flex items-center justify-center rounded-full border border-background text-background px-8 py-4 text-sm font-bold tracking-tight hover:bg-background hover:text-foreground transition-colors no-underline"
           >
             {t('home.cta.about', 'Read the mission')}
           </LocalizedLink>

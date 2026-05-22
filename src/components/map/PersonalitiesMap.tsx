@@ -297,7 +297,8 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
     <div>
       <div
         ref={containerRef}
-        style={{ width: '100%', height, borderRadius: 8 }}
+        className="rounded-element"
+        style={{ width: '100%', height }}
         role="region"
         aria-label="Map of personalities by country"
       />

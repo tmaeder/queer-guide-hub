@@ -322,7 +322,7 @@ export default function Places() {
             )}
 
             {/* Dynamic Title */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <h3 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
                 {viewMode === 'overview' && 'Explore Places'}
                 {viewMode === 'country' && selectedCountry && <>Explore {selectedCountry.name}</>}
@@ -453,7 +453,7 @@ export default function Places() {
                 {/* Zone A — Top queer destinations */}
                 {topQueerCountries.length > 0 && (
                   <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <Sparkles style={ICON_MD} aria-hidden="true" />
                       <h5 className="text-2xl font-semibold">Top queer destinations</h5>
                     </div>
@@ -518,7 +518,7 @@ export default function Places() {
                               aria-expanded={isExpanded}
                               className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
                             >
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-4">
                                 <div className="p-2 bg-muted-foreground/10">
                                   <Globe style={ICON_MD} />
                                 </div>
@@ -584,7 +584,7 @@ export default function Places() {
                     aria-expanded={showAllCountries}
                     className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <Globe style={ICON_MD} />
                       <div>
                         <p className="text-lg font-semibold">Show all countries &amp; territories</p>
@@ -617,7 +617,7 @@ export default function Places() {
                 style={TAB_CONTENT_STYLE}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <h5 className="text-2xl font-semibold">Cities</h5>
                     <Badge
                       variant="secondary"
@@ -640,7 +640,7 @@ export default function Places() {
                           aria-expanded={isExpanded}
                           className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-4">
                             <div className="p-2 bg-muted-foreground/10">
                               <Building2 style={ICON_MD} />
                             </div>
@@ -724,7 +724,7 @@ export default function Places() {
                       if (featured.length === 0) return null;
                       return (
                         <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-4">
                             <Sparkles style={ICON_MD} aria-hidden="true" />
                             <h5 className="text-2xl font-semibold">Famous queer neighborhoods</h5>
                           </div>
@@ -773,7 +773,7 @@ export default function Places() {
                                 aria-expanded={isExpanded}
                                 className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
                               >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-4">
                                   <div className="p-2 bg-muted-foreground/10">
                                     <Globe style={ICON_MD} />
                                   </div>
@@ -788,7 +788,7 @@ export default function Places() {
                               </button>
 
                               {isExpanded && Object.entries(byCountry).map(([countryId, { name: countryName, villages: countryVillages }]) => (
-                                <div key={countryId} className="flex flex-col gap-3">
+                                <div key={countryId} className="flex flex-col gap-4">
                                   <p className="text-sm font-semibold text-muted-foreground pl-1">
                                     {countryName}
                                   </p>
@@ -873,7 +873,7 @@ export default function Places() {
               </div>
 
               <div className="flex flex-col gap-6">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <h5 className="text-2xl font-semibold">Cities in {selectedCountry.name}</h5>
                   <Badge
                     variant="secondary"
@@ -931,7 +931,7 @@ export default function Places() {
             <div className="flex flex-col gap-8">
               {searchResults.countries?.length > 0 && (
                 <div className="flex flex-col gap-6">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <h5 className="text-2xl font-semibold">Countries</h5>
                     <Badge
                       variant="secondary"
@@ -957,7 +957,7 @@ export default function Places() {
 
               {searchResults.cities?.length > 0 && (
                 <div className="flex flex-col gap-6">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <h5 className="text-2xl font-semibold">Cities</h5>
                     <Badge
                       variant="secondary"

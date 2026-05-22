@@ -93,7 +93,7 @@ Central Park Cafe,Cozy cafe overlooking Central Park,cafe,2 E 60th St,New York,N
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Upload style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Upload size={16} className="mr-2" />
           Import CSV
         </Button>
       </DialogTrigger>
@@ -120,7 +120,7 @@ Central Park Cafe,Cozy cafe overlooking Central Park,cafe,2 E 60th St,New York,N
 
           <div className="flex justify-between">
             <Button variant="outline" onClick={downloadTemplate}>
-              <Download style={{ width: 16, height: 16, marginRight: 8 }} />
+              <Download size={16} className="mr-2" />
               Download Template
             </Button>
             <Button onClick={handleImport} disabled={!file || isUploading}>

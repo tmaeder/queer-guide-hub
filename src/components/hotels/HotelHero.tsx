@@ -26,8 +26,8 @@ export function HotelHero({ hotel }: HotelHeroProps) {
   return (
     <LocalizedLink
       to={`/hotels/${hotel.slug}`}
-      className="block group border border-foreground/10"
-      style={{ textDecoration: 'none', color: 'inherit' }}
+      className="block group border border-foreground/10 no-underline"
+      style={{ color: 'inherit' }}
       aria-label={name}
     >
       <div className="grid grid-cols-1 md:grid-cols-2">
@@ -46,9 +46,7 @@ export function HotelHero({ hotel }: HotelHeroProps) {
           <span className="text-xs uppercase tracking-wider text-muted-foreground">
             Featured stay
           </span>
-          <h2 className="text-3xl md:text-4xl font-semibold leading-tight">
-            {name}
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-semibold leading-tight">{name}</h2>
           {location && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <MapPin className="w-4 h-4" />
@@ -56,9 +54,7 @@ export function HotelHero({ hotel }: HotelHeroProps) {
             </div>
           )}
           {note && (
-            <p className="text-sm md:text-base text-foreground/80 leading-relaxed">
-              {note}
-            </p>
+            <p className="text-sm md:text-base text-foreground/80 leading-relaxed">{note}</p>
           )}
           <div className="inline-flex items-center gap-2 text-sm font-medium mt-2 group-hover:underline">
             View hotel

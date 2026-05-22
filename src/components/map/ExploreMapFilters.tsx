@@ -98,7 +98,7 @@ export const ExploreMapFiltersPanel = ({
   };
 
   return (
-    <div className="absolute top-3 left-16 right-3 z-20 rounded-container border border-border bg-background/85 backdrop-blur-md shadow-[var(--shadow-aceternity-sm)] px-3 py-2">
+    <div className="absolute top-3 left-16 right-3 z-20 rounded-container border border-border bg-background/85 backdrop-blur-md px-4 py-2">
       <div className="flex gap-2 items-center">
         <Popover open={popoverOpen && (loading || suggestions.length > 0 || query.length >= 2)} onOpenChange={setPopoverOpen}>
           <PopoverTrigger asChild>
@@ -154,7 +154,7 @@ export const ExploreMapFiltersPanel = ({
           <PopoverContent
             id="map-search-listbox"
             align="start"
-            className="p-0 w-[--radix-popover-trigger-width] border-border shadow-[var(--shadow-aceternity)]"
+            className="p-0 w-[--radix-popover-trigger-width] border-border"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <Command shouldFilter={false}>
@@ -200,9 +200,9 @@ export const ExploreMapFiltersPanel = ({
           </Button>
 
           <CollapsibleContent>
-            <div className="mt-3 flex gap-2 flex-wrap items-end">
+            <div className="mt-4 flex gap-2 flex-wrap items-end">
               <div className="flex flex-col gap-1 min-w-[140px]">
-                <Label htmlFor="category-filter" className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                <Label htmlFor="category-filter" className="text-xs2 uppercase tracking-wider text-muted-foreground">
                   Category
                 </Label>
                 <Input

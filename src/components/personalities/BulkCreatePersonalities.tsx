@@ -1,28 +1,31 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, AlertCircle, CheckCircle, XCircle, RefreshCw } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2, Plus, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 export const BulkCreatePersonalities = () => {
-  const [names, setNames] = useState("");
+  const [names, setNames] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
-  const [results, setResults] = useState<{ created: Array<{ name: string; image_url?: string; profession?: string; nationality?: string }>, errors: Array<{ name: string; error: string }> } | null>(null);
+  const [results, setResults] = useState<{
+    created: Array<{ name: string; image_url?: string; profession?: string; nationality?: string }>;
+    errors: Array<{ name: string; error: string }>;
+  } | null>(null);
   const [sources, setSources] = useState({
     wikidata: true,
     wikipedia: true,
     openLibrary: true,
     bandsintown: true,
-    pexelsImages: true
+    pexelsImages: true,
   });
   const { toast } = useToast();
 
@@ -35,7 +38,7 @@ export const BulkCreatePersonalities = () => {
         validationErrors.push(`"${name}" is too short (minimum 2 characters) - skipped`);
       } else if (name.length > 100) {
         validationErrors.push(`"${name}" is too long (maximum 100 characters) - skipped`);
-      } else if (!new RegExp("^[\\p{L}\\p{M}\\p{N}\\s\\-.'()\":,&;]+$", "u").test(name)) {
+      } else if (!new RegExp('^[\\p{L}\\p{M}\\p{N}\\s\\-.\'()":,&;]+$', 'u').test(name)) {
         validationErrors.push(`"${name}" contains invalid characters - skipped`);
       } else {
         validNames.push(name);
@@ -50,9 +53,9 @@ export const BulkCreatePersonalities = () => {
 
     if (!names.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Please enter personality names separated by lines",
-        variant: "destructive",
+        title: 'Validation Error',
+        description: 'Please enter personality names separated by lines',
+        variant: 'destructive',
       });
       return;
     }
@@ -61,15 +64,16 @@ export const BulkCreatePersonalities = () => {
     setProgress({ current: 0, total: 0 });
 
     try {
-      const namesList = names.split('\n')
-        .map(name => name.trim())
-        .filter(name => name.length > 0);
+      const namesList = names
+        .split('\n')
+        .map((name) => name.trim())
+        .filter((name) => name.length > 0);
 
       if (namesList.length === 0) {
         toast({
-          title: "Validation Error",
-          description: "No valid names found after filtering",
-          variant: "destructive",
+          title: 'Validation Error',
+          description: 'No valid names found after filtering',
+          variant: 'destructive',
         });
         return;
       }
@@ -78,21 +82,21 @@ export const BulkCreatePersonalities = () => {
 
       if (validNames.length === 0) {
         toast({
-          title: "No Valid Names",
-          description: "All provided names failed validation",
-          variant: "destructive",
+          title: 'No Valid Names',
+          description: 'All provided names failed validation',
+          variant: 'destructive',
         });
 
         setResults({
           created: [],
-          errors: validationErrors.map(error => ({ name: 'Validation', error }))
+          errors: validationErrors.map((error) => ({ name: 'Validation', error })),
         });
         return;
       }
 
       if (validationErrors.length > 0) {
         toast({
-          title: "Processing Valid Names",
+          title: 'Processing Valid Names',
           description: `Skipping ${validationErrors.length} invalid names, processing ${validNames.length} valid names`,
         });
       }
@@ -100,20 +104,23 @@ export const BulkCreatePersonalities = () => {
       setProgress({ current: 0, total: validNames.length });
 
       toast({
-        title: "Processing Started",
+        title: 'Processing Started',
         description: `Processing ${validNames.length} personalities...`,
       });
 
       let data, error;
       try {
         const response = await supabase.functions.invoke('bulk-create-personalities', {
-          body: { names: validNames, sources }
+          body: { names: validNames, sources },
         });
         data = response.data;
         error = response.error;
       } catch (invokeError) {
         console.error('Network error calling edge function:', invokeError);
-        throw new Error(`Network error: ${invokeError.message || 'Failed to send request to the Edge Function'}`);
+        throw new Error(
+          `Network error: ${invokeError.message || 'Failed to send request to the Edge Function'}`,
+          { cause: invokeError },
+        );
       }
 
       if (error) {
@@ -135,45 +142,44 @@ export const BulkCreatePersonalities = () => {
       setResults({
         created: data.results || [],
         errors: [
-          ...validationErrors.map(error => ({ name: 'Validation', error })),
-          ...(data.errorDetails || [])
-        ]
+          ...validationErrors.map((error) => ({ name: 'Validation', error })),
+          ...(data.errorDetails || []),
+        ],
       });
 
       if (createdCount > 0 && errorCount === 0) {
         toast({
-          title: "All Personalities Created",
+          title: 'All Personalities Created',
           description: `Successfully created ${createdCount} personalities`,
         });
-        setNames("");
+        setNames('');
       } else if (createdCount > 0 && errorCount > 0) {
         toast({
-          title: "Partial Success",
+          title: 'Partial Success',
           description: `Created ${createdCount} personalities, ${errorCount} failed`,
-          variant: "destructive",
+          variant: 'destructive',
         });
       } else {
         toast({
-          title: "Creation Failed",
+          title: 'Creation Failed',
           description: `No personalities created. ${errorCount} errors occurred`,
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
-
     } catch (error) {
       console.error('Error creating personalities:', error);
 
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 
       toast({
-        title: "System Error",
+        title: 'System Error',
         description: `Failed to process request: ${errorMessage}`,
-        variant: "destructive",
+        variant: 'destructive',
       });
 
       setResults({
         created: [],
-        errors: [{ name: 'System Error', error: errorMessage }]
+        errors: [{ name: 'System Error', error: errorMessage }],
       });
     } finally {
       setIsLoading(false);
@@ -185,8 +191,8 @@ export const BulkCreatePersonalities = () => {
     if (!results?.errors) return;
 
     const failedNames = results.errors
-      .filter(err => err.name !== 'Validation' && err.name !== 'System Error')
-      .map(err => err.name)
+      .filter((err) => err.name !== 'Validation' && err.name !== 'System Error')
+      .map((err) => err.name)
       .join('\n');
 
     setNames(failedNames);
@@ -210,7 +216,8 @@ export const BulkCreatePersonalities = () => {
             Bulk Create Personalities
           </CardTitle>
           <CardDescription>
-            Enter personality names (one per line) to automatically create entries enriched with Wikipedia data
+            Enter personality names (one per line) to automatically create entries enriched with
+            Wikipedia data
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -225,13 +232,13 @@ export const BulkCreatePersonalities = () => {
               />
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>
-                  {names.split('\n').filter(name => name.trim().length > 0).length} names entered
+                  {names.split('\n').filter((name) => name.trim().length > 0).length} names entered
                 </span>
                 {names.trim() && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setNames("")}
+                    onClick={() => setNames('')}
                     disabled={isLoading}
                   >
                     Clear
@@ -240,15 +247,15 @@ export const BulkCreatePersonalities = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <Label>Data Sources</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="wikidata"
                     checked={sources.wikidata}
                     onCheckedChange={(checked) =>
-                      setSources(prev => ({ ...prev, wikidata: checked as boolean }))
+                      setSources((prev) => ({ ...prev, wikidata: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
@@ -259,7 +266,7 @@ export const BulkCreatePersonalities = () => {
                     id="wikipedia"
                     checked={sources.wikipedia}
                     onCheckedChange={(checked) =>
-                      setSources(prev => ({ ...prev, wikipedia: checked as boolean }))
+                      setSources((prev) => ({ ...prev, wikipedia: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
@@ -270,7 +277,7 @@ export const BulkCreatePersonalities = () => {
                     id="openLibrary"
                     checked={sources.openLibrary}
                     onCheckedChange={(checked) =>
-                      setSources(prev => ({ ...prev, openLibrary: checked as boolean }))
+                      setSources((prev) => ({ ...prev, openLibrary: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
@@ -281,7 +288,7 @@ export const BulkCreatePersonalities = () => {
                     id="bandsintown"
                     checked={sources.bandsintown}
                     onCheckedChange={(checked) =>
-                      setSources(prev => ({ ...prev, bandsintown: checked as boolean }))
+                      setSources((prev) => ({ ...prev, bandsintown: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
@@ -292,7 +299,7 @@ export const BulkCreatePersonalities = () => {
                     id="pexelsImages"
                     checked={sources.pexelsImages}
                     onCheckedChange={(checked) =>
-                      setSources(prev => ({ ...prev, pexelsImages: checked as boolean }))
+                      setSources((prev) => ({ ...prev, pexelsImages: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
@@ -306,17 +313,16 @@ export const BulkCreatePersonalities = () => {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between text-sm">
                 <span>Processing personalities...</span>
-                <span>{progress.current}/{progress.total}</span>
+                <span>
+                  {progress.current}/{progress.total}
+                </span>
               </div>
               <Progress value={(progress.current / progress.total) * 100} />
             </div>
           )}
 
           <div className="flex gap-2">
-            <Button
-              onClick={handleBulkCreate}
-              disabled={isLoading || !names.trim()}
-            >
+            <Button onClick={handleBulkCreate} disabled={isLoading || !names.trim()}>
               {isLoading ? (
                 <>
                   <Loader2 />
@@ -331,11 +337,7 @@ export const BulkCreatePersonalities = () => {
             </Button>
 
             {results?.errors && results.errors.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={retryFailedItems}
-                disabled={isLoading}
-              >
+              <Button variant="outline" onClick={retryFailedItems} disabled={isLoading}>
                 <RefreshCw />
                 Retry Failed
               </Button>
@@ -349,15 +351,9 @@ export const BulkCreatePersonalities = () => {
         <Card>
           <CardHeader>
             <CardTitle>
-              {results.created.length > 0 && results.errors.length === 0 && (
-                <CheckCircle />
-              )}
-              {results.created.length > 0 && results.errors.length > 0 && (
-                <AlertCircle />
-              )}
-              {results.created.length === 0 && results.errors.length > 0 && (
-                <XCircle />
-              )}
+              {results.created.length > 0 && results.errors.length === 0 && <CheckCircle />}
+              {results.created.length > 0 && results.errors.length > 0 && <AlertCircle />}
+              {results.created.length === 0 && results.errors.length > 0 && <XCircle />}
               Results Summary
             </CardTitle>
           </CardHeader>
@@ -385,14 +381,22 @@ export const BulkCreatePersonalities = () => {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   {results.created.map((personality, index: number) => (
-                    <div key={index} className="text-sm p-2 rounded border-l-4" style={{ backgroundColor: 'hsl(var(--success) / 0.1)', borderLeftColor: 'hsl(var(--success))' }}>
-                      <div className="flex items-start gap-3">
+                    <div
+                      key={index}
+                      className="text-sm p-2 rounded border-l-4"
+                      style={{
+                        backgroundColor: 'hsl(var(--success) / 0.1)',
+                        borderLeftColor: 'hsl(var(--success))',
+                      }}
+                    >
+                      <div className="flex items-start gap-4">
                         {personality.image_url && (
                           <img
                             src={personality.image_url}
                             alt={personality.name}
                             role="presentation"
-                            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                            className="rounded-full shrink-0"
+                            style={{ width: '48px', height: '48px', objectFit: 'cover' }}
                             onError={(e) => {
                               (e.currentTarget as HTMLImageElement).style.display = 'none';
                             }}
@@ -401,10 +405,14 @@ export const BulkCreatePersonalities = () => {
                         <div className="flex-1">
                           <p className="text-sm font-medium">{personality.name}</p>
                           {personality.profession && (
-                            <p className="text-sm text-muted-foreground">{personality.profession}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {personality.profession}
+                            </p>
                           )}
                           {personality.nationality && (
-                            <span className="text-xs text-muted-foreground">{personality.nationality}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {personality.nationality}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -424,15 +432,20 @@ export const BulkCreatePersonalities = () => {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   {results.errors.map((error, index: number) => (
-                    <div key={index} className="text-sm p-2 rounded border-l-4" style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)', borderLeftColor: 'hsl(var(--destructive))' }}>
+                    <div
+                      key={index}
+                      className="text-sm p-2 rounded border-l-4"
+                      style={{
+                        backgroundColor: 'hsl(var(--destructive) / 0.1)',
+                        borderLeftColor: 'hsl(var(--destructive))',
+                      }}
+                    >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <p className="text-sm font-medium">{error.name}</p>
                           <p className="text-sm text-muted-foreground mt-1">{error.error}</p>
                         </div>
-                        <Badge variant="secondary">
-                          {getErrorCategory(error.error)}
-                        </Badge>
+                        <Badge variant="secondary">{getErrorCategory(error.error)}</Badge>
                       </div>
                     </div>
                   ))}
@@ -452,7 +465,9 @@ export const BulkCreatePersonalities = () => {
             <li>Use full names (e.g., "Marie Curie" instead of just "Curie")</li>
             <li>Include middle names or suffixes if the person is commonly known by them</li>
             <li>For disambiguation, add context (e.g., "Peter Allen (musician)")</li>
-            <li>One name per line, avoid special characters except hyphens, periods, and parentheses</li>
+            <li>
+              One name per line, avoid special characters except hyphens, periods, and parentheses
+            </li>
           </ul>
         </AlertDescription>
       </Alert>

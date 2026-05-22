@@ -4,7 +4,17 @@ import { Clock, X, Navigation, LayoutGrid, Loader2, Sparkles } from 'lucide-reac
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
 import { TYPE_ICONS } from '@/hooks/useSearchSuggestions';
 
-const RAIL_ORDER = ['venue', 'event', 'city', 'country', 'personality', 'news', 'marketplace', 'tag', 'queer_village'];
+const RAIL_ORDER = [
+  'venue',
+  'event',
+  'city',
+  'country',
+  'personality',
+  'news',
+  'marketplace',
+  'tag',
+  'queer_village',
+];
 
 export interface SearchPopoverRailProps {
   query: string;
@@ -48,12 +58,11 @@ export function SearchPopoverRail({
       aria-label={t('search.rail.label', 'Search scopes')}
       style={{
         width: 180,
-        flexShrink: 0,
         borderRight: '1px solid hsl(var(--border))',
-        display: 'flex',
         flexDirection: 'column',
         background: 'hsl(var(--background))',
       }}
+      className="shrink-0 flex"
     >
       <div style={{ overflowY: 'auto', flex: 1 }}>
         {!hasQuery && recentItems.length > 0 && (
@@ -80,14 +89,14 @@ export function SearchPopoverRail({
                       display: 'inline-flex',
                     }}
                   >
-                    <X style={{ height: 11, width: 11 }} />
+                    <X size={11} />
                   </button>
                 }
               >
-                <Clock style={{ height: 13, width: 13, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                <Clock size={13} className="text-muted-foreground shrink-0" />
                 <span
-                  className="text-xs"
-                  style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
+                  className="text-xs overflow-hidden whitespace-nowrap"
+                  style={{ textOverflow: 'ellipsis', flex: 1 }}
                 >
                   {term}
                 </span>
@@ -97,16 +106,12 @@ export function SearchPopoverRail({
               <button
                 type="button"
                 onClick={onClearRecents}
-                className="text-xs"
+                className="text-xs block text-left text-muted-foreground cursor-pointer"
                 style={{
-                  display: 'block',
                   width: '100%',
-                  textAlign: 'left',
                   padding: '4px 12px 8px',
                   border: 0,
                   background: 'transparent',
-                  color: 'hsl(var(--muted-foreground))',
-                  cursor: 'pointer',
                 }}
               >
                 {t('search.clearRecent', 'Clear')}
@@ -128,8 +133,10 @@ export function SearchPopoverRail({
           {RAIL_ORDER.map((id, idx) => {
             const meta = CONTENT_TYPES.find((c) => c.id === id);
             if (!meta) return null;
-            const Icon = (TYPE_ICONS[id] || Sparkles) as React.ComponentType<{ style?: React.CSSProperties }>;
-            const count = hasQuery ? countsByType[id] ?? 0 : null;
+            const Icon = (TYPE_ICONS[id] || Sparkles) as React.ComponentType<{
+              style?: React.CSSProperties;
+            }>;
+            const count = hasQuery ? (countsByType[id] ?? 0) : null;
             return (
               <ScopeRow
                 key={id}
@@ -149,15 +156,21 @@ export function SearchPopoverRail({
       <div style={{ borderTop: '1px solid hsl(var(--border))' }}>
         {!hasQuery && nearMeSupported && (
           <RailRow id="rail-nearme" onClick={onNearMe}>
-            <Navigation style={{ height: 13, width: 13, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-            <span className="text-xs" style={{ flex: 1 }}>{t('search.nearMe', 'Near me')}</span>
-            {nearMeLoading && <Loader2 className="animate-spin" style={{ height: 11, width: 11 }} />}
+            <Navigation size={13} className="text-muted-foreground shrink-0" />
+            <span className="text-xs" style={{ flex: 1 }}>
+              {t('search.nearMe', 'Near me')}
+            </span>
+            {nearMeLoading && <Loader2 className="animate-spin" size={11} />}
           </RailRow>
         )}
         <RailRow id="rail-browse" onClick={onBrowseAll}>
-          <LayoutGrid style={{ height: 13, width: 13, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-          <span className="text-xs" style={{ flex: 1 }}>{t('search.browseAll', 'Browse all')}</span>
-          <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: '0.7rem' }}>→</span>
+          <LayoutGrid size={13} className="text-muted-foreground shrink-0" />
+          <span className="text-xs" style={{ flex: 1 }}>
+            {t('search.browseAll', 'Browse all')}
+          </span>
+          <span style={{ fontSize: '0.7rem' }} className="text-muted-foreground">
+            →
+          </span>
         </RailRow>
       </div>
     </div>
@@ -166,10 +179,10 @@ export function SearchPopoverRail({
 
 function RailSection({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div style={{ paddingTop: 8, paddingBottom: 4 }}>
+    <div className="pt-2 pb-1">
       <div
-        className="text-[10px] uppercase tracking-wider text-muted-foreground"
-        style={{ padding: '4px 12px 6px', fontWeight: 600 }}
+        className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold"
+        style={{ padding: '4px 12px 6px' }}
       >
         {heading}
       </div>
@@ -269,14 +282,17 @@ function ScopeRow({
         (e.currentTarget as HTMLDivElement).style.background = 'transparent';
       }}
     >
-      <Icon style={{ height: 13, width: 13, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-      <span className="text-xs" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <Icon style={{ height: 13, width: 13 }} className="text-muted-foreground shrink-0" />
+      <span
+        className="text-xs overflow-hidden whitespace-nowrap"
+        style={{ flex: 1, textOverflow: 'ellipsis' }}
+      >
         {label}
       </span>
       {count !== null && (
         <span
-          className="text-[11px]"
-          style={{ color: 'hsl(var(--muted-foreground))', fontVariantNumeric: 'tabular-nums' }}
+          className="text-xs2 text-muted-foreground"
+          style={{ fontVariantNumeric: 'tabular-nums' }}
         >
           {count === 0 ? '—' : count}
         </span>

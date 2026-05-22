@@ -116,7 +116,7 @@ export function VideoManager() {
             placeholder="Search videos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="pl-10"
           />
         </div>
       </div>
@@ -152,12 +152,12 @@ export function VideoManager() {
               <h3 className="font-semibold mb-2 line-clamp-2">{video.title}</h3>
 
               {video.description && (
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                   {video.description}
                 </p>
               )}
 
-              <div className="text-xs text-muted-foreground mb-3">
+              <div className="text-xs text-muted-foreground mb-4">
                 <div>Renditions: {video.renditions.length}</div>
                 <div>Created: {new Date(video.created_at).toLocaleDateString()}</div>
               </div>

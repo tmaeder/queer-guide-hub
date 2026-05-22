@@ -30,14 +30,16 @@ function SectionHeader({
   moreLink: string;
 }) {
   return (
-    <div className="flex justify-between items-center mb-3">
+    <div className="flex justify-between items-center mb-4">
       <div className="flex items-center gap-2">
-        <Icon style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <span className="font-semibold" style={{ fontSize: '0.95rem' }}>{title}</span>
+        <Icon style={{ height: 18, width: 18 }} className="text-primary" />
+        <span className="font-semibold" style={{ fontSize: '0.95rem' }}>
+          {title}
+        </span>
       </div>
       <LocalizedLink to={moreLink}>
         <Button variant="ghost" size="sm">
-          See all <ArrowRight style={{ height: 14, width: 14, marginLeft: 4 }} />
+          See all <ArrowRight size={14} className="ml-1" />
         </Button>
       </LocalizedLink>
     </div>
@@ -45,22 +47,24 @@ function SectionHeader({
 }
 
 function ResultsRow({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-      {children}
-    </div>
-  );
+  return <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">{children}</div>;
 }
 
 function LoadingRow() {
   return (
     <ResultsRow>
-      {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={140} />)}
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} variant="rounded" height={140} />
+      ))}
     </ResultsRow>
   );
 }
 
-export function CityTravelHub({ destinationIata, destinationCity, equalityScore }: CityTravelHubProps) {
+export function CityTravelHub({
+  destinationIata,
+  destinationCity,
+  equalityScore,
+}: CityTravelHubProps) {
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 
   const { data: flightDeals, isLoading: flightsLoading } = useTravelDeals({
@@ -97,7 +101,12 @@ export function CityTravelHub({ destinationIata, destinationCity, equalityScore 
         ) : flightDeals && flightDeals.length > 0 ? (
           <ResultsRow>
             {flightDeals.slice(0, 3).map((deal, i) => (
-              <TravelDealCard key={`${deal.origin}-${deal.destination}-${i}`} deal={deal} originCity={originCity || undefined} destinationCity={destinationCity} />
+              <TravelDealCard
+                key={`${deal.origin}-${deal.destination}-${i}`}
+                deal={deal}
+                originCity={originCity || undefined}
+                destinationCity={destinationCity}
+              />
             ))}
           </ResultsRow>
         ) : (
@@ -111,15 +120,27 @@ export function CityTravelHub({ destinationIata, destinationCity, equalityScore 
 
       {/* Best Time to Fly */}
       {destinationIata && (
-        <FlightCalendarWidget destinationIata={destinationIata} destinationCity={destinationCity} type="monthly" />
+        <FlightCalendarWidget
+          destinationIata={destinationIata}
+          destinationCity={destinationCity}
+          type="monthly"
+        />
       )}
 
       {/* Hotels */}
       <div>
-        <SectionHeader icon={Hotel} title={`Hotels in ${destinationCity}`} moreLink={`/travel?tab=hotels&city=${encodeURIComponent(destinationCity)}`} />
-        {hotelsLoading ? <LoadingRow /> : hotelResults && hotelResults.length > 0 ? (
+        <SectionHeader
+          icon={Hotel}
+          title={`Hotels in ${destinationCity}`}
+          moreLink={`/travel?tab=hotels&city=${encodeURIComponent(destinationCity)}`}
+        />
+        {hotelsLoading ? (
+          <LoadingRow />
+        ) : hotelResults && hotelResults.length > 0 ? (
           <ResultsRow>
-            {hotelResults.slice(0, 3).map((hotel) => <UnifiedBookingCard key={hotel.id} result={hotel} />)}
+            {hotelResults.slice(0, 3).map((hotel) => (
+              <UnifiedBookingCard key={hotel.id} result={hotel} />
+            ))}
           </ResultsRow>
         ) : (
           <div className="text-center py-4 bg-accent rounded">
@@ -130,15 +151,27 @@ export function CityTravelHub({ destinationIata, destinationCity, equalityScore 
 
       {/* Activities */}
       <div>
-        <SectionHeader icon={Ticket} title={`Things to do in ${destinationCity}`} moreLink={`/travel?tab=activities&city=${encodeURIComponent(destinationCity)}`} />
-        {activitiesLoading ? <LoadingRow /> : activityResults && activityResults.length > 0 ? (
+        <SectionHeader
+          icon={Ticket}
+          title={`Things to do in ${destinationCity}`}
+          moreLink={`/travel?tab=activities&city=${encodeURIComponent(destinationCity)}`}
+        />
+        {activitiesLoading ? (
+          <LoadingRow />
+        ) : activityResults && activityResults.length > 0 ? (
           <ResultsRow>
-            {activityResults.slice(0, 3).map((a) => <UnifiedBookingCard key={a.id} result={a} />)}
+            {activityResults.slice(0, 3).map((a) => (
+              <UnifiedBookingCard key={a.id} result={a} />
+            ))}
           </ResultsRow>
         ) : (
           <div className="text-center py-4 bg-accent rounded">
             <p className="text-muted-foreground text-sm">
-              No activities found. Check <LocalizedLink to="/events" style={{ textDecoration: 'underline' }}>events</LocalizedLink> for things happening in {destinationCity}.
+              No activities found. Check{' '}
+              <LocalizedLink to="/events" className="underline">
+                events
+              </LocalizedLink>{' '}
+              for things happening in {destinationCity}.
             </p>
           </div>
         )}
@@ -148,7 +181,12 @@ export function CityTravelHub({ destinationIata, destinationCity, equalityScore 
       <CarRentalSection city={destinationCity} compact />
 
       {/* Airport Transfer (safety-aware) */}
-      <TransferSection city={destinationCity} equalityScore={equalityScore} airportCode={destinationIata} compact />
+      <TransferSection
+        city={destinationCity}
+        equalityScore={equalityScore}
+        airportCode={destinationIata}
+        compact
+      />
 
       {/* Travel Insurance */}
       <InsuranceSection compact />

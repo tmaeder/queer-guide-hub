@@ -115,7 +115,7 @@ export default function AdminEventTypes() {
               className="w-4 h-4 rounded-badge flex-shrink-0"
               style={{ backgroundColor: info.row.original.color }}
             />
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
           </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -124,13 +124,8 @@ export default function AdminEventTypes() {
         header: 'Description',
         cell: (info) => (
           <span
-            style={{
-              maxWidth: 300,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              display: 'block',
-            }}
+            style={{ maxWidth: 300, textOverflow: 'ellipsis' }}
+            className="overflow-hidden whitespace-nowrap block"
           >
             {info.getValue() || '-'}
           </span>
@@ -179,7 +174,7 @@ export default function AdminEventTypes() {
       ],
       toolbarActions: (
         <Button size="sm" onClick={openCreate}>
-          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          <Plus size={16} className="mr-1.5" />
           Add Event Type
         </Button>
       ),
@@ -195,70 +190,70 @@ export default function AdminEventTypes() {
       config={tableConfig}
       afterTable={
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent style={{ maxWidth: 480 }}>
-          <DialogHeader>
-            <DialogTitle>{editingId ? 'Edit Event Type' : 'Create Event Type'}</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 pt-2">
-            <div>
-              <Label>Name *</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
+          <DialogContent style={{ maxWidth: 480 }}>
+            <DialogHeader>
+              <DialogTitle>{editingId ? 'Edit Event Type' : 'Create Event Type'}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 pt-2">
               <div>
-                <Label>Icon</Label>
+                <Label>Name *</Label>
                 <Input
-                  value={form.icon}
-                  onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
-                  placeholder="Lucide name"
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 />
               </div>
               <div>
-                <Label>Color</Label>
-                <Input
-                  type="color"
-                  value={form.color}
-                  onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                <Label>Description</Label>
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  rows={3}
                 />
               </div>
-              <div>
-                <Label>Sort Order</Label>
-                <Input
-                  type="number"
-                  value={form.sort_order}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
-                  }
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Icon</Label>
+                  <Input
+                    value={form.icon}
+                    onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+                    placeholder="Lucide name"
+                  />
+                </div>
+                <div>
+                  <Label>Color</Label>
+                  <Input
+                    type="color"
+                    value={form.color}
+                    onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label>Sort Order</Label>
+                  <Input
+                    type="number"
+                    value={form.sort_order}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
+                    }
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={form.is_active}
+                  onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
                 />
+                <Label>Active</Label>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={form.is_active}
-                onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
-              />
-              <Label>Active</Label>
-            </div>
-          </div>
-          <DialogFooter style={{ marginTop: 16 }}>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       }
     />
   );

@@ -61,7 +61,7 @@ export const CreateGroupDialog = ({
   return <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Plus size={16} className="mr-2" />
           Create Group
         </Button>
       </DialogTrigger>
@@ -69,7 +69,7 @@ export const CreateGroupDialog = ({
         <DialogHeader>
           <DialogTitle>
             <span className="flex items-center gap-2">
-              <Users style={{ height: 20, width: 20 }} />
+              <Users size={20} />
               Create New Group
             </span>
           </DialogTitle>
@@ -114,10 +114,10 @@ export const CreateGroupDialog = ({
             <TagSelector selectedTags={formData.tags} onTagsChange={tags => setFormData(prev => ({
             ...prev,
             tags
-          }))} placeholder="Add tags to help others discover your group..." maxTags={5} allowCustomTags={true} />
+          }))} placeholder="Add tags to help others find your group..." maxTags={5} allowCustomTags={true} />
           </div>
 
-          <div className="flex items-center justify-between p-3">
+          <div className="flex items-center justify-between p-4">
             <div>
               <Label htmlFor="private">
                 Private Group
@@ -132,7 +132,7 @@ export const CreateGroupDialog = ({
           }))} />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-4 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>

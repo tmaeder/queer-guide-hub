@@ -19,7 +19,7 @@ export type EntityType = z.infer<typeof EntityType>;
 
 export const TargetTable = z.enum(["venues", "events", "stays", "personalities"]);
 
-export const FieldConfidence = z.record(z.number().min(0).max(1));
+export const FieldConfidence = z.record(z.string(), z.number().min(0).max(1));
 
 export const RawData = z
   .object({
@@ -39,7 +39,7 @@ export const RawData = z
     currency: z.string().optional(),
     images: z.array(z.string().url()).optional(),
     tags: z.array(z.string()).optional(),
-    extras: z.record(z.unknown()).optional(),
+    extras: z.record(z.string(), z.unknown()).optional(),
   })
   .catchall(z.unknown());
 

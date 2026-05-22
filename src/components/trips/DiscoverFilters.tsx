@@ -96,11 +96,11 @@ export function DiscoverFilters({ value, onChange }: Props) {
           className="h-10"
           aria-label={t('trips.discover.filtersAria', 'Open filters')}
         >
-          <SlidersHorizontal style={{ width: 14, height: 14, marginRight: 6 }} />
+          <SlidersHorizontal size={14} className="mr-1.5" />
           {t('trips.discover.filtersButton', 'Filters')}
           {activeCount > 0 && (
             <span
-              className="ml-2 inline-flex items-center justify-center rounded-full bg-background text-foreground text-[0.6875rem] font-bold h-5 min-w-5 px-1"
+              className="ml-2 inline-flex items-center justify-center rounded-full bg-background text-foreground text-xs2 font-bold h-5 min-w-5 px-1"
               aria-label={t('trips.discover.activeCountAria', '{{count}} active', {
                 count: activeCount,
               })}
@@ -115,9 +115,9 @@ export function DiscoverFilters({ value, onChange }: Props) {
           <SheetTitle>{t('trips.discover.filters.title', 'Filter trips')}</SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col gap-7 mt-6 pb-8">
+        <div className="flex flex-col gap-8 mt-6 pb-8">
           <section>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
               {t('trips.discover.filters.travelerType', 'Traveler type')}
             </h4>
             <div className="flex flex-wrap gap-2">
@@ -129,7 +129,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                     type="button"
                     onClick={() => onChange({ ...value, travelerType: tt })}
                     aria-pressed={selected}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                    className={`text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors ${
                       selected
                         ? 'bg-foreground text-background border-transparent'
                         : 'bg-background text-foreground border-border hover:border-foreground/40'
@@ -143,7 +143,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
           </section>
 
           <section>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
               {t('trips.discover.filters.duration', 'Duration')}
             </h4>
             <div className="flex flex-col gap-2">
@@ -155,7 +155,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                     type="button"
                     onClick={() => onChange({ ...value, duration: d })}
                     aria-pressed={selected}
-                    className={`text-left text-sm font-medium px-3 py-2 rounded-element border transition-colors ${
+                    className={`text-left text-sm font-medium px-4 py-2 rounded-element border transition-colors ${
                       selected
                         ? 'bg-foreground text-background border-transparent'
                         : 'bg-background text-foreground border-border hover:border-foreground/40'
@@ -169,7 +169,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
           </section>
 
           <section>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {t('trips.discover.filters.minEquality', 'Min equality score')}
               </h4>
@@ -195,7 +195,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                 'Minimum equality score',
               )}
             />
-            <p className="text-[0.6875rem] text-muted-foreground mt-2 leading-relaxed">
+            <p className="text-xs2 text-muted-foreground mt-2 leading-relaxed">
               {t(
                 'trips.discover.filters.minEqualityHint',
                 'Hides trips visiting countries below this LGBTQ+ legal equality score.',
@@ -204,10 +204,10 @@ export function DiscoverFilters({ value, onChange }: Props) {
           </section>
 
           <section>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
               {t('trips.discover.filters.quality', 'Trip quality')}
             </h4>
-            <label className="flex items-center gap-3 cursor-pointer py-1.5">
+            <label className="flex items-center gap-4 cursor-pointer py-1.5">
               <input
                 type="checkbox"
                 checked={value.hasCover}
@@ -220,7 +220,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                 {t('trips.discover.filters.hasCover', 'Has cover photo')}
               </span>
             </label>
-            <label className="flex items-center gap-3 cursor-pointer py-1.5">
+            <label className="flex items-center gap-4 cursor-pointer py-1.5">
               <input
                 type="checkbox"
                 checked={value.hasOwnerProfile}
@@ -245,7 +245,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
             onClick={() => onChange(DEFAULT_FILTERS)}
             disabled={activeCount === 0}
           >
-            <X style={{ width: 14, height: 14, marginRight: 6 }} />
+            <X size={14} className="mr-1.5" />
             {t('trips.discover.filters.clear', 'Clear all')}
           </Button>
         </SheetFooter>

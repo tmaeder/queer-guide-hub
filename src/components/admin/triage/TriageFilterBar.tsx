@@ -64,7 +64,7 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
               {count > 0 && (
                 <Badge
                   variant="secondary"
-                  className="h-4 min-w-4 px-1 text-[10px] font-normal"
+                  className="h-4 min-w-4 px-1 text-2xs font-normal"
                 >
                   {count}
                 </Badge>
@@ -85,7 +85,7 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
             if (e.key === 'Enter') handleSearchSubmit();
           }}
           placeholder="Search..."
-          className="h-7 pl-7 text-xs"
+          className="h-7 pl-8 text-xs"
         />
       </div>
 

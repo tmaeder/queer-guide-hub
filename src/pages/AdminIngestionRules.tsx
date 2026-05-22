@@ -70,8 +70,7 @@ export default function AdminIngestionRules() {
 
   const { data: rules = [], isLoading } = useQuery<Rule[]>({
     queryKey: ['ingestion_rules'],
-    queryFn: () =>
-      listFrom<Rule>('ingestion_rules', '*', { col: 'priority', ascending: true }),
+    queryFn: () => listFrom<Rule>('ingestion_rules', '*', { col: 'priority', ascending: true }),
   });
 
   const upsertMut = useMutation({
@@ -171,13 +170,11 @@ export default function AdminIngestionRules() {
           onClick={() => navigate('/admin')}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
+          <ArrowLeft size={16} /> Back to Admin
         </Button>
         <div>
-          <h4 className="text-xl font-bold">
-            Ingestion Rules & URL Import
-          </h4>
-          <p style={{ color: 'var(--muted-foreground)' }}>
+          <h4 className="text-xl font-bold">Ingestion Rules & URL Import</h4>
+          <p className="text-muted-foreground">
             Auto-tag/route community submissions; paste a URL to seed an inbox row.
           </p>
         </div>
@@ -185,8 +182,8 @@ export default function AdminIngestionRules() {
 
       <Card>
         <CardHeader>
-          <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Link2 style={{ height: 18, width: 18 }} /> URL Import
+          <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
+            <Link2 size={18} /> URL Import
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -215,8 +212,8 @@ export default function AdminIngestionRules() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Rules</CardTitle>
-            <Button onClick={openNew} size="sm" style={{ display: 'flex', gap: 6 }}>
-              <Plus style={{ width: 14, height: 14 }} /> New rule
+            <Button onClick={openNew} size="sm" className="flex gap-1.5">
+              <Plus size={14} /> New rule
             </Button>
           </div>
         </CardHeader>
@@ -230,19 +227,18 @@ export default function AdminIngestionRules() {
           ) : (
             <div className="flex flex-col gap-2">
               {rules.map((r) => (
-                <div key={r.id} className="p-3 border border-border flex items-center gap-3 flex-wrap">
+                <div
+                  key={r.id}
+                  className="p-4 border border-border flex items-center gap-4 flex-wrap"
+                >
                   <Switch
                     checked={r.enabled}
-                    onCheckedChange={(v: boolean) =>
-                      upsertMut.mutate({ ...r, enabled: v })
-                    }
+                    onCheckedChange={(v: boolean) => upsertMut.mutate({ ...r, enabled: v })}
                   />
                   <div className="flex-1 min-w-[200px]">
                     <p className="text-sm font-medium">{r.name}</p>
                     {r.description && (
-                      <p className="text-xs text-muted-foreground">
-                        {r.description}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{r.description}</p>
                     )}
                     <div className="flex gap-1 mt-1 flex-wrap">
                       {r.match.platforms?.map((p) => (
@@ -276,7 +272,7 @@ export default function AdminIngestionRules() {
                       setDialogOpen(true);
                     }}
                   >
-                    <Pencil style={{ width: 14, height: 14 }} />
+                    <Pencil size={14} />
                   </Button>
                   <Button
                     variant="ghost"
@@ -285,7 +281,7 @@ export default function AdminIngestionRules() {
                       if (confirm(`Delete rule "${r.name}"?`)) deleteMut.mutate(r.id);
                     }}
                   >
-                    <Trash2 style={{ width: 14, height: 14, color: 'hsl(var(--destructive))' }} />
+                    <Trash2 size={14} className="text-destructive" />
                   </Button>
                 </div>
               ))}
@@ -345,7 +341,10 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
   }, [rule, open]);
 
   const splitCsv = (s: string): string[] =>
-    s.split(',').map((x) => x.trim()).filter(Boolean);
+    s
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean);
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -376,7 +375,7 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
         <DialogHeader>
           <DialogTitle>{rule?.id ? 'Edit rule' : 'New rule'}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <Field label="Name">
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
@@ -396,9 +395,7 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
               onChange={(e) => setPriority(Number(e.target.value) || 0)}
             />
           </Field>
-          <p>
-            Match
-          </p>
+          <p>Match</p>
           <Field label="Platforms (csv: telegram, tiktok, …)">
             <Input value={platforms} onChange={(e) => setPlatforms(e.target.value)} />
           </Field>
@@ -411,9 +408,7 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
           <Field label="Regex (case-insensitive)">
             <Input value={regex} onChange={(e) => setRegex(e.target.value)} />
           </Field>
-          <p>
-            Actions
-          </p>
+          <p>Actions</p>
           <Field label="Add labels (csv)">
             <Input value={addLabels} onChange={(e) => setAddLabels(e.target.value)} />
           </Field>
@@ -445,9 +440,7 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs text-muted-foreground">
-        {label}
-      </p>
+      <p className="text-xs text-muted-foreground">{label}</p>
       {children}
     </div>
   );

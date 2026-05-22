@@ -38,13 +38,10 @@ export function DrawerTriageBar({
   const assignee = assigneeId ? admins.find((a) => a.user_id === assigneeId) : null;
 
   return (
-    <div className="grid grid-cols-2 gap-3 mb-5">
+    <div className="grid grid-cols-2 gap-4 mb-6">
       <div>
         <span className="text-xs font-semibold block mb-1">Status</span>
-        <Select
-          value={status || 'new'}
-          onValueChange={(v) => onStatusChange(v as KanbanStatus)}
-        >
+        <Select value={status || 'new'} onValueChange={(v) => onStatusChange(v as KanbanStatus)}>
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
@@ -71,10 +68,7 @@ export function DrawerTriageBar({
 
       <div>
         <span className="text-xs font-semibold block mb-1">Priority</span>
-        <Select
-          value={String(priority ?? 2)}
-          onValueChange={(v) => onPriorityChange(Number(v))}
-        >
+        <Select value={String(priority ?? 2)} onValueChange={(v) => onPriorityChange(Number(v))}>
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
@@ -115,7 +109,7 @@ export function DrawerTriageBar({
             {admins.map((a) => (
               <SelectItem key={a.user_id} value={a.user_id}>
                 <span className="inline-flex items-center">
-                  <Avatar style={{ width: 16, height: 16, marginRight: 6, fontSize: '0.6rem' }}>
+                  <Avatar style={{ width: 16, height: 16, fontSize: '0.6rem' }} className="mr-1.5">
                     {a.avatar_url && <AvatarImage src={a.avatar_url} alt="" />}
                     <AvatarFallback>{(a.display_name || '?').slice(0, 1)}</AvatarFallback>
                   </Avatar>
@@ -146,7 +140,9 @@ export function DrawerTriageBar({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__none__"><em>Not resolved</em></SelectItem>
+            <SelectItem value="__none__">
+              <em>Not resolved</em>
+            </SelectItem>
             <SelectItem value="fixed">Fixed</SelectItem>
             <SelectItem value="wontfix">Won't fix</SelectItem>
             <SelectItem value="duplicate">Duplicate</SelectItem>

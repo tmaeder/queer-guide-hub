@@ -144,7 +144,7 @@ export function DuplicateFinderPanel() {
                         {group.items.length} identical images
                       </CardTitle>
                       <Button size="sm" onClick={() => handleMerge(group)}>
-                        <Merge style={{ height: 14, width: 14, marginRight: 4 }} />
+                        <Merge size={14} className="mr-1" />
                         Merge
                       </Button>
                     </div>
@@ -180,11 +180,11 @@ export function DuplicateFinderPanel() {
                             />
                             {isSelected && (
                               <div className="absolute top-1 right-1">
-                                <Check style={{ height: 14, width: 14 }} />
+                                <Check size={14} />
                               </div>
                             )}
                             <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5">
-                              <p className="text-white text-[10px] truncate">
+                              <p className="text-white text-2xs truncate">
                                 {new Date(item.created_at).toLocaleDateString()}
                               </p>
                             </div>
@@ -205,17 +205,17 @@ export function DuplicateFinderPanel() {
           {visualQuery.data.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">No visual duplicates found.</p>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <p className="text-sm text-muted-foreground">
                 {visualQuery.data.length} similar pair{visualQuery.data.length !== 1 ? 's' : ''} found
               </p>
               {visualQuery.data.map((pair, i) => (
-                <div key={i} className="flex items-center gap-3 border border-border p-3">
+                <div key={i} className="flex items-center gap-4 border border-border p-4">
                   <div className="w-20 h-20 bg-muted flex-shrink-0">
                     <img src={pair.thumb_a || pair.url_a} alt="" className="w-full h-full object-cover" loading="lazy" />
                   </div>
                   <div className="flex flex-col items-center gap-1">
-                    <Badge variant="outline" style={{ fontSize: '0.625rem' }}>
+                    <Badge variant="outline" className="text-2xs">
                       dist: {pair.hamming_distance}
                     </Badge>
                   </div>

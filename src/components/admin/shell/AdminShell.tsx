@@ -63,7 +63,7 @@ function ShellSkeleton() {
         <Skeleton className="rounded w-40 h-6 mb-2" />
         <Skeleton className="w-24 h-4 mb-6" />
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 mb-2">
+          <div key={i} className="flex items-center gap-4 mb-2">
             <Skeleton className="rounded-none w-7 h-7" />
             <Skeleton className="h-5" style={{ width: 80 + Math.random() * 60 }} />
           </div>
@@ -136,7 +136,7 @@ export function AdminShell() {
             type="button"
             aria-label="Open admin navigation"
             onClick={() => setMobileOpen(true)}
-            className="fixed flex items-center gap-1.5 bg-background pl-2 pr-3 py-1.5 cursor-pointer"
+            className="fixed flex items-center gap-1.5 bg-background pl-2 pr-4 py-1.5 cursor-pointer"
             style={{ top: 80, left: 8, zIndex: 1200 }}
           >
             <Button variant="ghost" size="sm" className="h-7 w-7 p-1">
@@ -163,7 +163,7 @@ export function AdminShell() {
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
           {/* Breadcrumb bar */}
           {breadcrumbs.length > 1 && (
-            <div className="px-4 sm:px-6 py-2.5 bg-background border-b border-border flex items-center min-h-[44px]">
+            <div className="px-4 sm:px-6 py-2.5 bg-background border-b border-border flex items-center min-h-11">
               <nav aria-label="Breadcrumb">
                 <ol className="flex items-center flex-nowrap">
                   {breadcrumbs.map((crumb, i) => {
@@ -177,7 +177,7 @@ export function AdminShell() {
                         )}
                         {isLast ? (
                           <span
-                            className="font-semibold text-[0.82rem] text-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[300px] md:max-w-[500px] inline-block"
+                            className="font-semibold text-13 text-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[300px] md:max-w-[500px] inline-block"
                           >
                             {crumb.label}
                           </span>
@@ -185,7 +185,7 @@ export function AdminShell() {
                           <button
                             type="button"
                             onClick={() => crumb.route && navigate(crumb.route)}
-                            className="font-medium text-[0.82rem] text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--foreground))] bg-transparent border-0 p-0"
+                            className="font-medium text-13 text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--foreground))] bg-transparent border-0 p-0"
                           >
                             {crumb.label}
                           </button>

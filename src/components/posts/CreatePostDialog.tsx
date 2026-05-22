@@ -1,12 +1,24 @@
 import { useState } from 'react';
 import { buildPostValidationPayload, preSubmitCheck } from './postValidation';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFormValidation } from '@/components/security/EnhancedFormValidator';
@@ -22,7 +34,7 @@ import {
   X,
   Plus,
   AtSign,
-  Hash
+  Hash,
 } from 'lucide-react';
 import { useCommunityPosts, CreatePostData } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
@@ -77,9 +89,9 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
     const validation = await validateFormData(validationData, validationFields);
     if (!validation.isValid) {
       toast({
-        title: "Content Validation Failed",
+        title: 'Content Validation Failed',
         description: validation.errors.join(', '),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -88,12 +100,13 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
     const mentionMatches = content.match(/@(\w+)/g);
     const tagMatches = content.match(/#(\w+)/g);
 
-    const extractedMentions = mentionMatches?.map(match => ({
-      user_id: '', // In a real implementation, you'd look up user IDs
-      username: match.substring(1)
-    })) || [];
+    const extractedMentions =
+      mentionMatches?.map((match) => ({
+        user_id: '', // In a real implementation, you'd look up user IDs
+        username: match.substring(1),
+      })) || [];
 
-    const extractedTags = tagMatches?.map(match => match.substring(1)) || [];
+    const extractedTags = tagMatches?.map((match) => match.substring(1)) || [];
 
     const postData: CreatePostData = {
       content: content.trim(),
@@ -113,17 +126,17 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
         const url = new URL(linkUrl);
         if (!['http:', 'https:'].includes(url.protocol)) {
           toast({
-            title: "Invalid URL",
-            description: "Only HTTP and HTTPS URLs are allowed",
-            variant: "destructive",
+            title: 'Invalid URL',
+            description: 'Only HTTP and HTTPS URLs are allowed',
+            variant: 'destructive',
           });
           return;
         }
       } catch {
         toast({
-          title: "Invalid URL",
-          description: "Please enter a valid URL",
-          variant: "destructive",
+          title: 'Invalid URL',
+          description: 'Please enter a valid URL',
+          variant: 'destructive',
         });
         return;
       }
@@ -133,26 +146,26 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
       postData.link_description = linkDescription;
     }
 
-    if (postType === 'poll' && pollOptions.filter(opt => opt.trim()).length >= 2) {
+    if (postType === 'poll' && pollOptions.filter((opt) => opt.trim()).length >= 2) {
       postData.poll_options = {
-        options: pollOptions.filter(opt => opt.trim()),
+        options: pollOptions.filter((opt) => opt.trim()),
         multiple_choice: false,
-        expires_at: null
+        expires_at: null,
       };
     }
 
     try {
       await createPost(postData);
       toast({
-        title: "Success",
-        description: "Post created successfully!",
+        title: 'Success',
+        description: 'Post created successfully!',
       });
       handleClose();
     } catch (_error) {
       toast({
-        title: "Error",
-        description: "Failed to create post. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to create post. Please try again.',
+        variant: 'destructive',
       });
     }
   };
@@ -191,18 +204,25 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
   const getPostTypeIcon = () => {
     switch (postType) {
-      case 'image': return <ImageIcon style={{ height: 16, width: 16 }} />;
-      case 'link': return <LinkIcon style={{ height: 16, width: 16 }} />;
-      case 'poll': return <BarChart3 style={{ height: 16, width: 16 }} />;
-      default: return <PenSquare style={{ height: 16, width: 16 }} />;
+      case 'image':
+        return <ImageIcon size={16} />;
+      case 'link':
+        return <LinkIcon size={16} />;
+      case 'poll':
+        return <BarChart3 size={16} />;
+      default:
+        return <PenSquare size={16} />;
     }
   };
 
   const getVisibilityIcon = () => {
     switch (visibility) {
-      case 'friends': return <Users style={{ height: 16, width: 16 }} />;
-      case 'private': return <Lock style={{ height: 16, width: 16 }} />;
-      default: return <Globe style={{ height: 16, width: 16 }} />;
+      case 'friends':
+        return <Users size={16} />;
+      case 'private':
+        return <Lock size={16} />;
+      default:
+        return <Globe size={16} />;
     }
   };
 
@@ -213,7 +233,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
       <DialogTrigger asChild>
         {children || (
           <Button>
-            <PenSquare style={{ height: 16, width: 16, marginRight: 8 }} />
+            <PenSquare size={16} className="mr-2" />
             Create Post
           </Button>
         )}
@@ -225,7 +245,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
         <div className="flex flex-col gap-4">
           {/* User Info */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Avatar style={{ height: 40, width: 40 }}>
               <AvatarImage src={profile?.avatar_url || undefined} />
               <AvatarFallback>
@@ -235,13 +255,13 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
             <div className="flex-1">
               <p>{profile?.display_name || 'User'}</p>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                <Badge variant="outline" className="text-xs">
                   {getVisibilityIcon()}
-                  <span style={{ marginLeft: 4, textTransform: 'capitalize' }}>{visibility}</span>
+                  <span className="ml-1 capitalize">{visibility}</span>
                 </Badge>
-                <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                <Badge variant="outline" className="text-xs">
                   {getPostTypeIcon()}
-                  <span style={{ marginLeft: 4, textTransform: 'capitalize' }}>{postType}</span>
+                  <span className="ml-1 capitalize">{postType}</span>
                 </Badge>
               </div>
             </div>
@@ -254,7 +274,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('text')}
             >
-              <PenSquare style={{ height: 16, width: 16, marginRight: 4 }} />
+              <PenSquare size={16} className="mr-1" />
               Text
             </Button>
             <Button
@@ -262,7 +282,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('image')}
             >
-              <ImageIcon style={{ height: 16, width: 16, marginRight: 4 }} />
+              <ImageIcon size={16} className="mr-1" />
               Image
             </Button>
             <Button
@@ -270,7 +290,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('link')}
             >
-              <LinkIcon style={{ height: 16, width: 16, marginRight: 4 }} />
+              <LinkIcon size={16} className="mr-1" />
               Link
             </Button>
             <Button
@@ -278,7 +298,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('poll')}
             >
-              <BarChart3 style={{ height: 16, width: 16, marginRight: 4 }} />
+              <BarChart3 size={16} className="mr-1" />
               Poll
             </Button>
           </div>
@@ -296,11 +316,11 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
             {/* Mention and Tag Hints */}
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
-                <AtSign style={{ height: 12, width: 12 }} />
+                <AtSign size={12} />
                 <span>Type @ to mention users</span>
               </div>
               <div className="flex items-center gap-1">
-                <Hash style={{ height: 12, width: 12 }} />
+                <Hash size={12} />
                 <span>Type # to add tags</span>
               </div>
             </div>
@@ -309,12 +329,14 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           {/* Post Type Specific Content */}
           {postType === 'image' && (
             <Card>
-              <CardContent style={{ padding: 16 }}>
+              <CardContent className="p-4">
                 <Label>Image URLs (one per line)</Label>
                 <Textarea
                   placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
                   value={images.join('\n')}
-                  onChange={(e) => setImages(e.target.value.split('\n').filter(url => url.trim()))}
+                  onChange={(e) =>
+                    setImages(e.target.value.split('\n').filter((url) => url.trim()))
+                  }
                   rows={3}
                 />
               </CardContent>
@@ -323,7 +345,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
           {postType === 'link' && (
             <Card>
-              <CardContent style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <CardContent style={{ flexDirection: 'column' }} className="p-4 flex gap-4">
                 <div>
                   <Label htmlFor="link-url">Link URL</Label>
                   <Input
@@ -358,7 +380,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
           {postType === 'poll' && (
             <Card>
-              <CardContent style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <CardContent style={{ flexDirection: 'column' }} className="p-4 flex gap-4">
                 <Label>Poll Options</Label>
                 {pollOptions.map((option, index) => (
                   <div key={index} className="flex items-center gap-2">
@@ -368,19 +390,15 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
                       onChange={(e) => updatePollOption(index, e.target.value)}
                     />
                     {pollOptions.length > 2 && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removePollOption(index)}
-                      >
-                        <X style={{ height: 16, width: 16 }} />
+                      <Button variant="outline" size="icon" onClick={() => removePollOption(index)}>
+                        <X size={16} />
                       </Button>
                     )}
                   </div>
                 ))}
                 {pollOptions.length < 6 && (
                   <Button variant="outline" size="sm" onClick={addPollOption}>
-                    <Plus style={{ height: 16, width: 16, marginRight: 4 }} />
+                    <Plus size={16} className="mr-1" />
                     Add Option
                   </Button>
                 )}
@@ -398,19 +416,19 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               <SelectContent>
                 <SelectItem value="public">
                   <div className="flex items-center gap-2">
-                    <Globe style={{ height: 16, width: 16 }} />
+                    <Globe size={16} />
                     <span>Public - Anyone can see this post</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="friends">
                   <div className="flex items-center gap-2">
-                    <Users style={{ height: 16, width: 16 }} />
+                    <Users size={16} />
                     <span>Friends - Only your connections</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="private">
                   <div className="flex items-center gap-2">
-                    <Lock style={{ height: 16, width: 16 }} />
+                    <Lock size={16} />
                     <span>Private - Only you can see this</span>
                   </div>
                 </SelectItem>
@@ -428,10 +446,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
             <Button variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!content.trim() || isCreatingPost}
-            >
+            <Button onClick={handleSubmit} disabled={!content.trim() || isCreatingPost}>
               {isCreatingPost ? 'Posting...' : 'Post'}
             </Button>
           </div>

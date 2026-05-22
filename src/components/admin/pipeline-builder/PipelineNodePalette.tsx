@@ -32,7 +32,7 @@ export default function PipelineNodePalette({
 }: Props) {
   return (
     <div className="w-60 shrink-0 flex flex-col border-r border-border bg-muted/30 overflow-hidden">
-      <div className="px-3 py-2.5 border-b border-border">
+      <div className="px-4 py-2.5 border-b border-border">
         <div className="font-semibold text-sm">Node Palette</div>
         <div className="text-xs2 text-muted-foreground mt-0.5">Drag onto canvas</div>
         <div className="relative mt-2">
@@ -59,7 +59,7 @@ export default function PipelineNodePalette({
             No nodes match "{paletteSearch}"
           </div>
         )}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {categoryOrder.map(cat => {
             const types = nodeTypesByCategory[cat];
             if (!types?.length) return null;

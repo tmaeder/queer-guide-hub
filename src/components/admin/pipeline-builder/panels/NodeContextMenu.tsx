@@ -81,7 +81,7 @@ export default function NodeContextMenu({
     <div
       ref={menuRef}
       role="menu"
-      className="fixed z-50 bg-popover text-popover-foreground border border-border rounded-element shadow-lg py-1 text-sm"
+      className="fixed z-50 bg-popover text-popover-foreground border border-border rounded-element py-1 text-sm"
       style={{ left, top, minWidth: width }}
     >
       {entries.map((entry, i) => {
@@ -95,7 +95,7 @@ export default function NodeContextMenu({
             role="menuitem"
             onClick={entry.onClick}
             disabled={entry.disabled}
-            className={`w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`w-full flex items-center gap-2 px-4 py-1.5 text-left transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
               entry.destructive
                 ? 'text-destructive hover:bg-destructive/10'
                 : 'hover:bg-accent'

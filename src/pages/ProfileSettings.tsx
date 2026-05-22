@@ -218,7 +218,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
   }, [formData, hasUnsavedChanges, handleSave, saveStatus]);
 
   const lineTab =
-    'h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none';
+    'h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none';
 
   return (
     <div className="container mx-auto py-8 px-4 flex flex-col gap-6 pb-24">
@@ -228,7 +228,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         subtitle="Manage your account information and privacy settings"
         actions={
           <Button variant="outline" onClick={() => navigate(-1)} className="rounded-element">
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
         }
@@ -250,19 +250,19 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
           <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
             <TabsTrigger value="basic" className={lineTab}>
-              <span className="flex items-center gap-2"><User style={{ width: 16, height: 16 }} /> Basic</span>
+              <span className="flex items-center gap-2"><User size={16} /> Basic</span>
             </TabsTrigger>
             <TabsTrigger value="identity" className={lineTab}>
-              <span className="flex items-center gap-2"><Heart style={{ width: 16, height: 16 }} /> Identity</span>
+              <span className="flex items-center gap-2"><Heart size={16} /> Identity</span>
             </TabsTrigger>
             <TabsTrigger value="travel" className={lineTab}>
-              <span className="flex items-center gap-2"><Plane style={{ width: 16, height: 16 }} /> Travel</span>
+              <span className="flex items-center gap-2"><Plane size={16} /> Travel</span>
             </TabsTrigger>
             <TabsTrigger value="relationships" className={lineTab}>
-              <span className="flex items-center gap-2"><Users style={{ width: 16, height: 16 }} /> Relationships</span>
+              <span className="flex items-center gap-2"><Users size={16} /> Relationships</span>
             </TabsTrigger>
             <TabsTrigger value="privacy" className={lineTab}>
-              <span className="flex items-center gap-2"><Lock style={{ width: 16, height: 16 }} /> Privacy</span>
+              <span className="flex items-center gap-2"><Lock size={16} /> Privacy</span>
             </TabsTrigger>
             <TabsTrigger value="intimate" className={lineTab}>
               <span className="flex items-center gap-2">Intimate</span>
@@ -326,17 +326,17 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
       </div>
 
       {/* Sticky auto-save status bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-center gap-2 text-sm">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-center gap-2 text-sm">
           {saveStatus === 'saving' && (
             <>
-              <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
+              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
               <span className="text-muted-foreground">Saving…</span>
             </>
           )}
           {saveStatus === 'saved' && (
             <>
-              <Check style={{ width: 14, height: 14 }} />
+              <Check size={14} />
               <span className="text-muted-foreground">All changes saved</span>
             </>
           )}
@@ -347,7 +347,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
             <Badge variant="destructive" className="rounded-element">Save failed</Badge>
           )}
           {saveStatus === 'auth-error' && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Badge variant="destructive" className="rounded-element">Session expired</Badge>
               <Button variant="outline" size="sm" onClick={() => navigate('/auth')} className="rounded-element">
                 Sign in

@@ -43,9 +43,9 @@ export function ShareControls({ prefs }: { prefs: FootprintSharePrefs }) {
   const anyOn = Object.values(local).some(Boolean);
 
   return (
-    <details className="border border-border p-3" data-testid="footprint-share-controls">
+    <details className="border border-border p-4" data-testid="footprint-share-controls">
       <summary className="cursor-pointer text-sm font-medium">Share your footprint publicly</summary>
-      <div className="mt-3 space-y-2">
+      <div className="mt-4 space-y-2">
         {KINDS.map((k) => (
           <div key={k.key} className="flex items-center justify-between">
             <Label htmlFor={`share-${k.key}`} className="text-sm">

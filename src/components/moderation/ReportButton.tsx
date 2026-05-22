@@ -25,7 +25,7 @@ export function ReportButton({ contentType, contentId, contentName, size = 'sm' 
               onClick={() => setOpen(true)}
               aria-label="Report issue"
             >
-              <Flag style={{ width: 16, height: 16 }} />
+              <Flag size={16} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Report issue</TooltipContent>

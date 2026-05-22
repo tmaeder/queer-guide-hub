@@ -13,9 +13,9 @@ interface ScanResultDialogProps {
 }
 
 const VERDICT_CONFIG: Record<string, { className: string; label: string; Icon: typeof ShieldCheck }> = {
-  benign: { className: 'bg-green-500/10 text-green-700 border-green-500/30', label: 'Safe', Icon: ShieldCheck },
+  benign: { className: 'bg-foreground/10 text-foreground border-foreground/40/30', label: 'Safe', Icon: ShieldCheck },
   malicious: { className: 'bg-destructive/10 text-destructive border-destructive/30', label: 'Malicious', Icon: ShieldAlert },
-  suspicious: { className: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/30', label: 'Suspicious', Icon: ShieldQuestion },
+  suspicious: { className: 'bg-foreground/10 text-foreground border-border/30', label: 'Suspicious', Icon: ShieldQuestion },
 };
 
 export function ScanResultDialog({ open, link, onClose, onRescan, scanning }: ScanResultDialogProps) {
@@ -31,8 +31,8 @@ export function ScanResultDialog({ open, link, onClose, onRescan, scanning }: Sc
   const scannedAt = link.scanned_at;
 
   const hasResults = !!scanId;
-  const scoreColor = score > 50 ? 'text-destructive' : score > 20 ? 'text-yellow-600' : 'text-green-600';
-  const barColor = score > 50 ? 'bg-destructive' : score > 20 ? 'bg-yellow-500' : 'bg-green-500';
+  const scoreColor = score > 50 ? 'text-destructive' : score > 20 ? 'text-foreground' : 'text-foreground';
+  const barColor = score > 50 ? 'bg-destructive' : score > 20 ? 'bg-foreground' : 'bg-foreground';
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
@@ -124,7 +124,7 @@ export function ScanResultDialog({ open, link, onClose, onRescan, scanning }: Sc
                   href={`https://urlscan.io/result/${scanId}/`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-sky-500 no-underline"
+                  className="flex items-center gap-1 text-xs text-foreground no-underline"
                 >
                   View on URLScan.io <ExternalLink className="w-3 h-3" />
                 </a>

@@ -160,7 +160,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle>Book Hotel</DialogTitle>
           <Button variant="ghost" size="icon" className="h-7 w-7 p-0" onClick={handleClose} aria-label="Close">
-            <X style={{ height: 20, width: 20 }} />
+            <X size={20} />
           </Button>
         </DialogHeader>
         <div>
@@ -181,7 +181,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
                   {Array.from({ length: hotel.starRating }).map((_, i) => (
                     <Star
                       key={i}
-                      style={{ height: 14, width: 14, fill: 'currentColor', color: 'hsl(var(--primary))' }}
+                      size={14} style={{ fill: 'currentColor', color: 'hsl(var(--primary))' }}
                     />
                   ))}
                 </div>
@@ -191,7 +191,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
                   <Badge variant="secondary">Rating: {hotel.rating.toFixed(1)}</Badge>
                 </div>
               )}
-              <p className="mt-4 text-2xl font-extrabold text-primary">
+              <p className="mt-4 text-2xl font-bold text-primary">
                 {formatPrice(hotel.price, hotel.currency)}
                 {hasValidPrice(hotel.price) && (
                   <span className="text-sm font-normal text-muted-foreground"> / night</span>
@@ -241,7 +241,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
                   disabled={!guestName.trim() || !guestEmail.trim() || submitting}
                 >
                   {submitting ? 'Processing...' : hotel.supportsInApp ? 'Confirm Booking' : 'Continue to Partner'}
-                  {!hotel.supportsInApp && <ExternalLink style={{ height: 14, width: 14, marginLeft: 6 }} />}
+                  {!hotel.supportsInApp && <ExternalLink size={14} className="ml-1.5" />}
                 </Button>
               </div>
             </div>

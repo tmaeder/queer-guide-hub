@@ -24,18 +24,22 @@ type NewsArticle = Tables<'news_articles'> & {
 
 const NewsCardFixture = () => (
   <Card>
-    <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <h3 className="text-base font-semibold" style={{ fontSize: '1.125rem' }}>Sample News Headline</h3>
+    <CardHeader style={{ flexDirection: 'column' }} className="flex gap-4">
+      <h3 className="text-base font-semibold text-lg">Sample News Headline</h3>
       <div className="flex items-center gap-2">
-        <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>Politics</Badge>
-        <Badge variant="outline" style={{ fontSize: '0.75rem' }}>Source</Badge>
+        <Badge style={{ backgroundColor: 'hsl(var(--foreground))' }} className="text-background">
+          Politics
+        </Badge>
+        <Badge variant="outline" className="text-xs">
+          Source
+        </Badge>
       </div>
     </CardHeader>
-    <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
       <p className="text-sm">A sample excerpt for the news article.</p>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1">
-          <Clock style={{ height: 14, width: 14 }} />
+          <Clock size={14} />
           <span className="text-xs">2 hours ago</span>
         </div>
       </div>
@@ -96,7 +100,12 @@ export const NewsCard = ({
 
   if (loading || !article) {
     return (
-      <Skeleton name="news-card" loading={true} fixture={<NewsCardFixture />} fallback={<PageLoadingState count={1} />}>
+      <Skeleton
+        name="news-card"
+        loading={true}
+        fixture={<NewsCardFixture />}
+        fallback={<PageLoadingState count={1} />}
+      >
         <div />
       </Skeleton>
     );
@@ -127,31 +136,42 @@ export const NewsCard = ({
       g = Math.max(0, Math.round(g * 0.88));
       b = Math.max(0, Math.round(b * 0.88));
     }
-    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+    return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
   };
 
   const getCategoryColor = (category: string) => {
     const catEntry = Object.values(categoriesMap).find(
-      c => c.slug === category || c.name.toLowerCase() === category.toLowerCase()
+      (c) => c.slug === category || c.name.toLowerCase() === category.toLowerCase(),
     );
     if (catEntry) return ensureContrastOnWhite(catEntry.color);
     // Tailwind -700 shades: each ≥ 4.5:1 contrast on white text (WCAG 1.4.3).
     const fallback: Record<string, string> = {
-      politics: '#1d4ed8', 'human-rights': '#b91c1c', entertainment: '#6d28d9',
-      culture: '#6d28d9', health: '#047857', sports: '#c2410c', business: '#b45309',
-      technology: '#4338ca', lifestyle: '#be185d', education: '#0e7490',
-      legislation: '#1d4ed8', transgender: '#6d28d9', rights: '#b91c1c',
-      advocacy: '#c2410c', news: '#475569', community: '#be185d',
+      politics: '#1d4ed8',
+      'human-rights': '#b91c1c',
+      entertainment: '#6d28d9',
+      culture: '#6d28d9',
+      health: '#047857',
+      sports: '#c2410c',
+      business: '#b45309',
+      technology: '#4338ca',
+      lifestyle: '#be185d',
+      education: '#0e7490',
+      legislation: '#1d4ed8',
+      transgender: '#6d28d9',
+      rights: '#b91c1c',
+      advocacy: '#c2410c',
+      news: '#475569',
+      community: '#be185d',
     };
     return fallback[category?.toLowerCase()] || '#64748b';
   };
 
   const getCategoryLabel = (category: string) => {
     const catEntry = Object.values(categoriesMap).find(
-      c => c.slug === category || c.name.toLowerCase() === category.toLowerCase()
+      (c) => c.slug === category || c.name.toLowerCase() === category.toLowerCase(),
     );
     if (catEntry) return catEntry.name;
-    return category?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return category?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   const authorName = safeText(cleanAuthor(safeText(article.author)));
@@ -163,7 +183,10 @@ export const NewsCard = ({
   // Prefer canonical category from the news_qa_backfill_category_canonical
   // migration; fall back to the legacy `category` text column.
   const articleAny = article as Record<string, unknown>;
-  const canonical = typeof articleAny.category_canonical === 'string' ? (articleAny.category_canonical as string) : null;
+  const canonical =
+    typeof articleAny.category_canonical === 'string'
+      ? (articleAny.category_canonical as string)
+      : null;
   const displayCategory = !isHiddenCategory(canonical)
     ? canonical
     : !isHiddenCategory(article.category)
@@ -176,10 +199,13 @@ export const NewsCard = ({
     optimizedUrl: imageAsset?.optimized_url ?? null,
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
   });
-  const effectiveImage = (resolvedSrc && !imgFailed) ? resolvedSrc : fallbackSrc;
+  const effectiveImage = resolvedSrc && !imgFailed ? resolvedSrc : fallbackSrc;
   const hasImage = true;
 
-  const readingTime = estimateReadingTime(article.content as string | null | undefined, article.excerpt);
+  const readingTime = estimateReadingTime(
+    article.content as string | null | undefined,
+    article.excerpt,
+  );
   const onShare = buildShareHandler(article.slug, safeTitle);
 
   const linkedCities = (article.city_ids || [])
@@ -196,25 +222,26 @@ export const NewsCard = ({
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="flex items-center gap-4 py-3 px-4 transition-colors hover:bg-muted border-b border-border no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex items-center gap-4 py-4 px-4 transition-colors hover:bg-muted border-b border-border no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold truncate m-0">
-            {safeTitle}
-          </h3>
+          <h3 className="text-sm font-semibold truncate m-0">{safeTitle}</h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {displayCategory && (
             <Badge
-              style={{ backgroundColor: getCategoryColor(displayCategory), color: 'hsl(var(--background))', fontSize: '0.65rem', padding: '1px 6px' }}
+              style={{
+                backgroundColor: getCategoryColor(displayCategory),
+                fontSize: '0.65rem',
+                padding: '1px 6px',
+              }}
+              className="text-background"
             >
               {getCategoryLabel(displayCategory)}
             </Badge>
           )}
           {displaySource && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {displaySource}
-            </span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{displaySource}</span>
           )}
           {!hideDate && article.published_at && (
             <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -237,8 +264,8 @@ export const NewsCard = ({
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90"
-        style={{ textDecoration: 'none', color: 'inherit' }}
+        className="flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90 no-underline"
+        style={{ color: 'inherit' }}
       >
         {hasImage && (
           <div className="md:flex-[0_0_45%] rounded-element overflow-hidden">
@@ -252,15 +279,19 @@ export const NewsCard = ({
               alt={safeTitle}
               width={800}
               height={240}
-              style={{ width: '100%', height: 240, objectFit: 'cover', display: 'block' }}
+              style={{ width: '100%', height: 240, objectFit: 'cover' }}
+              className="block"
               onError={() => setImgFailed(true)}
             />
           </div>
         )}
-        <div className="flex-1 flex flex-col justify-center gap-3">
+        <div className="flex-1 flex flex-col justify-center gap-4">
           <div className="flex items-center gap-2">
             {displayCategory && (
-              <Badge style={{ backgroundColor: getCategoryColor(displayCategory), color: 'hsl(var(--background))' }}>
+              <Badge
+                style={{ backgroundColor: getCategoryColor(displayCategory) }}
+                className="text-background"
+              >
                 {getCategoryLabel(displayCategory)}
               </Badge>
             )}
@@ -268,11 +299,12 @@ export const NewsCard = ({
               <span className="text-xs text-muted-foreground">{displaySource}</span>
             )}
           </div>
-          <h3 className="text-xl font-bold leading-tight">
-            {safeTitle}
-          </h3>
+          <h3 className="text-xl font-bold leading-tight">{safeTitle}</h3>
           {excerptText && (
-            <p className="text-sm text-muted-foreground" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            <p
+              className="text-sm text-muted-foreground overflow-hidden"
+              style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
+            >
               {excerptText}
             </p>
           )}
@@ -285,7 +317,7 @@ export const NewsCard = ({
             )}
             {readingTime !== null && (
               <span className="text-xs inline-flex items-center gap-1">
-                <BookOpen style={{ height: 12, width: 12 }} aria-hidden="true" /> {readingTime} min read
+                <BookOpen size={12} aria-hidden="true" /> {readingTime} min read
               </span>
             )}
             {hideDate && article.is_featured && (
@@ -298,7 +330,7 @@ export const NewsCard = ({
               className="ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ height: 28, width: 28 }}
             >
-              <Share2 style={{ height: 14, width: 14 }} aria-hidden="true" />
+              <Share2 size={14} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -312,7 +344,7 @@ export const NewsCard = ({
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="flex gap-3 p-3 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex gap-4 p-4 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <img
           loading="lazy"
@@ -323,37 +355,63 @@ export const NewsCard = ({
           role="presentation"
           width={160}
           height={120}
-          style={{ width: 160, height: 120, objectFit: 'cover', flexShrink: 0, borderRadius: 6 }}
+          className="rounded-element shrink-0"
+          style={{ width: 160, height: 120, objectFit: 'cover' }}
           onError={() => setImgFailed(true)}
         />
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             {displayCategory && (
-              <Badge style={{ backgroundColor: getCategoryColor(displayCategory), color: 'hsl(var(--background))', fontSize: '0.65rem', padding: '1px 6px' }}>
+              <Badge
+                style={{
+                  backgroundColor: getCategoryColor(displayCategory),
+                  fontSize: '0.65rem',
+                  padding: '1px 6px',
+                }}
+                className="text-background"
+              >
                 {getCategoryLabel(displayCategory)}
               </Badge>
             )}
             {(article as Record<string, unknown>).is_premium === true && (
-              <Badge style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', padding: '1px 6px' }}>
-                <Lock style={{ height: 9, width: 9 }} aria-hidden="true" /> Premium
+              <Badge
+                style={{
+                  backgroundColor: 'hsl(var(--accent))',
+                  color: 'hsl(var(--accent-foreground))',
+                  alignItems: 'center',
+                  gap: 3,
+                  fontSize: '0.65rem',
+                  padding: '1px 6px',
+                }}
+                className="inline-flex"
+              >
+                <Lock size={9} aria-hidden="true" /> Premium
               </Badge>
             )}
             {displaySource && (
               <span className="text-xs text-muted-foreground truncate">{displaySource}</span>
             )}
           </div>
-          <h3 className="text-base font-semibold leading-snug m-0" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          <h3
+            className="text-base font-semibold leading-snug m-0 overflow-hidden"
+            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+          >
             {safeTitle}
           </h3>
           {excerptText && (
-            <p className="text-sm text-muted-foreground" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            <p
+              className="text-sm text-muted-foreground overflow-hidden"
+              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+            >
               {excerptText}
             </p>
           )}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-auto">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-auto">
             {authorName && <span>By {authorName}</span>}
             {!hideDate && article.published_at && (
-              <span>{formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}</span>
+              <span>
+                {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
+              </span>
             )}
             {readingTime !== null && <span>· {readingTime} min</span>}
             <button
@@ -363,7 +421,7 @@ export const NewsCard = ({
               className="ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ height: 24, width: 24 }}
             >
-              <Share2 style={{ height: 12, width: 12 }} aria-hidden="true" />
+              <Share2 size={12} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -374,247 +432,285 @@ export const NewsCard = ({
   // Default card variant
   return (
     <CardHoverEffect>
-    <Card
-      className="group transition-colors duration-300 hover:border-foreground/40"
-      style={{
-        borderColor: 'hsl(var(--border))',
-        cursor: 'pointer',
-      }}
-      onClick={() => navigate(`/news/${article.slug}`)}
-    >
-      <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {hasImage && (
-          <div className="relative overflow-hidden rounded-element">
-            <img
-              loading="lazy"
-              decoding="async"
-              referrerPolicy="no-referrer"
-              role="presentation"
-              src={effectiveImage}
-              alt={safeTitle}
-              width={400}
-              height={192}
-              style={{ width: '100%', height: density === 'compact' ? 140 : 192, objectFit: 'cover' }}
-              className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
-              onError={() => setImgFailed(true)}
-            />
-            {(article as Record<string, unknown>).is_premium === true && (
-              <Badge style={{ position: 'absolute', top: 8, right: 8, backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <Lock style={{ height: 10, width: 10 }} aria-hidden="true" /> Premium
-              </Badge>
-            )}
-            {article.is_featured && (
-              <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>
-                Featured
-              </Badge>
-            )}
-          </div>
-        )}
-
-
-
-        <div className="flex items-start justify-between gap-3">
-          <h3
-            className="font-semibold m-0"
-            style={{
-              fontSize: '1.125rem',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {safeTitle}
-          </h3>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {displayCategory && (
-            <Badge
-              style={{
-                backgroundColor: getCategoryColor(displayCategory),
-                color: 'hsl(var(--background))', textTransform: 'capitalize',
-                cursor: onFilterByCategory ? 'pointer' : 'default',
-              }}
-              onClick={(e) => { e.stopPropagation(); onFilterByCategory?.(displayCategory); }}
-            >
-              {getCategoryLabel(displayCategory)}
-            </Badge>
-          )}
-          {!displayCategory && fallbackCategoryFromTag && (
-            <Badge
-              style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', cursor: onFilterByCategory ? 'pointer' : 'default' }}
-              onClick={(e) => { e.stopPropagation(); onFilterByCategory?.(fallbackCategoryFromTag); }}
-            >
-              {fallbackCategoryFromTag}
-            </Badge>
-          )}
-          {displaySource && (
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 text-xs border border-border rounded-badge px-2 py-0.5 bg-transparent hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              style={{ cursor: onFilterBySource ? 'pointer' : 'default' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                const src = sourcesMap[article.source_id];
-                if (onFilterBySource && src?.id) onFilterBySource(src.id, displaySource);
-              }}
-              aria-label={onFilterBySource ? `Filter by source ${displaySource}` : `Source: ${displaySource}`}
-            >
-              {displaySource}
-            </button>
-          )}
-          <a
-            href={article.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              onViewArticle?.(article.id);
-            }}
-            className="inline-flex items-center text-muted-foreground opacity-50 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-badge"
-            aria-label={displaySource ? `Open original article on ${displaySource} (opens in new tab)` : 'Open original article (opens in new tab)'}
-            title="Open original article"
-          >
-            <ExternalLink style={{ height: 14, width: 14 }} aria-hidden="true" />
-          </a>
-        </div>
-      </CardHeader>
-
-      <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {excerptText && (
-          <p
-            className="text-sm text-muted-foreground"
-            style={{
-              display: '-webkit-box', WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical', overflow: 'hidden',
-            }}
-          >
-            {excerptText}
-          </p>
-        )}
-
-        {/* Meta row: date, views, author */}
-        <div className="flex flex-wrap items-center gap-4">
-          {article.published_at && (
-            <div className="flex items-center gap-1">
-              <Clock style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-              <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
-              </span>
-            </div>
-          )}
-          {readingTime !== null && (
-            <div className="flex items-center gap-1">
-              <BookOpen style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} aria-hidden="true" />
-              <span className="text-xs text-muted-foreground">{readingTime} min read</span>
-            </div>
-          )}
-          {typeof article.views_count === 'number' && article.views_count > 0 && (
-            <div className="flex items-center gap-1">
-              <Eye style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-              <span className="text-xs text-muted-foreground">
-                {article.views_count} view{article.views_count !== 1 ? 's' : ''}
-              </span>
-            </div>
-          )}
-          {authorName && (
-            onFilterByAuthor ? (
-              <button
-                type="button"
-                className="text-xs text-muted-foreground"
-                style={{ cursor: 'pointer' }}
-                onClick={(e) => { e.stopPropagation(); onFilterByAuthor(authorName); }}
-              >
-                By {authorName}
-              </button>
-            ) : (
-              <span className="text-xs text-muted-foreground">By {authorName}</span>
-            )
-          )}
-        </div>
-
-        {showFullContent && article.content && (
-          <div style={{ maxWidth: 'none', color: 'var(--foreground)' }} />
-        )}
-
-        {/* Tags */}
-        {(() => {
-          const displayTags = tags
-            .map((t) => safeText(t))
-            .filter((t) => t && t !== fallbackCategoryFromTag && !isHiddenCategory(t));
-          if (displayTags.length === 0) return null;
-          return (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Tag style={{ height: 14, width: 14, color: 'var(--muted-foreground)', flexShrink: 0 }} />
-              {displayTags.slice(0, 4).map((tag) => (
+      <Card
+        className="group transition-colors duration-300 hover:border-foreground/40 cursor-pointer"
+        style={{ borderColor: 'hsl(var(--border))' }}
+        onClick={() => navigate(`/news/${article.slug}`)}
+      >
+        <CardHeader style={{ flexDirection: 'column' }} className="flex gap-4">
+          {hasImage && (
+            <div className="relative overflow-hidden rounded-element">
+              <img
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                role="presentation"
+                src={effectiveImage}
+                alt={safeTitle}
+                width={400}
+                height={192}
+                style={{
+                  width: '100%',
+                  height: density === 'compact' ? 140 : 192,
+                  objectFit: 'cover',
+                }}
+                className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
+                onError={() => setImgFailed(true)}
+              />
+              {(article as Record<string, unknown>).is_premium === true && (
                 <Badge
-                  key={tag}
-                  variant="outline"
-                  style={{ fontSize: '0.7rem', padding: '2px 8px', cursor: onFilterByTag ? 'pointer' : 'default' }}
-                  onClick={(e) => { e.stopPropagation(); onFilterByTag?.(tag); }}
+                  style={{
+                    top: 8,
+                    right: 8,
+                    backgroundColor: 'hsl(var(--accent))',
+                    color: 'hsl(var(--accent-foreground))',
+                    alignItems: 'center',
+                  }}
+                  className="absolute inline-flex gap-1"
                 >
-                  {tag}
+                  <Lock size={10} aria-hidden="true" /> Premium
                 </Badge>
-              ))}
-              {displayTags.length > 4 && (
-                <Badge variant="outline" style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
-                  +{displayTags.length - 4} more
+              )}
+              {article.is_featured && (
+                <Badge
+                  style={{ top: 8, left: 8, backgroundColor: 'hsl(var(--muted))' }}
+                  className="absolute text-muted-foreground"
+                >
+                  Featured
                 </Badge>
               )}
             </div>
-          );
-        })()}
+          )}
 
-        {/* Location */}
-        {hasLocation && (
+          <div className="flex items-start justify-between gap-4">
+            <h3
+              className="font-semibold m-0 text-lg overflow-hidden"
+              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+            >
+              {safeTitle}
+            </h3>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {displayCategory && (
+              <Badge
+                style={{
+                  backgroundColor: getCategoryColor(displayCategory),
+                  cursor: onFilterByCategory ? 'pointer' : 'default',
+                }}
+                className="text-background capitalize"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFilterByCategory?.(displayCategory);
+                }}
+              >
+                {getCategoryLabel(displayCategory)}
+              </Badge>
+            )}
+            {!displayCategory && fallbackCategoryFromTag && (
+              <Badge
+                style={{
+                  backgroundColor: 'hsl(var(--muted))',
+                  cursor: onFilterByCategory ? 'pointer' : 'default',
+                }}
+                className="text-muted-foreground"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFilterByCategory?.(fallbackCategoryFromTag);
+                }}
+              >
+                {fallbackCategoryFromTag}
+              </Badge>
+            )}
+            {displaySource && (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 text-xs border border-border rounded-badge px-2 py-0.5 bg-transparent hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                style={{ cursor: onFilterBySource ? 'pointer' : 'default' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const src = sourcesMap[article.source_id];
+                  if (onFilterBySource && src?.id) onFilterBySource(src.id, displaySource);
+                }}
+                aria-label={
+                  onFilterBySource
+                    ? `Filter by source ${displaySource}`
+                    : `Source: ${displaySource}`
+                }
+              >
+                {displaySource}
+              </button>
+            )}
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onViewArticle?.(article.id);
+              }}
+              className="inline-flex items-center text-muted-foreground opacity-50 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-badge"
+              aria-label={
+                displaySource
+                  ? `Open original article on ${displaySource} (opens in new tab)`
+                  : 'Open original article (opens in new tab)'
+              }
+              title="Open original article"
+            >
+              <ExternalLink size={14} aria-hidden="true" />
+            </a>
+          </div>
+        </CardHeader>
+
+        <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
+          {excerptText && (
+            <p
+              className="text-sm text-muted-foreground overflow-hidden"
+              style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
+            >
+              {excerptText}
+            </p>
+          )}
+
+          {/* Meta row: date, views, author */}
+          <div className="flex flex-wrap items-center gap-4">
+            {article.published_at && (
+              <div className="flex items-center gap-1">
+                <Clock size={14} className="text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
+                </span>
+              </div>
+            )}
+            {readingTime !== null && (
+              <div className="flex items-center gap-1">
+                <BookOpen size={14} className="text-muted-foreground" aria-hidden="true" />
+                <span className="text-xs text-muted-foreground">{readingTime} min read</span>
+              </div>
+            )}
+            {typeof article.views_count === 'number' && article.views_count > 0 && (
+              <div className="flex items-center gap-1">
+                <Eye size={14} className="text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  {article.views_count} view{article.views_count !== 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
+            {authorName &&
+              (onFilterByAuthor ? (
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFilterByAuthor(authorName);
+                  }}
+                >
+                  By {authorName}
+                </button>
+              ) : (
+                <span className="text-xs text-muted-foreground">By {authorName}</span>
+              ))}
+          </div>
+
+          {showFullContent && article.content && (
+            <div style={{ maxWidth: 'none' }} className="text-foreground" />
+          )}
+
+          {/* Tags */}
+          {(() => {
+            const displayTags = tags
+              .map((t) => safeText(t))
+              .filter((t) => t && t !== fallbackCategoryFromTag && !isHiddenCategory(t));
+            if (displayTags.length === 0) return null;
+            return (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Tag size={14} className="text-muted-foreground shrink-0" />
+                {displayTags.slice(0, 4).map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '2px 8px',
+                      cursor: onFilterByTag ? 'pointer' : 'default',
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onFilterByTag?.(tag);
+                    }}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+                {displayTags.length > 4 && (
+                  <Badge variant="outline" style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
+                    +{displayTags.length - 4} more
+                  </Badge>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Location */}
+          {hasLocation && (
+            <div
+              className="flex flex-wrap items-center gap-1.5 text-muted-foreground"
+              style={{ fontSize: '0.8rem' }}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="presentation"
+            >
+              <MapPin size={14} className="shrink-0" />
+              {linkedCities.map(
+                (city: { id: string; name: string | undefined; slug?: string }, i: number) => (
+                  <span key={city.id}>
+                    <LocalizedLink
+                      to={`/city/${city.slug || city.id}`}
+                      className="text-primary no-underline"
+                    >
+                      {city.name}
+                    </LocalizedLink>
+                    {(i < linkedCities.length - 1 || linkedCountries.length > 0) && ', '}
+                  </span>
+                ),
+              )}
+              {linkedCountries.map(
+                (country: { id: string; name: string | undefined; slug?: string }, i: number) => (
+                  <span key={country.id}>
+                    <LocalizedLink
+                      to={`/country/${country.slug || country.id}`}
+                      className="text-primary no-underline"
+                    >
+                      {country.name}
+                    </LocalizedLink>
+                    {i < linkedCountries.length - 1 && ', '}
+                  </span>
+                ),
+              )}
+            </div>
+          )}
+
+          {/* Favorite + share */}
           <div
-            className="flex flex-wrap items-center gap-1.5 text-muted-foreground"
-            style={{ fontSize: '0.8rem' }}
+            className="flex items-center gap-1 pt-1"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
             role="presentation"
           >
-            <MapPin style={{ height: 14, width: 14, flexShrink: 0 }} />
-            {linkedCities.map((city: { id: string; name: string | undefined; slug?: string }, i: number) => (
-              <span key={city.id}>
-                <LocalizedLink to={`/city/${city.slug || city.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
-                  {city.name}
-                </LocalizedLink>
-                {(i < linkedCities.length - 1 || linkedCountries.length > 0) && ', '}
-              </span>
-            ))}
-            {linkedCountries.map((country: { id: string; name: string | undefined; slug?: string }, i: number) => (
-              <span key={country.id}>
-                <LocalizedLink to={`/country/${country.slug || country.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
-                  {country.name}
-                </LocalizedLink>
-                {i < linkedCountries.length - 1 && ', '}
-              </span>
-            ))}
+            <FavoriteButton itemId={article.id} type="news" />
+            <button
+              type="button"
+              onClick={onShare}
+              aria-label={`Share ${safeTitle}`}
+              className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              style={{ height: 28, width: 28 }}
+            >
+              <Share2 size={14} aria-hidden="true" />
+            </button>
           </div>
-        )}
-
-        {/* Favorite + share */}
-        <div
-          className="flex items-center gap-1 pt-1"
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-          role="presentation"
-        >
-          <FavoriteButton itemId={article.id} type="news" />
-          <button
-            type="button"
-            onClick={onShare}
-            aria-label={`Share ${safeTitle}`}
-            className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            style={{ height: 28, width: 28 }}
-          >
-            <Share2 style={{ height: 14, width: 14 }} aria-hidden="true" />
-          </button>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </CardHoverEffect>
   );
 };

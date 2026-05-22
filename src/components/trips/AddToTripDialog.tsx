@@ -108,13 +108,18 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         : t('trips.addTo.tripFallback', 'trip');
       toast({
         title: t('trips.addTo.addedTitle', 'Added to {{trip}}', { trip: tripName }),
-        description: t('trips.addTo.addedDesc', '{{name}} has been added to your trip.', { name: entity.name }),
+        description: t('trips.addTo.addedDesc', '{{name}} has been added to your trip.', {
+          name: entity.name,
+        }),
       });
       handleOpenChange(false);
     } catch (err: unknown) {
       toast({
         title: t('trips.addTo.failedToAdd', 'Failed to add'),
-        description: err instanceof Error ? err.message : t('common.somethingWentWrong', 'Something went wrong.'),
+        description:
+          err instanceof Error
+            ? err.message
+            : t('common.somethingWentWrong', 'Something went wrong.'),
         variant: 'destructive',
       });
     }
@@ -155,13 +160,18 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         title: t('trips.addTo.addedTitle', 'Added to {{trip}}', {
           trip: resolveTripTitle(trip, t),
         }),
-        description: t('trips.addTo.addedNewDesc', '{{name}} has been added to your new trip.', { name: entity.name }),
+        description: t('trips.addTo.addedNewDesc', '{{name}} has been added to your new trip.', {
+          name: entity.name,
+        }),
       });
       handleOpenChange(false);
     } catch (err: unknown) {
       toast({
         title: t('common.error', 'Error'),
-        description: err instanceof Error ? err.message : t('trips.addTo.failedToCreate', 'Failed to create trip.'),
+        description:
+          err instanceof Error
+            ? err.message
+            : t('trips.addTo.failedToCreate', 'Failed to create trip.'),
         variant: 'destructive',
       });
     }
@@ -175,12 +185,15 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
             <DialogTitle>{t('trips.addTo.title', 'Add to Trip')}</DialogTitle>
           </DialogHeader>
           <div className="py-8 text-center">
-            <Luggage style={{ width: 40, height: 40, margin: '0 auto 12px', opacity: 0.4 }} />
+            <Luggage size={40} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
             <p className="text-base mb-1">
               {t('trips.addTo.signInPrompt', 'Sign in to plan trips')}
             </p>
             <p className="text-sm text-muted-foreground">
-              {t('trips.addTo.signInDesc', 'Create an account to save places to your travel plans.')}
+              {t(
+                'trips.addTo.signInDesc',
+                'Create an account to save places to your travel plans.',
+              )}
             </p>
           </div>
         </DialogContent>
@@ -196,7 +209,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         <DialogHeader>
           <DialogTitle>
             <span className="flex items-center gap-2">
-              <Luggage style={{ width: 20, height: 20 }} />
+              <Luggage size={20} />
               {t('trips.addTo.title', 'Add to Trip')}
             </span>
           </DialogTitle>
@@ -232,27 +245,21 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                     tabIndex={0}
                     aria-checked={selectedTripId === trip.id}
                     className={cn(
-                      'flex items-center justify-between p-3 rounded-element border-2 cursor-pointer transition-colors',
+                      'flex items-center justify-between p-4 rounded-element border-2 cursor-pointer transition-colors',
                       selectedTripId === trip.id
                         ? 'border-primary'
                         : 'border-border hover:border-muted-foreground',
                     )}
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">
-                        {resolveTripTitle(trip, t)}
-                      </p>
-                      <div className="flex items-center gap-3 mt-1">
+                      <p className="text-sm font-semibold truncate">{resolveTripTitle(trip, t)}</p>
+                      <div className="flex items-center gap-4 mt-1">
                         {trip.start_date && (
                           <span className="text-xs text-muted-foreground">
                             <Calendar
-                              style={{
-                                width: 12,
-                                height: 12,
-                                display: 'inline',
-                                verticalAlign: -1,
-                                marginRight: 4,
-                              }}
+                              size={12}
+                              style={{ display: 'inline', verticalAlign: -1 }}
+                              className="mr-1"
                             />
                             {new Date(trip.start_date).toLocaleDateString(undefined, {
                               month: 'short',
@@ -264,21 +271,15 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                         )}
                         <span className="text-xs text-muted-foreground">
                           <Users
-                            style={{
-                              width: 12,
-                              height: 12,
-                              display: 'inline',
-                              verticalAlign: -1,
-                              marginRight: 4,
-                            }}
+                            size={12}
+                            style={{ display: 'inline', verticalAlign: -1 }}
+                            className="mr-1"
                           />
                           {trip.member_count}
                         </span>
                       </div>
                     </div>
-                    {selectedTripId === trip.id && (
-                      <Check style={{ width: 18, height: 18, flexShrink: 0 }} />
-                    )}
+                    {selectedTripId === trip.id && <Check size={18} className="shrink-0" />}
                   </div>
                 ))}
               </div>
@@ -286,9 +287,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
               {/* Day selector for selected trip */}
               {selectedTrip && selectedTrip.trip_days.length > 0 && (
                 <div className="space-y-1.5 mb-4">
-                  <Label>
-                    {t('trips.addTo.assignToDay', 'Assign to Day (optional)')}
-                  </Label>
+                  <Label>{t('trips.addTo.assignToDay', 'Assign to Day (optional)')}</Label>
                   <Select
                     value={selectedDayId || '__none__'}
                     onValueChange={(v) => setSelectedDayId(v === '__none__' ? '' : v)}
@@ -321,18 +320,14 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                 onClick={() => setShowCreateForm(true)}
                 style={{ width: '100%' }}
               >
-                <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
+                <Plus size={16} className="mr-2" />
                 {t('trips.addTo.createNewTrip', 'Create New Trip')}
               </Button>
             </>
           ) : (
             <div className="flex flex-col gap-4">
               {hasTrips && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowCreateForm(false)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setShowCreateForm(false)}>
                   {t('trips.addTo.backToTrips', 'Back to trips')}
                 </Button>
               )}
@@ -342,9 +337,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                 </p>
               )}
               <div className="space-y-1.5">
-                <Label htmlFor="new-trip-title">
-                  {t('trips.addTo.tripTitle', 'Trip Title')}
-                </Label>
+                <Label htmlFor="new-trip-title">{t('trips.addTo.tripTitle', 'Trip Title')}</Label>
                 <Input
                   id="new-trip-title"
                   value={newTripTitle}
@@ -356,9 +349,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="new-trip-start">
-                    {t('trips.addTo.startDate', 'Start Date')}
-                  </Label>
+                  <Label htmlFor="new-trip-start">{t('trips.addTo.startDate', 'Start Date')}</Label>
                   <Input
                     id="new-trip-start"
                     type="date"
@@ -367,9 +358,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="new-trip-end">
-                    {t('trips.addTo.endDate', 'End Date')}
-                  </Label>
+                  <Label htmlFor="new-trip-end">{t('trips.addTo.endDate', 'End Date')}</Label>
                   <Input
                     id="new-trip-end"
                     type="date"
@@ -390,11 +379,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
           {showCreateForm || !hasTrips ? (
             <Button
               onClick={handleCreateAndAdd}
-              disabled={
-                !newTripTitle.trim() ||
-                createTrip.isPending ||
-                addPlace.isPending
-              }
+              disabled={!newTripTitle.trim() || createTrip.isPending || addPlace.isPending}
             >
               {(createTrip.isPending || addPlace.isPending) && (
                 <Loader2 className="animate-spin mr-1" size={16} aria-label="Loading" />
@@ -402,10 +387,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
               {t('trips.addTo.createAndAdd', 'Create & Add')}
             </Button>
           ) : (
-            <Button
-              onClick={handleAddToTrip}
-              disabled={!selectedTripId || addPlace.isPending}
-            >
+            <Button onClick={handleAddToTrip} disabled={!selectedTripId || addPlace.isPending}>
               {addPlace.isPending && (
                 <Loader2 className="animate-spin mr-1" size={16} aria-label="Loading" />
               )}

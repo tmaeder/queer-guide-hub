@@ -25,9 +25,7 @@ import { getContentType } from '@/config/contentTypeRegistry';
 const CMSEditorLayout = lazy(() =>
   import('./editor/CMSEditorLayout').then((m) => ({ default: m.CMSEditorLayout })),
 );
-const AuditLog = lazy(() =>
-  import('./AuditLog').then((m) => ({ default: m.AuditLog })),
-);
+const AuditLog = lazy(() => import('./AuditLog').then((m) => ({ default: m.AuditLog })));
 const DataQualityDashboard = lazy(() =>
   import('./DataQualityDashboard').then((m) => ({ default: m.DataQualityDashboard })),
 );
@@ -66,7 +64,7 @@ function ShellSkeleton() {
         <Skeleton className="rounded-element mb-1" style={{ width: 160, height: 24 }} />
         <Skeleton className="mb-6" style={{ width: 100, height: 16 }} />
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 mb-2">
+          <div key={i} className="flex items-center gap-4 mb-2">
             <Skeleton className="rounded-element" style={{ width: 28, height: 28 }} />
             <Skeleton style={{ width: 80 + Math.random() * 60, height: 20 }} />
           </div>
@@ -116,26 +114,29 @@ export function CMSShell() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  const handleNavigate = useCallback((view: CMSView, contentType?: string) => {
-    // Trigger fade-out
-    setIsTransitioning(true);
+  const handleNavigate = useCallback(
+    (view: CMSView, contentType?: string) => {
+      // Trigger fade-out
+      setIsTransitioning(true);
 
-    // Clear any previous timer
-    if (transitionTimer.current) clearTimeout(transitionTimer.current);
+      // Clear any previous timer
+      if (transitionTimer.current) clearTimeout(transitionTimer.current);
 
-    transitionTimer.current = setTimeout(() => {
-      setActiveView(view);
-      setActiveContentType(contentType);
-      setEditor(null);
+      transitionTimer.current = setTimeout(() => {
+        setActiveView(view);
+        setActiveContentType(contentType);
+        setEditor(null);
 
-      // Trigger fade-in after state updates
-      requestAnimationFrame(() => {
-        setIsTransitioning(false);
-      });
-    }, 150);
+        // Trigger fade-in after state updates
+        requestAnimationFrame(() => {
+          setIsTransitioning(false);
+        });
+      }, 150);
 
-    if (isMobile) setMobileOpen(false);
-  }, [isMobile]);
+      if (isMobile) setMobileOpen(false);
+    },
+    [isMobile],
+  );
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -144,10 +145,13 @@ export function CMSShell() {
     };
   }, []);
 
-  const handleEdit = useCallback((contentType: string, itemId: string | null) => {
-    setEditor({ contentType, itemId });
-    if (isMobile) setMobileOpen(false);
-  }, [isMobile]);
+  const handleEdit = useCallback(
+    (contentType: string, itemId: string | null) => {
+      setEditor({ contentType, itemId });
+      if (isMobile) setMobileOpen(false);
+    },
+    [isMobile],
+  );
 
   const handleCloseEditor = useCallback(() => {
     setEditor(null);
@@ -187,9 +191,7 @@ export function CMSShell() {
   // dispatched via custom events the editor listens to (no shared state needed).
   useCMSShortcuts({
     onPalette: () => setPaletteOpen(true),
-    onSave: editor
-      ? () => window.dispatchEvent(new CustomEvent('cms:editor:save'))
-      : undefined,
+    onSave: editor ? () => window.dispatchEvent(new CustomEvent('cms:editor:save')) : undefined,
     onPublish: editor
       ? () => window.dispatchEvent(new CustomEvent('cms:editor:publish'))
       : undefined,
@@ -301,12 +303,11 @@ export function CMSShell() {
           role="button"
           tabIndex={0}
           aria-label="Open content hub menu"
-          className="fixed flex items-center gap-1.5 bg-background rounded-[10px] cursor-pointer transition-shadow"
+          className="fixed flex items-center gap-1.5 bg-background rounded-[10px] border border-border cursor-pointer"
           style={{
             top: 80,
             left: 8,
             zIndex: 1200,
-            boxShadow: '0 2px 12px hsl(var(--foreground) / 0.1)',
             paddingLeft: 8,
             paddingRight: 12,
             paddingTop: 6,
@@ -337,14 +338,21 @@ export function CMSShell() {
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Breadcrumb bar */}
         {breadcrumbs.length > 1 && (
-          <div className="px-4 sm:px-6 py-[10px] bg-background border-b border-border flex items-center" style={{ minHeight: 44 }}>
+          <div
+            className="px-4 sm:px-6 py-[10px] bg-background border-b border-border flex items-center"
+            style={{ minHeight: 44 }}
+          >
             <nav className="flex items-center flex-nowrap">
               {breadcrumbs.map((crumb, i) => {
                 const isLast = i === breadcrumbs.length - 1;
                 return (
                   <div key={i} className="flex items-center">
                     {i > 0 && (
-                      <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 6px' }} />
+                      <ChevronRight
+                        size={14}
+                        style={{ margin: '0 6px' }}
+                        className="text-muted-foreground"
+                      />
                     )}
                     {isLast ? (
                       <span
@@ -376,7 +384,8 @@ export function CMSShell() {
           style={{
             opacity: isTransitioning ? 0 : 1,
             transform: isTransitioning ? 'translateY(6px)' : 'translateY(0)',
-            transition: 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition:
+              'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           {renderMainContent()}
@@ -414,8 +423,8 @@ function CMSSettingsPanel() {
       <p className="text-sm text-muted-foreground mb-6">CMS configuration</p>
 
       <div className="flex flex-col gap-4">
-        <div className="border border-border rounded-container p-5">
-          <p className="text-sm font-semibold mb-3">Content Settings</p>
+        <div className="border border-border rounded-container p-6">
+          <p className="text-sm font-semibold mb-4">Content Settings</p>
           <div className="flex flex-col gap-2">
             <SettingRow defaultChecked label="Auto-save drafts" />
             <SettingRow label="Require review before publish" />
@@ -423,16 +432,16 @@ function CMSSettingsPanel() {
           </div>
         </div>
 
-        <div className="border border-border rounded-container p-5">
-          <p className="text-sm font-semibold mb-3">Media Settings</p>
+        <div className="border border-border rounded-container p-6">
+          <p className="text-sm font-semibold mb-4">Media Settings</p>
           <div className="flex flex-col gap-2">
             <SettingRow defaultChecked label="Compress images on upload" />
             <SettingRow defaultChecked label="Generate thumbnails" />
           </div>
         </div>
 
-        <div className="border border-border rounded-container p-5">
-          <p className="text-sm font-semibold mb-3">SEO Settings</p>
+        <div className="border border-border rounded-container p-6">
+          <p className="text-sm font-semibold mb-4">SEO Settings</p>
           <div className="flex flex-col gap-2">
             <SettingRow defaultChecked label="Auto-generate meta descriptions" />
             <SettingRow defaultChecked label="Generate XML sitemap" />

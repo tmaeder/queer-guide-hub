@@ -88,7 +88,7 @@ export default function ExtensionInstall() {
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-12 max-w-2xl text-center">
-        <h1 className="text-2xl font-semibold mb-3">{t("extension.signInGate.title", "Sign in to install the extension")}</h1>
+        <h1 className="text-2xl font-semibold mb-4">{t("extension.signInGate.title", "Sign in to install the extension")}</h1>
         <p className="text-muted-foreground mb-6">
           {t("extension.signInGate.subtitle", "The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.")}
         </p>
@@ -99,7 +99,7 @@ export default function ExtensionInstall() {
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-3xl">
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-4 mb-6">
         <Puzzle className="h-8 w-8" />
         <div>
           <h1 className="text-3xl font-bold">{t("extension.heading.title", "queer.guide capture")}</h1>
@@ -164,12 +164,12 @@ function ConnectCard({
           {t("extension.connect.title", "Connect this browser")}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 text-sm">
+      <CardContent className="space-y-4 text-sm">
         <p>
           {t("extension.connect.detected", "Extension")} <code>{ext.id.slice(0, 6)}…</code>{ext.version ? ` v${ext.version}` : ""} {t("extension.connect.installed", "is installed in this browser.")}
         </p>
         {status === "connected" ? (
-          <div className="bg-muted border border-border p-3">
+          <div className="bg-muted border border-border p-4">
             <p className="font-medium">{t("extension.connect.done.title", "Connected.")}</p>
             <p className="text-muted-foreground">
               {t("extension.connect.done.body", "Open the extension popup on any page to capture content for queer.guide.")}
@@ -203,9 +203,9 @@ function InstallSteps() {
       <CardHeader>
         <CardTitle className="text-xl">{t("extension.steps.title", "Install in 3 steps")}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-6">
         <Step n={1} title={t("extension.steps.s1.title", "Download the latest build")}>
-          <p className="text-sm text-muted-foreground mb-3">
+          <p className="text-sm text-muted-foreground mb-4">
             {t("extension.steps.s1.body", "We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.")}
           </p>
           <Button asChild>
@@ -220,7 +220,7 @@ function InstallSteps() {
         </Step>
 
         <Step n={2} title={t("extension.steps.s2.title", "Load it in Chrome")}>
-          <ol className="list-decimal pl-5 text-sm space-y-1">
+          <ol className="list-decimal pl-6 text-sm space-y-1">
             <li>{t("extension.steps.s2.l1", "Open chrome://extensions in a new tab.")}</li>
             <li>{t("extension.steps.s2.l2", "Toggle Developer mode on (top right).")}</li>
             <li>{t("extension.steps.s2.l3", "Click Load unpacked and pick the unzipped folder.")}</li>
@@ -252,7 +252,7 @@ function InstallSteps() {
 function Highlights() {
   const { t } = useTranslation();
   return (
-    <div className="grid sm:grid-cols-3 gap-3">
+    <div className="grid sm:grid-cols-3 gap-4">
       <Highlight icon={<Wand2 className="h-5 w-5" />} title={t("extension.highlights.smart.title", "Smart capture")}>
         {t("extension.highlights.smart.body", "Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work.")}
       </Highlight>
@@ -276,7 +276,7 @@ function Step({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-4">
       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
         {n}
       </div>

@@ -133,7 +133,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
         <div className="flex gap-1 border-b border-border">
           <button
             onClick={() => setMode('browse')}
-            className={`px-3 py-1.5 text-xs border-b-2 transition-colors ${
+            className={`px-4 py-1.5 text-xs border-b-2 transition-colors ${
               mode === 'browse' ? 'border-primary text-primary font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -141,7 +141,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
           </button>
           <button
             onClick={() => setMode('save')}
-            className={`px-3 py-1.5 text-xs border-b-2 transition-colors ${
+            className={`px-4 py-1.5 text-xs border-b-2 transition-colors ${
               mode === 'save' ? 'border-primary text-primary font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -176,7 +176,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
                 </div>
               )}
               {filtered.map(t => (
-                <div key={t.id} className="p-3 border-b border-border/50 flex items-start gap-3 hover:bg-accent transition-colors">
+                <div key={t.id} className="p-4 border-b border-border/50 flex items-start gap-4 hover:bg-accent transition-colors">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-medium text-sm">{t.name}</span>
@@ -207,7 +207,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
           </>
         ) : (
           <>
-            <div className="space-y-3 flex-1">
+            <div className="space-y-4 flex-1">
               {selectedNodes.length === 0 ? (
                 <div className="p-6 text-center text-xs text-muted-foreground border border-dashed border-border rounded-element">
                   Select one or more nodes on the canvas first (click to select, shift-click to add).

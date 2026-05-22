@@ -80,9 +80,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
   useEffect(() => {
     const prev = document.title;
     const label = config?.label.singular ?? contentType;
-    document.title = titleValue
-      ? `${titleValue} | Queer Guide`
-      : `New ${label} | Queer Guide`;
+    document.title = titleValue ? `${titleValue} | Queer Guide` : `New ${label} | Queer Guide`;
     return () => {
       document.title = prev;
     };
@@ -142,16 +140,27 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
       const updates: Record<string, unknown> = {};
       const isEmpty = (v: unknown) => v == null || (typeof v === 'string' && v.trim() === '');
       const summary = summaryRes.data?.output as string | undefined;
-      const seo = seoRes.data?.output as { meta_title?: string; meta_description?: string } | undefined;
+      const seo = seoRes.data?.output as
+        | { meta_title?: string; meta_description?: string }
+        | undefined;
 
-      const descField = config.fields.find((f) => f.name === 'description' && !f.readOnly && !f.hidden);
-      const excerptField = config.fields.find((f) => f.name === 'excerpt' && !f.readOnly && !f.hidden);
+      const descField = config.fields.find(
+        (f) => f.name === 'description' && !f.readOnly && !f.hidden,
+      );
+      const excerptField = config.fields.find(
+        (f) => f.name === 'excerpt' && !f.readOnly && !f.hidden,
+      );
       if (summary && descField && isEmpty(state.data.description)) updates.description = summary;
       else if (summary && excerptField && isEmpty(state.data.excerpt)) updates.excerpt = summary;
 
-      const metaTitleField = config.fields.find((f) => f.name === 'meta_title' && !f.readOnly && !f.hidden);
-      const metaDescField = config.fields.find((f) => f.name === 'meta_description' && !f.readOnly && !f.hidden);
-      if (seo?.meta_title && metaTitleField && isEmpty(state.data.meta_title)) updates.meta_title = seo.meta_title;
+      const metaTitleField = config.fields.find(
+        (f) => f.name === 'meta_title' && !f.readOnly && !f.hidden,
+      );
+      const metaDescField = config.fields.find(
+        (f) => f.name === 'meta_description' && !f.readOnly && !f.hidden,
+      );
+      if (seo?.meta_title && metaTitleField && isEmpty(state.data.meta_title))
+        updates.meta_title = seo.meta_title;
       if (seo?.meta_description && metaDescField && isEmpty(state.data.meta_description))
         updates.meta_description = seo.meta_description;
 
@@ -232,7 +241,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
 
   if (state.isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 p-8">
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-8">
         <Loader2 className="h-10 w-10 animate-spin" aria-label="Loading" />
         <p className="text-sm text-muted-foreground">
           Loading {config.label.singular.toLowerCase()}...
@@ -253,7 +262,11 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
 
   // Color for progress bar based on completion
   const progressColor =
-    requiredProgress === 100 ? 'hsl(var(--foreground))' : requiredProgress >= 60 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
+    requiredProgress === 100
+      ? 'hsl(var(--foreground))'
+      : requiredProgress >= 60
+        ? 'hsl(var(--foreground) / 0.55)'
+        : 'hsl(var(--destructive))';
 
   return (
     <div className="scale-in flex flex-col h-full bg-background">
@@ -283,12 +296,12 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
 
       {/* ── Error banners ───────────────────────────────────── */}
       {state.errors._conflict && (
-        <Alert className="mx-3 mt-3 border-yellow-500 text-yellow-700">
+        <Alert className="mx-4 mt-4 border-border text-foreground">
           <AlertDescription>{state.errors._conflict}</AlertDescription>
         </Alert>
       )}
       {state.errors._save && (
-        <Alert variant="destructive" className="mx-3 mt-3">
+        <Alert variant="destructive" className="mx-4 mt-4">
           <AlertDescription>{state.errors._save}</AlertDescription>
         </Alert>
       )}
@@ -297,12 +310,9 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
       <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
         {/* ── Main Column ─────────────────────────────────── */}
         <div className="flex-1 overflow-auto lg:w-[70%] lg:max-w-[70%]">
-          <div className="border border-border rounded-element bg-background m-3 mb-1 lg:mb-3 overflow-hidden">
+          <div className="border border-border rounded-element bg-background m-4 mb-1 lg:mb-4 overflow-hidden">
             {/* Group tabs */}
-            <Tabs
-              value={state.activeGroup}
-              onValueChange={(v) => setActiveGroup(v as FieldGroup)}
-            >
+            <Tabs value={state.activeGroup} onValueChange={(v) => setActiveGroup(v as FieldGroup)}>
               <TabsList className="border-b border-border min-h-12 bg-background w-full justify-start overflow-x-auto">
                 {fieldGroups.map((group) => {
                   const GroupIcon = fieldGroupIcons[group];
@@ -313,18 +323,14 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
                     <TabsTrigger
                       key={group}
                       value={group}
-                      className="min-h-12 normal-case font-medium text-sm gap-1.5 px-3"
+                      className="min-h-12 normal-case font-medium text-sm gap-1.5 px-4"
                     >
                       <GroupIcon
-                        style={{
-                          width: 15,
-                          height: 15,
-                          color: dotColor,
-                          flexShrink: 0,
-                        }}
+                        style={{ width: 15, height: 15, color: dotColor }}
+                        className="shrink-0"
                       />
                       <span>{fieldGroupLabels[group] || group}</span>
-                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-muted text-muted-foreground text-[0.65rem] font-bold leading-[18px] px-1">
+                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-muted text-muted-foreground text-2xs font-bold leading-[18px] px-1">
                         {count}
                       </span>
                     </TabsTrigger>
@@ -334,8 +340,8 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
             </Tabs>
 
             {/* Field grid */}
-            <div className="p-3 sm:p-6">
-              <div className="grid gap-3 sm:gap-5 grid-cols-1 sm:grid-cols-2">
+            <div className="p-4 sm:p-6">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
                 {activeFields.map((field) => (
                   <div
                     key={field.name}
@@ -344,7 +350,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
                     }}
                   >
                     <div
-                      className={`p-3 rounded-element border bg-background transition-colors focus-within:border-primary focus-within:shadow-[0_0_0_2px_hsl(var(--primary)/0.2)] ${
+                      className={`p-4 rounded-element border bg-background transition-colors focus-within:border-primary focus-within:shadow-[0_0_0_2px_hsl(var(--primary)/0.2)] ${
                         state.errors[field.name] ? 'border-destructive' : 'border-border'
                       }`}
                     >
@@ -386,7 +392,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
         <>
           <Button
             onClick={() => setAiOpen(true)}
-            className="fixed bottom-6 right-6 z-30 normal-case font-semibold shadow-lg"
+            className="fixed bottom-6 right-6 z-30 normal-case font-semibold"
           >
             <Sparkles size={16} className="mr-1" />
             AI Assist

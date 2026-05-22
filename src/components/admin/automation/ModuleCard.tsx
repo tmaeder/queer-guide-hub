@@ -37,10 +37,10 @@ export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: P
 
   return (
     <div
-      className={`p-5 rounded-element border bg-background transition-all ${module.is_enabled ? 'border-border opacity-100' : 'border-muted opacity-70'}`}
+      className={`p-6 rounded-element border bg-background transition-all ${module.is_enabled ? 'border-border opacity-100' : 'border-muted opacity-70'}`}
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-4">
         <div className="flex-1 min-w-0">
           <p className="text-base font-bold truncate">{module.display_name}</p>
           <p className="text-xs text-muted-foreground block mt-0.5">{module.description}</p>
@@ -52,16 +52,16 @@ export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: P
       </div>
 
       {/* Content types */}
-      <div className="flex gap-1 flex-wrap mb-3">
+      <div className="flex gap-1 flex-wrap mb-4">
         {module.content_types.map((ct) => (
-          <Badge key={ct} variant="outline" className="text-[0.7rem] h-[22px]">
+          <Badge key={ct} variant="outline" className="text-xs2 h-[22px]">
             {ct}
           </Badge>
         ))}
       </div>
 
       {/* Stats row */}
-      <div className="flex gap-4 mb-3">
+      <div className="flex gap-4 mb-4">
         <div>
           <p className="text-xs text-muted-foreground">Runs</p>
           <p className="text-sm font-semibold">{module.total_runs}</p>
@@ -89,7 +89,7 @@ export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: P
             : 'Never run'}
         </p>
         {module.last_run_status && (
-          <Badge variant={statusVariant} className="h-5 text-[0.65rem]">
+          <Badge variant={statusVariant} className="h-5 text-2xs">
             {module.last_run_status}
           </Badge>
         )}
@@ -119,7 +119,7 @@ export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: P
       </div>
 
       {/* Contextual links */}
-      <div className="flex gap-4 mt-3 flex-wrap">
+      <div className="flex gap-4 mt-4 flex-wrap">
         {module.slug === 'link-sanitizer' && (
           <RouterLink
             to="/admin/links"

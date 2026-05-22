@@ -72,20 +72,13 @@ export default function UserProfile() {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
-          <User
-            style={{
-              width: 48,
-              height: 48,
-              margin: '0 auto 16px',
-              color: 'var(--muted-foreground)',
-            }}
-          />
+          <User size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
           <p className="text-base font-medium mb-2">Profile not found</p>
           <p className="text-muted-foreground mb-4">
             This user profile doesn't exist or has been removed.
           </p>
           <Button onClick={() => navigate('/users')}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back to Directory
           </Button>
         </div>
@@ -110,20 +103,11 @@ export default function UserProfile() {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
-          <Shield
-            style={{
-              width: 48,
-              height: 48,
-              margin: '0 auto 16px',
-              color: 'var(--muted-foreground)',
-            }}
-          />
+          <Shield size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
           <p className="text-base font-medium mb-2">Private Profile</p>
-          <p className="text-muted-foreground mb-4">
-            This user has set their profile to private.
-          </p>
+          <p className="text-muted-foreground mb-4">This user has set their profile to private.</p>
           <Button onClick={() => navigate('/users')}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back to Directory
           </Button>
         </div>
@@ -137,16 +121,16 @@ export default function UserProfile() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={() => navigate(-1)}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={handleShare} aria-label="Share profile">
-              <Share2 style={{ width: 16, height: 16 }} />
+              <Share2 size={16} />
             </Button>
             {!isOwnProfile && (
               <Button variant="outline" size="icon" aria-label="Report user">
-                <Flag style={{ width: 16, height: 16 }} />
+                <Flag size={16} />
               </Button>
             )}
           </div>
@@ -157,15 +141,18 @@ export default function UserProfile() {
           <CardContent>
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex flex-col items-center text-center md:text-left">
-                <Avatar style={{ width: 128, height: 128, marginBottom: 16 }}>
-                  <AvatarImage src={profile.avatar_url || undefined} />
-                  <AvatarFallback style={{ fontSize: '1.5rem' }}>
+                <Avatar style={{ width: 128, height: 128 }} className="mb-4">
+                  <AvatarImage
+                    src={profile.avatar_url || undefined}
+                    alt={profile.display_name || 'Profile photo'}
+                  />
+                  <AvatarFallback className="text-2xl">
                     {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 {(profile as unknown as Record<string, unknown>)?.verified_identity && (
                   <Badge variant="secondary">
-                    <Check style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <Check size={12} className="mr-1" />
                     Verified
                   </Badge>
                 )}
@@ -173,7 +160,7 @@ export default function UserProfile() {
 
               <div className="flex-1 flex flex-col gap-4">
                 <div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
                     <h4 className="text-2xl font-bold">
                       {profile.display_name || 'Anonymous User'}
                     </h4>
@@ -186,10 +173,8 @@ export default function UserProfile() {
                     <TrustTierBadge userId={profile.user_id} showLabel />
                   </div>
 
-                  <div className="flex flex-wrap gap-3 text-muted-foreground mb-3">
-                    {profile.pronouns && (
-                      <p className="text-sm">{profile.pronouns}</p>
-                    )}
+                  <div className="flex flex-wrap gap-4 text-muted-foreground mb-4">
+                    {profile.pronouns && <p className="text-sm">{profile.pronouns}</p>}
                     {(profile as unknown as Record<string, unknown>)?.age_range && (
                       <>
                         {profile.pronouns && <p className="text-sm">&#8226;</p>}
@@ -202,7 +187,7 @@ export default function UserProfile() {
                       <>
                         <p className="text-sm">&#8226;</p>
                         <div className="flex items-center gap-1">
-                          <MapPin style={{ width: 16, height: 16 }} />
+                          <MapPin size={16} />
                           <p className="text-sm">{profile.location}</p>
                         </div>
                       </>
@@ -210,13 +195,11 @@ export default function UserProfile() {
                   </div>
 
                   {profile.bio && (
-                    <p className="text-muted-foreground mb-4 max-w-2xl">
-                      {profile.bio}
-                    </p>
+                    <p className="text-muted-foreground mb-4 max-w-2xl">{profile.bio}</p>
                   )}
 
                   <div className="flex items-center gap-2">
-                    <Calendar style={{ width: 16, height: 16 }} />
+                    <Calendar size={16} />
                     <p className="text-sm text-muted-foreground">
                       Joined {formatDate(profile.created_at)}
                     </p>
@@ -224,7 +207,7 @@ export default function UserProfile() {
                 </div>
 
                 {!isOwnProfile && (
-                  <div className="flex gap-3">
+                  <div className="flex gap-4">
                     <StartConversationButton
                       userId={profile.user_id}
                       userName={profile.display_name || 'User'}
@@ -286,12 +269,9 @@ export default function UserProfile() {
             <div className="flex flex-col gap-6">
               <div className="text-center py-8">
                 <Shield
-                  style={{
-                    width: 48,
-                    height: 48,
-                    margin: '0 auto 16px',
-                    color: 'var(--muted-foreground)',
-                  }}
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
                 />
                 <p className="text-base font-medium mb-2">Protected Information</p>
                 <p className="text-muted-foreground max-w-md mx-auto">
@@ -306,12 +286,9 @@ export default function UserProfile() {
             <div className="flex flex-col gap-6">
               <div className="text-center py-8">
                 <Shield
-                  style={{
-                    width: 48,
-                    height: 48,
-                    margin: '0 auto 16px',
-                    color: 'var(--muted-foreground)',
-                  }}
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
                 />
                 <p className="text-base font-medium mb-2">Contact Privacy</p>
                 <p className="text-muted-foreground max-w-md mx-auto">

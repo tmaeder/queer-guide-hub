@@ -67,7 +67,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
             key={b.label}
             className="flex-shrink-0 w-56 border border-border rounded-element bg-background"
           >
-            <div className="px-3 py-2 border-b border-border sticky top-0 bg-background">
+            <div className="px-4 py-2 border-b border-border sticky top-0 bg-background">
               <div className="text-sm font-semibold">{b.label}</div>
               <div className="text-xs text-muted-foreground">
                 {b.items.length.toLocaleString()}{' '}
@@ -81,7 +81,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
                   <li key={p.id}>
                     <LocalizedLink
                       to={`/personalities/${p.slug ?? p.id}`}
-                      className="flex items-center gap-2 px-3 py-2 hover:bg-accent transition-colors no-underline text-inherit"
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-accent transition-colors no-underline text-inherit"
                     >
                       <div
                         className="w-8 h-8 rounded-full bg-muted overflow-hidden flex-shrink-0 flex items-center justify-center text-xs font-bold"
@@ -100,7 +100,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="text-xs font-medium truncate">{p.name}</div>
-                        <div className="text-[11px] text-muted-foreground truncate">
+                        <div className="text-xs2 text-muted-foreground truncate">
                           {year ?? ''}
                           {p.profession ? `${year ? ' · ' : ''}${p.profession}` : ''}
                         </div>

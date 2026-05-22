@@ -1,60 +1,44 @@
 import React from 'react';
-import { motion, type Variants } from 'motion/react';
-import { staggerContainerVariants, staggerItem } from '@/lib/motion';
-import { stagger as staggerTokens } from '@/lib/animation';
 
 interface StaggerGridProps {
   children: React.ReactNode;
+  /** Kept for API compatibility — no longer staggers entrance. */
   stagger?: number;
-  /** @deprecated motion cascades via variants; prop kept for source compat */
+  /** @deprecated kept for source compatibility. */
   childSelector?: string;
   className?: string;
   style?: React.CSSProperties;
-  /** Per-child class applied to each motion item wrapper. Either a single string
+  /** Per-child class applied to each item wrapper. Either a single string
    *  for all items, or a function receiving the child index. */
   itemClassName?: string | ((index: number) => string);
 }
 
 /**
- * Wraps a grid of direct children and staggers their entrance animation.
- * Children are wrapped in motion.div so the parent's variant cascade reaches them.
- * Layout + styling of children is preserved via display: contents.
+ * Passthrough grid container retained for API compatibility across 10 call sites.
+ *
+ * Originally a `motion/react` IntersectionObserver staggered fade-in. Removed
+ * 2026-05-21 (R1 design review): initial-opacity-0 left content invisible
+ * until scrolled, violating CLAUDE.md "Motion: functional only". The wrapper
+ * now renders children directly (wrapped in itemClassName when provided),
+ * no animation.
  */
 export const StaggerGrid = ({
   children,
-  stagger = staggerTokens.normal,
   className,
   style,
   itemClassName,
-}: StaggerGridProps) => {
-  const variants: Variants = React.useMemo(
-    () => staggerContainerVariants(stagger),
-    [stagger],
-  );
-
-  return (
-    <motion.div
-      className={className}
-      style={style}
-      variants={variants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.05, margin: '0px 0px -20px 0px' }}
-    >
-      {React.Children.map(children, (child, i) => {
-        if (!React.isValidElement(child)) return child;
-        const itemCls =
-          typeof itemClassName === 'function' ? itemClassName(i) : itemClassName;
-        return (
-          <motion.div
-            key={(child.key as React.Key | null | undefined) ?? i}
-            variants={staggerItem}
-            className={itemCls}
-          >
-            {child}
-          </motion.div>
-        );
-      })}
-    </motion.div>
-  );
-};
+}: StaggerGridProps) => (
+  <div className={className} style={style}>
+    {React.Children.map(children, (child, i) => {
+      if (!React.isValidElement(child)) return child;
+      const itemCls =
+        typeof itemClassName === 'function' ? itemClassName(i) : itemClassName;
+      if (!itemCls) return child;
+      return (
+        <div key={(child.key as React.Key | null | undefined) ?? i} className={itemCls}>
+          {child}
+        </div>
+      );
+    })}
+  </div>
+);

@@ -1,6 +1,12 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useHotelFilterMeta } from '@/hooks/useHotelFilterMeta';
 import { HOTEL_TYPE_OPTIONS, HOTEL_PRICE_OPTIONS } from './hotelFilterOptions';
 
@@ -28,18 +34,11 @@ export function HotelFilters({
     : HOTEL_TYPE_OPTIONS;
 
   return (
-    <div className="flex flex-wrap gap-3 mb-6">
+    <div className="flex flex-wrap gap-4 mb-6">
       <div className="relative flex-1 max-w-xs min-w-[200px]">
         <Search
-          style={{
-            position: 'absolute',
-            left: 10,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: 16,
-            height: 16,
-            color: 'hsl(var(--muted-foreground))',
-          }}
+          style={{ left: 10, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16 }}
+          className="absolute text-muted-foreground"
         />
         <Input
           placeholder="Search hotels..."

@@ -113,7 +113,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
   return (
     <div className="mt-8">
       <div className="flex items-center gap-2 mb-4">
-        <Scale size={18} style={{ color: 'var(--primary)' }} />
+        <Scale size={18} className="text-primary" />
         <p className="text-base font-bold">
           {t('trips.split.title', 'Settle up')}
         </p>
@@ -122,7 +122,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
       {/* Per-member balances */}
       <div className="flex flex-col gap-2 mb-4">
         {balances.map((b) => (
-          <div key={b.user_id} className="flex items-center gap-3">
+          <div key={b.user_id} className="flex items-center gap-4">
             <Avatar className="h-7 w-7">
               <AvatarImage src={avatarFor(b.user_id)} />
               <AvatarFallback>{displayName(b.user_id).slice(0, 1).toUpperCase()}</AvatarFallback>
@@ -130,7 +130,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
             <p className="flex-1 text-sm">{displayName(b.user_id)}</p>
             <p
               className="text-sm font-bold tabular-nums"
-              style={{ color: b.net > 0 ? 'var(--success, #16a34a)' : 'var(--destructive)' }}
+              style={{ color: b.net > 0 ? 'hsl(var(--foreground))' : 'hsl(var(--destructive))' }}
             >
               {b.net > 0 ? '+' : ''}
               {fmt(b.net)}
@@ -147,7 +147,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
           {settlements.map((s, i) => (
             <div key={i} className="flex items-center gap-2 p-2 bg-muted text-sm">
               <p className="text-sm">{displayName(s.from_user_id)}</p>
-              <ArrowRight size={14} style={{ color: 'var(--muted-foreground)' }} />
+              <ArrowRight size={14} className="text-muted-foreground" />
               <p className="text-sm">{displayName(s.to_user_id)}</p>
               <div className="flex-1" />
               <p className="text-sm font-bold tabular-nums">{fmt(s.amount)}</p>
@@ -157,7 +157,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
       )}
 
       {skippedCount > 0 && (
-        <p className="text-xs text-muted-foreground mt-3 italic">
+        <p className="text-xs text-muted-foreground mt-4 italic">
           {t('trips.split.skipped', {
             count: skippedCount,
             defaultValue: '{{count}} items in other currencies excluded',

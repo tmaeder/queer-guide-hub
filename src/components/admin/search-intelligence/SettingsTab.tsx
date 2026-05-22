@@ -87,19 +87,19 @@ function ChangePill({ change }: { change: AxisChange }) {
 function ChangeRow({ keyName, change }: { keyName: string; change: AxisChange }) {
   return (
     <div>
-      <div className="flex flex-row items-center gap-3">
+      <div className="flex flex-row items-center gap-4">
         <p className="text-sm font-semibold min-w-[200px] font-mono">{keyName}</p>
         <ChangePill change={change} />
       </div>
       {change.kind === 'changed' && (change.added?.length || change.removed?.length) ? (
         <div className="flex flex-row gap-4 ml-[208px] mt-1">
           {change.added && change.added.length > 0 && (
-            <span className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>
+            <span className="text-xs text-foreground">
               +{change.added.map((a) => JSON.stringify(a)).join(', ')}
             </span>
           )}
           {change.removed && change.removed.length > 0 && (
-            <span className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>
+            <span className="text-xs text-destructive">
               −{change.removed.map((a) => JSON.stringify(a)).join(', ')}
             </span>
           )}
@@ -285,7 +285,7 @@ export function SettingsTab() {
                       {diff.summary.length} key(s) differ between desired (DB) and applied (Meili).
                     </p>
                   </div>
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     {Object.entries(diff.changes)
                       .filter(([, c]) => c.kind !== 'unchanged')
                       .map(([k, c]) => (
@@ -373,14 +373,8 @@ export function SettingsTab() {
 function SettingsJson({ value }: { value: SettingsObject | SettingsValue | null }) {
   return (
     <pre
-      style={{
-        fontSize: 12,
-        maxHeight: 600,
-        overflow: 'auto',
-        background: 'hsl(var(--foreground) / 0.04)',
-        padding: 12,
-        margin: 0,
-      }}
+      style={{ fontSize: 12, maxHeight: 600, background: 'hsl(var(--foreground) / 0.04)' }}
+      className="overflow-auto p-4 m-0"
     >
       {value === null ? '(none)' : JSON.stringify(value, null, 2)}
     </pre>

@@ -8,11 +8,7 @@ import {
   pointerWithin,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,13 +42,9 @@ interface Props {
 
 function extractTitle(item: ApiErrorSubmission): string {
   const msg = item.data.message ?? '';
-  const meta = item.data.metadata as
-    | { source?: string; advisor_type?: string }
-    | undefined;
+  const meta = item.data.metadata as { source?: string; advisor_type?: string } | undefined;
   if (meta?.source === 'supabase-advisor') {
-    const m = msg.match(
-      /Table\s+\\?[`"]?([\w.]+)\\?[`"]?.*role\s+\\?[`"]?([\w_]+)\\?[`"]?/,
-    );
+    const m = msg.match(/Table\s+\\?[`"]?([\w.]+)\\?[`"]?.*role\s+\\?[`"]?([\w_]+)\\?[`"]?/);
     if (m) return `${meta.advisor_type}: ${m[1]} · ${m[2]}`;
     return meta.advisor_type ?? msg;
   }
@@ -77,9 +69,7 @@ export function ApiErrorsKanban({
   onStatusChange,
   forwardingIds,
 }: Props) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const seriesBySubmission = useMemo(() => {
@@ -120,9 +110,7 @@ export function ApiErrorsKanban({
   }, [grouped]);
 
   if (errors.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground py-8 text-center">No API errors recorded</p>
-    );
+    return <p className="text-sm text-muted-foreground py-8 text-center">No API errors recorded</p>;
   }
 
   const handleDragEnd = (e: DragEndEvent) => {
@@ -141,20 +129,14 @@ export function ApiErrorsKanban({
       }
     }
     if (!targetCol) return;
-    const sourceCol = kanbanColumns.find((c) =>
-      idsByColumn[c.id].includes(String(active.id)),
-    )?.id;
+    const sourceCol = kanbanColumns.find((c) => idsByColumn[c.id].includes(String(active.id)))?.id;
     if (sourceCol && sourceCol !== targetCol) {
       onStatusChange(String(active.id), targetCol);
     }
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={pointerWithin}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
       <div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
         style={{
@@ -212,11 +194,11 @@ function Column({
   return (
     <div ref={setNodeRef} data-col-id={col.id}>
       <div
-        className="flex items-center gap-2 mb-3 pb-2 border-b-2"
+        className="flex items-center gap-2 mb-4 pb-2 border-b-2"
         style={{ borderColor: col.color }}
       >
         <p className="text-sm font-bold">{col.label}</p>
-        <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
+        <Badge variant="secondary" className="text-xs">
           {items.length}
         </Badge>
       </div>
@@ -273,14 +255,9 @@ function SortableErrorCard({
   onStatusChange,
   isForwarding,
 }: CardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -308,7 +285,7 @@ function SortableErrorCard({
           className="cursor-grab text-muted-foreground/60 flex items-start pt-1 active:cursor-grabbing hover:text-muted-foreground"
           aria-label="Drag to reorder"
         >
-          <GripVertical style={{ width: 14, height: 14 }} />
+          <GripVertical size={14} />
         </div>
 
         <div
@@ -331,16 +308,11 @@ function SortableErrorCard({
                 color,
                 fontSize: '0.7rem',
                 padding: '2px 6px',
-                display: 'inline-flex',
                 alignItems: 'center',
-                gap: 4,
               }}
+              className="inline-flex gap-1"
             >
-              {isAdvisor ? (
-                <ShieldAlert style={{ width: 11, height: 11 }} />
-              ) : (
-                <Server style={{ width: 11, height: 11 }} />
-              )}
+              {isAdvisor ? <ShieldAlert size={11} /> : <Server size={11} />}
               {isAdvisor ? `advisor · ${advisorMeta?.advisor_type}` : item.data.service}
             </Badge>
             {isAdvisor && advisorMeta?.severity && (
@@ -349,11 +321,10 @@ function SortableErrorCard({
                 style={{
                   borderColor: severityColor,
                   backgroundColor: severityColor,
-                  color: 'hsl(var(--background))',
                   fontSize: '0.7rem',
                   padding: '2px 6px',
-                  fontWeight: 700,
                 }}
+                className="text-background font-bold"
               >
                 {advisorMeta.severity}
               </Badge>
@@ -364,16 +335,13 @@ function SortableErrorCard({
                 style={{
                   borderColor: 'hsl(var(--foreground) / 0.55)',
                   backgroundColor: 'hsl(var(--foreground) / 0.55)',
-                  color: 'hsl(var(--background))',
                   fontSize: '0.7rem',
                   padding: '2px 6px',
-                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 4,
-                  fontWeight: 700,
                 }}
+                className="text-background inline-flex gap-1 font-bold"
               >
-                <Github style={{ width: 11, height: 11 }} />#{item.github_issue_number}
+                <Github size={11} />#{item.github_issue_number}
               </Badge>
             )}
             <div className="flex-1" />
@@ -387,15 +355,10 @@ function SortableErrorCard({
             </div>
             <Badge
               variant="secondary"
-              style={{
-                fontSize: '0.7rem',
-                padding: '2px 6px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
+              style={{ fontSize: '0.7rem', padding: '2px 6px', alignItems: 'center' }}
+              className="inline-flex gap-1"
             >
-              <Hash style={{ width: 11, height: 11 }} />
+              <Hash size={11} />
               {item.occurrence_count}×
             </Badge>
           </div>
@@ -414,15 +377,7 @@ function SortableErrorCard({
           </p>
 
           <p className="text-muted-foreground block" style={{ fontSize: '0.72rem' }}>
-            <Zap
-              style={{
-                width: 11,
-                height: 11,
-                display: 'inline',
-                verticalAlign: -2,
-                marginRight: 3,
-              }}
-            />
+            <Zap size={11} style={{ display: 'inline', verticalAlign: -2, marginRight: 3 }} />
             {item.data.function_name}
             {item.data.status_code ? ` · ${item.data.status_code}` : ''}
             {' · '}last seen {timeAgo(item.last_seen_at)}
@@ -445,7 +400,7 @@ function SortableErrorCard({
                   gap: 4,
                 }}
               >
-                <Github style={{ width: 12, height: 12 }} /> #{item.github_issue_number}
+                <Github size={12} /> #{item.github_issue_number}
               </Button>
             ) : (
               <Button
@@ -465,7 +420,7 @@ function SortableErrorCard({
                   color: 'hsl(var(--background))',
                 }}
               >
-                <MessageSquarePlus style={{ width: 12, height: 12 }} />
+                <MessageSquarePlus size={12} />
                 {isForwarding ? 'Forwarding…' : 'Fix with Claude'}
               </Button>
             )}
@@ -486,7 +441,7 @@ function SortableErrorCard({
                 }}
                 title="Mark resolved (auto-reopens if it recurs)"
               >
-                <Check style={{ width: 12, height: 12 }} /> Resolve
+                <Check size={12} /> Resolve
               </Button>
             )}
             <Button
@@ -505,7 +460,7 @@ function SortableErrorCard({
               }}
               title="Copy Claude prompt"
             >
-              <Copy style={{ width: 12, height: 12 }} />
+              <Copy size={12} />
             </Button>
           </div>
 

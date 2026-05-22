@@ -1,31 +1,24 @@
-import { CalendarIcon } from "lucide-react"
-import { DateRange } from "react-day-picker"
+import { CalendarIcon } from 'lucide-react';
+import { DateRange } from 'react-day-picker';
 
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface DatePickerWithRangeProps {
-  className?: string
-  date?: DateRange
-  onSelect?: (date: DateRange | undefined) => void
+  className?: string;
+  date?: DateRange;
+  onSelect?: (date: DateRange | undefined) => void;
 }
 
-export function DatePickerWithRange({
-  date,
-  onSelect,
-}: DatePickerWithRangeProps) {
+export function DatePickerWithRange({ date, onSelect }: DatePickerWithRangeProps) {
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
+    <div className="grid gap-2">
       <Popover>
         <PopoverTrigger asChild>
           <Button
             id="date"
-            variant={"outline"}
+            variant={'outline'}
             style={{
               width: 300,
               justifyContent: 'flex-start',
@@ -34,12 +27,11 @@ export function DatePickerWithRange({
               ...(!date ? { color: 'hsl(var(--muted-foreground))' } : {}),
             }}
           >
-            <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
+            <CalendarIcon size={16} className="mr-2" />
             {date?.from ? (
               date.to ? (
                 <>
-                  {date.from.toLocaleDateString()} -{" "}
-                  {date.to.toLocaleDateString()}
+                  {date.from.toLocaleDateString()} - {date.to.toLocaleDateString()}
                 </>
               ) : (
                 date.from.toLocaleDateString()
@@ -49,7 +41,7 @@ export function DatePickerWithRange({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">
+        <PopoverContent style={{ width: 'auto' }} className="p-0" align="start">
           <Calendar
             initialFocus
             mode="range"
@@ -57,10 +49,11 @@ export function DatePickerWithRange({
             selected={date}
             onSelect={onSelect}
             numberOfMonths={2}
-            style={{ padding: 12, pointerEvents: 'auto' }}
+            style={{ pointerEvents: 'auto' }}
+            className="p-4"
           />
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

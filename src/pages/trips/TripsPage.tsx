@@ -99,7 +99,7 @@ export default function TripsPage() {
             <ColourfulText text={t('trips.title')} />
             {hasAnyTrips && (
               <span
-                className="ml-3 text-muted-foreground font-medium tabular-nums"
+                className="ml-4 text-muted-foreground font-medium tabular-nums"
                 style={{ fontSize: '0.65em' }}
               >
                 · {trips?.length}
@@ -116,7 +116,7 @@ export default function TripsPage() {
             style={{ paddingLeft: 16, paddingRight: 16 }}
             aria-label={t('trips.discover.aria', 'Discover public trips')}
           >
-            <Compass style={{ width: 18, height: 18, marginRight: 6 }} />
+            <Compass size={18} className="mr-1.5" />
             {t('trips.discover.button', 'Discover')}
           </Button>
           <Button
@@ -125,7 +125,7 @@ export default function TripsPage() {
             onClick={() => setCreateOpen(true)}
             style={{ paddingLeft: 20, paddingRight: 20 }}
           >
-            <Plus style={{ width: 18, height: 18, marginRight: 6 }} />
+            <Plus size={18} className="mr-1.5" />
             {t('trips.create')}
           </Button>
         </div>
@@ -145,7 +145,7 @@ export default function TripsPage() {
       )}
 
       {scopeEmptyIds && (
-        <div className="border border-border bg-muted/30 p-3 mb-4 rounded flex items-center justify-between gap-3">
+        <div className="border border-border bg-muted/30 p-4 mb-4 rounded flex items-center justify-between gap-4">
           <p className="text-sm">
             {t(
               'pages.trips.emptyTripsBanner.scopeNote',

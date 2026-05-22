@@ -28,16 +28,15 @@ export function OAuthButtons({ onError }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <Button
         type="button"
         variant="outline"
         onClick={() => handle('google')}
         disabled={loading !== null}
-
       >
         {loading === 'google' ? (
-          <Loader2 style={{ width: 18, height: 18, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+          <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} className="mr-2" />
         ) : (
           <GoogleIcon />
         )}
@@ -48,10 +47,9 @@ export function OAuthButtons({ onError }: Props) {
         variant="outline"
         onClick={() => handle('apple')}
         disabled={loading !== null}
-
       >
         {loading === 'apple' ? (
-          <Loader2 style={{ width: 18, height: 18, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+          <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} className="mr-2" />
         ) : (
           <AppleIcon />
         )}
@@ -63,7 +61,7 @@ export function OAuthButtons({ onError }: Props) {
 
 function GoogleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" style={{ marginRight: 8 }} aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" className="mr-2" aria-hidden>
       <path
         fill="#4285F4"
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -86,7 +84,14 @@ function GoogleIcon() {
 
 function AppleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" style={{ marginRight: 8 }} aria-hidden fill="currentColor">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      className="mr-2"
+      aria-hidden
+      fill="currentColor"
+    >
       <path d="M17.05 12.04c-.03-3.07 2.51-4.55 2.62-4.62-1.43-2.09-3.66-2.38-4.45-2.41-1.89-.19-3.69 1.11-4.65 1.11-.97 0-2.45-1.09-4.03-1.06-2.07.03-3.99 1.21-5.06 3.06-2.16 3.74-.55 9.28 1.55 12.32 1.03 1.49 2.25 3.16 3.85 3.1 1.55-.06 2.13-1 4-1 1.86 0 2.39 1 4.02.97 1.66-.03 2.71-1.51 3.72-3.01 1.18-1.72 1.66-3.39 1.69-3.48-.04-.02-3.24-1.24-3.27-4.93zM14.05 3.41c.86-1.04 1.43-2.49 1.27-3.93-1.23.05-2.71.82-3.59 1.86-.79.92-1.49 2.4-1.3 3.81 1.37.11 2.77-.7 3.62-1.74z" />
     </svg>
   );

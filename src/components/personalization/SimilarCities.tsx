@@ -14,7 +14,14 @@ interface SimilarCitiesProps {
   limit?: number;
 }
 
-export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _latitude, limit = 6 }: SimilarCitiesProps) {
+export function SimilarCities({
+  cityId,
+  _cityName,
+  countryId,
+  equalityScore,
+  _latitude,
+  limit = 6,
+}: SimilarCitiesProps) {
   const { data: cities, isLoading } = useQuery({
     queryKey: ['similar-cities', cityId, countryId, limit],
     queryFn: async () => {
@@ -60,8 +67,10 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
     return (
       <div>
         <Skeleton className="h-6 w-[200px] mb-2" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-[70px] rounded" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-[70px] rounded" />
+          ))}
         </div>
       </div>
     );
@@ -71,29 +80,34 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
-        <Sparkles style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <p className="font-semibold text-[0.95rem]">
-          You might also like
-        </p>
+      <div className="flex items-center gap-2 mb-4">
+        <Sparkles size={18} className="text-primary" />
+        <p className="font-semibold text-15">You might also like</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {cities.map((city) => (
-          <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
-            <Card className="hover:shadow-sm transition-shadow">
-              <CardContent style={{ padding: 12 }}>
+          <LocalizedLink key={city.id} to={`/city/${city.id}`} className="no-underline">
+            <Card>
+              <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-semibold text-sm">{city.name}</p>
-                    <p className="text-[0.7rem] text-muted-foreground">{city.country_name}</p>
+                    <p className="text-xs2 text-muted-foreground">{city.country_name}</p>
                   </div>
                   {city.eq_score != null && (
                     <div className="flex items-center gap-0.5">
-                      <Shield style={{
-                        height: 12, width: 12,
-                        color: city.eq_score >= 70 ? 'var(--success)' : city.eq_score >= 40 ? 'var(--warning)' : 'var(--destructive)',
-                      }} />
-                      <span className="text-[0.65rem] font-semibold">{city.eq_score}</span>
+                      <Shield
+                        size={12}
+                        style={{
+                          color:
+                            city.eq_score >= 70
+                              ? 'var(--success)'
+                              : city.eq_score >= 40
+                                ? 'var(--warning)'
+                                : 'var(--destructive)',
+                        }}
+                      />
+                      <span className="text-2xs font-semibold">{city.eq_score}</span>
                     </div>
                   )}
                 </div>

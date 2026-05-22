@@ -25,106 +25,106 @@ const privacySettings: PrivacySetting[] = [
     key: 'bio_public',
     label: 'Bio Visibility',
     description: 'Allow others to see your bio and description',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'basic',
-    defaultValue: true
+    defaultValue: true,
   },
   {
     key: 'location_public',
     label: 'Location Sharing',
     description: 'Share your general location with others',
-    icon: <MapPin style={{ height: 16, width: 16 }} />,
+    icon: <MapPin size={16} />,
     category: 'sensitive',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'pronouns_public',
     label: 'Pronouns Visibility',
     description: 'Display your pronouns publicly',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'basic',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'interests_public',
     label: 'Interests & Hobbies',
     description: 'Share your interests and hobbies',
-    icon: <Heart style={{ height: 16, width: 16 }} />,
+    icon: <Heart size={16} />,
     category: 'basic',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'contact_public',
     label: 'Contact Information',
     description: 'Allow others to see your website and social links',
-    icon: <Phone style={{ height: 16, width: 16 }} />,
+    icon: <Phone size={16} />,
     category: 'sensitive',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'phone_public',
     label: 'Phone Number',
     description: 'Share your phone number (highly sensitive)',
-    icon: <Phone style={{ height: 16, width: 16 }} />,
+    icon: <Phone size={16} />,
     category: 'sensitive',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'gender_identity_public',
     label: 'Gender Identity',
     description: 'Share your gender identity',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'sensitive',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'sexual_orientation_public',
     label: 'Sexual Orientation',
     description: 'Share your sexual orientation',
-    icon: <Heart style={{ height: 16, width: 16 }} />,
+    icon: <Heart size={16} />,
     category: 'sensitive',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'relationship_status_public',
     label: 'Relationship Status',
     description: 'Share your relationship status',
-    icon: <Heart style={{ height: 16, width: 16 }} />,
+    icon: <Heart size={16} />,
     category: 'sensitive',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'income_range_public',
     label: 'Income Information',
     description: 'Share your income range (financial data)',
-    icon: <DollarSign style={{ height: 16, width: 16 }} />,
+    icon: <DollarSign size={16} />,
     category: 'financial',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'emergency_contact_public',
     label: 'Emergency Contact',
     description: 'Emergency contact information visibility',
-    icon: <Phone style={{ height: 16, width: 16 }} />,
+    icon: <Phone size={16} />,
     category: 'sensitive',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'political_views_public',
     label: 'Political Views',
     description: 'Share your political perspectives',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'sensitive',
-    defaultValue: false
+    defaultValue: false,
   },
   {
     key: 'religious_beliefs_public',
     label: 'Religious Beliefs',
     description: 'Share your religious or spiritual beliefs',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'sensitive',
-    defaultValue: false
-  }
+    defaultValue: false,
+  },
 ];
 
 export function PrivacyControlCenter() {
@@ -138,10 +138,13 @@ export function PrivacyControlCenter() {
       setSettings(profile.privacy_settings as Record<string, boolean>);
     } else {
       // Set default values
-      const defaultSettings = privacySettings.reduce((acc, setting) => {
-        acc[setting.key] = setting.defaultValue;
-        return acc;
-      }, {} as Record<string, boolean>);
+      const defaultSettings = privacySettings.reduce(
+        (acc, setting) => {
+          acc[setting.key] = setting.defaultValue;
+          return acc;
+        },
+        {} as Record<string, boolean>,
+      );
       setSettings(defaultSettings);
     }
   }, [profile]);
@@ -156,11 +159,11 @@ export function PrivacyControlCenter() {
       setSettings(newSettings);
 
       await updateProfile({
-        privacy_settings: newSettings
+        privacy_settings: newSettings,
       });
 
       // Log security event for sensitive changes
-      const setting = privacySettings.find(s => s.key === key);
+      const setting = privacySettings.find((s) => s.key === key);
       if (setting?.category === 'sensitive' || setting?.category === 'financial') {
         await supabase.rpc('log_security_event', {
           p_event_type: 'PRIVACY_SETTING_CHANGED',
@@ -168,54 +171,56 @@ export function PrivacyControlCenter() {
           p_metadata: {
             setting_key: key,
             setting_value: value,
-            category: setting.category
+            category: setting.category,
           },
-          p_severity: 'medium'
+          p_severity: 'medium',
         });
       }
 
       toast({
-        title: "Privacy Setting Updated",
-        description: `${setting?.label} visibility has been ${value ? 'enabled' : 'disabled'}`
+        title: 'Privacy Setting Updated',
+        description: `${setting?.label} visibility has been ${value ? 'enabled' : 'disabled'}`,
       });
-
     } catch (error) {
       console.error('Error updating privacy setting:', error);
       toast({
-        title: "Update Failed",
-        description: "Failed to update privacy setting",
-        variant: "destructive"
+        title: 'Update Failed',
+        description: 'Failed to update privacy setting',
+        variant: 'destructive',
       });
       // Revert the setting
-      setSettings(prev => ({ ...prev, [key]: !value }));
+      setSettings((prev) => ({ ...prev, [key]: !value }));
     } finally {
       setLoading(false);
     }
   };
 
   const setAllToPrivate = async () => {
-    const privateSettings = privacySettings.reduce((acc, setting) => {
-      acc[setting.key] = false;
-      return acc;
-    }, {} as Record<string, boolean>);
+    const privateSettings = privacySettings.reduce(
+      (acc, setting) => {
+        acc[setting.key] = false;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
 
     try {
       setLoading(true);
       setSettings(privateSettings);
 
       await updateProfile({
-        privacy_settings: privateSettings
+        privacy_settings: privateSettings,
       });
 
       toast({
-        title: "All Settings Set to Private",
-        description: "All privacy settings have been set to private for maximum protection"
+        title: 'All Settings Set to Private',
+        description: 'All privacy settings have been set to private for maximum protection',
       });
     } catch (_error) {
       toast({
-        title: "Update Failed",
-        description: "Failed to update privacy settings",
-        variant: "destructive"
+        title: 'Update Failed',
+        description: 'Failed to update privacy settings',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -225,13 +230,13 @@ export function PrivacyControlCenter() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'basic':
-        return <Eye style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />;
+        return <Eye size={16} className="text-muted-foreground" />;
       case 'sensitive':
-        return <Shield style={{ height: 16, width: 16, color: 'hsl(var(--foreground) / 0.55)' }} />;
+        return <Shield size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
       case 'financial':
-        return <Lock style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />;
+        return <Lock size={16} className="text-destructive" />;
       default:
-        return <Eye style={{ height: 16, width: 16 }} />;
+        return <Eye size={16} />;
     }
   };
 
@@ -248,13 +253,16 @@ export function PrivacyControlCenter() {
     }
   };
 
-  const groupedSettings = privacySettings.reduce((acc, setting) => {
-    if (!acc[setting.category]) {
-      acc[setting.category] = [];
-    }
-    acc[setting.category].push(setting);
-    return acc;
-  }, {} as Record<string, PrivacySetting[]>);
+  const groupedSettings = privacySettings.reduce(
+    (acc, setting) => {
+      if (!acc[setting.category]) {
+        acc[setting.category] = [];
+      }
+      acc[setting.category].push(setting);
+      return acc;
+    },
+    {} as Record<string, PrivacySetting[]>,
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -262,15 +270,11 @@ export function PrivacyControlCenter() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Shield style={{ height: 24, width: 24 }} />
+              <Shield size={24} />
               <CardTitle>Privacy Control Center</CardTitle>
             </div>
-            <Button
-              variant="outline"
-              onClick={setAllToPrivate}
-              disabled={loading}
-            >
-              <EyeOff style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Button variant="outline" onClick={setAllToPrivate} disabled={loading}>
+              <EyeOff size={16} className="mr-2" />
               Set All Private
             </Button>
           </div>
@@ -281,10 +285,11 @@ export function PrivacyControlCenter() {
       </Card>
 
       <Alert>
-        <Shield style={{ height: 16, width: 16 }} />
+        <Shield size={16} />
         <AlertTitle>Privacy Protection Active</AlertTitle>
         <AlertDescription>
-          Your data is protected by enhanced security measures. All privacy changes are logged for security purposes.
+          Your data is protected by enhanced security measures. All privacy changes are logged for
+          security purposes.
         </AlertDescription>
       </Alert>
 
@@ -306,13 +311,11 @@ export function PrivacyControlCenter() {
               {categorySettings.map((setting, index) => (
                 <div key={setting.key}>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       {setting.icon}
                       <div>
                         <p className="font-medium">{setting.label}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {setting.description}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{setting.description}</p>
                       </div>
                     </div>
                     <Switch
@@ -321,7 +324,7 @@ export function PrivacyControlCenter() {
                       disabled={loading}
                     />
                   </div>
-                  {index < categorySettings.length - 1 && <Separator style={{ marginTop: 16 }} />}
+                  {index < categorySettings.length - 1 && <Separator className="mt-4" />}
                 </div>
               ))}
             </div>
@@ -330,7 +333,7 @@ export function PrivacyControlCenter() {
       ))}
 
       <Card>
-        <CardContent style={{ paddingTop: 24 }}>
+        <CardContent className="pt-6">
           <div className="text-center flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">
               Privacy settings are enforced at the database level for maximum security.

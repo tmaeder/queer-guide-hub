@@ -114,7 +114,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Upload style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Upload size={16} className="mr-2" />
           Import CSV
         </Button>
       </DialogTrigger>
@@ -128,7 +128,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
           <Card>
             <CardContent>
               <div className="flex items-center gap-2 mb-2">
-                <FileText style={{ width: 16, height: 16 }} />
+                <FileText size={16} />
                 <p className="text-sm font-semibold">CSV Format Requirements</p>
               </div>
               <ul className="flex flex-col gap-1">
@@ -143,7 +143,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
                 size="sm"
                 onClick={downloadTemplate}
               >
-                <Download style={{ width: 16, height: 16, marginRight: 8 }} />
+                <Download size={16} className="mr-2" />
                 Download Template
               </Button>
             </CardContent>
@@ -179,11 +179,11 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
           {importResult && (
             <Card>
               <CardContent>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-4">
                   {importResult.success ? (
-                    <CheckCircle style={{ width: 20, height: 20, color: 'hsl(var(--foreground))' }} />
+                    <CheckCircle size={20} className="text-foreground" />
                   ) : (
-                    <AlertCircle style={{ width: 20, height: 20, color: 'hsl(var(--destructive))' }} />
+                    <AlertCircle size={20} className="text-destructive" />
                   )}
                   <p className="text-sm font-semibold">
                     {importResult.success ? 'Import Successful' : 'Import Failed'}

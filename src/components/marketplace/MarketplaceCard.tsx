@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { memo, type CSSProperties } from 'react';
 import { MotionCard as Card, CardImage } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Badge } from '@/components/ui/badge';
@@ -61,7 +61,7 @@ function HighlightedText({ text, query }: { text: string; query?: string }) {
   );
 }
 
-export function MarketplaceCard({
+function MarketplaceCardImpl({
   listing,
   loading = false,
   showFavoriteButton = false,
@@ -114,7 +114,7 @@ export function MarketplaceCard({
 
         <div className="p-6 flex flex-col gap-4 relative">
           <div className="flex flex-col gap-2">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <h2 className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap text-base">
                   <LocalizedLink
@@ -138,11 +138,10 @@ export function MarketplaceCard({
                     <HighlightedText text={listing.business_name} query={searchQuery} />
                   )}
                   {provenance && (
-                    <span className="ml-1.5 text-[11px] uppercase tracking-wider text-muted-foreground/70 inline-flex items-center gap-1">
+                    <span className="ml-1.5 text-xs2 uppercase tracking-wider text-muted-foreground/70 inline-flex items-center gap-1">
                       · {provenance}
                       {isAffiliate && (
-                        <BadgeDollarSign
-                          style={{ width: 11, height: 11 }}
+                        <BadgeDollarSign size={11}
                           aria-label="Sponsored affiliate listing"
                         />
                       )}
@@ -158,7 +157,7 @@ export function MarketplaceCard({
 
             {(listing.venues?.name || listing.location) && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} aria-hidden="true" />
+                <MapPin size={12} className="shrink-0" aria-hidden="true" />
                 <span className="overflow-hidden text-ellipsis whitespace-nowrap">
                   {listing.venues ? `${listing.venues.name}, ${listing.venues.city}` : listing.location}
                 </span>
@@ -172,13 +171,13 @@ export function MarketplaceCard({
                     <span
                       key={p.key}
                       title={p.title}
-                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                     >
                       {p.label}
                     </span>
                   ))}
                   {pills.length > 2 && (
-                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 self-center">
+                    <span className="text-2xs uppercase tracking-[0.14em] text-muted-foreground/70 self-center">
                       +{pills.length - 2}
                     </span>
                   )}
@@ -188,7 +187,7 @@ export function MarketplaceCard({
                     <span
                       key={p.key}
                       title={p.title}
-                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                     >
                       {p.label}
                     </span>
@@ -211,7 +210,7 @@ export function MarketplaceCard({
             <div className="flex flex-col">
               <div className="flex items-baseline gap-1.5">
                 {price.modifier && (
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
+                  <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
                 )}
                 <p className="text-base font-bold leading-none">{price.primary}</p>
               </div>
@@ -219,7 +218,7 @@ export function MarketplaceCard({
                 <p className="text-xs text-muted-foreground mt-0.5">{price.secondary}</p>
               )}
               {viewsCount > 50 && (
-                <p className="text-[11px] text-muted-foreground/80 mt-0.5">{viewsCount.toLocaleString()} views</p>
+                <p className="text-xs2 text-muted-foreground/80 mt-0.5">{viewsCount.toLocaleString()} views</p>
               )}
               <div className="flex items-center gap-1.5 mt-1.5">
                 {listing.shipping_available && <Badge variant="outline">Ships</Badge>}
@@ -229,7 +228,7 @@ export function MarketplaceCard({
 
             {averageRating > 0 && (
               <div className="flex items-center gap-1">
-                <Star style={{ height: 14, width: 14 }} fill="currentColor" aria-hidden="true" />
+                <Star size={14} fill="currentColor" aria-hidden="true" />
                 <p className="text-sm font-medium">{averageRating.toFixed(1)}</p>
               </div>
             )}
@@ -240,14 +239,14 @@ export function MarketplaceCard({
               {showContactIcons && listing.contact_phone && (
                 <Button size="default" variant="ghost" aria-label={`Call ${listing.contact_phone}`} asChild>
                   <a href={`tel:${listing.contact_phone}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
-                    <Phone style={{ height: 16, width: 16 }} aria-hidden="true" />
+                    <Phone size={16} aria-hidden="true" />
                   </a>
                 </Button>
               )}
               {showContactIcons && listing.contact_email && (
                 <Button size="default" variant="ghost" aria-label={`Email ${listing.contact_email}`} asChild>
                   <a href={`mailto:${listing.contact_email}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
-                    <Mail style={{ height: 16, width: 16 }} aria-hidden="true" />
+                    <Mail size={16} aria-hidden="true" />
                   </a>
                 </Button>
               )}
@@ -261,11 +260,11 @@ export function MarketplaceCard({
                   rel={outbound.rel}
                   onClick={(e) => e.stopPropagation()}
                   data-affiliate={outbound.isAffiliate ? 'true' : undefined}
-                  className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-3 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
                   aria-label={`${outbound.label} (opens in new tab)`}
                 >
                   {outbound.label}
-                  <ExternalLink style={{ width: 14, height: 14 }} aria-hidden="true" />
+                  <ExternalLink size={14} aria-hidden="true" />
                 </a>
               ) : (
                 <LocalizedLink to={`/marketplace/${listing.slug}`}>
@@ -274,7 +273,7 @@ export function MarketplaceCard({
               )}
               {linkState === 'stale' && (
                 <span title="Link not recently verified" className="text-muted-foreground" aria-label="Link not recently verified">
-                  <AlertTriangle style={{ width: 14, height: 14 }} aria-hidden="true" />
+                  <AlertTriangle size={14} aria-hidden="true" />
                 </span>
               )}
             </div>
@@ -284,3 +283,5 @@ export function MarketplaceCard({
     </CardHoverEffect>
   );
 }
+
+export const MarketplaceCard = memo(MarketplaceCardImpl);

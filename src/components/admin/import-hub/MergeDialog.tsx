@@ -1,4 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
 import { SideBySideComparison } from './SideBySideComparison';
 import { useEntityById, useMergeEntities } from '@/hooks/useImportHubQueries';
@@ -27,7 +33,11 @@ export function MergeDialog({
   const loading = loadingA || loadingB;
   const nameField = entityType === 'events' ? 'title' : 'name';
 
-  const handleMerge = async (mergedData: Record<string, unknown>, keepId: string, removeId: string) => {
+  const handleMerge = async (
+    mergedData: Record<string, unknown>,
+    keepId: string,
+    removeId: string,
+  ) => {
     await mergeMutation.mutateAsync({
       entityType,
       keepId,
@@ -40,7 +50,7 @@ export function MergeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent style={{ maxWidth: 900, maxHeight: '90vh', overflow: 'auto' }}>
+      <DialogContent style={{ maxWidth: 900, maxHeight: '90vh' }} className="overflow-auto">
         <DialogHeader>
           <DialogTitle>Merge {entityType}</DialogTitle>
           <DialogDescription>

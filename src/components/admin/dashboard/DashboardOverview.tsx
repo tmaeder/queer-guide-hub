@@ -88,28 +88,28 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       icon: Activity,
       color:
         systemHealth.status === 'healthy'
-          ? 'text-green-600'
+          ? 'text-foreground'
           : systemHealth.status === 'warning'
-            ? 'text-yellow-600'
-            : 'text-red-600',
+            ? 'text-foreground'
+            : 'text-destructive',
     },
     {
       title: 'Uptime',
       value: systemHealth.uptime,
       icon: Globe,
-      color: 'text-blue-600',
+      color: 'text-foreground',
     },
     {
       title: 'DB Latency',
       value: `${systemHealth.dbLatency}ms`,
       icon: Activity,
-      color: systemHealth.dbLatency < 100 ? 'text-green-600' : 'text-yellow-600',
+      color: systemHealth.dbLatency < 100 ? 'text-foreground' : 'text-foreground',
     },
     {
       title: 'Storage Used',
       value: `${systemHealth.storageUsed}%`,
       icon: Eye,
-      color: systemHealth.storageUsed < 80 ? 'text-green-600' : 'text-red-600',
+      color: systemHealth.storageUsed < 80 ? 'text-foreground' : 'text-destructive',
     },
   ];
 
@@ -138,7 +138,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       {/* Key Metrics */}
       <div>
         <h6 className="text-base font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp style={{ height: 20, width: 20 }} />
+          <TrendingUp size={20} />
           Key Metrics
         </h6>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
@@ -157,7 +157,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
                       {card.change}
                     </Badge>
                     <span className="text-xs">{card.description}</span>
-                    <ArrowUpRight style={{ height: 12, width: 12, marginLeft: 'auto' }} />
+                    <ArrowUpRight size={12} style={{ marginLeft: 'auto' }} />
                   </div>
                 </CardContent>
               </Card>
@@ -169,7 +169,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       {/* System Health */}
       <div>
         <h6 className="text-base font-semibold mb-4 flex items-center gap-2">
-          <Activity style={{ height: 20, width: 20 }} />
+          <Activity size={20} />
           System Health
         </h6>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
@@ -178,7 +178,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
             return (
               <Card key={card.title}>
                 <CardContent>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <div className="p-2 rounded-full bg-muted">
                       <Icon style={{ height: 16, width: 16 }} className={card.color} />
                     </div>
@@ -200,7 +200,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
           <CardTitle>Storage Usage</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <div className="flex justify-between text-sm">
               <span className="text-sm">Used Storage</span>
               <span className="text-sm">{systemHealth.storageUsed}% of limit</span>

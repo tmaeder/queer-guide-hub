@@ -21,7 +21,7 @@ export function CityCompletionList({ rows }: { rows: CityCompletionRow[] }) {
           r.city_name,
         )}`;
         return (
-          <div key={r.city_id} className="border border-border p-3">
+          <div key={r.city_id} className="border border-border p-4">
             <div className="flex items-baseline justify-between gap-2 flex-wrap">
               {r.city_slug ? (
                 <LocalizedLink to={`/places/${r.city_slug}`} className="font-medium">
@@ -37,7 +37,7 @@ export function CityCompletionList({ rows }: { rows: CityCompletionRow[] }) {
             <div className="h-1 mt-2 bg-foreground/10 overflow-hidden">
               <div className="h-full bg-foreground" style={{ width: `${pct}%` }} />
             </div>
-            <div className="mt-3">
+            <div className="mt-4">
               <Button asChild size="sm" variant="outline">
                 <LocalizedLink to={href}>Plan a return</LocalizedLink>
               </Button>

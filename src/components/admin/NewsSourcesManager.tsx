@@ -1,30 +1,32 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
-import { listFrom, insertInto, updateRow, deleteRow } from "@/hooks/usePageFetchers";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
-  Plus,
-  Edit2,
-  Trash2,
-  Rss,
-  Globe,
-  Play,
-  Tags,
-  ChevronDown,
-  ChevronUp
-} from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { validateNewsSource } from "@/utils/contentValidation";
-import { LEGACY_NEWS_TRIGGER_ENABLED } from "@/lib/featureFlags";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { supabase } from '@/integrations/supabase/client';
+import { Tables } from '@/integrations/supabase/types';
+import { listFrom, insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
+import { Plus, Edit2, Trash2, Rss, Globe, Play, Tags, ChevronDown, ChevronUp } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { validateNewsSource } from '@/utils/contentValidation';
+import { LEGACY_NEWS_TRIGGER_ENABLED } from '@/lib/featureFlags';
 
 type NewsSource = Tables<'news_sources'>;
 
@@ -35,18 +37,18 @@ export function NewsSourcesManager() {
   const [keywordsDialogOpen, setKeywordsDialogOpen] = useState(false);
   const [editingSource, setEditingSource] = useState<NewsSource | null>(null);
   const [editingKeywords, setEditingKeywords] = useState<string[]>([]);
-  const [newKeyword, setNewKeyword] = useState("");
+  const [newKeyword, setNewKeyword] = useState('');
   const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
 
   const [formData, setFormData] = useState({
-    name: "",
-    url: "",
-    category: "",
-    source_type: "",
+    name: '',
+    url: '',
+    category: '',
+    source_type: '',
     fetch_frequency: 120,
     is_active: true,
     auto_publish: false,
-    keywords: [] as string[]
+    keywords: [] as string[],
   });
 
   useEffect(() => {
@@ -76,7 +78,7 @@ export function NewsSourcesManager() {
     const result = validateNewsSource(formData as Record<string, unknown>);
     if (!result.isValid) {
       const fieldErrors: Record<string, string> = {};
-      result.errors.forEach(err => {
+      result.errors.forEach((err) => {
         fieldErrors[err.field] = err.message;
       });
       setValidationErrors(fieldErrors);
@@ -106,14 +108,14 @@ export function NewsSourcesManager() {
 
   const resetForm = () => {
     setFormData({
-      name: "",
-      url: "",
-      category: "",
-      source_type: "",
+      name: '',
+      url: '',
+      category: '',
+      source_type: '',
       fetch_frequency: 120,
       is_active: true,
       auto_publish: false,
-      keywords: []
+      keywords: [],
     });
     setEditingSource(null);
   };
@@ -128,13 +130,13 @@ export function NewsSourcesManager() {
       fetch_frequency: source.fetch_frequency,
       is_active: source.is_active,
       auto_publish: (source as NewsSource & { auto_publish?: boolean }).auto_publish ?? false,
-      keywords: source.keywords || []
+      keywords: source.keywords || [],
     });
     setDialogOpen(true);
   };
 
   const handleDelete = async (sourceId: string) => {
-    if (!confirm("Are you sure you want to delete this news source?")) return;
+    if (!confirm('Are you sure you want to delete this news source?')) return;
 
     try {
       const { error } = await deleteRow('news_sources', sourceId);
@@ -156,7 +158,7 @@ export function NewsSourcesManager() {
       if (error) throw error;
 
       toast({
-        title: "Success",
+        title: 'Success',
         description: `News source ${!isActive ? 'activated' : 'deactivated'}`,
       });
 
@@ -193,12 +195,12 @@ export function NewsSourcesManager() {
   const addKeyword = () => {
     if (newKeyword.trim() && !editingKeywords.includes(newKeyword.trim())) {
       setEditingKeywords([...editingKeywords, newKeyword.trim()]);
-      setNewKeyword("");
+      setNewKeyword('');
     }
   };
 
   const removeKeyword = (keyword: string) => {
-    setEditingKeywords(editingKeywords.filter(k => k !== keyword));
+    setEditingKeywords(editingKeywords.filter((k) => k !== keyword));
   };
 
   const saveKeywords = async () => {
@@ -232,9 +234,9 @@ export function NewsSourcesManager() {
     setExpandedSources(newExpanded);
   };
 
-  const activeSourcesCount = sources.filter(s => s.is_active).length;
-  const rssSourcesCount = sources.filter(s => s.url && s.url.includes('feed')).length;
-  const apiSourcesCount = sources.filter(s => s.source_type === 'api').length;
+  const activeSourcesCount = sources.filter((s) => s.is_active).length;
+  const rssSourcesCount = sources.filter((s) => s.url && s.url.includes('feed')).length;
+  const apiSourcesCount = sources.filter((s) => s.source_type === 'api').length;
 
   if (loading) {
     return <div className="text-center p-4">Loading news sources...</div>;
@@ -260,9 +262,7 @@ export function NewsSourcesManager() {
           </DialogTrigger>
           <DialogContent style={{ maxWidth: '42rem' }}>
             <DialogHeader>
-              <DialogTitle>
-                {editingSource ? 'Edit News Source' : 'Add News Source'}
-              </DialogTitle>
+              <DialogTitle>{editingSource ? 'Edit News Source' : 'Add News Source'}</DialogTitle>
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -272,18 +272,23 @@ export function NewsSourcesManager() {
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => { setFormData({...formData, name: e.target.value}); setValidationErrors(prev => ({...prev, name: ''})); }}
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      setValidationErrors((prev) => ({ ...prev, name: '' }));
+                    }}
                     required
                     aria-invalid={!!validationErrors.name}
                   />
-                  {validationErrors.name && <p className="text-xs text-destructive mt-1">{validationErrors.name}</p>}
+                  {validationErrors.name && (
+                    <p className="text-xs text-destructive mt-1">{validationErrors.name}</p>
+                  )}
                 </div>
 
                 <div>
                   <Label htmlFor="source_type">Source Type</Label>
                   <Select
                     value={formData.source_type}
-                    onValueChange={(value) => setFormData({...formData, source_type: value})}
+                    onValueChange={(value) => setFormData({ ...formData, source_type: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select source type" />
@@ -303,12 +308,17 @@ export function NewsSourcesManager() {
                 <Input
                   id="category"
                   value={formData.category}
-                  onChange={(e) => { setFormData({...formData, category: e.target.value}); setValidationErrors(prev => ({...prev, category: ''})); }}
+                  onChange={(e) => {
+                    setFormData({ ...formData, category: e.target.value });
+                    setValidationErrors((prev) => ({ ...prev, category: '' }));
+                  }}
                   placeholder="e.g., LGBTQ+, General News, Politics"
                   required
                   aria-invalid={!!validationErrors.category}
                 />
-                {validationErrors.category && <p className="text-xs text-destructive mt-1">{validationErrors.category}</p>}
+                {validationErrors.category && (
+                  <p className="text-xs text-destructive mt-1">{validationErrors.category}</p>
+                )}
               </div>
 
               <div>
@@ -317,12 +327,17 @@ export function NewsSourcesManager() {
                   id="url"
                   type="url"
                   value={formData.url}
-                  onChange={(e) => { setFormData({...formData, url: e.target.value}); setValidationErrors(prev => ({...prev, url: ''})); }}
+                  onChange={(e) => {
+                    setFormData({ ...formData, url: e.target.value });
+                    setValidationErrors((prev) => ({ ...prev, url: '' }));
+                  }}
                   placeholder="https://example.com/feed.xml or API endpoint"
                   required
                   aria-invalid={!!validationErrors.url}
                 />
-                {validationErrors.url && <p className="text-xs text-destructive mt-1">{validationErrors.url}</p>}
+                {validationErrors.url && (
+                  <p className="text-xs text-destructive mt-1">{validationErrors.url}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -333,7 +348,9 @@ export function NewsSourcesManager() {
                     type="number"
                     min="30"
                     value={formData.fetch_frequency}
-                    onChange={(e) => setFormData({...formData, fetch_frequency: parseInt(e.target.value)})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fetch_frequency: parseInt(e.target.value) })
+                    }
                   />
                 </div>
 
@@ -341,7 +358,7 @@ export function NewsSourcesManager() {
                   <Switch
                     id="is_active"
                     checked={formData.is_active}
-                    onCheckedChange={(checked) => setFormData({...formData, is_active: checked})}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                   />
                   <Label htmlFor="is_active">Active</Label>
                 </div>
@@ -351,11 +368,12 @@ export function NewsSourcesManager() {
                 <Switch
                   id="auto_publish"
                   checked={formData.auto_publish}
-                  onCheckedChange={(checked) => setFormData({...formData, auto_publish: checked})}
+                  onCheckedChange={(checked) => setFormData({ ...formData, auto_publish: checked })}
                 />
                 <Label htmlFor="auto_publish">Auto-publish (skip review queue)</Label>
                 <span className="text-xs text-muted-foreground ml-2">
-                  Trusted sources only — new sources are forced through review for the first 24 hours regardless.
+                  Trusted sources only — new sources are forced through review for the first 24
+                  hours regardless.
                 </span>
               </div>
 
@@ -363,9 +381,7 @@ export function NewsSourcesManager() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  {editingSource ? 'Update' : 'Create'}
-                </Button>
+                <Button type="submit">{editingSource ? 'Update' : 'Create'}</Button>
               </div>
             </form>
           </DialogContent>
@@ -375,25 +391,25 @@ export function NewsSourcesManager() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         <Card>
-          <CardContent style={{ padding: 16 }}>
+          <CardContent className="p-4">
             <div className="text-2xl font-bold">{sources.length}</div>
             <span className="text-xs text-muted-foreground">Total Sources</span>
           </CardContent>
         </Card>
         <Card>
-          <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>{activeSourcesCount}</div>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-foreground">{activeSourcesCount}</div>
             <span className="text-xs text-muted-foreground">Active</span>
           </CardContent>
         </Card>
         <Card>
-          <CardContent style={{ padding: 16 }}>
+          <CardContent className="p-4">
             <div className="text-2xl font-bold">{rssSourcesCount}</div>
             <span className="text-xs text-muted-foreground">RSS Feeds</span>
           </CardContent>
         </Card>
         <Card>
-          <CardContent style={{ padding: 16 }}>
+          <CardContent className="p-4">
             <div className="text-2xl font-bold">{apiSourcesCount}</div>
             <span className="text-xs text-muted-foreground">API Sources</span>
           </CardContent>
@@ -404,9 +420,7 @@ export function NewsSourcesManager() {
       <Card>
         <CardHeader>
           <CardTitle>News Sources</CardTitle>
-          <CardDescription>
-            Manage your RSS feeds and API sources
-          </CardDescription>
+          <CardDescription>Manage your RSS feeds and API sources</CardDescription>
         </CardHeader>
         <CardContent>
           {sources.length === 0 ? (
@@ -417,32 +431,41 @@ export function NewsSourcesManager() {
             <div className="flex flex-col gap-4">
               {sources.map((source) => (
                 <Collapsible key={source.id}>
-                  <Card style={{ transition: 'border-color 0.2s', borderColor: source.is_active ? 'hsl(var(--muted))' : 'hsl(var(--muted))' }}>
-                    <CardContent style={{ padding: 16 }}>
+                  <Card
+                    style={{
+                      transition: 'border-color 0.2s',
+                      borderColor: source.is_active ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
+                    }}
+                  >
+                    <CardContent className="p-4">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             {source.source_type === 'rss' || source.url?.includes('feed') ? (
-                              <Rss className="h-4 w-4" style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
+                              <Rss
+                                className="h-4 w-4"
+                                style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                              />
                             ) : (
-                              <Globe className="h-4 w-4" style={{ color: 'hsl(var(--muted-foreground))' }} />
+                              <Globe className="h-4 w-4 text-muted-foreground" />
                             )}
                             <span className="font-medium">{source.name}</span>
                           </div>
 
-                          <Badge variant={source.is_active ? "default" : "secondary"}>
+                          <Badge variant={source.is_active ? 'default' : 'secondary'}>
                             {source.is_active ? 'Active' : 'Inactive'}
                           </Badge>
 
                           {(source as NewsSource & { auto_publish?: boolean }).auto_publish && (
-                            <Badge variant="default" style={{ background: 'hsl(var(--foreground))' }}>
+                            <Badge
+                              variant="default"
+                              style={{ background: 'hsl(var(--foreground))' }}
+                            >
                               Auto-publish
                             </Badge>
                           )}
 
-                          <Badge variant="outline">
-                            {source.category}
-                          </Badge>
+                          <Badge variant="outline">{source.category}</Badge>
 
                           {source.keywords && source.keywords.length > 0 && (
                             <Badge variant="outline" className="text-xs">
@@ -513,7 +536,7 @@ export function NewsSourcesManager() {
                         </div>
                       </div>
 
-                      <CollapsibleContent style={{ marginTop: 16 }}>
+                      <CollapsibleContent className="mt-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                           <div>
                             <span className="font-medium">URL:</span>
@@ -534,8 +557,7 @@ export function NewsSourcesManager() {
                             <p className="text-sm text-muted-foreground">
                               {source.last_fetched_at
                                 ? new Date(source.last_fetched_at).toLocaleString()
-                                : 'Never'
-                              }
+                                : 'Never'}
                             </p>
                           </div>
 
@@ -555,11 +577,17 @@ export function NewsSourcesManager() {
                           {source.status && (
                             <div className="md:col-span-3">
                               <span className="font-medium">Status:</span>
-                              <p className="text-sm" style={{
-                                color: source.status === 'error' ? 'hsl(var(--destructive))' :
-                                  source.status === 'processing' ? 'hsl(var(--foreground) / 0.55)' :
-                                  'hsl(var(--foreground))'
-                              }}>
+                              <p
+                                className="text-sm"
+                                style={{
+                                  color:
+                                    source.status === 'error'
+                                      ? 'hsl(var(--destructive))'
+                                      : source.status === 'processing'
+                                        ? 'hsl(var(--foreground) / 0.55)'
+                                        : 'hsl(var(--foreground))',
+                                }}
+                              >
                                 {source.status}
                                 {source.last_error && ` - ${source.last_error}`}
                               </p>
@@ -596,11 +624,17 @@ export function NewsSourcesManager() {
 
             <div className="flex flex-wrap gap-2">
               {editingKeywords.map((keyword, index) => (
-                <Badge key={index} variant="secondary" style={{ cursor: 'pointer' }}>
+                <Badge key={index} variant="secondary" className="cursor-pointer">
                   {keyword}
                   <button
                     onClick={() => removeKeyword(keyword)}
-                    style={{ marginLeft: 4, color: 'hsl(var(--destructive))', background: 'none', border: 'none', cursor: 'pointer' }}
+                    style={{
+                      marginLeft: 4,
+                      color: 'hsl(var(--destructive))',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
                   >
                     ×
                   </button>

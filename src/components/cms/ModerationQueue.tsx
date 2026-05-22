@@ -15,7 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, ThumbsUp, ThumbsDown, Flag, ShieldAlert, Inbox, MessageSquare, X } from 'lucide-react';
+import {
+  Loader2,
+  ThumbsUp,
+  ThumbsDown,
+  Flag,
+  ShieldAlert,
+  Inbox,
+  MessageSquare,
+  X,
+} from 'lucide-react';
 import { listFromWhere, updateRow } from '@/hooks/usePageFetchers';
 import { CommentThread } from './CommentThread';
 
@@ -94,8 +103,9 @@ export function ModerationQueue() {
 
   const counts = useMemo(() => {
     return {
-      pending: items.filter((i) => !i.is_spam && ['new', 'under_review'].includes(i.feedback_status))
-        .length,
+      pending: items.filter(
+        (i) => !i.is_spam && ['new', 'under_review'].includes(i.feedback_status),
+      ).length,
       spam: items.filter((i) => i.is_spam).length,
       total: items.length,
     };
@@ -164,7 +174,7 @@ export function ModerationQueue() {
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center py-16 text-muted-foreground">
-          <Inbox size={36} style={{ opacity: 0.3, marginBottom: 8 }} />
+          <Inbox size={36} style={{ opacity: 0.3 }} className="mb-2" />
           <p className="text-sm">Nothing to moderate.</p>
         </div>
       ) : (
@@ -193,17 +203,17 @@ export function ModerationQueue() {
                   aria-expanded={!!expanded}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="h-[22px] text-[0.7rem] font-semibold">
+                    <Badge variant="secondary" className="h-[22px] text-xs2 font-semibold">
                       {item.content_type}
                     </Badge>
                     {item.is_spam && (
-                      <Badge variant="destructive" className="h-[22px] text-[0.7rem] gap-1">
+                      <Badge variant="destructive" className="h-[22px] text-xs2 gap-1">
                         <Flag size={12} />
                         Spam
                       </Badge>
                     )}
                     {item.priority > 0 && (
-                      <Badge className="h-[22px] text-[0.7rem] gap-1 bg-yellow-500 text-white hover:bg-yellow-600">
+                      <Badge className="h-[22px] text-xs2 gap-1 bg-foreground text-white hover:bg-foreground">
                         <ShieldAlert size={12} />
                         Priority {item.priority}
                       </Badge>
@@ -230,8 +240,10 @@ export function ModerationQueue() {
                   <Button
                     size="sm"
                     disabled={busy}
-                    onClick={() => transition(item.id, { feedback_status: 'approved', status: 'approved' })}
-                    className="font-semibold text-xs bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() =>
+                      transition(item.id, { feedback_status: 'approved', status: 'approved' })
+                    }
+                    className="font-semibold text-xs bg-foreground hover:bg-foreground text-white"
                   >
                     <ThumbsUp size={14} />
                     Approve
@@ -240,7 +252,9 @@ export function ModerationQueue() {
                     size="sm"
                     variant="outline"
                     disabled={busy}
-                    onClick={() => transition(item.id, { feedback_status: 'rejected', status: 'rejected' })}
+                    onClick={() =>
+                      transition(item.id, { feedback_status: 'rejected', status: 'rejected' })
+                    }
                     className="font-semibold text-xs text-destructive border-destructive/50 hover:bg-destructive/10"
                   >
                     <ThumbsDown size={14} />
@@ -252,7 +266,7 @@ export function ModerationQueue() {
                       variant="ghost"
                       disabled={busy}
                       onClick={() => transition(item.id, { is_spam: true })}
-                      className="font-medium text-xs text-yellow-600 hover:text-yellow-700"
+                      className="font-medium text-xs text-foreground hover:text-foreground"
                     >
                       <Flag size={14} />
                       Mark spam
@@ -275,7 +289,7 @@ export function ModerationQueue() {
                     <span className="text-xs text-muted-foreground block mb-2">
                       Submission data
                     </span>
-                    <pre className="m-0 p-3 bg-background border border-border rounded text-xs overflow-auto max-h-52">
+                    <pre className="m-0 p-4 bg-background border border-border rounded text-xs overflow-auto max-h-52">
                       {JSON.stringify(item.data, null, 2)}
                     </pre>
                     <div className="mt-4">

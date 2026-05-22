@@ -45,3 +45,6 @@ Queer Guide/
 worker/
 worker-ingest/
 worker-submit/
+
+# Playwright MCP session artifacts (console logs, page snapshots)
+.playwright-mcp/

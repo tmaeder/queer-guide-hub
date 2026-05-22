@@ -74,12 +74,12 @@ export default function TripBookletPage() {
   }, [trip]);
 
   if (isLoading) {
-    return <div style={{ padding: 32 }}>Loading…</div>;
+    return <div className="p-8">Loading…</div>;
   }
   if (error || !trip) {
     const kind = classifyTripError(tripId, error, trip) ?? 'load-error';
     return (
-      <div style={{ padding: 32 }}>
+      <div className="p-8">
         <ErrorState
           title={t(`trips.error.${kind}.title`)}
           description={t(`trips.error.${kind}.description`)}
@@ -93,8 +93,7 @@ export default function TripBookletPage() {
     );
   }
 
-  const fmtDate = (iso?: string | null) =>
-    iso ? format(new Date(iso), 'EEE, MMM d, yyyy') : '—';
+  const fmtDate = (iso?: string | null) => (iso ? format(new Date(iso), 'EEE, MMM d, yyyy') : '—');
 
   const placeName = (p: TripPlace): string =>
     p.venues?.name ?? p.events?.title ?? p.hotels?.name ?? p.custom_name ?? 'Stop';
@@ -131,9 +130,7 @@ export default function TripBookletPage() {
           <button onClick={() => window.print()}>
             {t('trips.booklet.print', 'Print / Save as PDF')}
           </button>
-          <button onClick={() => window.close()}>
-            {t('trips.booklet.close', 'Close')}
-          </button>
+          <button onClick={() => window.close()}>{t('trips.booklet.close', 'Close')}</button>
         </div>
 
         {/* Cover */}
@@ -162,7 +159,7 @@ export default function TripBookletPage() {
           .map((day) => {
             const places = placesByDay.get(day.id) ?? [];
             return (
-              <div key={day.id} style={{ marginBottom: 12 }}>
+              <div key={day.id} className="mb-4">
                 <h3>
                   {fmtDate(day.date)}
                   {day.title ? ` — ${day.title}` : ''}
@@ -170,7 +167,7 @@ export default function TripBookletPage() {
                 {places.length === 0 ? (
                   <p className="muted">— {t('trips.booklet.empty', 'Free day')}</p>
                 ) : (
-                  <ul style={{ paddingLeft: 18, margin: 0 }}>
+                  <ul style={{ paddingLeft: 18 }} className="m-0">
                     {places.map((p) => (
                       <li key={p.id}>
                         <strong>{placeName(p)}</strong>
@@ -181,9 +178,7 @@ export default function TripBookletPage() {
                             {p.end_time ? `–${p.end_time.slice(0, 5)}` : ''}
                           </span>
                         )}
-                        {placeAddress(p) && (
-                          <div className="muted">{placeAddress(p)}</div>
-                        )}
+                        {placeAddress(p) && <div className="muted">{placeAddress(p)}</div>}
                         {p.notes && <div>{p.notes}</div>}
                       </li>
                     ))}
@@ -196,6 +191,7 @@ export default function TripBookletPage() {
         {/* Addresses index */}
         <div className="page-break" />
         <h2>{t('trips.booklet.addresses', 'Addresses')}</h2>
+        <div className="overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -221,6 +217,7 @@ export default function TripBookletPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
         {/* Reservations */}
         <h2>{t('trips.booklet.reservations', 'Reservations & confirmations')}</h2>
@@ -228,6 +225,7 @@ export default function TripBookletPage() {
           <p className="muted">{t('trips.booklet.noReservations', 'No reservations recorded.')}</p>
         )}
         {reservations && reservations.length > 0 && (
+          <div className="overflow-x-auto">
           <table>
             <thead>
               <tr>
@@ -256,6 +254,7 @@ export default function TripBookletPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
 
         {/* Country safety */}
@@ -265,7 +264,7 @@ export default function TripBookletPage() {
           <p className="muted">{t('trips.booklet.noCountries', 'No country information.')}</p>
         )}
         {countries.map((c) => (
-          <div key={c.id} style={{ marginBottom: 8 }}>
+          <div key={c.id} className="mb-2">
             <h3>
               {c.name}
               {c.code && <span className="muted"> ({c.code})</span>}
@@ -279,6 +278,7 @@ export default function TripBookletPage() {
 
         {/* Emergency */}
         <h2>{t('trips.booklet.emergency', 'Emergency contacts')}</h2>
+        <div className="overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -290,22 +290,23 @@ export default function TripBookletPage() {
           <tbody>
             {countries.length === 0 && (
               <tr>
-                <td colSpan={3} className="muted">—</td>
+                <td colSpan={3} className="muted">
+                  —
+                </td>
               </tr>
             )}
             {countries.map((c) => (
               <tr key={c.id}>
                 <td>{c.name}</td>
                 <td className="muted">112 / 911</td>
-                <td className="muted">
-                  {t('trips.booklet.embassyHint', 'Look up before travel')}
-                </td>
+                <td className="muted">{t('trips.booklet.embassyHint', 'Look up before travel')}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
 
-        <p className="muted" style={{ marginTop: 32, fontSize: 10 }}>
+        <p className="muted mt-8" style={{ fontSize: 10 }}>
           {t(
             'trips.booklet.footer',
             'Generated by queer.guide — verify emergency numbers and embassy details before travel.',

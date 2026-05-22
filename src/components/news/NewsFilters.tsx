@@ -296,27 +296,23 @@ export const NewsFilters = ({
     featuredOnly;
 
   return (
-    <Card style={{ position: 'sticky', top: 16 }}>
-      <CardHeader style={{ paddingBottom: 16 }}>
-        <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.125rem' }}>
-          <Filter style={{ height: 20, width: 20 }} />
+    <Card style={{ top: 16 }} className="sticky">
+      <CardHeader className="pb-4">
+        <CardTitle style={{ alignItems: 'center' }} className="flex gap-2 text-lg">
+          <Filter size={20} />
           Filters
         </CardTitle>
       </CardHeader>
-      <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <CardContent style={{ flexDirection: 'column' }} className="flex gap-6">
         {/* Featured Only */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">
-            Featured Only
-          </span>
+          <span className="text-sm font-medium">Featured Only</span>
           <Switch checked={featuredOnly} onCheckedChange={handleFeaturedToggle} />
         </div>
 
         {/* Multi-article stories only */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">
-            Multi-article stories only
-          </span>
+          <span className="text-sm font-medium">Multi-article stories only</span>
           <Switch checked={inStoryOnly} onCheckedChange={handleInStoryToggle} />
         </div>
 
@@ -325,12 +321,10 @@ export const NewsFilters = ({
         {/* Category Filter */}
         {categories.length > 0 && (
           <>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
-                <Tag style={{ height: 16, width: 16 }} />
-                <span className="text-sm font-medium">
-                  Category
-                </span>
+                <Tag size={16} />
+                <span className="text-sm font-medium">Category</span>
               </div>
               <Select value={selectedCategory || 'all'} onValueChange={handleCategoryChange}>
                 <SelectTrigger style={{ width: '100%' }}>
@@ -351,32 +345,26 @@ export const NewsFilters = ({
         )}
 
         {/* Near Me */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MapPin style={{ height: 16, width: 16 }} />
-              <span className="text-sm font-medium">
-                Near Me
-              </span>
+              <MapPin size={16} />
+              <span className="text-sm font-medium">Near Me</span>
             </div>
             <Switch checked={nearMe} onCheckedChange={handleNearMe} disabled={locationLoading} />
           </div>
           {nearMe && (
-            <p className="text-xs text-muted-foreground">
-              Showing news relevant to your location
-            </p>
+            <p className="text-xs text-muted-foreground">Showing news relevant to your location</p>
           )}
         </div>
 
         <Separator />
 
         {/* Countries Filter */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <Globe style={{ height: 16, width: 16 }} />
-            <span className="text-sm font-medium">
-              Country
-            </span>
+            <Globe size={16} />
+            <span className="text-sm font-medium">Country</span>
           </div>
           <Select onValueChange={handleCountryToggle}>
             <SelectTrigger style={{ width: '100%' }}>
@@ -399,11 +387,12 @@ export const NewsFilters = ({
                   <Badge
                     key={countryId}
                     variant="default"
-                    style={{ cursor: 'pointer', fontSize: '0.7rem' }}
+                    style={{ fontSize: '0.7rem' }}
+                    className="cursor-pointer"
                     onClick={() => handleCountryToggle(countryId)}
                   >
                     {country.name}
-                    <X style={{ height: 10, width: 10, marginLeft: 4 }} />
+                    <X size={10} className="ml-1" />
                   </Badge>
                 ) : null;
               })}
@@ -412,12 +401,10 @@ export const NewsFilters = ({
         </div>
 
         {/* Cities Filter */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <Map style={{ height: 16, width: 16 }} />
-            <span className="text-sm font-medium">
-              City
-            </span>
+            <Map size={16} />
+            <span className="text-sm font-medium">City</span>
           </div>
           <Select onValueChange={handleCityToggle}>
             <SelectTrigger style={{ width: '100%' }}>
@@ -440,11 +427,12 @@ export const NewsFilters = ({
                   <Badge
                     key={cityId}
                     variant="default"
-                    style={{ cursor: 'pointer', fontSize: '0.7rem' }}
+                    style={{ fontSize: '0.7rem' }}
+                    className="cursor-pointer"
                     onClick={() => handleCityToggle(cityId)}
                   >
                     {city.name}
-                    <X style={{ height: 10, width: 10, marginLeft: 4 }} />
+                    <X size={10} className="ml-1" />
                   </Badge>
                 ) : null;
               })}
@@ -456,12 +444,10 @@ export const NewsFilters = ({
 
         {/* Source Filter */}
         {sources.length > 0 && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <Building style={{ height: 16, width: 16 }} />
-              <span className="text-sm font-medium">
-                Source
-              </span>
+              <Building size={16} />
+              <span className="text-sm font-medium">Source</span>
             </div>
             <Select value={source} onValueChange={handleSourceChange}>
               <SelectTrigger style={{ width: '100%' }}>
@@ -480,12 +466,10 @@ export const NewsFilters = ({
         )}
 
         {/* Date Range Filter */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <Calendar style={{ height: 16, width: 16 }} />
-            <span className="text-sm font-medium">
-              Published Date
-            </span>
+            <Calendar size={16} />
+            <span className="text-sm font-medium">Published Date</span>
           </div>
           <Select value={dateRange} onValueChange={handleDateRangeChange}>
             <SelectTrigger style={{ width: '100%' }}>
@@ -508,19 +492,18 @@ export const NewsFilters = ({
         {trendingTags.length > 0 && (
           <>
             <Separator />
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
-                <TrendingUp style={{ height: 16, width: 16 }} />
-                <span className="text-sm font-medium">
-                  Trending Topics
-                </span>
+                <TrendingUp size={16} />
+                <span className="text-sm font-medium">Trending Topics</span>
               </div>
               <div className="flex flex-wrap gap-1">
                 {trendingTags.slice(0, 10).map(({ tag }) => (
                   <Badge
                     key={tag}
                     variant={selectedTags.includes(tag) ? 'default' : 'outline'}
-                    style={{ cursor: 'pointer', fontSize: '0.7rem', transition: 'all 0.2s' }}
+                    style={{ fontSize: '0.7rem', transition: 'all 0.2s' }}
+                    className="cursor-pointer"
                     onClick={() => handleTagToggle(tag)}
                   >
                     {tag}

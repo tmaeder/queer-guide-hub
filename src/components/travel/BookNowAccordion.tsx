@@ -245,7 +245,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   key={value}
                   type="button"
                   onClick={() => handleTabChange(value)}
-                  className={`flex-1 px-4 py-3 inline-flex items-center justify-center gap-2 text-sm font-medium border-b-2 ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                  className={`flex-1 px-4 py-4 inline-flex items-center justify-center gap-2 text-sm font-medium border-b-2 ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                 >
                   <Icon style={{ height: 18, width: 18 }} />
                   {label}
@@ -274,7 +274,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                 onSubmit={(e) => {
                   e.preventDefault();
                 }}
-                className="flex gap-3 items-end"
+                className="flex gap-4 items-end"
               >
                 <div className="flex-1 flex flex-col gap-1">
                   <Label htmlFor="travel-city">City</Label>
@@ -286,7 +286,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   />
                 </div>
                 <Button type="submit" size="sm" onClick={() => setActivityCity(activityCity.trim())}>
-                  <Ticket style={{ height: 16, width: 16, marginRight: 6 }} />
+                  <Ticket size={16} className="mr-1.5" />
                   Search Activities
                 </Button>
               </form>
@@ -296,7 +296,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           {activeTab === 'flights' && (
             <div className="border-t border-border p-6">
               <div className="flex items-center gap-2 mb-4">
-                <TrendingUp style={{ height: 20, width: 20 }} />
+                <TrendingUp size={20} />
                 <h3 className="text-base font-bold tracking-tight">
                   {originCity ? `Popular deals from ${originCity}` : 'Popular flight deals'}
                 </h3>
@@ -330,7 +330,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           {activeTab === 'hotels' && (
             <div className="border-t border-border p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Hotel style={{ height: 20, width: 20 }} />
+                <Hotel size={20} />
                 <h3 className="text-base font-bold tracking-tight">
                   {hotelSearch?.city ? `Hotels in ${hotelSearch.city}` : 'Search for hotels'}
                 </h3>
@@ -390,7 +390,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                 </ResultsGrid>
               ) : hotelSearch && hasActiveHotelFilters ? (
                 <EmptyState>
-                  <div className="flex flex-col items-center gap-3">
+                  <div className="flex flex-col items-center gap-4">
                     <span>
                       {t('pages.travel.hotels.noResultsWithFilters', 'No hotels match your filters in {{city}}.', {
                         city: hotelSearch.city,
@@ -412,7 +412,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           {activeTab === 'activities' && (
             <div className="border-t border-border p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Ticket style={{ height: 20, width: 20 }} />
+                <Ticket size={20} />
                 <h3 className="text-base font-bold tracking-tight">
                   {activityCity ? `Activities in ${activityCity}` : 'Search for activities'}
                 </h3>

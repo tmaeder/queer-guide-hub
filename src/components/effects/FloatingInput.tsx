@@ -20,7 +20,7 @@ export const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
           id={id}
           placeholder=" "
           className={cn(
-            'peer flex h-12 w-full border border-input bg-background px-3 pt-4 pb-1 text-base md:text-sm text-foreground',
+            'peer flex h-12 w-full border border-input bg-background px-4 pt-4 pb-1 text-base md:text-sm text-foreground',
             'focus:outline-none focus:border-foreground focus:ring-0',
             'disabled:cursor-not-allowed disabled:opacity-50',
             className,

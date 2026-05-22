@@ -85,7 +85,7 @@ export function StoryActivityLog({ storyId, adminById }: Props) {
           >
             {events.map((e) => (
               <div key={e.id} className="mb-1">
-                <p className="block text-[0.7rem]">
+                <p className="block text-xs2">
                   <strong>
                     {e.actor_id
                       ? adminById[e.actor_id]?.display_name ?? 'Admin'
@@ -95,7 +95,7 @@ export function StoryActivityLog({ storyId, adminById }: Props) {
                   </strong>{' '}
                   {renderEvent(e)}
                 </p>
-                <p className="text-[0.6rem] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   {timeAgo(e.created_at)}
                 </p>
               </div>

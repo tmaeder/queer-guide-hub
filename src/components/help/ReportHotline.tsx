@@ -76,7 +76,7 @@ export function ReportHotline({ hotlineId }: { hotlineId: string }) {
             {t('help.report_thanks', 'Thank you. We’ll review it.')}
           </p>
         ) : (
-          <div className="flex flex-col gap-3 py-2">
+          <div className="flex flex-col gap-4 py-2">
             <div>
               <Label className="mb-1 block text-xs font-semibold">
                 {t('help.report_reason', 'Reason')}

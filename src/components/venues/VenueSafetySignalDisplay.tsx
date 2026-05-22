@@ -42,7 +42,7 @@ export function VenueSafetySignalDisplay({ venueId }: Props) {
           const hi = Math.round((row.confidence_high ?? 0) * 100);
           return (
             <div key={row.question_slug} className="flex flex-col gap-2">
-              <div className="flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline justify-between gap-4">
                 <p className="text-sm">{row.prompt}</p>
                 <span className="text-xs text-muted-foreground tabular-nums">
                   {pct}% yes · {row.n_responses}

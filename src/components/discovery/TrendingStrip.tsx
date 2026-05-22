@@ -105,14 +105,14 @@ export function TrendingStrip({
 
 	return (
 		<section className={className} aria-label={headline}>
-			<h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+			<h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
 				<TrendingUp className="h-5 w-5 text-foreground" />
 				{headline}
 			</h2>
 			<SkeletonCrossfade
 				loading={!items}
 				skeleton={
-					<div className="flex gap-3 pb-3">
+					<div className="flex gap-4 pb-4">
 						{Array.from({ length: limit }).map((_, i) => (
 							<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-element" />
 						))}
@@ -120,7 +120,7 @@ export function TrendingStrip({
 				}
 			>
 				<ScrollArea className="w-full whitespace-nowrap">
-					<div className="flex gap-3 pb-3">
+					<div className="flex gap-4 pb-4">
 						{items
 							?.map((it) => {
 								const slug = it.slug || it.entity_id;

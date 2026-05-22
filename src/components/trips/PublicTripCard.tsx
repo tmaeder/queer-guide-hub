@@ -173,18 +173,18 @@ export function PublicTripCard({ trip }: Props) {
                 <span
                   aria-label={t(`trips.card.safety.${safetyLevel}`)}
                   className={cn(
-                    'absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white shadow cursor-help',
+                    'absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white border border-border/40 cursor-help',
                     safetyBg,
                   )}
                 >
                   {safetyLevel === 'safe' && (
-                    <ShieldCheck style={{ width: 16, height: 16 }} />
+                    <ShieldCheck size={16} />
                   )}
                   {safetyLevel === 'caution' && (
-                    <ShieldAlert style={{ width: 16, height: 16 }} />
+                    <ShieldAlert size={16} />
                   )}
                   {safetyLevel === 'danger' && (
-                    <AlertTriangle style={{ width: 16, height: 16 }} />
+                    <AlertTriangle size={16} />
                   )}
                 </span>
               </TooltipTrigger>
@@ -228,7 +228,7 @@ export function PublicTripCard({ trip }: Props) {
           )}
         </div>
 
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
+        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
           <Avatar style={{ width: 22, height: 22 }}>
             <AvatarImage
               src={trip.owner?.avatar_url ?? undefined}
@@ -251,12 +251,12 @@ export function PublicTripCard({ trip }: Props) {
 
         {(trip.fork_count > 0 || trip.save_count > 0) && (
           <div
-            className="flex items-center gap-3 mt-2 text-[0.6875rem] text-muted-foreground"
+            className="flex items-center gap-4 mt-2 text-xs2 text-muted-foreground"
             aria-label={t('trips.discover.signalsAria', 'Trip activity')}
           >
             {trip.fork_count > 0 && (
               <span className="inline-flex items-center gap-1">
-                <GitFork style={{ width: 11, height: 11 }} />
+                <GitFork size={11} />
                 {t('trips.discover.forkCount', {
                   count: trip.fork_count,
                   defaultValue: '{{count}} forks',
@@ -265,7 +265,7 @@ export function PublicTripCard({ trip }: Props) {
             )}
             {trip.save_count > 0 && (
               <span className="inline-flex items-center gap-1">
-                <Bookmark style={{ width: 11, height: 11 }} />
+                <Bookmark size={11} />
                 {t('trips.discover.saveCount', {
                   count: trip.save_count,
                   defaultValue: '{{count}} saves',
@@ -275,7 +275,7 @@ export function PublicTripCard({ trip }: Props) {
           </div>
         )}
 
-        <div className="flex gap-2 mt-3">
+        <div className="flex gap-2 mt-4">
           <Button
             variant="outline"
             size="sm"
@@ -284,7 +284,7 @@ export function PublicTripCard({ trip }: Props) {
             className="flex-1"
             aria-label={t('trips.discover.forkAria', 'Fork this trip')}
           >
-            <Sparkles style={{ width: 14, height: 14, marginRight: 6 }} />
+            <Sparkles size={14} className="mr-1.5" />
             {forking
               ? t('trips.discover.forking', 'Forking…')
               : t('trips.discover.fork', 'Fork into my trips')}

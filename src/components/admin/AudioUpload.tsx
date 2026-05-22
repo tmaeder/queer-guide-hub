@@ -6,7 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { insertRow } from '@/hooks/usePageFetchers';
@@ -38,14 +44,14 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
   const [_isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const audioFiles = acceptedFiles.filter(file => file.type.startsWith('audio/'));
+    const audioFiles = acceptedFiles.filter((file) => file.type.startsWith('audio/'));
 
     if (audioFiles.length === 0) {
       toast.error('Please upload audio files only');
       return;
     }
 
-    const newAudios = audioFiles.map(file => ({
+    const newAudios = audioFiles.map((file) => ({
       id: crypto.randomUUID(),
       title: file.name.split('.')[0],
       artist: '',
@@ -57,21 +63,21 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       config: {
         quality: 'music' as const,
         generateTranscript: false,
-        normalizeLoudness: true
-      }
+        normalizeLoudness: true,
+      },
     }));
 
-    setAudios(prev => [...prev, ...newAudios]);
-    newAudios.forEach(audio => uploadAudio(audio));
+    setAudios((prev) => [...prev, ...newAudios]);
+    newAudios.forEach((audio) => uploadAudio(audio));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- uploadAudio defined below, stable in practice
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'audio/*': ['.mp3', '.wav', '.aac', '.flac', '.ogg', '.m4a']
+      'audio/*': ['.mp3', '.wav', '.aac', '.flac', '.ogg', '.m4a'],
     },
-    multiple: true
+    multiple: true,
   });
 
   const uploadAudio = async (audio: UploadedAudio) => {
@@ -86,9 +92,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
 
       if (uploadError) throw uploadError;
 
-      setAudios(prev => prev.map(a =>
-        a.id === audio.id ? { ...a, uploadProgress: 100 } : a
-      ));
+      setAudios((prev) => prev.map((a) => (a.id === audio.id ? { ...a, uploadProgress: 100 } : a)));
 
       const { error: dbError } = await insertRow('audio_files', {
         id: audio.id,
@@ -107,27 +111,24 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
         body: {
           action: 'start',
           audioId: audio.id,
-          config: audio.config
-        }
+          config: audio.config,
+        },
       });
 
       if (processError) throw processError;
 
-      setAudios(prev => prev.map(a =>
-        a.id === audio.id ? { ...a, status: 'processing' } : a
-      ));
+      setAudios((prev) =>
+        prev.map((a) => (a.id === audio.id ? { ...a, status: 'processing' } : a)),
+      );
 
       pollProcessingStatus(audio.id);
 
       toast.success(`Started processing "${audio.title}"`);
       onUploadComplete?.(audio.id);
-
     } catch (error) {
       console.error('Upload error:', error);
       toast.error(`Failed to upload "${audio.title}"`);
-      setAudios(prev => prev.map(a =>
-        a.id === audio.id ? { ...a, status: 'error' } : a
-      ));
+      setAudios((prev) => prev.map((a) => (a.id === audio.id ? { ...a, status: 'error' } : a)));
     } finally {
       setIsUploading(false);
     }
@@ -137,20 +138,28 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
     const pollInterval = setInterval(async () => {
       try {
         const { data: job } = await supabase.functions.invoke('process-audio', {
-          body: { action: 'status', jobId: audioId }
+          body: { action: 'status', jobId: audioId },
         });
 
         if (job?.job) {
           const { status, progress_percent } = job.job;
 
-          setAudios(prev => prev.map(a =>
-            a.id === audioId ? {
-              ...a,
-              processingProgress: progress_percent,
-              status: status === 'completed' ? 'completed' :
-                      status === 'failed' ? 'error' : 'processing'
-            } : a
-          ));
+          setAudios((prev) =>
+            prev.map((a) =>
+              a.id === audioId
+                ? {
+                    ...a,
+                    processingProgress: progress_percent,
+                    status:
+                      status === 'completed'
+                        ? 'completed'
+                        : status === 'failed'
+                          ? 'error'
+                          : 'processing',
+                  }
+                : a,
+            ),
+          );
 
           if (status === 'completed' || status === 'failed') {
             clearInterval(pollInterval);
@@ -168,19 +177,17 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
   };
 
   const updateAudioInfo = (id: string, field: keyof UploadedAudio, value: unknown) => {
-    setAudios(prev => prev.map(a =>
-      a.id === id ? { ...a, [field]: value } : a
-    ));
+    setAudios((prev) => prev.map((a) => (a.id === id ? { ...a, [field]: value } : a)));
   };
 
   const updateAudioConfig = (id: string, field: keyof UploadedAudio['config'], value: unknown) => {
-    setAudios(prev => prev.map(a =>
-      a.id === id ? { ...a, config: { ...a.config, [field]: value } } : a
-    ));
+    setAudios((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, config: { ...a.config, [field]: value } } : a)),
+    );
   };
 
   const removeAudio = (id: string) => {
-    setAudios(prev => prev.filter(a => a.id !== id));
+    setAudios((prev) => prev.filter((a) => a.id !== id));
   };
 
   return (
@@ -189,7 +196,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Music style={{ width: 20, height: 20 }} />
+            <Music size={20} />
             Upload Audio Files
           </CardTitle>
         </CardHeader>
@@ -199,7 +206,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
             className={`border-2 border-dashed rounded-element p-8 text-center cursor-pointer transition-all ${isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary'}`}
           >
             <input {...getInputProps()} />
-            <Upload style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+            <Upload size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
             {isDragActive ? (
               <p className="text-base font-medium">Drop audio files here...</p>
             ) : (
@@ -225,7 +232,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <div className="w-16 h-16 bg-muted rounded-element flex items-center justify-center">
-                      <Music style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
+                      <Music size={32} className="text-muted-foreground" />
                     </div>
                   </div>
 
@@ -273,7 +280,9 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                         <p className="text-sm font-medium">Quality</p>
                         <Select
                           value={audio.config.quality}
-                          onValueChange={(value: string) => updateAudioConfig(audio.id, 'quality', value)}
+                          onValueChange={(value: string) =>
+                            updateAudioConfig(audio.id, 'quality', value)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -290,7 +299,9 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                         <Checkbox
                           id={`transcript-${audio.id}`}
                           checked={audio.config.generateTranscript}
-                          onCheckedChange={(checked) => updateAudioConfig(audio.id, 'generateTranscript', checked)}
+                          onCheckedChange={(checked) =>
+                            updateAudioConfig(audio.id, 'generateTranscript', checked)
+                          }
                         />
                         <label htmlFor={`transcript-${audio.id}`}>
                           <p className="text-sm font-medium">Generate transcript</p>
@@ -301,7 +312,9 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                         <Checkbox
                           id={`normalize-${audio.id}`}
                           checked={audio.config.normalizeLoudness}
-                          onCheckedChange={(checked) => updateAudioConfig(audio.id, 'normalizeLoudness', checked)}
+                          onCheckedChange={(checked) =>
+                            updateAudioConfig(audio.id, 'normalizeLoudness', checked)
+                          }
                         />
                         <label htmlFor={`normalize-${audio.id}`}>
                           <p className="text-sm font-medium">Normalize loudness</p>
@@ -313,7 +326,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div
-                          className={`w-2 h-2 rounded-full ${audio.status === 'completed' ? 'bg-green-500' : audio.status === 'error' ? 'bg-destructive' : 'bg-yellow-500'}`}
+                          className={`w-2 h-2 rounded-full ${audio.status === 'completed' ? 'bg-foreground' : audio.status === 'error' ? 'bg-destructive' : 'bg-foreground'}`}
                         />
                         <p className="text-sm capitalize">{audio.status}</p>
                       </div>
@@ -347,12 +360,8 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                     )}
                   </div>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeAudio(audio.id)}
-                  >
-                    <X style={{ width: 16, height: 16 }} />
+                  <Button variant="ghost" size="sm" onClick={() => removeAudio(audio.id)}>
+                    <X size={16} />
                   </Button>
                 </div>
               </CardContent>

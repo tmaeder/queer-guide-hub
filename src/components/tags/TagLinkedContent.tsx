@@ -2,14 +2,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardImage } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  MapPin,
-  Newspaper,
-  Calendar,
-  Users as UsersIcon,
-  Star,
-  ExternalLink,
-} from 'lucide-react';
+import { MapPin, Newspaper, Calendar, Users as UsersIcon, Star, ExternalLink } from 'lucide-react';
 import { useTagContent, TagContentResult } from '@/hooks/useTagContent';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -22,7 +15,7 @@ interface TagLinkedContentProps {
 
 function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onClick: () => void }) {
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
       <CardImage src={v.image_url} alt={v.name} fallbackIcon={MapPin} height={160}>
         {v.foursquare_rating && (
           <div
@@ -34,8 +27,12 @@ function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onCl
               backdropFilter: 'blur(4px)',
             }}
           >
-            <Star style={{ width: 12, height: 12, fill: '#f59e0b', color: '#f59e0b' }} />
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, lineHeight: 1 }}>
+            <Star
+              size={12}
+              style={{ fill: 'hsl(var(--foreground))' }}
+              className="text-foreground"
+            />
+            <span style={{ lineHeight: 1 }} className="text-xs font-bold">
               {(v.foursquare_rating / 10).toFixed(1)}
             </span>
           </div>
@@ -43,21 +40,13 @@ function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onCl
       </CardImage>
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-base font-semibold leading-tight">
-            {v.name}
-          </p>
-          {v.category && (
-            <Badge variant="secondary">
-              {v.category}
-            </Badge>
-          )}
+          <p className="text-base font-semibold leading-tight">{v.name}</p>
+          {v.category && <Badge variant="secondary">{v.category}</Badge>}
         </div>
         {(v.city || v.country) && (
           <div className="flex items-center gap-1.5 text-muted-foreground mt-2">
-            <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
-            <p className="text-sm">
-              {[v.city, v.country].filter(Boolean).join(', ')}
-            </p>
+            <MapPin size={14} className="shrink-0" />
+            <p className="text-sm">{[v.city, v.country].filter(Boolean).join(', ')}</p>
           </div>
         )}
       </div>
@@ -73,17 +62,16 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
   const day = date?.getDate();
 
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
       <CardImage src={e.image_url} alt={e.title} fallbackIcon={Calendar} height={140}>
         {e.event_type && (
           <div
-            className="absolute text-white rounded-element px-2 py-0.5 capitalize"
+            className="absolute text-white rounded-element px-2 py-0.5 capitalize font-semibold"
             style={{
               top: 8,
               left: 8,
               backgroundColor: 'rgba(0,0,0,0.65)',
               fontSize: '0.7rem',
-              fontWeight: 600,
               backdropFilter: 'blur(4px)',
             }}
           >
@@ -92,29 +80,27 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
         )}
       </CardImage>
       <div className="p-4">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-4">
           {date && (
             <div
               className="rounded-element bg-muted flex flex-col items-center justify-center py-1.5 flex-shrink-0"
               style={{ width: 48 }}
             >
-              <span className="uppercase" style={{ fontSize: '0.6rem', fontWeight: 700, color: 'hsl(var(--primary))', lineHeight: 1 }}>
+              <span
+                className="uppercase font-bold"
+                style={{ fontSize: '0.6rem', color: 'hsl(var(--primary))', lineHeight: 1 }}
+              >
                 {month}
               </span>
-              <span style={{ fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.2 }}>
+              <span style={{ fontSize: '1.1rem', lineHeight: 1.2 }} className="font-bold">
                 {day}
               </span>
             </div>
           )}
           <div className="flex-1 min-w-0">
             <p
-              className="text-base font-semibold leading-tight"
-              style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
+              className="text-base font-semibold leading-tight overflow-hidden"
+              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
             >
               {e.title}
             </p>
@@ -134,42 +120,40 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
 
 function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick: () => void }) {
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
       <CardImage src={n.image_url} alt={n.title} fallbackIcon={Newspaper} height={140} />
       <div className="p-4">
         <p
-          className="text-base font-semibold"
+          className="text-base font-semibold overflow-hidden"
           style={{
             lineHeight: 1.3,
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
           }}
         >
           {n.title}
         </p>
         {n.excerpt && (
           <p
-            className="text-sm text-muted-foreground mt-1.5"
+            className="text-sm text-muted-foreground mt-1.5 overflow-hidden"
             style={{
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
               lineHeight: 1.5,
             }}
           >
             {n.excerpt}
           </p>
         )}
-        <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center justify-between mt-4">
           <span className="text-xs text-muted-foreground">
             {n.news_sources?.name}
             {n.news_sources?.name && n.published_at && ' · '}
             {n.published_at && formatDistanceToNow(new Date(n.published_at), { addSuffix: true })}
           </span>
-          {n.url && <ExternalLink style={{ width: 14, height: 14, opacity: 0.3, flexShrink: 0 }} />}
+          {n.url && <ExternalLink size={14} style={{ opacity: 0.3 }} className="shrink-0" />}
         </div>
       </div>
     </Card>
@@ -178,7 +162,13 @@ function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick
 
 // ── Personality Card ────────────────────────────────────────────────
 
-function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][number]; onClick: () => void }) {
+function PersonalityCard({
+  p,
+  onClick,
+}: {
+  p: TagContentResult['personalities'][number];
+  onClick: () => void;
+}) {
   const initials = p.name
     .split(' ')
     .map((w) => w[0])
@@ -187,11 +177,8 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
     .toUpperCase();
 
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
-      <div
-        className="relative bg-muted overflow-hidden"
-        style={{ paddingTop: '133.33%' }}
-      >
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
+      <div className="relative bg-muted overflow-hidden" style={{ paddingTop: '133.33%' }}>
         {p.image_url ? (
           <img
             src={p.image_url}
@@ -199,13 +186,13 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
             role="presentation"
             loading="lazy"
             style={{
-              position: 'absolute',
               inset: 0,
               width: '100%',
               height: '100%',
               objectFit: 'cover',
               transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
+            className="absolute"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
@@ -214,32 +201,24 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
           <div
             className="absolute inset-0 flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, rgba(219,39,119,0.18) 0%, rgba(245,158,11,0.18) 100%)',
+              background:
+                'linear-gradient(135deg, rgba(219,39,119,0.18) 0%, rgba(245,158,11,0.18) 100%)',
             }}
           >
             <div
               className="rounded-full bg-background flex items-center justify-center"
               style={{ width: 64, height: 64 }}
             >
-              <span className="text-muted-foreground" style={{ fontWeight: 700, fontSize: '1.25rem' }}>
-                {initials}
-              </span>
+              <span className="text-muted-foreground font-bold text-xl">{initials}</span>
             </div>
           </div>
         )}
       </div>
-      <div className="p-3">
-        <p
-          className="font-semibold truncate"
-          style={{ fontSize: '0.9rem', lineHeight: 1.3 }}
-        >
+      <div className="p-4">
+        <p className="font-semibold truncate" style={{ fontSize: '0.9rem', lineHeight: 1.3 }}>
           {p.name}
         </p>
-        {p.profession && (
-          <p className="text-sm text-muted-foreground truncate">
-            {p.profession}
-          </p>
-        )}
+        {p.profession && <p className="text-sm text-muted-foreground truncate">{p.profession}</p>}
       </div>
     </Card>
   );
@@ -249,24 +228,25 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
 
 function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onClick: () => void }) {
   return (
-    <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
       <div className="p-4 flex items-center gap-4">
         {g.avatar_url ? (
           <img
             src={g.avatar_url}
             alt={g.name}
             role="presentation"
-            style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
+            className="rounded-element shrink-0"
+            style={{ width: 48, height: 48, objectFit: 'cover' }}
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         ) : (
           <div
-            className="bg-muted flex items-center justify-center flex-shrink-0"
-            style={{ width: 48, height: 48, borderRadius: 8 }}
+            className="bg-muted flex items-center justify-center flex-shrink-0 rounded-element"
+            style={{ width: 48, height: 48 }}
           >
-            <UsersIcon style={{ width: 20, height: 20, opacity: 0.3 }} />
+            <UsersIcon size={20} style={{ opacity: 0.3 }} />
           </div>
         )}
         <div className="flex-1 min-w-0">
@@ -286,16 +266,22 @@ function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onCl
 
 // ── Section wrapper ─────────────────────────────────────────────────
 
-function Section({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
+function Section({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count: number;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <div className="flex items-baseline gap-2 mb-4">
         <h2 className="font-bold" style={{ fontSize: '1.1rem' }}>
           {title}
         </h2>
-        <p className="text-sm text-muted-foreground">
-          {count}
-        </p>
+        <p className="text-sm text-muted-foreground">{count}</p>
       </div>
       {children}
     </div>
@@ -305,13 +291,13 @@ function Section({ title, count, children }: { title: string; count: number; chi
 // ── Loading skeleton ────────────────────────────────────────────────
 
 function CardSkeleton({ height = 260 }: { height?: number }) {
-  return <Skeleton style={{ height, borderRadius: 12 }} />;
+  return <Skeleton className="rounded-container" style={{ height }} />;
 }
 
 function SectionSkeleton() {
   return (
     <div>
-      <Skeleton style={{ width: 120, height: 28, marginBottom: 16 }} />
+      <Skeleton style={{ width: 120, height: 28 }} className="mb-4" />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CardSkeleton />
         <CardSkeleton />
@@ -334,7 +320,10 @@ function rankNewsByRelevance(
   tagName: string,
 ): TagContentResult['news'] {
   if (articles.length === 0) return articles;
-  const terms = tagName.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+  const terms = tagName
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 2);
   if (terms.length === 0) return articles;
 
   return [...articles].sort((a, b) => {
@@ -364,7 +353,12 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
 
   const { venues, events, personalities, groups } = data;
   const news = rankNewsByRelevance(data.news, tagName);
-  const hasAny = venues.length > 0 || news.length > 0 || events.length > 0 || personalities.length > 0 || groups.length > 0;
+  const hasAny =
+    venues.length > 0 ||
+    news.length > 0 ||
+    events.length > 0 ||
+    personalities.length > 0 ||
+    groups.length > 0;
   if (!hasAny) return null;
 
   return (
@@ -396,7 +390,11 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
         <Section title="Personalities" count={personalities.length}>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {personalities.map((p) => (
-              <PersonalityCard key={p.id} p={p} onClick={() => navigate(`/personalities/${p.slug || p.id}`)} />
+              <PersonalityCard
+                key={p.id}
+                p={p}
+                onClick={() => navigate(`/personalities/${p.slug || p.id}`)}
+              />
             ))}
           </div>
         </Section>
@@ -410,12 +408,14 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
               <NewsCard
                 key={n.id}
                 n={n}
-                onClick={() => { if (n.url) window.open(n.url, '_blank', 'noopener'); }}
+                onClick={() => {
+                  if (n.url) window.open(n.url, '_blank', 'noopener');
+                }}
               />
             ))}
           </div>
           {news.length > MAX_NEWS && (
-            <p className="text-sm text-muted-foreground mt-3 text-center">
+            <p className="text-sm text-muted-foreground mt-4 text-center">
               +{news.length - MAX_NEWS} more articles
             </p>
           )}
@@ -425,7 +425,7 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
       {/* Groups */}
       {groups.length > 0 && (
         <Section title="Communities" count={groups.length}>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {groups.map((g) => (
               <GroupCard key={g.id} g={g} onClick={() => navigate(`/groups/${g.id}`)} />
             ))}

@@ -1,10 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { type CentralizedTag, type CategoryTreeNode } from '@/hooks/useCentralizedTags';
 import { TagListRenderer } from '@/components/resources/TagListRenderer';
-import {
-  getCategoryIcon,
-  getCategoryShortName,
-} from '@/components/resources/categoryMeta';
+import { getCategoryIcon, getCategoryShortName } from '@/components/resources/categoryMeta';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -49,9 +46,9 @@ export function ResourceCategory({
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6 flex-wrap">
+      <div className="flex items-center gap-4 mb-6 flex-wrap">
         <Button variant="secondary" size="sm" onClick={onBack}>
-          <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
+          <ArrowLeft size={14} className="mr-1.5" />
           {t('resources.category.back')}
         </Button>
         {(() => {
@@ -102,7 +99,7 @@ export function ResourceCategory({
         })()
       ) : (
         <div className="flex flex-col gap-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {allChildren.map((child) => {
               const Icon = getCategoryIcon(child.name);
               const isEmpty = child.tag_count === 0;
@@ -117,51 +114,51 @@ export function ResourceCategory({
                   style={isEmpty ? { opacity: 0.45, cursor: 'default' } : undefined}
                   aria-disabled={isEmpty || undefined}
                 >
-                  <Icon style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.65 }} />
+                  <Icon style={{ width: 16, height: 16, opacity: 0.65 }} className="shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold" style={{ fontSize: '0.85rem' }}>
                       {getCategoryShortName(child.name)}
                     </p>
                     <span className="text-xs text-muted-foreground">
-                      {isEmpty ? t('resources.category.comingSoon') : t('resources.category.tagCount', { count: child.tag_count })}
+                      {isEmpty
+                        ? t('resources.category.comingSoon')
+                        : t('resources.category.tagCount', { count: child.tag_count })}
                     </span>
                   </div>
                   {!isEmpty && (
-                    <ChevronRight
-                      style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }}
-                    />
+                    <ChevronRight size={14} style={{ opacity: 0.4 }} className="shrink-0" />
                   )}
                 </button>
               );
             })}
           </div>
 
-          {allChildren.filter((c) => c.tag_count > 0).map((child) => {
-            const childTags = allTags
-              .filter((t) => t.categories?.some((c) => c.id === child.id))
-              .sort(
-                (a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0),
-              )
-              .slice(0, 10);
-            if (childTags.length === 0) return null;
-            return (
-              <div key={child.id}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold">{getCategoryShortName(child.name)}</p>
-                    <Badge variant="secondary">{child.tag_count}</Badge>
+          {allChildren
+            .filter((c) => c.tag_count > 0)
+            .map((child) => {
+              const childTags = allTags
+                .filter((t) => t.categories?.some((c) => c.id === child.id))
+                .sort((a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0))
+                .slice(0, 10);
+              if (childTags.length === 0) return null;
+              return (
+                <div key={child.id}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold">{getCategoryShortName(child.name)}</p>
+                      <Badge variant="secondary">{child.tag_count}</Badge>
+                    </div>
+                    <button
+                      onClick={() => onSelectSubcategory(child.name)}
+                      className="bg-transparent border-0 cursor-pointer p-0 text-primary text-xs hover:underline"
+                    >
+                      {t('resources.category.viewAll')}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => onSelectSubcategory(child.name)}
-                    className="bg-transparent border-0 cursor-pointer p-0 text-primary text-xs hover:underline"
-                  >
-                    {t('resources.category.viewAll')}
-                  </button>
+                  {renderTagList(childTags)}
                 </div>
-                {renderTagList(childTags)}
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       )}
     </div>
@@ -200,9 +197,9 @@ export function ResourceSubcategory({
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6 flex-wrap">
+      <div className="flex items-center gap-4 mb-6 flex-wrap">
         <Button variant="secondary" size="sm" onClick={onBack}>
-          <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
+          <ArrowLeft size={14} className="mr-1.5" />
           {t('resources.category.back')}
         </Button>
         {parent && (
@@ -213,7 +210,7 @@ export function ResourceSubcategory({
             <span className="text-sm">{getCategoryShortName(parent.name)}</span>
           </button>
         )}
-        <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
+        <ChevronRight size={14} className="text-muted-foreground" />
         <Icon style={{ width: 18, height: 18 }} />
         <h6 className="text-base font-semibold">{getCategoryShortName(selectedSubcategory)}</h6>
         <Badge variant="secondary">{subTags.length}</Badge>

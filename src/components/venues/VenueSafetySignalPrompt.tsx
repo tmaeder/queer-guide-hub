@@ -82,9 +82,9 @@ export function VenueSafetySignalPrompt({ venueId, open, onOpenChange }: Props) 
         )}
 
         {!isLoading && queue.length > 0 && (
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-6">
             {queue.map((q) => (
-              <div key={q.question_id} className="flex flex-col gap-3">
+              <div key={q.question_id} className="flex flex-col gap-4">
                 <p className="text-sm font-medium">{q.prompt}</p>
                 <div className="flex gap-2">
                   <Button

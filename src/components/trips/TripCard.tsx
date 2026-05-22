@@ -16,11 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardImage, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,10 +76,14 @@ export function TripCard({ trip }: Props) {
   const handleTogglePin = () => {
     setActiveTripId(isActive ? null : trip.id);
     toast({
-      title: isActive ? t('trips.toast.unpinned', 'Trip unpinned') : t('trips.toast.pinned', 'Trip pinned'),
+      title: isActive
+        ? t('trips.toast.unpinned', 'Trip unpinned')
+        : t('trips.toast.pinned', 'Trip pinned'),
       description: isActive
         ? t('trips.toast.unpinnedDescription', 'No longer your active trip context.')
-        : t('trips.toast.pinnedDescription', '{{title}} is now your active trip context.', { title: displayTitle }),
+        : t('trips.toast.pinnedDescription', '{{title}} is now your active trip context.', {
+            title: displayTitle,
+          }),
     });
   };
 
@@ -196,13 +196,13 @@ export function TripCard({ trip }: Props) {
                 <span
                   aria-label={t(`trips.card.safety.${safetyLevel}`)}
                   className={cn(
-                    'absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white shadow cursor-help',
+                    'absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white border border-border/40 cursor-help',
                     safetyBg,
                   )}
                 >
-                  {safetyLevel === 'safe' && <ShieldCheck style={{ width: 16, height: 16 }} />}
-                  {safetyLevel === 'caution' && <ShieldAlert style={{ width: 16, height: 16 }} />}
-                  {safetyLevel === 'danger' && <AlertTriangle style={{ width: 16, height: 16 }} />}
+                  {safetyLevel === 'safe' && <ShieldCheck size={16} />}
+                  {safetyLevel === 'caution' && <ShieldAlert size={16} />}
+                  {safetyLevel === 'danger' && <AlertTriangle size={16} />}
                 </span>
               </TooltipTrigger>
               <TooltipContent>{t(`trips.card.safety.${safetyLevel}`)}</TooltipContent>
@@ -216,21 +216,15 @@ export function TripCard({ trip }: Props) {
                 onPointerDown={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
                 aria-label={t('trips.card.menuAria')}
-                className="trip-card-menu absolute top-2 right-2 h-7 w-7 p-0 bg-background shadow"
+                className="trip-card-menu absolute top-2 right-2 h-7 w-7 p-0 bg-background border border-border"
               >
-                <MoreVertical style={{ width: 16, height: 16 }} />
+                <MoreVertical size={16} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem onClick={handleEdit}>
-                {t('trips.card.edit')}
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleEdit}>{t('trips.card.edit')}</DropdownMenuItem>
               <DropdownMenuItem onClick={handleTogglePin} className="flex items-center gap-2">
-                {isActive ? (
-                  <PinOff style={{ width: 14, height: 14 }} aria-hidden />
-                ) : (
-                  <Pin style={{ width: 14, height: 14 }} aria-hidden />
-                )}
+                {isActive ? <PinOff size={14} aria-hidden /> : <Pin size={14} aria-hidden />}
                 {isActive
                   ? t('trips.card.unpin', 'Unpin from active')
                   : t('trips.card.pin', 'Set as active trip')}
@@ -255,12 +249,10 @@ export function TripCard({ trip }: Props) {
             {displayTitle}
           </h3>
 
-          <div className="flex items-center gap-3 mb-3 flex-wrap text-muted-foreground">
+          <div className="flex items-center gap-4 mb-4 flex-wrap text-muted-foreground">
             <span className="inline-flex items-center gap-1">
-              <Calendar
-                style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.7 }}
-              />
-              <span className="text-[0.8125rem]">{dateRange}</span>
+              <Calendar size={14} style={{ opacity: 0.7 }} className="shrink-0" />
+              <span className="text-13">{dateRange}</span>
             </span>
             {phase !== 'live' && phase !== 'memory' && (
               <span
@@ -277,7 +269,7 @@ export function TripCard({ trip }: Props) {
                   e.stopPropagation();
                   navigate(`/trips/${trip.id}/today`);
                 }}
-                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[0.6875rem] font-bold uppercase border-none cursor-pointer"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs2 font-bold uppercase border-none cursor-pointer"
                 style={{
                   background: 'hsl(var(--foreground))',
                   color: 'hsl(var(--background))',
@@ -297,15 +289,17 @@ export function TripCard({ trip }: Props) {
               <span className="inline-flex items-center gap-1">
                 <span
                   className="rounded-full"
-                  style={{ width: 3, height: 3, background: 'hsl(var(--muted-foreground))', opacity: 0.5 }}
+                  style={{
+                    width: 3,
+                    height: 3,
+                    background: 'hsl(var(--muted-foreground))',
+                    opacity: 0.5,
+                  }}
                 />
-                <MapPin
-                  style={{ width: 13, height: 13, flexShrink: 0, opacity: 0.7 }}
-                />
-                <span className="text-[0.8125rem]">
+                <MapPin size={13} style={{ opacity: 0.7 }} className="shrink-0" />
+                <span className="text-13">
                   {t('trips.card.placeCount', { count: placeCount })}
-                  {dayCount > 0 &&
-                    ` · ${t('trips.card.dayCount', { count: dayCount })}`}
+                  {dayCount > 0 && ` · ${t('trips.card.dayCount', { count: dayCount })}`}
                 </span>
               </span>
             )}
@@ -375,9 +369,7 @@ export function TripCard({ trip }: Props) {
               onClick={handleConfirmDelete}
               disabled={deleteTrip.isPending}
             >
-              {deleteTrip.isPending
-                ? t('trips.card.deleting')
-                : t('trips.card.delete')}
+              {deleteTrip.isPending ? t('trips.card.deleting') : t('trips.card.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

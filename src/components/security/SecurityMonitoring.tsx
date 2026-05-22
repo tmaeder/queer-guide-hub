@@ -48,11 +48,16 @@ export function SecurityMonitoring() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'destructive';
-      case 'high': return 'destructive';
-      case 'medium': return 'secondary';
-      case 'low': return 'outline';
-      default: return 'outline';
+      case 'critical':
+        return 'destructive';
+      case 'high':
+        return 'destructive';
+      case 'medium':
+        return 'secondary';
+      case 'low':
+        return 'outline';
+      default:
+        return 'outline';
     }
   };
 
@@ -60,11 +65,11 @@ export function SecurityMonitoring() {
     switch (severity) {
       case 'critical':
       case 'high':
-        return <AlertTriangle style={{ height: 16, width: 16 }} />;
+        return <AlertTriangle size={16} />;
       case 'medium':
-        return <Shield style={{ height: 16, width: 16 }} />;
+        return <Shield size={16} />;
       default:
-        return <Activity style={{ height: 16, width: 16 }} />;
+        return <Activity size={16} />;
     }
   };
 
@@ -76,7 +81,7 @@ export function SecurityMonitoring() {
   if (!user || !isAdmin) {
     return (
       <Alert>
-        <Shield style={{ height: 16, width: 16 }} />
+        <Shield size={16} />
         <AlertTitle>Access Denied</AlertTitle>
         <AlertDescription>
           You need administrator privileges to access security monitoring.
@@ -100,7 +105,7 @@ export function SecurityMonitoring() {
 
       {error && (
         <Alert variant="destructive">
-          <AlertTriangle style={{ height: 16, width: 16 }} />
+          <AlertTriangle size={16} />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -109,9 +114,9 @@ export function SecurityMonitoring() {
       <div className="grid gap-4">
         {events.map((event) => (
           <Card key={event.id}>
-            <CardHeader style={{ paddingBottom: 12 }}>
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle style={{ fontSize: '1.125rem' }}>
+                <CardTitle className="text-lg">
                   <div className="flex items-center gap-2">
                     {getSeverityIcon(event.severity)}
                     {event.event_type.replace(/_/g, ' ')}
@@ -155,7 +160,11 @@ export function SecurityMonitoring() {
         {events.length === 0 && !loading && (
           <Card>
             <CardContent className="text-center py-6">
-              <Shield style={{ height: 48, width: 48, margin: '0 auto 16px auto', display: 'block', color: 'var(--muted-foreground)' }} />
+              <Shield
+                size={48}
+                style={{ margin: '0 auto 16px auto' }}
+                className="block text-muted-foreground"
+              />
               <p className="text-muted-foreground">No security events found</p>
             </CardContent>
           </Card>

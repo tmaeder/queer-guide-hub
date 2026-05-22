@@ -42,7 +42,7 @@ const PAGE_SIZE = 24;
 const AUTO_LOAD_CAP = 48;
 
 const GRID_CLASS =
-  'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5 [&>*]:min-w-0';
+  'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-4 md:gap-6 [&>*]:min-w-0';
 
 const MAX_DEEP_LINK_PAGE = 50;
 
@@ -425,7 +425,7 @@ export default function Personalities() {
               aria-selected={view === 'grid'}
               onClick={() => setView('grid')}
               className={
-                'px-3 py-2 text-sm flex items-center gap-1.5 ' +
+                'px-4 py-2 text-sm flex items-center gap-1.5 ' +
                 (view === 'grid' ? 'bg-foreground text-background' : 'bg-background hover:bg-accent')
               }
               title="Grid view"
@@ -439,7 +439,7 @@ export default function Personalities() {
               aria-selected={view === 'timeline'}
               onClick={() => setView('timeline')}
               className={
-                'px-3 py-2 text-sm flex items-center gap-1.5 border-l border-border ' +
+                'px-4 py-2 text-sm flex items-center gap-1.5 border-l border-border ' +
                 (view === 'timeline'
                   ? 'bg-foreground text-background'
                   : 'bg-background hover:bg-accent')
@@ -455,7 +455,7 @@ export default function Personalities() {
               aria-selected={view === 'map'}
               onClick={() => setView('map')}
               className={
-                'px-3 py-2 text-sm flex items-center gap-1.5 border-l border-border ' +
+                'px-4 py-2 text-sm flex items-center gap-1.5 border-l border-border ' +
                 (view === 'map'
                   ? 'bg-foreground text-background'
                   : 'bg-background hover:bg-accent')
@@ -534,7 +534,7 @@ export default function Personalities() {
 
         {/* Initial loading skeleton */}
         {loading && personalities.length === 0 && !error && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-4 md:gap-6">
             {Array.from({ length: 10 }).map((_, i) => (
               <PersonalityCardSkeleton key={i} />
             ))}

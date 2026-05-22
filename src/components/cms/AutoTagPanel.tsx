@@ -23,8 +23,8 @@ interface AutoTagPanelProps {
 /** Confidence → color mapping */
 function confidenceColor(c: number): string {
   if (c >= 0.85) return 'hsl(var(--foreground))'; // green
-  if (c >= 0.6) return 'hsl(var(--foreground) / 0.55)';  // amber
-  return 'hsl(var(--destructive))';                 // red
+  if (c >= 0.6) return 'hsl(var(--foreground) / 0.55)'; // amber
+  return 'hsl(var(--destructive))'; // red
 }
 
 function confidenceLabel(c: number): string {
@@ -42,17 +42,13 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
     setSelected(new Set());
     const result = await suggestTags(contentType, contentId);
     if (result?.tags) {
-      const highConf = new Set(
-        result.tags
-          .filter(t => t.confidence >= 0.85)
-          .map(t => t.name)
-      );
+      const highConf = new Set(result.tags.filter((t) => t.confidence >= 0.85).map((t) => t.name));
       setSelected(highConf);
     }
   }, [contentType, contentId, suggestTags]);
 
   const handleToggle = (tagName: string) => {
-    setSelected(prev => {
+    setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(tagName)) {
         next.delete(tagName);
@@ -65,7 +61,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
 
   const handleSelectAll = () => {
     if (suggestions?.tags) {
-      setSelected(new Set(suggestions.tags.map(t => t.name)));
+      setSelected(new Set(suggestions.tags.map((t) => t.name)));
     }
   };
 
@@ -90,7 +86,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
-            <Sparkles style={{ height: 16, width: 16 }} className="text-primary" />
+            <Sparkles size={16} className="text-primary" />
             AI Tag Suggestions
           </div>
         </CardTitle>
@@ -98,7 +94,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
       <CardContent>
         {!suggestions && !loading && !applied && (
           <Button variant="outline" size="sm" onClick={handleSuggest}>
-            <Sparkles style={{ height: 14, width: 14, marginRight: 6 }} />
+            <Sparkles size={14} className="mr-1.5" />
             Suggest Tags
           </Button>
         )}
@@ -123,10 +119,13 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
                     checked={selected.has(tag.name)}
                     onCheckedChange={() => handleToggle(tag.name)}
                   />
-                  <label htmlFor={`autotag-${tag.name}`} className="flex items-center gap-1 flex-wrap flex-1 m-0 cursor-pointer">
-                    <span className="text-[0.8125rem]">{tag.name}</span>
+                  <label
+                    htmlFor={`autotag-${tag.name}`}
+                    className="flex items-center gap-1 flex-wrap flex-1 m-0 cursor-pointer"
+                  >
+                    <span className="text-13">{tag.name}</span>
                     <span
-                      className="text-[0.6875rem] font-semibold leading-none"
+                      className="text-xs2 font-semibold leading-none"
                       style={{ color: confidenceColor(tag.confidence) }}
                     >
                       {confidenceLabel(tag.confidence)}
@@ -134,7 +133,8 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
                     {tag.is_new && (
                       <Badge
                         variant="outline"
-                        style={{ fontSize: '0.625rem', padding: '0 4px', lineHeight: '1.25rem' }}
+                        style={{ padding: '0 4px', lineHeight: '1.25rem' }}
+                        className="text-2xs"
                       >
                         NEW
                       </Badge>
@@ -147,9 +147,9 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
             <div className="flex gap-1 mt-1">
               <Button size="sm" onClick={handleApply} disabled={applying || selected.size === 0}>
                 {applying ? (
-                  <Loader2 className="animate-spin" style={{ height: 14, width: 14, marginRight: 4 }} />
+                  <Loader2 className="animate-spin mr-1" size={14} />
                 ) : (
-                  <Check style={{ height: 14, width: 14, marginRight: 4 }} />
+                  <Check size={14} className="mr-1" />
                 )}
                 Apply {selected.size > 0 ? `(${selected.size})` : ''}
               </Button>
@@ -162,7 +162,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
 
         {suggestions && tags.length === 0 && !loading && (
           <div className="flex items-center gap-2 py-2">
-            <AlertCircle style={{ height: 14, width: 14 }} className="text-muted-foreground" />
+            <AlertCircle size={14} className="text-muted-foreground" />
             <span className="text-xs text-muted-foreground">No tags suggested for this item</span>
           </div>
         )}
@@ -170,10 +170,8 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
         {applied && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 py-2">
-              <Check style={{ height: 14, width: 14, color: 'hsl(var(--foreground))' }} />
-              <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
-                Tags applied successfully
-              </span>
+              <Check size={14} className="text-foreground" />
+              <span className="text-xs font-medium text-foreground">Tags applied successfully</span>
             </div>
             <Button
               variant="outline"
@@ -184,7 +182,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
                 handleSuggest();
               }}
             >
-              <Sparkles style={{ height: 14, width: 14, marginRight: 6 }} />
+              <Sparkles size={14} className="mr-1.5" />
               Re-suggest
             </Button>
           </div>

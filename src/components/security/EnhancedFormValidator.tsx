@@ -139,7 +139,7 @@ export function EnhancedFormValidator({
     <div className="flex flex-col gap-4">
       {(validationErrors.length > 0 || isBlocked) && (
         <Alert variant="destructive">
-          <AlertTriangle style={{ height: 16, width: 16 }} />
+          <AlertTriangle size={16} />
           <AlertDescription>
             {isBlocked ? (
               <span>Form submission blocked due to too many invalid attempts. Please wait and try again.</span>

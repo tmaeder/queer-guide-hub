@@ -134,7 +134,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Wand2 style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Wand2 size={16} className="mr-2" />
           Bulk Enrich
         </Button>
       </DialogTrigger>
@@ -142,7 +142,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
         <DialogHeader>
           <DialogTitle>
             <span className="flex items-center gap-2">
-              <Wand2 style={{ height: 20, width: 20 }} />
+              <Wand2 size={20} />
               Bulk Content Enrichment
             </span>
           </DialogTitle>
@@ -152,7 +152,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 mt-2">
+        <div className="flex flex-col gap-6 mt-2">
           {/* Module Selection */}
           <div>
             <Label>Automation Module</Label>
@@ -176,7 +176,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           </div>
 
           {/* Info box */}
-          <div className="bg-muted rounded p-3">
+          <div className="bg-muted rounded p-4">
             <span className="text-xs text-muted-foreground">
               The module will process items according to its configured batch size and create flags
               in the automation review queue. High-confidence changes may be auto-approved based on
@@ -188,7 +188,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           {loading && (
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Loader2 style={{ height: 16, width: 16 }} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" />
                 <span className="text-sm">Running {selectedModule?.label}...</span>
               </div>
               <div className="h-1 w-full overflow-hidden rounded bg-secondary">
@@ -199,34 +199,34 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
 
           {/* Results */}
           {result && !loading && (
-            <div className="border border-border rounded-element p-4 flex flex-col gap-3">
+            <div className="border border-border rounded-element p-4 flex flex-col gap-4">
               <div className="flex items-center gap-2">
-                <CheckCircle style={{ height: 18, width: 18, color: 'hsl(var(--foreground))' }} />
+                <CheckCircle size={18} className="text-foreground" />
                 <span className="text-sm font-semibold">Processing Complete</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-1">
-                  <FileText style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+                  <FileText size={14} className="text-muted-foreground" />
                   <span className="text-sm">
                     <strong>{result.items_processed}</strong> / {result.items_total} processed
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Zap style={{ height: 14, width: 14, color: 'hsl(var(--foreground) / 0.55)' }} />
+                  <Zap size={14} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                   <span className="text-sm">
                     <strong>{result.flags_created}</strong> flags created
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle style={{ height: 14, width: 14, color: 'hsl(var(--foreground))' }} />
+                  <CheckCircle size={14} className="text-foreground" />
                   <span className="text-sm">
                     <strong>{result.auto_approved}</strong> auto-approved
                   </span>
                 </div>
                 {result.items_failed > 0 && (
                   <div className="flex items-center gap-1">
-                    <AlertTriangle style={{ height: 14, width: 14, color: 'hsl(var(--destructive))' }} />
+                    <AlertTriangle size={14} className="text-destructive" />
                     <span className="text-sm">
                       <strong>{result.items_failed}</strong> failed
                     </span>
@@ -249,7 +249,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           {/* Run button */}
           {!loading && (
             <Button onClick={handleRun} style={{ width: '100%' }}>
-              <Wand2 style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Wand2 size={16} className="mr-2" />
               {result ? 'Run Again' : `Run ${selectedModule?.label || 'Module'}`}
             </Button>
           )}

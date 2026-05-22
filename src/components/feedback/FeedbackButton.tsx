@@ -27,7 +27,13 @@ export function FeedbackButton() {
   const navigate = useLocalizedNavigate();
 
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ category: '', title: '', description: '', email: '', honeypot: '' });
+  const [form, setForm] = useState({
+    category: '',
+    title: '',
+    description: '',
+    email: '',
+    honeypot: '',
+  });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
   const [includeScreenshot, setIncludeScreenshot] = useState(true);
   const [capturing, setCapturing] = useState(false);
@@ -165,7 +171,7 @@ export function FeedbackButton() {
               visibility: capturing ? 'hidden' : 'visible',
             }}
           >
-            <MessageSquarePlus style={{ width: 22, height: 22 }} />
+            <MessageSquarePlus size={22} />
           </button>
         </TooltipTrigger>
         <TooltipContent side="left">Share Feedback</TooltipContent>
@@ -176,13 +182,13 @@ export function FeedbackButton() {
           {status === 'submitted' ? (
             <div className="text-center py-8">
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-foreground">
-                <Check style={{ width: 24, height: 24, color: 'hsl(var(--background))' }} />
+                <Check size={24} className="text-background" />
               </div>
               <h6 className="text-base font-semibold mb-2">Thank you!</h6>
               <p className="text-sm text-muted-foreground mb-6">
                 Your feedback helps make Queer Guide better for everyone.
               </p>
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-4 justify-center">
                 <Button variant="outline" onClick={handleClose}>
                   Close
                 </Button>
@@ -239,7 +245,10 @@ export function FeedbackButton() {
                             : 'hsl(var(--border))';
                         }}
                       >
-                        <Icon style={{ width: 16, height: 16, color: cat.color, flexShrink: 0 }} />
+                        <Icon
+                          style={{ width: 16, height: 16, color: cat.color }}
+                          className="shrink-0"
+                        />
                         <p className="text-sm" style={{ fontWeight: selected ? 600 : 400 }}>
                           {cat.label}
                         </p>
@@ -301,44 +310,36 @@ export function FeedbackButton() {
                   />
                   <Label
                     htmlFor="feedback-screenshot"
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+                    style={{ alignItems: 'center' }}
+                    className="flex gap-1.5 cursor-pointer"
                   >
-                    <Camera style={{ width: 14, height: 14 }} />
+                    <Camera size={14} />
                     Include screenshot of this page
                   </Label>
                 </div>
                 {includeScreenshot && screenshotUrlRef.current && (
                   <div
-                    className="mt-2 border border-border rounded overflow-hidden"
-                    style={{ marginLeft: 28, maxWidth: 220 }}
+                    className="mt-2 border border-border rounded overflow-hidden ml-8"
+                    style={{ maxWidth: 220 }}
                   >
                     <img
                       src={screenshotUrlRef.current}
                       alt="Screenshot preview"
-                      style={{ display: 'block', width: '100%', height: 'auto' }}
+                      style={{ width: '100%', height: 'auto' }}
+                      className="block"
                     />
                   </div>
                 )}
               </div>
 
               {/* Context preview */}
-              <div
-                className="mb-4 rounded bg-muted"
-                style={{ padding: 10, fontSize: '0.7rem' }}
-              >
+              <div className="mb-4 rounded bg-muted p-2.5" style={{ fontSize: '0.7rem' }}>
                 <p className="block text-xs text-muted-foreground">
                   Automatically included: current page URL, browser info, recent errors
                 </p>
                 <p
-                  className="block text-muted-foreground"
-                  style={{
-                    fontFamily: 'monospace',
-                    fontSize: '0.65rem',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    marginTop: 2,
-                  }}
+                  className="block text-muted-foreground overflow-hidden whitespace-nowrap mt-0.5"
+                  style={{ fontFamily: 'monospace', fontSize: '0.65rem', textOverflow: 'ellipsis' }}
                 >
                   {pageUrl}
                 </p>
@@ -357,13 +358,18 @@ export function FeedbackButton() {
               />
 
               <DialogFooter>
-                <div className="flex gap-3 w-full justify-end">
+                <div className="flex gap-4 w-full justify-end">
                   <Button variant="outline" onClick={handleClose}>
                     Cancel
                   </Button>
                   <Button
                     onClick={handleSubmit}
-                    disabled={status === 'submitting' || !form.category || !form.title.trim() || !form.description.trim()}
+                    disabled={
+                      status === 'submitting' ||
+                      !form.category ||
+                      !form.title.trim() ||
+                      !form.description.trim()
+                    }
                   >
                     {status === 'submitting' ? 'Submitting...' : 'Submit'}
                   </Button>

@@ -32,23 +32,41 @@ interface MarketplaceFiltersProps {
   }) => void;
 }
 
-const categories = [
-  'products',
-  'services'
-];
+const categories = ['products', 'services'];
 
 const subcategories: Record<string, string[]> = {
-  products: ['clothing', 'jewelry', 'art', 'books', 'food', 'crafts', 'beauty', 'electronics', 'home-goods', 'handmade'],
-  services: ['photography', 'design', 'marketing', 'therapy', 'legal', 'financial', 'consulting', 'wellness', 'creative', 'professional']
+  products: [
+    'clothing',
+    'jewelry',
+    'art',
+    'books',
+    'food',
+    'crafts',
+    'beauty',
+    'electronics',
+    'home-goods',
+    'handmade',
+  ],
+  services: [
+    'photography',
+    'design',
+    'marketing',
+    'therapy',
+    'legal',
+    'financial',
+    'consulting',
+    'wellness',
+    'creative',
+    'professional',
+  ],
 };
 
-const businessTypes = [
-  'online',
-  'physical',
-  'both'
-];
+const businessTypes = ['online', 'physical', 'both'];
 
-export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: MarketplaceFiltersProps) {
+export function MarketplaceFilters({
+  initialSearch = '',
+  onFiltersChange,
+}: MarketplaceFiltersProps) {
   const [search, setSearch] = useState(initialSearch);
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
@@ -96,7 +114,17 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, category, subcategory, location, businessType, priceMin, priceMax, priceTouched, selectedTags]);
+  }, [
+    search,
+    category,
+    subcategory,
+    location,
+    businessType,
+    priceMin,
+    priceMax,
+    priceTouched,
+    selectedTags,
+  ]);
 
   const clearFilters = () => {
     setSearch('');
@@ -111,7 +139,14 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
     onFiltersChange({});
   };
 
-  const hasActiveFilters = search || (category && category !== 'all') || (subcategory && subcategory !== 'all') || location || (businessType && businessType !== 'all') || priceTouched || selectedTags.length > 0;
+  const hasActiveFilters =
+    search ||
+    (category && category !== 'all') ||
+    (subcategory && subcategory !== 'all') ||
+    location ||
+    (businessType && businessType !== 'all') ||
+    priceTouched ||
+    selectedTags.length > 0;
 
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
@@ -123,14 +158,16 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
     subcategory: subcategory && subcategory !== 'all' ? subcategory : undefined,
     businessType: businessType && businessType !== 'all' ? businessType : undefined,
   });
-  const fmtCount = (n: number | undefined) =>
-    n != null && n > 0 ? ` (${n})` : '';
+  const fmtCount = (n: number | undefined) => (n != null && n > 0 ? ` (${n})` : '');
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-background">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+          <Search
+            style={{ left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16 }}
+            className="absolute text-muted-foreground"
+          />
           <Input
             placeholder="Search products and services..."
             value={search}
@@ -141,7 +178,7 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
           />
         </div>
         <Button onClick={handleSearch} size="icon" aria-label="Search">
-          <Search style={{ height: 16, width: 16 }} />
+          <Search size={16} />
         </Button>
         <Button
           variant="outline"
@@ -149,7 +186,7 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
           size="icon"
           aria-label="Toggle filters"
         >
-          <Filter style={{ height: 16, width: 16 }} />
+          <Filter size={16} />
         </Button>
       </div>
 
@@ -182,12 +219,13 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Subcategories</SelectItem>
-                  {category && subcategories[category]?.map((subcat) => (
-                    <SelectItem key={subcat} value={subcat}>
-                      {subcat.charAt(0).toUpperCase() + subcat.slice(1)}
-                      {fmtCount(facets.subcategory.get(subcat))}
-                    </SelectItem>
-                  ))}
+                  {category &&
+                    subcategories[category]?.map((subcat) => (
+                      <SelectItem key={subcat} value={subcat}>
+                        {subcat.charAt(0).toUpperCase() + subcat.slice(1)}
+                        {fmtCount(facets.subcategory.get(subcat))}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -258,12 +296,12 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
 
           <div className="flex gap-2 pt-2">
             <Button onClick={handleSearch}>
-              <Sliders style={{ height: 16, width: 16 }} />
+              <Sliders size={16} />
               Apply Filters
             </Button>
             {hasActiveFilters && (
               <Button variant="outline" onClick={clearFilters}>
-                <X style={{ height: 16, width: 16 }} />
+                <X size={16} />
                 Clear All
               </Button>
             )}
@@ -277,38 +315,39 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
           {search && (
             <Badge variant="secondary">
               Search: {search}
-              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setSearch('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setSearch('')} />
             </Badge>
           )}
           {category && category !== 'all' && (
             <Badge variant="secondary">
               {category}
-              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setCategory('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setCategory('')} />
             </Badge>
           )}
           {subcategory && subcategory !== 'all' && (
             <Badge variant="secondary">
               {subcategory}
-              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setSubcategory('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setSubcategory('')} />
             </Badge>
           )}
           {location && (
             <Badge variant="secondary">
               Location: {location}
-              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setLocation('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setLocation('')} />
             </Badge>
           )}
           {businessType && businessType !== 'all' && (
             <Badge variant="secondary">
               {businessType}
-              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setBusinessType('')} />
+              <X size={12} className="cursor-pointer" onClick={() => setBusinessType('')} />
             </Badge>
           )}
           {priceTouched && (
             <Badge variant="secondary">
               Price: ${priceMin} – {priceMax >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${priceMax}`}
               <X
-                style={{ height: 12, width: 12, cursor: 'pointer' }}
+                size={12}
+                className="cursor-pointer"
                 onClick={() => {
                   setPriceMin(PRICE_MIN);
                   setPriceMax(PRICE_MAX);
@@ -317,15 +356,16 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
               />
             </Badge>
           )}
-           {selectedTags.map((tag) => (
-             <Badge key={tag} variant="secondary">
-               {tag}
-               <X
-                 style={{ height: 12, width: 12, cursor: 'pointer' }}
-                 onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
-               />
-             </Badge>
-           ))}
+          {selectedTags.map((tag) => (
+            <Badge key={tag} variant="secondary">
+              {tag}
+              <X
+                size={12}
+                className="cursor-pointer"
+                onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))}
+              />
+            </Badge>
+          ))}
         </div>
       )}
     </div>

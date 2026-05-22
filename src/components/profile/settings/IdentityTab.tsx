@@ -80,7 +80,7 @@ export function IdentityTab({ formData, onChange, onComingOutChange }: IdentityT
 
       <Card>
         <CardHeader>
-          <CardTitle>Coming Out Journey</CardTitle>
+          <CardTitle>Coming Out</CardTitle>
           <p className="text-sm text-muted-foreground">
             This information is private by default and only visible to people you choose.
           </p>
@@ -88,7 +88,7 @@ export function IdentityTab({ formData, onChange, onComingOutChange }: IdentityT
         <CardContent>
           <div className="flex flex-col gap-4">
             <Alert>
-              <Heart style={{ width: 16, height: 16 }} />
+              <Heart size={16} />
               <AlertDescription>
                 Coming out is a deeply personal journey. All fields here are optional and private by default.
               </AlertDescription>

@@ -38,7 +38,7 @@ export function BackToTopButton() {
         cursor: 'pointer',
       }}
     >
-      <ArrowUp style={{ width: 18, height: 18 }} />
+      <ArrowUp size={18} />
     </button>
   );
 }

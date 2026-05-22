@@ -45,7 +45,11 @@ export function TripChat({ tripId }: Props) {
       { content: text, replyTo: replyTo?.id },
       {
         onError: (err) =>
-          toast({ title: 'Failed to send message', description: String(err), variant: 'destructive' }),
+          toast({
+            title: 'Failed to send message',
+            description: String(err),
+            variant: 'destructive',
+          }),
       },
     );
     setInput('');
@@ -66,8 +70,7 @@ export function TripChat({ tripId }: Props) {
     return format(date, 'MMM d, HH:mm');
   };
 
-  const findReplyMessage = (id: string | null) =>
-    id ? messages?.find((m) => m.id === id) : null;
+  const findReplyMessage = (id: string | null) => (id ? messages?.find((m) => m.id === id) : null);
 
   if (isLoading) return <PageLoadingState count={3} variant="list" />;
 
@@ -76,7 +79,7 @@ export function TripChat({ tripId }: Props) {
       {/* Messages list */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto space-y-3 p-3"
+        className="flex-1 overflow-y-auto space-y-4 p-4"
         style={{ overscrollBehavior: 'contain' }}
       >
         {(!messages || messages.length === 0) && (
@@ -99,27 +102,30 @@ export function TripChat({ tripId }: Props) {
             <div key={msg.id} className={cn('flex gap-2 group', isOwn && 'flex-row-reverse')}>
               <Avatar className="h-6 w-6 mt-0.5">
                 {msg.sender?.avatar_url && (
-                  <AvatarImage src={msg.sender.avatar_url} alt={msg.sender?.display_name || 'User'} />
+                  <AvatarImage
+                    src={msg.sender.avatar_url}
+                    alt={msg.sender?.display_name || 'User'}
+                  />
                 )}
-                <AvatarFallback className="text-[10px]">{initial}</AvatarFallback>
+                <AvatarFallback className="text-2xs">{initial}</AvatarFallback>
               </Avatar>
 
               <div className={cn('max-w-[75%]', isOwn ? 'items-end' : 'items-start')}>
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[11px] font-semibold">
+                  <span className="text-xs2 font-semibold">
                     {isOwn ? 'You' : msg.sender?.display_name || 'Unknown'}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-2xs text-muted-foreground">
                     {formatTimestamp(msg.created_at)}
                   </span>
                 </div>
 
                 {replyMsg && (
                   <div className="border-l-2 border-primary/40 pl-2 mb-1 rounded-badge bg-muted py-1 px-2">
-                    <span className="block text-[10px] text-muted-foreground">
+                    <span className="block text-2xs text-muted-foreground">
                       {replyMsg.sender?.display_name || 'Unknown'}
                     </span>
-                    <span className="block text-[11px] truncate max-w-[200px]">
+                    <span className="block text-xs2 truncate max-w-[200px]">
                       {replyMsg.content}
                     </span>
                   </div>
@@ -127,11 +133,11 @@ export function TripChat({ tripId }: Props) {
 
                 <div
                   className={cn(
-                    'rounded-element p-3',
+                    'rounded-element p-4',
                     isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
                   )}
                 >
-                  <p className="text-[13px] whitespace-pre-wrap break-words">{msg.content}</p>
+                  <p className="text-13 whitespace-pre-wrap break-words">{msg.content}</p>
                 </div>
 
                 <Button
@@ -150,15 +156,13 @@ export function TripChat({ tripId }: Props) {
 
       {/* Reply preview */}
       {replyTo && (
-        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-border bg-muted">
-          <Reply size={14} style={{ opacity: 0.5, flexShrink: 0 }} />
+        <div className="flex items-center gap-2 px-4 py-1.5 border-t border-border bg-muted">
+          <Reply size={14} style={{ opacity: 0.5 }} className="shrink-0" />
           <div className="flex-1 min-w-0">
-            <span className="block text-[11px] font-semibold">
+            <span className="block text-xs2 font-semibold">
               Replying to {replyTo.sender?.display_name || 'Unknown'}
             </span>
-            <span className="block text-[11px] text-muted-foreground truncate">
-              {replyTo.content}
-            </span>
+            <span className="block text-xs2 text-muted-foreground truncate">{replyTo.content}</span>
           </div>
           <Button
             variant="ghost"
@@ -172,14 +176,14 @@ export function TripChat({ tripId }: Props) {
       )}
 
       {/* Input */}
-      <div className="flex gap-2 items-end mt-2 p-3 border-t border-border">
+      <div className="flex gap-2 items-end mt-2 p-4 border-t border-border">
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           rows={1}
-          className="flex-1 text-[13px] min-h-[40px] max-h-[120px]"
+          className="flex-1 text-13 min-h-[40px] max-h-[120px]"
         />
         <Button
           variant="ghost"

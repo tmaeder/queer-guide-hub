@@ -48,7 +48,7 @@ export const FilterChips = ({ filters, onRemove, className }: FilterChipsProps) 
           key={c.key}
           type="button"
           onClick={() => onRemove(c.key)}
-          className="h-8 inline-flex items-center gap-1 border border-border bg-background px-3 text-xs text-foreground hover:bg-muted focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="h-8 inline-flex items-center gap-1 border border-border bg-background px-4 text-xs text-foreground hover:bg-muted focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           aria-label={`Remove filter: ${c.label}`}
         >
           <span>{c.label}</span>

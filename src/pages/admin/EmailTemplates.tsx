@@ -8,8 +8,22 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Eye, Edit, Save, X, Mail, Loader2, FileText, TestTube } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEmailTemplates, upsertEmailTemplate } from '@/hooks/usePageFetchers';
@@ -105,7 +119,7 @@ export default function EmailTemplates() {
     let subject = template.subject;
 
     // Replace variables with sample data
-    template.variables.forEach(variable => {
+    template.variables.forEach((variable) => {
       const value = data[variable.name] || `{{${variable.name}}}`;
       const regex = new RegExp(`{{${variable.name}}}`, 'g');
       htmlContent = htmlContent.replace(regex, value);
@@ -127,13 +141,13 @@ export default function EmailTemplates() {
           to_email: testEmail,
           variables: previewData,
           is_test: true,
-        }
+        },
       });
 
       if (error) throw error;
 
       toast({
-        title: "Test Email Sent",
+        title: 'Test Email Sent',
         description: `Test email sent to ${testEmail}`,
       });
       setShowTestDialog(false);
@@ -169,7 +183,9 @@ export default function EmailTemplates() {
       <div className="flex items-center justify-between">
         <div>
           <h4 className="text-2xl font-bold">Email Templates</h4>
-          <p className="text-muted-foreground">Manage automated email templates sent by the system</p>
+          <p className="text-muted-foreground">
+            Manage automated email templates sent by the system
+          </p>
         </div>
       </div>
 
@@ -180,7 +196,7 @@ export default function EmailTemplates() {
             <CardHeader>
               <CardTitle>
                 <div className="flex items-center gap-2">
-                  <Mail style={{ height: 20, width: 20 }} />
+                  <Mail size={20} />
                   Templates
                 </div>
               </CardTitle>
@@ -190,14 +206,17 @@ export default function EmailTemplates() {
                 {templates.map((template) => (
                   <div
                     key={template.id}
-                    className="cursor-pointer transition-colors"
+                    className="cursor-pointer transition-colors p-4"
                     style={{
-                      padding: 12,
-                      borderRadius: 8,
+                      borderRadius: 'var(--radius-element)',
                       borderWidth: 1,
                       borderStyle: 'solid',
-                      borderColor: selectedTemplate?.id === template.id ? 'hsl(var(--primary))' : 'hsl(var(--border))',
-                      backgroundColor: selectedTemplate?.id === template.id ? 'hsl(var(--accent))' : undefined,
+                      borderColor:
+                        selectedTemplate?.id === template.id
+                          ? 'hsl(var(--primary))'
+                          : 'hsl(var(--border))',
+                      backgroundColor:
+                        selectedTemplate?.id === template.id ? 'hsl(var(--accent))' : undefined,
                     }}
                     onClick={() => {
                       setSelectedTemplate(template);
@@ -236,11 +255,20 @@ export default function EmailTemplates() {
         <div className="lg:col-span-8">
           {!selectedTemplate ? (
             <Card>
-              <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '24rem' }}>
+              <CardContent
+                style={{ alignItems: 'center', justifyContent: 'center', height: '24rem' }}
+                className="flex"
+              >
                 <div className="text-center">
-                  <Mail style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px auto', display: 'block' }} />
+                  <Mail
+                    size={48}
+                    style={{ margin: '0 auto 16px auto' }}
+                    className="text-muted-foreground block"
+                  />
                   <p className="text-base font-medium">No Template Selected</p>
-                  <p className="text-muted-foreground">Select a template from the list to view or edit</p>
+                  <p className="text-muted-foreground">
+                    Select a template from the list to view or edit
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -252,13 +280,11 @@ export default function EmailTemplates() {
                   <div>
                     <CardTitle>
                       <div className="flex items-center gap-2">
-                        <Edit style={{ height: 20, width: 20 }} />
+                        <Edit size={20} />
                         Editing: {editingTemplate.name}
                       </div>
                     </CardTitle>
-                    <CardDescription>
-                      Make changes to the email template
-                    </CardDescription>
+                    <CardDescription>Make changes to the email template</CardDescription>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -267,17 +293,14 @@ export default function EmailTemplates() {
                         setEditingTemplate(null);
                       }}
                     >
-                      <X style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <X size={16} className="mr-2" />
                       Cancel
                     </Button>
-                    <Button
-                      onClick={handleSaveTemplate}
-                      disabled={isSaving}
-                    >
+                    <Button onClick={handleSaveTemplate} disabled={isSaving}>
                       {isSaving ? (
-                        <Loader2 style={{ height: 16, width: 16, marginRight: 8 }} className="animate-spin" />
+                        <Loader2 size={16} className="animate-spin mr-2" />
                       ) : (
-                        <Save style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <Save size={16} className="mr-2" />
                       )}
                       Save
                     </Button>
@@ -395,7 +418,8 @@ export default function EmailTemplates() {
                         <div>
                           <p className="text-base font-medium mb-2">Available Variables</p>
                           <p className="text-sm text-muted-foreground mb-4">
-                            Use these variables in your email content by wrapping them in double curly braces: {`{{variable_name}}`}
+                            Use these variables in your email content by wrapping them in double
+                            curly braces: {`{{variable_name}}`}
                           </p>
                         </div>
                         <Table>
@@ -430,7 +454,7 @@ export default function EmailTemplates() {
                   <div>
                     <CardTitle>
                       <div className="flex items-center gap-2">
-                        <FileText style={{ height: 20, width: 20 }} />
+                        <FileText size={20} />
                         {selectedTemplate.name}
                         <Badge variant={selectedTemplate.is_active ? 'default' : 'secondary'}>
                           {selectedTemplate.is_active ? 'Active' : 'Inactive'}
@@ -438,14 +462,14 @@ export default function EmailTemplates() {
                       </div>
                     </CardTitle>
                     <CardDescription>
-                      Template Key: <code style={{ fontSize: '0.75rem' }}>{selectedTemplate.template_key}</code>
+                      Template Key: <code className="text-xs">{selectedTemplate.template_key}</code>
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
                     <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
-                          <TestTube style={{ height: 16, width: 16, marginRight: 8 }} />
+                          <TestTube size={16} className="mr-2" />
                           Test Email
                         </Button>
                       </DialogTrigger>
@@ -476,9 +500,9 @@ export default function EmailTemplates() {
                               disabled={!testEmail || isSendingTest}
                             >
                               {isSendingTest ? (
-                                <Loader2 style={{ height: 16, width: 16, marginRight: 8 }} className="animate-spin" />
+                                <Loader2 size={16} className="animate-spin mr-2" />
                               ) : (
-                                <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
+                                <Mail size={16} className="mr-2" />
                               )}
                               Send Test
                             </Button>
@@ -492,15 +516,12 @@ export default function EmailTemplates() {
                       size="sm"
                       onClick={() => setShowPreview(!showPreview)}
                     >
-                      <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Eye size={16} className="mr-2" />
                       {showPreview ? 'Hide Preview' : 'Preview'}
                     </Button>
 
-                    <Button
-                      size="sm"
-                      onClick={() => setEditingTemplate(selectedTemplate)}
-                    >
-                      <Edit style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <Button size="sm" onClick={() => setEditingTemplate(selectedTemplate)}>
+                      <Edit size={16} className="mr-2" />
                       Edit
                     </Button>
                   </div>
@@ -516,30 +537,36 @@ export default function EmailTemplates() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Created</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Created</Label>
                       <p className="text-sm">{formatDate(selectedTemplate.created_at)}</p>
                     </div>
                     <div>
-                      <Label style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Last Updated</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">
+                        Last Updated
+                      </Label>
                       <p className="text-sm">{formatDate(selectedTemplate.updated_at)}</p>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Subject Line</Label>
-                    <div className="rounded-element bg-muted" style={{ padding: 12 }}>
-                      <code style={{ fontSize: '0.875rem' }}>{selectedTemplate.subject}</code>
+                    <Label className="text-sm font-medium">Subject Line</Label>
+                    <div className="rounded-element bg-muted p-4">
+                      <code className="text-sm">{selectedTemplate.subject}</code>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Available Variables</Label>
+                    <Label className="text-sm font-medium">Available Variables</Label>
                     <div className="flex flex-col gap-2">
                       {selectedTemplate.variables.map((variable, index) => (
-                        <div key={index} className="rounded bg-muted" style={{ padding: 8 }}>
+                        <div key={index} className="rounded bg-muted p-2">
                           <span className="text-sm">
-                            <code style={{ fontFamily: 'monospace' }}>{`{{${variable.name}}}`}</code>
-                            <span className="text-muted-foreground ml-2">- {variable.description}</span>
+                            <code
+                              style={{ fontFamily: 'monospace' }}
+                            >{`{{${variable.name}}}`}</code>
+                            <span className="text-muted-foreground ml-2">
+                              - {variable.description}
+                            </span>
                           </span>
                         </div>
                       ))}
@@ -554,7 +581,7 @@ export default function EmailTemplates() {
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         {selectedTemplate.variables.map((variable) => (
                           <div key={variable.name} className="flex flex-col gap-1">
-                            <Label htmlFor={`preview-${variable.name}`} style={{ fontSize: '0.75rem' }}>
+                            <Label htmlFor={`preview-${variable.name}`} className="text-xs">
                               {variable.name}
                             </Label>
                             <Input
@@ -584,14 +611,39 @@ export default function EmailTemplates() {
                         <TabsContent value="html-preview">
                           <div className="border border-border rounded-element p-4 bg-background">
                             <div className="border-b border-border pb-2 mb-4">
-                              <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
+                              <strong>Subject:</strong>{' '}
+                              {generatePreview(selectedTemplate, previewData).subject}
                             </div>
                             <ContentSanitizer
                               style={{ maxWidth: 'none' }}
                               className="prose"
                               content={generatePreview(selectedTemplate, previewData).htmlContent}
                               allowedTags={[
-                                'p','br','strong','em','u','a','ul','ol','li','blockquote','code','pre','h1','h2','h3','h4','h5','h6','img','table','thead','tbody','tr','th','td'
+                                'p',
+                                'br',
+                                'strong',
+                                'em',
+                                'u',
+                                'a',
+                                'ul',
+                                'ol',
+                                'li',
+                                'blockquote',
+                                'code',
+                                'pre',
+                                'h1',
+                                'h2',
+                                'h3',
+                                'h4',
+                                'h5',
+                                'h6',
+                                'img',
+                                'table',
+                                'thead',
+                                'tbody',
+                                'tr',
+                                'th',
+                                'td',
                               ]}
                             />
                           </div>
@@ -599,7 +651,10 @@ export default function EmailTemplates() {
 
                         <TabsContent value="html-code">
                           <div className="rounded-element bg-muted p-4">
-                            <pre style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+                            <pre
+                              style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}
+                              className="text-sm"
+                            >
                               {generatePreview(selectedTemplate, previewData).htmlContent}
                             </pre>
                           </div>
@@ -609,9 +664,10 @@ export default function EmailTemplates() {
                           <TabsContent value="text-preview">
                             <div className="rounded-element bg-muted p-4">
                               <div className="border-b border-border pb-2 mb-4">
-                                <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
+                                <strong>Subject:</strong>{' '}
+                                {generatePreview(selectedTemplate, previewData).subject}
                               </div>
-                              <pre style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
+                              <pre style={{ whiteSpace: 'pre-wrap' }} className="text-sm">
                                 {generatePreview(selectedTemplate, previewData).textContent}
                               </pre>
                             </div>

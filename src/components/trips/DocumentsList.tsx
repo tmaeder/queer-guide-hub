@@ -112,7 +112,7 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
               : t('docs.list.tripTitle', 'Trip documents')}
           </h6>
           <Button variant="brand" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
+            <Plus size={14} className="mr-1.5" />
             {t('docs.list.add', 'Add document')}
           </Button>
         </div>
@@ -121,7 +121,7 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
       {embedded && (
         <div className="flex justify-end mb-2">
           <Button variant="ghost" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
+            <Plus size={14} className="mr-1.5" />
             {t('docs.list.add', 'Add document')}
           </Button>
         </div>
@@ -166,7 +166,7 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
             return (
               <Card key={doc.id}>
                 <CardContent>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <div className="w-9 h-9 bg-muted flex items-center justify-center flex-shrink-0">
                       {isImage ? <ImageIcon size={16} /> : <Icon size={16} />}
                     </div>
@@ -188,11 +188,11 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
                         )}
                       </div>
                       {doc.notes && (
-                        <p className="text-[0.8125rem] text-muted-foreground mt-0.5">
+                        <p className="text-13 text-muted-foreground mt-0.5">
                           {doc.notes}
                         </p>
                       )}
-                      <p className="text-[0.6875rem] text-muted-foreground mt-0.5">
+                      <p className="text-xs2 text-muted-foreground mt-0.5">
                         {t('docs.list.uploaded', 'Uploaded')}{' '}
                         {format(new Date(doc.created_at), 'MMM d, yyyy')}
                       </p>

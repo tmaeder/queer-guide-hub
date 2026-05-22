@@ -6,17 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import {
-  Collapsible,
-  CollapsibleContent,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useToast } from '@/hooks/use-toast';
-import {
-  useTripPacking,
-  usePackingMutations,
-  type PackingGroup,
-} from '@/hooks/useTripPacking';
+import { useTripPacking, usePackingMutations, type PackingGroup } from '@/hooks/useTripPacking';
 import { PackingMarketplaceSuggestions } from './packing/PackingMarketplaceSuggestions';
 import { cn } from '@/lib/utils';
 
@@ -44,24 +37,18 @@ export function PackingTab({ tripId }: Props) {
   const checkedCount = packing.checkedCount ?? 0;
   const totalCount = packing.totalCount ?? 0;
   const isLoading = packing.isLoading;
-  const {
-    addPackingItem,
-    toggleChecked,
-    deletePackingItem,
-    addPackingTemplate,
-  } = usePackingMutations(tripId);
+  const { addPackingItem, toggleChecked, deletePackingItem, addPackingTemplate } =
+    usePackingMutations(tripId);
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [newItemText, setNewItemText] = useState<Record<string, string>>({});
 
   if (isLoading) return <PageLoadingState count={3} variant="list" />;
 
-  const percentage =
-    totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
+  const percentage = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
   const sortedGroups = [...(grouped || [])].sort(
-    (a, b) =>
-      CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
+    (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
   );
 
   const existingCategories = new Set(sortedGroups.map((g) => g.category));
@@ -75,9 +62,7 @@ export function PackingTab({ tripId }: Props) {
 
   const categoryLabel = (cat: string) =>
     t(`trips.packing.category.${cat}`, {
-      defaultValue: cat
-        .replace(/-/g, ' ')
-        .replace(/\b\w/g, (ch) => ch.toUpperCase()),
+      defaultValue: cat.replace(/-/g, ' ').replace(/\b\w/g, (ch) => ch.toUpperCase()),
     });
 
   const templateLabel = (tpl: string) => t(`trips.packing.templates.${tpl}`);
@@ -134,10 +119,10 @@ export function PackingTab({ tripId }: Props) {
     return (
       <div className="text-center py-12 md:py-20 px-6 border-[1.5px] border-dashed border-border rounded-container">
         <div
-          className="w-14 h-14 rounded-element flex items-center justify-center mx-auto mb-3"
+          className="w-14 h-14 rounded-element flex items-center justify-center mx-auto mb-4"
           style={{ background: 'hsl(var(--foreground) / 0.1)' }}
         >
-          <CheckSquare size={26} style={{ color: 'hsl(var(--foreground))' }} />
+          <CheckSquare size={26} className="text-foreground" />
         </div>
         <h3 className="text-lg font-bold mb-1">{t('trips.packing.emptyTitle')}</h3>
         <p className="text-sm text-muted-foreground mb-6 max-w-[360px] mx-auto">
@@ -162,10 +147,10 @@ export function PackingTab({ tripId }: Props) {
   return (
     <div>
       {/* Progress card */}
-      <div className="p-4 md:p-5 mb-6">
+      <div className="p-4 md:p-6 mb-6">
         <div className="flex items-baseline justify-between mb-2 gap-2">
           <p
-            className="font-extrabold text-[1.375rem]"
+            className="font-bold text-title"
             style={{
               letterSpacing: '-0.02em',
               fontVariantNumeric: 'tabular-nums',
@@ -177,11 +162,8 @@ export function PackingTab({ tripId }: Props) {
             })}
           </p>
           <span
-            className="text-sm font-bold"
-            style={{
-              color: 'hsl(var(--foreground))',
-              fontVariantNumeric: 'tabular-nums',
-            }}
+            className="text-sm font-bold text-foreground"
+            style={{ fontVariantNumeric: 'tabular-nums' }}
           >
             {percentage}%
           </span>
@@ -218,7 +200,7 @@ export function PackingTab({ tripId }: Props) {
       </div>
 
       {/* Category groups */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         {allGroups.map((group) => {
           const isCollapsed = collapsed[group.category];
           const groupChecked = group.items.filter((i) => i.is_checked).length;
@@ -235,11 +217,7 @@ export function PackingTab({ tripId }: Props) {
                   className="flex items-center gap-2 w-full border-none bg-transparent cursor-pointer text-left p-0 min-h-9"
                   style={{ color: 'inherit', fontFamily: 'inherit' }}
                 >
-                  {isCollapsed ? (
-                    <ChevronRight size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  )}
+                  {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
                   <span
                     className={cn(
                       'font-bold flex-1 text-sm',
@@ -283,9 +261,7 @@ export function PackingTab({ tripId }: Props) {
                           >
                             {item.name}
                           </span>
-                          {item.quantity > 1 && (
-                            <Badge variant="secondary">×{item.quantity}</Badge>
-                          )}
+                          {item.quantity > 1 && <Badge variant="secondary">×{item.quantity}</Badge>}
                           <Button
                             variant="ghost"
                             onClick={() => handleDeleteItem(item.id)}

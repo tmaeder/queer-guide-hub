@@ -36,18 +36,18 @@ export function CurrencySelector() {
           minWidth: 0,
           height: 36,
           padding: '0 8px',
-          gap: 4,
           border: 'none',
           background: 'transparent',
         }}
+        className="gap-1"
       >
-        <Wallet style={{ width: 16, height: 16, flexShrink: 0 }} />
+        <Wallet size={16} className="shrink-0" />
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {currencies.map((c) => (
           <SelectItem key={c.code} value={c.code}>
-            <span className="text-[0.8125rem]">
+            <span className="text-13">
               {c.code}
               {c.symbol && c.symbol !== c.code ? ` (${c.symbol})` : ''}
             </span>

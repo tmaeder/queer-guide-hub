@@ -20,7 +20,11 @@ export default function ProfessionDetail() {
   const navigate = useLocalizedNavigate();
   const [professionData, setProfessionData] = useState<ProfessionData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { data: personalities, isLoading: loading, error: queryError } = usePersonalitiesByProfession();
+  const {
+    data: personalities,
+    isLoading: loading,
+    error: queryError,
+  } = usePersonalitiesByProfession();
 
   useEffect(() => {
     if (!professionName) return;
@@ -30,15 +34,14 @@ export default function ProfessionDetail() {
     }
     if (!personalities) return;
     const decodedProfession = decodeURIComponent(professionName);
-    const filtered = (personalities as Array<{ profession?: string | null }>)
-      .filter(
-        (p) =>
-          p.profession &&
-          p.profession
-            .split(',')
-            .map((prof: string) => prof.trim().toLowerCase())
-            .includes(decodedProfession.toLowerCase()),
-      ) as Record<string, unknown>[];
+    const filtered = (personalities as Array<{ profession?: string | null }>).filter(
+      (p) =>
+        p.profession &&
+        p.profession
+          .split(',')
+          .map((prof: string) => prof.trim().toLowerCase())
+          .includes(decodedProfession.toLowerCase()),
+    ) as Record<string, unknown>[];
     setProfessionData({
       name: decodedProfession,
       personalities: filtered,
@@ -60,7 +63,7 @@ export default function ProfessionDetail() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} style={{ overflow: 'hidden' }}>
+              <Card key={i} className="overflow-hidden">
                 <Skeleton style={{ aspectRatio: '1/1', width: '100%' }} />
                 <div className="p-4 flex flex-col gap-2">
                   <Skeleton style={{ height: 16, width: '100%' }} />
@@ -78,10 +81,10 @@ export default function ProfessionDetail() {
     return (
       <div className="container mx-auto py-6 px-4">
         <Card style={{ borderColor: 'var(--destructive)' }}>
-          <CardContent style={{ padding: 24, textAlign: 'center' }}>
+          <CardContent className="p-6 text-center">
             <p className="text-destructive">{error || 'Profession not found'}</p>
-            <Button variant="outline" onClick={handleBack} style={{ marginTop: 16 }}>
-              <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <Button variant="outline" onClick={handleBack} className="mt-4">
+              <ArrowLeft size={16} className="mr-2" />
               Back to Resources
             </Button>
           </CardContent>
@@ -95,12 +98,12 @@ export default function ProfessionDetail() {
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={handleBack} style={{ flexShrink: 0 }}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Button variant="outline" onClick={handleBack} className="shrink-0">
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
-          <div className="flex items-center gap-3">
-            <User style={{ width: 32, height: 32, color: 'var(--primary)' }} />
+          <div className="flex items-center gap-4">
+            <User size={32} className="text-primary" />
             <h4 className="text-2xl font-bold">{professionData.name}</h4>
             <Badge variant="secondary">
               {professionData.totalCount} {professionData.totalCount === 1 ? 'person' : 'people'}
@@ -113,7 +116,7 @@ export default function ProfessionDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total People</CardTitle>
-              <Users style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+              <Users size={16} className="text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold">{professionData.totalCount}</p>
@@ -123,7 +126,7 @@ export default function ProfessionDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Locations</CardTitle>
-              <MapPin style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+              <MapPin size={16} className="text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold">
@@ -138,7 +141,7 @@ export default function ProfessionDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Age Range</CardTitle>
-              <Calendar style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+              <Calendar size={16} className="text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold">
@@ -171,7 +174,7 @@ export default function ProfessionDetail() {
             </div>
           ) : (
             <Card>
-              <CardContent style={{ padding: 24, textAlign: 'center' }}>
+              <CardContent className="p-6 text-center">
                 <p className="text-muted-foreground">No people found for this profession.</p>
               </CardContent>
             </Card>

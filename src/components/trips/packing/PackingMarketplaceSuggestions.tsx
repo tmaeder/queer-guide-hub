@@ -69,8 +69,7 @@ export function PackingMarketplaceSuggestions({ tripId }: Props) {
           type="button"
           disabled={smartLoading}
           onClick={onRequestSmartSuggestions}
-          className="border-0 bg-transparent font-semibold text-[13px] cursor-pointer inline-flex items-center gap-1 p-0 disabled:opacity-60"
-          style={{ color: 'hsl(var(--foreground))' }}
+          className="border-0 bg-transparent font-semibold text-13 cursor-pointer inline-flex items-center gap-1 p-0 disabled:opacity-60 text-foreground"
         >
           <Sparkles size={13} />
           {smartLoading ? t('trips.packing.smartLoading') : t('trips.packing.smartCta')}
@@ -82,7 +81,7 @@ export function PackingMarketplaceSuggestions({ tripId }: Props) {
           <span className="font-bold uppercase tracking-wider text-xs text-muted-foreground mb-2 block">
             {t(`trips.packing.category.${category}`, { defaultValue: category })}
           </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {(items ?? []).map((s) => (
               <SuggestionCard
                 key={s.id}

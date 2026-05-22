@@ -69,19 +69,14 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
     const safePlaceholders = placeholders.filter(
       (p): p is string => typeof p === 'string' && p.length > 0,
     );
-    const showTypedPlaceholder =
-      !inputValue && !isFocused && safePlaceholders.length > 0;
+    const showTypedPlaceholder = !inputValue && !isFocused && safePlaceholders.length > 0;
 
     return (
-      <div style={{ position: 'relative' }}>
+      <div className="relative">
         <Input
           ref={inputRef}
-          style={{
-            position: 'relative',
-            zIndex: 10,
-            background: 'transparent',
-            ...externalStyle,
-          }}
+          style={{ zIndex: 10, background: 'transparent', ...externalStyle }}
+          className="relative"
           value={inputValue}
           onChange={handleChange}
           onFocus={handleFocus}
@@ -93,14 +88,13 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
         {showTypedPlaceholder && (
           <div
             style={{
-              position: 'absolute',
               left: 12,
               top: '50%',
               transform: 'translateY(-50%)',
               pointerEvents: 'none',
               zIndex: 0,
-              color: 'hsl(var(--muted-foreground))',
             }}
+            className="absolute text-muted-foreground"
           >
             <TextType
               text={safePlaceholders}
@@ -110,7 +104,7 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
               cursorCharacter={cursorCharacter}
               loop={true}
               as="span"
-              style={{ fontSize: '0.875rem' }}
+              className="text-sm"
             />
           </div>
         )}

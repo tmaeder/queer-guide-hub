@@ -1,5 +1,17 @@
 import { useState } from 'react';
-import { Plus, Trash2, ArrowRight, Utensils, Car, Home, Ticket, ShoppingBag, Package, Wallet, Sparkles } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  ArrowRight,
+  Utensils,
+  Car,
+  Home,
+  Ticket,
+  ShoppingBag,
+  Package,
+  Wallet,
+  Sparkles,
+} from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
@@ -121,7 +133,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   if (items.length === 0) {
     return (
       <>
-        <div className="text-center py-6 md:py-10 px-3 border-[1.5px] border-dashed border-border rounded-container">
+        <div className="text-center py-6 md:py-10 px-4 border-[1.5px] border-dashed border-border rounded-container">
           <div
             className="w-14 h-14 rounded-element flex items-center justify-center mx-auto mb-1.5"
             style={{ backgroundColor: `${brand}1a` }}
@@ -129,16 +141,16 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
             <Wallet size={26} style={{ color: brand }} />
           </div>
           <h6 className="font-bold mb-0.5 text-lg">{t('trips.budget.emptyTitle')}</h6>
-          <p className="text-sm text-muted-foreground mb-3 max-w-[360px] mx-auto">
+          <p className="text-sm text-muted-foreground mb-4 max-w-[360px] mx-auto">
             {t('trips.budget.emptyDescription')}
           </p>
           <div className="flex gap-1 justify-center flex-wrap">
             <Button variant="brand" onClick={() => setDialogOpen(true)}>
-              <Plus size={16} style={{ marginRight: 6 }} />
+              <Plus size={16} className="mr-1.5" />
               {t('trips.budget.addExpense')}
             </Button>
             <Button variant="outline" onClick={() => setEstimateOpen(true)}>
-              <Sparkles size={16} style={{ marginRight: 6 }} />
+              <Sparkles size={16} className="mr-1.5" />
               {t('trips.budget.estimateCosts', { defaultValue: 'Estimate costs' })}
             </Button>
           </div>
@@ -167,33 +179,30 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       <Card>
         <CardContent>
           <div className="flex items-center justify-between mb-1">
-            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-[0.7rem]">
+            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-xs2">
               {t('trips.budget.totalSpend')}
             </span>
             <Badge variant="secondary">
               {t('trips.budget.membersCount', { count: members.length })}
             </Badge>
           </div>
-          <div className="flex items-baseline gap-3 flex-wrap">
+          <div className="flex items-baseline gap-4 flex-wrap">
             {Object.keys(summary.totalByCurrency).length > 1 && summary.totalConverted != null ? (
               <>
-                <span
-                  className="text-[1.5rem] md:text-[1.75rem] font-extrabold tabular-nums"
-                >
+                <span className="text-2xl md:text-headline font-bold tabular-nums">
                   {formatAmount(summary.totalConverted, defaultCurrency)}
                 </span>
                 <span className="text-xs text-muted-foreground tabular-nums">
-                  ({Object.entries(summary.totalByCurrency)
+                  (
+                  {Object.entries(summary.totalByCurrency)
                     .map(([cur, total]) => formatAmount(total, cur))
-                    .join(' + ')})
+                    .join(' + ')}
+                  )
                 </span>
               </>
             ) : (
               Object.entries(summary.totalByCurrency).map(([cur, total]) => (
-                <span
-                  key={cur}
-                  className="text-[1.5rem] md:text-[1.75rem] font-extrabold tabular-nums"
-                >
+                <span key={cur} className="text-2xl md:text-headline font-bold tabular-nums">
                   {formatAmount(total, cur)}
                 </span>
               ))
@@ -209,9 +218,9 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
 
       {/* Pie chart */}
       {chartData.length > 0 && (
-        <Card className="mt-3">
+        <Card className="mt-4">
           <CardContent>
-            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-[0.7rem] block mb-1">
+            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-xs2 block mb-1">
               {t('trips.budget.spendingByCategory')}
             </span>
             <div style={{ height: 200 }}>
@@ -257,32 +266,24 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         const color = categoryColors[cat] || categoryColors.other;
         const catTotal: Record<string, number> = {};
         for (const item of catItems) {
-          catTotal[item.currency] =
-            (catTotal[item.currency] || 0) + Number(item.amount);
+          catTotal[item.currency] = (catTotal[item.currency] || 0) + Number(item.amount);
         }
 
         return (
-          <div key={cat} className="mt-3">
+          <div key={cat} className="mt-4">
             <div className="flex items-center justify-between mb-[0.3125rem]">
               <div className="flex items-center gap-1">
                 <div
-                  className="w-7 h-7 rounded-[0.3125rem] flex items-center justify-center"
+                  className="w-7 h-7 rounded-badge flex items-center justify-center"
                   style={{ backgroundColor: `${color}1f` }}
                 >
                   <Icon size={14} style={{ color }} />
                 </div>
-                <span
-                  className="font-bold text-sm"
-                >
-                  {categoryLabel(cat)}
-                </span>
+                <span className="font-bold text-sm">{categoryLabel(cat)}</span>
               </div>
               <div className="flex gap-1">
                 {Object.entries(catTotal).map(([cur, total]) => (
-                  <span
-                    key={cur}
-                    className="text-sm font-bold text-muted-foreground tabular-nums"
-                  >
+                  <span key={cur} className="text-sm font-bold text-muted-foreground tabular-nums">
                     {formatAmount(total, cur)}
                   </span>
                 ))}
@@ -293,7 +294,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               <Card key={item.id} className="mb-1">
                 <CardContent>
                   <div className="flex items-center gap-[0.3125rem]">
-                    <Avatar className="w-8 h-8 text-[13px]">
+                    <Avatar className="w-8 h-8 text-13">
                       {memberAvatar(item.paid_by) && (
                         <AvatarImage src={memberAvatar(item.paid_by)} />
                       )}
@@ -336,7 +337,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {Object.keys(summary.perPersonBalance).length > 0 && (
         <div className="mt-4">
           <div className="border-t border-border mb-2" />
-          <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-[0.7rem] block mb-1">
+          <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-xs2 block mb-1">
             {t('trips.budget.settlements')}
           </span>
           {Object.entries(summary.perPersonBalance).map(([cur, settlements]) =>
@@ -344,20 +345,18 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               <Card key={`${cur}-${i}`} className="mb-1">
                 <CardContent>
                   <div className="flex items-center gap-2">
-                    <Avatar className="w-6 h-6 text-[11px]">
+                    <Avatar className="w-6 h-6 text-xs2">
                       {memberAvatar(s.from) && <AvatarImage src={memberAvatar(s.from)} />}
                       <AvatarFallback>{memberName(s.from)[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm">{memberName(s.from)}</span>
                     <ArrowRight size={14} className="text-muted-foreground" />
-                    <Avatar className="w-6 h-6 text-[11px]">
+                    <Avatar className="w-6 h-6 text-xs2">
                       {memberAvatar(s.to) && <AvatarImage src={memberAvatar(s.to)} />}
                       <AvatarFallback>{memberName(s.to)[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm">{memberName(s.to)}</span>
-                    <span className="text-sm font-bold ml-auto">
-                      {formatAmount(s.amount, cur)}
-                    </span>
+                    <span className="text-sm font-bold ml-auto">{formatAmount(s.amount, cur)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -369,14 +368,14 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {/* FABs */}
       <Button
         variant="outline"
-        className="fixed bottom-[84px] right-7 h-10 w-10 p-0 rounded-full bg-background border-border shadow-[var(--shadow-aceternity-sm)]"
+        className="fixed bottom-[84px] right-7 h-10 w-10 p-0 rounded-full bg-background border-border"
         onClick={() => setEstimateOpen(true)}
         aria-label={t('trips.budget.estimateCosts', { defaultValue: 'Estimate costs' })}
       >
         <Sparkles size={18} />
       </Button>
       <Button
-        className="fixed bottom-6 right-6 h-14 w-14 p-0 rounded-full text-white shadow-[var(--shadow-aceternity)] hover:opacity-90"
+        className="fixed bottom-6 right-6 h-14 w-14 p-0 rounded-full text-white hover:opacity-90"
         style={{ backgroundColor: brand }}
         onClick={() => setDialogOpen(true)}
       >
@@ -399,38 +398,25 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         currentUserId={user?.id}
       />
 
-      <CostSplitSummary
-        tripId={tripId}
-        members={members}
-        defaultCurrency={defaultCurrency}
-      />
+      <CostSplitSummary tripId={tripId} members={members} defaultCurrency={defaultCurrency} />
 
       <div className="mt-4">
         <Button variant="outline" size="sm" onClick={() => setBundleOpen(true)}>
-          <Wallet style={{ width: 14, height: 14, marginRight: 6 }} />
+          <Wallet size={14} className="mr-1.5" />
           Bundle bookings
         </Button>
       </div>
 
       <BookingActivitySection tripId={tripId} />
 
-      <BundledCheckoutDialog
-        open={bundleOpen}
-        onOpenChange={setBundleOpen}
-        tripId={tripId}
-      />
+      <BundledCheckoutDialog open={bundleOpen} onOpenChange={setBundleOpen} tripId={tripId} />
 
       {/* Delete confirmation */}
-      <Dialog
-        open={!!deleteConfirmId}
-        onOpenChange={(open) => !open && setDeleteConfirmId(null)}
-      >
+      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('trips.budget.deleteTitle')}</DialogTitle>
-            <DialogDescription>
-              {t('trips.budget.deleteConfirm')}
-            </DialogDescription>
+            <DialogDescription>{t('trips.budget.deleteConfirm')}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>

@@ -23,11 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { ContentChange } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -43,10 +39,10 @@ interface Props {
 }
 
 const CHANGE_TYPE_CLASS: Record<string, string> = {
-  normalize: 'bg-blue-100 text-blue-800 border-blue-200',
-  sanitize: 'bg-blue-100 text-blue-800 border-blue-200',
-  enrich: 'bg-green-100 text-green-800 border-green-200',
-  flag: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  normalize: 'bg-muted text-foreground border-foreground/40',
+  sanitize: 'bg-muted text-foreground border-foreground/40',
+  enrich: 'bg-muted text-foreground border-foreground/40',
+  flag: 'bg-muted text-foreground border-border',
   ai_enhance: 'bg-muted text-muted-foreground',
 };
 
@@ -98,17 +94,15 @@ export function ReviewQueue({
   if (changes.length === 0) {
     return (
       <div className="text-center py-12">
-        <CheckCircle2 size={48} style={{ color: 'hsl(var(--foreground))', margin: '0 auto 16px' }} />
+        <CheckCircle2 size={48} style={{ margin: '0 auto 16px' }} className="text-foreground" />
         <h6 className="text-lg font-semibold text-muted-foreground">No pending changes</h6>
-        <p className="text-sm text-muted-foreground">
-          All automation changes have been reviewed.
-        </p>
+        <p className="text-sm text-muted-foreground">All automation changes have been reviewed.</p>
       </div>
     );
   }
 
   const confidenceColor = (c: number) =>
-    c >= 0.9 ? 'bg-green-500' : c >= 0.7 ? 'bg-blue-500' : 'bg-yellow-500';
+    c >= 0.9 ? 'bg-foreground' : c >= 0.7 ? 'bg-foreground' : 'bg-foreground';
 
   return (
     <div className="flex flex-col gap-4">
@@ -219,17 +213,17 @@ export function ReviewQueue({
                   <p className="text-sm font-semibold truncate max-w-[200px]">
                     {change.content_name}
                   </p>
-                  <Badge variant="outline" className="h-[18px] text-[0.65rem] px-1.5">
+                  <Badge variant="outline" className="h-[18px] text-2xs px-1.5">
                     {change.content_type}
                   </Badge>
                 </div>
               </TableCell>
               <TableCell>
-                <p className="text-sm font-mono text-[0.8rem]">{change.field_name}</p>
+                <p className="text-sm font-mono text-13">{change.field_name}</p>
               </TableCell>
               <TableCell>
                 <Badge
-                  className={`h-[22px] text-[0.7rem] ${CHANGE_TYPE_CLASS[change.change_type] ?? 'bg-muted text-muted-foreground'}`}
+                  className={`h-[22px] text-xs2 ${CHANGE_TYPE_CLASS[change.change_type] ?? 'bg-muted text-muted-foreground'}`}
                   variant="outline"
                 >
                   {change.change_type}
@@ -279,7 +273,7 @@ export function ReviewQueue({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 text-green-600"
+                          className="h-7 w-7 p-0 text-foreground"
                           onClick={() => onApprove(change.id)}
                           disabled={isApproving}
                         >

@@ -117,7 +117,7 @@ export function AudioManager() {
             placeholder="Search audio..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="pl-10"
           />
         </div>
       </div>
@@ -165,12 +165,12 @@ export function AudioManager() {
               )}
 
               {audio.description && (
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                   {audio.description}
                 </p>
               )}
 
-              <div className="text-xs text-muted-foreground mb-3">
+              <div className="text-xs text-muted-foreground mb-4">
                 <div>Renditions: {audio.renditions.length}</div>
                 <div>Created: {new Date(audio.created_at).toLocaleDateString()}</div>
               </div>

@@ -48,10 +48,24 @@ export function TripPolls({ tripId }: Props) {
     const validOptions = options.filter((o) => o.trim());
     if (!question.trim() || validOptions.length < 2) return;
     createPoll.mutate(
-      { question: question.trim(), options: validOptions, isMultipleChoice: isMultiple, deadline: deadline || undefined },
       {
-        onSuccess: () => { toast({ title: t('trips.polls.createdToast', 'Poll created') }); setCreateOpen(false); resetForm(); },
-        onError: (err) => toast({ title: t('trips.polls.createFailedToast', 'Failed to create poll'), description: String(err), variant: 'destructive' }),
+        question: question.trim(),
+        options: validOptions,
+        isMultipleChoice: isMultiple,
+        deadline: deadline || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast({ title: t('trips.polls.createdToast', 'Poll created') });
+          setCreateOpen(false);
+          resetForm();
+        },
+        onError: (err) =>
+          toast({
+            title: t('trips.polls.createFailedToast', 'Failed to create poll'),
+            description: String(err),
+            variant: 'destructive',
+          }),
       },
     );
   };
@@ -60,7 +74,12 @@ export function TripPolls({ tripId }: Props) {
     vote.mutate(
       { pollId, optionId },
       {
-        onError: (err) => toast({ title: t('trips.polls.voteFailedToast', 'Failed to vote'), description: String(err), variant: 'destructive' }),
+        onError: (err) =>
+          toast({
+            title: t('trips.polls.voteFailedToast', 'Failed to vote'),
+            description: String(err),
+            variant: 'destructive',
+          }),
       },
     );
   };
@@ -81,9 +100,12 @@ export function TripPolls({ tripId }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <p className="text-sm font-medium text-muted-foreground">
-          {polls?.length || 0} {(polls?.length || 0) === 1 ? t('trips.polls.poll', 'poll') : t('trips.polls.polls', 'polls')}
+          {polls?.length || 0}{' '}
+          {(polls?.length || 0) === 1
+            ? t('trips.polls.poll', 'poll')
+            : t('trips.polls.polls', 'polls')}
         </p>
         <Button size="sm" onClick={() => setCreateOpen(true)}>
           <Plus size={14} />
@@ -105,7 +127,7 @@ export function TripPolls({ tripId }: Props) {
         </ScrollReveal>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {polls?.map((poll) => {
           const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes?.length || 0), 0);
           const isExpired = poll.deadline ? isPast(new Date(poll.deadline)) : false;
@@ -118,8 +140,15 @@ export function TripPolls({ tripId }: Props) {
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <p className="text-sm font-semibold">{poll.question}</p>
                   <div className="flex items-center gap-1 shrink-0">
-                    {isClosed && <Badge variant="outline"><Lock size={10} style={{ marginRight: 4 }} />{t('trips.polls.closed', 'Closed')}</Badge>}
-                    {poll.is_multiple_choice && <Badge variant="outline">{t('trips.polls.multiple', 'Multiple')}</Badge>}
+                    {isClosed && (
+                      <Badge variant="outline">
+                        <Lock size={10} className="mr-1" />
+                        {t('trips.polls.closed', 'Closed')}
+                      </Badge>
+                    )}
+                    {poll.is_multiple_choice && (
+                      <Badge variant="outline">{t('trips.polls.multiple', 'Multiple')}</Badge>
+                    )}
                   </div>
                 </div>
 
@@ -149,20 +178,28 @@ export function TripPolls({ tripId }: Props) {
                         role={!isClosed && user ? 'button' : undefined}
                         tabIndex={!isClosed && user ? 0 : undefined}
                         aria-pressed={!isClosed && user ? !!hasVoted : undefined}
-                        className={`relative bg-muted rounded-element px-3 h-8 flex items-center overflow-hidden transition-colors ${isClosed ? 'cursor-default' : 'cursor-pointer hover:bg-accent'}`}
-                        style={hasVoted ? { outline: '2px solid hsl(var(--foreground))', outlineOffset: -2 } : undefined}
+                        className={`relative bg-muted rounded-element px-4 h-8 flex items-center overflow-hidden transition-colors ${isClosed ? 'cursor-default' : 'cursor-pointer hover:bg-accent'}`}
+                        style={
+                          hasVoted
+                            ? { outline: '2px solid hsl(var(--foreground))', outlineOffset: -2 }
+                            : undefined
+                        }
                       >
                         <div
                           className="absolute left-0 top-0 bottom-0 transition-all"
                           style={{
                             width: `${pct}%`,
-                            backgroundColor: hasVoted ? 'hsl(var(--foreground))' : 'hsl(var(--accent))',
+                            backgroundColor: hasVoted
+                              ? 'hsl(var(--foreground))'
+                              : 'hsl(var(--accent))',
                             opacity: hasVoted ? 0.2 : 0.5,
                           }}
                         />
                         <div className="relative z-10 flex items-center justify-between w-full">
-                          <span className={`text-[13px] ${hasVoted ? 'font-semibold' : ''}`}>{opt.text}</span>
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className={`text-13 ${hasVoted ? 'font-semibold' : ''}`}>
+                            {opt.text}
+                          </span>
+                          <span className="text-xs2 text-muted-foreground">
                             {voteCount} {totalVotes > 0 && `(${Math.round(pct)}%)`}
                           </span>
                         </div>
@@ -173,13 +210,16 @@ export function TripPolls({ tripId }: Props) {
 
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground">
-                      {totalVotes} {totalVotes === 1 ? t('trips.polls.totalVote', 'total vote') : t('trips.polls.totalVotes', 'total votes')}
+                    <span className="text-2xs text-muted-foreground">
+                      {totalVotes}{' '}
+                      {totalVotes === 1
+                        ? t('trips.polls.totalVote', 'total vote')
+                        : t('trips.polls.totalVotes', 'total votes')}
                     </span>
                     {poll.deadline && !isClosed && (
                       <div className="flex items-center gap-0.5">
                         <Clock size={10} className="text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-2xs text-muted-foreground">
                           {formatDistanceToNow(new Date(poll.deadline), { addSuffix: true })}
                         </span>
                       </div>
@@ -197,13 +237,21 @@ export function TripPolls({ tripId }: Props) {
         })}
       </div>
 
-      <Dialog open={createOpen} onOpenChange={(o) => { if (!o) { setCreateOpen(false); resetForm(); } }}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setCreateOpen(false);
+            resetForm();
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('trips.polls.create', 'Create Poll')}</DialogTitle>
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 mt-2">
+          <div className="flex flex-col gap-4 mt-2">
             <Input
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
@@ -219,25 +267,34 @@ export function TripPolls({ tripId }: Props) {
                   placeholder={t('trips.polls.optionPlaceholder', 'Option {{n}}', { n: idx + 1 })}
                 />
                 {options.length > 2 && (
-                  <Button variant="ghost" size="sm" onClick={() => removeOption(idx)} className="min-w-[44px] min-h-[44px]">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeOption(idx)}
+                    className="min-w-11 min-h-11"
+                  >
                     <X size={14} />
                   </Button>
                 )}
               </div>
             ))}
             {options.length < 6 && (
-              <Button variant="ghost" size="sm" onClick={addOption}>{t('trips.polls.addOption', '+ Add Option')}</Button>
+              <Button variant="ghost" size="sm" onClick={addOption}>
+                {t('trips.polls.addOption', '+ Add Option')}
+              </Button>
             )}
 
             <div className="flex items-center gap-2">
               <Switch id="poll-multi" checked={isMultiple} onCheckedChange={setIsMultiple} />
-              <Label htmlFor="poll-multi" className="text-[13px]">
+              <Label htmlFor="poll-multi" className="text-13">
                 {t('trips.polls.allowMultiple', 'Allow multiple choices')}
               </Label>
             </div>
 
             <div className="flex flex-col gap-2 max-w-[260px]">
-              <Label htmlFor="poll-deadline">{t('trips.polls.deadline', 'Deadline (optional)')}</Label>
+              <Label htmlFor="poll-deadline">
+                {t('trips.polls.deadline', 'Deadline (optional)')}
+              </Label>
               <Input
                 id="poll-deadline"
                 type="datetime-local"
@@ -248,13 +305,24 @@ export function TripPolls({ tripId }: Props) {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => { setCreateOpen(false); resetForm(); }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setCreateOpen(false);
+                resetForm();
+              }}
+            >
               {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               size="sm"
               onClick={handleCreate}
-              disabled={!question.trim() || options.filter((o) => o.trim()).length < 2 || createPoll.isPending}
+              disabled={
+                !question.trim() ||
+                options.filter((o) => o.trim()).length < 2 ||
+                createPoll.isPending
+              }
             >
               {t('common.create', 'Create')}
             </Button>

@@ -18,18 +18,13 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
   const isVisited = !!village.id && visitedLookup.has('village', village.id);
 
   return (
-    <LocalizedLink to={`/villages/${village.slug}`} style={{ textDecoration: 'none' }}>
+    <LocalizedLink to={`/villages/${village.slug}`} className="no-underline">
       <Card hoverable>
         <CardImage src={imageUrl} alt={village.name} fallbackIcon={Landmark} height={180}>
           {village.featured && (
             <Badge
-              style={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                backgroundColor: 'hsl(var(--primary))',
-                color: 'white',
-              }}
+              style={{ top: 8, right: 8, backgroundColor: 'hsl(var(--primary))', color: 'white' }}
+              className="absolute"
             >
               Featured
             </Badge>
@@ -50,16 +45,17 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
 
           {(cityName || countryName) && (
             <div className="flex items-center gap-1 text-muted-foreground">
-              <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
-              <p className="text-sm truncate">{[cityName, countryName].filter(Boolean).join(', ')}</p>
+              <MapPin size={14} className="shrink-0" />
+              <p className="text-sm truncate">
+                {[cityName, countryName].filter(Boolean).join(', ')}
+              </p>
             </div>
           )}
 
           {village.description && (
             <p
-              className="text-sm text-muted-foreground mt-1"
+              className="text-sm text-muted-foreground mt-1 overflow-hidden"
               style={{
-                overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,

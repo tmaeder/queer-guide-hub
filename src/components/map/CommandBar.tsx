@@ -230,7 +230,7 @@ export const CommandBar = ({
               }}
               onFocus={() => setPopoverOpen(true)}
               onKeyDown={handleEnter}
-              className="pl-7 pr-7 h-7 text-sm border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="pl-8 pr-8 h-7 text-sm border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
             />
             {loading && (
               <Loader2

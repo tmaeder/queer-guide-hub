@@ -278,15 +278,15 @@ export default function AdminVenues() {
       toolbarActions: (
         <div className="flex gap-1 flex-wrap">
           {(['foursquare', 'tripadvisor', 'tomtom', 'google-places'] as const).map((provider) => (
-            <Button key={provider} variant="secondary" size="sm" disabled={!!isImporting[provider]} style={{ fontSize: '0.75rem' }} onClick={() => setImportDialog({ open: true, provider })}>
-              <Search style={{ height: 12, width: 12, marginRight: 4 }} />
+            <Button key={provider} variant="secondary" size="sm" disabled={!!isImporting[provider]} className="text-xs" onClick={() => setImportDialog({ open: true, provider })}>
+              <Search size={12} className="mr-1" />
               {isImporting[provider] ? 'Importing...' : provider.charAt(0).toUpperCase() + provider.slice(1).replace('-', ' ')}
             </Button>
           ))}
           <VenuesCsvImport onImportComplete={refetch} />
           <ExportExcelButton onExport={handleExportExcel} />
           <Button size="sm" onClick={() => { resetForm(); setIsCreateDialogOpen(true); }}>
-            <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Plus size={14} className="mr-1" />
             Add Venue
           </Button>
         </div>

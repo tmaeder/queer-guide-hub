@@ -9,11 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Search,
   Filter,
@@ -83,15 +79,8 @@ export function ResourcesFilterBar({
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <div className="relative flex-1">
           <Search
-            style={{
-              position: 'absolute',
-              left: 16,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 20,
-              height: 20,
-              color: 'hsl(var(--muted-foreground))',
-            }}
+            style={{ left: 16, top: '50%', transform: 'translateY(-50%)', width: 20, height: 20 }}
+            className="absolute text-muted-foreground"
           />
           <Input
             placeholder={t('resources.filter.searchPlaceholder')}
@@ -104,14 +93,19 @@ export function ResourcesFilterBar({
         <div className="flex gap-1">
           {[
             { mode: 'chips' as DisplayMode, icon: Tag, label: t('resources.filter.view.chips') },
-            { mode: 'grid' as DisplayMode, icon: LayoutGrid, label: t('resources.filter.view.grid') },
+            {
+              mode: 'grid' as DisplayMode,
+              icon: LayoutGrid,
+              label: t('resources.filter.view.grid'),
+            },
             { mode: 'list' as DisplayMode, icon: List, label: t('resources.filter.view.list') },
           ].map(({ mode, icon: Icon, label }) => (
             <Button
               key={mode}
               variant={displayMode === mode ? 'default' : 'secondary'}
               size="lg"
-              style={{ height: 44, width: 44, padding: 0 }}
+              style={{ height: 44, width: 44 }}
+              className="p-0"
               onClick={() => onDisplayModeChange(mode)}
               title={`${label}${t('resources.filter.view.ariaSuffix')}`}
               aria-label={`${label}${t('resources.filter.view.ariaSuffix')}`}
@@ -124,21 +118,25 @@ export function ResourcesFilterBar({
           <Button
             variant={viewMode === 'graph' ? 'default' : 'secondary'}
             size="lg"
-            style={{ height: 44, width: 44, padding: 0 }}
+            style={{ height: 44, width: 44 }}
+            className="p-0"
             onClick={onToggleGraph}
             title={t('resources.filter.graph')}
             aria-label={t('resources.filter.graph')}
             aria-pressed={viewMode === 'graph'}
           >
-            <Network style={{ width: 18, height: 18 }} />
+            <Network size={18} />
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-wrap gap-4 items-center">
         <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
-          <SelectTrigger style={{ width: 220, height: 40 }} aria-label={t('resources.filter.filterAria')}>
-            <Filter style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+          <SelectTrigger
+            style={{ width: 220, height: 40 }}
+            aria-label={t('resources.filter.filterAria')}
+          >
+            <Filter size={16} className="mr-2 shrink-0" />
             <SelectValue placeholder={t('resources.filter.categoryPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
@@ -151,7 +149,7 @@ export function ResourcesFilterBar({
                   <SelectItem value={cat.name}>{getCategoryShortName(cat.name)}</SelectItem>
                   {cat.children.map((child) => (
                     <SelectItem key={child.id} value={child.name}>
-                      <span style={{ paddingLeft: 16, fontSize: '0.85em', opacity: 0.85 }}>
+                      <span style={{ fontSize: '0.85em', opacity: 0.85 }} className="pl-4">
                         {getCategoryShortName(child.name)}
                       </span>
                     </SelectItem>
@@ -165,8 +163,11 @@ export function ResourcesFilterBar({
           value={sortBy}
           onValueChange={(value: string) => onSortByChange(value as SortOption)}
         >
-          <SelectTrigger style={{ width: 150, height: 40 }} aria-label={t('resources.filter.sortAria')}>
-            <TrendingUp style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+          <SelectTrigger
+            style={{ width: 150, height: 40 }}
+            aria-label={t('resources.filter.sortAria')}
+          >
+            <TrendingUp size={16} className="mr-2 shrink-0" />
             <SelectValue placeholder={t('resources.filter.sortPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
@@ -184,23 +185,25 @@ export function ResourcesFilterBar({
               style={{ height: 40 }}
               aria-expanded={advancedOpen}
             >
-              <Sliders style={{ width: 14, height: 14, marginRight: 6 }} />
+              <Sliders size={14} className="mr-1.5" />
               {t('resources.filter.advanced')}
               <ChevronDown
+                size={14}
                 style={{
-                  width: 14,
-                  height: 14,
-                  marginLeft: 6,
                   transition: 'transform 150ms',
                   transform: advancedOpen ? 'rotate(180deg)' : 'rotate(0)',
                 }}
+                className="ml-1.5"
               />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="w-full mt-3 flex flex-wrap gap-3 items-center">
+          <CollapsibleContent className="w-full mt-4 flex flex-wrap gap-4 items-center">
             <Select value={usageFilter} onValueChange={onUsageFilterChange}>
-              <SelectTrigger style={{ width: 140, height: 40 }} aria-label={t('resources.filter.usageAria')}>
-                <BarChart3 style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+              <SelectTrigger
+                style={{ width: 140, height: 40 }}
+                aria-label={t('resources.filter.usageAria')}
+              >
+                <BarChart3 size={16} className="mr-2 shrink-0" />
                 <SelectValue placeholder={t('resources.filter.usagePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -219,24 +222,29 @@ export function ResourcesFilterBar({
               aria-label={t('resources.filter.hasImageTitle')}
               aria-pressed={hasImageFilter}
             >
-              <Image style={{ width: 16, height: 16, marginRight: 6 }} />
+              <Image size={16} className="mr-1.5" />
               {t('resources.filter.hasImage')}
             </Button>
 
             <Button
               variant="secondary"
               size="sm"
-              style={{ height: 40, width: 40, padding: 0 }}
+              style={{ height: 40, width: 40 }}
+              className="p-0"
               onClick={onSortDirectionToggle}
-              title={sortDirection === 'asc' ? t('resources.filter.sortDirAsc') : t('resources.filter.sortDirDesc')}
-              aria-label={sortDirection === 'asc' ? t('resources.filter.sortDirAsc') : t('resources.filter.sortDirDesc')}
+              title={
+                sortDirection === 'asc'
+                  ? t('resources.filter.sortDirAsc')
+                  : t('resources.filter.sortDirDesc')
+              }
+              aria-label={
+                sortDirection === 'asc'
+                  ? t('resources.filter.sortDirAsc')
+                  : t('resources.filter.sortDirDesc')
+              }
               aria-pressed={sortDirection === 'desc'}
             >
-              {sortDirection === 'asc' ? (
-                <SortAsc style={{ width: 16, height: 16 }} />
-              ) : (
-                <SortDesc style={{ width: 16, height: 16 }} />
-              )}
+              {sortDirection === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
             </Button>
           </CollapsibleContent>
         </Collapsible>
@@ -260,7 +268,10 @@ export function ResourcesFilterBar({
               onClick={() => onUsageFilterChange('all')}
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-badge cursor-pointer bg-secondary text-xs hover:opacity-80"
             >
-              {usageFilter === 'used' ? t('resources.filter.usageUsed') : t('resources.filter.usageUnused')} ✕
+              {usageFilter === 'used'
+                ? t('resources.filter.usageUsed')
+                : t('resources.filter.usageUnused')}{' '}
+              ✕
             </button>
           )}
           {hasImageFilter && (

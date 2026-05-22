@@ -54,7 +54,7 @@ export function TagCategorizer() {
     <Card>
       <CardHeader>
         <CardTitle>
-          <Tag style={{ width: 20, height: 20 }} />
+          <Tag size={20} />
           Tag Categorization
         </CardTitle>
         <CardDescription>
@@ -70,7 +70,7 @@ export function TagCategorizer() {
             </div>
             <Progress value={(progress.categorized / progress.total) * 100} />
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500" />
+              <CheckCircle className="w-4 h-4 text-foreground" />
               <p className="text-sm text-muted-foreground">{progress.message}</p>
             </div>
           </div>

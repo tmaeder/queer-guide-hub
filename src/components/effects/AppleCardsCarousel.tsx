@@ -57,7 +57,7 @@ export function AppleCardsCarousel({ items, className }: AppleCardsCarouselProps
           <a
             key={i}
             href={card.href ?? '#'}
-            className="snap-start shrink-0 w-64 h-80 md:w-80 md:h-96 relative rounded-container overflow-hidden group ring-1 ring-border/60 shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)] transition-shadow"
+            className="snap-start shrink-0 w-64 h-80 md:w-80 md:h-96 relative rounded-container overflow-hidden group ring-1 ring-border/60"
           >
             <motion.img
               src={card.src}
@@ -65,7 +65,7 @@ export function AppleCardsCarousel({ items, className }: AppleCardsCarouselProps
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end p-5 text-background">
+            <div className="absolute inset-0 flex flex-col justify-end p-6 text-background">
               {card.category && (
                 <p className="text-xs font-medium uppercase tracking-wider opacity-85">{card.category}</p>
               )}
@@ -80,7 +80,7 @@ export function AppleCardsCarousel({ items, className }: AppleCardsCarouselProps
           aria-label="Scroll left"
           onClick={() => scrollBy(-320)}
           disabled={!canL}
-          className="pointer-events-auto h-10 w-10 rounded-full bg-background/80 backdrop-blur border border-border/60 shadow-[var(--shadow-aceternity-sm)] flex items-center justify-center disabled:opacity-30 transition-opacity hover:bg-background"
+          className="pointer-events-auto h-10 w-10 rounded-full bg-background/80border border-border/60 flex items-center justify-center disabled:opacity-30 transition-opacity hover:bg-background"
         >
           <ChevronLeft size={18} />
         </button>
@@ -89,7 +89,7 @@ export function AppleCardsCarousel({ items, className }: AppleCardsCarouselProps
           aria-label="Scroll right"
           onClick={() => scrollBy(320)}
           disabled={!canR}
-          className="pointer-events-auto h-10 w-10 rounded-full bg-background/80 backdrop-blur border border-border/60 shadow-[var(--shadow-aceternity-sm)] flex items-center justify-center disabled:opacity-30 transition-opacity hover:bg-background"
+          className="pointer-events-auto h-10 w-10 rounded-full bg-background/80border border-border/60 flex items-center justify-center disabled:opacity-30 transition-opacity hover:bg-background"
         >
           <ChevronRight size={18} />
         </button>

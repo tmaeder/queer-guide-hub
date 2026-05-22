@@ -90,19 +90,19 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 	return (
 		<ScrollReveal direction="up">
 		<section className={className} aria-label={title}>
-			<h2 className="text-lg font-semibold mb-3">{title}</h2>
+			<h2 className="text-lg font-semibold mb-4">{title}</h2>
 			<ScrollArea className="w-full whitespace-nowrap">
 				<SkeletonCrossfade
 					loading={!items}
 					skeleton={
-						<div className="flex gap-3 pb-3">
+						<div className="flex gap-4 pb-4">
 							{Array.from({ length: limit }).map((_, i) => (
 								<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-element" />
 							))}
 						</div>
 					}
 				>
-				<div className="flex gap-3 pb-3">
+				<div className="flex gap-4 pb-4">
 					{items?.map((it) => {
 									const slug = it.metadata?.slug || it.content_id;
 									const to = hitPath(it.content_type, slug);

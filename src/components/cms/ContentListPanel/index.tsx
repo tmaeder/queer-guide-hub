@@ -43,7 +43,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {Icon && (
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
@@ -93,7 +93,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
             placeholder={c.config ? `Search ${c.config.label.plural.toLowerCase()}...` : 'Search all content...'}
             value={c.search}
             onChange={(e) => c.setSearch(e.target.value)}
-            className="pl-7 pr-7 h-9"
+            className="pl-8 pr-8 h-9"
           />
           {c.search && (
             <Button

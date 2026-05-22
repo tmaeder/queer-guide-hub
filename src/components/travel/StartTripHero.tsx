@@ -65,17 +65,17 @@ export function StartTripHero() {
 
   return (
     <section className="border border-border bg-background p-6 sm:p-8 mb-8 rounded">
-      <h2 className="text-3xl font-extrabold tracking-tight mb-2">
+      <h2 className="text-3xl font-bold tracking-tight mb-2">
         {t('pages.travel.hero.title', 'Plan a trip')}
       </h2>
-      <p className="text-muted-foreground mb-5 max-w-prose">
+      <p className="text-muted-foreground mb-6 max-w-prose">
         {t(
           'pages.travel.hero.subtitle',
           'Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.',
         )}
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_160px_160px_auto] gap-3 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_160px_160px_auto] gap-4 items-end">
         <CityCountryAutocomplete
           id="travel-hero-city"
           label={t('pages.travel.hero.cityLabel', 'Where to?')}
@@ -84,9 +84,7 @@ export function StartTripHero() {
           required
         />
         <div className="flex flex-col gap-1">
-          <Label htmlFor="travel-hero-start">
-            {t('pages.travel.hero.start', 'Start')}
-          </Label>
+          <Label htmlFor="travel-hero-start">{t('pages.travel.hero.start', 'Start')}</Label>
           <Input
             id="travel-hero-start"
             type="date"
@@ -96,9 +94,7 @@ export function StartTripHero() {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor="travel-hero-end">
-            {t('pages.travel.hero.end', 'End')}
-          </Label>
+          <Label htmlFor="travel-hero-end">{t('pages.travel.hero.end', 'End')}</Label>
           <Input
             id="travel-hero-end"
             type="date"
@@ -107,19 +103,13 @@ export function StartTripHero() {
             min={startDate || today}
           />
         </div>
-        <Button
-          onClick={handlePlan}
-          disabled={createTrip.isPending}
-          data-testid="travel-plan-trip"
-        >
-          {createTrip.isPending && (
-            <Loader2 size={16} className="animate-spin" style={{ marginRight: 6 }} />
-          )}
+        <Button onClick={handlePlan} disabled={createTrip.isPending} data-testid="travel-plan-trip">
+          {createTrip.isPending && <Loader2 size={16} className="animate-spin mr-1.5" />}
           {t('pages.travel.hero.cta', 'Plan this trip')}
         </Button>
       </div>
 
-      {error && <p className="text-sm text-destructive mt-3">{error}</p>}
+      {error && <p className="text-sm text-destructive mt-4">{error}</p>}
 
       <p className="text-sm text-muted-foreground mt-4">
         {t('pages.travel.hero.discover', 'Or')}{' '}
