@@ -47,8 +47,8 @@
 
     <!-- GetYourGuide widget script is loaded on-demand by ActivitiesWidget component -->
 
-    <!-- Umami Analytics - Self-hosted -->
-    <script defer src="/umami.js" data-website-id="queer-guide"></script>
+    <!-- Umami Analytics is loaded only after the user grants analytics
+         consent. See src/utils/analyticsLoader.ts (finding F5). -->
 
     <!-- Default OG/Twitter tags. The Pages middleware (functions/_middleware.ts)
          appends per-route og:url, og:title, og:description, twitter:title and
