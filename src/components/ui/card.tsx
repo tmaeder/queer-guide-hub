@@ -76,6 +76,22 @@ const CardImage = ({
   const [loaded, setLoaded] = React.useState(false);
   const fallbackSrc = React.useMemo(() => getRandomFallbackImage(), []);
 
+  // Reset state when src changes — without this, an earlier error on one
+  // src would permanently route a new src to the fallback. Also schedules
+  // a timeout: some Pexels URLs return 200 OK and then stall mid-stream;
+  // the browser never fires onLoad or onError, so the card sits empty.
+  // After 8 s without a settled load, treat it as failed and fall back.
+  React.useEffect(() => {
+    setError(false);
+    setLoaded(false);
+    if (!src) return;
+    const timer = setTimeout(() => {
+      setError((prev) => prev || !loaded);
+    }, 8000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src]);
+
   const effectiveSrc = (!src || error) ? fallbackSrc : src;
   const referrerPolicy = isTrustedSrc(effectiveSrc) ? undefined : 'no-referrer';
 
