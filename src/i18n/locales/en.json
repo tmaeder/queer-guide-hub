@@ -1861,6 +1861,12 @@
       "linkCopied": "Link copied",
       "linkCopiedDescription": "You can paste it now",
       "shareFailed": "Share failed"
+    },
+    "geolocate": {
+      "unsupported": "Geolocation unavailable",
+      "denied": "Location access is off — showing the default area",
+      "unavailable": "Couldn't get your location — showing the default area",
+      "timeout": "Location lookup timed out — showing the default area"
     }
   },
   "resources": {
