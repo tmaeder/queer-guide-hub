@@ -72,6 +72,32 @@ export function getPriceRange(range: number | null) {
   return '$'.repeat(range);
 }
 
+/**
+ * Build the breadcrumb trail for a venue detail page.
+ *
+ * Only the joined `venue.cities.name` / `venue.countries.name` are used
+ * for labels. The raw `venue.city` / `venue.country` text columns
+ * contain a mix of full names and ISO codes (defect D5) — omit the
+ * segment when the FK record is absent rather than render "CH".
+ */
+export function buildVenueBreadcrumbs(
+  venue: VenueWithRelations | null,
+): Array<{ label: string; href?: string }> | undefined {
+  if (!venue) return undefined;
+  const cityName = venue.cities?.name ?? null;
+  const countryName = venue.countries?.name ?? null;
+  const cityLink = venue.cities?.id ? `/city/${venue.cities.slug || venue.cities.id}` : undefined;
+  const countryLink = venue.countries?.id
+    ? `/country/${venue.countries.slug || venue.countries.id}`
+    : undefined;
+  return [
+    { label: 'Venues', href: '/venues' },
+    ...(countryName ? [{ label: countryName, href: countryLink }] : []),
+    ...(cityName ? [{ label: cityName, href: cityLink }] : []),
+    { label: venue.name },
+  ];
+}
+
 const HOURS_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const HOURS_DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 

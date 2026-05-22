@@ -29,6 +29,7 @@ import {
   VenuePhotos,
   VenueEventsTab,
   VenueReviewsTab,
+  buildVenueBreadcrumbs,
 } from './VenueDetail.parts';
 
 export default function VenueDetail() {
@@ -188,14 +189,7 @@ export default function VenueDetail() {
   const remainingImages =
     venue?.images && venue.images.length > 1 ? venue.images.slice(1) : venue?.images || [];
 
-  const breadcrumbs = venue
-    ? [
-        { label: 'Venues', href: '/venues' },
-        ...(countryName ? [{ label: countryName, href: countryLink ?? undefined }] : []),
-        ...(cityName ? [{ label: cityName, href: cityLink ?? undefined }] : []),
-        { label: venue.name },
-      ]
-    : undefined;
+  const breadcrumbs = buildVenueBreadcrumbs(venue);
 
   const tabs: EntityDetailTab[] = venue
     ? [

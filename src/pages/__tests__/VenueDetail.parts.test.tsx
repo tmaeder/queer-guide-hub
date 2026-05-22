@@ -5,7 +5,13 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ReactElement } from 'react';
 
-import { getPriceRange, formatHours, hasUsableHours } from '../VenueDetail.parts';
+import {
+  getPriceRange,
+  formatHours,
+  hasUsableHours,
+  buildVenueBreadcrumbs,
+} from '../VenueDetail.parts';
+import type { VenueWithRelations } from '../VenueDetail.parts';
 
 const render = (node: unknown) => renderToStaticMarkup(node as ReactElement);
 
@@ -34,6 +40,55 @@ describe('VenueDetail.parts', () => {
     });
     it('returns true when at least one day has open + close', () => {
       expect(hasUsableHours({ tuesday: { open: '0900', close: '1700' } })).toBe(true);
+    });
+  });
+
+  describe('buildVenueBreadcrumbs (D5)', () => {
+    const baseVenue = { id: 'v1', name: 'Test Venue' } as VenueWithRelations;
+
+    it('returns undefined for null venue', () => {
+      expect(buildVenueBreadcrumbs(null)).toBeUndefined();
+    });
+    it('omits country segment when countries FK is null', () => {
+      const trail = buildVenueBreadcrumbs({
+        ...baseVenue,
+        countries: null,
+        country: 'CH',
+        cities: null,
+        city: 'Zürich',
+      } as VenueWithRelations);
+      expect(trail).toEqual([
+        { label: 'Venues', href: '/venues' },
+        { label: 'Test Venue' },
+      ]);
+      // The ISO code from the raw text column must NOT leak through.
+      expect(JSON.stringify(trail)).not.toContain('"CH"');
+      expect(JSON.stringify(trail)).not.toContain('Zürich');
+    });
+    it('renders joined country + city when FKs are present', () => {
+      const trail = buildVenueBreadcrumbs({
+        ...baseVenue,
+        countries: { id: 'c1', slug: 'switzerland', name: 'Switzerland' },
+        cities: { id: 'ci1', slug: 'zurich', name: 'Zürich' },
+      } as VenueWithRelations);
+      expect(trail).toEqual([
+        { label: 'Venues', href: '/venues' },
+        { label: 'Switzerland', href: '/country/switzerland' },
+        { label: 'Zürich', href: '/city/zurich' },
+        { label: 'Test Venue' },
+      ]);
+    });
+    it('renders country only when city FK is null', () => {
+      const trail = buildVenueBreadcrumbs({
+        ...baseVenue,
+        countries: { id: 'c1', slug: 'germany', name: 'Germany' },
+        cities: null,
+      } as VenueWithRelations);
+      expect(trail).toEqual([
+        { label: 'Venues', href: '/venues' },
+        { label: 'Germany', href: '/country/germany' },
+        { label: 'Test Venue' },
+      ]);
     });
   });
 
