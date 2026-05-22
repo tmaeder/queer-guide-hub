@@ -240,7 +240,7 @@ function MarketplaceCardImpl({
                 <p className="text-xs text-muted-foreground mt-0.5">{price.secondary}</p>
               )}
               {viewsCount > 50 && (
-                <p className="text-xs2 text-muted-foreground/80 mt-0.5">{viewsCount.toLocaleString()} views</p>
+                <p className="text-xs2 text-muted-foreground mt-0.5">{viewsCount.toLocaleString()} views</p>
               )}
               <div className="flex items-center gap-1.5 mt-1.5">
                 {listing.shipping_available && <Badge variant="outline">Ships</Badge>}
