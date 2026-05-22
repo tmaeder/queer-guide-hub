@@ -185,11 +185,18 @@ const Events = () => {
       append: false,
     });
   };
+  // D6 follow-up: handlePresetSelect both calls fetchEvents() and mutates
+  // filter state that the `otherFiltersMounted` useEffect listens to. Without
+  // this skip flag we'd fire two fetches per preset toggle. The flag is set
+  // before the state batch and the useEffect drops one tick when it sees it.
+  const suppressFilterRefetch = useRef(false);
+
   const handlePresetSelect = async (preset: EventPresetId | null) => {
     // D6: toggling a preset OFF must fully reverse every state it set.
     // Previously eventType='pride' leaked after un-toggling Pride, and
     // isFree/featuredOnly were always cleared on every press (even when
     // activating a different preset that shouldn't touch them).
+    suppressFilterRefetch.current = true;
     const isToggleOff = preset === null || preset === activePreset;
     if (isToggleOff) {
       const wasActive = activePreset;
@@ -435,10 +442,16 @@ const Events = () => {
   // D6: re-fetch when any of the remaining filter dimensions change.
   // Pill `×` handlers call setX() but did not trigger a refetch on their
   // own; this guard mirrors the existing cityMounted / sortMounted pattern.
+  // suppressFilterRefetch is set by handlePresetSelect to avoid double
+  // fetches when the preset handler already issued one.
   const otherFiltersMounted = useRef(false);
   useEffect(() => {
     if (!otherFiltersMounted.current) {
       otherFiltersMounted.current = true;
+      return;
+    }
+    if (suppressFilterRefetch.current) {
+      suppressFilterRefetch.current = false;
       return;
     }
     handleFiltersChange();

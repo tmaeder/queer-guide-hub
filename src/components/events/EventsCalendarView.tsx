@@ -284,8 +284,21 @@ export const EventsCalendarView = ({
                           <div className="flex flex-col gap-2 mb-4">
                             <div className="flex items-center gap-2 text-muted-foreground">
                               <Clock className="h-3 w-3 flex-shrink-0" />
-                              <span className="text-xs">
-                                {formatEventTime(event.start_date, event.end_date)}
+                              <span
+                                className="text-xs"
+                                title={
+                                  (event as { timezone?: string | null }).timezone
+                                    ? `Times shown in ${(event as { timezone?: string | null }).timezone}`
+                                    : 'Times shown in your local timezone'
+                                }
+                              >
+                                {/* D11: pass event.timezone so calendar-day
+                                    times stay event-local. */}
+                                {formatEventTime(
+                                  event.start_date,
+                                  event.end_date,
+                                  (event as { timezone?: string | null }).timezone,
+                                )}
                               </span>
                             </div>
 

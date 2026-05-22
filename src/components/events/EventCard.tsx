@@ -334,8 +334,25 @@ export const EventCard = memo(function EventCard({
                   </div>
                   <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {formatEventTime(event.start_date, event.end_date)}
+                    <span
+                      className="text-sm"
+                      title={
+                        (event as { timezone?: string | null }).timezone
+                          ? `Times shown in ${(event as { timezone?: string | null }).timezone}`
+                          : 'Times shown in your local timezone'
+                      }
+                    >
+                      {/* D11: pass event.timezone so the card shows times in
+                          the event-local zone (e.g. a Berlin party at 22:00
+                          local stays 22:00 instead of rendering as the
+                          visitor's wall-clock time, which produced the
+                          "4:30 AM doors" QA repro). Falls back to browser
+                          local when timezone is null. */}
+                      {formatEventTime(
+                        event.start_date,
+                        event.end_date,
+                        (event as { timezone?: string | null }).timezone,
+                      )}
                     </span>
                   </div>
                 </div>

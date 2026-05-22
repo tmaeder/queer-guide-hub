@@ -77,8 +77,11 @@ const Index = React.memo(() => {
     [realStats, t],
   );
 
+  // D12: keep the high bar for the strip itself (hide entirely if we can't
+  // show at least one real number) but drop the per-stat 100-floor below
+  // so legitimately small numbers don't render as "—".
   const showStatsStrip =
-    loading || (!statsError && stats.some((s) => typeof s.value === 'number' && s.value >= 100));
+    loading || (!statsError && stats.some((s) => typeof s.value === 'number' && s.value > 0));
 
   return (
     <div className="min-h-screen">
@@ -158,8 +161,15 @@ const Index = React.memo(() => {
                   >
                     {loading ? (
                       <Skeleton className="mx-auto h-[1em] w-24" />
-                    ) : typeof stat.value === 'number' && stat.value >= 100 ? (
-                      <AnimatedCounter value={stat.value} suffix="+" />
+                    ) : typeof stat.value === 'number' && stat.value > 0 ? (
+                      // D12: drop "+" suffix for small numbers (under 100)
+                      // so e.g. "6 MEMBERS" reads truthfully rather than
+                      // "6+ MEMBERS"; keep "+" on the big numbers where
+                      // it signals "thousands and growing".
+                      <AnimatedCounter
+                        value={stat.value}
+                        suffix={stat.value >= 100 ? '+' : ''}
+                      />
                     ) : (
                       '—'
                     )}
