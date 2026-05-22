@@ -90,6 +90,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
   // Guard defensively.
   let queryClient: ReturnType<typeof useQueryClient> | null = null;
   try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- intentional defensive call; see comment above
     queryClient = useQueryClient();
   } catch {
     queryClient = null;
