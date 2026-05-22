@@ -67,11 +67,25 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 		const types = contentTypesKey ? contentTypesKey.split(",") : undefined;
 		// Over-fetch when restricting types so we still have `limit` rows after
 		// the (defensive) client-side filter trims any off-type leakage.
-		fetchSimilar(entity, types ? Math.min(50, limit * 3) : limit, types)
+		// Over-fetch (3×) so we still have `limit` rows after filtering the
+		// source entity and any duplicate hits the ANN returned.
+		fetchSimilar(entity, Math.min(50, limit * 3), types)
 			.then((res) => {
 				if (cancelled) return;
 				let next = res as unknown as SimItem[];
 				if (types) next = next.filter((r) => types.includes(r.content_type));
+				// D2: never include the current entity in "More like this".
+				next = next.filter(
+					(r) => !(r.content_type === entity.type && r.content_id === entity.id),
+				);
+				// Drop duplicate (content_type, content_id) hits.
+				const seen = new Set<string>();
+				next = next.filter((r) => {
+					const k = `${r.content_type}:${r.content_id}`;
+					if (seen.has(k)) return false;
+					seen.add(k);
+					return true;
+				});
 				setItems(next.slice(0, limit));
 			})
 			.catch(() => {
