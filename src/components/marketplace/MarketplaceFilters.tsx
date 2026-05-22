@@ -68,6 +68,13 @@ export function MarketplaceFilters({
   onFiltersChange,
 }: MarketplaceFiltersProps) {
   const [search, setSearch] = useState(initialSearch);
+  // Re-sync the input when the URL `?q=` changes externally (back/forward
+  // nav, saved-search restore). Without this, the typed and URL search
+  // paths can drift apart — the same query string yielded different
+  // result counts depending on which surface set it.
+  useEffect(() => {
+    setSearch(initialSearch);
+  }, [initialSearch]);
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
   const [location, setLocation] = useState('');
