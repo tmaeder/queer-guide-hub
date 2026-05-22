@@ -11,6 +11,7 @@
 import { fetchRows, type Env } from './sitemap';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
 import { safeOgImage } from './safeOgImage';
+import { categoryLabel, categoryLabelTitle } from './categoryLabels';
 
 export type DetailResult = {
   meta: RouteMeta;
@@ -106,17 +107,32 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   const address = stringField(row, 'address');
   const city = stringField(row, 'city');
   const country = stringField(row, 'country');
-  const subtype = stringField(row, 'venue_subtype') ?? stringField(row, 'category') ?? 'Venue';
+  const rawSubtype = stringField(row, 'venue_subtype');
+  const rawCategory = stringField(row, 'category');
+  // P2.1 — derive a human label that never says "other"; defaults to "space".
+  const label = categoryLabel(rawSubtype, rawCategory);
+  const labelTitle = categoryLabelTitle(rawSubtype, rawCategory);
+  const subtype = rawSubtype ?? rawCategory ?? 'Venue';
 
+  // P2.1+P2.2 — venue title and description templates. Title puts the
+  // venue name + city so the click signal stays clear; description leads
+  // with a typed clause ("Gay bar in Berlin · …") to lift CTR for
+  // category-intent queries. When the row has its own description we use
+  // that and only fall back to the template.
+  const titledClause = `${labelTitle} in ${city ?? country ?? 'the LGBTQ+ community'}`;
   const meta: RouteMeta = {
     title: truncate(`${name}${city ? ` — ${city}` : ''}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(
-      description ||
-        `${name}${city ? ` in ${city}` : ''} — LGBTQ+ ${subtype.toLowerCase()} on Queer Guide.`,
+      description
+        ? description
+        : `${titledClause} · ${name} on Queer Guide${
+            country && country !== city ? `, ${country}` : ''
+          }. Hours, location, photos, and recent reviews.`,
       MAX_DESC,
     ),
     ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
+  void label;
 
   const body = `<main data-prerendered="bot-ua">
     <article>
