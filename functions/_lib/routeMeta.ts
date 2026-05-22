@@ -104,6 +104,14 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Free, confidential hotlines and crisis lines for LGBTQ+ people around the world. You are not alone.',
   },
+  // P4.3 — /help is the live canonical for the crisis hub (HelpHotlines
+  // renders both /help and /help/:country). /help-hotlines is the legacy
+  // URL; keep it indexable for now since it still has inbound links.
+  '/help': {
+    title: 'LGBTQ+ help hotlines, crisis lines, and country resources | Queer Guide',
+    description:
+      'Free, confidential LGBTQ+ help hotlines and crisis lines worldwide, organized by country. Verified, queer-affirming, ad-free.',
+  },
   '/about-hub': {
     title: 'About Hub | Queer Guide',
     description: 'Learn about Queer Guide — our mission, values, vision, press, and the team behind it.',
