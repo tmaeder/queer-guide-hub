@@ -66,6 +66,9 @@ describe('useMarketplace search routing', () => {
     expect(path).toBe('/');
     expect((body as { query: string }).query).toBe('M2193 Low Rise Brief');
     expect((body as { filters: { types: string[] } }).filters.types).toEqual(['marketplace']);
+    // search-proxy expects 0-based page indices — passing 1 here would
+    // skip the first page worth of hits and miss narrow queries.
+    expect((body as { page: number }).page).toBe(0);
 
     await waitFor(() => expect(result.current.total).toBe(3));
     expect(result.current.listings.map((l) => l.id)).toEqual(['a', 'b', 'c']);

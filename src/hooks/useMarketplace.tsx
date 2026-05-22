@@ -68,7 +68,12 @@ export function useMarketplace() {
             query: filters.search.trim(),
             filters: { types: ['marketplace'] },
             hitsPerPage: PAGE_SIZE,
-            page: page + 1,
+            // search-proxy expects 0-based page indices (validInt min:0,
+            // default:0) and computes Meili offset = page * limit. Sending
+            // page+1 here skipped the first PAGE_SIZE hits and returned
+            // empty arrays for narrow queries like "M2193" (4 total hits,
+            // none surfaced because offset jumped past them).
+            page,
           });
           const hits = data?.hits ?? [];
           const ids = hits
