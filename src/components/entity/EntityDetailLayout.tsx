@@ -61,6 +61,20 @@ export function EntityDetailLayout({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlTab]);
 
+  // D8: on first render the parent page often passes `tabs=[]` while its
+  // data query is in-flight, so `activeTab` initialises to ''. When `tabs`
+  // later populates, snap activeTab to the first tab (or the URL-requested
+  // tab if it's valid). Without this, the AnimatePresence below filters out
+  // every panel and the Overview content renders blank until the user
+  // manually clicks the tab.
+  useEffect(() => {
+    if (tabs.length === 0) return;
+    if (!tabIds.includes(activeTab)) {
+      setActiveTab(urlTab && tabIds.includes(urlTab) ? urlTab : (tabs[0]?.id ?? ''));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabIds.join('|')]);
+
   const handleTabChange = (next: string) => {
     setActiveTab(next);
     setSearchParams(
