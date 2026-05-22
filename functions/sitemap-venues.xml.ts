@@ -1,7 +1,16 @@
 import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry } from './_lib/sitemap';
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
-  const rows = await fetchRows(env, 'venues', 'slug,updated_at', 'slug=not.is.null', 5000);
+  // P1.1 — only include rows whose seo_indexable flag is true. The DB default
+  // is true, but admin/editorial workflows can flip it to remove placeholder
+  // or low-quality rows from search without deleting them.
+  const rows = await fetchRows(
+    env,
+    'venues',
+    'slug,updated_at',
+    'slug=not.is.null&seo_indexable=eq.true',
+    5000,
+  );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
     .map((r) => ({
