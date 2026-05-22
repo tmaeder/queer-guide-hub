@@ -63,6 +63,23 @@ interface UseViewportPointsOptions {
 const DEBOUNCE_MS = 200;
 const EMPTY_FC: PointCollection = { type: 'FeatureCollection', features: [] };
 
+// Gated debug logger — matches ExploreMap's mapDebug. Opt in via
+// `localStorage.setItem('qg:debug:map', '1')` in prod to inspect the
+// data flow without redeploying.
+const mapDebug = (...args: unknown[]): void => {
+  try {
+    if (
+      import.meta.env.DEV ||
+      (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
+    ) {
+      // eslint-disable-next-line no-console
+      console.debug('[venues-map]', ...args);
+    }
+  } catch {
+    /* localStorage may throw in some sandboxed contexts */
+  }
+};
+
 // ── Cache ─────────────────────────────────────────────────────────────────────
 
 const featureCache = new LRUCache<PointFeature[]>(48);
@@ -298,6 +315,7 @@ export function useViewportPoints({
     const bk = bboxKey(quantized);
     const fh = computeFiltersHash(filtersRef.current ?? {});
 
+    mapDebug('fetch:start', { enabled, gen, bucket, bk });
     setIsFetching(true);
 
     try {
@@ -341,8 +359,12 @@ export function useViewportPoints({
       await Promise.all(promises);
 
       // Discard if a newer fetch has started while we were waiting
-      if (gen !== genRef.current) return;
+      if (gen !== genRef.current) {
+        mapDebug('fetch:stale', { gen, current: genRef.current });
+        return;
+      }
 
+      mapDebug('fetch:resolve', { gen, features: allFeatures.length, counts });
       setGeojson({ type: 'FeatureCollection', features: allFeatures });
       setLayerCounts(counts);
       lastRawBboxRef.current = bbox;
