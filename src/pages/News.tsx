@@ -86,6 +86,8 @@ export default function News() {
     articles,
     sources,
     categories,
+    categoryCounts: categoryCountsFromHook,
+    totalArticles,
     articleTags,
     loading,
     error,
@@ -474,10 +476,11 @@ export default function News() {
     setCurrentPage((p) => p + 1);
   };
 
-  // Count articles per canonical category for the tab badges. Prefer
-  // category_canonical (from migration news_qa_backfill_category_canonical)
-  // and fall back to legacy `category` so unclassified rows still surface.
+  // Per-tab badge counts come from `useNews` (separate count-only queries,
+  // independent of the 200-row page slice). Fall back to a slice-derived count
+  // until the count queries resolve so the tabs aren't empty on first paint.
   const categoryCounts = useMemo(() => {
+    if (Object.keys(categoryCountsFromHook).length > 0) return categoryCountsFromHook;
     const counts: Record<string, number> = {};
     articles.forEach((a: { category?: string; category_canonical?: string | null }) => {
       const slug = a.category_canonical || a.category;
@@ -486,7 +489,7 @@ export default function News() {
       }
     });
     return counts;
-  }, [articles]);
+  }, [categoryCountsFromHook, articles]);
 
   // Show featured section on first page with no active category filter
   const showFeatured =
@@ -878,7 +881,21 @@ export default function News() {
                   >
                     {viewMode === 'stories'
                       ? `${stories.length} story collection${stories.length !== 1 ? 's' : ''}`
-                      : `${sortedArticles.length} article${sortedArticles.length !== 1 ? 's' : ''}${hasMore ? ` · showing ${paginatedArticles.length}` : ''}`}
+                      : (() => {
+                          // Prefer the active-category true total when known, then the
+                          // global total. Fall back to the slice length until counts
+                          // resolve. The slice is capped at 200 in useNews, so when
+                          // we hit that cap we suffix "+" to be honest.
+                          const truth =
+                            (activeCategory && categoryCounts[activeCategory]) ||
+                            (!activeCategory ? totalArticles ?? undefined : undefined);
+                          const sliceLen = sortedArticles.length;
+                          const totalForFilter = truth ?? sliceLen;
+                          const isCapped = sliceLen >= 200 && truth === undefined;
+                          const totalLabel = `${totalForFilter}${isCapped ? '+' : ''}`;
+                          const plural = totalForFilter !== 1 ? 's' : '';
+                          return `${totalLabel} article${plural}${hasMore ? ` · showing ${paginatedArticles.length}` : ''}`;
+                        })()}
                   </p>
 
                   <AnimatePresence mode="wait" initial={false}>

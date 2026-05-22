@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,11 @@ export const useNotifications = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  // Stable per-hook-instance id. Multiple components (Header, NotificationBell,
+  // NotificationList, useUnifiedInbox) call this hook simultaneously; a shared
+  // topic name would return the SAME channel from the realtime client, and the
+  // second `.on('postgres_changes', …)` after `.subscribe()` would throw. See D2.
+  const instanceId = useId();
 
   // Fetch notifications
   const fetchNotifications = async () => {
@@ -117,7 +122,7 @@ export const useNotifications = () => {
     fetchNotifications();
 
     const channel = supabase
-      .channel('notifications-changes')
+      .channel(`notifications-changes:${user.id}:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -145,8 +150,8 @@ export const useNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchNotifications defined above, re-run on user/toast change
-  }, [user, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchNotifications defined above; `toast` is module-stable
+  }, [user, instanceId]);
 
   return {
     notifications,

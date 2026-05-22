@@ -45,6 +45,12 @@ export const useNews = () => {
   const [error, setError] = useState<string | null>(null);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [articleTags, setArticleTags] = useState<Record<string, string[]>>({});
+  // True per-category and global totals computed by `count: 'exact', head: true`
+  // queries — independent of the 200-row page slice we render. Without these,
+  // the page can only see whatever slice the active filter returned, so every
+  // tab badge ends up showing the same number.
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+  const [totalArticles, setTotalArticles] = useState<number | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -321,6 +327,41 @@ export const useNews = () => {
     }
   }, []);
 
+  const fetchCategoryCounts = useCallback(async (cats: NewsCategory[]) => {
+    // Mirror the visibility filters from `fetchArticles` so badge counts agree
+    // with what a tab click would actually load.
+    const applyBaseFilters = <T extends ReturnType<typeof supabase.from>>(q: T) =>
+      (q as unknown as ReturnType<typeof supabase.from>)
+        .not('published_at', 'is', null)
+        .not('content', 'is', null)
+        .neq('content', '')
+        .or('quality_score.is.null,quality_score.gte.50')
+        .or('quality_status.is.null,quality_status.eq.passed')
+        .is('duplicate_of_id', null) as unknown as T;
+
+    try {
+      const total = await applyBaseFilters(
+        supabase.from('news_articles').select('*', { count: 'exact', head: true }),
+      );
+      setTotalArticles(total.count ?? null);
+
+      const pairs = await Promise.all(
+        cats.map(async (cat) => {
+          const slug = cat.slug.replace(/[(),]/g, '');
+          const res = await applyBaseFilters(
+            supabase.from('news_articles').select('*', { count: 'exact', head: true }),
+          ).or(`category_canonical.eq.${slug},category.eq.${slug}`);
+          return [cat.slug, res.count ?? 0] as const;
+        }),
+      );
+      const counts: Record<string, number> = {};
+      for (const [slug, c] of pairs) counts[slug] = c;
+      setCategoryCounts(counts);
+    } catch (err) {
+      console.warn('Failed to fetch category counts:', err);
+    }
+  }, []);
+
   const refreshData = useCallback(async () => {
     await Promise.allSettled([fetchArticles(), fetchSources(), fetchCategories()]);
   }, [fetchArticles, fetchSources, fetchCategories]);
@@ -330,10 +371,18 @@ export const useNews = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch per-category counts once we know which categories exist.
+  useEffect(() => {
+    if (categories.length === 0) return;
+    fetchCategoryCounts(categories);
+  }, [categories, fetchCategoryCounts]);
+
   return {
     articles,
     sources,
     categories,
+    categoryCounts,
+    totalArticles,
     articleTags,
     loading,
     loadingTimedOut,

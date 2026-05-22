@@ -29,7 +29,23 @@ export function stripHtmlTags(html: string): string {
  */
 export function cleanAuthor(raw: string): string {
   if (!raw) return '';
-  let author = stripHtmlTags(raw);
+  // Ingestion sometimes stores `author` as a JSON-encoded array string
+  // (e.g. '["Author Name"]'). Detect and unwrap so brackets/quotes don't
+  // leak into the rendered byline. Wrapped in try/catch — some authors
+  // legitimately contain `[` (pseudonyms, brackets), in which case we just
+  // continue with the original string.
+  let working = raw;
+  if (working.trim().startsWith('[')) {
+    try {
+      const parsed = JSON.parse(working);
+      if (Array.isArray(parsed)) {
+        working = parsed.filter((v) => typeof v === 'string' && v.trim()).join(', ');
+      }
+    } catch {
+      /* not JSON — fall through with the original */
+    }
+  }
+  let author = stripHtmlTags(working);
   // Reddit: "/u/NamelessResearcherhttps://www.reddit.com/user/NamelessResearcher"
   author = author.replace(/https?:\/\/\S+/g, '').trim();
   // Reddit /u/ prefix → just the username

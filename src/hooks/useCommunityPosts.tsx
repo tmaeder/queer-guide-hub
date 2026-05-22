@@ -38,14 +38,7 @@ export const useCommunityPosts = (userId?: string) => {
     queryFn: async () => {
       let query = supabase
         .from('community_posts')
-        .select(`
-          *,
-          profiles (
-            display_name,
-            avatar_url,
-            user_id
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       // If userId is provided, filter by that user
@@ -57,27 +50,50 @@ export const useCommunityPosts = (userId?: string) => {
       }
 
       const { data, error } = await query;
-      
+
       if (error) throw error;
+      if (!data?.length) return [] as CommunityPost[];
 
-      // Check which posts the current user has liked
-      if (user && data?.length) {
-        const postIds = data.map(post => post.id);
-        const { data: likes } = await supabase
-          .from('post_likes')
-          .select('post_id')
-          .in('post_id', postIds)
-          .eq('user_id', user.id);
+      // Resolve profiles + likes in parallel. We avoid PostgREST embedding
+      // (`profiles ( ... )`) because community_posts has no direct FK to
+      // public.profiles — both reference auth.users — and an ambiguous embed
+      // would surface as a render-time crash on the Feed page (D1).
+      const userIds = Array.from(new Set(data.map((p) => p.user_id).filter(Boolean)));
+      const [profilesRes, likesRes] = await Promise.all([
+        userIds.length
+          ? supabase
+              .from('profiles')
+              .select('user_id, display_name, avatar_url')
+              .in('user_id', userIds)
+          : Promise.resolve({ data: [] as Array<{ user_id: string; display_name: string | null; avatar_url: string | null }> }),
+        user
+          ? supabase
+              .from('post_likes')
+              .select('post_id')
+              .in('post_id', data.map((p) => p.id))
+              .eq('user_id', user.id)
+          : Promise.resolve({ data: [] as Array<{ post_id: string }> }),
+      ]);
 
-        const likedPostIds = new Set(likes?.map(like => like.post_id));
+      const profileMap = new Map(
+        (profilesRes.data ?? []).map((p) => [p.user_id, p]),
+      );
+      const likedPostIds = new Set((likesRes.data ?? []).map((l) => l.post_id));
 
-        return data.map(post => ({
+      return data.map((post) => {
+        const profile = profileMap.get(post.user_id);
+        return {
           ...post,
-          user_liked: likedPostIds.has(post.id)
-        })) as CommunityPost[];
-      }
-
-      return data as CommunityPost[];
+          profiles: profile
+            ? {
+                user_id: profile.user_id,
+                display_name: profile.display_name ?? 'Unknown User',
+                avatar_url: profile.avatar_url,
+              }
+            : undefined,
+          user_liked: likedPostIds.has(post.id),
+        };
+      }) as CommunityPost[];
     },
     enabled: true,
   });

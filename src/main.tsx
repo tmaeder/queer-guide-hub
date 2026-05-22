@@ -5,9 +5,11 @@ import './index.css'
 import i18n from './i18n'
 import { initCloudflareOptimizations } from './utils/cloudflareOptimizations'
 import { installErrorBuffer, installNetworkBuffer } from '@/utils/feedbackContext'
+import { installGlobalErrorSurfacing } from '@/utils/globalErrorSurfacing'
 
 installErrorBuffer();
 installNetworkBuffer();
+installGlobalErrorSurfacing();
 
 initCloudflareOptimizations();
 

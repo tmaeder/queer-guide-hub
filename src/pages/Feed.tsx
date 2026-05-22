@@ -37,7 +37,7 @@ export default function Feed() {
   } = useCommunityPosts();
 
   const filteredPosts = posts.filter(post =>
-    post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.profiles?.display_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

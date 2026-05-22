@@ -70,6 +70,24 @@ describe('cleanAuthor', () => {
   it('should return empty for too-short results', () => {
     expect(cleanAuthor('X')).toBe('');
   });
+
+  // D6 — ingestion stored some authors as JSON-encoded arrays. Make sure the
+  // brackets and quotes are stripped before the byline renders.
+  it('parses single-element JSON array authors', () => {
+    expect(cleanAuthor('["ruthless podcast staff"]')).toBe('ruthless podcast staff');
+  });
+
+  it('joins multi-element JSON array authors', () => {
+    expect(cleanAuthor('["Alex Doe", "Jane Smith"]')).toBe('Alex Doe, Jane Smith');
+  });
+
+  it('returns empty for empty JSON array author', () => {
+    expect(cleanAuthor('[]')).toBe('');
+  });
+
+  it('falls back to original string when not valid JSON', () => {
+    expect(cleanAuthor('[author with brackets')).toBe('[author with brackets');
+  });
 });
 
 describe('cleanExcerpt', () => {

@@ -7,6 +7,7 @@ import { TripContextBar } from '@/components/trips/TripContextBar';
 import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
 import { ClaimUsernameBanner } from '@/components/auth/ClaimUsernameBanner';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
 // above-the-fold or interaction-critical on first paint, so defer their
@@ -62,11 +63,19 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         className="fixed inset-0 z-0 pointer-events-none bg-grid-dots opacity-50"
       />
       <AnalyticsTracker />
+      {/* Header + banners are wrapped in dedicated error boundaries so a crash
+        in (e.g.) the avatar menu's notifications subscription cannot blank the
+        whole app. The inner ErrorBoundary in routes.tsx handles route-level
+        crashes; this outer boundary catches the chrome. */}
       <div className="relative z-10">
-        <Header />
-        <EmailVerifyBanner />
-        <ClaimUsernameBanner />
-        <TripContextBar />
+        <ErrorBoundary section="header" fallback={null}>
+          <Header />
+        </ErrorBoundary>
+        <ErrorBoundary section="banners" fallback={null}>
+          <EmailVerifyBanner />
+          <ClaimUsernameBanner />
+          <TripContextBar />
+        </ErrorBoundary>
       </div>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
@@ -82,7 +91,9 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       </AnimatePresence>
       {!isFullBleedMap && (
         <div className="relative z-10">
-          <Footer />
+          <ErrorBoundary section="footer" fallback={null}>
+            <Footer />
+          </ErrorBoundary>
         </div>
       )}
       <Suspense fallback={null}>

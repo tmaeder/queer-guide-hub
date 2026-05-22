@@ -176,7 +176,7 @@ export function useUserDirectoryQuery({
         throw new Error(`Failed to load profiles: ${error.message}`);
       }
 
-      let filteredData = data as Profile[];
+      let filteredData = (data ?? []) as Profile[];
       if (filters.interests.length > 0) {
         filteredData = filteredData.filter((profile) => {
           const profileInterests = (profile.interests as string[]) || [];
