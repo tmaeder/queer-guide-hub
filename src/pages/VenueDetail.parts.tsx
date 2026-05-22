@@ -244,9 +244,11 @@ export function VenueHero({
             onCheckInSuccess={onCheckInSuccess}
           />
           {venue.phone && (
-            <Button variant="outline" size="sm" onClick={() => window.open(`tel:${venue.phone}`)}>
-              <Phone size={16} className="mr-2" />
-              Call
+            <Button variant="outline" size="sm" asChild>
+              <a href={`tel:${venue.phone}`}>
+                <Phone size={16} className="mr-2" />
+                Call
+              </a>
             </Button>
           )}
           {venue.website && (
