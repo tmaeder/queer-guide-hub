@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
+import { dedupeEvents } from '@/utils/eventDedup';
 
 type Event = Database['public']['Tables']['events']['Row'];
 type EventInsert = Database['public']['Tables']['events']['Insert'];
@@ -14,6 +15,9 @@ export function useEvents(autoFetch: boolean = true) {
   const [hasMore, setHasMore] = useState(true);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [datasetTotal, setDatasetTotal] = useState<number | null>(null);
+  // D7: true total returned by the most recent filtered query so the page
+  // header can say "Showing N of M events" instead of just "24".
+  const [totalCount, setTotalCount] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +64,7 @@ export function useEvents(autoFetch: boolean = true) {
     const signal = options?.signal;
     if (signal?.aborted) return { fetched: 0, total: null as number | null };
     let fetchedCount = 0;
-    let totalCount: number | null = null;
+    let resultTotal: number | null = null;
     try {
       setLoading(true);
       setLoadingTimedOut(false);
@@ -158,7 +162,12 @@ export function useEvents(autoFetch: boolean = true) {
         }
 
         if (filters?.featured) {
-          query = query.eq('is_featured', true);
+          // D5: the "Featured" preset must reflect what the page shows as
+          // spotlight. Production currently has 0 upcoming events with
+          // is_featured=true; the EventsHeroSpotlight falls back to pride /
+          // festival events. Mirror that fallback so the preset returns
+          // something meaningful instead of always being empty.
+          query = query.or('is_featured.eq.true,event_type.in.(pride,festival)');
         }
 
         if (filters?.isFree) {
@@ -216,7 +225,11 @@ export function useEvents(autoFetch: boolean = true) {
       if (signal?.aborted) return { fetched: 0, total: null as number | null };
       if (error) throw error;
 
-      let eventsData = (data as Event[]) || [];
+      // D2 client-side safety net for near-duplicates the ingestion pipeline
+      // missed (language variants, slight city-name spellings). Pairs like
+      // "International Mr Leather" + "Internationaler Herr Leder" share venue
+      // + day but slip past duplicate_of_id linking.
+      let eventsData = dedupeEvents((data as Event[]) || []);
 
       // Attach public attendee counts via SECURITY DEFINER RPC.
       // event_attendees has restricted SELECT (own rows only); the RPC
@@ -266,7 +279,8 @@ export function useEvents(autoFetch: boolean = true) {
       }
 
       fetchedCount = eventsData.length;
-      totalCount = typeof count === 'number' ? count : null;
+      resultTotal = typeof count === 'number' ? count : null;
+      setTotalCount(resultTotal);
 
       if (typeof count === 'number') {
         if (typeof page === 'number') {

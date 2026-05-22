@@ -42,18 +42,26 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
       zoom: 1.5,
       attributionControl: false,
     });
+    // D1: assign immediately so cleanup runs even if 'load' never fires
+    // (otherwise a slow tile fetch leaks the instance on unmount).
+    mapRef.current = map;
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
     map.on('load', () => {
-      mapRef.current = map;
       setMapReady(true);
       // After mount, the container may have been sized 0 (motion scale, transitions);
       // force a resize so MapLibre picks up the real dimensions.
       requestAnimationFrame(() => map.resize());
       setTimeout(() => map.resize(), 250);
     });
-    map.on('error', () => setMapError(true));
+    // D1: only style-level errors flip the fallback; transient tile errors
+    // shouldn't blank the map.
+    map.on('error', (e) => {
+      if (!mapReady && e?.error && e.error.message?.toLowerCase().includes('style')) {
+        setMapError(true);
+      }
+    });
 
     // Observe container size changes (transitions, viewport changes)
     const resizeObserver = new ResizeObserver(() => {
@@ -61,9 +69,11 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
     });
     resizeObserver.observe(containerRef.current);
 
+    // D1: 20s backstop tied to mapReady (the actual signal) rather than the
+    // ref. The previous 5s timeout false-positived on slow tile loads.
     const timeoutId = window.setTimeout(() => {
-      setMapError((prev) => (mapRef.current ? prev : true));
-    }, 5000);
+      if (!mapReady) setMapError(true);
+    }, 20000);
 
     return () => {
       window.clearTimeout(timeoutId);
@@ -72,6 +82,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
       mapRef.current = null;
       map.remove();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update markers when events change
