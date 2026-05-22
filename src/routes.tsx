@@ -463,6 +463,10 @@ export const AppRoutes = () => {
                 <Route path="submit/:contentType" element={<SubmitForm />} />
                 <Route path="p/:slug" element={<CMSPage />} />
                 <Route path="share-target" element={<ShareTarget />} />
+                {/* Inner catch-all: paths like /de/unknown or /en/typo
+                  fall through to NotFound instead of rendering nothing
+                  inside the locale layout. */}
+                <Route path="*" element={<NotFound />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

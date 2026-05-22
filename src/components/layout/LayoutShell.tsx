@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { useLocation } from 'react-router';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { Header } from '@/components/layout/Header';
@@ -8,19 +8,21 @@ import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
 import { ClaimUsernameBanner } from '@/components/auth/ClaimUsernameBanner';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { lazyOptional } from '@/utils/lazyRetry';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
 // above-the-fold or interaction-critical on first paint, so defer their
 // modules to a lazy chunk and mount them via Suspense with a null
-// fallback. Each only briefly delays its own appearance, never the rest
-// of the page.
-const FeedbackButton = lazy(() =>
+// fallback. lazyOptional() makes a permanent chunk-load failure render
+// nothing (instead of throwing into the parent boundary) — losing the
+// cookie banner is always strictly better than blanking the entire app.
+const FeedbackButton = lazyOptional(() =>
   import('@/components/feedback/FeedbackButton').then((m) => ({ default: m.FeedbackButton })),
 );
-const CookieConsentBanner = lazy(() =>
+const CookieConsentBanner = lazyOptional(() =>
   import('@/components/privacy/CookieConsentBanner').then((m) => ({ default: m.CookieConsentBanner })),
 );
-const InstallBanner = lazy(() =>
+const InstallBanner = lazyOptional(() =>
   import('@/components/pwa/InstallBanner').then((m) => ({ default: m.InstallBanner })),
 );
 
@@ -96,11 +98,17 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           </ErrorBoundary>
         </div>
       )}
-      <Suspense fallback={null}>
-        <CookieConsentBanner />
-        <FeedbackButton />
-        <InstallBanner />
-      </Suspense>
+      {/* Belt-and-suspenders: lazyOptional already swallows permanent
+        failures, but a dedicated boundary with fallback={null} ensures
+        any unexpected throw inside these banners can never blank the
+        whole layout. */}
+      <ErrorBoundary section="peripheral-chrome" fallback={null}>
+        <Suspense fallback={null}>
+          <CookieConsentBanner />
+          <FeedbackButton />
+          <InstallBanner />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };

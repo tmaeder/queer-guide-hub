@@ -33,7 +33,7 @@ export const useCommunityPosts = (userId?: string) => {
   const queryClient = useQueryClient();
 
   // Fetch posts for a specific user or all public posts
-  const { data: posts = [], isLoading, error } = useQuery({
+  const { data: posts = [], isLoading, error, refetch } = useQuery({
     queryKey: ['community-posts', userId],
     queryFn: async () => {
       let query = supabase
@@ -260,6 +260,7 @@ export const useCommunityPosts = (userId?: string) => {
     posts,
     isLoading,
     error,
+    refetch,
     createPost: createPostMutation.mutate,
     isCreatingPost: createPostMutation.isPending,
     likePost: likePostMutation.mutate,
