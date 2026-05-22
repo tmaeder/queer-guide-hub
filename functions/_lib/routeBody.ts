@@ -216,6 +216,41 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
 const FALLBACK_PARAGRAPH_FOR = (description: string) =>
   `${description} This page is part of Queer Guide, the independent, community-led, ad-free guide to LGBTQ+ life worldwide.`;
 
+/**
+ * Per-route <noscript> fallback (P3.3). Returns content that replaces the
+ * global default (crisis-hotline block) in index.html. Crisis routes keep
+ * the default so the fallback stays useful for users who arrive without
+ * JS — `null` signals "leave alone".
+ */
+export function buildNoscriptHtml(pathname: string): string | null {
+  const clean = pathname.replace(/\/+$/, '') || '/';
+  if (clean === '/help-hotlines' || clean.startsWith('/help')) return null;
+  if (clean.startsWith('/safety') || clean.startsWith('/report-')) return null;
+
+  const entry = STATIC_ROUTE_BODY[clean];
+  if (!entry) return null;
+
+  const escape = (s: string) =>
+    s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const intro = entry.paragraphs[0] ?? '';
+  const links = (entry.links ?? COMMON_FOOTER_LINKS).slice(0, 5);
+  const linksHtml = links
+    .map((l) => `<li><a href="${escape(l.href)}">${escape(l.label)}</a></li>`)
+    .join('');
+
+  return `<div style="max-width:640px;margin:2rem auto;padding:1rem;font-family:system-ui,sans-serif;border:1px solid currentColor;border-radius:8px">
+  <h1 style="margin:0 0 .5rem;font-size:1.25rem">${escape(entry.h1)}</h1>
+  <p style="margin:0 0 .75rem">${escape(intro)}</p>
+  <ul style="margin:0;padding-left:1.25rem;line-height:1.7">${linksHtml}</ul>
+  <p style="margin-top:1rem">Enable JavaScript to see the full interactive page. For crisis support, see <a href="/help-hotlines">help hotlines</a>.</p>
+</div>`;
+}
+
 export function buildBodyHtml(
   pathname: string,
   fallback: { title: string; description: string },

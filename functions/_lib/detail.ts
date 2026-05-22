@@ -15,14 +15,37 @@ export type DetailResult = {
   meta: RouteMeta;
   body: string;
   jsonLd: string;
+  /**
+   * Per-row indexability (P1.1). When false, the middleware emits a
+   * <meta name="robots" content="noindex,nofollow"> and skips hreflang
+   * alternates. Source: the row's seo_indexable column (default true).
+   */
+  indexable?: boolean;
 };
 
 const TITLE_SUFFIX = ' | Queer Guide';
 const MAX_TITLE = 60;
 const MAX_DESC = 155;
 
-const truncate = (s: string, max: number) =>
-  s.length <= max ? s : `${s.slice(0, max - 1).replace(/\s+\S*$/, '')}…`;
+/**
+ * Cuts a string to max chars. Prefers a sentence boundary inside the last
+ * 30 chars before the limit so descriptions don't end mid-thought; falls
+ * back to a word boundary + ellipsis when no sentence end is found.
+ * P2.7 of the SEO remediation.
+ */
+const truncate = (s: string, max: number) => {
+  if (s.length <= max) return s;
+  const head = s.slice(0, max);
+  const lookbehind = head.slice(Math.max(0, head.length - 30));
+  // Sentence-end punctuation followed by whitespace or string end.
+  const idx = lookbehind.search(/[.!?](?=\s|$)/);
+  if (idx >= 0) {
+    const cut = head.length - 30 + idx + 1;
+    return head.slice(0, cut);
+  }
+  const wordCut = head.slice(0, max - 1).replace(/\s+\S*$/, '');
+  return `${wordCut}…`;
+};
 
 const escape = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
