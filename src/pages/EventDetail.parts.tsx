@@ -457,7 +457,17 @@ export function EventOverview({
               <div className="flex gap-4">
                 <Button
                   variant={userAttendance === 'going' ? 'default' : 'outline'}
-                  onClick={() => onAttendanceUpdate('going')}
+                  // D4: clicking the active state clears RSVP (writes 'not_going').
+                  onClick={() =>
+                    onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')
+                  }
+                  // D9: announce toggle state to assistive tech.
+                  aria-pressed={userAttendance === 'going'}
+                  aria-label={
+                    userAttendance === 'going'
+                      ? 'Cancel RSVP — currently marked as going'
+                      : 'Mark RSVP as going'
+                  }
                   style={{ flex: 1 }}
                 >
                   <Users size={16} className="mr-2" />
@@ -465,7 +475,17 @@ export function EventOverview({
                 </Button>
                 <Button
                   variant={userAttendance === 'interested' ? 'default' : 'outline'}
-                  onClick={() => onAttendanceUpdate('interested')}
+                  onClick={() =>
+                    onAttendanceUpdate(
+                      userAttendance === 'interested' ? 'not_going' : 'interested',
+                    )
+                  }
+                  aria-pressed={userAttendance === 'interested'}
+                  aria-label={
+                    userAttendance === 'interested'
+                      ? 'Cancel RSVP — currently marked as interested'
+                      : 'Mark RSVP as interested'
+                  }
                   style={{ flex: 1 }}
                 >
                   <Users size={16} className="mr-2" />

@@ -89,13 +89,22 @@ export async function fetchRedirectById<T = unknown>(id: string): Promise<T | nu
   return (data as T | null) ?? null;
 }
 
-/** EventDetail.tsx — upsert attendance. */
+/** EventDetail.tsx — upsert attendance.
+ *
+ * D4: must specify `onConflict: 'event_id,user_id'` because the table's
+ * primary key is `id` (auto-generated) while uniqueness is enforced by
+ * the (event_id, user_id) constraint. Without onConflict, the second
+ * call for the same (event, user) tries to INSERT a new row and hits a
+ * 23505 unique violation surfaced as "Failed to update attendance".
+ */
 export async function upsertEventAttendance(payload: {
   event_id: string;
   user_id: string;
-  status: string;
+  status: 'going' | 'interested' | 'not_going';
 }) {
-  const { error } = await supabase.from('event_attendees').upsert(payload);
+  const { error } = await supabase
+    .from('event_attendees')
+    .upsert(payload, { onConflict: 'event_id,user_id' });
   return { error };
 }
 

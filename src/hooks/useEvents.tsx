@@ -352,11 +352,16 @@ export function useEvents(autoFetch: boolean = true) {
     status: 'going' | 'interested' | 'not_going',
   ) => {
     try {
-      const { error } = await supabase.from('event_attendees').upsert({
-        event_id: eventId,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
-        status,
-      });
+      const userId = (await supabase.auth.getUser()).data.user?.id;
+      // D4: onConflict is required — table PK is `id`, uniqueness lives on
+      // (event_id, user_id). Without it the second click hits a 23505 and
+      // we surface "Failed to update attendance".
+      const { error } = await supabase
+        .from('event_attendees')
+        .upsert(
+          { event_id: eventId, user_id: userId, status },
+          { onConflict: 'event_id,user_id' },
+        );
 
       if (error) throw error;
 
@@ -364,7 +369,7 @@ export function useEvents(autoFetch: boolean = true) {
       if (status === 'going' || status === 'interested') {
         await supabase.from('event_favorites').upsert({
           event_id: eventId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: userId,
         });
       }
 

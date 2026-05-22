@@ -142,8 +142,14 @@ export default function EventDetail() {
       if (upsertError) throw upsertError;
       setUserAttendance(status);
       toast({
-        title: t('pages.eventDetail.attendanceUpdated', 'Attendance updated'),
-        description: `You're now marked as ${status.replace('_', ' ')} for this event`,
+        title:
+          status === 'not_going'
+            ? t('pages.eventDetail.rsvpCleared', 'RSVP cleared')
+            : t('pages.eventDetail.attendanceUpdated', 'Attendance updated'),
+        description:
+          status === 'not_going'
+            ? t('pages.eventDetail.rsvpClearedDesc', 'You are no longer marked for this event.')
+            : `You're now marked as ${status.replace('_', ' ')} for this event`,
       });
       await refetch();
     } catch (e) {
