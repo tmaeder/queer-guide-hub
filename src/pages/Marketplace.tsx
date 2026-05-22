@@ -87,9 +87,8 @@ function MainGridSection({
     <>
       <div className="flex items-center justify-between mb-6">
         <p className="text-muted-foreground">
-          {visible.length === total
-            ? `${total} listing${total !== 1 ? 's' : ''}`
-            : `Showing ${visible.length} of ${total} listings`}
+          Showing {visible.length.toLocaleString()} of {total.toLocaleString()} listing
+          {total !== 1 ? 's' : ''}
         </p>
       </div>
 

@@ -75,9 +75,8 @@ export function MarketplaceFilteredView({
     <>
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <p className="text-muted-foreground">
-          {accumulated.length === total
-            ? `${total} listing${total !== 1 ? 's' : ''}`
-            : `Showing ${accumulated.length} of ${total} listings`}
+          Showing {accumulated.length.toLocaleString()} of {total.toLocaleString()} listing
+          {total !== 1 ? 's' : ''}
         </p>
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as MarketplaceSort)}>
           <SelectTrigger style={{ width: 200 }} aria-label="Sort listings">

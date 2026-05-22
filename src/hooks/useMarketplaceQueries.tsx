@@ -39,23 +39,19 @@ export function useMarketplaceSubcategoryTiles() {
   return useAsync<SubcategoryTile[]>(
     [],
     async () => {
-      const { data, error } = await supabase
-        .from('marketplace_listings')
-        .select('subcategory')
-        .eq('status', 'active')
-        .not('subcategory', 'is', null)
-        .limit(2000);
+      // Server-side aggregation. The legacy client-side aggregator silently
+      // truncated to the first ~1000 rows (Supabase db.max_rows default),
+      // skewing tile counts. The RPC GROUP BYs server-side, no row cap.
+      const { data, error } = await supabase.rpc('get_marketplace_subcategory_counts');
       if (error || !data) return [];
-      const counts = new Map<string, number>();
-      for (const row of data as Array<{ subcategory: string | null }>) {
-        if (!row.subcategory) continue;
-        counts.set(row.subcategory, (counts.get(row.subcategory) ?? 0) + 1);
-      }
-      return Array.from(counts.entries())
-        .filter(([, count]) => count >= 5)
-        .sort((a, b) => b[1] - a[1])
+      type Row = { slug: string | null; count: number | string | null };
+      return (data as Row[])
+        .filter((r): r is { slug: string; count: number | string } => !!r.slug && r.count != null)
         .slice(0, 8)
-        .map(([slug, count]) => ({ slug, count }));
+        .map((r) => ({
+          slug: r.slug,
+          count: typeof r.count === 'string' ? parseInt(r.count, 10) : r.count,
+        }));
     },
     [],
   );
@@ -207,44 +203,49 @@ const EMPTY_FACETS: FacetCounts = {
 };
 
 /**
- * Compute facet counts for the current filter scope.
- * One query: pulls categorical fields for all matching listings, aggregates in JS.
- * `search` is intentionally ignored — counts reflect the broader filter context so
- * users see all available refinements while typing.
+ * Compute facet counts for the current filter scope via the server-side
+ * RPC `get_marketplace_facets`. Each per-dimension bucket excludes its own
+ * filter so the dropdown can show true alternates (e.g. "Products (998)"
+ * keeps reading 998 after the user selects it). `search` is intentionally
+ * ignored — counts reflect the broader filter context.
  */
 export function useMarketplaceFacets(opts: {
   category?: string;
   subcategory?: string;
   businessType?: string;
+  categoryId?: string;
 }) {
   return useAsync<FacetCounts>(
-    [opts.category, opts.subcategory, opts.businessType],
+    [opts.category, opts.subcategory, opts.businessType, opts.categoryId],
     async () => {
-      let q = supabase
-        .from('marketplace_listings')
-        .select('category, subcategory, business_type')
-        .eq('status', 'active')
-        .limit(10000);
-      if (opts.category) q = q.eq('category', opts.category);
-      if (opts.subcategory) q = q.eq('subcategory', opts.subcategory);
-      if (opts.businessType) q = q.eq('business_type', opts.businessType);
-      const { data, error } = await q;
+      const { data, error } = await supabase.rpc('get_marketplace_facets', {
+        p_category: opts.category ?? null,
+        p_subcategory: opts.subcategory ?? null,
+        p_business_type: opts.businessType ?? null,
+        p_category_id: opts.categoryId ?? null,
+      });
       if (error || !data) return EMPTY_FACETS;
-      const facets: FacetCounts = {
-        category: new Map(),
-        subcategory: new Map(),
-        business_type: new Map(),
-        total: data.length,
+      const payload = data as {
+        total?: number | string;
+        by_category?: Record<string, number | string>;
+        by_subcategory?: Record<string, number | string>;
+        by_business_type?: Record<string, number | string>;
       };
-      type Row = { category: string | null; subcategory: string | null; business_type: string | null };
-      for (const row of data as Row[]) {
-        if (row.category) facets.category.set(row.category, (facets.category.get(row.category) ?? 0) + 1);
-        if (row.subcategory)
-          facets.subcategory.set(row.subcategory, (facets.subcategory.get(row.subcategory) ?? 0) + 1);
-        if (row.business_type)
-          facets.business_type.set(row.business_type, (facets.business_type.get(row.business_type) ?? 0) + 1);
-      }
-      return facets;
+      const toMap = (rec: Record<string, number | string> | undefined) => {
+        const m = new Map<string, number>();
+        if (!rec) return m;
+        for (const [k, v] of Object.entries(rec)) {
+          m.set(k, typeof v === 'string' ? parseInt(v, 10) : v);
+        }
+        return m;
+      };
+      const total = typeof payload.total === 'string' ? parseInt(payload.total, 10) : payload.total ?? 0;
+      return {
+        category: toMap(payload.by_category),
+        subcategory: toMap(payload.by_subcategory),
+        business_type: toMap(payload.by_business_type),
+        total,
+      };
     },
     EMPTY_FACETS,
   );

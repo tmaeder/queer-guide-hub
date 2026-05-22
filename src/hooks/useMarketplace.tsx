@@ -97,7 +97,13 @@ export function useMarketplace() {
       }
 
       if (filters?.subcategory) {
-        query = query.eq('subcategory', filters.subcategory);
+        // Match against the canonical generated column so the URL slug
+        // (`fetish_gear`) lines up with stored values that may have come
+        // through hyphenated or title-cased ("Fetish Gear").
+        const slug = filters.subcategory
+          .toLowerCase()
+          .replace(/[\s-]+/g, '_');
+        query = query.eq('subcategory_slug', slug);
       }
 
       if (filters?.location) {
