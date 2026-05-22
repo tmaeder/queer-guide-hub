@@ -21,12 +21,13 @@
 # references an old chunk hash then try to import that HTML as JS and
 # blow up with "Failed to load module script: text/html MIME". CF Pages
 # tries the static file first; these rules only fire when no file exists.
+# DO NOT add identity rewrites like `/sw.js /sw.js 200` here — they
+# create infinite rewrite loops that abort CF rule parsing entirely
+# (breaks the SPA catch-all below, every route returns 404).
 /assets/*  /404.html  404
 /icons/*   /404.html  404
 /fonts/*   /404.html  404
 /locales/*  /404.html  404
-/sw.js     /sw.js     200
-/manifest.json  /manifest.json  200
 
 # Cloudflare Pages SPA catch-all (must be last)
 /*    /index.html   200
