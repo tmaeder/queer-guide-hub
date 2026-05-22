@@ -94,7 +94,7 @@ export default function Travel() {
 
       <PrideScroller />
 
-      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+      <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
         <h2 className="text-xl font-bold tracking-tight">
           {t('pages.travel.inspiration.heading', 'Inspiration')}
         </h2>

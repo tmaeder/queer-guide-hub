@@ -29,7 +29,7 @@ export function BentoSection({ preset = 'mosaic', className, children }: BentoSe
   return (
     <div
       className={cn(
-        'grid grid-cols-12 gap-3 md:gap-4 auto-rows-[minmax(0,auto)]',
+        'grid grid-cols-12 gap-4 md:gap-4 auto-rows-[minmax(0,auto)]',
         className,
       )}
       data-bento-preset={preset}

@@ -1,4 +1,12 @@
-import { ExternalLink, MousePointerClick, Hotel, Ticket, Plane, UtensilsCrossed, Link2 } from 'lucide-react';
+import {
+  ExternalLink,
+  MousePointerClick,
+  Hotel,
+  Ticket,
+  Plane,
+  UtensilsCrossed,
+  Link2,
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useTripBookingClicks, type TripBookingClick } from '@/hooks/useTripBookingClicks';
 
@@ -27,21 +35,23 @@ export function BookingActivitySection({ tripId }: Props) {
 
   if (isLoading || !data || data.total === 0) return null;
 
-  const verticalEntries = (Object.entries(data.byVertical) as [TripBookingClick['vertical'], number][])
+  const verticalEntries = (
+    Object.entries(data.byVertical) as [TripBookingClick['vertical'], number][]
+  )
     .filter(([, count]) => count > 0)
     .sort((a, b) => b[1] - a[1]);
 
   return (
     <div className="mt-8">
       <p
-        className="font-bold mb-3 uppercase text-xs text-muted-foreground"
+        className="font-bold mb-4 uppercase text-xs text-muted-foreground"
         style={{ letterSpacing: '0.04em' }}
       >
         Booking activity
       </p>
 
-      <div className="p-4 bg-muted mb-3">
-        <div className="flex items-center gap-2 mb-3">
+      <div className="p-4 bg-muted mb-4">
+        <div className="flex items-center gap-2 mb-4">
           <MousePointerClick size={16} style={{ opacity: 0.7 }} />
           <p className="text-sm">
             <strong>{data.total}</strong> booking click{data.total === 1 ? '' : 's'} from this trip
@@ -81,7 +91,7 @@ export function BookingActivitySection({ tripId }: Props) {
                 key={r.id}
                 className="flex items-center gap-2 px-2 py-1.5 bg-background border border-border"
               >
-                <Icon size={14} style={{ flexShrink: 0, opacity: 0.7 }} />
+                <Icon size={14} style={{ opacity: 0.7 }} className="shrink-0" />
                 <span className="text-xs font-semibold flex-shrink-0">{r.provider}</span>
                 <span className="text-xs text-muted-foreground flex-1 min-w-0 truncate">
                   {host}

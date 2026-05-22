@@ -40,7 +40,7 @@ export default function MarketplaceShare() {
         <div className="mb-4">
           <LocalizedLink to="/marketplace">
             <Button variant="ghost" size="sm">
-              <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} aria-hidden="true" />
+              <ArrowLeft size={14} className="mr-1.5" aria-hidden="true" />
               Marketplace
             </Button>
           </LocalizedLink>
@@ -62,7 +62,7 @@ export default function MarketplaceShare() {
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
-            <Heart style={{ width: 32, height: 32 }} className="mx-auto mb-3" aria-hidden="true" />
+            <Heart size={32} className="mx-auto mb-4" aria-hidden="true" />
             <p className="text-sm">No active listings found for this link.</p>
           </div>
         ) : (

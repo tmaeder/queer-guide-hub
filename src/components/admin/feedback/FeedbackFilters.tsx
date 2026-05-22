@@ -58,7 +58,7 @@ export function FeedbackFilters({
           placeholder="Search title, description, URL…"
           value={localQ}
           onChange={(e) => setLocalQ(e.target.value)}
-          className="pl-7 pr-7 h-9"
+          className="pl-8 pr-8 h-9"
         />
         {localQ && (
           <button
@@ -78,14 +78,14 @@ export function FeedbackFilters({
             Filters
             {filterCount > 0 && (
               <span
-                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-[0.6rem] font-bold flex items-center justify-center"
+                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-2xs font-bold flex items-center justify-center"
               >
                 {filterCount}
               </span>
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-[280px] p-3 flex flex-col gap-3">
+        <PopoverContent align="start" className="w-[280px] p-4 flex flex-col gap-4">
           <div>
             <Label className="text-xs font-semibold mb-1 block">Category</Label>
             <Select value={state.category ?? '__all__'} onValueChange={(v) => update({ category: v === '__all__' ? null : v })}>

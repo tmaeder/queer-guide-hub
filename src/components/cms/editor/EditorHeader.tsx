@@ -15,12 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 interface EditorHeaderProps {
@@ -97,9 +92,9 @@ export function EditorHeader({
   const saveShortcut = isMac ? '⌘S' : 'Ctrl+S';
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-shrink-0 min-h-[56px]">
+    <div className="flex items-center justify-between px-4 py-4 border-b border-border bg-background flex-shrink-0 min-h-[56px]">
       {/* Left side */}
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-4 min-w-0 flex-1">
         <div
           className="flex items-center justify-center flex-shrink-0 rounded-element w-10 h-10"
           style={{ backgroundColor: contentType.color + '18', color: contentType.color }}
@@ -147,8 +142,8 @@ export function EditorHeader({
                 {displayTitle}
               </p>
               <Pencil
-                style={{ width: 13, height: 13, flexShrink: 0 }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                size={13}
+                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
               />
             </div>
           )}
@@ -185,8 +180,8 @@ export function EditorHeader({
                   size="sm"
                   disabled={isEnriching || state.isSaving}
                   onClick={onEnrich}
-                  className="hidden sm:inline-flex font-medium normal-case"
-                  style={{ borderColor: 'hsl(var(--foreground))', color: 'hsl(var(--foreground))' }}
+                  className="hidden sm:inline-flex font-medium normal-case text-foreground"
+                  style={{ borderColor: 'hsl(var(--foreground))' }}
                 >
                   {isEnriching ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-1" />
@@ -260,7 +255,7 @@ export function EditorHeader({
                 onClick={handleClose}
                 className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
               >
-                <X style={{ width: 20, height: 20 }} />
+                <X size={20} />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Close editor</TooltipContent>
@@ -271,9 +266,9 @@ export function EditorHeader({
       {/* Preview Dialog */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader className="border-b border-border pb-3">
-            <DialogTitle className="flex items-center gap-3">
-              <Eye style={{ width: 20, height: 20, opacity: 0.6 }} />
+          <DialogHeader className="border-b border-border pb-4">
+            <DialogTitle className="flex items-center gap-4">
+              <Eye size={20} style={{ opacity: 0.6 }} />
               <span className="font-semibold">Content Preview</span>
             </DialogTitle>
           </DialogHeader>
@@ -328,7 +323,7 @@ export function EditorHeader({
                 })}
             </div>
           </div>
-          <DialogFooter className="border-t border-border pt-3">
+          <DialogFooter className="border-t border-border pt-4">
             <Button
               variant="ghost"
               onClick={() => setPreviewOpen(false)}

@@ -40,7 +40,10 @@ const legalPageIcons: Record<string, LucideIcon> = {
 };
 
 // ── Heading extraction for TOC ──────────────────────────────────────────────
-function extractSections(html: string): { sections: { id: string; title: string }[]; htmlWithIds: string } {
+function extractSections(html: string): {
+  sections: { id: string; title: string }[];
+  htmlWithIds: string;
+} {
   const div = document.createElement('div');
   div.innerHTML = html;
   const sections: { id: string; title: string }[] = [];
@@ -48,7 +51,12 @@ function extractSections(html: string): { sections: { id: string; title: string 
   div.querySelectorAll('h2').forEach((h2) => {
     const text = h2.textContent?.trim() || '';
     if (!text) return;
-    const id = h2.id || text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const id =
+      h2.id ||
+      text
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
     h2.setAttribute('id', id);
     sections.push({ id, title: text });
   });
@@ -68,7 +76,7 @@ const HTML_BODY_CSS = `
 .qg-cms-body a { color: inherit; text-decoration: underline; }
 .qg-cms-body a:hover { opacity: 0.85; }
 .qg-cms-body img { max-width: 100%; height: auto; margin: 1rem 0; }
-.qg-cms-body pre { background-color: #111; color: #f5f5f5; padding: 1rem; overflow: auto; margin: 1rem 0; font-size: 0.875rem; }
+.qg-cms-body pre { background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground)); padding: 1rem; overflow: auto; margin: 1rem 0; font-size: 0.875rem; }
 .qg-cms-body code { background-color: hsl(var(--accent)); padding: 0.125rem 0.375rem; font-size: 0.875em; }
 .qg-cms-body table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
 .qg-cms-body th, .qg-cms-body td { border: 1px solid hsl(var(--border)); padding: 0.5rem 0.75rem; text-align: left; }
@@ -104,7 +112,7 @@ function ChildPageCard({ page }: { page: CMSPage }) {
   return (
     <LocalizedLink
       to={`/${page.slug}`}
-      className="flex items-start gap-4 bg-card p-5 text-foreground no-underline transition-opacity hover:opacity-85"
+      className="flex items-start gap-4 bg-card p-6 text-foreground no-underline transition-opacity hover:opacity-85"
     >
       <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center bg-primary text-primary-foreground">
         <FileText size={20} />
@@ -115,10 +123,7 @@ function ChildPageCard({ page }: { page: CMSPage }) {
           <p className="text-sm leading-normal text-muted-foreground">{page.subtitle}</p>
         )}
       </div>
-      <ChevronRight
-        size={18}
-        style={{ flexShrink: 0, marginTop: 2, color: 'hsl(var(--muted-foreground))' }}
-      />
+      <ChevronRight size={18} className="shrink-0 mt-0.5 text-muted-foreground" />
     </LocalizedLink>
   );
 }
@@ -141,10 +146,7 @@ function LegalHubCard({ page }: { page: CMSPage }) {
           <p className="text-sm leading-normal text-muted-foreground">{page.subtitle}</p>
         )}
       </div>
-      <ChevronRight
-        size={16}
-        style={{ flexShrink: 0, marginTop: 4, color: 'hsl(var(--muted-foreground))' }}
-      />
+      <ChevronRight size={16} className="shrink-0 mt-1 text-muted-foreground" />
     </LocalizedLink>
   );
 }
@@ -158,7 +160,7 @@ function Breadcrumb({ parent, current }: { parent: CMSPage; current: CMSPage }) 
       >
         {parent.title}
       </LocalizedLink>
-      <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+      <ChevronRight size={14} className="text-muted-foreground" />
       <span className="font-semibold text-foreground">{current.title}</span>
     </nav>
   );
@@ -206,10 +208,11 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
       <div className="mx-auto w-full max-w-[900px] px-4 py-8 sm:px-6 md:py-12">
         <h1 className="mb-1 text-3xl font-bold md:text-4xl">The Legal Stuff</h1>
         <p className="mb-8 max-w-[600px] text-base text-muted-foreground">
-          Transparency matters. Here's everything about how we operate, protect your data, and keep this space safe.
+          Transparency matters. Here's everything about how we operate, protect your data, and keep
+          this space safe.
         </p>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {childPages.map((child) => (
             <LegalHubCard key={child.slug} page={child} />
           ))}
@@ -217,10 +220,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
         <p className="mt-10 text-sm text-muted-foreground">
           Questions? Reach out at{' '}
-          <a
-            href="mailto:legal@queer.guide"
-            className="text-foreground underline hover:opacity-85"
-          >
+          <a href="mailto:legal@queer.guide" className="text-foreground underline hover:opacity-85">
             legal@queer.guide
           </a>
         </p>
@@ -233,8 +233,15 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     const { sections, htmlWithIds } = extractSections(sanitizedHtml);
 
     const formatDate = (d: string) => {
-      try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); }
-      catch { return d; }
+      try {
+        return new Date(d).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      } catch {
+        return d;
+      }
     };
 
     return (
@@ -285,7 +292,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
       {childPages.length > 0 && (
         <div className="mt-8">
           <h2 className="mb-4 text-xl font-bold">Related Pages</h2>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {childPages.map((child) => (
               <ChildPageCard key={child.slug} page={child} />
             ))}

@@ -61,12 +61,12 @@ export function ResourceTagDetail({
           }}
           className="inline-flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
         >
-          <ArrowLeft style={{ width: 14, height: 14 }} />
+          <ArrowLeft size={14} />
           <span className="text-sm">{t('resources.tagDetail.breadcrumbHome')}</span>
         </button>
         {parentName && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
+            <ChevronRight size={14} className="text-muted-foreground" />
             <button
               onClick={() => {
                 onSetSelectedCategory(parentName);
@@ -82,7 +82,7 @@ export function ResourceTagDetail({
         )}
         {childName && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
+            <ChevronRight size={14} className="text-muted-foreground" />
             <button
               onClick={() => {
                 onSetSelectedCategory(parentName || childName);
@@ -96,7 +96,7 @@ export function ResourceTagDetail({
             </button>
           </>
         )}
-        <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
+        <ChevronRight size={14} className="text-muted-foreground" />
         <span className="text-sm font-medium">{selectedTag.name}</span>
       </div>
 
@@ -116,7 +116,7 @@ export function ResourceTagDetail({
             }}
           />
           <div
-            className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6"
+            className="absolute inset-0 flex flex-col justify-end p-6 sm:p-6"
             style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)' }}
           >
             {primary && (
@@ -125,7 +125,7 @@ export function ResourceTagDetail({
                 {getCategoryShortName(primary.name)}
               </p>
             )}
-            <h1 className="text-2xl font-extrabold text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)', lineHeight: 1.1 }}>
+            <h1 className="text-2xl font-bold text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)', lineHeight: 1.1 }}>
               {selectedTag.name}
             </h1>
           </div>

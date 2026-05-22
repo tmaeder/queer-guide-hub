@@ -61,7 +61,7 @@ export function TriageList({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-3 py-1.5 border-t text-xs text-muted-foreground">
+        <div className="flex items-center justify-between px-4 py-1.5 border-t text-xs text-muted-foreground">
           <span>
             {(page - 1) * perPage + 1}–{Math.min(page * perPage, total)} of {total}
           </span>

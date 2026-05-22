@@ -121,7 +121,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
   if (revisions.length === 0) {
     return (
       <div className="border border-border rounded-element p-6 text-center">
-        <History size={24} className="text-gray-400 mx-auto mb-2" />
+        <History size={24} className="text-muted-foreground mx-auto mb-2" />
         <p className="text-sm text-muted-foreground">
           No revisions yet. Changes will be tracked once the content is saved.
         </p>
@@ -133,7 +133,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
     <TooltipProvider>
       <div>
         <div className="flex flex-row items-center gap-2 mb-4">
-          <History size={18} className="text-gray-500" />
+          <History size={18} className="text-muted-foreground" />
           <p className="text-base font-semibold">Revision History</p>
           <span className="text-xs text-muted-foreground">
             ({revisions.length} revision{revisions.length !== 1 ? 's' : ''})
@@ -161,7 +161,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
 
             return (
               <div key={revision.id}>
-                <div className="flex gap-4 py-3 px-4 rounded hover:bg-muted">
+                <div className="flex gap-4 py-4 px-4 rounded hover:bg-muted">
                   {/* Timeline indicator */}
                   <div className="flex flex-col items-center pt-1">
                     <div
@@ -181,7 +181,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                       </p>
                       {index === 0 && (
                         <span
-                          className="px-1.5 py-0.5 rounded text-[0.65rem] font-bold"
+                          className="px-1.5 py-0.5 rounded text-2xs font-bold"
                           style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
                         >
                           CURRENT
@@ -195,10 +195,10 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                       </p>
                     )}
 
-                    <div className="flex flex-row items-center gap-3">
+                    <div className="flex flex-row items-center gap-4">
                       <div className="flex flex-row items-center gap-1">
                         <Avatar className="w-[18px] h-[18px]">
-                          <AvatarFallback className="text-[0.55rem] bg-gray-400">
+                          <AvatarFallback className="text-3xs bg-border">
                             {initials || <User size={10} />}
                           </AvatarFallback>
                         </Avatar>
@@ -208,7 +208,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                       </div>
 
                       <div className="flex flex-row items-center gap-1">
-                        <Clock size={12} className="text-gray-400" />
+                        <Clock size={12} className="text-muted-foreground" />
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="text-xs text-muted-foreground">
@@ -236,7 +236,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                           size="sm"
                           variant="ghost"
                           onClick={() => setRestoreTarget(revision)}
-                          className="text-xs normal-case text-amber-600"
+                          className="text-xs normal-case text-foreground"
                         >
                           <RotateCcw size={14} />
                           Restore
@@ -246,7 +246,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                   </div>
                 </div>
 
-                {index < revisions.length - 1 && <Separator className="ml-9" />}
+                {index < revisions.length - 1 && <Separator className="ml-10" />}
               </div>
             );
           })}
@@ -279,7 +279,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                 onClick={handleRestoreConfirm}
                 disabled={isRestoring}
                 size="sm"
-                className="bg-amber-600 hover:bg-amber-700 text-white"
+                className="bg-foreground hover:bg-foreground text-white"
               >
                 {isRestoring ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Loading" /> : <RotateCcw size={14} />}
                 {isRestoring ? 'Restoring...' : 'Restore'}

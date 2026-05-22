@@ -45,10 +45,10 @@ export function InspiredByYourTrips({ ownTrips }: Props) {
 
   return (
     <section className="mt-12 pt-10 border-t border-border">
-      <div className="flex items-end justify-between gap-3 mb-4">
+      <div className="flex items-end justify-between gap-4 mb-4">
         <div>
           <div className="inline-flex items-center gap-2 mb-1">
-            <Sparkles style={{ width: 16, height: 16 }} />
+            <Sparkles size={16} />
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {t('trips.inspired.eyebrow', 'Inspired by your trips')}
             </span>
@@ -63,7 +63,7 @@ export function InspiredByYourTrips({ ownTrips }: Props) {
           onClick={() => navigate('/trips/discover')}
         >
           {t('trips.inspired.cta', 'See all')}
-          <ArrowRight style={{ width: 14, height: 14, marginLeft: 4 }} />
+          <ArrowRight size={14} className="ml-1" />
         </Button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

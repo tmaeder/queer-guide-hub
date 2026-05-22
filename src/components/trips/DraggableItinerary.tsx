@@ -236,21 +236,21 @@ export function DraggableItinerary({
       >
         {/* Unassigned places */}
         {unassigned.length > 0 && (
-          <div className="border border-dashed border-border rounded-container p-5 mb-4 bg-muted/40 backdrop-blur-sm">
-            <div className="flex items-center justify-between mb-3">
+          <div className="border border-dashed border-border rounded-container p-6 mb-4 bg-muted/40 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
-                  <Inbox style={{ width: 12, height: 12 }} aria-hidden="true" />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+                  <Inbox size={12} aria-hidden="true" />
                   {t('trips.itinerary.unassigned')}
                 </span>
                 <Badge variant="outline" className="rounded-full">{unassigned.length}</Badge>
               </div>
               <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
-                <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
+                <Plus size={14} className="mr-1" />
                 {t('trips.itinerary.add')}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground block mb-3">
+            <p className="text-xs text-muted-foreground block mb-4">
               {t('trips.itinerary.unassignedHint')}
             </p>
             <SortableContext
@@ -273,16 +273,15 @@ export function DraggableItinerary({
         {/* Empty state */}
         {itineraryIsEmpty && (
           <div className="text-center py-16 md:py-24 px-6 border border-dashed border-border rounded-container bg-muted/30 backdrop-blur-sm">
-            <div className="relative w-16 h-16 mx-auto mb-5">
+            <div className="relative w-16 h-16 mx-auto mb-6">
               <div
                 className="absolute inset-0 rounded-full opacity-[0.08]"
                 style={{ backgroundColor: 'hsl(var(--foreground))' }}
                 aria-hidden="true"
               />
-              <MapIcon
-                style={{ width: 28, height: 28, color: 'hsl(var(--foreground))' }}
+              <MapIcon size={28}
                 aria-hidden="true"
-                className="absolute inset-0 m-auto"
+                className="absolute inset-0 m-auto text-foreground"
               />
             </div>
             <h6 className="font-bold mb-2 text-xl tracking-tight">{t('trips.itinerary.emptyTitle')}</h6>
@@ -290,7 +289,7 @@ export function DraggableItinerary({
               {t('trips.itinerary.emptyDescription')}
             </p>
             <Button variant="brand" onClick={() => onAddPlace()} className="rounded-full">
-              <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+              <Plus size={16} className="mr-1.5" />
               {t('trips.itinerary.addPlace')}
             </Button>
           </div>
@@ -327,8 +326,8 @@ export function DraggableItinerary({
         })}
 
         {!itineraryIsEmpty && (
-          <Button variant="outline" onClick={() => onAddPlace()} className="w-full mt-3 rounded-element border-dashed h-12">
-            <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          <Button variant="outline" onClick={() => onAddPlace()} className="w-full mt-4 rounded-element border-dashed h-12">
+            <Plus size={16} className="mr-1.5" />
             {t('trips.itinerary.addPlace')}
           </Button>
         )}

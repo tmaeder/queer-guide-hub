@@ -35,7 +35,12 @@ interface RedirectFormDialogProps {
   onSave: (data: RedirectFormData) => Promise<void>;
 }
 
-export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: RedirectFormDialogProps) {
+export function RedirectFormDialog({
+  open,
+  editingRedirect,
+  onClose,
+  onSave,
+}: RedirectFormDialogProps) {
   const [type, setType] = useState<RedirectType>('SHORT');
   const [slug, setSlug] = useState('');
   const [sourcePath, setSourcePath] = useState('');
@@ -148,19 +153,28 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{editingRedirect ? 'Edit Redirect' : 'New Redirect'}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col" style={{ gap: 16, paddingTop: 8 }}>
-          <Tabs value={type} onValueChange={(v) => setType(v as RedirectType)} style={{ marginBottom: 8 }}>
+        <div className="flex flex-col gap-4 pt-2">
+          <Tabs
+            value={type}
+            onValueChange={(v) => setType(v as RedirectType)}
+            style={{ marginBottom: 8 }}
+          >
             <TabsList>
-              <TabsTrigger value="SHORT" className="flex items-center" style={{ gap: 4 }}>
+              <TabsTrigger value="SHORT" className="flex items-center gap-1">
                 <Link2 size={16} />
                 Short Link
               </TabsTrigger>
-              <TabsTrigger value="PATH" className="flex items-center" style={{ gap: 4 }}>
+              <TabsTrigger value="PATH" className="flex items-center gap-1">
                 <ArrowRight size={16} />
                 Path Redirect
               </TabsTrigger>
@@ -170,8 +184,10 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
           {type === 'SHORT' ? (
             <div>
               <Label>Slug</Label>
-              <div className="flex items-center" style={{ gap: 4 }}>
-                <span style={{ color: 'var(--muted-foreground)', fontFamily: 'monospace' }}>/go/</span>
+              <div className="flex items-center gap-1">
+                <span style={{ fontFamily: 'monospace' }} className="text-muted-foreground">
+                  /go/
+                </span>
                 <Input
                   value={slug}
                   onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
@@ -179,14 +195,18 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
                 />
               </div>
               <p
-                className="text-xs"
-                style={{ marginTop: 4, color: validationErrors.slug ? 'hsl(var(--destructive))' : 'var(--muted-foreground)' }}
+                className="text-xs mt-1"
+                style={{
+                  color: validationErrors.slug
+                    ? 'hsl(var(--destructive))'
+                    : 'var(--muted-foreground)',
+                }}
               >
                 {validationErrors.slug || `Short URL: queer.guide/go/${slug || '...'}`}
               </p>
             </div>
           ) : (
-            <div className="flex" style={{ gap: 8 }}>
+            <div className="flex gap-2">
               <div className="flex-1">
                 <Label>Source Path</Label>
                 <Input
@@ -195,14 +215,15 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
                   placeholder="/old/page"
                 />
                 {validationErrors.sourcePath && (
-                  <p className="text-xs" style={{ marginTop: 4, color: 'hsl(var(--destructive))' }}>
-                    {validationErrors.sourcePath}
-                  </p>
+                  <p className="text-xs mt-1 text-destructive">{validationErrors.sourcePath}</p>
                 )}
               </div>
               <div style={{ minWidth: 120 }}>
                 <Label>Match</Label>
-                <Select value={matchKind} onValueChange={(v) => setMatchKind(v as 'EXACT' | 'WILDCARD' | 'REGEX')}>
+                <Select
+                  value={matchKind}
+                  onValueChange={(v) => setMatchKind(v as 'EXACT' | 'WILDCARD' | 'REGEX')}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -224,14 +245,18 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
               placeholder="/events/pride-zurich-2026"
             />
             <p
-              className="text-xs"
-              style={{ marginTop: 4, color: validationErrors.target ? 'hsl(var(--destructive))' : 'var(--muted-foreground)' }}
+              className="text-xs mt-1"
+              style={{
+                color: validationErrors.target
+                  ? 'hsl(var(--destructive))'
+                  : 'var(--muted-foreground)',
+              }}
             >
               {validationErrors.target || 'Relative path (/page) or allowlisted absolute URL'}
             </p>
           </div>
 
-          <div className="flex" style={{ gap: 16 }}>
+          <div className="flex gap-4">
             <div style={{ minWidth: 140, flex: 1 }}>
               <Label>HTTP Status</Label>
               <Select value={String(statusCode)} onValueChange={(v) => setStatusCode(Number(v))}>
@@ -264,13 +289,14 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
           {queryMode === 'OVERRIDE' && (
             <div>
               <Label>Query Override (JSON)</Label>
-              <Input
-                value={queryOverride}
-                onChange={(e) => setQueryOverride(e.target.value)}
-              />
+              <Input value={queryOverride} onChange={(e) => setQueryOverride(e.target.value)} />
               <p
-                className="text-xs"
-                style={{ marginTop: 4, color: validationErrors.queryOverride ? 'hsl(var(--destructive))' : 'var(--muted-foreground)' }}
+                className="text-xs mt-1"
+                style={{
+                  color: validationErrors.queryOverride
+                    ? 'hsl(var(--destructive))'
+                    : 'var(--muted-foreground)',
+                }}
               >
                 {validationErrors.queryOverride || 'e.g. {"ref":"campaign-a"}'}
               </p>
@@ -281,14 +307,18 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
             <Label>UTM Defaults (JSON, optional)</Label>
             <Input value={utmDefaults} onChange={(e) => setUtmDefaults(e.target.value)} />
             <p
-              className="text-xs"
-              style={{ marginTop: 4, color: validationErrors.utmDefaults ? 'hsl(var(--destructive))' : 'var(--muted-foreground)' }}
+              className="text-xs mt-1"
+              style={{
+                color: validationErrors.utmDefaults
+                  ? 'hsl(var(--destructive))'
+                  : 'var(--muted-foreground)',
+              }}
             >
               {validationErrors.utmDefaults || 'Added if not already present'}
             </p>
           </div>
 
-          <div className="flex" style={{ gap: 16 }}>
+          <div className="flex gap-4">
             <div className="flex-1">
               <Label>Start (optional)</Label>
               <Input
@@ -307,7 +337,7 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
             </div>
           </div>
 
-          <div className="flex" style={{ gap: 16 }}>
+          <div className="flex gap-4">
             <div style={{ width: 160 }}>
               <Label>Click Limit (optional)</Label>
               <Input
@@ -316,7 +346,7 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
                 onChange={(e) => setClickLimit(e.target.value)}
               />
             </div>
-            <div className="flex items-center self-end" style={{ gap: 8, height: 40 }}>
+            <div className="flex items-center self-end gap-2" style={{ height: 40 }}>
               <Switch checked={isEnabled} onCheckedChange={setIsEnabled} />
               <span className="text-sm">{isEnabled ? 'Enabled' : 'Disabled'}</span>
             </div>
@@ -328,7 +358,9 @@ export function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: R
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button onClick={handleSubmit} disabled={saving}>
             {saving ? 'Saving...' : editingRedirect ? 'Update' : 'Create'}
           </Button>

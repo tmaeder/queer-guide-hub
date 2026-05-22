@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -56,7 +62,8 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
       icon: Cog,
       title: 'Functional Cookies',
       description: 'Enable enhanced functionality and personalization features.',
-      details: 'Language preferences, theme settings, user interface customizations, and accessibility features.',
+      details:
+        'Language preferences, theme settings, user interface customizations, and accessibility features.',
       required: false,
     },
     {
@@ -64,7 +71,8 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
       icon: BarChart3,
       title: 'Analytics Cookies',
       description: 'Help us understand how visitors interact with our website.',
-      details: 'Page views, navigation patterns, performance metrics, and error tracking to improve our service.',
+      details:
+        'Page views, navigation patterns, performance metrics, and error tracking to improve our service.',
       required: false,
     },
     {
@@ -72,7 +80,8 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
       icon: Target,
       title: 'Marketing Cookies',
       description: 'Used to track visitors across websites for marketing purposes.',
-      details: 'Advertising personalization, social media integration, and marketing campaign effectiveness.',
+      details:
+        'Advertising personalization, social media integration, and marketing campaign effectiveness.',
       required: false,
     },
   ];
@@ -81,8 +90,8 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent style={{ maxWidth: 672, maxHeight: '80vh', overflowY: 'auto' }}>
         <DialogHeader>
-          <DialogTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Cookie style={{ height: 20, width: 20 }} />
+          <DialogTitle style={{ alignItems: 'center' }} className="flex gap-2">
+            <Cookie size={20} />
             Cookie Preferences
           </DialogTitle>
           <DialogDescription>
@@ -95,31 +104,27 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
           {cookieCategories.map((category) => {
             const Icon = category.icon;
             return (
-              <div key={category.id} className="flex flex-col gap-3">
+              <div key={category.id} className="flex flex-col gap-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-2">
-                      <Icon style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-                      <Label htmlFor={category.id} style={{ fontSize: '1rem', fontWeight: 500 }}>
+                      <Icon style={{ height: 16, width: 16 }} className="text-muted-foreground" />
+                      <Label htmlFor={category.id} className="text-base font-medium">
                         {category.title}
                       </Label>
                       {category.required && (
                         <span className="text-xs bg-accent px-2 py-0.5 rounded">Required</span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {category.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {category.details}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{category.description}</p>
+                    <p className="text-xs text-muted-foreground">{category.details}</p>
                   </div>
                   <Switch
                     id={category.id}
                     checked={localPreferences[category.id]}
                     onCheckedChange={(checked) => {
                       if (!category.required) {
-                        setLocalPreferences(prev => ({
+                        setLocalPreferences((prev) => ({
                           ...prev,
                           [category.id]: checked,
                         }));
@@ -134,7 +139,7 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
           })}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <Button onClick={handleSave} style={{ flex: 1 }}>
             Save Preferences
           </Button>

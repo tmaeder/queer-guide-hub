@@ -27,11 +27,11 @@ export const TopNav = ({ active = "Discover" }) => (
       </ul>
     </div>
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, height: 32, padding: "0 10px", border: "1px solid var(--line)", borderRadius: 2, color: "var(--muted)", fontSize: 12 }}>
-        <span>⌕</span><span style={{ minWidth: 110 }}>Search Queer Guide…</span><span className="mono" style={{ fontSize: 9, padding: "1px 5px", border: "1px solid var(--line)", borderRadius: 3 }}>⌘K</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, height: 32, padding: "0 10px", border: "1px solid var(--line)", borderRadius: 'var(--radius-badge)', color: "var(--muted)", fontSize: 12 }}>
+        <span>⌕</span><span style={{ minWidth: 110 }}>Search Queer Guide…</span><span className="mono" style={{ fontSize: 9, padding: "1px 5px", border: "1px solid var(--line)", borderRadius: 'var(--radius-badge)' }}>⌘K</span>
       </div>
       <span className="pill">EN ▾</span>
-      <div style={{ width: 30, height: 30, borderRadius: 2, background: "var(--ink)" }} />
+      <div style={{ width: 30, height: 30, borderRadius: 'var(--radius-badge)', background: "var(--ink)" }} />
     </div>
   </div>
 );

@@ -158,56 +158,45 @@ export const AvatarSettings = ({
       </div>
 
       <Tabs defaultValue={data.avatarType || 'builder'} style={{ width: '100%' }}>
-        <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        <TabsList style={{ width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }} className="grid">
           <TabsTrigger value="upload">
-            <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Upload size={16} className="mr-2" />
             Upload
           </TabsTrigger>
           <TabsTrigger value="builder">
-            <Palette style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Palette size={16} className="mr-2" />
             Build
           </TabsTrigger>
           <TabsTrigger value="initials">
-            <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Mail size={16} className="mr-2" />
             Initials
           </TabsTrigger>
           <TabsTrigger value="random">
-            <User style={{ height: 16, width: 16, marginRight: 8 }} />
+            <User size={16} className="mr-2" />
             Random
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="upload" style={{ marginTop: 16 }}>
+        <TabsContent value="upload" className="mt-4">
           <div className="flex flex-col gap-4">
             <div className="text-center">
-              <p className="text-sm">
-                Upload Your Photo
-              </p>
+              <p className="text-sm">Upload Your Photo</p>
               <p className="text-xs text-muted-foreground">
                 Use your own image as your profile picture
               </p>
             </div>
             <div className="flex items-center justify-center w-full">
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground rounded-element cursor-pointer transition-colors hover:bg-muted">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload
-                    style={{
-                      width: 32,
-                      height: 32,
-                      marginBottom: 8,
-                      color: 'var(--muted-foreground)',
-                    }}
-                  />
+                <div className="flex flex-col items-center justify-center pt-6 pb-6">
+                  <Upload size={32} className="mb-2 text-muted-foreground" />
                   <p className="text-sm">
                     <span className="font-semibold">Click to upload</span>
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    PNG, JPG up to 5MB
-                  </p>
+                  <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
                 </div>
                 <input
                   type="file"
-                  style={{ display: 'none' }}
+                  className="hidden"
                   accept="image/*"
                   onChange={handleFileSelect}
                 />
@@ -216,12 +205,10 @@ export const AvatarSettings = ({
           </div>
         </TabsContent>
 
-        <TabsContent value="builder" style={{ marginTop: 16 }}>
+        <TabsContent value="builder" className="mt-4">
           <div className="flex flex-col gap-4">
             <div className="text-center">
-              <p className="text-sm">
-                Avatar Builder
-              </p>
+              <p className="text-sm">Avatar Builder</p>
               <p className="text-xs text-muted-foreground">
                 Create a custom avatar with our builder
               </p>
@@ -230,18 +217,20 @@ export const AvatarSettings = ({
           </div>
         </TabsContent>
 
-        <TabsContent value="initials" style={{ marginTop: 16 }}>
+        <TabsContent value="initials" className="mt-4">
           <div className="flex flex-col gap-4 text-center">
             <div>
-              <p className="text-sm">
-                Initials Avatar
-              </p>
+              <p className="text-sm">Initials Avatar</p>
               <p className="text-xs text-muted-foreground">
                 Auto-generated avatar based on your name
               </p>
             </div>
             <div className="flex justify-center">
-              <img src={generateAvatarUrl(data.email, 64) || ''} alt="Initials avatar preview" className="w-16 h-16 rounded-full" />
+              <img
+                src={generateAvatarUrl(data.email, 64) || ''}
+                alt="Initials avatar preview"
+                className="w-16 h-16 rounded-full"
+              />
             </div>
             <Button
               onClick={useInitials}
@@ -249,7 +238,7 @@ export const AvatarSettings = ({
               style={{ width: '100%' }}
               variant={(data.avatarType as string) === 'initials' ? 'default' : 'outline'}
             >
-              <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Mail size={16} className="mr-2" />
               {(data.avatarType as string) === 'initials'
                 ? 'Using Initials'
                 : 'Use Initials Avatar'}
@@ -257,18 +246,14 @@ export const AvatarSettings = ({
           </div>
         </TabsContent>
 
-        <TabsContent value="random" style={{ marginTop: 16 }}>
+        <TabsContent value="random" className="mt-4">
           <div className="flex flex-col gap-4 text-center">
             <div>
-              <p className="text-sm">
-                Random Avatar
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Generate a random avatar instantly
-              </p>
+              <p className="text-sm">Random Avatar</p>
+              <p className="text-xs text-muted-foreground">Generate a random avatar instantly</p>
             </div>
             <Button onClick={generateRandomAvatar} size="lg" style={{ width: '100%' }}>
-              <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
+              <RefreshCw size={16} className="mr-2" />
               Generate Random Avatar
             </Button>
           </div>
@@ -280,12 +265,9 @@ export const AvatarSettings = ({
           <Button onClick={handleSave} disabled={saving} size="lg">
             {saving && (
               <RefreshCw
-                style={{
-                  height: 16,
-                  width: 16,
-                  marginRight: 8,
-                  animation: 'spin 1s linear infinite',
-                }}
+                size={16}
+                style={{ animation: 'spin 1s linear infinite' }}
+                className="mr-2"
               />
             )}
             Save Avatar

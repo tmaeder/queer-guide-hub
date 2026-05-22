@@ -102,7 +102,7 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Ticket style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Ticket size={16} className="mr-2" />
           Import from Ticketmaster
         </Button>
       </DialogTrigger>

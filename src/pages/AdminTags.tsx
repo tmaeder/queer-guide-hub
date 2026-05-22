@@ -163,7 +163,9 @@ export default function AdminTags() {
               alt=""
               role="presentation"
               className="h-8 w-8 rounded object-cover"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
             />
           );
         },
@@ -174,7 +176,7 @@ export default function AdminTags() {
       }),
       columnHelper.accessor('name', {
         header: 'Name',
-        cell: (info) => <span style={{ fontWeight: 500 }}>{info.getValue()}</span>,
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
         meta: {
           serverSortable: true,
           defaultVisible: true,
@@ -206,8 +208,18 @@ export default function AdminTags() {
         header: 'Status',
         cell: (info) => {
           const s = info.getValue();
-          const color = s === 'active' ? 'hsl(var(--muted))' : s === 'deprecated' ? 'hsl(var(--muted))' : 'hsl(var(--muted))';
-          const text = s === 'active' ? 'hsl(var(--foreground))' : s === 'deprecated' ? 'hsl(var(--foreground) / 0.7)' : 'hsl(var(--muted-foreground))';
+          const color =
+            s === 'active'
+              ? 'hsl(var(--muted))'
+              : s === 'deprecated'
+                ? 'hsl(var(--muted))'
+                : 'hsl(var(--muted))';
+          const text =
+            s === 'active'
+              ? 'hsl(var(--foreground))'
+              : s === 'deprecated'
+                ? 'hsl(var(--foreground) / 0.7)'
+                : 'hsl(var(--muted-foreground))';
           return <Badge style={{ backgroundColor: color, color: text }}>{s}</Badge>;
         },
         meta: {
@@ -225,8 +237,7 @@ export default function AdminTags() {
         header: 'Description',
         cell: (info) => {
           const desc = info.getValue();
-          if (!desc)
-            return <span className="text-sm text-muted-foreground">-</span>;
+          if (!desc) return <span className="text-sm text-muted-foreground">-</span>;
           return (
             <span className="text-sm max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap block">
               {desc}
@@ -393,7 +404,7 @@ export default function AdminTags() {
                           <SelectItem value={cat.name}>{cat.name}</SelectItem>
                           {cat.children.map((child) => (
                             <SelectItem key={child.id} value={child.name}>
-                              <span style={{ paddingLeft: 16, fontSize: '0.9em' }}>
+                              <span style={{ fontSize: '0.9em' }} className="pl-4">
                                 ↳ {child.name}
                               </span>
                             </SelectItem>
@@ -465,9 +476,7 @@ export default function AdminTags() {
                     </div>
                     <Textarea
                       value={description}
-                      onChange={(e) =>
-                        setBulkEditTags((p) => ({ ...p, [tagId]: e.target.value }))
-                      }
+                      onChange={(e) => setBulkEditTags((p) => ({ ...p, [tagId]: e.target.value }))}
                       placeholder="Enter description..."
                       rows={2}
                     />

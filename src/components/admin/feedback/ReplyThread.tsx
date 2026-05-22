@@ -34,25 +34,27 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
       </p>
 
       {replies.length > 0 && (
-        <div className="flex flex-col gap-2 mb-3">
+        <div className="flex flex-col gap-2 mb-4">
           {replies.map((r, i) => {
             const isGithub = r.by_name.startsWith('GH:');
             return (
               <div
                 key={`${r.at}-${i}`}
                 className="p-2 border-l-[3px] bg-muted rounded"
-                style={{ borderColor: isGithub ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))' }}
+                style={{
+                  borderColor: isGithub ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
+                }}
               >
                 <div className="flex items-center gap-1 mb-1">
                   <Avatar className="w-[18px] h-[18px]">
-                    <AvatarFallback className="text-[0.6rem]">
+                    <AvatarFallback className="text-2xs">
                       {isGithub ? <Github size={10} /> : r.by_name.slice(0, 1).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-[0.7rem] font-semibold">
+                  <span className="text-xs2 font-semibold">
                     {isGithub ? r.by_name.slice(3) : r.by_name}
                   </span>
-                  <span className="text-[0.6rem] text-muted-foreground">{timeAgo(r.at)}</span>
+                  <span className="text-2xs text-muted-foreground">{timeAgo(r.at)}</span>
                   {r.emailed && (
                     <span
                       title={
@@ -90,7 +92,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                   )}
                   {r.email_error && (
                     <span title={r.email_error}>
-                      <AlertTriangle size={11} style={{ color: 'hsl(var(--destructive))' }} />
+                      <AlertTriangle size={11} className="text-destructive" />
                     </span>
                   )}
                   {r.github_url && (
@@ -98,14 +100,14 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                       href={r.github_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ display: 'inline-flex' }}
+                      className="inline-flex"
                       aria-label="Open on GitHub"
                     >
                       <Github size={11} />
                     </a>
                   )}
                 </div>
-                <p className="whitespace-pre-wrap text-[0.8rem] leading-snug">{r.body}</p>
+                <p className="whitespace-pre-wrap text-13 leading-snug">{r.body}</p>
               </div>
             );
           })}
@@ -120,7 +122,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
       />
       <div className="flex items-center mt-2 gap-2">
         {canEmail ? (
-          <label className="flex items-center gap-2 text-[0.7rem] cursor-pointer">
+          <label className="flex items-center gap-2 text-xs2 cursor-pointer">
             <Switch checked={notify} onCheckedChange={setNotify} />
             <span>Email submitter ({contactEmail})</span>
           </label>
@@ -134,9 +136,10 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
         <Button
           onClick={handleSend}
           disabled={!body.trim() || isSending}
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ alignItems: 'center' }}
+          className="flex gap-1.5"
         >
-          <Send style={{ width: 14, height: 14 }} />
+          <Send size={14} />
           {isSending ? 'Sending…' : canEmail && notify ? 'Reply' : 'Save comment'}
         </Button>
       </div>

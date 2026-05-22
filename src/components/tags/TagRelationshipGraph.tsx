@@ -199,7 +199,7 @@ export default function TagRelationshipGraph({
       <div
         role="alert"
         data-testid="tag-graph-error"
-        className="flex flex-col items-center justify-center gap-3 p-8 text-center"
+        className="flex flex-col items-center justify-center gap-4 p-8 text-center"
       >
         <AlertTriangle className="h-8 w-8 text-destructive" aria-hidden="true" />
         <div>
@@ -225,19 +225,22 @@ export default function TagRelationshipGraph({
         <p className="text-sm text-muted-foreground">
           {graphData?.nodes.length || 0} tags, {graphData?.edges.length || 0} relationships
         </p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {topNodes.map((node) => (
             <Card
               key={node.id}
-              style={{ cursor: 'pointer' }}
+              className="cursor-pointer"
               onClick={() => onTagClick({ id: node.id, name: node.name })}
             >
-              <CardContent style={{ padding: 12 }}>
+              <CardContent className="p-4">
                 <p className="text-sm font-semibold truncate" style={{ fontSize: '0.8rem' }}>
                   {node.name}
                 </p>
                 {node.category && (
-                  <span className="block text-xs text-muted-foreground mt-1" style={{ fontSize: '0.7rem' }}>
+                  <span
+                    className="block text-xs text-muted-foreground mt-1"
+                    style={{ fontSize: '0.7rem' }}
+                  >
                     {node.category}
                   </span>
                 )}
@@ -259,7 +262,7 @@ export default function TagRelationshipGraph({
             onValueChange={(val) => setInternalCategoryFilter(val === 'all' ? null : val)}
           >
             <SelectTrigger style={{ width: 220, height: 36 }}>
-              <Filter style={{ width: 14, height: 14, marginRight: 6 }} />
+              <Filter size={14} className="mr-1.5" />
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
@@ -273,7 +276,7 @@ export default function TagRelationshipGraph({
           </Select>
         )}
 
-        <div className="flex items-center gap-3" style={{ minWidth: 220 }}>
+        <div className="flex items-center gap-4" style={{ minWidth: 220 }}>
           <span className="text-xs text-muted-foreground whitespace-nowrap">
             Min. similarity {Math.round(minScore * 100)}%
           </span>
@@ -289,7 +292,7 @@ export default function TagRelationshipGraph({
 
         <div className="flex gap-1">
           <Button variant="outline" size="sm" onClick={handleZoomToFit}>
-            <Maximize2 style={{ width: 14, height: 14 }} />
+            <Maximize2 size={14} />
           </Button>
         </div>
 
@@ -346,21 +349,15 @@ export default function TagRelationshipGraph({
         {/* Hover tooltip */}
         {hoveredNode && (
           <div
-            className="absolute bg-background p-3 pointer-events-none"
+            className="absolute bg-background p-4 pointer-events-none"
             style={{ top: 12, right: 12, maxWidth: 220 }}
           >
-            <p className="text-sm font-semibold mb-1">
-              {hoveredNode.name}
-            </p>
+            <p className="text-sm font-semibold mb-1">{hoveredNode.name}</p>
             {hoveredNode.category && (
-              <span className="block text-xs text-muted-foreground">
-                {hoveredNode.category}
-              </span>
+              <span className="block text-xs text-muted-foreground">{hoveredNode.category}</span>
             )}
             {hoveredNode.usage_count > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {hoveredNode.usage_count} uses
-              </span>
+              <span className="text-xs text-muted-foreground">{hoveredNode.usage_count} uses</span>
             )}
           </div>
         )}

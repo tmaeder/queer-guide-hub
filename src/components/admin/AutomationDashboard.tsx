@@ -38,11 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
   DialogContent,
@@ -68,10 +64,10 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 };
 
 const SEVERITY_CLASS: Record<string, string> = {
-  info: 'bg-blue-100 text-blue-800',
-  warning: 'bg-yellow-100 text-yellow-800',
-  error: 'bg-red-100 text-red-800',
-  critical: 'bg-red-100 text-red-800',
+  info: 'bg-muted text-foreground',
+  warning: 'bg-muted text-foreground',
+  error: 'bg-destructive/10 text-destructive',
+  critical: 'bg-destructive/10 text-destructive',
 };
 
 const FLAG_TYPE_LABELS: Record<string, string> = {
@@ -134,7 +130,12 @@ export function AutomationDashboard() {
           value={stats.pendingFlags}
           color={stats.pendingFlags > 0 ? 'hsl(var(--foreground) / 0.55)' : undefined}
         />
-        <StatCard icon={CheckCircle2} label="Applied" value={stats.appliedFlags} color="hsl(var(--foreground))" />
+        <StatCard
+          icon={CheckCircle2}
+          label="Applied"
+          value={stats.appliedFlags}
+          color="hsl(var(--foreground))"
+        />
         <StatCard
           icon={Link2}
           label="Dead Links"
@@ -157,7 +158,7 @@ export function AutomationDashboard() {
           <TabsTrigger value="review">
             Review Queue
             {stats.pendingFlags > 0 && (
-              <Badge variant="destructive" className="ml-2 px-1 text-[0.65rem]">
+              <Badge variant="destructive" className="ml-2 px-1 text-2xs">
                 {stats.pendingFlags}
               </Badge>
             )}
@@ -177,31 +178,37 @@ export function AutomationDashboard() {
                     <div className="flex items-center gap-4">
                       <div
                         className="p-2 rounded-element flex"
-                        style={{ backgroundColor: mod.is_enabled ? 'hsl(var(--muted))' : 'hsl(var(--muted))' }}
+                        style={{
+                          backgroundColor: mod.is_enabled
+                            ? 'hsl(var(--muted))'
+                            : 'hsl(var(--muted))',
+                        }}
                       >
                         <CategoryIcon
                           size={20}
-                          style={{ color: mod.is_enabled ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
+                          style={{
+                            color: mod.is_enabled
+                              ? 'hsl(var(--foreground))'
+                              : 'hsl(var(--muted-foreground))',
+                          }}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-[0.95rem]">{mod.display_name}</p>
+                          <p className="font-semibold text-15">{mod.display_name}</p>
                           {mod.schedule && (
-                            <Badge variant="outline" className="text-[0.7rem] h-5">
+                            <Badge variant="outline" className="text-xs2 h-5">
                               {mod.schedule}
                             </Badge>
                           )}
                           {mod.auto_approve && (
-                            <Badge className="bg-green-100 text-green-800 text-[0.7rem] h-5">
+                            <Badge className="bg-muted text-foreground text-xs2 h-5">
                               Auto-approve
                             </Badge>
                           )}
                         </div>
-                        <p className="text-[0.8rem] text-muted-foreground mt-0.5">
-                          {mod.description}
-                        </p>
-                        <div className="flex gap-4 mt-1 text-[0.75rem] text-muted-foreground flex-wrap items-center">
+                        <p className="text-13 text-muted-foreground mt-0.5">{mod.description}</p>
+                        <div className="flex gap-4 mt-1 text-xs text-muted-foreground flex-wrap items-center">
                           <span>Confidence: {(mod.confidence_threshold * 100).toFixed(0)}%</span>
                           <span>Batch: {mod.batch_size}</span>
                           <span>Runs: {mod.total_runs}</span>
@@ -214,12 +221,12 @@ export function AutomationDashboard() {
                           )}
                           {mod.last_run_status && (
                             <Badge
-                              className={`text-[0.65rem] h-[18px] ${
+                              className={`text-2xs h-[18px] ${
                                 mod.last_run_status === 'success'
-                                  ? 'bg-green-100 text-green-800'
+                                  ? 'bg-muted text-foreground'
                                   : mod.last_run_status === 'partial'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
+                                    ? 'bg-muted text-foreground'
+                                    : 'bg-destructive/10 text-destructive'
                               }`}
                             >
                               {mod.last_run_status}
@@ -309,44 +316,40 @@ export function AutomationDashboard() {
                     {pendingFlags.map((flag) => (
                       <TableRow key={flag.id}>
                         <TableCell>
-                          <Badge variant="secondary" className="text-[0.7rem]">
+                          <Badge variant="secondary" className="text-xs2">
                             {FLAG_TYPE_LABELS[flag.flag_type] || flag.flag_type}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <button
                             type="button"
-                            className="text-[0.85rem] font-medium cursor-pointer hover:underline text-left bg-transparent border-0 p-0"
+                            className="text-sm font-medium cursor-pointer hover:underline text-left bg-transparent border-0 p-0"
                             onClick={() => setSelectedFlag(flag)}
                           >
                             {flag.title}
                           </button>
                           {flag.description && (
-                            <p className="text-[0.75rem] text-muted-foreground mt-0.5">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                               {flag.description.slice(0, 80)}
                               {flag.description.length > 80 ? '...' : ''}
                             </p>
                           )}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="text-[0.65rem]">
+                          <Badge variant="outline" className="text-2xs">
                             {flag.content_type}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            className={`text-[0.65rem] ${SEVERITY_CLASS[flag.severity] ?? ''}`}
-                          >
+                          <Badge className={`text-2xs ${SEVERITY_CLASS[flag.severity] ?? ''}`}>
                             {flag.severity}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {flag.confidence != null
-                            ? `${(flag.confidence * 100).toFixed(0)}%`
-                            : '—'}
+                          {flag.confidence != null ? `${(flag.confidence * 100).toFixed(0)}%` : '—'}
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(flag.created_at), { addSuffix: true })}
                           </span>
                         </TableCell>
@@ -371,7 +374,7 @@ export function AutomationDashboard() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-7 w-7 p-0 text-green-600"
+                                    className="h-7 w-7 p-0 text-foreground"
                                     disabled={isReviewing}
                                     onClick={() =>
                                       reviewFlag({ flagId: flag.id, action: 'approved' })
@@ -444,16 +447,16 @@ export function AutomationDashboard() {
                     {deadLinks.map((link) => (
                       <TableRow key={link.id}>
                         <TableCell>
-                          <Badge variant="outline" className="text-[0.65rem]">
+                          <Badge variant="outline" className="text-2xs">
                             {link.content_type}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.8rem]">{link.field_name}</span>
+                          <span className="text-13">{link.field_name}</span>
                         </TableCell>
                         <TableCell>
                           <span
-                            className="text-[0.75rem] font-mono truncate block max-w-[300px]"
+                            className="text-xs font-mono truncate block max-w-[300px]"
                             title={link.original_url}
                           >
                             {link.original_url}
@@ -461,23 +464,23 @@ export function AutomationDashboard() {
                         </TableCell>
                         <TableCell>
                           <Badge
-                            className={`text-[0.65rem] ${link.http_status ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}
+                            className={`text-2xs ${link.http_status ? 'bg-muted text-foreground' : 'bg-destructive/10 text-destructive'}`}
                           >
                             {link.http_status || 'Timeout'}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {link.response_time_ms ? `${link.response_time_ms}ms` : '—'}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-destructive truncate block max-w-[200px]">
+                          <span className="text-xs text-destructive truncate block max-w-[200px]">
                             {link.error_message || '—'}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(link.last_checked_at), {
                               addSuffix: true,
                             })}
@@ -525,35 +528,33 @@ export function AutomationDashboard() {
                     {geoMismatches.map((geo) => (
                       <TableRow key={geo.id}>
                         <TableCell>
-                          <Badge variant="outline" className="text-[0.65rem]">
+                          <Badge variant="outline" className="text-2xs">
                             {geo.content_type}
                           </Badge>
-                          <span className="text-[0.7rem] text-muted-foreground font-mono block">
+                          <span className="text-xs2 text-muted-foreground font-mono block">
                             {geo.content_id.slice(0, 8)}...
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.8rem]">
+                          <span className="text-13">
                             {[geo.city, geo.region].filter(Boolean).join(', ')}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.8rem]">
+                          <span className="text-13">
                             {geo.country} {geo.country_code ? `(${geo.country_code})` : ''}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-yellow-700 max-w-[250px] block">
+                          <span className="text-xs text-foreground max-w-[250px] block">
                             {geo.mismatch_details}
                           </span>
                         </TableCell>
                         <TableCell>
-                          {geo.confidence != null
-                            ? `${(geo.confidence * 100).toFixed(0)}%`
-                            : '—'}
+                          {geo.confidence != null ? `${(geo.confidence * 100).toFixed(0)}%` : '—'}
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(geo.last_validated_at), {
                               addSuffix: true,
                             })}
@@ -612,15 +613,13 @@ function StatCard({
     <Card>
       <CardContent>
         <div className="flex items-center justify-between">
-          <span className="text-[0.75rem] text-muted-foreground">{label}</span>
+          <span className="text-xs text-muted-foreground">{label}</span>
           <Icon size={14} style={{ color: color || 'var(--muted-foreground)' }} />
         </div>
-        <p className="text-[1.3rem] font-bold" style={{ color: color || 'inherit' }}>
+        <p className="text-xl font-bold" style={{ color: color || 'inherit' }}>
           {value.toLocaleString()}
           {total != null && (
-            <span className="text-[0.75rem] text-muted-foreground ml-1 font-normal">
-              / {total}
-            </span>
+            <span className="text-xs text-muted-foreground ml-1 font-normal">/ {total}</span>
           )}
         </p>
       </CardContent>
@@ -661,21 +660,17 @@ function FlagDetailDialog({
             <Badge variant="outline">{flag.content_type}</Badge>
             <Badge variant="outline">Module: {flag.module_name}</Badge>
             {flag.confidence != null && (
-              <Badge variant="outline">
-                Confidence: {(flag.confidence * 100).toFixed(0)}%
-              </Badge>
+              <Badge variant="outline">Confidence: {(flag.confidence * 100).toFixed(0)}%</Badge>
             )}
           </div>
 
-          {flag.description && (
-            <p className="text-[0.9rem] text-muted-foreground">{flag.description}</p>
-          )}
+          {flag.description && <p className="text-sm text-muted-foreground">{flag.description}</p>}
 
           {flag.current_value && (
             <div>
-              <p className="font-semibold text-[0.85rem] mb-1">Current Value</p>
+              <p className="font-semibold text-sm mb-1">Current Value</p>
               <div
-                className="p-3 rounded font-mono text-[0.8rem] whitespace-pre-wrap break-all"
+                className="p-4 rounded font-mono text-13 whitespace-pre-wrap break-all"
                 style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 {JSON.stringify(flag.current_value, null, 2)}
@@ -685,9 +680,9 @@ function FlagDetailDialog({
 
           {flag.suggested_value && (
             <div>
-              <p className="font-semibold text-[0.85rem] mb-1">Suggested Value</p>
+              <p className="font-semibold text-sm mb-1">Suggested Value</p>
               <div
-                className="p-3 rounded font-mono text-[0.8rem] whitespace-pre-wrap break-all"
+                className="p-4 rounded font-mono text-13 whitespace-pre-wrap break-all"
                 style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 {JSON.stringify(flag.suggested_value, null, 2)}
@@ -695,7 +690,7 @@ function FlagDetailDialog({
             </div>
           )}
 
-          <p className="text-[0.75rem] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Content ID: {flag.content_id} &middot; Created{' '}
             {formatDistanceToNow(new Date(flag.created_at), { addSuffix: true })}
           </p>
@@ -706,7 +701,8 @@ function FlagDetailDialog({
           </Button>
           <Button
             variant="outline"
-            style={{ borderColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive))' }}
+            style={{ borderColor: 'hsl(var(--destructive))' }}
+            className="text-destructive"
             disabled={isReviewing}
             onClick={() => onReject(flag.id)}
           >
@@ -761,10 +757,10 @@ function ModuleConfigDialog({
         </DialogHeader>
         <div className="flex flex-col gap-6 mt-4">
           <div>
-            <p className="text-[0.85rem] font-medium mb-1">
+            <p className="text-sm font-medium mb-1">
               Confidence Threshold: {threshold.toFixed(0)}%
             </p>
-            <p className="text-[0.75rem] text-muted-foreground mb-2">
+            <p className="text-xs text-muted-foreground mb-2">
               Changes above this confidence level can be auto-approved
             </p>
             <Slider
@@ -774,7 +770,7 @@ function ModuleConfigDialog({
               max={100}
               step={5}
             />
-            <div className="flex justify-between text-[0.7rem] text-muted-foreground mt-1">
+            <div className="flex justify-between text-xs2 text-muted-foreground mt-1">
               <span>50%</span>
               <span>75%</span>
               <span>100%</span>
@@ -782,10 +778,8 @@ function ModuleConfigDialog({
           </div>
 
           <div>
-            <p className="text-[0.85rem] font-medium mb-1">Batch Size: {batchSize}</p>
-            <p className="text-[0.75rem] text-muted-foreground mb-2">
-              Number of items to process per run
-            </p>
+            <p className="text-sm font-medium mb-1">Batch Size: {batchSize}</p>
+            <p className="text-xs text-muted-foreground mb-2">Number of items to process per run</p>
             <Slider
               value={[batchSize]}
               onValueChange={([v]) => setBatchSize(v)}
@@ -797,8 +791,8 @@ function ModuleConfigDialog({
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[0.85rem] font-medium">Auto-Approve</p>
-              <p className="text-[0.75rem] text-muted-foreground">
+              <p className="text-sm font-medium">Auto-Approve</p>
+              <p className="text-xs text-muted-foreground">
                 Automatically apply changes above confidence threshold
               </p>
             </div>

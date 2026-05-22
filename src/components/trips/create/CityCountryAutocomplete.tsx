@@ -198,13 +198,13 @@ export function CityCountryAutocomplete({
           aria-autocomplete="list"
           aria-expanded={open}
           aria-controls={`${id}-listbox`}
-          className="pl-9 pr-9"
+          className="pl-10 pr-10"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 flex">
           {loading ? (
             <Loader2 size={16} className="animate-spin" />
           ) : value ? (
-            <Check size={16} style={{ color: '#10B981' }} />
+            <Check size={16} className="text-foreground" />
           ) : null}
         </span>
       </div>
@@ -213,12 +213,12 @@ export function CityCountryAutocomplete({
         <div
           id={`${id}-listbox`}
           role="listbox"
-          className="absolute left-0 right-0 mt-1 max-h-80 overflow-y-auto bg-background border border-border rounded-element shadow-[var(--shadow-aceternity)]"
+          className="absolute left-0 right-0 mt-1 max-h-80 overflow-y-auto bg-background border border-border rounded-element"
           style={{ zIndex: 1500 }}
         >
           {options.length === 0 && !loading && (
             <div className="p-4">
-              <div className="text-[13px] text-muted-foreground mb-2">
+              <div className="text-13 text-muted-foreground mb-2">
                 {t('trips.dialog.create.noCityMatch')}
               </div>
               {onFallbackRequested && (
@@ -229,7 +229,7 @@ export function CityCountryAutocomplete({
                     onFallbackRequested(normalize(debounced));
                     setOpen(false);
                   }}
-                  className="border-0 bg-transparent font-semibold text-[13px] cursor-pointer p-0"
+                  className="border-0 bg-transparent font-semibold text-13 cursor-pointer p-0"
                   style={{ color: 'hsl(var(--foreground))' }}
                 >
                   {t('trips.dialog.create.addNewPlace', {

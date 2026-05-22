@@ -68,10 +68,10 @@ export function CityHero({
                 to={`/country/${city.countries.slug || city.countries.id}`}
                 style={{
                   color: 'inherit',
-                  textDecoration: 'underline',
                   textDecorationColor: 'currentColor',
                   textUnderlineOffset: '2px',
                 }}
+                className="underline"
               >
                 {city.countries.name}
               </LocalizedLink>
@@ -82,9 +82,9 @@ export function CityHero({
         <div className="flex gap-2 flex-shrink-0 mt-2 flex-wrap">
           <LocalizedLink
             to={`/travel?city=${encodeURIComponent(city.slug || String(city.id))}`}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5 no-underline"
+            className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-2.5 text-sm font-bold tracking-tight text-background transition-opacity duration-300 hover:opacity-90 no-underline"
           >
-            <Plane style={{ height: 14, width: 14 }} aria-hidden="true" />
+            <Plane size={14} aria-hidden="true" />
             Plan a trip in {city.name}
           </LocalizedLink>
           <ReportButton contentType="cities" contentId={city.id} contentName={city.name} />
@@ -109,7 +109,7 @@ export function CityHero({
           {city.official_website && (
             <Button variant="outline" size="sm" asChild>
               <a href={city.official_website} target="_blank" rel="noopener noreferrer">
-                <Globe style={{ height: 16, width: 16, marginRight: 6 }} />
+                <Globe size={16} className="mr-1.5" />
                 Website
               </a>
             </Button>
@@ -120,43 +120,43 @@ export function CityHero({
       <div className="flex gap-2 flex-wrap mb-4">
         {city.is_capital && (
           <Badge variant="outline" className="gap-1">
-            <Building style={{ height: 14, width: 14 }} />
+            <Building size={14} />
             Capital City
           </Badge>
         )}
         {city.is_major_city && (
           <Badge variant="outline" className="gap-1">
-            <MapPin style={{ height: 14, width: 14 }} />
+            <MapPin size={14} />
             Major City
           </Badge>
         )}
         {city.population && (
           <Badge variant="outline" className="gap-1">
-            <Users style={{ height: 14, width: 14 }} />
+            <Users size={14} />
             {formatPopulation(city.population)}
           </Badge>
         )}
         {city.timezone && (
           <Badge variant="outline" className="gap-1">
-            <Clock style={{ height: 14, width: 14 }} />
+            <Clock size={14} />
             {city.timezone}
           </Badge>
         )}
         {effectiveIata && (
           <Badge variant="outline" className="gap-1">
-            <Plane style={{ height: 14, width: 14 }} />
+            <Plane size={14} />
             {hasAirport ? effectiveIata : `~${effectiveIata} (nearest)`}
           </Badge>
         )}
         {city.climate_type && (
           <Badge variant="outline" className="gap-1">
-            <Thermometer style={{ height: 14, width: 14 }} />
+            <Thermometer size={14} />
             {city.climate_type}
           </Badge>
         )}
         {city.lgbt_friendly_rating && (
           <Badge variant="outline" className="gap-1">
-            <Star style={{ height: 14, width: 14, fill: 'currentColor', color: 'inherit' }} />
+            <Star size={14} style={{ fill: 'currentColor', color: 'inherit' }} />
             {city.lgbt_friendly_rating}/5 LGBTQ+ Friendly
           </Badge>
         )}

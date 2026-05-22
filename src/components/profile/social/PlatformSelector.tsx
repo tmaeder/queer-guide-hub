@@ -50,13 +50,13 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
       <div className="flex items-center justify-between">
         <h6 className="text-base font-medium">Add Platform</h6>
         <Button variant="ghost" size="sm" onClick={() => setShowCustom(!showCustom)}>
-          <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Plus size={16} className="mr-2" />
           Custom URL
         </Button>
       </div>
 
       {showCustom && (
-        <div className="flex flex-col gap-2 p-3 bg-muted">
+        <div className="flex flex-col gap-2 p-4 bg-muted">
           <Label htmlFor="custom-url">Custom URL</Label>
           <div className="flex gap-2">
             <Input
@@ -72,17 +72,11 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <div className="relative">
           <Search
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: 12,
-              width: 16,
-              height: 16,
-              color: 'var(--muted-foreground)',
-            }}
+            style={{ left: 12, top: 12, width: 16, height: 16 }}
+            className="absolute text-muted-foreground"
           />
           <Input
             placeholder="Search platforms..."
@@ -96,12 +90,15 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
             <button
               key={category}
               type="button"
-              className="px-3 py-1 text-sm font-medium transition-colors"
+              className="px-4 py-1 text-sm font-medium transition-colors cursor-pointer"
               style={{
-                backgroundColor: selectedCategory === category ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                color: selectedCategory === category ? 'hsl(var(--primary-foreground))' : 'hsl(var(--secondary-foreground))',
+                backgroundColor:
+                  selectedCategory === category ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
+                color:
+                  selectedCategory === category
+                    ? 'hsl(var(--primary-foreground))'
+                    : 'hsl(var(--secondary-foreground))',
                 border: 'none',
-                cursor: 'pointer',
               }}
               onClick={() => setSelectedCategory(category)}
             >

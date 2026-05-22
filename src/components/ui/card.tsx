@@ -18,7 +18,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       ref={ref}
       className={cn(
         'bg-card text-card-foreground rounded-container border border-border/60 transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
-        hoverable && 'cursor-pointer hover:-translate-y-0.5 hover:shadow-[var(--shadow-aceternity)]',
+        hoverable && 'cursor-pointer hover:bg-muted/40',
         className,
       )}
       {...props}
@@ -80,7 +80,7 @@ const CardImage = ({
   const referrerPolicy = isTrustedSrc(effectiveSrc) ? undefined : 'no-referrer';
 
   return (
-    <div className="relative overflow-hidden rounded-t-xl" style={{ height }}>
+    <div className="relative overflow-hidden rounded-t-container" style={{ height }}>
       <img
         src={effectiveSrc}
         alt={alt}

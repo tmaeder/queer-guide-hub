@@ -28,7 +28,7 @@ export function ResourceOverview({
   return (
     <div>
       <h2 className="text-base font-semibold mb-4">{t('resources.browseAllTopics')}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {orderedParents.map((cat) => {
           const Icon = getCategoryIcon(cat.name);
           const activeChildren = cat.children?.filter((c) => c.tag_count > 0) ?? [];
@@ -81,7 +81,7 @@ export function ResourceOverview({
         >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Briefcase style={{ width: 18, height: 18, opacity: 0.75 }} />
+              <Briefcase size={18} style={{ opacity: 0.75 }} />
               <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
                 {t('resources.professions.title')}
               </span>

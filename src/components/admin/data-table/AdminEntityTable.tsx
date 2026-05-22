@@ -55,7 +55,7 @@ export function AdminEntityTable<TData extends { id: string }>({
       <div className="flex items-center gap-4 mb-6">
         {backHref !== null && (
           <Button variant="outline" onClick={() => navigate(backHref)}>
-            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             {backLabel}
           </Button>
         )}

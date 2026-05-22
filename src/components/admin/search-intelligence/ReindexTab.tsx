@@ -216,7 +216,7 @@ export function ReindexTab() {
                       )}
                     </div>
                     {errors.length > 0 && (
-                      <Alert variant="destructive" className="mt-3">
+                      <Alert variant="destructive" className="mt-4">
                         <AlertDescription>
                           {errors.map((e, i) => (
                             <div key={i} className="text-xs">

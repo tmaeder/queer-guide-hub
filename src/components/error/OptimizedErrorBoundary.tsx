@@ -63,9 +63,9 @@ const DefaultErrorFallback = ({
         <CardHeader>
           <div className="flex items-center gap-2">
             {isNetworkError ? (
-              <Wifi style={{ height: 20, width: 20, color: 'var(--destructive)' }} />
+              <Wifi size={20} style={{ color: 'var(--destructive)' }} />
             ) : (
-              <AlertCircle style={{ height: 20, width: 20, color: 'var(--destructive)' }} />
+              <AlertCircle size={20} style={{ color: 'var(--destructive)' }} />
             )}
             <CardTitle>{isNetworkError ? 'Connection Issue' : 'Something went wrong'}</CardTitle>
           </div>
@@ -101,7 +101,7 @@ const DefaultErrorFallback = ({
 
           <div className="flex gap-2">
             <Button onClick={resetErrorBoundary} variant="outline">
-              <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
+              <RefreshCw size={16} className="mr-2" />
               Try Again
             </Button>
             <Button onClick={() => window.location.reload()} variant="default">
@@ -120,7 +120,7 @@ export const DataErrorFallback = ({
 }) => {
   return (
     <Alert variant="destructive">
-      <AlertCircle style={{ height: 16, width: 16 }} />
+      <AlertCircle size={16} />
       <AlertTitle>Failed to load data</AlertTitle>
       <AlertDescription>
         <p className="text-sm">
@@ -138,7 +138,7 @@ export const DataErrorFallback = ({
           </details>
         )}
         <Button onClick={resetErrorBoundary} variant="outline" size="sm">
-          <RefreshCw style={{ height: 12, width: 12, marginRight: 4 }} />
+          <RefreshCw size={12} className="mr-1" />
           Retry
         </Button>
       </AlertDescription>

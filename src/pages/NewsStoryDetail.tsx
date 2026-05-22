@@ -26,7 +26,9 @@ export default function NewsStoryDetail() {
       setStory(s);
       setLoading(false);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   const title = story ? safeText(decodeHtmlEntities(story.title)) : 'Story';
@@ -46,7 +48,12 @@ export default function NewsStoryDetail() {
       : undefined,
   });
 
-  if (loading) return <div className="container mx-auto px-4 py-12"><PageLoadingState count={1} /></div>;
+  if (loading)
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <PageLoadingState count={1} />
+      </div>
+    );
 
   if (!story) {
     return (
@@ -63,34 +70,38 @@ export default function NewsStoryDetail() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-3xl">
-      <LocalizedLink to="/news" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 no-underline">
+      <LocalizedLink
+        to="/news"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 no-underline"
+      >
         <ArrowLeft size={14} /> Back to News
       </LocalizedLink>
 
-      <div className="flex items-center gap-2 mb-3">
-        <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }} className="inline-flex items-center gap-1">
-          <Layers style={{ width: 10, height: 10 }} aria-hidden="true" />
+      <div className="flex items-center gap-2 mb-4">
+        <Badge
+          style={{ backgroundColor: 'hsl(var(--foreground))' }}
+          className="inline-flex items-center gap-1 text-background"
+        >
+          <Layers size={10} aria-hidden="true" />
           {story.article_count} articles
         </Badge>
         <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-          <Clock style={{ width: 12, height: 12 }} aria-hidden="true" />
+          <Clock size={12} aria-hidden="true" />
           Updated {formatDistanceToNow(new Date(story.last_updated_at), { addSuffix: true })}
         </span>
       </div>
 
       <h1 className="text-3xl md:text-4xl font-bold leading-tight mb-4">{title}</h1>
 
-      {story.summary && (
-        <p className="text-lg text-muted-foreground mb-8">{story.summary}</p>
-      )}
+      {story.summary && <p className="text-lg text-muted-foreground mb-8">{story.summary}</p>}
 
-      <h2 className="text-sm uppercase tracking-widest text-muted-foreground mb-3">Coverage</h2>
-      <ol className="flex flex-col gap-3 list-none p-0 m-0">
+      <h2 className="text-sm uppercase tracking-widest text-muted-foreground mb-4">Coverage</h2>
+      <ol className="flex flex-col gap-4 list-none p-0 m-0">
         {story.articles.map((a) => (
           <li key={a.id}>
             <LocalizedLink
               to={`/news/${a.slug}`}
-              className="flex gap-4 p-3 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex gap-4 p-4 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {a.image_url && (
                 <img
@@ -99,11 +110,19 @@ export default function NewsStoryDetail() {
                   alt=""
                   width={120}
                   height={80}
-                  style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
+                  className="rounded-element shrink-0"
+                  style={{ width: 120, height: 80, objectFit: 'cover' }}
                 />
               )}
               <div className="flex flex-col gap-1 min-w-0 flex-1">
-                <h3 className="text-base font-semibold leading-snug m-0" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <h3
+                  className="text-base font-semibold leading-snug m-0 overflow-hidden"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
                   {safeText(decodeHtmlEntities(a.title))}
                 </h3>
                 <p className="text-xs text-muted-foreground m-0">

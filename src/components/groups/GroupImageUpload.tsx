@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface GroupImageUploadProps {
   currentImages?: string[];
@@ -27,9 +27,9 @@ export const GroupImageUpload = ({
     const remainingSlots = maxImages - currentImages.length;
     if (remainingSlots <= 0) {
       toast({
-        title: "Upload limit reached",
+        title: 'Upload limit reached',
         description: `You can only upload up to ${maxImages} images.`,
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -52,9 +52,9 @@ export const GroupImageUpload = ({
           throw uploadError;
         }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('user-photos')
-          .getPublicUrl(filePath);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('user-photos').getPublicUrl(filePath);
 
         return publicUrl;
       });
@@ -64,15 +64,15 @@ export const GroupImageUpload = ({
       onImagesChange(newImages);
 
       toast({
-        title: "Images uploaded successfully",
+        title: 'Images uploaded successfully',
         description: `${uploadedUrls.length} image(s) uploaded.`,
       });
     } catch (error) {
       console.error('Error uploading images:', error);
       toast({
-        title: "Upload failed",
-        description: "Failed to upload images. Please try again.",
-        variant: "destructive",
+        title: 'Upload failed',
+        description: 'Failed to upload images. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -89,7 +89,9 @@ export const GroupImageUpload = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label>Group Images ({currentImages.length}/{maxImages})</Label>
+        <Label>
+          Group Images ({currentImages.length}/{maxImages})
+        </Label>
         <div className="flex items-center gap-2">
           <Input
             type="file"
@@ -114,7 +116,7 @@ export const GroupImageUpload = ({
               </>
             ) : (
               <>
-                <Upload style={{ height: 16, width: 16 }} />
+                <Upload size={16} />
                 Upload Images
               </>
             )}
@@ -148,7 +150,7 @@ export const GroupImageUpload = ({
                 className="opacity-0 group-hover:opacity-100"
                 onClick={() => removeImage(index)}
               >
-                <X style={{ height: 12, width: 12 }} />
+                <X size={12} />
               </Button>
             </div>
           ))}
@@ -156,8 +158,11 @@ export const GroupImageUpload = ({
       )}
 
       {currentImages.length === 0 && (
-        <div className="border-2 border-dashed p-8 text-center" style={{ borderColor: 'hsl(var(--muted-foreground) / 0.3)' }}>
-          <ImageIcon style={{ width: 48, height: 48, margin: '0 auto', marginBottom: 16, opacity: 0.5 }} />
+        <div
+          className="border-2 border-dashed p-8 text-center"
+          style={{ borderColor: 'hsl(var(--muted-foreground) / 0.3)' }}
+        >
+          <ImageIcon size={48} style={{ margin: '0 auto', opacity: 0.5 }} className="mb-4" />
           <p className="text-muted-foreground">No images uploaded yet</p>
           <p className="text-sm text-muted-foreground">Upload images to showcase your group</p>
         </div>

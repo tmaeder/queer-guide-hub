@@ -38,7 +38,7 @@ export function TopicHubGrid() {
   return (
     <section aria-labelledby="topics-heading">
       <h2 id="topics-heading" className="text-base font-semibold mb-4">{t('resources.topicHubs.heading')}</h2>
-      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {visible.map((topic) => (
           <li key={topic.slug}>
             <TopicCard topic={topic} />
@@ -63,18 +63,17 @@ function TopicCard({ topic }: { topic: TopicHubRow }) {
         </div>
         <ChevronRight
           aria-hidden
-          className="opacity-30 transition-transform group-hover:translate-x-0.5"
-          style={{ width: 16, height: 16 }}
+          className="opacity-30 transition-transform group-hover:translate-x-0.5" size={16}
         />
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
         {topic.description}
       </p>
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="mt-4 flex flex-wrap gap-1.5">
         {topic.tag_cluster.slice(0, 3).map((tag) => (
           <span
             key={tag}
-            className="text-[0.65rem] px-1.5 py-0.5 rounded-badge bg-foreground/5 text-muted-foreground"
+            className="text-2xs px-1.5 py-0.5 rounded-badge bg-foreground/5 text-muted-foreground"
           >
             {tag}
           </span>

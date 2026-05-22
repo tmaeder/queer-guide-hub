@@ -46,7 +46,7 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
         </p>
         <LocalizedLink to="/travel">
           <Button variant="outline" size="sm">
-            <Plane style={{ height: 14, width: 14, marginRight: 6 }} />
+            <Plane size={14} className="mr-1.5" />
             Search Flights Manually
           </Button>
         </LocalizedLink>
@@ -62,13 +62,11 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
             Flights from {originCity || originIata}
             {destinationIata ? ` to ${destinationCity}` : ''}
           </h3>
-          <p className="text-xs text-muted-foreground">
-            Best deals based on your location
-          </p>
+          <p className="text-xs text-muted-foreground">Best deals based on your location</p>
         </div>
         <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
           <Button variant="ghost" size="sm">
-            More <ArrowRight style={{ height: 14, width: 14, marginLeft: 4 }} />
+            More <ArrowRight size={14} className="ml-1" />
           </Button>
         </LocalizedLink>
       </div>
@@ -92,17 +90,8 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
         </div>
       ) : (
         <div className="text-center py-6 bg-muted rounded-element">
-          <Plane
-            style={{
-              height: 24,
-              width: 24,
-              margin: '0 auto 8px',
-              color: 'var(--muted-foreground)',
-            }}
-          />
-          <p className="text-muted-foreground mb-2">
-            No deals available right now
-          </p>
+          <Plane size={24} style={{ margin: '0 auto 8px' }} className="text-muted-foreground" />
+          <p className="text-muted-foreground mb-2">No deals available right now</p>
           <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
             <Button variant="outline" size="sm">
               Search Flights to {destinationCity}

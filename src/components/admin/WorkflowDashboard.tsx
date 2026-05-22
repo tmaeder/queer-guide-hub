@@ -72,12 +72,12 @@ const STATUS_CONFIG: Record<
     icon: React.ElementType;
   }
 > = {
-  completed: { label: 'Completed', tone: 'border-emerald-500 text-emerald-700 bg-emerald-50', icon: CheckCircle2 },
-  running: { label: 'Running', tone: 'border-blue-500 text-blue-700 bg-blue-50', icon: Loader2 },
+  completed: { label: 'Completed', tone: 'border-foreground/40 text-foreground bg-muted', icon: CheckCircle2 },
+  running: { label: 'Running', tone: 'border-foreground/40 text-foreground bg-muted', icon: Loader2 },
   queued: { label: 'Queued', tone: 'border-muted text-muted-foreground', icon: Clock },
-  failed: { label: 'Failed', tone: 'border-red-500 text-red-700 bg-red-50', icon: AlertTriangle },
-  dead_letter: { label: 'Dead Letter', tone: 'border-red-500 text-red-700 bg-red-50', icon: Skull },
-  cancelled: { label: 'Cancelled', tone: 'border-amber-500 text-amber-700 bg-amber-50', icon: XCircle },
+  failed: { label: 'Failed', tone: 'border-destructive text-destructive bg-destructive/10', icon: AlertTriangle },
+  dead_letter: { label: 'Dead Letter', tone: 'border-destructive text-destructive bg-destructive/10', icon: Skull },
+  cancelled: { label: 'Cancelled', tone: 'border-border text-foreground bg-muted', icon: XCircle },
 };
 
 function StatusChip({ status }: { status: WorkflowRunStatus }) {
@@ -191,7 +191,7 @@ export function WorkflowDashboard() {
               key={key}
               onClick={() => setActiveTab(key)}
               className={cn(
-                'flex items-center gap-2 border-b-2 px-4 py-3 text-sm transition-colors',
+                'flex items-center gap-2 border-b-2 px-4 py-4 text-sm transition-colors',
                 activeTab === key
                   ? 'border-primary font-bold text-primary'
                   : 'border-transparent font-medium text-muted-foreground hover:text-primary',
@@ -202,7 +202,7 @@ export function WorkflowDashboard() {
               {key === 'dead_letter' && deadLetterRuns.length > 0 && (
                 <Badge
                   variant="outline"
-                  className="ml-1 h-5 border-red-500 text-[0.7rem] text-red-700"
+                  className="ml-1 h-5 border-destructive text-xs2 text-destructive"
                 >
                   {deadLetterRuns.length}
                 </Badge>
@@ -293,7 +293,7 @@ function OverviewTab({
       {/* Active runs */}
       {activeRuns.length > 0 && (
         <div className="rounded-element border bg-card p-4">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-bold">
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold">
             <Loader2 size={14} className="animate-spin" />
             Active Runs ({activeRuns.length})
           </h3>
@@ -324,10 +324,10 @@ function OverviewTab({
       {/* Queue metrics */}
       {metrics?.queues && metrics.queues.length > 0 && (
         <div className="rounded-element border bg-card p-4">
-          <h3 className="mb-3 text-sm font-bold">Queue Depths</h3>
+          <h3 className="mb-4 text-sm font-bold">Queue Depths</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
             {metrics.queues.map((q) => (
-              <div key={q.queue_name} className="rounded border p-3">
+              <div key={q.queue_name} className="rounded border p-4">
                 <span className="text-xs text-muted-foreground">{q.queue_name}</span>
                 <div className="text-lg font-bold">{q.queue_length}</div>
                 {q.oldest_msg_age_sec != null && (
@@ -364,7 +364,7 @@ function RunsTab({
   return (
     <div className="flex flex-col gap-4">
       {/* Filter */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <div className="flex flex-col gap-1">
           <Label className="text-xs">Status</Label>
           <Select
@@ -423,7 +423,7 @@ function RunsTab({
                     <StatusChip status={run.status} />
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-[0.7rem]">
+                    <Badge variant="outline" className="text-xs2">
                       {run.queue_name}
                     </Badge>
                   </TableCell>
@@ -507,7 +507,7 @@ function RunsTab({
 
 function RunDetail({ run }: { run: WorkflowRun }) {
   return (
-    <div className="grid grid-cols-1 gap-4 text-[0.8rem] md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 text-13 md:grid-cols-2">
       <div>
         <span className="text-xs font-bold text-muted-foreground">ID</span>
         <p className="font-mono text-xs">{run.id}</p>
@@ -518,8 +518,8 @@ function RunDetail({ run }: { run: WorkflowRun }) {
       </div>
       {run.error_message && (
         <div className="col-span-full">
-          <span className="text-xs font-bold text-red-600">Error</span>
-          <p className="whitespace-pre-wrap font-mono text-xs text-red-600">
+          <span className="text-xs font-bold text-destructive">Error</span>
+          <p className="whitespace-pre-wrap font-mono text-xs text-destructive">
             {run.error_message}
           </p>
         </div>
@@ -527,7 +527,7 @@ function RunDetail({ run }: { run: WorkflowRun }) {
       {run.output_result && (
         <div className="col-span-full">
           <span className="text-xs font-bold text-muted-foreground">Output</span>
-          <pre className="max-h-[200px] overflow-auto rounded bg-background p-2 font-mono text-[0.7rem]">
+          <pre className="max-h-[200px] overflow-auto rounded bg-background p-2 font-mono text-xs2">
             {JSON.stringify(run.output_result, null, 2)}
           </pre>
         </div>
@@ -535,7 +535,7 @@ function RunDetail({ run }: { run: WorkflowRun }) {
       {run.input_payload && Object.keys(run.input_payload).length > 0 && (
         <div className="col-span-full">
           <span className="text-xs font-bold text-muted-foreground">Input Payload</span>
-          <pre className="max-h-[150px] overflow-auto rounded bg-background p-2 font-mono text-[0.7rem]">
+          <pre className="max-h-[150px] overflow-auto rounded bg-background p-2 font-mono text-xs2">
             {JSON.stringify(run.input_payload, null, 2)}
           </pre>
         </div>
@@ -593,12 +593,12 @@ function DefinitionsTab({
                 <span className="text-sm font-semibold">{def.name}</span>
               </TableCell>
               <TableCell>
-                <Badge variant="outline" className="font-mono text-[0.7rem]">
+                <Badge variant="outline" className="font-mono text-xs2">
                   {def.edge_function}
                 </Badge>
               </TableCell>
               <TableCell>
-                <Badge className="text-[0.7rem]">{def.queue_name}</Badge>
+                <Badge className="text-xs2">{def.queue_name}</Badge>
               </TableCell>
               <TableCell>
                 {def.schedule ? (
@@ -614,8 +614,8 @@ function DefinitionsTab({
                 <Badge
                   variant="outline"
                   className={cn(
-                    'text-[0.7rem]',
-                    def.is_enabled ? 'border-emerald-500 text-emerald-700' : '',
+                    'text-xs2',
+                    def.is_enabled ? 'border-foreground/40 text-foreground' : '',
                   )}
                 >
                   {def.is_enabled ? 'Yes' : 'No'}
@@ -668,7 +668,7 @@ function DeadLetterTab({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 rounded-element bg-red-600 p-4 text-white">
+      <div className="flex items-center gap-2 rounded-element bg-destructive p-4 text-white">
         <AlertTriangle size={18} />
         <p className="text-sm font-semibold">
           {runs.length} workflow{runs.length !== 1 ? 's' : ''} in dead letter queue — review and
@@ -678,7 +678,7 @@ function DeadLetterTab({
       {runs.map((run) => (
         <div
           key={run.id}
-          className="rounded-element border border-red-300 bg-card p-4"
+          className="rounded-element border border-destructive bg-card p-4"
         >
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -691,7 +691,7 @@ function DeadLetterTab({
             </Button>
           </div>
           {run.error_message && (
-            <p className="mb-2 font-mono text-xs text-red-600">{run.error_message}</p>
+            <p className="mb-2 font-mono text-xs text-destructive">{run.error_message}</p>
           )}
           <span className="text-xs text-muted-foreground">
             Attempt {run.attempt}/{run.max_attempts} ·{' '}
@@ -724,7 +724,7 @@ function EnqueueDialog({
 
   const handleEnqueue = async () => {
     if (!selectedWorkflow) return;
-    let payload: Record<string, unknown> = {};
+    let payload: Record<string, unknown>;
     try {
       payload = JSON.parse(payloadStr);
       setPayloadError('');

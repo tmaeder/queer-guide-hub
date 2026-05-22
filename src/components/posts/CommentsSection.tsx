@@ -94,7 +94,7 @@ const CommentItem = ({
 
   return (
     <>
-      <div className="flex gap-3 py-3">
+      <div className="flex gap-4 py-4">
         <Avatar>
           <AvatarImage src={comment.profiles?.avatar_url || undefined} />
           <AvatarFallback>
@@ -104,7 +104,7 @@ const CommentItem = ({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <LocalizedLink to={`/user/${comment.user_id}`} style={{ fontWeight: 500, fontSize: '0.875rem' }}>
+            <LocalizedLink to={`/user/${comment.user_id}`} className="font-medium text-sm">
               {comment.profiles?.display_name || 'Unknown User'}
             </LocalizedLink>
             <span className="text-xs text-muted-foreground">
@@ -120,7 +120,6 @@ const CommentItem = ({
               size="sm"
               onClick={handleLikeToggle}
               disabled={isLiking || !user}
-
             >
               <Heart
                 style={{
@@ -138,9 +137,8 @@ const CommentItem = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => onReply(comment.id, comment.profiles?.display_name || 'User')}
-
               >
-                <Reply style={{ width: 12, height: 12, marginRight: 4 }} />
+                <Reply size={12} className="mr-1" />
                 Reply
               </Button>
             )}
@@ -150,24 +148,19 @@ const CommentItem = ({
         {(isOwnComment || user) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-
-                aria-label="Comment actions"
-              >
-                <MoreHorizontal style={{ width: 12, height: 12 }} />
+              <Button variant="ghost" size="sm" aria-label="Comment actions">
+                <MoreHorizontal size={12} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {isOwnComment && (
                 <>
                   <DropdownMenuItem>
-                    <Edit style={{ width: 12, height: 12, marginRight: 8 }} />
+                    <Edit size={12} className="mr-2" />
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
-                    <Trash2 style={{ width: 12, height: 12, marginRight: 8 }} />
+                    <Trash2 size={12} className="mr-2" />
                     Delete
                   </DropdownMenuItem>
                 </>
@@ -275,7 +268,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         <CardContent>
           <div className="flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex gap-3 animate-pulse">
+              <div key={i} className="flex gap-4 animate-pulse">
                 <div className="h-8 w-8 bg-accent rounded-full" />
                 <div className="flex-1 flex flex-col gap-2">
                   <div className="h-3 bg-accent rounded-badge w-1/4" />
@@ -295,7 +288,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         {/* Comments Header */}
         <div className="p-4 border-b">
           <p className="font-medium flex items-center gap-2">
-            <MessageCircle style={{ width: 16, height: 16 }} />
+            <MessageCircle size={16} />
             Comments ({comments.length})
           </p>
         </div>
@@ -319,12 +312,10 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <Avatar>
                 <AvatarImage src={user.user_metadata?.avatar_url} />
-                <AvatarFallback>
-                  {user.email?.charAt(0)?.toUpperCase() || 'U'}
-                </AvatarFallback>
+                <AvatarFallback>{user.email?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
 
               <div className="flex-1">
@@ -340,11 +331,11 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
-                      <AtSign style={{ width: 12, height: 12 }} />
+                      <AtSign size={12} />
                       <span>mention</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Hash style={{ width: 12, height: 12 }} />
+                      <Hash size={12} />
                       <span>tag</span>
                     </div>
                     <span>• Ctrl+Enter to post</span>
@@ -357,7 +348,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                       onClick={handleSubmitComment}
                       disabled={!newComment.trim() || isCreatingComment}
                     >
-                      <Send style={{ width: 12, height: 12, marginRight: 4 }} />
+                      <Send size={12} className="mr-1" />
                       {isCreatingComment ? 'Posting...' : 'Post'}
                     </Button>
                   </div>
@@ -371,7 +362,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         <div className="[&>*]:border-b [&>*]:border-border">
           {comments.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              <MessageCircle style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+              <MessageCircle size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
               <p className="text-sm">No comments yet. Be the first to comment!</p>
             </div>
           ) : (

@@ -88,7 +88,7 @@ export function SecurityDashboard() {
   if (!isAdmin) {
     return (
       <Alert>
-        <AlertTriangle style={{ height: 16, width: 16 }} />
+        <AlertTriangle size={16} />
         <AlertDescription>
           Access denied. This dashboard is only available to administrators.
         </AlertDescription>
@@ -115,11 +115,11 @@ export function SecurityDashboard() {
     switch (severity) {
       case 'critical':
       case 'high':
-        return <AlertTriangle style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />;
+        return <AlertTriangle size={16} className="text-destructive" />;
       case 'medium':
-        return <Eye style={{ height: 16, width: 16, color: 'hsl(var(--foreground) / 0.55)' }} />;
+        return <Eye size={16} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
       default:
-        return <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />;
+        return <CheckCircle size={16} className="text-foreground" />;
     }
   };
 
@@ -127,12 +127,11 @@ export function SecurityDashboard() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Shield style={{ height: 24, width: 24 }} />
+          <Shield size={24} />
           <h2 className="text-2xl font-bold">Security Dashboard</h2>
         </div>
         <Button onClick={loadSecurityData} disabled={loading}>
-          <RefreshCw
-            style={{ height: 16, width: 16, marginRight: 8 }}
+          <RefreshCw size={16} className="mr-2"
             className={loading ? 'animate-spin' : ''}
           />
           Refresh
@@ -148,7 +147,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Events (24h)</p>
                 <p className="text-2xl font-bold">{metrics.totalEvents}</p>
               </div>
-              <Eye style={{ height: 32, width: 32, color: 'hsl(var(--muted-foreground))' }} />
+              <Eye size={32} className="text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -160,7 +159,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Critical Events</p>
                 <p className="text-2xl font-bold text-destructive">{metrics.criticalEvents}</p>
               </div>
-              <AlertTriangle style={{ height: 32, width: 32, color: 'hsl(var(--destructive))' }} />
+              <AlertTriangle size={32} className="text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -172,7 +171,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Admin Access</p>
                 <p className="text-2xl font-bold">{metrics.recentAdminAccess}</p>
               </div>
-              <Lock style={{ height: 32, width: 32, color: 'hsl(var(--muted-foreground))' }} />
+              <Lock size={32} className="text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -184,7 +183,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Failed Logins</p>
                 <p className="text-2xl font-bold">{metrics.failedLogins}</p>
               </div>
-              <AlertTriangle style={{ height: 32, width: 32, color: 'hsl(var(--foreground) / 0.55)' }} />
+              <AlertTriangle size={32} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
             </div>
           </CardContent>
         </Card>
@@ -196,11 +195,11 @@ export function SecurityDashboard() {
           <CardTitle>Recent Security Events</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {events.slice(0, 20).map((event) => (
               <div
                 key={event.id}
-                className="flex items-start gap-3 p-3 border border-border rounded"
+                className="flex items-start gap-4 p-4 border border-border rounded"
               >
                 {getSeverityIcon(event.severity)}
                 <div className="flex-1 min-w-0">
@@ -235,29 +234,29 @@ export function SecurityDashboard() {
           <CardTitle>Security Implementation Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Profile data encryption and RLS policies hardened</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Location privacy lockdown implemented</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Financial data security enhanced</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Credential storage security implemented</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Content sanitization enhanced</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
+              <CheckCircle size={16} className="text-foreground" />
               <span>Admin access logging and monitoring active</span>
             </div>
           </div>

@@ -100,7 +100,7 @@ export default function Signup({ onBack }: Props) {
 
   if (step === 'username') {
     return (
-      <Card className="max-w-md mx-auto rounded-container shadow-[var(--shadow-aceternity-lg)]">
+      <Card className="max-w-md mx-auto rounded-container">
         <CardHeader>
           <CardTitle className="text-2xl font-bold tracking-tight text-center text-balance">
             Pick your username
@@ -139,7 +139,7 @@ export default function Signup({ onBack }: Props) {
   }
 
   return (
-    <Card className="max-w-md mx-auto rounded-container shadow-[var(--shadow-aceternity-lg)]">
+    <Card className="max-w-md mx-auto rounded-container">
       <CardHeader>
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-center gap-2">

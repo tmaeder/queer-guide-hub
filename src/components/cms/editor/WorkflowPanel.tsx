@@ -152,7 +152,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
   const isNewItem = !itemId;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Current State */}
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">Status</p>
@@ -191,7 +191,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
                     onClick={() => handleTransitionClick(trans)}
                     className={cn(
                       'w-full justify-start font-medium normal-case',
-                      isPublish && 'bg-green-500 hover:bg-green-600 text-white',
+                      isPublish && 'bg-foreground hover:bg-foreground text-white',
                     )}
                   >
                     {isTransitioning ? (
@@ -215,7 +215,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       {commentTarget && (
         <>
           <hr className="border-border" />
-          <div className="rounded-element p-3 bg-gray-50 border border-gray-200">
+          <div className="rounded-element p-4 bg-muted border border-border">
             <p className="text-sm font-semibold mb-1">{commentTarget.label}</p>
             {commentTarget.description && (
               <p className="text-xs text-muted-foreground block mb-1.5">
@@ -267,7 +267,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       {!isNewItem && (
         <div>
           <p className="text-xs font-semibold flex items-center gap-1 mb-2 text-muted-foreground">
-            <CalendarClock style={{ width: 12, height: 12 }} />
+            <CalendarClock size={12} />
             Scheduled publish
           </p>
           <div className="flex flex-row gap-2 items-center">
@@ -315,7 +315,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       {/* Visibility Level */}
       <div>
         <p className="text-xs font-semibold flex items-center gap-1 mb-2 text-muted-foreground">
-          <Eye style={{ width: 12, height: 12 }} />
+          <Eye size={12} />
           Visibility
         </p>
         <Select
@@ -329,19 +329,19 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
           <SelectContent>
             <SelectItem value="public">
               <div className="flex items-center gap-2">
-                <Globe style={{ width: 14, height: 14, color: 'hsl(var(--foreground))' }} />
+                <Globe size={14} className="text-foreground" />
                 <span>Public</span>
               </div>
             </SelectItem>
             <SelectItem value="private">
               <div className="flex items-center gap-2">
-                <EyeOff style={{ width: 14, height: 14, color: 'hsl(var(--foreground) / 0.55)' }} />
+                <EyeOff size={14} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                 <span>Private</span>
               </div>
             </SelectItem>
             <SelectItem value="restricted">
               <div className="flex items-center gap-2">
-                <Lock style={{ width: 14, height: 14, color: 'hsl(var(--destructive))' }} />
+                <Lock size={14} className="text-destructive" />
                 <span>Restricted</span>
               </div>
             </SelectItem>
@@ -355,7 +355,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
           <hr className="border-border" />
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock style={{ width: 12, height: 12 }} />
+              <Clock size={12} />
               Published
             </p>
             <p className="text-xs font-medium">{formatDatetime(publishedAt)}</p>

@@ -122,7 +122,7 @@ export function RelationshipsTab({ formData, onChange }: RelationshipsTabProps) 
   return (
     <div className="flex flex-col gap-6">
       <Alert>
-        <Heart style={{ width: 16, height: 16 }} />
+        <Heart size={16} />
         <AlertDescription>
           Share what you're comfortable with. All fields are optional and visibility is controlled in Privacy settings.
         </AlertDescription>

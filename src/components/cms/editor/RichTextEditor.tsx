@@ -105,7 +105,7 @@ export function RichTextEditor({
 
       {/* Editor content area */}
       <div
-        className="px-4 py-3 overflow-y-auto rich-text-content"
+        className="px-4 py-4 overflow-y-auto rich-text-content"
         style={{ minHeight }}
       >
         <EditorContent editor={editor} />

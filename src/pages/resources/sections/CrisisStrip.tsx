@@ -101,16 +101,16 @@ export function CrisisStrip() {
   const emergency = EMERGENCY_NUMBERS[country] ?? EMERGENCY_NUMBERS.INT;
 
   return (
-    <section aria-labelledby="crisis-heading" className="rounded-container bg-foreground/[0.03] border border-border/60 p-5 sm:p-6">
-      <header className="flex flex-wrap items-center gap-3 mb-4">
+    <section aria-labelledby="crisis-heading" className="rounded-container bg-foreground/[0.03] border border-border/60 p-6 sm:p-6">
+      <header className="flex flex-wrap items-center gap-4 mb-4">
         <div className="flex items-center gap-2">
-          <AlertTriangle aria-hidden style={{ width: 18, height: 18 }} />
+          <AlertTriangle aria-hidden size={18} />
           <h2 id="crisis-heading" className="text-base font-semibold">{t('resources.crisis.heading')}</h2>
         </div>
-        <Badge variant="secondary" className="text-[0.7rem]">{t('resources.crisis.badge')}</Badge>
+        <Badge variant="secondary" className="text-xs2">{t('resources.crisis.badge')}</Badge>
         <div className="ml-auto flex items-center gap-2">
           <Select value={country} onValueChange={setCountry}>
-            <SelectTrigger className="h-8 w-[170px] text-xs" aria-label={t('resources.crisis.chooseCountryAria')}>
+            <SelectTrigger className="h-8 w-full sm:w-[170px] text-xs" aria-label={t('resources.crisis.chooseCountryAria')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -139,25 +139,25 @@ export function CrisisStrip() {
       </p>
 
       {showNoLocalNote && (
-        <p className="text-xs text-muted-foreground mb-3">
+        <p className="text-xs text-muted-foreground mb-4">
           {t('resources.crisis.noLocal', { country: countryLabel(country) })}
         </p>
       )}
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-element" />)}
         </div>
       ) : visible.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('resources.crisis.noHotlinesLoaded')}</p>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" aria-label={t('resources.crisis.listAria')}>
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4" aria-label={t('resources.crisis.listAria')}>
           {visible.map((h) => (
             <li key={h.id}>
               <Card className="p-4 h-full flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold text-sm leading-tight">{h.name}</p>
-                  <Badge variant="outline" className="shrink-0 text-[0.65rem]">{countryLabel(h.country)}</Badge>
+                  <Badge variant="outline" className="shrink-0 text-2xs">{countryLabel(h.country)}</Badge>
                 </div>
                 {h.phone && (
                   <a
@@ -165,20 +165,20 @@ export function CrisisStrip() {
                     aria-label={t('resources.crisis.callAria', { name: h.name, phone: h.phone })}
                     className="inline-flex items-center gap-2 text-xl font-semibold tabular-nums text-foreground hover:underline -mx-1 px-1 py-0.5"
                   >
-                    <Phone aria-hidden style={{ width: 18, height: 18 }} />
+                    <Phone aria-hidden size={18} />
                     {h.phone}
                   </a>
                 )}
-                <div className="flex flex-wrap gap-2 text-[0.7rem] text-muted-foreground mt-auto">
+                <div className="flex flex-wrap gap-2 text-xs2 text-muted-foreground mt-auto">
                   {h.hours && (
                     <span className="inline-flex items-center gap-1">
-                      <Clock aria-hidden style={{ width: 12, height: 12 }} />
+                      <Clock aria-hidden size={12} />
                       {h.hours}
                     </span>
                   )}
                   {h.languages?.length > 0 && (
                     <span className="inline-flex items-center gap-1">
-                      <Languages aria-hidden style={{ width: 12, height: 12 }} />
+                      <Languages aria-hidden size={12} />
                       {h.languages.join(', ')}
                     </span>
                   )}
@@ -194,7 +194,7 @@ export function CrisisStrip() {
         className="mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline"
       >
         {t('resources.crisis.seeAll')}
-        <ChevronRight aria-hidden style={{ width: 14, height: 14 }} />
+        <ChevronRight aria-hidden size={14} />
       </LocalizedLink>
     </section>
   );

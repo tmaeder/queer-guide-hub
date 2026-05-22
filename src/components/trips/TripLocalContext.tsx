@@ -29,13 +29,13 @@ export function TripLocalContext({ trip }: Props) {
     <div className="mt-8 flex flex-col gap-6">
       {personalities.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Users size={16} style={{ color: 'hsl(var(--foreground))' }} />
+          <div className="flex items-center gap-2 mb-4">
+            <Users size={16} className="text-foreground" />
             <span className="font-bold text-base">
               {t('trips.localContext.personalitiesTitle', "Notable from where you're going")}
             </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {personalities.map((p) => (
               <Card
                 key={p.id}
@@ -67,13 +67,13 @@ export function TripLocalContext({ trip }: Props) {
 
       {villages.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <MapIcon size={16} style={{ color: 'hsl(var(--foreground))' }} />
+          <div className="flex items-center gap-2 mb-4">
+            <MapIcon size={16} className="text-foreground" />
             <span className="font-bold text-base">
               {t('trips.localContext.villagesTitle', 'Queer neighborhoods')}
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {villages.map((v) => (
               <Card
                 key={v.id}

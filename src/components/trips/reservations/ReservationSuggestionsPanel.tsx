@@ -67,7 +67,7 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
       {accommodations.length > 0 && (
         <div>
           <SectionHeader icon={<Hotel size={14} />} title={t('trips.suggestions.stayTitle')} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {accommodations.map((a) => (
               <SuggestionCard
                 key={a.id}
@@ -102,7 +102,7 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
       {hasAnyTransport && (
         <div>
           <SectionHeader icon={<Plane size={14} />} title={t('trips.suggestions.getToTitle')} />
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {(['flight', 'rail', 'bus'] as const).map((mode) => {
               const group = transportGroups[mode];
               if (group.length === 0) return null;
@@ -115,7 +115,7 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
                       {t(`trips.suggestions.mode.${mode}`)}
                     </span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {group.map((s) => (
                       <SuggestionCard
                         key={s.id}
@@ -150,7 +150,7 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
 
 function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
-    <div className="flex items-center gap-2 mb-3">
+    <div className="flex items-center gap-2 mb-4">
       <div className="w-7 h-7 rounded-element bg-muted flex items-center justify-center">
         {icon}
       </div>

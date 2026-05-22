@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { Upload, X, Image } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { supabase } from '@/integrations/supabase/client';
+import { Upload, X, Image } from 'lucide-react';
 import { toast } from 'sonner';
-import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/uploadErrors";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '@/lib/uploadErrors';
 
 interface TagImageUploadProps {
   currentImageUrl?: string;
@@ -16,7 +16,7 @@ interface TagImageUploadProps {
 export const TagImageUpload = ({
   currentImageUrl,
   onImageChange,
-  tagName
+  tagName,
 }: TagImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
@@ -33,9 +33,9 @@ export const TagImageUpload = ({
 
     if (file.size > MAX_UPLOAD_BYTES) {
       toast({
-        title: "File too large",
+        title: 'File too large',
         description: `${file.name} is ${(file.size / (1024 * 1024)).toFixed(1)} MB. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`,
-        variant: "destructive"
+        variant: 'destructive',
       });
       return;
     }
@@ -48,26 +48,21 @@ export const TagImageUpload = ({
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
       // Upload to Supabase storage
-      const { data, error } = await supabase.storage
-        .from('tag-images')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      const { data, error } = await supabase.storage.from('tag-images').upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
 
       if (error) throw error;
 
       // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('tag-images')
-        .getPublicUrl(data.path);
+      const { data: urlData } = supabase.storage.from('tag-images').getPublicUrl(data.path);
 
       const imageUrl = urlData.publicUrl;
       setPreviewUrl(imageUrl);
       onImageChange(imageUrl);
 
       toast.success('Success: Image uploaded successfully');
-
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Upload failed: Failed to upload image. Please try again.');
@@ -84,9 +79,7 @@ export const TagImageUpload = ({
         const fileName = urlParts[urlParts.length - 1];
 
         // Delete from storage
-        await supabase.storage
-          .from('tag-images')
-          .remove([fileName]);
+        await supabase.storage.from('tag-images').remove([fileName]);
       } catch (error) {
         console.error('Delete error:', error);
       }
@@ -107,36 +100,31 @@ export const TagImageUpload = ({
           <div className="w-full overflow-hidden bg-muted" style={{ height: 128 }}>
             <img
               src={previewUrl}
-              alt={tagName || "Tag image"}
+              alt={tagName || 'Tag image'}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>
           <Button type="button" variant="destructive" size="sm" onClick={handleDeleteImage}>
-            <X style={{ width: 16, height: 16 }} />
+            <X size={16} />
           </Button>
         </div>
       ) : (
         <div className="w-full">
           <div className="p-6 text-center bg-muted">
-            <Image style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+            <Image size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
             <div className="flex flex-col gap-2">
               <p className="text-sm text-muted-foreground">Upload an image for this tag</p>
               <span className="text-xs text-muted-foreground">PNG, JPG, WebP up to 20MB</span>
             </div>
           </div>
 
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            disabled={uploading}
-          />
+          <Input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
         </div>
       )}
 
       {uploading && (
         <div className="flex items-center gap-2">
-          <Upload className="animate-pulse" style={{ width: 16, height: 16 }} />
+          <Upload className="animate-pulse" size={16} />
           <p className="text-sm text-muted-foreground">Uploading image...</p>
         </div>
       )}

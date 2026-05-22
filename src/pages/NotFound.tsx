@@ -23,20 +23,23 @@ const NotFound = () => {
           {t('pages.notFound.title', 'Page not found')}
         </h6>
         <p className="text-muted-foreground mb-8">
-          {t('pages.notFound.description', "The page you're looking for doesn't exist or has been moved.")}
+          {t(
+            'pages.notFound.description',
+            "The page you're looking for doesn't exist or has been moved.",
+          )}
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button
             variant="outline"
             onClick={() => window.history.back()}
             style={{ display: 'inline-flex', gap: 8 }}
           >
-            <ArrowLeft style={{ width: 16, height: 16 }} aria-hidden="true" />
+            <ArrowLeft size={16} aria-hidden="true" />
             {t('pages.notFound.goBack', 'Go Back')}
           </Button>
-          <Button asChild style={{ display: 'inline-flex', gap: 8 }}>
+          <Button asChild className="inline-flex gap-2">
             <LocalizedLink to="/">
-              <Home style={{ width: 16, height: 16 }} aria-hidden="true" />
+              <Home size={16} aria-hidden="true" />
               {t('pages.notFound.returnHome', 'Return Home')}
             </LocalizedLink>
           </Button>

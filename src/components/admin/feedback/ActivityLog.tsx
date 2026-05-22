@@ -77,13 +77,13 @@ export function ActivityLog({ entries, adminById }: Props) {
           <div className="mt-1 p-2 bg-muted rounded max-h-[220px] overflow-y-auto">
             {grouped.map((e) => (
               <div key={e.id} className="mb-1">
-                <p className="block text-[0.7rem]">
+                <p className="block text-xs2">
                   <strong>
                     {e.actor_id ? adminById[e.actor_id]?.display_name ?? 'Admin' : 'System'}
                   </strong>{' '}
                   {renderChange(e, adminById)}
                 </p>
-                <p className="text-[0.6rem] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   {timeAgo(e.at)}
                 </p>
               </div>

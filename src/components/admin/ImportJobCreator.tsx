@@ -272,11 +272,7 @@ export const ImportJobCreator = () => {
     // acknowledged the routing. The legacy import-*-csv handlers stamp
     // the whole batch with one target_table, so mismatches today silently
     // ingest as the wrong entity type.
-    if (
-      detectionSummary &&
-      detectionSummary.mismatches > 0 &&
-      !routingAcknowledged
-    ) {
+    if (detectionSummary && detectionSummary.mismatches > 0 && !routingAcknowledged) {
       toast({
         title: 'Mixed entity types detected',
         description: `${detectionSummary.mismatches} row(s) look like a different entity type. Review the preview and check the acknowledgement box to continue.`,
@@ -319,12 +315,12 @@ export const ImportJobCreator = () => {
 
   /* ── Render ── */
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {/* ── CSV / Edge Function Imports ── */}
       <Card>
         <CardHeader>
           <CardTitle>
-            <Upload style={{ height: 18, width: 18 }} />
+            <Upload size={18} />
             Import Data
           </CardTitle>
         </CardHeader>
@@ -374,23 +370,19 @@ export const ImportJobCreator = () => {
                   onChange={handleFileUpload}
                   disabled={loading}
                 />
-                {fileName && (
-                  <p className="text-xs text-muted-foreground">
-                    {fileName}
-                  </p>
-                )}
+                {fileName && <p className="text-xs text-muted-foreground">{fileName}</p>}
               </div>
 
               {csvPreview && (
                 <>
                   <div className="flex items-center gap-2 -mb-2">
-                    <Eye style={{ height: 14, width: 14 }} />
-                    <p className="text-sm font-medium">
-                      Preview (first 5 rows)
-                    </p>
+                    <Eye size={14} />
+                    <p className="text-sm font-medium">Preview (first 5 rows)</p>
                   </div>
                   {detectionSummary && (
-                    <div className={`flex flex-col gap-1.5 p-2 border rounded ${detectionSummary.mismatches > 0 ? "border-destructive bg-destructive/10" : "border-border bg-muted"}`}>
+                    <div
+                      className={`flex flex-col gap-1.5 p-2 border rounded ${detectionSummary.mismatches > 0 ? 'border-destructive bg-destructive/10' : 'border-border bg-muted'}`}
+                    >
                       <p className="text-xs font-semibold">
                         Detected entity types ({detectionSummary.rows.length} rows scanned)
                       </p>
@@ -402,10 +394,7 @@ export const ImportJobCreator = () => {
                             const isMismatch =
                               expectedType !== null && t !== 'unknown' && t !== expectedType;
                             return (
-                              <Badge
-                                key={t}
-                                variant={isMismatch ? 'destructive' : 'secondary'}
-                              >
+                              <Badge key={t} variant={isMismatch ? 'destructive' : 'secondary'}>
                                 {t}: {count}
                               </Badge>
                             );
@@ -414,10 +403,10 @@ export const ImportJobCreator = () => {
                       {detectionSummary.mismatches > 0 && expectedType && (
                         <p className="text-xs text-destructive">
                           {detectionSummary.mismatches} row(s) don&apos;t look like{' '}
-                          <b>{expectedType}</b>. They will still be staged as{' '}
-                          <b>{expectedType}</b> by this import; the AI validator may reject
-                          them. To route per-row to the correct table, use the pipeline DAG
-                          with the <code>source-csv-upload</code> node instead.
+                          <b>{expectedType}</b>. They will still be staged as <b>{expectedType}</b>{' '}
+                          by this import; the AI validator may reject them. To route per-row to the
+                          correct table, use the pipeline DAG with the{' '}
+                          <code>source-csv-upload</code> node instead.
                         </p>
                       )}
                       {detectionSummary.unknownCount > 0 && (
@@ -433,7 +422,7 @@ export const ImportJobCreator = () => {
                             checked={routingAcknowledged}
                             onCheckedChange={(v) => setRoutingAcknowledged(!!v)}
                           />
-                          <Label htmlFor="ack-routing" style={{ fontSize: '0.75rem' }}>
+                          <Label htmlFor="ack-routing" className="text-xs">
                             I understand mixed-type rows will be staged as{' '}
                             {expectedType ?? 'the selected type'}.
                           </Label>
@@ -449,7 +438,10 @@ export const ImportJobCreator = () => {
                             detected
                           </th>
                           {csvPreview.headers.map((h, i) => (
-                            <th key={i} className="p-1.5 text-left font-semibold border-b border-border">
+                            <th
+                              key={i}
+                              className="p-1.5 text-left font-semibold border-b border-border"
+                            >
                               {h}
                             </th>
                           ))}
@@ -465,7 +457,10 @@ export const ImportJobCreator = () => {
                             detectedType !== expectedType;
                           return (
                             <tr key={i}>
-                              <td className="p-1.5 border-b border-border whitespace-nowrap" title={detected?.reason}>
+                              <td
+                                className="p-1.5 border-b border-border whitespace-nowrap"
+                                title={detected?.reason}
+                              >
                                 <Badge variant={isMismatch ? 'destructive' : 'secondary'}>
                                   {detectedType}
                                 </Badge>
@@ -487,7 +482,9 @@ export const ImportJobCreator = () => {
                       <Label>Duplicates</Label>
                       <Select
                         value={duplicateStrategy}
-                        onValueChange={(v) => setDuplicateStrategy(v as 'skip' | 'update' | 'create')}
+                        onValueChange={(v) =>
+                          setDuplicateStrategy(v as 'skip' | 'update' | 'create')
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -516,7 +513,7 @@ export const ImportJobCreator = () => {
                                 padding: 0,
                               }}
                             >
-                              <X style={{ height: 10, width: 10 }} />
+                              <X size={10} />
                             </button>
                           </Badge>
                         ))}
@@ -551,10 +548,8 @@ export const ImportJobCreator = () => {
           {importType === 'scrape-gaycities-events' && (
             <Card variant="outlined">
               <CardHeader>
-                <CardTitle
-
-                >
-                  <Sliders style={{ height: 14, width: 14 }} />
+                <CardTitle>
+                  <Sliders size={14} />
                   Events Scraper Config
                 </CardTitle>
               </CardHeader>
@@ -574,7 +569,7 @@ export const ImportJobCreator = () => {
                             padding: 0,
                           }}
                         >
-                          <X style={{ height: 10, width: 10 }} />
+                          <X size={10} />
                         </button>
                       </Badge>
                     ))}
@@ -583,7 +578,6 @@ export const ImportJobCreator = () => {
                     placeholder="Search cities..."
                     value={citySearch}
                     onChange={(e) => setCitySearch(e.target.value)}
-
                   />
                   <div className="flex flex-wrap gap-1 overflow-y-auto" style={{ maxHeight: 150 }}>
                     {allCities
@@ -604,12 +598,13 @@ export const ImportJobCreator = () => {
                             key={slug}
                             variant="outline"
                             size="sm"
-
                             onClick={() => setScraperCities((prev) => [...prev, slug])}
                           >
-                            <Plus style={{ height: 10, width: 10, marginRight: 2 }} />
+                            <Plus size={10} className="mr-0.5" />
                             {city.name}{' '}
-                            <span style={{ opacity: 0.5, marginLeft: 4 }}>{city.country}</span>
+                            <span style={{ opacity: 0.5 }} className="ml-1">
+                              {city.country}
+                            </span>
                           </Button>
                         );
                       })}
@@ -641,10 +636,8 @@ export const ImportJobCreator = () => {
           {importType === 'scrape-spartacus' && (
             <Card variant="outlined">
               <CardHeader>
-                <CardTitle
-
-                >
-                  <Sliders style={{ height: 14, width: 14 }} />
+                <CardTitle>
+                  <Sliders size={14} />
                   Spartacus Scraper Config
                 </CardTitle>
               </CardHeader>
@@ -686,7 +679,7 @@ export const ImportJobCreator = () => {
                             padding: 0,
                           }}
                         >
-                          <X style={{ height: 10, width: 10 }} />
+                          <X size={10} />
                         </button>
                       </Badge>
                     ))}
@@ -699,10 +692,9 @@ export const ImportJobCreator = () => {
                           key={c}
                           variant="outline"
                           size="sm"
-
                           onClick={() => setSpartacusCountries((prev) => [...prev, c])}
                         >
-                          <Plus style={{ height: 10, width: 10, marginRight: 2 }} />
+                          <Plus size={10} className="mr-0.5" />
                           {c}
                         </Button>
                       ))}
@@ -748,14 +740,12 @@ export const ImportJobCreator = () => {
               <Button onClick={handleSubmit} disabled={loading}>
                 {loading ? (
                   <>
-                    <RefreshCw
-                      style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }}
-                    />{' '}
+                    <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />{' '}
                     Running...
                   </>
                 ) : (
                   <>
-                    <CheckCircle style={{ height: 16, width: 16 }} />{' '}
+                    <CheckCircle size={16} />{' '}
                     {selected.mode === 'venue-api' ? 'Configure Import' : 'Start Import'}
                   </>
                 )}

@@ -47,20 +47,27 @@ export const LegalPageLayout = ({
   return (
     <div className="container mx-auto py-8 px-4" style={{ maxWidth: 1100 }}>
       <h3 className="text-3xl font-bold mb-1">{title}</h3>
-      {subtitle && (
-        <p className="text-base text-muted-foreground mb-2 max-w-xl">{subtitle}</p>
-      )}
+      {subtitle && <p className="text-base text-muted-foreground mb-2 max-w-xl">{subtitle}</p>}
       {lastUpdated && (
-        <span className="text-xs mb-8 block" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
+        <span
+          className="text-xs mb-8 block"
+          style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}
+        >
           Last updated {lastUpdated}
         </span>
       )}
 
       <div className="flex flex-col md:flex-row md:gap-8 items-start mt-6">
         {/* Sidebar TOC — desktop */}
-        <div className="hidden md:block sticky flex-shrink-0" style={{ top: 80, minWidth: 200, maxWidth: 240 }}>
-          <div className="bg-background p-3">
-            <span className="text-xs font-semibold mb-2 px-2 block uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
+        <div
+          className="hidden md:block sticky flex-shrink-0"
+          style={{ top: 80, minWidth: 200, maxWidth: 240 }}
+        >
+          <div className="bg-background p-4">
+            <span
+              className="text-xs font-semibold mb-2 px-2 block uppercase tracking-wider"
+              style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}
+            >
               On this page
             </span>
             <nav aria-label="Table of contents">
@@ -74,7 +81,10 @@ export const LegalPageLayout = ({
                     border: 'none',
                     borderLeft: `2px solid ${activeSection === s.id ? 'hsl(var(--foreground))' : 'transparent'}`,
                     backgroundColor: 'transparent',
-                    color: activeSection === s.id ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
+                    color:
+                      activeSection === s.id
+                        ? 'hsl(var(--foreground))'
+                        : 'hsl(var(--muted-foreground))',
                     fontWeight: activeSection === s.id ? 600 : 400,
                     fontSize: '0.8125rem',
                     cursor: 'pointer',
@@ -96,16 +106,16 @@ export const LegalPageLayout = ({
             aria-expanded={tocOpen}
             aria-label="Table of contents"
           >
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <List style={{ width: 16, height: 16 }} />
+            <span style={{ alignItems: 'center' }} className="flex gap-2">
+              <List size={16} />
               {activeSection
-                ? `${sections.findIndex(s => s.id === activeSection) + 1} of ${sections.length} sections`
+                ? `${sections.findIndex((s) => s.id === activeSection) + 1} of ${sections.length} sections`
                 : 'Contents'}
             </span>
-            {tocOpen ? <ChevronUp style={{ width: 16, height: 16 }} /> : <ChevronDown style={{ width: 16, height: 16 }} />}
+            {tocOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </Button>
           {tocOpen && (
-            <div className="mt-2 bg-background p-3">
+            <div className="mt-2 bg-background p-4">
               {sections.map((s) => (
                 <button
                   key={s.id}
@@ -116,7 +126,10 @@ export const LegalPageLayout = ({
                     border: 'none',
                     backgroundColor: 'transparent',
                     fontSize: '0.875rem',
-                    color: activeSection === s.id ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
+                    color:
+                      activeSection === s.id
+                        ? 'hsl(var(--foreground))'
+                        : 'hsl(var(--muted-foreground))',
                     fontWeight: activeSection === s.id ? 600 : 400,
                     cursor: 'pointer',
                   }}
@@ -135,7 +148,7 @@ export const LegalPageLayout = ({
           <div className="mt-12 pt-6 border-t border-border">
             <p className="text-sm text-muted-foreground">
               Questions? We're real humans at{' '}
-              <a href="mailto:legal@queer.guide" className="hover:opacity-85" style={{ color: 'hsl(var(--foreground))' }}>
+              <a href="mailto:legal@queer.guide" className="hover:opacity-85 text-foreground">
                 legal@queer.guide
               </a>
             </p>

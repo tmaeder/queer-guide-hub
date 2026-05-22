@@ -23,7 +23,7 @@ export function DonorWall() {
   if (!donors?.length) {
     return (
       <div className="py-8 text-center">
-        <Heart style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.3 }} />
+        <Heart size={32} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
         <p className="text-sm text-muted-foreground">
           {t('donate.noDonorsYet', 'Be the first to support queer.guide!')}
         </p>
@@ -32,10 +32,10 @@ export function DonorWall() {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-4">
       {donors.map((donor) => (
         <Card key={donor.id}>
-          <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
+          <CardContent className="py-4 px-4 flex items-center justify-between gap-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium truncate">

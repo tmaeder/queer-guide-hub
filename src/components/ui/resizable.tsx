@@ -1,6 +1,6 @@
-import React from "react"
-import { GripVertical } from "lucide-react"
-import * as ResizablePrimitive from "react-resizable-panels"
+import React from 'react';
+import { GripVertical } from 'lucide-react';
+import * as ResizablePrimitive from 'react-resizable-panels';
 
 const ResizablePanelGroup = ({
   style,
@@ -16,43 +16,44 @@ const ResizablePanelGroup = ({
     }}
     {...props}
   />
-)
+);
 
-const ResizablePanel = ResizablePrimitive.Panel
+const ResizablePanel = ResizablePrimitive.Panel;
 
 const ResizableHandle = ({
   withHandle,
   style,
   ...props
 }: React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle> & {
-  withHandle?: boolean
+  withHandle?: boolean;
 }) => (
   <ResizablePrimitive.PanelResizeHandle
     style={{
-      position: 'relative',
-      display: 'flex',
       width: 1,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'hsl(var(--border))',
       ...style,
     }}
+    className="relative flex"
     {...props}
   >
     {withHandle && (
-      <div style={{
-        zIndex: 10,
-        display: 'flex',
-        height: 16,
-        width: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'hsl(var(--accent))',
-      }}>
-        <GripVertical style={{ height: 10, width: 10 }} />
+      <div
+        style={{
+          zIndex: 10,
+          height: 16,
+          width: 12,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'hsl(var(--accent))',
+        }}
+        className="flex"
+      >
+        <GripVertical size={10} />
       </div>
     )}
   </ResizablePrimitive.PanelResizeHandle>
-)
+);
 
-export { ResizablePanelGroup, ResizablePanel, ResizableHandle }
+export { ResizablePanelGroup, ResizablePanel, ResizableHandle };

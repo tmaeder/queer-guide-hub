@@ -38,7 +38,7 @@ export function ArchivedStoriesPanel({ archived, adminById, onOpen }: Props) {
           return (
             <div
               key={s.id}
-              className="border border-border p-3 flex items-start gap-3 opacity-90"
+              className="border border-border p-4 flex items-start gap-4 opacity-90"
             >
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold">

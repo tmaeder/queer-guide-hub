@@ -25,17 +25,17 @@ export function SavedSearchesButton() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" aria-label="Saved searches">
-          <Bookmark style={{ width: 14, height: 14, marginRight: 6 }} aria-hidden="true" />
+          <Bookmark size={14} className="mr-1.5" aria-hidden="true" />
           Saved searches
           {searches.length > 0 && (
-            <span className="ml-1.5 text-[11px] rounded-full bg-muted px-1.5 py-0 leading-tight">
+            <span className="ml-1.5 text-xs2 rounded-full bg-muted px-1.5 py-0 leading-tight">
               {searches.length}
             </span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <div>
             <p className="text-sm font-semibold mb-2">Save current filters</p>
             <div className="flex gap-2">
@@ -55,13 +55,13 @@ export function SavedSearchesButton() {
                 disabled={!hasFilters || !name.trim()}
                 aria-label="Save search"
               >
-                <Plus style={{ width: 14, height: 14 }} aria-hidden="true" />
+                <Plus size={14} aria-hidden="true" />
               </Button>
             </div>
           </div>
 
           {searches.length > 0 && (
-            <div className="border-t border-border pt-3">
+            <div className="border-t border-border pt-4">
               <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Saved</p>
               <ul className="flex flex-col gap-1 max-h-[260px] overflow-y-auto">
                 {searches.map((s) => (
@@ -83,7 +83,7 @@ export function SavedSearchesButton() {
                       aria-label={`Delete saved search ${s.name}`}
                       className="p-1 rounded hover:bg-muted text-muted-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                     >
-                      <X style={{ width: 12, height: 12 }} aria-hidden="true" />
+                      <X size={12} aria-hidden="true" />
                     </button>
                   </li>
                 ))}

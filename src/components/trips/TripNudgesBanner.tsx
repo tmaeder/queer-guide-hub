@@ -46,7 +46,7 @@ export function TripNudgesBanner({ tripId }: Props) {
         return (
           <div
             key={n.id}
-            className="flex items-start gap-3 p-3"
+            className="flex items-start gap-4 p-4"
             style={{ backgroundColor: tone.bg }}
           >
             <div className="flex items-center mt-0.5" style={{ color: tone.fg }}>
@@ -55,16 +55,14 @@ export function TripNudgesBanner({ tripId }: Props) {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold leading-tight">{n.title}</p>
               {n.body && (
-                <span className="block text-xs text-muted-foreground mt-0.5">
-                  {n.body}
-                </span>
+                <span className="block text-xs text-muted-foreground mt-0.5">{n.body}</span>
               )}
-              {n.action_url && n.action_label && (
-                isInternal ? (
+              {n.action_url &&
+                n.action_label &&
+                (isInternal ? (
                   <RouterLink
                     to={n.action_url}
-                    className="inline-block mt-2 text-xs font-semibold hover:underline"
-                    style={{ color: 'hsl(var(--foreground))', textDecoration: 'none' }}
+                    className="inline-block mt-2 text-xs font-semibold hover:underline text-foreground no-underline"
                   >
                     {n.action_label} →
                   </RouterLink>
@@ -73,13 +71,11 @@ export function TripNudgesBanner({ tripId }: Props) {
                     href={n.action_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block mt-2 text-xs font-semibold hover:underline"
-                    style={{ color: 'hsl(var(--foreground))', textDecoration: 'none' }}
+                    className="inline-block mt-2 text-xs font-semibold hover:underline text-foreground no-underline"
                   >
                     {n.action_label} →
                   </a>
-                )
-              )}
+                ))}
             </div>
             <Button
               variant="ghost"

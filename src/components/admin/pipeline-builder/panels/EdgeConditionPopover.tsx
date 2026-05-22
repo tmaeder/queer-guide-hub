@@ -55,8 +55,8 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
         <PopoverTrigger asChild>
           <span className="absolute" />
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-3" side="bottom" align="center">
-          <div className="flex items-center gap-2 mb-3">
+        <PopoverContent className="w-80 p-4" side="bottom" align="center">
+          <div className="flex items-center gap-2 mb-4">
             <GitBranch className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-xs font-semibold">Edge Condition</span>
             <Button size="icon" variant="ghost" className="h-6 w-6 ml-auto" onClick={onClose}>
@@ -100,7 +100,7 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
             <span className="font-mono">items_count, items_valid, items_invalid, entity_type, source_name, dry_run</span>
           </div>
 
-          <div className="flex gap-1.5 mt-3">
+          <div className="flex gap-1.5 mt-4">
             <Button size="sm" variant="default" className="h-7 text-xs flex-1" onClick={handleSave}>
               Save
             </Button>

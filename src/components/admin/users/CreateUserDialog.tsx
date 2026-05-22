@@ -150,7 +150,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
             placeholder="Defaults to email"
           />
 
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <div className="flex-1">
               <Field
                 label="First Name"
@@ -167,7 +167,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <div className="flex-1">
               <Field
                 label="Pronouns"

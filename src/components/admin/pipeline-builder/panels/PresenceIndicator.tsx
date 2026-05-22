@@ -115,7 +115,7 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
               )}
             </div>
             {editorCount > 0 && (
-              <Pencil className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400 ml-0.5" />
+              <Pencil className="h-2.5 w-2.5 text-foreground dark:text-foreground ml-0.5" />
             )}
           </div>
         </TooltipTrigger>
@@ -130,7 +130,7 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
                 />
                 <span className="truncate flex-1">{p.email || p.user_id.slice(0, 12)}</span>
                 {p.activity === 'editing' ? (
-                  <Pencil className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />
+                  <Pencil className="h-2.5 w-2.5 text-foreground dark:text-foreground" />
                 ) : (
                   <Eye className="h-2.5 w-2.5 text-muted-foreground" />
                 )}
@@ -138,7 +138,7 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
             ))}
           </div>
           {editorCount > 1 && (
-            <div className="mt-2 pt-2 border-t border-border text-2xs text-amber-600 dark:text-amber-400">
+            <div className="mt-2 pt-2 border-t border-border text-2xs text-foreground dark:text-foreground">
               ⚠ Multiple editors — last save wins
             </div>
           )}

@@ -87,9 +87,9 @@ export default function Friends() {
                       variant="destructive"
                       size="sm"
                       disabled={!canSend || sosLoading}
-                      style={{ gap: 6 }}
+                      className="gap-1.5"
                     >
-                      <Siren style={{ width: 16, height: 16 }} />
+                      <Siren size={16} />
                       {cooldownSeconds > 0
                         ? `${Math.floor(cooldownSeconds / 60)}:${String(cooldownSeconds % 60).padStart(2, '0')}`
                         : t('sos.button')}
@@ -108,7 +108,7 @@ export default function Friends() {
                         onClick={sendSOS}
                         className="bg-destructive text-destructive-foreground"
                       >
-                        <Siren style={{ width: 16, height: 16, marginRight: 6 }} />
+                        <Siren size={16} className="mr-1.5" />
                         {sosLoading ? t('sos.sending') : t('sos.send')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -116,7 +116,7 @@ export default function Friends() {
                 </AlertDialog>
                 <Badge variant="secondary">
                   <div className="flex items-center gap-2">
-                    <Users style={{ width: 16, height: 16 }} />
+                    <Users size={16} />
                     {friends.length} Friends
                   </div>
                 </Badge>
@@ -125,16 +125,16 @@ export default function Friends() {
           />
 
           <Tabs defaultValue="friends" style={{ width: '100%' }}>
-            <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr' }}>
+            <TabsList style={{ width: '100%', gridTemplateColumns: '1fr 1fr' }} className="grid">
               <TabsTrigger value="friends">
                 <div className="flex items-center gap-2">
-                  <Users style={{ width: 16, height: 16 }} />
+                  <Users size={16} />
                   Friends ({friends.length})
                 </div>
               </TabsTrigger>
               <TabsTrigger value="requests">
                 <div className="flex items-center gap-2">
-                  <Clock style={{ width: 16, height: 16 }} />
+                  <Clock size={16} />
                   Requests ({pendingRequests.length})
                 </div>
               </TabsTrigger>
@@ -166,9 +166,12 @@ export default function Friends() {
                         <Card key={friendship.id}>
                           <CardContent>
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-4">
                                 <Avatar style={{ width: 48, height: 48 }}>
-                                  <AvatarImage src={profile?.avatar_url || undefined} />
+                                  <AvatarImage
+                                    src={profile?.avatar_url || undefined}
+                                    alt={profile?.display_name || ''}
+                                  />
                                   <AvatarFallback>
                                     {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
                                   </AvatarFallback>
@@ -176,7 +179,8 @@ export default function Friends() {
                                 <div>
                                   <LocalizedLink
                                     to={`/users/${friendId}`}
-                                    style={{ fontWeight: 500, transition: 'color 0.2s' }}
+                                    style={{ transition: 'color 0.2s' }}
+                                    className="font-medium"
                                   >
                                     {profile?.display_name || 'Unknown User'}
                                   </LocalizedLink>
@@ -231,9 +235,12 @@ export default function Friends() {
                         <Card key={request.id}>
                           <CardContent>
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-4">
                                 <Avatar style={{ width: 48, height: 48 }}>
-                                  <AvatarImage src={profile?.avatar_url || undefined} />
+                                  <AvatarImage
+                                    src={profile?.avatar_url || undefined}
+                                    alt={profile?.display_name || ''}
+                                  />
                                   <AvatarFallback>
                                     {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
                                   </AvatarFallback>
@@ -241,7 +248,8 @@ export default function Friends() {
                                 <div>
                                   <LocalizedLink
                                     to={`/users/${request.user_id}`}
-                                    style={{ fontWeight: 500, transition: 'color 0.2s' }}
+                                    style={{ transition: 'color 0.2s' }}
+                                    className="font-medium"
                                   >
                                     {profile?.display_name || 'Unknown User'}
                                   </LocalizedLink>
@@ -263,7 +271,7 @@ export default function Friends() {
                                   disabled={loading}
                                 >
                                   <div className="flex items-center gap-2">
-                                    <Check style={{ width: 16, height: 16 }} />
+                                    <Check size={16} />
                                     Accept
                                   </div>
                                 </Button>
@@ -274,7 +282,7 @@ export default function Friends() {
                                   disabled={loading}
                                 >
                                   <div className="flex items-center gap-2">
-                                    <X style={{ width: 16, height: 16 }} />
+                                    <X size={16} />
                                     Decline
                                   </div>
                                 </Button>

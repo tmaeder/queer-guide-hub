@@ -230,7 +230,7 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
               onClick={() => fileRef.current?.click()}
               disabled={upload.isPending}
             >
-              <Upload style={{ width: 16, height: 16, marginRight: 6 }} />
+              <Upload size={16} className="mr-1.5" />
               {file
                 ? t('docs.upload.replace', 'Replace file')
                 : t('docs.upload.pick', 'Choose file')}
@@ -250,7 +250,7 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
                     disabled={extracting || upload.isPending}
                     aria-label={t('docs.upload.autoFill', 'Auto-fill from photo')}
                   >
-                    <Sparkles style={{ width: 14, height: 14, marginRight: 4 }} />
+                    <Sparkles size={14} className="mr-1" />
                     {extracting
                       ? t('docs.upload.autoFilling', 'Reading…')
                       : t('docs.upload.autoFill', 'Auto-fill from photo')}

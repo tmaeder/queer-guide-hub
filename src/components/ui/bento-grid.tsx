@@ -50,7 +50,7 @@ export function BentoCell({
       role={interactive && onClick ? 'button' : undefined}
       tabIndex={interactive && onClick ? 0 : undefined}
       className={cn(
-        "bg-background p-4 flex flex-col gap-3 min-h-[140px]",
+        "bg-background p-4 flex flex-col gap-4 min-h-[140px]",
         interactive && "hover:bg-muted/30 cursor-pointer",
         className,
       )}

@@ -3,12 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { FeedbackCard } from '@/components/feedback/FeedbackCard';
 import type { FeedbackItem } from '@/components/feedback/FeedbackCard';
@@ -18,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { fetchFeedbackBoardItems, toggleFeedbackVote } from '@/hooks/usePageFetchers';
 import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
 
 const columns = [
   { id: 'new', label: 'New', color: 'hsl(var(--foreground))' },
@@ -83,7 +77,10 @@ export default function FeedbackBoard() {
   const handleVote = useCallback(
     (id: string) => {
       if (!user) {
-        toast({ title: 'Log in to vote', description: 'Create a free account to upvote feedback.' });
+        toast({
+          title: 'Log in to vote',
+          description: 'Create a free account to upvote feedback.',
+        });
         return;
       }
       voteMutation.mutate(id);
@@ -122,7 +119,7 @@ export default function FeedbackBoard() {
             <div key={col.id}>
               {/* Column header */}
               <div
-                className="flex items-center gap-2 mb-3 pb-2 border-b-2"
+                className="flex items-center gap-2 mb-4 pb-2 border-b-2"
                 style={{ borderColor: col.color }}
               >
                 <p className="text-sm font-bold">{col.label}</p>
@@ -134,7 +131,7 @@ export default function FeedbackBoard() {
               {/* Cards */}
               <div className="flex flex-col gap-2 md:max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
                 {colItems.length === 0 && (
-                  <p className="py-5 text-center text-[0.7rem] italic opacity-60 text-muted-foreground">
+                  <p className="py-6 text-center text-xs2 italic opacity-60 text-muted-foreground">
                     —
                   </p>
                 )}
@@ -171,13 +168,8 @@ export default function FeedbackBoard() {
                   return (
                     <Badge
                       variant="outline"
-                      style={{
-                        borderColor: cat.color,
-                        color: cat.color,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}
+                      style={{ borderColor: cat.color, color: cat.color, alignItems: 'center' }}
+                      className="inline-flex gap-1"
                     >
                       <Icon style={{ width: 12, height: 12 }} />
                       {cat.label}
@@ -187,16 +179,18 @@ export default function FeedbackBoard() {
                 {(() => {
                   const col = columns.find((c) => c.id === selectedItem.feedback_status);
                   return col ? (
-                    <Badge variant="secondary" style={{ backgroundColor: col.color, color: 'hsl(var(--background))' }}>
+                    <Badge
+                      variant="secondary"
+                      style={{ backgroundColor: col.color }}
+                      className="text-background"
+                    >
                       {col.label}
                     </Badge>
                   ) : null;
                 })()}
               </div>
 
-              <p className="text-sm whitespace-pre-wrap mb-4">
-                {selectedItem.data.description}
-              </p>
+              <p className="text-sm whitespace-pre-wrap mb-4">{selectedItem.data.description}</p>
 
               <div className="flex items-center gap-4">
                 <Button
@@ -208,16 +202,19 @@ export default function FeedbackBoard() {
                     alignItems: 'center',
                     gap: 6,
                     ...(votesMap[selectedItem.id]?.hasVoted
-                      ? { backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }
+                      ? {
+                          backgroundColor: 'hsl(var(--foreground))',
+                          color: 'hsl(var(--background))',
+                        }
                       : {}),
                   }}
                 >
-                  <ChevronUp style={{ width: 14, height: 14 }} />
+                  <ChevronUp size={14} />
                   {votesMap[selectedItem.id]?.count ?? 0} vote
                   {(votesMap[selectedItem.id]?.count ?? 0) !== 1 ? 's' : ''}
                 </Button>
                 <div className="flex items-center gap-1">
-                  <Clock style={{ width: 12, height: 12 }} className="text-muted-foreground" />
+                  <Clock size={12} className="text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">
                     {new Date(selectedItem.submitted_at).toLocaleDateString('en-US', {
                       month: 'short',

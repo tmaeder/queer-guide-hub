@@ -536,7 +536,7 @@ export async function writeChangesBatch(
 
   // Batch-apply all auto_approved changes for this batch in one RPC call.
   // (Tag rows live in ai_suggestions and were already applied inline above.)
-  let cAutoApproved = 0
+  let cAutoApproved: number
   const { data: applied, error: applyErr } = await supabase.rpc('bulk_apply_batch_changes', {
     p_batch_id: batchId,
   })

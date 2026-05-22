@@ -154,7 +154,7 @@ export function AddReservationDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-2.5 mt-2">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="res-type">Type</Label>
               <Select value={type} onValueChange={setType}>
@@ -208,7 +208,7 @@ export function AddReservationDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="res-checkin">{dateLabels[0]}</Label>
               <Input
@@ -249,7 +249,7 @@ export function AddReservationDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="res-amount">Amount</Label>
               <Input
@@ -289,7 +289,7 @@ export function AddReservationDialog({
           </div>
         </div>
 
-        <DialogFooter className="mt-3">
+        <DialogFooter className="mt-4">
           <Button variant="outline" onClick={resetAndClose}>
             Cancel
           </Button>

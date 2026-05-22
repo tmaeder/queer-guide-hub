@@ -62,18 +62,19 @@ export function TripTemplates() {
             Trip Templates
           </h5>
           <p className="text-sm text-muted-foreground mt-1">
-            Get inspired with curated LGBTQ+ travel itineraries
+            LGBTQ+ travel itineraries to start from
           </p>
         </div>
       </ScrollReveal>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {isLoading && !templates
           ? Array.from({ length: 3 }).map((_, i) => (
               <Skeleton
                 key={i}
                 variant="rectangular"
-                style={{ height: 220, borderRadius: 0 }}
+                className="rounded-container"
+                style={{ height: 220 }}
               />
             ))
           : (templates ?? []).map((template) => (
@@ -114,10 +115,10 @@ export function TripTemplates() {
                         {template.cities}
                       </p>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-4">
                       <Badge variant="secondary">
                         <span className="inline-flex items-center gap-1">
-                          <Clock style={{ width: 12, height: 12 }} />
+                          <Clock size={12} />
                           {template.days} days
                         </span>
                       </Badge>
@@ -136,7 +137,7 @@ export function TripTemplates() {
                       disabled={createTrip.isPending}
                     >
                       Use Template
-                      <ArrowRight style={{ width: 16, height: 16 }} />
+                      <ArrowRight size={16} />
                     </Button>
                   </CardContent>
                 </Card>

@@ -16,11 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Pagination,
   PaginationContent,
@@ -54,7 +50,7 @@ function TableSkeleton({ columns }: { columns: number }) {
       {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
         <TableRow key={i}>
           <TableCell style={{ width: 42 }}>
-            <Skeleton style={{ width: 18, height: 18, borderRadius: 2 }} />
+            <Skeleton style={{ width: 18, height: 18, borderRadius: 'var(--radius-badge)' }} />
           </TableCell>
           <TableCell>
             <Skeleton style={{ width: `${55 + (i % 3) * 15}%`, height: 20 }} />
@@ -99,7 +95,7 @@ function EmptyState({
   return (
     <div className="py-16 px-6 flex flex-col items-center text-center">
       <div
-        className="rounded-full flex items-center justify-center mb-5"
+        className="rounded-full flex items-center justify-center mb-6"
         style={{
           width: 72,
           height: 72,
@@ -129,7 +125,7 @@ function EmptyState({
           <h6 className="text-lg font-semibold mb-1">
             No {config ? config.label.plural.toLowerCase() : 'items'} yet
           </h6>
-          <p className="text-sm text-muted-foreground mb-5 max-w-[360px]">
+          <p className="text-sm text-muted-foreground mb-6 max-w-[360px]">
             {config
               ? `Create your first ${config.label.singular.toLowerCase()} to get started.`
               : 'Content you create will appear here.'}
@@ -216,10 +212,13 @@ function renderColumnValue(
   }
   if (field.type === 'select') {
     const opt = field.options?.find((o) => o.value === v);
-    const color = field.name === 'category' ? (config?.color ?? 'hsl(var(--muted-foreground))') : 'hsl(var(--muted-foreground))';
+    const color =
+      field.name === 'category'
+        ? (config?.color ?? 'hsl(var(--muted-foreground))')
+        : 'hsl(var(--muted-foreground))';
     return (
       <Badge
-        className="h-5 text-[0.7rem] font-semibold"
+        className="h-5 text-xs2 font-semibold"
         style={{ backgroundColor: `${color}1A`, color }}
       >
         {opt?.label ?? String(v)}
@@ -236,7 +235,7 @@ function renderColumnValue(
     }
     const formatted = n >= 0 && n <= 1 ? n.toFixed(2) : n.toLocaleString();
     return (
-      <span className="text-[0.8rem]" style={{ fontVariantNumeric: 'tabular-nums' }}>
+      <span className="text-13" style={{ fontVariantNumeric: 'tabular-nums' }}>
         {formatted}
       </span>
     );
@@ -250,21 +249,15 @@ function renderColumnValue(
     return (
       <div className="flex flex-wrap gap-1">
         {shown.map((tag) => (
-          <Badge key={String(tag)} variant="secondary" className="h-[18px] text-[0.65rem]">
+          <Badge key={String(tag)} variant="secondary" className="h-[18px] text-2xs">
             {String(tag)}
           </Badge>
         ))}
-        {remaining > 0 && (
-          <span className="text-xs text-muted-foreground">+{remaining}</span>
-        )}
+        {remaining > 0 && <span className="text-xs text-muted-foreground">+{remaining}</span>}
       </div>
     );
   }
-  return (
-    <span className="text-[0.8rem] truncate block">
-      {String(v)}
-    </span>
-  );
+  return <span className="text-13 truncate block">{String(v)}</span>;
 }
 
 // ── Main table component ────────────────────────────────────────────
@@ -327,7 +320,7 @@ export function ContentListTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead style={{ width: 42, paddingLeft: 12 }}>
+              <TableHead style={{ width: 42 }} className="pl-4">
                 <Checkbox
                   checked={someSelected && !allSelected ? 'indeterminate' : allSelected}
                   onCheckedChange={toggleSelectAll}
@@ -410,7 +403,7 @@ export function ContentListTable({
                     }}
                     onClick={() => onEdit(item.contentType, item.id)}
                   >
-                    <TableCell style={{ paddingLeft: 12 }} onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => toggleSelect(itemKey)}
@@ -433,7 +426,7 @@ export function ContentListTable({
                     {!contentTypeId && (
                       <TableCell>
                         <Badge
-                          className="h-5 text-[0.7rem] font-semibold"
+                          className="h-5 text-xs2 font-semibold"
                           style={{
                             backgroundColor: `${item.contentTypeColor}1A`,
                             color: item.contentTypeColor,
@@ -451,10 +444,7 @@ export function ContentListTable({
                             className="rounded-full flex-shrink-0"
                             style={{ width: 8, height: 8, backgroundColor: statusColor }}
                           />
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: statusColor }}
-                          >
+                          <span className="text-xs font-medium" style={{ color: statusColor }}>
                             {getStatusLabel(item.status)}
                           </span>
                         </div>
@@ -529,7 +519,8 @@ export function ContentListTable({
               </SelectContent>
             </Select>
             <span>
-              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount}
+              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalCount)} of{' '}
+              {totalCount}
             </span>
           </div>
           <Pagination className="mx-0 w-auto justify-end">

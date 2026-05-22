@@ -43,7 +43,12 @@ function getTitle(row: KanbanRow): string {
   const config = submissionRegistry[row.content_type];
   const field = config?.titleField || 'name';
   return String(
-    row.data?.[field] || row.data?.title || row.data?.name || row.data?.subject || row.content_type || 'Untitled',
+    row.data?.[field] ||
+      row.data?.title ||
+      row.data?.name ||
+      row.data?.subject ||
+      row.content_type ||
+      'Untitled',
   );
 }
 
@@ -87,32 +92,32 @@ export function SubmissionsKanban({ onCardClick }: Props) {
         </p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-      {LANES.map((lane) => {
-        const laneRows = byLane[lane.key] ?? [];
-        return (
-          <div key={lane.key} className="flex flex-col gap-2 min-w-0">
-            <div className="flex items-center gap-2 px-1">
-              <div
-                className="rounded-full"
-                style={{ width: 8, height: 8, backgroundColor: lane.color }}
-              />
-              <p className="text-sm font-semibold">{lane.label}</p>
-              <span className="text-xs text-muted-foreground">{laneRows.length}</span>
+        {LANES.map((lane) => {
+          const laneRows = byLane[lane.key] ?? [];
+          return (
+            <div key={lane.key} className="flex flex-col gap-2 min-w-0">
+              <div className="flex items-center gap-2 px-1">
+                <div
+                  className="rounded-full"
+                  style={{ width: 8, height: 8, backgroundColor: lane.color }}
+                />
+                <p className="text-sm font-semibold">{lane.label}</p>
+                <span className="text-xs text-muted-foreground">{laneRows.length}</span>
+              </div>
+              <div className="flex flex-col gap-2" style={{ minHeight: 80 }}>
+                {laneRows.length === 0 ? (
+                  <div className="p-4 text-xs text-muted-foreground text-center border border-dashed border-border">
+                    Empty
+                  </div>
+                ) : (
+                  laneRows.map((row) => (
+                    <KanbanCard key={row.id} row={row} onClick={() => onCardClick(row)} />
+                  ))
+                )}
+              </div>
             </div>
-            <div className="flex flex-col gap-2" style={{ minHeight: 80 }}>
-              {laneRows.length === 0 ? (
-                <div className="p-4 text-xs text-muted-foreground text-center border border-dashed border-border">
-                  Empty
-                </div>
-              ) : (
-                laneRows.map((row) => (
-                  <KanbanCard key={row.id} row={row} onClick={() => onCardClick(row)} />
-                ))
-              )}
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
       </div>
     </div>
   );
@@ -141,7 +146,7 @@ function KanbanCard({ row, onClick }: { row: KanbanRow; onClick: () => void }) {
     >
       <div className="flex items-center gap-1.5 min-w-0">
         {Icon && (
-          <Icon style={{ width: 14, height: 14, color: config?.color, flexShrink: 0 }} />
+          <Icon style={{ width: 14, height: 14, color: config?.color }} className="shrink-0" />
         )}
         <p className="text-sm font-medium truncate">{getTitle(row)}</p>
       </div>

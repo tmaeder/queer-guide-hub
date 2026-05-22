@@ -67,7 +67,7 @@ export function DataQualityDashboard() {
       </div>
 
       {/* Summary tiles */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <SummaryTile label="Total items" value={totals.total} icon={FileText} color="hsl(var(--muted-foreground))" />
         <SummaryTile label="Published" value={totals.published} icon={CheckCircle2} color="hsl(var(--foreground))" />
         <SummaryTile
@@ -97,7 +97,7 @@ export function DataQualityDashboard() {
       ) : (
         <div className="border border-border rounded-element overflow-hidden bg-background">
           <div
-            className="grid px-4 py-2.5 bg-muted border-b border-border text-[0.7rem] font-bold uppercase tracking-wider text-muted-foreground"
+            className="grid px-4 py-2.5 bg-muted border-b border-border text-xs2 font-bold uppercase tracking-wider text-muted-foreground"
             style={{ gridTemplateColumns: '2fr repeat(6, 1fr)' }}
           >
             <div>Type</div>
@@ -117,7 +117,7 @@ export function DataQualityDashboard() {
       )}
 
       {rows.some((r) => r.error) && (
-        <Alert className="mt-4 border-yellow-500 text-yellow-700 dark:text-yellow-400">
+        <Alert className="mt-4 border-border text-foreground dark:text-foreground">
           <AlertDescription>
             Some types failed to load metrics. Errors:{' '}
             {rows
@@ -143,10 +143,10 @@ function SummaryTile({
   color: string;
 }) {
   return (
-    <div className="p-3 border border-border rounded-element bg-background flex flex-col gap-1">
+    <div className="p-4 border border-border rounded-element bg-background flex flex-col gap-1">
       <div className="flex items-center gap-1.5">
         <Icon size={14} color={color} />
-        <p className="text-[0.7rem] text-muted-foreground">{label}</p>
+        <p className="text-xs2 text-muted-foreground">{label}</p>
       </div>
       <p className="text-2xl font-bold" style={{ color }}>
         {value.toLocaleString()}

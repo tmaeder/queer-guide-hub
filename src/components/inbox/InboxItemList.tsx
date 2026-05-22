@@ -24,12 +24,12 @@ export const InboxItemList = ({ items, onSelect, onToggleStar }: InboxItemListPr
         return (
           <Card
             key={item.id}
-            className={`p-3 cursor-pointer hover:bg-accent/50 transition-colors ${
+            className={`p-4 cursor-pointer hover:bg-accent/50 transition-colors ${
               !item.isRead ? 'border-l-4 border-l-primary bg-primary/5' : ''
             }`}
             onClick={() => onSelect(item.id)}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <Icon
                 className={`h-4 w-4 mt-1 shrink-0 ${
                   !item.isRead ? 'text-primary' : 'text-muted-foreground'

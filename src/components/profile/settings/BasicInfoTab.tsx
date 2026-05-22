@@ -19,10 +19,20 @@ interface BasicInfoTabProps {
   profile: Profile | null | undefined;
   user: User;
   onChange: (field: string, value: string) => void;
-  onAvatarSave: (data: { avatarUrl?: string; avatarConfig?: Record<string, unknown>; avatarType?: string }) => void;
+  onAvatarSave: (data: {
+    avatarUrl?: string;
+    avatarConfig?: Record<string, unknown>;
+    avatarType?: string;
+  }) => void;
 }
 
-export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }: BasicInfoTabProps) {
+export function BasicInfoTab({
+  formData,
+  profile,
+  user,
+  onChange,
+  onAvatarSave,
+}: BasicInfoTabProps) {
   const minAgeDate = getMinAgeDate();
 
   return (
@@ -32,7 +42,8 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
         <CardHeader>
           <CardTitle>Profile Avatar</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Choose how you want to appear to other users. Upload your own photo, use our avatar builder, or connect your Gravatar account.
+            Choose how you want to appear to other users. Upload your own photo, use our avatar
+            builder, or connect your Gravatar account.
           </p>
         </CardHeader>
         <CardContent>
@@ -57,20 +68,67 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
           <div className="flex flex-col gap-4">
             {/* Name row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField id="first_name" label="First Name" value={formData.first_name} onChange={(v) => onChange('first_name', v)} placeholder="Your first name" />
-              <FormField id="last_name" label="Last Name" value={formData.last_name} onChange={(v) => onChange('last_name', v)} placeholder="Your last name" />
-              <FormField id="chosen_name" label="Preferred Name" value={formData.chosen_name} onChange={(v) => onChange('chosen_name', v)} placeholder="If different from legal name" description="Used when your legal name is required" />
+              <FormField
+                id="first_name"
+                label="First Name"
+                value={formData.first_name}
+                onChange={(v) => onChange('first_name', v)}
+                placeholder="Your first name"
+              />
+              <FormField
+                id="last_name"
+                label="Last Name"
+                value={formData.last_name}
+                onChange={(v) => onChange('last_name', v)}
+                placeholder="Your last name"
+              />
+              <FormField
+                id="chosen_name"
+                label="Preferred Name"
+                value={formData.chosen_name}
+                onChange={(v) => onChange('chosen_name', v)}
+                placeholder="If different from legal name"
+                description="Used when your legal name is required"
+              />
             </div>
 
             {/* Display name + pronouns + pronunciation */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField id="display_name" label="Display Name" value={formData.display_name} onChange={(v) => onChange('display_name', v)} placeholder="How you appear to others" description="Shown on your profile and in conversations" />
-              <FormField id="pronouns" label="Pronouns" value={formData.pronouns} onChange={(v) => onChange('pronouns', v)} placeholder="e.g., they/them, she/her, he/him" />
-              <FormField id="name_pronunciation" label="Name Pronunciation" value={formData.name_pronunciation} onChange={(v) => onChange('name_pronunciation', v)} placeholder="e.g., toe-BEE-us" description="Help others pronounce your name" />
+              <FormField
+                id="display_name"
+                label="Display Name"
+                value={formData.display_name}
+                onChange={(v) => onChange('display_name', v)}
+                placeholder="How you appear to others"
+                description="Shown on your profile and in conversations"
+              />
+              <FormField
+                id="pronouns"
+                label="Pronouns"
+                value={formData.pronouns}
+                onChange={(v) => onChange('pronouns', v)}
+                placeholder="e.g., they/them, she/her, he/him"
+              />
+              <FormField
+                id="name_pronunciation"
+                label="Name Pronunciation"
+                value={formData.name_pronunciation}
+                onChange={(v) => onChange('name_pronunciation', v)}
+                placeholder="e.g., toe-BEE-us"
+                description="Help others pronounce your name"
+              />
             </div>
 
             {/* Bio */}
-            <FormField id="bio" label="Bio" value={formData.bio} onChange={(v) => onChange('bio', v)} placeholder="Tell us about yourself..." multiline rows={3} />
+            <FormField
+              id="bio"
+              label="Bio"
+              value={formData.bio}
+              onChange={(v) => onChange('bio', v)}
+              placeholder="Tell us about yourself..."
+              multiline
+              rows={3}
+            />
 
             {/* Location + DOB */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -99,20 +157,32 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
                   />
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" size="icon" type="button" style={{ height: 40, width: 40, flexShrink: 0 }}>
-                        <CalendarIcon style={{ width: 16, height: 16 }} />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        type="button"
+                        style={{ height: 40, width: 40 }}
+                        className="shrink-0"
+                      >
+                        <CalendarIcon size={16} />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">
-                      <div className="p-3">
+                    <PopoverContent style={{ width: 'auto' }} className="p-0" align="start">
+                      <div className="p-4">
                         <p className="text-sm font-medium">Select Date of Birth</p>
-                        <p className="text-xs text-muted-foreground">You must be at least 18 years old</p>
+                        <p className="text-xs text-muted-foreground">
+                          You must be at least 18 years old
+                        </p>
                       </div>
                       <Calendar
                         mode="single"
                         captionLayout="dropdown"
-                        selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
-                        onSelect={(date) => onChange('date_of_birth', date ? date.toISOString().split('T')[0] : '')}
+                        selected={
+                          formData.date_of_birth ? new Date(formData.date_of_birth) : undefined
+                        }
+                        onSelect={(date) =>
+                          onChange('date_of_birth', date ? date.toISOString().split('T')[0] : '')
+                        }
                         disabled={(date) => date > minAgeDate || date < new Date('1900-01-01')}
                         fromYear={1930}
                         toYear={minAgeDate.getFullYear()}
@@ -121,8 +191,13 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
                         style={{ padding: 12, pointerEvents: 'auto' }}
                       />
                       {formData.date_of_birth && (
-                        <div className="p-3">
-                          <Button variant="ghost" size="sm" onClick={() => onChange('date_of_birth', '')} style={{ width: '100%' }}>
+                        <div className="p-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onChange('date_of_birth', '')}
+                            style={{ width: '100%' }}
+                          >
                             <span className="text-sm text-muted-foreground">Clear date</span>
                           </Button>
                         </div>
@@ -136,8 +211,20 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
 
             {/* Occupation + Education */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField id="occupation" label="Occupation" value={formData.occupation} onChange={(v) => onChange('occupation', v)} placeholder="What do you do?" />
-              <FormField id="education" label="Education" value={formData.education} onChange={(v) => onChange('education', v)} placeholder="Your education background" />
+              <FormField
+                id="occupation"
+                label="Occupation"
+                value={formData.occupation}
+                onChange={(v) => onChange('occupation', v)}
+                placeholder="What do you do?"
+              />
+              <FormField
+                id="education"
+                label="Education"
+                value={formData.education}
+                onChange={(v) => onChange('education', v)}
+                placeholder="Your education background"
+              />
             </div>
           </div>
         </CardContent>

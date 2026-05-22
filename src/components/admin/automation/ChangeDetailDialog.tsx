@@ -82,7 +82,7 @@ export function ChangeDetailDialog({
           {change.reasoning && (
             <div className="mb-6">
               <span className="text-xs text-muted-foreground">Reasoning</span>
-              <p className="text-sm mt-1 p-3 bg-muted rounded-badge">{change.reasoning}</p>
+              <p className="text-sm mt-1 p-4 bg-muted rounded-badge">{change.reasoning}</p>
             </div>
           )}
 
@@ -90,13 +90,13 @@ export function ChangeDetailDialog({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="text-xs text-muted-foreground mb-1 block">Old Value</span>
-                <div className="p-3 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: 'hsl(var(--muted))', border: '1px solid hsl(var(--destructive) / 0.3)' }}>
+                <div className="p-4 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: 'hsl(var(--muted))', border: '1px solid hsl(var(--destructive) / 0.3)' }}>
                   {formatValue(change.old_value)}
                 </div>
               </div>
               <div>
                 <span className="text-xs text-muted-foreground mb-1 block">New Value</span>
-                <div className="p-3 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                <div className="p-4 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
                   {formatValue(change.new_value)}
                 </div>
               </div>

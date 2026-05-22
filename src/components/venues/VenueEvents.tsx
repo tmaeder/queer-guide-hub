@@ -42,9 +42,9 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
                 <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
               </p>
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar style={{ width: 12, height: 12 }} />
+                <Calendar size={12} />
                 <span className="text-xs">{formatEventDate(event.start_date)}</span>
-                <Clock style={{ width: 12, height: 12 }} />
+                <Clock size={12} />
                 <span className="text-xs">{formatEventTime(event.start_date)}</span>
               </div>
             </div>
@@ -70,7 +70,7 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
       <CardContent>
         <div className="flex flex-col gap-4">
           {upcomingEvents.map((event) => (
-            <div key={event.id} className="flex items-center justify-between p-3 border border-border hover:bg-muted transition-colors">
+            <div key={event.id} className="flex items-center justify-between p-4 border border-border hover:bg-muted transition-colors">
               <div className="flex-1">
                 <p className="text-sm font-medium">
                   {event.title}
@@ -78,16 +78,16 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
                 </p>
                 <div className="flex items-center gap-4 mt-1 text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <Calendar style={{ width: 12, height: 12 }} />
+                    <Calendar size={12} />
                     <span className="text-sm">{formatEventDate(event.start_date)}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Clock style={{ width: 12, height: 12 }} />
+                    <Clock size={12} />
                     <span className="text-sm">{formatEventTime(event.start_date)}</span>
                   </div>
                   {event.max_attendees && (
                     <div className="flex items-center gap-1">
-                      <Users style={{ width: 12, height: 12 }} />
+                      <Users size={12} />
                       <span className="text-sm">Max {event.max_attendees}</span>
                     </div>
                   )}

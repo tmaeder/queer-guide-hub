@@ -48,20 +48,20 @@ export function TripsSignedOutHero() {
           <div>
             <Badge variant="outline">
               <span className="inline-flex items-center gap-1">
-                <Luggage style={{ width: 12, height: 12 }} />
+                <Luggage size={12} />
                 {t('trips.signedOut.badge')}
               </span>
             </Badge>
 
-            <h2 className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] leading-[1.1] mb-4">
+            <h2 className="text-headline-lg sm:text-display md:text-5xl leading-[1.1] mb-4">
               {t('trips.signedOut.title')}
             </h2>
 
-            <p className="mb-8 max-w-[480px] md:text-[1.0625rem] text-muted-foreground">
+            <p className="mb-8 max-w-[480px] md:text-body-lg text-muted-foreground">
               {t('trips.signedOut.subtitle')}
             </p>
 
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex flex-wrap gap-4 mb-8">
               <Button
                 size="lg"
                 variant="brand"
@@ -69,7 +69,7 @@ export function TripsSignedOutHero() {
                 style={{ paddingLeft: 28, paddingRight: 28 }}
               >
                 {t('trips.signedOut.primaryCta')}
-                <ArrowRight style={{ width: 16, height: 16, marginLeft: 8 }} />
+                <ArrowRight size={16} className="ml-2" />
               </Button>
               <Button
                 size="lg"
@@ -84,7 +84,7 @@ export function TripsSignedOutHero() {
 
             <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {bullets.map(({ icon: Icon, titleKey, bodyKey }) => (
-                <li key={titleKey} className="flex gap-3 items-start">
+                <li key={titleKey} className="flex gap-4 items-start">
                   <div
                     className="flex-shrink-0 w-9 h-9 rounded-element flex items-center justify-center"
                     style={{ backgroundColor: `${brand}12` }}
@@ -126,7 +126,7 @@ export function TripsSignedOutHero() {
                     }}
                   >
                     <div
-                      className="p-5 min-h-[96px] flex flex-col justify-between"
+                      className="p-6 min-h-[96px] flex flex-col justify-between"
                       style={{
                         backgroundImage: template.coverImageUrl
                           ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${template.coverImageUrl}"), ${template.gradient}`
@@ -151,9 +151,9 @@ export function TripsSignedOutHero() {
                         </span>
                       </div>
                       <div
-                        className="inline-flex items-center gap-1 self-start text-white bg-white/20 px-2 py-0.5 rounded text-[0.7rem] font-semibold"
+                        className="inline-flex items-center gap-1 self-start text-white bg-white/20 px-2 py-0.5 rounded text-xs2 font-semibold"
                       >
-                        <ShieldCheck style={{ width: 11, height: 11 }} />
+                        <ShieldCheck size={11} />
                         {t('trips.signedOut.safeLabel')}
                       </div>
                     </div>

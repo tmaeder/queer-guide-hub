@@ -42,7 +42,11 @@ interface Props {
   parentStory?: SubmissionStoryRef | null;
   onOpenStory?: (storyId: string) => void;
   onOpenPartner: (id: string) => void;
-  onMergeDuplicate: (args: { duplicateId: string; canonicalId: string; suggestionId: string }) => void;
+  onMergeDuplicate: (args: {
+    duplicateId: string;
+    canonicalId: string;
+    suggestionId: string;
+  }) => void;
   onDismissDuplicate: (suggestionId: string) => void;
   onToggleSpam: (isSpam: boolean) => void;
   onToggleNotify: (notify: boolean) => void;
@@ -121,21 +125,22 @@ export function FeedbackDetailDrawer({
   const conversationCount = replyCount + handoffCount;
 
   return (
-    <Sheet open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-[540px] p-0 flex flex-col"
-      >
+    <Sheet
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
+      <SheetContent side="right" className="w-full sm:max-w-[540px] p-0 flex flex-col">
         <div className="flex-1 overflow-y-auto px-6 pt-6 pb-2">
           {/* Banners */}
           {canonical && (
             <div
-              className="mb-3 flex items-center gap-2"
+              className="mb-4 flex items-center gap-2 p-2.5"
               style={{
-                padding: 10,
                 borderLeft: '3px solid hsl(var(--muted-foreground))',
                 backgroundColor: 'hsl(var(--muted-foreground) / 0.08)',
-                borderRadius: 4,
+                borderRadius: 'var(--radius-badge)',
               }}
             >
               <Link2 size={14} />
@@ -154,18 +159,22 @@ export function FeedbackDetailDrawer({
 
           {item.is_spam && (
             <div
-              className="mb-3 flex items-center gap-2"
+              className="mb-4 flex items-center gap-2 p-2.5"
               style={{
-                padding: 10,
                 borderLeft: '3px solid hsl(var(--destructive))',
                 backgroundColor: 'hsl(var(--destructive) / 0.08)',
-                borderRadius: 4,
+                borderRadius: 'var(--radius-badge)',
               }}
             >
               <Ban size={14} />
               <span className="text-xs flex-1">Flagged as spam</span>
-              <Button size="sm" variant="outline" onClick={() => onToggleSpam(false)} className="gap-1">
-                <RotateCcw style={{ width: 12, height: 12 }} />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onToggleSpam(false)}
+                className="gap-1"
+              >
+                <RotateCcw size={12} />
                 Restore
               </Button>
             </div>
@@ -184,13 +193,11 @@ export function FeedbackDetailDrawer({
 
           {isForwarded && item.feedback_status !== 'done' && (
             <div
-              className="mb-3 flex items-center"
+              className="mb-4 flex items-center p-2.5 gap-2"
               style={{
-                padding: 10,
                 borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
                 backgroundColor: 'hsl(var(--foreground) / 0.55)',
-                borderRadius: 4,
-                gap: 8,
+                borderRadius: 'var(--radius-badge)',
               }}
             >
               <Github size={14} />
@@ -200,7 +207,7 @@ export function FeedbackDetailDrawer({
                   href={item.github_issue_url!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ fontWeight: 600 }}
+                  className="font-semibold"
                 >
                   #{item.github_issue_number}
                 </a>
@@ -209,19 +216,18 @@ export function FeedbackDetailDrawer({
           )}
 
           {/* Title + badges + close */}
-          <div className="flex items-start gap-3 mb-3">
+          <div className="flex items-start gap-4 mb-4">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center flex-wrap mb-1.5" style={{ gap: 4 }}>
+              <div className="flex items-center flex-wrap mb-1.5 gap-1">
                 <Badge
                   variant="outline"
                   style={{
                     borderColor: cat.color,
                     color: cat.color,
-                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 4,
                     fontSize: '0.65rem',
                   }}
+                  className="inline-flex gap-1"
                 >
                   <CatIcon style={{ width: 11, height: 11 }} />
                   {cat.label}
@@ -248,8 +254,8 @@ export function FeedbackDetailDrawer({
                 {item.data.title}
               </h2>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} style={{ padding: 4 }}>
-              <X style={{ width: 16, height: 16 }} />
+            <Button variant="ghost" size="sm" onClick={onClose} className="p-1">
+              <X size={16} />
             </Button>
           </div>
 
@@ -274,8 +280,10 @@ export function FeedbackDetailDrawer({
 
           {/* Tabbed sections */}
           <Tabs defaultValue="details" className="flex-1">
-            <TabsList className="mb-3">
-              <TabsTrigger value="details" className="text-xs">Details</TabsTrigger>
+            <TabsList className="mb-4">
+              <TabsTrigger value="details" className="text-xs">
+                Details
+              </TabsTrigger>
               <TabsTrigger value="conversation" className="text-xs">
                 Conversation{conversationCount > 0 ? ` (${conversationCount})` : ''}
               </TabsTrigger>
@@ -288,7 +296,7 @@ export function FeedbackDetailDrawer({
               {/* Labels */}
               <div>
                 <span className="text-xs font-semibold block mb-1">Labels</span>
-                <div className="flex flex-wrap items-center" style={{ gap: 4 }}>
+                <div className="flex flex-wrap items-center gap-1">
                   {item.labels.map((l) => (
                     <Badge
                       key={l}
@@ -297,13 +305,13 @@ export function FeedbackDetailDrawer({
                       style={{ fontSize: '0.7rem' }}
                       onClick={() => onRemoveLabel(l)}
                     >
-                      {l} <X style={{ width: 10, height: 10, marginLeft: 4 }} />
+                      {l} <X size={10} className="ml-1" />
                     </Badge>
                   ))}
                   <Popover open={labelPopoverOpen} onOpenChange={setLabelPopoverOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" size="sm" className="h-6 px-2 text-xs gap-1">
-                        <Plus style={{ width: 10, height: 10 }} />
+                        <Plus size={10} />
                         Add
                       </Button>
                     </PopoverTrigger>
@@ -328,7 +336,7 @@ export function FeedbackDetailDrawer({
                             <Badge
                               key={l}
                               variant="outline"
-                              className="cursor-pointer text-[0.6rem]"
+                              className="cursor-pointer text-2xs"
                               onClick={() => {
                                 onAddLabel(l);
                                 setLabelPopoverOpen(false);
@@ -354,9 +362,7 @@ export function FeedbackDetailDrawer({
 
               {/* Reviewer notes */}
               <div>
-                <span className="text-xs font-semibold block mb-1">
-                  Reviewer Notes (internal)
-                </span>
+                <span className="text-xs font-semibold block mb-1">Reviewer Notes (internal)</span>
                 <Textarea
                   value={localNotes}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>

@@ -88,11 +88,11 @@ export function EntityCard({
         {overlay && (
           <div className="absolute inset-x-0 bottom-0 z-10 p-4 text-background">
             {eyebrow && (
-              <div className="text-[11px] font-medium uppercase tracking-[0.14em] opacity-80">
+              <div className="text-xs2 font-medium uppercase tracking-[0.14em] opacity-80">
                 {eyebrow}
               </div>
             )}
-            <h3 className="mt-1 text-lg md:text-xl font-extrabold tracking-tight leading-tight">
+            <h3 className="mt-1 text-lg md:text-xl font-bold tracking-tight leading-tight">
               {title}
             </h3>
             {meta && <div className="mt-1 text-xs opacity-80 tabular-nums">{meta}</div>}
@@ -103,11 +103,11 @@ export function EntityCard({
       {!overlay && (
         <div className="flex flex-1 flex-col gap-1.5 p-4">
           {eyebrow && (
-            <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="text-xs2 font-medium uppercase tracking-[0.14em] text-muted-foreground">
               {eyebrow}
             </div>
           )}
-          <h3 className="text-lg font-extrabold tracking-tight leading-tight text-foreground">
+          <h3 className="text-lg font-bold tracking-tight leading-tight text-foreground">
             {title}
           </h3>
           {meta && (

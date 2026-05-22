@@ -121,7 +121,7 @@ export default function AdminEventAmenities() {
     () => [
       columnHelper.accessor('name', {
         header: 'Name',
-        cell: (info) => <span style={{ fontWeight: 500 }}>{info.getValue()}</span>,
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('category', {
@@ -185,7 +185,7 @@ export default function AdminEventAmenities() {
       ],
       toolbarActions: (
         <Button size="sm" onClick={openCreate}>
-          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          <Plus size={16} className="mr-1.5" />
           Add Amenity
         </Button>
       ),
@@ -267,7 +267,7 @@ export default function AdminEventAmenities() {
                 <Label>Active</Label>
               </div>
             </div>
-            <DialogFooter style={{ marginTop: 16 }}>
+            <DialogFooter className="mt-4">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>

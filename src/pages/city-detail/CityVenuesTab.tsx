@@ -33,41 +33,44 @@ export function CityVenuesTab({
 }: CityVenuesTabProps) {
   return (
     <ScrollReveal direction="up">
-    <div className="mt-6">
-      {showCreateTrip && (
-        <Card style={{ marginBottom: 16 }}>
-          <CardContent style={{ paddingTop: 20 }}>
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-3">
-                <Luggage style={{ width: 20, height: 20, opacity: 0.6 }} />
-                <p className="font-medium">Planning a trip to {city.name}?</p>
+      <div className="mt-6">
+        {showCreateTrip && (
+          <Card className="mb-4">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-4">
+                  <Luggage size={20} style={{ opacity: 0.6 }} />
+                  <p className="font-medium">Planning a trip to {city.name}?</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={onCreateTrip}>
+                  Create Trip
+                </Button>
               </div>
-              <Button variant="outline" size="sm" onClick={onCreateTrip}>
-                Create Trip
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      {venuesLoading ? (
-        <InlineLoading text="Loading venues..." size="md" />
-      ) : venues.length > 0 ? (
-        <BentoSection preset="featured">
-          {venues.map((venue: VenueRelation, i: number) => (
-            <div key={venue.id} className={VENUE_SPAN_CLASS[spansForPreset('featured', i, venues.length)]}>
-              <VenueCard venue={venue} />
-            </div>
-          ))}
-        </BentoSection>
-      ) : (
-        <EmptyState
-          icon={Building}
-          title="No venues found yet"
-          description={`Be the first to add venues in ${city.name}!`}
-          mood="encouraging"
-        />
-      )}
-    </div>
+            </CardContent>
+          </Card>
+        )}
+        {venuesLoading ? (
+          <InlineLoading text="Loading venues..." size="md" />
+        ) : venues.length > 0 ? (
+          <BentoSection preset="featured">
+            {venues.map((venue: VenueRelation, i: number) => (
+              <div
+                key={venue.id}
+                className={VENUE_SPAN_CLASS[spansForPreset('featured', i, venues.length)]}
+              >
+                <VenueCard venue={venue} />
+              </div>
+            ))}
+          </BentoSection>
+        ) : (
+          <EmptyState
+            icon={Building}
+            title="No venues found yet"
+            description={`Be the first to add venues in ${city.name}!`}
+            mood="encouraging"
+          />
+        )}
+      </div>
     </ScrollReveal>
   );
 }

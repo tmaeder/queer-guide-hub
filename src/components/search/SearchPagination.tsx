@@ -28,11 +28,7 @@ export const SearchPagination = ({
   for (let p = start; p <= end; p++) numbers.push(p);
 
   return (
-    <nav
-      aria-label="Search results pages"
-      className="flex items-center justify-center"
-      style={{ gap: 8, marginTop: 32 }}
-    >
+    <nav aria-label="Search results pages" className="flex items-center justify-center gap-2 mt-8">
       <Button
         variant="outline"
         size="sm"
@@ -40,7 +36,7 @@ export const SearchPagination = ({
         onClick={() => onPageChange(page - 1)}
         aria-label="Previous page"
       >
-        <ChevronLeft style={{ width: 16, height: 16 }} />
+        <ChevronLeft size={16} />
         Prev
       </Button>
       {start > 1 && (
@@ -74,7 +70,7 @@ export const SearchPagination = ({
         aria-label="Next page"
       >
         Next
-        <ChevronRight style={{ width: 16, height: 16 }} />
+        <ChevronRight size={16} />
       </Button>
     </nav>
   );

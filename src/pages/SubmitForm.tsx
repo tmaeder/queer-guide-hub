@@ -173,15 +173,13 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       <div className="mx-auto py-12 px-4">
         <Card>
           <CardContent>
-            <CheckCircle
-              style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'hsl(var(--foreground))' }}
-            />
+            <CheckCircle size={48} style={{ margin: '0 auto 16px' }} className="text-foreground" />
             <h5 className="text-xl font-semibold mb-2">Thank you!</h5>
             <p className="text-muted-foreground mb-6">
               Your {config.label.toLowerCase()} has been submitted and will be reviewed by our team.
               It will appear on the site once approved.
             </p>
-            <div className="flex justify-center gap-3">
+            <div className="flex justify-center gap-4">
               <Button onClick={() => navigate('/submit')}>Submit More</Button>
               <Button variant="outline" onClick={reset}>
                 Submit Another {config.label}
@@ -209,7 +207,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       </Button>
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-center gap-4 mb-2">
         <Icon style={{ width: 28, height: 28, color: config.color }} />
         <h4 className="text-3xl font-bold">Submit {config.label}</h4>
       </div>
@@ -285,7 +283,10 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                     ? { backgroundColor: config.color, color: 'hsl(var(--background))' }
                     : i < currentStep
                       ? { backgroundColor: `${config.color}25`, color: config.color }
-                      : { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }),
+                      : {
+                          backgroundColor: 'hsl(var(--muted))',
+                          color: 'hsl(var(--muted-foreground))',
+                        }),
                 }}
               >
                 {i < currentStep ? '✓' : i + 1}
@@ -294,7 +295,9 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
               {/* Step label (hidden on mobile) */}
               <span
                 className={`text-xs whitespace-nowrap hidden sm:block ${
-                  i === currentStep ? 'font-semibold text-foreground' : 'font-normal text-muted-foreground'
+                  i === currentStep
+                    ? 'font-semibold text-foreground'
+                    : 'font-normal text-muted-foreground'
                 }`}
               >
                 {step.label}
@@ -375,7 +378,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 <div
                   role="alert"
                   aria-live="polite"
-                  className="mb-4 p-3 rounded"
+                  className="mb-4 p-4 rounded"
                   style={{
                     backgroundColor: 'hsl(var(--destructive) / 0.08)',
                     border: '1px solid hsl(var(--destructive) / 0.35)',
@@ -414,7 +417,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
             </div>
 
             {/* Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {stepFields.map((fieldConfig) => (
                 <div
                   key={fieldConfig.name}
@@ -439,7 +442,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
             </div>
 
             {/* Navigation buttons */}
-            <div className="flex justify-between mt-6 gap-3">
+            <div className="flex justify-between mt-6 gap-4">
               <Button
                 type="button"
                 variant="outline"
@@ -455,7 +458,11 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 disabled={isSubmitting}
                 aria-describedby={!user && isLastStep ? 'submit-auth-hint' : undefined}
                 className="flex items-center gap-1.5"
-                style={isLastStep ? { backgroundColor: config.color, color: 'hsl(var(--background))' } : undefined}
+                style={
+                  isLastStep
+                    ? { backgroundColor: config.color, color: 'hsl(var(--background))' }
+                    : undefined
+                }
               >
                 {isSubmitting ? (
                   'Submitting...'

@@ -3,7 +3,13 @@ import { CalendarIcon, Filter, RotateCcw, Search, SlidersHorizontal } from 'luci
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -31,7 +37,7 @@ export function CMSAdvancedFilters({
   onReset,
   filterOptions,
   totalResults,
-  totalRecords
+  totalRecords,
 }: CMSAdvancedFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -41,7 +47,7 @@ export function CMSAdvancedFilters({
     filters.status !== 'all' ? filters.status : null,
     filters.dateRange.from,
     filters.dateRange.to,
-    filters.showDeleted ? 'deleted' : null
+    filters.showDeleted ? 'deleted' : null,
   ].filter(Boolean).length;
 
   return (
@@ -51,7 +57,7 @@ export function CMSAdvancedFilters({
           <div>
             <CardTitle>
               <div className="flex items-center gap-2">
-                <Filter style={{ height: 20, width: 20 }} />
+                <Filter size={20} />
                 Filters & Search
                 {activeFiltersCount > 0 && (
                   <Badge variant="secondary">{activeFiltersCount} active</Badge>
@@ -63,17 +69,13 @@ export function CMSAdvancedFilters({
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-            >
-              <SlidersHorizontal style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Button variant="outline" size="sm" onClick={() => setShowAdvanced(!showAdvanced)}>
+              <SlidersHorizontal size={16} className="mr-2" />
               {showAdvanced ? 'Simple' : 'Advanced'}
             </Button>
             {activeFiltersCount > 0 && (
               <Button variant="outline" size="sm" onClick={onReset}>
-                <RotateCcw style={{ height: 16, width: 16, marginRight: 8 }} />
+                <RotateCcw size={16} className="mr-2" />
                 Reset
               </Button>
             )}
@@ -88,13 +90,21 @@ export function CMSAdvancedFilters({
             <div className="flex flex-col gap-2">
               <Label htmlFor="search">Search</Label>
               <div className="relative">
-                <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                <Search
+                  style={{
+                    left: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    height: 16,
+                    width: 16,
+                  }}
+                  className="absolute text-muted-foreground"
+                />
                 <Input
                   id="search"
                   placeholder="Search content..."
                   value={filters.search}
                   onChange={(e) => onFilterChange('search', e.target.value)}
-
                 />
               </div>
             </div>
@@ -102,14 +112,17 @@ export function CMSAdvancedFilters({
             {/* Content Type */}
             <div className="flex flex-col gap-2">
               <Label>Content Type</Label>
-              <Select value={filters.contentType} onValueChange={(value) => onFilterChange('contentType', value)}>
+              <Select
+                value={filters.contentType}
+                onValueChange={(value) => onFilterChange('contentType', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  {filterOptions.contentTypes.map(type => (
-                    <SelectItem key={type} value={type} style={{ textTransform: 'capitalize' }}>
+                  {filterOptions.contentTypes.map((type) => (
+                    <SelectItem key={type} value={type} className="capitalize">
                       {type.replace('_', ' ')}
                     </SelectItem>
                   ))}
@@ -120,14 +133,17 @@ export function CMSAdvancedFilters({
             {/* Status */}
             <div className="flex flex-col gap-2">
               <Label>Status</Label>
-              <Select value={filters.status} onValueChange={(value) => onFilterChange('status', value)}>
+              <Select
+                value={filters.status}
+                onValueChange={(value) => onFilterChange('status', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
-                  {filterOptions.statuses.map(status => (
-                    <SelectItem key={status} value={status} style={{ textTransform: 'capitalize' }}>
+                  {filterOptions.statuses.map((status) => (
+                    <SelectItem key={status} value={status} className="capitalize">
                       {status}
                     </SelectItem>
                   ))}
@@ -139,7 +155,10 @@ export function CMSAdvancedFilters({
             <div className="flex flex-col gap-2">
               <Label>Sort By</Label>
               <div className="flex gap-2">
-                <Select value={filters.sortBy} onValueChange={(value) => onFilterChange('sortBy', value)}>
+                <Select
+                  value={filters.sortBy}
+                  onValueChange={(value) => onFilterChange('sortBy', value)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -154,7 +173,9 @@ export function CMSAdvancedFilters({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onFilterChange('sortOrder', filters.sortOrder === 'asc' ? 'desc' : 'asc')}
+                  onClick={() =>
+                    onFilterChange('sortOrder', filters.sortOrder === 'asc' ? 'desc' : 'asc')
+                  }
                   style={{ paddingLeft: 12, paddingRight: 12 }}
                 >
                   {filters.sortOrder === 'asc' ? '\u2191' : '\u2193'}
@@ -181,22 +202,24 @@ export function CMSAdvancedFilters({
                             textAlign: 'left',
                             fontWeight: 400,
                             flex: 1,
-                            ...(!filters.dateRange.from ? { color: 'var(--muted-foreground)' } : {})
+                            ...(!filters.dateRange.from
+                              ? { color: 'var(--muted-foreground)' }
+                              : {}),
                           }}
                         >
-                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
-                          {filters.dateRange.from ? (
-                            format(filters.dateRange.from, "MMM dd")
-                          ) : (
-                            "From"
-                          )}
+                          <CalendarIcon size={16} className="mr-2" />
+                          {filters.dateRange.from
+                            ? format(filters.dateRange.from, 'MMM dd')
+                            : 'From'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent style={{ width: 'auto', padding: 0 }}>
+                      <PopoverContent style={{ width: 'auto' }} className="p-0">
                         <Calendar
                           mode="single"
                           selected={filters.dateRange.from || undefined}
-                          onSelect={(date) => onFilterChange('dateRange', { ...filters.dateRange, from: date })}
+                          onSelect={(date) =>
+                            onFilterChange('dateRange', { ...filters.dateRange, from: date })
+                          }
                           initialFocus
                         />
                       </PopoverContent>
@@ -211,22 +234,20 @@ export function CMSAdvancedFilters({
                             textAlign: 'left',
                             fontWeight: 400,
                             flex: 1,
-                            ...(!filters.dateRange.to ? { color: 'var(--muted-foreground)' } : {})
+                            ...(!filters.dateRange.to ? { color: 'var(--muted-foreground)' } : {}),
                           }}
                         >
-                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
-                          {filters.dateRange.to ? (
-                            format(filters.dateRange.to, "MMM dd")
-                          ) : (
-                            "To"
-                          )}
+                          <CalendarIcon size={16} className="mr-2" />
+                          {filters.dateRange.to ? format(filters.dateRange.to, 'MMM dd') : 'To'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent style={{ width: 'auto', padding: 0 }}>
+                      <PopoverContent style={{ width: 'auto' }} className="p-0">
                         <Calendar
                           mode="single"
                           selected={filters.dateRange.to || undefined}
-                          onSelect={(date) => onFilterChange('dateRange', { ...filters.dateRange, to: date })}
+                          onSelect={(date) =>
+                            onFilterChange('dateRange', { ...filters.dateRange, to: date })
+                          }
                           initialFocus
                         />
                       </PopoverContent>
@@ -254,33 +275,65 @@ export function CMSAdvancedFilters({
               <div className="flex flex-wrap gap-2">
                 <p className="text-sm font-medium">Active filters:</p>
                 {filters.search && (
-                  <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Badge
+                    variant="secondary"
+                    style={{ alignItems: 'center' }}
+                    className="flex gap-1"
+                  >
                     Search: "{filters.search}"
                     <button onClick={() => onFilterChange('search', '')}>&times;</button>
                   </Badge>
                 )}
                 {filters.contentType !== 'all' && (
-                  <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Badge
+                    variant="secondary"
+                    style={{ alignItems: 'center' }}
+                    className="flex gap-1"
+                  >
                     Type: {filters.contentType.replace('_', ' ')}
                     <button onClick={() => onFilterChange('contentType', 'all')}>&times;</button>
                   </Badge>
                 )}
                 {filters.status !== 'all' && (
-                  <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Badge
+                    variant="secondary"
+                    style={{ alignItems: 'center' }}
+                    className="flex gap-1"
+                  >
                     Status: {filters.status}
                     <button onClick={() => onFilterChange('status', 'all')}>&times;</button>
                   </Badge>
                 )}
                 {filters.dateRange.from && (
-                  <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    From: {format(filters.dateRange.from, "MMM dd, yyyy")}
-                    <button onClick={() => onFilterChange('dateRange', { ...filters.dateRange, from: null })}>&times;</button>
+                  <Badge
+                    variant="secondary"
+                    style={{ alignItems: 'center' }}
+                    className="flex gap-1"
+                  >
+                    From: {format(filters.dateRange.from, 'MMM dd, yyyy')}
+                    <button
+                      onClick={() =>
+                        onFilterChange('dateRange', { ...filters.dateRange, from: null })
+                      }
+                    >
+                      &times;
+                    </button>
                   </Badge>
                 )}
                 {filters.dateRange.to && (
-                  <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    To: {format(filters.dateRange.to, "MMM dd, yyyy")}
-                    <button onClick={() => onFilterChange('dateRange', { ...filters.dateRange, to: null })}>&times;</button>
+                  <Badge
+                    variant="secondary"
+                    style={{ alignItems: 'center' }}
+                    className="flex gap-1"
+                  >
+                    To: {format(filters.dateRange.to, 'MMM dd, yyyy')}
+                    <button
+                      onClick={() =>
+                        onFilterChange('dateRange', { ...filters.dateRange, to: null })
+                      }
+                    >
+                      &times;
+                    </button>
                   </Badge>
                 )}
               </div>

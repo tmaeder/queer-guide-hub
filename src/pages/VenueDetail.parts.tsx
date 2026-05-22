@@ -122,15 +122,14 @@ export function VenueHero({
     <>
       {/* Hero Image */}
       <ParallaxHero className="w-full h-40 md:h-48 rounded-container mb-6">
-          <img
-            src={heroImage || getRandomFallbackImage()}
-            alt={venue.name}
-            role="presentation"
-            className="w-full h-full object-cover"
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
+        <img
+          src={heroImage || getRandomFallbackImage()}
+          alt={venue.name}
+          className="w-full h-full object-cover"
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
       </ParallaxHero>
 
       {/* Safety Alert Banner */}
@@ -143,7 +142,7 @@ export function VenueHero({
 
       {/* Permanently Closed Banner */}
       {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
-        <div className="mb-6 px-4 py-3 bg-destructive text-destructive-foreground flex items-center gap-2">
+        <div className="mb-6 px-4 py-4 bg-destructive text-destructive-foreground flex items-center gap-2">
           <p className="text-sm font-semibold">
             Permanently closed
             {' · '}
@@ -159,14 +158,14 @@ export function VenueHero({
       {/* Title Row */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-1 flex-wrap">
+          <div className="flex items-center gap-4 mb-1 flex-wrap">
             {venue.logo_url && (
               <img
                 src={venue.logo_url}
                 alt=""
                 role="presentation"
-                className="object-contain flex-shrink-0"
-                style={{ width: 40, height: 40, borderRadius: '10px', padding: '3px' }}
+                className="object-contain flex-shrink-0 rounded-element"
+                style={{ width: 40, height: 40, padding: '3px' }}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
@@ -182,17 +181,10 @@ export function VenueHero({
             )}
           </div>
           <div className="flex items-center gap-1 mb-2">
-            <MapPin
-              style={{
-                width: 14,
-                height: 14,
-                color: 'hsl(var(--muted-foreground))',
-                flexShrink: 0,
-              }}
-            />
+            <MapPin size={14} className="text-muted-foreground shrink-0" />
             <span className="text-sm text-muted-foreground">
               {cityLink ? (
-                <LocalizedLink to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
+                <LocalizedLink to={cityLink} style={{ color: 'inherit' }} className="no-underline">
                   <span className="text-sm hover:text-primary hover:underline">{cityName}</span>
                 </LocalizedLink>
               ) : (
@@ -204,7 +196,8 @@ export function VenueHero({
                   {countryLink ? (
                     <LocalizedLink
                       to={countryLink}
-                      style={{ color: 'inherit', textDecoration: 'none' }}
+                      style={{ color: 'inherit' }}
+                      className="no-underline"
                     >
                       <span className="text-sm hover:text-primary hover:underline">
                         {countryName}
@@ -223,9 +216,9 @@ export function VenueHero({
           <button
             type="button"
             onClick={onAddToTrip}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-2.5 text-sm font-bold tracking-tight text-background transition-opacity duration-300 hover:opacity-90"
           >
-            <Luggage style={{ width: 14, height: 14 }} aria-hidden="true" />
+            <Luggage size={14} aria-hidden="true" />
             Add to trip
           </button>
           <FavoriteButton itemId={venue.id} type="venue" size="md" />
@@ -252,18 +245,14 @@ export function VenueHero({
           />
           {venue.phone && (
             <Button variant="outline" size="sm" onClick={() => window.open(`tel:${venue.phone}`)}>
-              <Phone style={{ width: 16, height: 16, marginRight: 8 }} />
+              <Phone size={16} className="mr-2" />
               Call
             </Button>
           )}
           {venue.website && (
             <Button variant="outline" size="sm" asChild>
-              <a
-                href={venue.website}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-              >
-                <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
+              <a href={venue.website} target="_blank" rel="noopener noreferrer nofollow">
+                <Globe size={16} className="mr-2" />
                 Website
               </a>
             </Button>
@@ -276,16 +265,15 @@ export function VenueHero({
         {venue.category && <Badge>{venue.category}</Badge>}
         {cityName && (
           <Badge variant="outline" className="gap-1">
-            <MapPin style={{ width: 14, height: 14 }} />
-            {cityName}{countryName ? `, ${countryName}` : ''}
+            <MapPin size={14} />
+            {cityName}
+            {countryName ? `, ${countryName}` : ''}
           </Badge>
         )}
-        {venue.price_range && (
-          <Badge variant="outline">{getPriceRange(venue.price_range)}</Badge>
-        )}
+        {venue.price_range && <Badge variant="outline">{getPriceRange(venue.price_range)}</Badge>}
         {averageRating > 0 && (
           <Badge variant="outline" className="gap-1">
-            <Star style={{ width: 14, height: 14, fill: 'currentColor' }} />
+            <Star size={14} style={{ fill: 'currentColor' }} />
             {averageRating.toFixed(1)} ({reviewCount} review{reviewCount !== 1 ? 's' : ''})
           </Badge>
         )}
@@ -333,14 +321,12 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 <CardTitle>{t('pages.venueDetail.amenities', 'Amenities')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {venue.amenities.map((amenity, index) => (
                     <div key={index} className="flex items-center gap-2 p-2 rounded">
-                      {amenity === 'wifi' && <Wifi style={{ width: 16, height: 16 }} />}
-                      {amenity === 'parking' && <Car style={{ width: 16, height: 16 }} />}
-                      {amenity === 'wheelchair-accessible' && (
-                        <Accessibility style={{ width: 16, height: 16 }} />
-                      )}
+                      {amenity === 'wifi' && <Wifi size={16} />}
+                      {amenity === 'parking' && <Car size={16} />}
+                      {amenity === 'wheelchair-accessible' && <Accessibility size={16} />}
                       {!['wifi', 'parking', 'wheelchair-accessible'].includes(amenity) && (
                         <div
                           className="rounded-full bg-muted flex-shrink-0"
@@ -400,51 +386,39 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
             </CardHeader>
             <CardContent>
               {venue.address && (
-                <div className="flex items-start gap-3">
-                  <MapPin
-                    style={{
-                      width: 16,
-                      height: 16,
-                      color: 'hsl(var(--muted-foreground))',
-                      flexShrink: 0,
-                      marginTop: 2,
-                    }}
-                  />
+                <div className="flex items-start gap-4">
+                  <MapPin size={16} className="text-muted-foreground shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm">
                       {venue.address}
                       {venue.postal_code ? `, ${venue.postal_code}` : ''}
                     </p>
-                    {typeof venue.latitude === 'number' &&
-                      typeof venue.longitude === 'number' && (
-                        <Button variant="outline" size="sm" asChild style={{ marginTop: 8 }}>
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Navigation2 style={{ width: 14, height: 14, marginRight: 6 }} />
-                            Directions
-                          </a>
-                        </Button>
-                      )}
+                    {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
+                      <Button variant="outline" size="sm" asChild className="mt-2">
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Navigation2 size={14} className="mr-1.5" />
+                          Directions
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
               {venue.phone && (
-                <div className="flex items-center gap-3">
-                  <Phone style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-                  <a
-                    href={`tel:${venue.phone}`}
-                    className="text-sm text-primary hover:underline"
-                  >
+                <div className="flex items-center gap-4">
+                  <Phone size={16} className="text-muted-foreground" />
+                  <a href={`tel:${venue.phone}`} className="text-sm text-primary hover:underline">
                     {venue.phone}
                   </a>
                 </div>
               )}
               {venue.email && (
-                <div className="flex items-center gap-3">
-                  <Mail style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+                <div className="flex items-center gap-4">
+                  <Mail size={16} className="text-muted-foreground" />
                   <a
                     href={`mailto:${venue.email}`}
                     className="text-sm text-primary hover:underline"
@@ -454,8 +428,8 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 </div>
               )}
               {venue.website && (
-                <div className="flex items-center gap-3">
-                  <Globe style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+                <div className="flex items-center gap-4">
+                  <Globe size={16} className="text-muted-foreground" />
                   <a
                     href={venue.website}
                     target="_blank"
@@ -467,10 +441,8 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 </div>
               )}
               {venue.instagram && (
-                <div className="flex items-center gap-3">
-                  <Instagram
-                    style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }}
-                  />
+                <div className="flex items-center gap-4">
+                  <Instagram size={16} className="text-muted-foreground" />
                   <a
                     href={`https://instagram.com/${venue.instagram}`}
                     target="_blank"
@@ -490,7 +462,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               <CardHeader>
                 <CardTitle>
                   <div className="flex items-center gap-2">
-                    <Clock style={{ width: 16, height: 16 }} />
+                    <Clock size={16} />
                     Hours
                   </div>
                 </CardTitle>
@@ -605,62 +577,60 @@ export function VenueReviewsTab({ reviews }: VenueReviewsProps) {
   if (reviews.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">
-          No reviews yet. Be the first to leave a review!
-        </p>
+        <p className="text-muted-foreground">No reviews yet. Be the first to leave a review!</p>
       </div>
     );
   }
   return (
     <ScrollReveal direction="up">
-    <div className="flex flex-col gap-4 mt-2">
-      {reviews.map((review) => (
-        <Card key={review.id}>
-          <CardContent>
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <div
-                  className="bg-muted rounded-full flex items-center justify-center font-semibold text-sm"
-                  style={{ width: 36, height: 36 }}
-                >
-                  {review.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">
-                    {review.profiles?.display_name || 'Anonymous'}
-                  </p>
-                  <div className="flex items-center" style={{ gap: 1 }}>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        style={{
-                          width: 13,
-                          height: 13,
-                          fill: i < review.rating ? 'currentColor' : 'none',
-                          // TODO(polish): no token match — star rating amber/gray
-                          color: i < review.rating ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                        }}
-                      />
-                    ))}
+      <div className="flex flex-col gap-4 mt-2">
+        {reviews.map((review) => (
+          <Card key={review.id}>
+            <CardContent>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="bg-muted rounded-full flex items-center justify-center font-semibold text-sm"
+                    style={{ width: 36, height: 36 }}
+                  >
+                    {review.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">
+                      {review.profiles?.display_name || 'Anonymous'}
+                    </p>
+                    <div className="flex items-center" style={{ gap: 1 }}>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          size={13}
+                          style={{
+                            fill: i < review.rating ? 'currentColor' : 'none',
+                            // TODO(polish): no token match — star rating amber/gray
+                            color:
+                              i < review.rating
+                                ? 'hsl(var(--foreground))'
+                                : 'hsl(var(--muted-foreground))',
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(review.created_at).toLocaleDateString()}
+                </span>
               </div>
-              <span className="text-xs text-muted-foreground">
-                {new Date(review.created_at).toLocaleDateString()}
-              </span>
-            </div>
-            {review.title && (
-              <p className="text-sm font-semibold mb-1">{review.title}</p>
-            )}
-            {review.content && (
-              <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.6 }}>
-                {review.content}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+              {review.title && <p className="text-sm font-semibold mb-1">{review.title}</p>}
+              {review.content && (
+                <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.6 }}>
+                  {review.content}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </ScrollReveal>
   );
 }

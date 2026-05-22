@@ -68,7 +68,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
   return (
     <div className="mt-2">
       <div className="text-center mb-8 md:mb-10 max-w-2xl mx-auto px-2">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
           {t('trips.empty.hero.title', 'Plan a trip you’ll feel safe on.')}
         </h2>
         <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
@@ -85,7 +85,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
             <CardContent className="flex flex-col items-start gap-4 p-6 w-full">
               <span
                 aria-hidden="true"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-container border border-border bg-background shadow-sm"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-container border border-border bg-background"
               >
                 <Icon style={{ width: 20, height: 20 }} />
               </span>
@@ -101,7 +101,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
                 className="mt-1"
               >
                 {cta}
-                <ArrowRight style={{ width: 14, height: 14, marginLeft: 6 }} />
+                <ArrowRight size={14} className="ml-1.5" />
               </Button>
             </CardContent>
           </Card>
@@ -110,10 +110,10 @@ export function EmptyTripsHero({ onCreate }: Props) {
 
       {(discoverLoading || previewTrips.length > 0) && (
         <section className="mb-12">
-          <div className="flex items-end justify-between gap-3 mb-4">
+          <div className="flex items-end justify-between gap-4 mb-4">
             <div>
               <div className="inline-flex items-center gap-2 mb-1">
-                <Compass style={{ width: 16, height: 16 }} />
+                <Compass size={16} />
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {t('trips.empty.discoverEyebrow', 'From real travelers')}
                 </span>
@@ -128,7 +128,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
               onClick={() => navigate('/trips/discover')}
             >
               {t('trips.empty.discoverCta', 'Open Discover')}
-              <ArrowRight style={{ width: 14, height: 14, marginLeft: 4 }} />
+              <ArrowRight size={14} className="ml-1" />
             </Button>
           </div>
           {discoverLoading && previewTrips.length === 0 ? (

@@ -96,7 +96,7 @@ export async function addNewsFeed(opts: {
       throw new Error(`feed unreachable: ${probe.status}`);
     }
   } catch (e) {
-    throw new Error(`feed probe failed: ${e instanceof Error ? e.message : String(e)}`);
+    throw new Error(`feed probe failed: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
   }
 
   const row = {

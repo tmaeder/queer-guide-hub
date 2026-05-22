@@ -45,7 +45,7 @@ const getToastStyle = (variant: ToastVariant = 'default'): React.CSSProperties =
     justifyContent: 'space-between',
     gap: 16,
     overflow: 'hidden',
-    borderRadius: 0,
+    borderRadius: 'var(--radius-none)',
     padding: 24,
     paddingRight: 32,
     boxShadow: 'none',
@@ -88,7 +88,7 @@ const toastActionStyle: React.CSSProperties = {
   flexShrink: 0,
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: 8,
+  borderRadius: 'var(--radius-element)',
   backgroundColor: 'hsl(var(--accent))',
   padding: '0 12px',
   fontSize: '0.875rem',
@@ -113,7 +113,7 @@ const toastCloseStyle: React.CSSProperties = {
   position: 'absolute',
   right: 8,
   top: 8,
-  borderRadius: 8,
+  borderRadius: 'var(--radius-element)',
   padding: 4,
   color: 'hsl(var(--muted-foreground))',
   opacity: 0.7,
@@ -134,7 +134,7 @@ const ToastClose = React.forwardRef<
     aria-label="Close notification"
     {...props}
   >
-    <X style={{ height: 16, width: 16 }} />
+    <X size={16} />
   </ToastPrimitives.Close>
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName

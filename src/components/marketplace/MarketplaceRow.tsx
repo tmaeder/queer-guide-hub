@@ -48,10 +48,10 @@ export function MarketplaceRow({
         </div>
         <div className="hidden md:flex gap-1.5">
           <Button variant="outline" size="icon" onClick={() => scroll(-1)} aria-label={`Scroll ${title} left`}>
-            <ChevronLeft style={{ width: 16, height: 16 }} />
+            <ChevronLeft size={16} />
           </Button>
           <Button variant="outline" size="icon" onClick={() => scroll(1)} aria-label={`Scroll ${title} right`}>
-            <ChevronRight style={{ width: 16, height: 16 }} />
+            <ChevronRight size={16} />
           </Button>
         </div>
       </div>

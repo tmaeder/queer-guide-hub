@@ -91,15 +91,13 @@ export function UserModerationActions({
     <div className="flex flex-col gap-6">
       <div>
         <p className="text-sm text-muted-foreground mb-2">Current Status</p>
-        <Badge variant={statusCfg.variant} style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
+        <Badge variant={statusCfg.variant} style={{ padding: '4px 12px' }} className="text-sm">
           {statusCfg.label}
         </Badge>
       </div>
 
       <div>
-        <p className="text-sm text-muted-foreground mb-2">
-          Reason (required for suspend/ban)
-        </p>
+        <p className="text-sm text-muted-foreground mb-2">Reason (required for suspend/ban)</p>
         <Textarea
           placeholder="Describe the reason for this action..."
           value={reason}
@@ -117,7 +115,7 @@ export function UserModerationActions({
             disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <ShieldCheck style={{ height: 14, width: 14 }} />
+            <ShieldCheck size={14} />
             Reinstate
           </Button>
         )}
@@ -127,9 +125,14 @@ export function UserModerationActions({
             size="sm"
             onClick={() => setPendingAction('suspended')}
             disabled={loading}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'hsl(var(--foreground) / 0.55)' }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              color: 'hsl(var(--foreground) / 0.55)',
+            }}
           >
-            <ShieldAlert style={{ height: 14, width: 14 }} />
+            <ShieldAlert size={14} />
             Suspend
           </Button>
         )}
@@ -141,7 +144,7 @@ export function UserModerationActions({
             disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <ShieldBan style={{ height: 14, width: 14 }} />
+            <ShieldBan size={14} />
             Ban
           </Button>
         )}

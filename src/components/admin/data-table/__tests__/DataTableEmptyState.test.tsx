@@ -11,7 +11,7 @@ describe('DataTableEmptyState', () => {
       <DataTableEmptyState isLoading={true} hasFilters={false} columnCount={4} />,
     );
     // 5 row divs each containing skeletons.
-    const skeletonRows = container.querySelectorAll('.flex.gap-4.py-3');
+    const skeletonRows = container.querySelectorAll('.flex.gap-4.py-4');
     expect(skeletonRows).toHaveLength(5);
   });
 
@@ -31,7 +31,7 @@ describe('DataTableEmptyState', () => {
       <DataTableEmptyState isLoading={true} hasFilters={false} columnCount={20} />,
     );
     // Each row has 1 leading checkbox skeleton + min(columnCount, 5) column skeletons.
-    const firstRow = container.querySelector('.flex.gap-4.py-3')!;
+    const firstRow = container.querySelector('.flex.gap-4.py-4')!;
     const skeletons = firstRow.querySelectorAll('[class*="Skeleton"], .h-5');
     expect(skeletons.length).toBeLessThanOrEqual(6);
   });

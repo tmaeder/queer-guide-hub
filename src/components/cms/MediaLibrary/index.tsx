@@ -73,7 +73,7 @@ export function MediaLibrary() {
   if (!isAdmin) {
     return (
       <Alert>
-        <AlertTriangle style={{ height: 16, width: 16 }} />
+        <AlertTriangle size={16} />
         <AlertDescription>Admin access required.</AlertDescription>
       </Alert>
     );
@@ -122,7 +122,7 @@ export function MediaLibrary() {
   return (
     <div className="max-w-screen-lg mx-auto p-6 flex flex-col gap-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h4 className="text-2xl font-bold">Media Library</h4>
           <p className="text-sm text-muted-foreground">
@@ -131,7 +131,7 @@ export function MediaLibrary() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleBulkOptimize}>
-            <Zap style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Zap size={14} className="mr-1" />
             Optimize All
           </Button>
         </div>
@@ -176,8 +176,8 @@ export function MediaLibrary() {
 
           {/* Bulk actions bar */}
           {bulkMode && selectedItems.size > 0 && (
-            <div className="flex items-center justify-between border border-border p-3">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between border border-border p-4">
+              <div className="flex items-center gap-4">
                 <Checkbox
                   checked={selectedItems.size === items.length && items.length > 0}
                   onCheckedChange={(checked) => {
@@ -193,7 +193,7 @@ export function MediaLibrary() {
                   variant="outline"
                   onClick={() => setDeleteDialogOpen(true)}
                 >
-                  <Trash2 style={{ height: 14, width: 14, marginRight: 4 }} />
+                  <Trash2 size={14} className="mr-1" />
                   Delete
                 </Button>
               </div>

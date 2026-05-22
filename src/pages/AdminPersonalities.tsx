@@ -72,15 +72,17 @@ const columnHelper = createColumnHelper<PersonalityRow>();
 function VerificationBadge({ status }: { status: string }) {
   if (status === 'verified')
     return (
-      <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>
-        <Check style={{ height: 12, width: 12, marginRight: 4 }} />
+      <Badge style={{ backgroundColor: 'hsl(var(--muted))' }} className="text-foreground">
+        <Check size={12} className="mr-1" />
         Verified
       </Badge>
     );
   if (status === 'disputed')
     return (
-      <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
-        <AlertCircle style={{ height: 12, width: 12, marginRight: 4 }} />
+      <Badge
+        style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}
+      >
+        <AlertCircle size={12} className="mr-1" />
         Disputed
       </Badge>
     );
@@ -89,10 +91,22 @@ function VerificationBadge({ status }: { status: string }) {
 
 function VisibilityBadge({ visibility }: { visibility: string }) {
   if (visibility === 'public')
-    return <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>Public</Badge>;
+    return (
+      <Badge style={{ backgroundColor: 'hsl(var(--muted))' }} className="text-muted-foreground">
+        Public
+      </Badge>
+    );
   if (visibility === 'private')
-    return <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>Private</Badge>;
-  return <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>Draft</Badge>;
+    return (
+      <Badge style={{ backgroundColor: 'hsl(var(--muted))' }} className="text-foreground">
+        Private
+      </Badge>
+    );
+  return (
+    <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
+      Draft
+    </Badge>
+  );
 }
 
 export default function AdminPersonalities() {
@@ -191,8 +205,7 @@ export default function AdminPersonalities() {
         accessor: (r) => {
           if (!r.birth_date) return '';
           const birth = new Date(r.birth_date as string);
-          const end =
-            !r.is_living && r.death_date ? new Date(r.death_date as string) : new Date();
+          const end = !r.is_living && r.death_date ? new Date(r.death_date as string) : new Date();
           let age = end.getFullYear() - birth.getFullYear();
           const m = end.getMonth() - birth.getMonth();
           if (m < 0 || (m === 0 && end.getDate() < birth.getDate())) age--;
@@ -240,11 +253,9 @@ export default function AdminPersonalities() {
         header: 'Name',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
             {info.row.original.pronouns && (
-              <p className="text-sm text-muted-foreground">
-                {info.row.original.pronouns}
-              </p>
+              <p className="text-sm text-muted-foreground">{info.row.original.pronouns}</p>
             )}
           </div>
         ),
@@ -261,7 +272,7 @@ export default function AdminPersonalities() {
           const val = info.getValue();
           return val ? (
             <div className="flex items-center gap-1">
-              <MapPin style={{ height: 12, width: 12 }} />
+              <MapPin size={12} />
               {val}
             </div>
           ) : (
@@ -280,7 +291,7 @@ export default function AdminPersonalities() {
             !p.is_living && p.death_date ? ` - ${new Date(p.death_date).getFullYear()}` : '';
           return (
             <div className="flex items-center gap-1">
-              <Calendar style={{ height: 12, width: 12 }} />
+              <Calendar size={12} />
               {born}
               {died}
             </div>
@@ -313,8 +324,13 @@ export default function AdminPersonalities() {
           <div className="flex flex-col gap-1">
             <VisibilityBadge visibility={info.getValue()} />
             {info.row.original.is_featured && (
-              <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
-                <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Badge
+                style={{
+                  backgroundColor: 'hsl(var(--muted))',
+                  color: 'hsl(var(--foreground) / 0.7)',
+                }}
+              >
+                <Star size={12} className="mr-1" />
                 Featured
               </Badge>
             )}
@@ -339,7 +355,7 @@ export default function AdminPersonalities() {
         header: 'Views',
         cell: (info) => (
           <div className="flex items-center gap-1">
-            <Eye style={{ height: 12, width: 12 }} />
+            <Eye size={12} />
             {info.getValue()?.toLocaleString() ?? 0}
           </div>
         ),
@@ -503,85 +519,85 @@ export default function AdminPersonalities() {
       }
       afterTable={
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent style={{ maxWidth: 672 }}>
-          <DialogHeader>
-            <DialogTitle>Edit Personality</DialogTitle>
-          </DialogHeader>
-          {selectedPersonality && (
-            <div className="flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Verification Status</Label>
-                  <Select
-                    value={selectedPersonality.verification_status}
-                    onValueChange={(v) => handleVerificationChange(selectedPersonality.id, v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="verified">Verified</SelectItem>
-                      <SelectItem value="disputed">Disputed</SelectItem>
-                    </SelectContent>
-                  </Select>
+          <DialogContent style={{ maxWidth: 672 }}>
+            <DialogHeader>
+              <DialogTitle>Edit Personality</DialogTitle>
+            </DialogHeader>
+            {selectedPersonality && (
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Verification Status</Label>
+                    <Select
+                      value={selectedPersonality.verification_status}
+                      onValueChange={(v) => handleVerificationChange(selectedPersonality.id, v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="verified">Verified</SelectItem>
+                        <SelectItem value="disputed">Disputed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Visibility</Label>
+                    <Select
+                      value={selectedPersonality.visibility}
+                      onValueChange={(v) => handleVisibilityChange(selectedPersonality.id, v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="public">Public</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="featured"
+                    checked={selectedPersonality.is_featured}
+                    onChange={(e) => handleFeaturedToggle(selectedPersonality.id, e.target.checked)}
+                  />
+                  <Label htmlFor="featured">Featured Personality</Label>
                 </div>
                 <div>
-                  <Label>Visibility</Label>
-                  <Select
-                    value={selectedPersonality.visibility}
-                    onValueChange={(v) => handleVisibilityChange(selectedPersonality.id, v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="private">Private</SelectItem>
-                      <SelectItem value="draft">Draft</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="internal-notes">Interne Notizen</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Nur intern sichtbar — wird nicht öffentlich angezeigt.
+                  </p>
+                  <Textarea
+                    id="internal-notes"
+                    value={internalNotes}
+                    onChange={(e) => setInternalNotes(e.target.value)}
+                    placeholder={notesLoading ? 'Laden…' : 'Interne Vermerke zu dieser Person'}
+                    rows={5}
+                    disabled={notesLoading || notesSaving}
+                  />
+                  <div className="flex justify-end mt-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={saveInternalNotes}
+                      disabled={
+                        notesLoading || notesSaving || internalNotes === internalNotesLoaded
+                      }
+                    >
+                      {notesSaving ? 'Speichern…' : 'Notizen speichern'}
+                    </Button>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="featured"
-                  checked={selectedPersonality.is_featured}
-                  onChange={(e) => handleFeaturedToggle(selectedPersonality.id, e.target.checked)}
-                />
-                <Label htmlFor="featured">Featured Personality</Label>
-              </div>
-              <div>
-                <Label htmlFor="internal-notes">Interne Notizen</Label>
-                <p className="text-xs text-muted-foreground">
-                  Nur intern sichtbar — wird nicht öffentlich angezeigt.
-                </p>
-                <Textarea
-                  id="internal-notes"
-                  value={internalNotes}
-                  onChange={(e) => setInternalNotes(e.target.value)}
-                  placeholder={notesLoading ? 'Laden…' : 'Interne Vermerke zu dieser Person'}
-                  rows={5}
-                  disabled={notesLoading || notesSaving}
-                />
-                <div className="flex justify-end mt-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={saveInternalNotes}
-                    disabled={
-                      notesLoading || notesSaving || internalNotes === internalNotesLoaded
-                    }
-                  >
-                    {notesSaving ? 'Speichern…' : 'Notizen speichern'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            )}
+          </DialogContent>
+        </Dialog>
       }
     />
   );

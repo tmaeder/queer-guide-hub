@@ -32,20 +32,25 @@ function buildRentalcarsUrl(city: string, checkIn?: string, _checkOut?: string):
   return `https://www.rentalcars.com/search-results?${params.toString()}`;
 }
 
-export function CarRentalSection({ city, checkIn, checkOut, compact = false }: CarRentalSectionProps) {
+export function CarRentalSection({
+  city,
+  checkIn,
+  checkOut,
+  compact = false,
+}: CarRentalSectionProps) {
   const discoverUrl = buildDiscoverCarsUrl(city, checkIn, checkOut);
   const rentalcarsUrl = buildRentalcarsUrl(city, checkIn, checkOut);
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-muted">
-        <Car style={{ height: 20, width: 20, color: 'var(--primary)', flexShrink: 0 }} />
+      <div className="flex items-center gap-4 p-4 bg-muted">
+        <Car size={20} className="text-primary shrink-0" />
         <div className="flex-1">
           <p className="font-semibold text-sm">Rent a Car in {city}</p>
           <p className="text-xs text-muted-foreground">Compare prices from top providers</p>
         </div>
         <Button size="sm" onClick={() => window.open(discoverUrl, '_blank', 'noopener')}>
-          <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+          <ExternalLink size={14} className="mr-1" />
           Search
         </Button>
       </div>
@@ -54,31 +59,40 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
-        <Car style={{ height: 18, width: 18, color: 'var(--primary)' }} />
+      <div className="flex items-center gap-2 mb-4">
+        <Car size={18} className="text-primary" />
         <p className="font-semibold text-base">Rent a Car in {city}</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="hover:shadow-sm transition-shadow">
-          <CardContent style={{ padding: 16 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">DiscoverCars</p>
-            <p className="text-xs text-muted-foreground mb-3">
+            <p className="text-xs text-muted-foreground mb-4">
               Compare 500+ providers, free cancellation
             </p>
-            <Button size="sm" className="w-full" onClick={() => window.open(discoverUrl, '_blank', 'noopener')}>
-              <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={() => window.open(discoverUrl, '_blank', 'noopener')}
+            >
+              <ExternalLink size={14} className="mr-1" />
               Search Cars
             </Button>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-sm transition-shadow">
-          <CardContent style={{ padding: 16 }}>
+        <Card>
+          <CardContent className="p-4">
             <p className="font-semibold text-sm mb-1">Rentalcars.com</p>
-            <p className="text-xs text-muted-foreground mb-3">
+            <p className="text-xs text-muted-foreground mb-4">
               Booking.com partner, loyalty rewards
             </p>
-            <Button size="sm" variant="outline" className="w-full" onClick={() => window.open(rentalcarsUrl, '_blank', 'noopener')}>
-              <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              onClick={() => window.open(rentalcarsUrl, '_blank', 'noopener')}
+            >
+              <ExternalLink size={14} className="mr-1" />
               Search Cars
             </Button>
           </CardContent>

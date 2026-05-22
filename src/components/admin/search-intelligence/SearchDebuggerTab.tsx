@@ -115,8 +115,8 @@ export function SearchDebuggerTab() {
             ))}
           </div>
           <details>
-            <summary style={{ cursor: 'pointer' }}>Raw response</summary>
-            <pre className="text-xs max-h-[400px] overflow-auto bg-muted p-3 rounded">
+            <summary className="cursor-pointer">Raw response</summary>
+            <pre className="text-xs max-h-[400px] overflow-auto bg-muted p-4 rounded">
               {JSON.stringify(result.raw, null, 2)}
             </pre>
           </details>

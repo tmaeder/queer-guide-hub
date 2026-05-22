@@ -31,12 +31,17 @@ export function PreviewDialog({ open, onClose }: PreviewDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Preview / Test Redirect</DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground" style={{ marginBottom: 16 }}>
+        <p className="text-sm text-muted-foreground mb-4">
           Enter a slug or short URL to preview the redirect resolution.
         </p>
         <Input
@@ -45,20 +50,25 @@ export function PreviewDialog({ open, onClose }: PreviewDialogProps) {
           placeholder="pride-zrh or https://queer.guide/go/pride-zrh"
           onKeyDown={(e) => e.key === 'Enter' && handlePreview()}
         />
-        <Button variant="outline" onClick={handlePreview} style={{ marginTop: 8, alignSelf: 'flex-start' }}>
+        <Button
+          variant="outline"
+          onClick={handlePreview}
+          style={{ alignSelf: 'flex-start' }}
+          className="mt-2"
+        >
           Test
         </Button>
         {previewResult && (
-          <div className="bg-muted" style={{ marginTop: 16, padding: 16, borderRadius: 4 }}>
-            <p
-              style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '0.8rem' }}
-            >
+          <div className="bg-muted mt-4 p-4" style={{ borderRadius: 'var(--radius-badge)' }}>
+            <p style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '0.8rem' }}>
               {previewResult}
             </p>
           </div>
         )}
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

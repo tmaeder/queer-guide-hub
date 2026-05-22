@@ -259,7 +259,7 @@ export default function Footprint() {
                   {recent.map((m) => {
                     const trip = tripById.get(m.trip_id!);
                     return (
-                      <div key={m.id} className="flex items-baseline justify-between gap-3">
+                      <div key={m.id} className="flex items-baseline justify-between gap-4">
                         <span className="text-sm capitalize">
                           {m.mark_type} · {m.entity_type}
                         </span>

@@ -8,7 +8,15 @@ function sanitizeMeiliHighlight(html: string): string {
   return html.replace(/<(?!\/?em\b)[^>]+>/gi, '').replace(/<em\b[^>]*>/gi, '<em>');
 }
 
-function HighlightedText({ text, query, html }: { text: string; query: string; html?: string | null }) {
+function HighlightedText({
+  text,
+  query,
+  html,
+}: {
+  text: string;
+  query: string;
+  html?: string | null;
+}) {
   if (!text) return null;
   if (html && /<em>/i.test(html)) {
     return (
@@ -26,7 +34,10 @@ function HighlightedText({ text, query, html }: { text: string; query: string; h
   return (
     <>
       {text.slice(0, idx)}
-      <mark style={{ background: 'transparent', color: 'inherit', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 2 }}>
+      <mark
+        style={{ background: 'transparent', color: 'inherit', textUnderlineOffset: 2 }}
+        className="font-bold underline"
+      >
         {text.slice(idx, idx + q.length)}
       </mark>
       {text.slice(idx + q.length)}
@@ -73,8 +84,9 @@ export function SearchPopoverResults({
   const totalCount = Object.values(countsByType).reduce((a, b) => a + b, 0);
   const visible = suggestions.length;
 
-  const scopeLabel =
-    activeScope ? CONTENT_TYPES.find((c) => c.id === activeScope)?.label ?? activeScope : t('search.allLabel', 'All');
+  const scopeLabel = activeScope
+    ? (CONTENT_TYPES.find((c) => c.id === activeScope)?.label ?? activeScope)
+    : t('search.allLabel', 'All');
 
   const headerText = query
     ? totalCount > visible
@@ -83,21 +95,20 @@ export function SearchPopoverResults({
     : `${scopeLabel}`;
 
   return (
-    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ flex: 1, minWidth: 0, flexDirection: 'column' }} className="flex">
       <div
         style={{
-          display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '8px 12px',
           borderBottom: '1px solid hsl(var(--border))',
           minHeight: 36,
-          gap: 8,
         }}
+        className="flex gap-2"
       >
         <span
-          className="text-xs text-muted-foreground"
-          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap"
+          style={{ textOverflow: 'ellipsis' }}
         >
           {headerText}
         </span>
@@ -106,42 +117,70 @@ export function SearchPopoverResults({
           onClick={onToggleFilters}
           aria-pressed={filtersOpen}
           aria-label={t('search.filters', 'Filters')}
-          className="text-xs"
+          className="text-xs inline-flex gap-1 text-foreground cursor-pointer shrink-0"
           style={{
-            display: 'inline-flex',
             alignItems: 'center',
-            gap: 4,
             padding: '3px 8px',
             border: '1px solid hsl(var(--border))',
             background: filtersOpen ? 'hsl(var(--accent))' : 'transparent',
-            color: 'hsl(var(--foreground))',
-            cursor: 'pointer',
-            flexShrink: 0,
           }}
         >
-          <SlidersHorizontal style={{ height: 12, width: 12 }} />
+          <SlidersHorizontal size={12} />
           {t('search.filters', 'Filters')}
           {activeFiltersCount > 0 && (
-            <span style={{ color: 'hsl(var(--muted-foreground))' }}>· {activeFiltersCount}</span>
+            <span className="text-muted-foreground">· {activeFiltersCount}</span>
           )}
         </button>
       </div>
 
-      <div role="listbox" aria-label={t('search.results', 'Results')} style={{ flex: 1, overflowY: 'auto', maxHeight: 480 }}>
+      <div
+        role="listbox"
+        aria-label={t('search.results', 'Results')}
+        style={{ flex: 1, overflowY: 'auto', maxHeight: 480 }}
+      >
         {error && (
-          <div role="alert" style={{ padding: '12px', borderBottom: '1px solid hsl(var(--border))', color: 'hsl(var(--destructive))', fontSize: '0.8rem' }}>
-            {t('search.unavailable', 'Search unavailable')}. <button type="button" onClick={onSearchAll} style={{ textDecoration: 'underline', background: 'transparent', border: 0, padding: 0, cursor: 'pointer', color: 'inherit' }}>{t('search.retry', 'Retry')}</button>
+          <div
+            role="alert"
+            style={{
+              padding: '12px',
+              borderBottom: '1px solid hsl(var(--border))',
+              fontSize: '0.8rem',
+            }}
+            className="text-destructive"
+          >
+            {t('search.unavailable', 'Search unavailable')}.{' '}
+            <button
+              type="button"
+              onClick={onSearchAll}
+              style={{ background: 'transparent', border: 0, color: 'inherit' }}
+              className="underline p-0 cursor-pointer"
+            >
+              {t('search.retry', 'Retry')}
+            </button>
           </div>
         )}
 
         {loading && suggestions.length === 0 && (
-          <div style={{ padding: 8 }}>
+          <div className="p-2">
             {[0, 1, 2].map((i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px' }}>
-                <div style={{ height: 40, width: 40, background: 'hsl(var(--muted))' }} className="animate-pulse" />
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div className="animate-pulse" style={{ height: 10, width: '60%', background: 'hsl(var(--muted))' }} />
-                  <div className="animate-pulse" style={{ height: 8, width: '40%', background: 'hsl(var(--muted))' }} />
+              <div
+                key={i}
+                style={{ alignItems: 'center', padding: '6px 8px' }}
+                className="flex gap-2.5"
+              >
+                <div
+                  style={{ height: 40, width: 40, background: 'hsl(var(--muted))' }}
+                  className="animate-pulse"
+                />
+                <div style={{ flex: 1, flexDirection: 'column' }} className="flex gap-1.5">
+                  <div
+                    className="animate-pulse"
+                    style={{ height: 10, width: '60%', background: 'hsl(var(--muted))' }}
+                  />
+                  <div
+                    className="animate-pulse"
+                    style={{ height: 8, width: '40%', background: 'hsl(var(--muted))' }}
+                  />
                 </div>
               </div>
             ))}
@@ -149,16 +188,25 @@ export function SearchPopoverResults({
         )}
 
         {!loading && !error && query.length >= 2 && suggestions.length === 0 && (
-          <div style={{ padding: '32px 12px', textAlign: 'center' }}>
-            <Search style={{ height: 24, width: 24, opacity: 0.4, margin: '0 auto 8px' }} />
+          <div style={{ padding: '32px 12px' }} className="text-center">
+            <Search size={24} style={{ opacity: 0.4, margin: '0 auto 8px' }} />
             <p className="text-sm">
               {activeScope
-                ? t('search.noScopeResults', { defaultValue: 'No {{scope}} for "{{query}}"', scope: scopeLabel, query })
+                ? t('search.noScopeResults', {
+                    defaultValue: 'No {{scope}} for "{{query}}"',
+                    scope: scopeLabel,
+                    query,
+                  })
                 : t('search.noResults', { defaultValue: 'No results for "{{query}}"', query })}
             </p>
-            <p className="text-xs text-muted-foreground" style={{ marginTop: 4 }}>
+            <p className="text-xs text-muted-foreground mt-1">
               {activeScope ? (
-                <button type="button" onClick={onClearScope} style={{ textDecoration: 'underline', background: 'transparent', border: 0, padding: 0, cursor: 'pointer', color: 'inherit' }}>
+                <button
+                  type="button"
+                  onClick={onClearScope}
+                  style={{ background: 'transparent', border: 0, color: 'inherit' }}
+                  className="underline p-0 cursor-pointer"
+                >
                   {t('search.tryAll', 'Try All')} →
                 </button>
               ) : (
@@ -203,16 +251,15 @@ export function SearchPopoverResults({
                 style={{
                   height: 40,
                   width: 40,
-                  flexShrink: 0,
                   border: '1px solid hsl(var(--border))',
                   background: 'hsl(var(--muted))',
-                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  overflow: 'hidden',
                 }}
+                className="shrink-0 flex overflow-hidden"
               >
                 {suggestion.image ? (
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a load event, not user interaction
                   <img
                     src={suggestion.image}
                     alt=""
@@ -223,33 +270,35 @@ export function SearchPopoverResults({
                     }}
                   />
                 ) : (
-                  <Icon style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                  <Icon style={{ height: 16, width: 16 }} className="text-muted-foreground" />
                 )}
               </div>
-              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ flex: 1, minWidth: 0, flexDirection: 'column' }} className="flex">
                 <span
-                  className="text-sm"
-                  style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  className="text-sm font-medium overflow-hidden whitespace-nowrap"
+                  style={{ textOverflow: 'ellipsis' }}
                 >
                   <HighlightedText text={displayName} query={query} html={suggestion.nameHtml} />
                 </span>
                 {(suggestion.subtitle || suggestion.city || suggestion.country) && (
                   <span
-                    className="text-xs text-muted-foreground"
-                    style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap"
+                    style={{ textOverflow: 'ellipsis' }}
                   >
-                    {[suggestion.subtitle, suggestion.city, suggestion.country].filter(Boolean).join(' · ')}
+                    {[suggestion.subtitle, suggestion.city, suggestion.country]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </span>
                 )}
               </div>
-              <Icon style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+              <Icon style={{ height: 12, width: 12 }} className="text-muted-foreground shrink-0" />
             </div>
           );
         })}
 
         {loading && suggestions.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 8 }}>
-            <Loader2 className="animate-spin" style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
+          <div style={{ justifyContent: 'center' }} className="flex p-2">
+            <Loader2 className="animate-spin text-muted-foreground" size={14} />
           </div>
         )}
       </div>

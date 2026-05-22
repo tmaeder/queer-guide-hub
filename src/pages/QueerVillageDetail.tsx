@@ -87,7 +87,7 @@ export default function QueerVillageDetail() {
           <p className="text-muted-foreground mb-6">
             The queer village you&apos;re looking for doesn&apos;t exist.
           </p>
-          <LocalizedLink to="/villages" style={{ color: 'inherit', fontWeight: 500 }}>
+          <LocalizedLink to="/villages" style={{ color: 'inherit' }} className="font-medium">
             ← Back to Villages
           </LocalizedLink>
         </div>
@@ -105,16 +105,12 @@ export default function QueerVillageDetail() {
         {
           id: 'venues',
           label: <VillageTabLabel icon={villageTabIcons.Building} label="Venues" />,
-          content: (
-            <VillageVenuesTab village={village} venues={venues} loading={venuesLoading} />
-          ),
+          content: <VillageVenuesTab village={village} venues={venues} loading={venuesLoading} />,
         },
         {
           id: 'events',
           label: <VillageTabLabel icon={villageTabIcons.Calendar} label="Events" />,
-          content: (
-            <VillageEventsTab village={village} events={events} loading={eventsLoading} />
-          ),
+          content: <VillageEventsTab village={village} events={events} loading={eventsLoading} />,
         },
         {
           id: 'photos',

@@ -31,7 +31,7 @@ export function DrawerActionFooter({
 }: Props) {
   return (
     <div
-      className="sticky bottom-0 bg-background border-t border-border -mx-6 px-6 py-3 mt-auto"
+      className="sticky bottom-0 bg-background border-t border-border -mx-6 px-6 py-4 mt-auto"
       style={{ zIndex: 10 }}
     >
       <div className="flex items-center gap-2 mb-2">
@@ -44,13 +44,11 @@ export function DrawerActionFooter({
         />
         <label
           htmlFor="notify-submitter-toggle"
-          style={{ fontSize: '0.7rem', cursor: 'pointer', flex: 1 }}
-          className="text-muted-foreground"
+          style={{ fontSize: '0.7rem', flex: 1 }}
+          className="text-muted-foreground cursor-pointer"
         >
           Email on status change
-          {!hasContactEmail && (
-            <span style={{ marginLeft: 4 }}>(no email)</span>
-          )}
+          {!hasContactEmail && <span className="ml-1">(no email)</span>}
         </label>
       </div>
 
@@ -62,7 +60,7 @@ export function DrawerActionFooter({
             onClick={() => onToggleSpam(false)}
             className="gap-1.5"
           >
-            <RotateCcw style={{ width: 12, height: 12 }} />
+            <RotateCcw size={12} />
             Restore
           </Button>
         ) : (
@@ -73,7 +71,7 @@ export function DrawerActionFooter({
             title="Mark as spam"
             className="gap-1.5"
           >
-            <Ban style={{ width: 12, height: 12 }} />
+            <Ban size={12} />
             Spam
           </Button>
         )}
@@ -85,7 +83,7 @@ export function DrawerActionFooter({
           title="Copy prompt only (no handoff entry)"
           className="gap-1.5"
         >
-          <Copy style={{ width: 12, height: 12 }} />
+          <Copy size={12} />
           Copy
         </Button>
 
@@ -93,13 +91,10 @@ export function DrawerActionFooter({
           <Button
             size="sm"
             variant="outline"
-            onClick={() =>
-              window.open(githubIssueUrl!, '_blank', 'noopener,noreferrer')
-            }
+            onClick={() => window.open(githubIssueUrl!, '_blank', 'noopener,noreferrer')}
             className="gap-1.5"
           >
-            <Github style={{ width: 12, height: 12 }} />
-            #{githubIssueNumber}
+            <Github size={12} />#{githubIssueNumber}
           </Button>
         ) : (
           <Button
@@ -110,7 +105,7 @@ export function DrawerActionFooter({
             title="Open GitHub issue with @claude mention"
             className="gap-1.5"
           >
-            <Github style={{ width: 12, height: 12 }} />
+            <Github size={12} />
             {isForwarding ? 'Forwarding…' : 'GitHub'}
           </Button>
         )}

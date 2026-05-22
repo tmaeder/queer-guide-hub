@@ -35,7 +35,7 @@ export function TagListRenderer({
 
   if (displayMode === 'grid') {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {tags.map((tag) => {
           const uses = tagUsageCounts[tag.name] || 0;
           return (
@@ -43,7 +43,7 @@ export function TagListRenderer({
               key={tag.id}
               type="button"
               onClick={() => onTagClick(tag)}
-              className="flex flex-col overflow-hidden rounded-element bg-background border border-border cursor-pointer text-left p-0 transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary focus-visible:outline-offset-2"
+              className="flex flex-col overflow-hidden rounded-element bg-background border border-border cursor-pointer text-left p-0 transition-colors hover:border-primary hover:bg-muted/40 focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary focus-visible:outline-offset-2"
               style={{ font: 'inherit', color: 'inherit' }}
             >
               <div className="relative w-full bg-muted" style={{ aspectRatio: '4 / 3' }}>
@@ -77,10 +77,7 @@ export function TagListRenderer({
                 >
                   {tag.name}
                 </span>
-                <span
-                  className="text-muted-foreground truncate"
-                  style={{ fontSize: '0.7rem' }}
-                >
+                <span className="text-muted-foreground truncate" style={{ fontSize: '0.7rem' }}>
                   {getTagCategoryLabel(tag)}
                 </span>
               </div>
@@ -101,10 +98,13 @@ export function TagListRenderer({
               key={tag.id}
               type="button"
               onClick={() => onTagClick(tag)}
-              className="flex items-center gap-3 px-3 py-2 rounded-element cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
+              className="flex items-center gap-4 px-4 py-2 rounded-element cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
               style={{ minHeight: 44, font: 'inherit', color: 'inherit' }}
             >
-              <div className="rounded-element overflow-hidden shrink-0 bg-muted" style={{ width: 40, height: 40 }}>
+              <div
+                className="rounded-element overflow-hidden shrink-0 bg-muted"
+                style={{ width: 40, height: 40 }}
+              >
                 <img
                   src={tag.image_url || getRandomFallbackImage()}
                   alt={tag.name}
@@ -117,7 +117,10 @@ export function TagListRenderer({
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="font-semibold block" style={{ fontSize: '0.85rem', lineHeight: 1.25 }}>
+                <span
+                  className="font-semibold block"
+                  style={{ fontSize: '0.85rem', lineHeight: 1.25 }}
+                >
                   {tag.name}
                 </span>
                 <span
@@ -135,10 +138,10 @@ export function TagListRenderer({
                   {uses} uses
                 </span>
               )}
-              <Badge variant="secondary" style={{ flexShrink: 0 }}>
+              <Badge variant="secondary" className="shrink-0">
                 {getTagCategoryLabel(tag)}
               </Badge>
-              <ChevronRight style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }} />
+              <ChevronRight size={14} style={{ opacity: 0.4 }} className="shrink-0" />
             </button>
           );
         })}
@@ -161,8 +164,10 @@ export function TagListRenderer({
             className="inline-flex items-center gap-1.5 rounded-full cursor-pointer bg-background border border-border transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary no-underline text-inherit"
             style={{ minHeight: 36, padding: '6px 12px' }}
           >
-            <Tag style={{ width: 12, height: 12, opacity: 0.55 }} />
-            <span style={{ fontWeight: 500, fontSize: '0.78rem' }}>{tag.name}</span>
+            <Tag size={12} style={{ opacity: 0.55 }} />
+            <span style={{ fontSize: '0.78rem' }} className="font-medium">
+              {tag.name}
+            </span>
             {uses > 0 && (
               <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
                 {uses}

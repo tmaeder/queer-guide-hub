@@ -152,7 +152,7 @@ function Field({ label, value, right }) {
         <span className="lbl">{label}</span>
         {right && <span className="mono" style={{ color: "var(--muted)" }}>{right}</span>}
       </div>
-      <div style={{ marginTop: 6, padding: "11px 12px", border: "1px solid var(--line-strong)", borderRadius: 3, background: "#fff", fontSize: 14 }}>{value}</div>
+      <div style={{ marginTop: 6, padding: "11px 12px", border: "1px solid var(--line-strong)", borderRadius: 'var(--radius-badge)', background: "#fff", fontSize: 14 }}>{value}</div>
     </label>
   );
 }
@@ -166,7 +166,7 @@ export function PatternSignUp() {
       </div>
       <div style={{height:1,background:"var(--ink)",marginTop:14}} />
       <div className="row" style={{ gap: 6 }}>
-        {[1,2,3,4].map((i) => <div key={i} style={{ flex: 1, height: 3, background: i <= 2 ? "var(--accent)" : "var(--line)", borderRadius: 3 }} />)}
+        {[1,2,3,4].map((i) => <div key={i} style={{ flex: 1, height: 3, background: i <= 2 ? "var(--accent)" : "var(--line)", borderRadius: 'var(--radius-badge)' }} />)}
       </div>
 
       <div className="eyebrow">About you</div>
@@ -193,7 +193,7 @@ export function PatternSignUp() {
 
       <div>
         <div className="lbl" style={{ marginBottom: 8 }}>Home base</div>
-        <div style={{ padding: "11px 12px", border: "1px solid var(--line-strong)", borderRadius: 3, background: "#fff", fontSize: 14 }}>Berlin, Germany</div>
+        <div style={{ padding: "11px 12px", border: "1px solid var(--line-strong)", borderRadius: 'var(--radius-badge)', background: "#fff", fontSize: 14 }}>Berlin, Germany</div>
       </div>
 
       <div className="row" style={{ marginTop: "auto", justifyContent: "space-between" }}>
@@ -425,7 +425,7 @@ export function PatternEvents() {
           <div className="lbl" style={{ marginBottom: 8 }}>Type</div>
           {["Pride", "Drag", "Music", "Film", "Sports", "Wellness", "Conferences"].map((t, i) => (
             <label key={t} style={{ display: "flex", gap: 8, padding: "5px 0", color: "var(--ink-2)" }}>
-              <span style={{ width: 14, height: 14, border: "1px solid var(--line-strong)", borderRadius: 3, background: i < 3 ? "var(--ink)" : "transparent" }} />
+              <span style={{ width: 14, height: 14, border: "1px solid var(--line-strong)", borderRadius: 'var(--radius-badge)', background: i < 3 ? "var(--ink)" : "transparent" }} />
               <span>{t}</span>
               <span style={{ marginLeft: "auto", color: "var(--muted)" }}>{[42, 18, 64, 12, 8, 6, 4][i]}</span>
             </label>
@@ -446,7 +446,7 @@ export function PatternEvents() {
                 <div key={i} style={{ borderTop: "1px solid var(--line)", borderRight: i % 7 === 6 ? "none" : "1px solid var(--line)", padding: 8, minHeight: 86 }}>
                   <div className="mono" style={{ color: "var(--muted)" }}>{i + 1}</div>
                   {ev && (
-                    <div style={{ marginTop: 6, padding: 6, background: i % 4 === 0 ? "var(--c2)" : i % 4 === 1 ? "var(--c4)" : i % 4 === 2 ? "var(--c6)" : "var(--accent)", color: "#fff", borderRadius: 5, fontSize: 10, lineHeight: 1.2 }}>{ev[1]}</div>
+                    <div style={{ marginTop: 6, padding: 6, background: i % 4 === 0 ? "var(--c2)" : i % 4 === 1 ? "var(--c4)" : i % 4 === 2 ? "var(--c6)" : "var(--accent)", color: "#fff", borderRadius: 'var(--radius-badge)', fontSize: 10, lineHeight: 1.2 }}>{ev[1]}</div>
                   )}
                 </div>
               );
@@ -502,7 +502,7 @@ export function PatternFestival() {
             <div className="lbl">Going</div>
             <div className="row" style={{ marginTop: 10 }}>
               {[0, 1, 2, 3, 4].map((i) => (
-                <div key={i} style={{ width: 28, height: 28, borderRadius: 2, border: "2px solid #fff", marginLeft: i ? -8 : 0, background: ["var(--c1)", "var(--c2)", "var(--c4)", "var(--c6)", "var(--ink)"][i] }} />
+                <div key={i} style={{ width: 28, height: 28, borderRadius: 'var(--radius-badge)', border: "2px solid #fff", marginLeft: i ? -8 : 0, background: ["var(--c1)", "var(--c2)", "var(--c4)", "var(--c6)", "var(--ink)"][i] }} />
               ))}
               <span style={{ marginLeft: 8, color: "var(--muted)", fontSize: 13 }}>4,218 going · 1,902 maybe</span>
             </div>
@@ -538,7 +538,7 @@ export function PatternHotelSearch() {
       <div style={{ padding: "20px 28px", borderBottom: "1px solid var(--line)" }}>
         <div className="eyebrow">Hotel search</div>
         <h2 className="h-d" style={{ fontSize: 42, margin: "6px 0 14px" }}>Stays where you can be loud about it.</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr auto", gap: 8, padding: 6, border: "1px solid var(--line-strong)", borderRadius: 4, background: "#fff" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr auto", gap: 8, padding: 6, border: "1px solid var(--line-strong)", borderRadius: 'var(--radius-badge)', background: "#fff" }}>
           {[["Where", "Lisbon, Portugal"], ["Check in", "Jun 21"], ["Check out", "Jun 28"], ["Guests", "2 adults"]].map(([l, v]) => (
             <div key={l} style={{ padding: 10 }}>
               <div className="lbl">{l}</div>
@@ -636,10 +636,10 @@ export function PatternHotelDetail() {
         <div className="card" style={{ padding: 18, alignSelf: "start" }}>
           <div className="lbl">Your stay</div>
           <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
-            <div style={{ padding: 10, border: "1px solid var(--line)", borderRadius: 8 }}><div className="mono" style={{ color: "var(--muted)" }}>Check in</div><div>Jun 21</div></div>
-            <div style={{ padding: 10, border: "1px solid var(--line)", borderRadius: 8 }}><div className="mono" style={{ color: "var(--muted)" }}>Check out</div><div>Jun 28</div></div>
+            <div style={{ padding: 10, border: "1px solid var(--line)", borderRadius: 'var(--radius-element)' }}><div className="mono" style={{ color: "var(--muted)" }}>Check in</div><div>Jun 21</div></div>
+            <div style={{ padding: 10, border: "1px solid var(--line)", borderRadius: 'var(--radius-element)' }}><div className="mono" style={{ color: "var(--muted)" }}>Check out</div><div>Jun 28</div></div>
           </div>
-          <div style={{ padding: 10, border: "1px solid var(--line)", borderRadius: 8, marginTop: 8 }}>
+          <div style={{ padding: 10, border: "1px solid var(--line)", borderRadius: 'var(--radius-element)', marginTop: 8 }}>
             <div className="mono" style={{ color: "var(--muted)" }}>Guests</div><div>2 adults · 1 room</div>
           </div>
           <hr />
@@ -719,7 +719,7 @@ export function PatternMap() {
       <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", flex: 1, minHeight: 0 }}>
         <div style={{ borderRight: "1px solid var(--line)", padding: 22, overflow: "hidden" }}>
           <div className="eyebrow" style={{ marginBottom: 8 }}>Lisbon · 412 places</div>
-          <div style={{ padding: "10px 12px", border: "1px solid var(--line-strong)", borderRadius: 2, fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>⌕ Search this area</div>
+          <div style={{ padding: "10px 12px", border: "1px solid var(--line-strong)", borderRadius: 'var(--radius-badge)', fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>⌕ Search this area</div>
           <div className="row" style={{ marginBottom: 12 }}>
             {["All", "Bars", "Clubs", "Saunas", "Cafés", "Sights"].map((t, i) => <span key={t} className={i === 0 ? "pill pill--solid" : "pill"}>{t}</span>)}
           </div>
@@ -731,7 +731,7 @@ export function PatternMap() {
               ["Construction", "Club", "★ 4.5", "var(--c6)"],
             ].map(([n, t, r, c]) => (
               <div key={n} className="card" style={{ padding: 12, display: "grid", gridTemplateColumns: "32px 1fr auto", gap: 10, alignItems: "center" }}>
-                <div style={{ width: 32, height: 32, borderRadius: 6, background: c }} />
+                <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-element)', background: c }} />
                 <div>
                   <div style={{ fontWeight: 500 }}>{n}</div>
                   <div className="mono" style={{ color: "var(--muted)" }}>{t}</div>
@@ -750,15 +750,15 @@ export function PatternMap() {
             [38, 32, "var(--c1)", 12], [55, 42, "var(--c2)", 8], [62, 28, "var(--c4)", 4],
             [42, 58, "var(--c6)", 6], [70, 52, "var(--accent)", 22], [30, 70, "var(--c3)", 3],
           ].map(([x, y, c, n], i) => (
-            <div key={i} style={{ position: "absolute", left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)", width: 36, height: 36, borderRadius: 2, background: c, color: "#fff", display: "grid", placeItems: "center", fontWeight: 700, boxShadow: "0 4px 16px rgba(0,0,0,0.25)", fontSize: 12 }}>{n}</div>
+            <div key={i} style={{ position: "absolute", left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)", width: 36, height: 36, borderRadius: 'var(--radius-badge)', background: c, color: "#fff", display: "grid", placeItems: "center", fontWeight: 700, boxShadow: "0 4px 16px rgba(0,0,0,0.25)", fontSize: 12 }}>{n}</div>
           ))}
-          <div style={{ position: "absolute", right: 22, bottom: 22, padding: 10, background: "#fff", borderRadius: 3, fontSize: 12 }}>
+          <div style={{ position: "absolute", right: 22, bottom: 22, padding: 10, background: "#fff", borderRadius: 'var(--radius-badge)', fontSize: 12 }}>
             <div className="lbl" style={{ marginBottom: 6 }}>Density</div>
             <div className="row" style={{ gap: 6 }}>
-              <span style={{ width: 14, height: 14, background: "var(--c3)", borderRadius: 3 }}></span>
-              <span style={{ width: 14, height: 14, background: "var(--c2)", borderRadius: 3 }}></span>
-              <span style={{ width: 14, height: 14, background: "var(--c1)", borderRadius: 3 }}></span>
-              <span style={{ width: 14, height: 14, background: "var(--accent)", borderRadius: 3 }}></span>
+              <span style={{ width: 14, height: 14, background: "var(--c3)", borderRadius: 'var(--radius-badge)' }}></span>
+              <span style={{ width: 14, height: 14, background: "var(--c2)", borderRadius: 'var(--radius-badge)' }}></span>
+              <span style={{ width: 14, height: 14, background: "var(--c1)", borderRadius: 'var(--radius-badge)' }}></span>
+              <span style={{ width: 14, height: 14, background: "var(--accent)", borderRadius: 'var(--radius-badge)' }}></span>
             </div>
           </div>
         </div>
@@ -891,7 +891,7 @@ export function PatternGroups() {
           ["Trail Running Pride", "Global · sport", 502, "var(--accent)"],
         ].map(([n, sub, count, color], i) => (
           <div key={i} className="card" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 3, background: color }} />
+            <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-badge)', background: color }} />
             <div style={{ fontFamily: "var(--font-display)", fontSize: 24 }}>{n}</div>
             <div className="mono" style={{ color: "var(--muted)" }}>{sub}</div>
             <div className="row" style={{ marginTop: "auto", justifyContent: "space-between" }}>
@@ -932,8 +932,8 @@ export function PatternGroupDetail() {
           </div>
           <div className="card" style={{ padding: 14, marginBottom: 14 }}>
             <div className="row">
-              <div style={{ width: 32, height: 32, borderRadius: 2, background: "var(--c2)" }} />
-              <div style={{ flex: 1, padding: "8px 12px", border: "1px solid var(--line)", borderRadius: 2, color: "var(--muted)" }}>Share something with the group…</div>
+              <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-badge)', background: "var(--c2)" }} />
+              <div style={{ flex: 1, padding: "8px 12px", border: "1px solid var(--line)", borderRadius: 'var(--radius-badge)', color: "var(--muted)" }}>Share something with the group…</div>
               <span className="pill">📷</span>
               <span className="pill">Event</span>
             </div>
@@ -945,7 +945,7 @@ export function PatternGroupDetail() {
           ].map(([who, when, body], i) => (
             <div key={i} className="card" style={{ padding: 14, marginBottom: 10 }}>
               <div className="row" style={{ marginBottom: 8 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 2, background: ["var(--c1)", "var(--c4)", "var(--c6)"][i] }} />
+                <div style={{ width: 30, height: 30, borderRadius: 'var(--radius-badge)', background: ["var(--c1)", "var(--c4)", "var(--c6)"][i] }} />
                 <div>
                   <div style={{ fontWeight: 500, fontSize: 13 }}>{who}</div>
                   <div className="mono" style={{ color: "var(--muted)" }}>{when}</div>
@@ -972,7 +972,7 @@ export function PatternGroupDetail() {
           <hr />
           <div className="lbl">Members · 1,284</div>
           <div className="row" style={{ marginTop: 8 }}>
-            {[0,1,2,3,4,5].map((i) => <div key={i} style={{ width: 28, height: 28, borderRadius: 2, marginLeft: i ? -8 : 0, border: "2px solid #fff", background: ["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c6)","var(--ink)"][i] }} />)}
+            {[0,1,2,3,4,5].map((i) => <div key={i} style={{ width: 28, height: 28, borderRadius: 'var(--radius-badge)', marginLeft: i ? -8 : 0, border: "2px solid #fff", background: ["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c6)","var(--ink)"][i] }} />)}
             <span style={{ marginLeft: 8, color: "var(--muted)", fontSize: 12 }}>+1,278</span>
           </div>
         </div>
@@ -991,7 +991,7 @@ export function PatternMessaging() {
             <h3 className="h-d" style={{ fontSize: 26 }}>Messages</h3>
             <span className="pill">+ New</span>
           </div>
-          <div style={{ padding: "9px 12px", border: "1px solid var(--line)", borderRadius: 2, color: "var(--muted)", marginBottom: 12, fontSize: 13 }}>⌕ Search messages…</div>
+          <div style={{ padding: "9px 12px", border: "1px solid var(--line)", borderRadius: 'var(--radius-badge)', color: "var(--muted)", marginBottom: 12, fontSize: 13 }}>⌕ Search messages…</div>
           {[
             ["Mira", "See you Sunday!", "2m", true],
             ["Jonas", "Sent the photos", "1h", true],
@@ -1001,8 +1001,8 @@ export function PatternMessaging() {
           ].map(([n, p, t, online], i) => (
             <div key={i} className="row" style={{ padding: "10px 0", borderTop: i ? "1px solid var(--line)" : "none" }}>
               <div style={{ position: "relative" }}>
-                <div style={{ width: 36, height: 36, borderRadius: 2, background: ["var(--c1)","var(--c2)","var(--c4)","var(--c6)","var(--accent)"][i] }} />
-                {online && <div style={{ position: "absolute", right: -2, bottom: -2, width: 10, height: 10, borderRadius: 2, background: "#22c55e", border: "2px solid var(--paper)" }} />}
+                <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-badge)', background: ["var(--c1)","var(--c2)","var(--c4)","var(--c6)","var(--accent)"][i] }} />
+                {online && <div style={{ position: "absolute", right: -2, bottom: -2, width: 10, height: 10, borderRadius: 'var(--radius-badge)', background: "#22c55e", border: "2px solid var(--paper)" }} />}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="row" style={{ justifyContent: "space-between" }}>
@@ -1017,7 +1017,7 @@ export function PatternMessaging() {
         <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div className="row" style={{ padding: "14px 22px", borderBottom: "1px solid var(--line)", justifyContent: "space-between" }}>
             <div className="row">
-              <div style={{ width: 36, height: 36, borderRadius: 2, background: "var(--c1)" }} />
+              <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-badge)', background: "var(--c1)" }} />
               <div>
                 <div style={{ fontWeight: 500 }}>Mira</div>
                 <div className="mono" style={{ color: "#22c55e" }}>● online</div>
@@ -1034,19 +1034,19 @@ export function PatternMessaging() {
               ["m","Oh nice! I'll save spots. See you Sunday ❤︎", "11:05"],
             ].map(([who, body, t], i) => (
               <div key={i} style={{ alignSelf: who === "me" ? "flex-end" : "flex-start", maxWidth: "70%" }}>
-                <div style={{ padding: "10px 14px", background: who === "me" ? "var(--accent)" : "#fff", color: who === "me" ? "#fff" : "var(--ink)", borderRadius: 16, borderTopRightRadius: who === "me" ? 4 : 16, borderTopLeftRadius: who === "me" ? 16 : 4 }}>{body}</div>
+                <div style={{ padding: "10px 14px", background: who === "me" ? "var(--accent)" : "#fff", color: who === "me" ? "#fff" : "var(--ink)", borderRadius: 'var(--radius-container)', borderTopRightRadius: who === "me" ? 'var(--radius-badge)' : 'var(--radius-container)', borderTopLeftRadius: who === "me" ? 'var(--radius-container)' : 'var(--radius-badge)' }}>{body}</div>
                 <div className="mono" style={{ color: "var(--muted)", marginTop: 3, textAlign: who === "me" ? "right" : "left", fontSize: 10 }}>{t}</div>
               </div>
             ))}
           </div>
           <div className="row" style={{ padding: "14px 22px", borderTop: "1px solid var(--line)" }}>
             <span className="pill">+</span>
-            <div style={{ flex: 1, padding: "10px 14px", border: "1px solid var(--line)", borderRadius: 2, color: "var(--muted)" }}>Write a message…</div>
+            <div style={{ flex: 1, padding: "10px 14px", border: "1px solid var(--line)", borderRadius: 'var(--radius-badge)', color: "var(--muted)" }}>Write a message…</div>
             <span className="pill pill--accent">Send →</span>
           </div>
         </div>
         <div style={{ borderLeft: "1px solid var(--line)", padding: 22 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 2, background: "var(--c1)", margin: "0 auto" }} />
+          <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-badge)', background: "var(--c1)", margin: "0 auto" }} />
           <div style={{ textAlign: "center", marginTop: 10, fontFamily: "var(--font-display)", fontSize: 22 }}>Mira K.</div>
           <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 12 }}>Berlin · Trans Brunch host</div>
           <hr />
@@ -1117,7 +1117,7 @@ export function PatternArticle() {
         <h1 className="h-d" style={{ fontSize: 64, lineHeight: 1.0, marginTop: 10 }}>Inside Greece's quiet shift on same-sex adoption.</h1>
         <div style={{ color: "var(--muted)", marginTop: 14, fontSize: 16 }}>The 2024 reform passed without the protest predicted. A reporter spent six months on Crete to find out why.</div>
         <div className="row" style={{ marginTop: 20 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 2, background: "var(--c2)" }} />
+          <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-badge)', background: "var(--c2)" }} />
           <div>
             <div style={{ fontWeight: 500 }}>Paula Mantzouri</div>
             <div className="mono" style={{ color: "var(--muted)" }}>Athens correspondent</div>
@@ -1198,7 +1198,7 @@ export function PatternResources() {
           ["IGLYO", "Youth · Europe", "info@iglyo.com", "var(--accent)"],
         ].map(([n, type, contact, color], i) => (
           <div key={i} className="card" style={{ padding: 16, display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 14, alignItems: "center" }}>
-            <div style={{ width: 44, height: 44, borderRadius: 3, background: color }} />
+            <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-badge)', background: color }} />
             <div>
               <div style={{ fontFamily: "var(--font-display)", fontSize: 22 }}>{n}</div>
               <div className="mono" style={{ color: "var(--muted)" }}>{type}</div>
@@ -1285,13 +1285,13 @@ export function PatternMarketDetail() {
           </div>
           <div className="lbl" style={{ marginTop: 14 }}>Color</div>
           <div className="row" style={{ marginTop: 6 }}>
-            {["#1a1814", "#d8533a", "#264653", "#f4a261"].map((c, i) => <span key={c} style={{ width: 32, height: 32, borderRadius: 2, background: c, border: i === 1 ? "2px solid var(--ink)" : "1px solid var(--line)" }} />)}
+            {["#1a1814", "#d8533a", "#264653", "#f4a261"].map((c, i) => <span key={c} style={{ width: 32, height: 32, borderRadius: 'var(--radius-badge)', background: c, border: i === 1 ? "2px solid var(--ink)" : "1px solid var(--line)" }} />)}
           </div>
           <button className="btn btn--accent" style={{ width: "100%", justifyContent: "center", height: 46, marginTop: 16 }}>Add to bag · €220</button>
           <button className="btn btn--ghost" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>Message Olé Studio</button>
           <hr />
           <div className="row">
-            <div style={{ width: 38, height: 38, borderRadius: 2, background: "var(--c2)" }} />
+            <div style={{ width: 38, height: 38, borderRadius: 'var(--radius-badge)', background: "var(--c2)" }} />
             <div>
               <div style={{ fontWeight: 500 }}>Olé Studio</div>
               <div className="mono" style={{ color: "var(--muted)" }}>Madrid · since 2018 · 1,840 sales</div>
@@ -1310,7 +1310,7 @@ export function PatternSearch() {
     <div className="art" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
       <TopNav active="Discover" />
       <div style={{ padding: "30px 28px 14px", maxWidth: 720, width: "100%", margin: "0 auto" }}>
-        <div className="row" style={{ alignItems: "center", padding: "12px 18px", border: "1px solid var(--ink)", borderRadius: 4, background: "#fff", gap: 12 }}>
+        <div className="row" style={{ alignItems: "center", padding: "12px 18px", border: "1px solid var(--ink)", borderRadius: 'var(--radius-badge)', background: "#fff", gap: 12 }}>
           <span style={{ fontSize: 18 }}>⌕</span>
           <span style={{ flex: 1, fontFamily: "var(--font-display)", fontSize: 22, color: "var(--ink)" }}>queer bars in Lisbon</span>
           <span className="mono" style={{ color: "var(--muted)" }}>esc</span>
@@ -1366,7 +1366,7 @@ export function PatternTags() {
             [10, 50, 30, "history", "var(--c5)"],
             [90, 50, 32, "food", "var(--c2)"],
           ].map(([x, y, r, label, c], i) => (
-            <div key={i} style={{ position: "absolute", left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)", width: r, height: r, borderRadius: 2, background: c, color: "#fff", display: "grid", placeItems: "center", fontFamily: "var(--font-display)", fontSize: r * 0.22, boxShadow: "0 6px 20px rgba(0,0,0,0.18)" }}>{label}</div>
+            <div key={i} style={{ position: "absolute", left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)", width: r, height: r, borderRadius: 'var(--radius-badge)', background: c, color: "#fff", display: "grid", placeItems: "center", fontFamily: "var(--font-display)", fontSize: r * 0.22, boxShadow: "0 6px 20px rgba(0,0,0,0.18)" }}>{label}</div>
           ))}
           <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, opacity: 0.25 }}>
             <line x1="50%" y1="50%" x2="28%" y2="30%" stroke="currentColor" strokeWidth="1" />
@@ -1441,7 +1441,7 @@ function AdminSidebar({ active }) {
       <div style={{ height: 14 }} />
       <div className="lbl" style={{ color: "rgba(245,241,234,0.4)", marginBottom: 6, paddingLeft: 8 }}>Workspace</div>
       {["Overview", "Cities", "Venues", "Events", "Hotels", "Users", "Moderation", "CMS", "Translations", "Security", "Settings"].map((s) => (
-        <div key={s} style={{ padding: "8px 10px", borderRadius: 8, background: s === active ? "rgba(245,241,234,0.12)" : "transparent", color: s === active ? "var(--paper)" : "rgba(245,241,234,0.7)", fontSize: 13 }}>{s}</div>
+        <div key={s} style={{ padding: "8px 10px", borderRadius: 'var(--radius-element)', background: s === active ? "rgba(245,241,234,0.12)" : "transparent", color: s === active ? "var(--paper)" : "rgba(245,241,234,0.7)", fontSize: 13 }}>{s}</div>
       ))}
       <div style={{ marginTop: "auto", padding: 10, fontSize: 11, opacity: 0.6 }}>v3.4 · build a8f2</div>
     </div>
@@ -1548,7 +1548,7 @@ export function PatternCMS() {
           <div className="mono" style={{ color: "var(--accent)" }}>POLITICS · 8 MIN READ</div>
           <input style={{ width: "100%", border: 0, outline: "none", fontFamily: "var(--font-display)", fontSize: 56, lineHeight: 1.0, background: "transparent", color: "var(--ink)", marginTop: 8 }} defaultValue="Inside Greece's quiet shift on same-sex adoption." />
           <input style={{ width: "100%", border: 0, outline: "none", fontFamily: "inherit", fontSize: 16, color: "var(--muted)", background: "transparent", marginTop: 10 }} defaultValue="The 2024 reform passed without the protest predicted." />
-          <div className="row" style={{ marginTop: 16, padding: "8px 12px", borderRadius: 3, border: "1px solid var(--line)", background: "#fff", gap: 4 }}>
+          <div className="row" style={{ marginTop: 16, padding: "8px 12px", borderRadius: 'var(--radius-badge)', border: "1px solid var(--line)", background: "#fff", gap: 4 }}>
             {["B", "I", "U", "H1", "H2", "“ ”", "—", "🔗", "📷", "🎬", "—", "↶", "↷"].map((t, i) => (
               <span key={i} style={{ padding: "4px 8px", fontFamily: t === "B" ? "serif" : t === "I" ? "serif" : "inherit", fontStyle: t === "I" ? "italic" : "normal", fontWeight: t === "B" ? 700 : 400, color: "var(--ink-2)", borderRight: i === 4 || i === 9 ? "1px solid var(--line)" : "none", paddingRight: 12, marginRight: i === 4 || i === 9 ? 4 : 0 }}>{t}</span>
             ))}
@@ -1566,7 +1566,7 @@ export function PatternCMS() {
         <hr />
         <div className="lbl">Author</div>
         <div className="row" style={{ marginTop: 8 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 2, background: "var(--c2)" }} />
+          <div style={{ width: 30, height: 30, borderRadius: 'var(--radius-badge)', background: "var(--c2)" }} />
           <span style={{ fontSize: 13 }}>Paula Mantzouri</span>
         </div>
         <hr />

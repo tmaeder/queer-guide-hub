@@ -25,10 +25,10 @@ interface SummaryRow {
 type StatusFilter = 'pending' | 'permanent_failed' | 'all';
 
 const statusClass: Record<string, string> = {
-  pending: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
-  retrying: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-  permanent_failed: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-  resolved: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+  pending: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  retrying: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  permanent_failed: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+  resolved: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
 };
 
 export default function DLQTab() {
@@ -106,10 +106,10 @@ export default function DLQTab() {
       <div className="flex flex-col gap-4">
         {/* Header + controls */}
         <div className="flex items-center gap-2 flex-wrap">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <AlertTriangle className="h-4 w-4 text-foreground dark:text-foreground" />
           <span className="text-sm font-semibold">Dead Letter Queue</span>
           <span className="text-xs text-muted-foreground">
-            <strong className="text-foreground">{totals.total}</strong> total · <strong className="text-yellow-700 dark:text-yellow-300">{totals.pending}</strong> pending · <strong className="text-destructive">{totals.failed}</strong> permanent
+            <strong className="text-foreground">{totals.total}</strong> total · <strong className="text-foreground dark:text-foreground">{totals.pending}</strong> pending · <strong className="text-destructive">{totals.failed}</strong> permanent
           </span>
           <div className="flex-1" />
           <FilterButton value="pending" label="Pending" />
@@ -137,7 +137,7 @@ export default function DLQTab() {
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
                 {['Source', 'Stage', 'Status', 'Items', 'Next retry'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -146,15 +146,15 @@ export default function DLQTab() {
                 <tr><td colSpan={5} className="p-6 text-center text-muted-foreground text-xs">DLQ is empty</td></tr>
               ) : summary.map((r, i) => (
                 <tr key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                  <td className="px-3 py-2 font-mono text-xs">{r.source_slug ?? '—'}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{r.stage}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-2 font-mono text-xs">{r.source_slug ?? '—'}</td>
+                  <td className="px-4 py-2 font-mono text-xs">{r.stage}</td>
+                  <td className="px-4 py-2">
                     <span className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
                       {r.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2 tabular-nums font-semibold">{r.items}</td>
-                  <td className="px-3 py-2 text-muted-foreground text-xs"
+                  <td className="px-4 py-2 tabular-nums font-semibold">{r.items}</td>
+                  <td className="px-4 py-2 text-muted-foreground text-xs"
                       title={r.next_retry ? new Date(r.next_retry).toISOString() : ''}>
                     {r.next_retry ? formatDistanceToNow(new Date(r.next_retry), { addSuffix: true }) : '—'}
                   </td>
@@ -170,7 +170,7 @@ export default function DLQTab() {
             <thead className="bg-muted/40 sticky top-0">
               <tr className="border-b border-border">
                 {['Stage', 'Source', 'Error', 'Attempts', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -181,9 +181,9 @@ export default function DLQTab() {
                 <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Nothing in queue</td></tr>
               ) : rows.map(r => (
                 <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                  <td className="px-3 py-2 font-mono text-xs align-top">{r.stage}</td>
-                  <td className="px-3 py-2 font-mono text-xs align-top">{r.source_slug ?? '—'}</td>
-                  <td className="px-3 py-2 align-top max-w-[360px]">
+                  <td className="px-4 py-2 font-mono text-xs align-top">{r.stage}</td>
+                  <td className="px-4 py-2 font-mono text-xs align-top">{r.source_slug ?? '—'}</td>
+                  <td className="px-4 py-2 align-top max-w-[360px]">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="font-mono text-xs2 text-destructive truncate cursor-help">
@@ -198,15 +198,15 @@ export default function DLQTab() {
                       )}
                     </Tooltip>
                   </td>
-                  <td className="px-3 py-2 tabular-nums text-xs align-top">
+                  <td className="px-4 py-2 tabular-nums text-xs align-top">
                     {r.attempts}/{r.max_attempts}
                   </td>
-                  <td className="px-3 py-2 align-top">
+                  <td className="px-4 py-2 align-top">
                     <span className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
                       {r.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2 align-top flex gap-1">
+                  <td className="px-4 py-2 align-top flex gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button

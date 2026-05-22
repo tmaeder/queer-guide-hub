@@ -116,8 +116,8 @@ export function LocationField({ field, value, onChange, error, disabled, setFiel
       />
       {resolved && (
         <div className="flex items-center gap-1 mt-1">
-          <Check className="w-3.5 h-3.5 text-green-500" />
-          <span className="text-xs text-green-500">City & country linked</span>
+          <Check className="w-3.5 h-3.5 text-foreground" />
+          <span className="text-xs text-foreground">City & country linked</span>
         </div>
       )}
     </FieldWrapper>

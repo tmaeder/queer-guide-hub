@@ -91,7 +91,7 @@ export function CountryAutocomplete({
         >
           <span className="flex items-center gap-2 truncate">
             {selectedCountry?.flag_emoji && (
-              <span style={{ fontSize: '1.25rem' }}>{selectedCountry.flag_emoji}</span>
+              <span className="text-xl">{selectedCountry.flag_emoji}</span>
             )}
             <span className="truncate">{selectedCountry ? selectedCountry.name : placeholder}</span>
           </span>
@@ -130,7 +130,7 @@ export function CountryAutocomplete({
                     )}
                   />
                   {country.flag_emoji && (
-                    <span className="mr-2" style={{ fontSize: '1.25rem' }}>
+                    <span className="mr-2 text-xl">
                       {country.flag_emoji}
                     </span>
                   )}

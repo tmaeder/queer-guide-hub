@@ -14,11 +14,7 @@ import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetc
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, Network } from 'lucide-react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { ErrorState } from '@/components/ui/EmptyState';
@@ -30,7 +26,12 @@ import { ResourceSearch } from '@/pages/resources/ResourceSearch';
 import { CrisisStrip } from '@/pages/resources/sections/CrisisStrip';
 import { TopicHubGrid } from '@/pages/resources/sections/TopicHubGrid';
 import { OrgsDirectory } from '@/pages/resources/sections/OrgsDirectory';
-import { isRealTagImage, type ViewMode, type DisplayMode, type SortOption } from '@/pages/resources/resourceHelpers';
+import {
+  isRealTagImage,
+  type ViewMode,
+  type DisplayMode,
+  type SortOption,
+} from '@/pages/resources/resourceHelpers';
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
@@ -72,8 +73,7 @@ export default function Resources() {
   const setSortDirection = (next: 'asc' | 'desc') =>
     updateParam('dir', next === 'desc' ? null : 'asc');
   const setFilterCategory = (next: string) => updateParam('cat', next === 'all' ? null : next);
-  const setDisplayMode = (next: DisplayMode) =>
-    updateParam('view', next === 'grid' ? null : next);
+  const setDisplayMode = (next: DisplayMode) => updateParam('view', next === 'grid' ? null : next);
   const setUsageFilter = (next: string) => updateParam('usage', next === 'all' ? null : next);
   const setHasImageFilter = (next: boolean) => updateParam('hasImage', next ? '1' : null);
 
@@ -88,7 +88,9 @@ export default function Resources() {
 
   // Load professions once (DUP-4)
   useEffect(() => {
-    fetchAllProfessions().then(setProfessions).catch((e) => console.error('Error loading professions:', e));
+    fetchAllProfessions()
+      .then(setProfessions)
+      .catch((e) => console.error('Error loading professions:', e));
   }, []);
 
   // Profession filter from URL
@@ -109,9 +111,7 @@ export default function Resources() {
     if (categoriesTree.length === 0) return;
     if (!categoryParam && !categorySlug) return;
 
-    const matchAgainst = (
-      predicate: (c: { name: string; slug?: string }) => boolean,
-    ): boolean => {
+    const matchAgainst = (predicate: (c: { name: string; slug?: string }) => boolean): boolean => {
       const parent = categoriesTree.find((c) => predicate(c));
       if (parent) {
         setSelectedCategory(parent.name);
@@ -210,9 +210,7 @@ export default function Resources() {
     let filtered: CentralizedTag[] = viewMode === 'search' ? searchResults : allTags;
     if (filterCategory !== 'all') {
       filtered = filtered.filter((tag) =>
-        tag.categories?.some(
-          (c) => c.name === filterCategory || c.parent_name === filterCategory,
-        ),
+        tag.categories?.some((c) => c.name === filterCategory || c.parent_name === filterCategory),
       );
     }
     if (usageFilter === 'used') {
@@ -229,9 +227,7 @@ export default function Resources() {
           return dir * ((tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0));
         case 'recent':
           return (
-            dir *
-            (new Date(b.created_at || 0).getTime() -
-              new Date(a.created_at || 0).getTime())
+            dir * (new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
           );
         default: {
           const cmp = a.name.localeCompare(b.name);
@@ -369,10 +365,7 @@ export default function Resources() {
       >
         <h1 className="text-3xl font-bold mb-2">{t('resources.tagNotFound.title')}</h1>
         <p className="text-muted-foreground mb-6">
-          <Trans
-            i18nKey="resources.tagNotFound.bodyPrefix"
-            values={{ tag: tagName ?? '' }}
-          />
+          <Trans i18nKey="resources.tagNotFound.bodyPrefix" values={{ tag: tagName ?? '' }} />
           <code className="px-1 py-0.5 rounded bg-muted">/{tagName ?? ''}</code>.
         </p>
         <Button
@@ -427,9 +420,7 @@ export default function Resources() {
       sortBy={sortBy}
       onSortByChange={setSortBy}
       sortDirection={sortDirection}
-      onSortDirectionToggle={() =>
-        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-      }
+      onSortDirectionToggle={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
       categoriesTree={categoriesTree}
     />
   );
@@ -437,141 +428,140 @@ export default function Resources() {
   return (
     <div className="relative">
       <div className="container mx-auto pt-8 md:pt-10 pb-8 md:pb-12 px-4 relative">
+        <header className="mb-6 md:mb-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">
+            {t('resources.hero.eyebrow')}
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+            {t('resources.hero.title')}
+          </h1>
+          <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-2xl">
+            {t('resources.hero.lede')}
+          </p>
+        </header>
 
-      <header className="mb-6 md:mb-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">
-          {t('resources.hero.eyebrow')}
-        </p>
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{t('resources.hero.title')}</h1>
-        <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-2xl">
-          {t('resources.hero.lede')}
-        </p>
-      </header>
+        {isPureOverview && (
+          <div className="flex flex-col gap-10 mb-10">
+            <CrisisStrip />
+            <TopicHubGrid />
+            <OrgsDirectory />
+          </div>
+        )}
 
-      {isPureOverview && (
-        <div className="flex flex-col gap-10 mb-10">
-          <CrisisStrip />
-          <TopicHubGrid />
-          <OrgsDirectory />
-        </div>
-      )}
+        {!isPureOverview && filterBar}
 
-      {!isPureOverview && filterBar}
-
-      {/* ───────── Graph ───────── */}
-      {viewMode === 'graph' && (
-        <Suspense fallback={<PageLoadingState count={1} />}>
-          <Card style={{ marginBottom: 24 }}>
-            <CardHeader>
-              <CardTitle>
-                <div className="flex items-center gap-2">
-                  <Network style={{ width: 20, height: 20 }} />
-                  <span className="text-base">{t('resources.graph.title')}</span>
+        {/* ───────── Graph ───────── */}
+        {viewMode === 'graph' && (
+          <Suspense fallback={<PageLoadingState count={1} />}>
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Network size={20} />
+                    <span className="text-base">{t('resources.graph.title')}</span>
+                  </div>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">{t('resources.graph.description')}</p>
+              </CardHeader>
+              <CardContent>
+                <div className="w-full h-[400px] md:h-[600px]">
+                  <TagRelationshipGraph
+                    onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as CentralizedTag)}
+                    categoryFilter={filterCategory !== 'all' ? filterCategory : null}
+                    categories={orderedParents.map((p) => p.name)}
+                  />
                 </div>
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {t('resources.graph.description')}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="w-full h-[400px] md:h-[600px]">
-                <TagRelationshipGraph
-                  onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as CentralizedTag)}
-                  categoryFilter={filterCategory !== 'all' ? filterCategory : null}
-                  categories={orderedParents.map((p) => p.name)}
+              </CardContent>
+            </Card>
+          </Suspense>
+        )}
+
+        {/* ───────── Overview — explore disclosure ───────── */}
+        {isPureOverview && (
+          <Collapsible defaultOpen={false}>
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="w-full flex items-center justify-between gap-4 rounded-element border border-border bg-background px-4 py-4 text-left hover:bg-muted transition-colors group"
+                aria-label={t('resources.disclosureAria')}
+              >
+                <span className="font-semibold text-sm">{t('resources.disclosure')}</span>
+                <ChevronDown
+                  aria-hidden
+                  className="opacity-60 transition-transform group-data-[state=open]:rotate-180"
+                  size={16}
                 />
-              </div>
-            </CardContent>
-          </Card>
-        </Suspense>
-      )}
-
-      {/* ───────── Overview — explore disclosure ───────── */}
-      {isPureOverview && (
-        <Collapsible defaultOpen={false}>
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className="w-full flex items-center justify-between gap-3 rounded-element border border-border bg-background px-4 py-3 text-left hover:bg-muted transition-colors group"
-              aria-label={t('resources.disclosureAria')}
-            >
-              <span className="font-semibold text-sm">{t('resources.disclosure')}</span>
-              <ChevronDown
-                aria-hidden
-                className="opacity-60 transition-transform group-data-[state=open]:rotate-180"
-                style={{ width: 16, height: 16 }}
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-4 flex flex-col gap-4">
+              {filterBar}
+              <ResourceOverview
+                popularTags={[]}
+                orderedParents={orderedParents}
+                tagUsageCounts={tagUsageCounts}
+                professionCount={professions.length}
+                onTagClick={handleTagClick}
+                onShowProfessions={() => setViewMode('professions')}
               />
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-4 flex flex-col gap-4">
-            {filterBar}
-            <ResourceOverview
-              popularTags={[]}
-              orderedParents={orderedParents}
-              tagUsageCounts={tagUsageCounts}
-              professionCount={professions.length}
-              onTagClick={handleTagClick}
-              onShowProfessions={() => setViewMode('professions')}
-            />
-          </CollapsibleContent>
-        </Collapsible>
-      )}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
-      {/* ───────── Category ───────── */}
-      {viewMode === 'category' && selectedCategory && (
-        <ResourceCategory
-          selectedCategory={selectedCategory}
-          categoriesTree={categoriesTree}
-          allTags={allTags}
-          tagUsageCounts={tagUsageCounts}
-          displayMode={displayMode}
-          onTagClick={handleTagClick}
-          onBack={handleBack}
-          onSelectSubcategory={(name) => {
-            setSelectedSubcategory(name);
-            setViewMode('subcategory');
-          }}
-        />
-      )}
+        {/* ───────── Category ───────── */}
+        {viewMode === 'category' && selectedCategory && (
+          <ResourceCategory
+            selectedCategory={selectedCategory}
+            categoriesTree={categoriesTree}
+            allTags={allTags}
+            tagUsageCounts={tagUsageCounts}
+            displayMode={displayMode}
+            onTagClick={handleTagClick}
+            onBack={handleBack}
+            onSelectSubcategory={(name) => {
+              setSelectedSubcategory(name);
+              setViewMode('subcategory');
+            }}
+          />
+        )}
 
-      {/* ───────── Subcategory ───────── */}
-      {viewMode === 'subcategory' && selectedSubcategory && (
-        <ResourceSubcategory
-          selectedSubcategory={selectedSubcategory}
-          categoriesTree={categoriesTree}
-          allTags={allTags}
-          tagUsageCounts={tagUsageCounts}
-          displayMode={displayMode}
-          onTagClick={handleTagClick}
-          onBack={handleBack}
-          onNavigateToParent={(parentName) => {
-            setSelectedCategory(parentName);
-            setSelectedSubcategory('');
-            setViewMode('category');
-          }}
-        />
-      )}
+        {/* ───────── Subcategory ───────── */}
+        {viewMode === 'subcategory' && selectedSubcategory && (
+          <ResourceSubcategory
+            selectedSubcategory={selectedSubcategory}
+            categoriesTree={categoriesTree}
+            allTags={allTags}
+            tagUsageCounts={tagUsageCounts}
+            displayMode={displayMode}
+            onTagClick={handleTagClick}
+            onBack={handleBack}
+            onNavigateToParent={(parentName) => {
+              setSelectedCategory(parentName);
+              setSelectedSubcategory('');
+              setViewMode('category');
+            }}
+          />
+        )}
 
-      {/* ───────── Professions ───────── */}
-      {viewMode === 'professions' && (
-        <ResourceProfessions
-          professions={professions}
-          onBack={handleBack}
-          onNavigate={navigate}
-        />
-      )}
+        {/* ───────── Professions ───────── */}
+        {viewMode === 'professions' && (
+          <ResourceProfessions
+            professions={professions}
+            onBack={handleBack}
+            onNavigate={navigate}
+          />
+        )}
 
-      {/* ───────── Search / Filtered ───────── */}
-      {showFilteredResults && (
-        <ResourceSearch
-          viewMode={viewMode}
-          filterCategory={filterCategory}
-          filteredAndSortedTags={filteredAndSortedTags}
-          tagUsageCounts={tagUsageCounts}
-          displayMode={displayMode}
-          onTagClick={handleTagClick}
-        />
-      )}
+        {/* ───────── Search / Filtered ───────── */}
+        {showFilteredResults && (
+          <ResourceSearch
+            viewMode={viewMode}
+            filterCategory={filterCategory}
+            filteredAndSortedTags={filteredAndSortedTags}
+            tagUsageCounts={tagUsageCounts}
+            displayMode={displayMode}
+            onTagClick={handleTagClick}
+          />
+        )}
       </div>
     </div>
   );

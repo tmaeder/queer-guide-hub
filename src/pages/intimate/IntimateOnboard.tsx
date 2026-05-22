@@ -181,7 +181,7 @@ export default function IntimateOnboard() {
       >
         {step === 'consent' && (
           <FlatField>
-            <label htmlFor="intimate-consent" className="flex items-start gap-3 cursor-pointer">
+            <label htmlFor="intimate-consent" className="flex items-start gap-4 cursor-pointer">
               <Checkbox
                 id="intimate-consent"
                 checked={consent}
@@ -361,7 +361,7 @@ export default function IntimateOnboard() {
         )}
 
         {step === 'review' && (
-          <dl className="space-y-3 text-sm">
+          <dl className="space-y-4 text-sm">
             {merged.genitalia && <Row k="Genitalia" v={merged.genitalia} />}
             {merged.size_cm && <Row k="Size" v={`${merged.size_cm} cm`} />}
             {merged.erection_angle_deg !== undefined && merged.erection_angle_deg !== null && (
@@ -380,7 +380,7 @@ export default function IntimateOnboard() {
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
-    <div className="flex justify-between border-t border-border pt-3">
+    <div className="flex justify-between border-t border-border pt-4">
       <dt className="text-muted-foreground">{k}</dt>
       <dd className="font-medium">{v}</dd>
     </div>

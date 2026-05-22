@@ -125,7 +125,7 @@ export function TierUpgradeOverlay({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="text-4xl font-bold tracking-tight mb-3"
+              className="text-4xl font-bold tracking-tight mb-4"
             >
               {tierName}
             </motion.h2>

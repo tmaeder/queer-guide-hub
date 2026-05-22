@@ -58,7 +58,7 @@ export function CommentThread({
 
   return (
     <div className={className}>
-      <div className="flex items-center gap-2 text-sm font-medium mb-3">
+      <div className="flex items-center gap-2 text-sm font-medium mb-4">
         <MessageSquare className="size-4" />
         <span>Discussion</span>
         <span className="text-muted-foreground">({visible.length})</span>
@@ -70,7 +70,7 @@ export function CommentThread({
         <div className="text-sm text-muted-foreground py-2">{emptyHint}</div>
       )}
 
-      <ul className="space-y-3">
+      <ul className="space-y-4">
         {visible.map((c) => (
           <CommentNode
             key={c.id}
@@ -132,7 +132,7 @@ function CommentNode({ comment, depth, readOnly, onReply, onResolve, onUnresolve
   };
 
   return (
-    <li className="flex gap-3" style={{ marginLeft: depth * 16 }}>
+    <li className="flex gap-4" style={{ marginLeft: depth * 16 }}>
       <Avatar className="size-7 shrink-0">
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>
@@ -147,7 +147,7 @@ function CommentNode({ comment, depth, readOnly, onReply, onResolve, onUnresolve
             </span>
           )}
           {comment.resolved && (
-            <span className="ml-1 inline-flex items-center gap-0.5 text-emerald-600">
+            <span className="ml-1 inline-flex items-center gap-0.5 text-foreground">
               <Check className="size-3" />
               resolved
             </span>
@@ -156,7 +156,7 @@ function CommentNode({ comment, depth, readOnly, onReply, onResolve, onUnresolve
         <div className="text-sm whitespace-pre-wrap mt-0.5">{comment.body}</div>
 
         {!readOnly && (
-          <div className="mt-1 flex gap-3 text-xs">
+          <div className="mt-1 flex gap-4 text-xs">
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
@@ -213,7 +213,7 @@ function CommentNode({ comment, depth, readOnly, onReply, onResolve, onUnresolve
         )}
 
         {comment.replies && comment.replies.length > 0 && (
-          <ul className="mt-3 space-y-3">
+          <ul className="mt-4 space-y-4">
             {comment.replies.map((r) => (
               <CommentNode
                 key={r.id}

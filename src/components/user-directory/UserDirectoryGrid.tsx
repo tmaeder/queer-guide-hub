@@ -50,12 +50,12 @@ export const UserDirectoryGrid = ({
         {profiles && profiles.length > 0 && (
           <div className="flex items-center justify-between p-4 bg-muted rounded-element border border-border">
             <div className="flex items-center gap-2">
-              <Users style={{ height: 20, width: 20 }} />
+              <Users size={20} />
               <span className="font-medium">
                 {profiles.length} member{profiles.length !== 1 ? 's' : ''} found
               </span>
               {activeFiltersCount > 0 && (
-                <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                <Badge variant="outline" className="text-xs">
                   Filtered
                 </Badge>
               )}
@@ -87,34 +87,27 @@ export const UserDirectoryGrid = ({
             <LocalizedLink
               key={profile.user_id}
               to={`/user/${profile.user_id}`}
-              style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+              style={{ color: 'inherit' }}
+              className="block no-underline"
             >
               <Card
-                style={{
-                  height: '100%',
-                  transition: 'all 0.3s',
-                  border: '2px solid',
-                  padding: 24,
-                }}
+                style={{ height: '100%', transition: 'all 0.3s', border: '2px solid' }}
+                className="p-6"
               >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="relative">
                     <Avatar style={{ height: 64, width: 64 }}>
                       <AvatarImage src={profile.avatar_url || undefined} />
                       <AvatarFallback
-                        style={{
-                          backgroundColor: '#333333',
-                          color: '#ffffff',
-                          fontSize: '1.125rem',
-                          fontWeight: 700,
-                        }}
+                        style={{ backgroundColor: '#333333', color: '#ffffff' }}
+                        className="text-lg font-bold"
                       >
                         {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     {profile.verified_identity && (
                       <div
-                        className="absolute rounded-full flex items-center justify-center shadow-[var(--shadow-aceternity-sm)]"
+                        className="absolute rounded-full flex items-center justify-center"
                         style={{
                           top: -4,
                           right: -4,
@@ -124,29 +117,23 @@ export const UserDirectoryGrid = ({
                           animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         }}
                       >
-                        <Check style={{ height: 12, width: 12, color: '#ffffff' }} />
+                        <Check size={12} className="text-background" />
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h6 className="font-bold text-foreground truncate" style={{ fontSize: '1.125rem' }}>
+                    <h6 className="font-bold text-foreground truncate text-lg">
                       {profile.display_name || 'Anonymous User'}
                     </h6>
                     {isAuthed && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                         {profile.pronouns && (
-                          <span className="font-medium">
-                            {profile.pronouns}
-                          </span>
+                          <span className="font-medium">{profile.pronouns}</span>
                         )}
                         {profile.age_range && (
                           <>
-                            {profile.pronouns && (
-                              <span>•</span>
-                            )}
-                            <span>
-                              {profile.age_range}
-                            </span>
+                            {profile.pronouns && <span>•</span>}
+                            <span>{profile.age_range}</span>
                           </>
                         )}
                       </div>
@@ -162,13 +149,13 @@ export const UserDirectoryGrid = ({
                         <Badge
                           variant="outline"
                           style={{
-                            fontSize: '0.75rem',
                             backgroundColor: '#eff6ff',
                             borderColor: '#bfdbfe',
                             color: '#1d4ed8',
                           }}
+                          className="text-xs"
                         >
-                          <Briefcase style={{ height: 12, width: 12, marginRight: 4 }} />
+                          <Briefcase size={12} className="mr-1" />
                           Business
                         </Badge>
                       )}
@@ -176,13 +163,13 @@ export const UserDirectoryGrid = ({
                         <Badge
                           variant="outline"
                           style={{
-                            fontSize: '0.75rem',
                             backgroundColor: '#f0fdf4',
                             borderColor: '#bbf7d0',
                             color: '#15803d',
                           }}
+                          className="text-xs"
                         >
-                          <Check style={{ height: 12, width: 12, marginRight: 4 }} />
+                          <Check size={12} className="mr-1" />
                           Verified
                         </Badge>
                       )}
@@ -192,13 +179,12 @@ export const UserDirectoryGrid = ({
 
                 {isAuthed && profile.bio && (
                   <p
-                    className="text-sm text-muted-foreground mb-4"
+                    className="text-sm text-muted-foreground mb-4 overflow-hidden"
                     style={{
                       lineHeight: 1.75,
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
                     }}
                   >
                     {profile.bio}
@@ -209,27 +195,27 @@ export const UserDirectoryGrid = ({
                   <div className="flex flex-col gap-2 mb-4">
                     {profile.location && (
                       <div className="flex items-center text-sm text-muted-foreground">
-                        <MapPin style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <MapPin size={16} className="mr-2" />
                         {profile.location}
                       </div>
                     )}
 
                     {profile.occupation && (
                       <div className="flex items-center text-sm text-muted-foreground">
-                        <Briefcase style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <Briefcase size={16} className="mr-2" />
                         {profile.occupation}
                       </div>
                     )}
 
                     {profile.education && (
                       <div className="flex items-center text-sm text-muted-foreground">
-                        <GraduationCap style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <GraduationCap size={16} className="mr-2" />
                         {profile.education}
                       </div>
                     )}
 
                     <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Calendar size={16} className="mr-2" />
                       Joined {new Date(profile.created_at).toLocaleDateString()}
                     </div>
                   </div>
@@ -241,13 +227,13 @@ export const UserDirectoryGrid = ({
                       <Badge
                         variant="outline"
                         style={{
-                          fontSize: '0.75rem',
                           backgroundColor: '#fdf2f8',
                           borderColor: '#fbcfe8',
                           color: '#be185d',
                         }}
+                        className="text-xs"
                       >
-                        <Heart style={{ height: 12, width: 12, marginRight: 4 }} />
+                        <Heart size={12} className="mr-1" />
                         {profile.relationship_status}
                       </Badge>
                     )}
@@ -255,11 +241,11 @@ export const UserDirectoryGrid = ({
                       <Badge
                         variant="outline"
                         style={{
-                          fontSize: '0.75rem',
                           backgroundColor: '#fff7ed',
                           borderColor: '#fed7aa',
                           color: '#c2410c',
                         }}
+                        className="text-xs"
                       >
                         Children
                       </Badge>
@@ -268,11 +254,11 @@ export const UserDirectoryGrid = ({
                       <Badge
                         variant="outline"
                         style={{
-                          fontSize: '0.75rem',
                           backgroundColor: '#fffbeb',
                           borderColor: '#fde68a',
                           color: '#b45309',
                         }}
+                        className="text-xs"
                       >
                         Pets
                       </Badge>
@@ -280,7 +266,8 @@ export const UserDirectoryGrid = ({
                     {profile.gender_identity && (
                       <Badge
                         variant="secondary"
-                        style={{ fontSize: '0.75rem', borderColor: '#e9d5ff' }}
+                        style={{ borderColor: '#e9d5ff' }}
+                        className="text-xs"
                       >
                         {profile.gender_identity}
                       </Badge>
@@ -294,12 +281,12 @@ export const UserDirectoryGrid = ({
                       href={profile.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium flex items-center gap-1 hover:underline"
-                      style={{ color: 'hsl(var(--primary))', textDecoration: 'none' }}
+                      className="text-sm font-medium flex items-center gap-1 hover:underline no-underline"
+                      style={{ color: 'hsl(var(--primary))' }}
                       onClick={(e: React.MouseEvent) => e.stopPropagation()}
                     >
                       Visit Website
-                      <ExternalLink style={{ height: 12, width: 12 }} />
+                      <ExternalLink size={12} />
                     </a>
                   ) : (
                     <div />
@@ -327,37 +314,27 @@ export const UserDirectoryGrid = ({
 
       {profiles && profiles.length === 0 && (
         <Card>
-          <CardContent
-            style={{
-              padding: 48,
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 24,
-            }}
-          >
+          <CardContent style={{ flexDirection: 'column' }} className="p-12 text-center flex gap-6">
             <div className="relative inline-block mx-auto">
-              <Users style={{ height: 64, width: 64 }} />
+              <Users size={64} />
               <div
                 className="absolute bg-muted rounded-full flex items-center justify-center"
                 style={{ top: -8, right: -8, width: 32, height: 32 }}
               >
-                <Search style={{ height: 16, width: 16 }} />
+                <Search size={16} />
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <h6 className="font-semibold text-foreground" style={{ fontSize: '1.25rem' }}>
-                No members found
-              </h6>
+              <h6 className="font-semibold text-foreground text-xl">No members found</h6>
               <p className="text-muted-foreground mx-auto" style={{ maxWidth: '28rem' }}>
                 {filters.searchQuery || activeFiltersCount > 0
-                  ? 'Try adjusting your search terms or filters to discover more amazing people in our community.'
+                  ? 'Try adjusting your search terms or filters to find more people.'
                   : 'Be among the first to join our growing community of inclusive and welcoming members!'}
               </p>
             </div>
             {(filters.searchQuery || activeFiltersCount > 0) && (
-              <Button variant="outline" onClick={clearAllFilters} style={{ gap: 8 }}>
-                <X style={{ height: 16, width: 16 }} />
+              <Button variant="outline" onClick={clearAllFilters} className="gap-2">
+                <X size={16} />
                 Clear all filters
               </Button>
             )}

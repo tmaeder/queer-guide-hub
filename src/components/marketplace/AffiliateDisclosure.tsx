@@ -1,7 +1,7 @@
 export function AffiliateDisclosure({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
-      <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
+      <p className="text-xs2 text-muted-foreground/80 leading-relaxed">
         Some links are affiliate links. We may earn a commission at no extra cost to you.
       </p>
     );

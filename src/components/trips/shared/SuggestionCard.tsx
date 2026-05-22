@@ -95,13 +95,8 @@ export function SuggestionCard({
           {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
           {description && (
             <p
-              className="text-xs text-muted-foreground"
-              style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
+              className="text-xs text-muted-foreground overflow-hidden"
+              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
             >
               {description}
             </p>
@@ -109,7 +104,7 @@ export function SuggestionCard({
           <div className="mt-auto flex gap-2">
             <Button variant="brand" size="sm" className="flex-1" onClick={onCtaClick}>
               {ctaLabel}
-              <ExternalLink size={14} style={{ marginLeft: 6 }} />
+              <ExternalLink size={14} className="ml-1.5" />
             </Button>
             {secondaryAction && (
               <Button

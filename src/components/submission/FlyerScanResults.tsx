@@ -135,9 +135,7 @@ function ItemDetail({
               fontWeight: 600,
               fontSize: '0.75rem',
               cursor: 'pointer',
-              ...(detected_type === 'event'
-                ? { backgroundColor: '#ec4899', color: '#fff' }
-                : {}),
+              ...(detected_type === 'event' ? { backgroundColor: 'hsl(var(--foreground))', color: '#fff' } : {}),
             }}
             variant={detected_type === 'event' ? 'default' : 'secondary'}
           >
@@ -163,10 +161,10 @@ function ItemDetail({
       {/* Duplicate warning */}
       {hasDuplicates && (
         <div
-          className="flex items-center gap-2 p-3 mb-4 rounded-element"
+          className="flex items-center gap-2 p-4 mb-4 rounded-element"
           style={{ backgroundColor: '#fef3c7' }}
         >
-          <AlertTriangle style={{ width: 16, height: 16, color: '#d97706', flexShrink: 0 }} />
+          <AlertTriangle size={16} style={{ color: '#d97706' }} className="shrink-0" />
           <span className="text-xs" style={{ color: '#92400e' }}>
             {matches.duplicate_events.length > 0
               ? `Similar event found: "${matches.duplicate_events[0].title}"`
@@ -224,7 +222,7 @@ function ItemDetail({
                   cursor: 'pointer',
                   ...(selectedVenueId === v.id
                     ? {
-                        backgroundColor: '#DB277720',
+                        backgroundColor: 'hsl(var(--muted))',
                         borderColor: 'hsl(var(--foreground))',
                         borderWidth: 1,
                         borderStyle: 'solid',
@@ -232,7 +230,7 @@ function ItemDetail({
                     : {}),
                 }}
               >
-                {selectedVenueId === v.id && <Check style={{ width: 14, height: 14, marginRight: 4 }} />}
+                {selectedVenueId === v.id && <Check size={14} className="mr-1" />}
                 {`${v.name} (${Math.round(v.score * 100)}%)`}
               </Badge>
             ))}
@@ -246,7 +244,7 @@ function ItemDetail({
         onClick={onApply}
         style={{
           width: '100%',
-          backgroundColor: detected_type === 'event' ? '#ec4899' : 'hsl(var(--foreground))',
+          backgroundColor: 'hsl(var(--foreground))',
           color: '#fff',
         }}
       >
@@ -301,10 +299,8 @@ export function FlyerScanResults({
     return (
       <Card>
         <CardContent data-testid="extraction-empty-card">
-          <p className="text-sm text-muted-foreground">
-            {t('submission.errors.extractionEmpty')}
-          </p>
-          <Button variant="outline" size="sm" onClick={onDismiss} style={{ marginTop: 12 }}>
+          <p className="text-sm text-muted-foreground">{t('submission.errors.extractionEmpty')}</p>
+          <Button variant="outline" size="sm" onClick={onDismiss} className="mt-4">
             {t('submission.errors.manualFallbackCta')}
           </Button>
         </CardContent>
@@ -320,17 +316,16 @@ export function FlyerScanResults({
     return (
       <Card>
         <CardContent>
-          <div className="flex justify-between items-center mb-3">
-            <p className="text-sm font-semibold">
-              Scan results
-            </p>
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-sm font-semibold">Scan results</p>
             <Button
               variant="ghost"
               size="sm"
               onClick={onDismiss}
-              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+              style={{ alignItems: 'center' }}
+              className="flex gap-1"
             >
-              <X style={{ width: 14, height: 14 }} />
+              <X size={14} />
               Dismiss
             </Button>
           </div>
@@ -359,9 +354,10 @@ export function FlyerScanResults({
             variant="ghost"
             size="sm"
             onClick={onDismiss}
-            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+            style={{ alignItems: 'center' }}
+            className="flex gap-1"
           >
-            <X style={{ width: 14, height: 14 }} />
+            <X size={14} />
             Dismiss
           </Button>
         </div>
@@ -382,13 +378,12 @@ export function FlyerScanResults({
                   border: '1px solid',
                   borderColor: isExpanded
                     ? effectiveType === 'event'
-                      ? '#ec4899'
+                      ? 'hsl(var(--foreground))'
                       : 'hsl(var(--foreground))'
                     : 'hsl(var(--border))',
-                  borderRadius: 8,
-                  overflow: 'hidden',
                   transition: 'border-color 0.2s',
                 }}
+                className="rounded-element overflow-hidden"
               >
                 {/* Collapsed header */}
                 <div
@@ -402,16 +397,16 @@ export function FlyerScanResults({
                   role="button"
                   tabIndex={0}
                   aria-expanded={isExpanded}
-                  className="flex items-center gap-2 p-3 cursor-pointer hover:bg-muted"
+                  className="flex items-center gap-2 p-4 cursor-pointer hover:bg-muted"
                 >
                   <Badge
                     style={{
-                      fontWeight: 600,
                       fontSize: '0.7rem',
                       height: 22,
-                      backgroundColor: effectiveType === 'event' ? '#ec489920' : '#DB277720',
-                      color: effectiveType === 'event' ? '#ec4899' : 'hsl(var(--foreground))',
+                      backgroundColor: effectiveType === 'event' ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
+                      color: effectiveType === 'event' ? 'hsl(var(--foreground))' : 'hsl(var(--foreground))',
                     }}
+                    className="font-semibold"
                     variant="outline"
                   >
                     {effectiveType === 'event' ? 'Event' : 'Venue'}
@@ -422,21 +417,21 @@ export function FlyerScanResults({
                     </span>
                     {multipleFiles && (
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <FileText style={{ width: 10, height: 10 }} />
+                        <FileText size={10} />
                         {result.source_file}
                       </span>
                     )}
                   </div>
                   {isExpanded ? (
-                    <ChevronUp style={{ width: 16, height: 16, color: '#999', flexShrink: 0 }} />
+                    <ChevronUp size={16} style={{ color: '#999' }} className="shrink-0" />
                   ) : (
-                    <ChevronDown style={{ width: 16, height: 16, color: '#999', flexShrink: 0 }} />
+                    <ChevronDown size={16} style={{ color: '#999' }} className="shrink-0" />
                   )}
                 </div>
 
                 {/* Expanded detail */}
                 {isExpanded && (
-                  <div className="p-3 pt-0">
+                  <div className="p-4 pt-0">
                     <ItemDetail
                       item={{ ...item, detected_type: effectiveType }}
                       imageUrl={result.image_url}

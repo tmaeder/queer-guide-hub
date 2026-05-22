@@ -126,7 +126,7 @@ export const MailboxSettings = () => {
       <Button
         onClick={handleClaim}
         disabled={claiming || !handle || handle.length < 3 || !availability?.available}
-        className="mt-3 w-full"
+        className="mt-4 w-full"
       >
         {claiming ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
         Claim {handle ? `${handle}@queer.guide` : 'Email Address'}

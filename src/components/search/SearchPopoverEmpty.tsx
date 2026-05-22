@@ -10,15 +10,31 @@ export interface SearchPopoverEmptyProps {
   onBrowse: (path: string) => void;
 }
 
-export function SearchPopoverEmpty({ trending, onSelectTrending, onBrowse }: SearchPopoverEmptyProps) {
+export function SearchPopoverEmpty({
+  trending,
+  onSelectTrending,
+  onBrowse,
+}: SearchPopoverEmptyProps) {
   const { t } = useTranslation();
   const tiles = trending.slice(0, 6);
   const browseLinks = [
     { label: t('search.quickLinks.places', 'Places'), icon: MapPin, path: '/places' },
     { label: t('search.quickLinks.cities', 'Cities'), icon: Globe, path: '/cities' },
-    { label: t('search.quickLinks.eventsWeekend', 'Events this weekend'), icon: CalendarDays, path: '/events?range=weekend' },
-    { label: t('search.quickLinks.personalities', 'Personalities'), icon: Users, path: '/personalities' },
-    { label: t('search.quickLinks.marketplace', 'Marketplace'), icon: ShoppingBag, path: '/marketplace' },
+    {
+      label: t('search.quickLinks.eventsWeekend', 'Events this weekend'),
+      icon: CalendarDays,
+      path: '/events?range=weekend',
+    },
+    {
+      label: t('search.quickLinks.personalities', 'Personalities'),
+      icon: Users,
+      path: '/personalities',
+    },
+    {
+      label: t('search.quickLinks.marketplace', 'Marketplace'),
+      icon: ShoppingBag,
+      path: '/marketplace',
+    },
   ];
 
   return (
@@ -26,18 +42,22 @@ export function SearchPopoverEmpty({ trending, onSelectTrending, onBrowse }: Sea
       {tiles.length > 0 && (
         <div style={{ padding: '12px 12px 8px' }}>
           <div
-            className="text-[10px] uppercase tracking-wider text-muted-foreground"
-            style={{ fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}
+            className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 flex gap-1"
+            style={{ alignItems: 'center' }}
           >
-            <TrendingUp style={{ height: 11, width: 11 }} />
+            <TrendingUp size={11} />
             {t('search.trending', 'Trending')}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+          <div style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }} className="grid gap-2">
             {tiles.map((hit) => {
               const name = (hit.title || hit.name || '') as string;
               if (!name) return null;
-              const Icon = (TYPE_ICONS[hit.type] || TrendingUp) as React.ComponentType<{ style?: React.CSSProperties }>;
-              const image = (hit.image_url || hit.cover_image_url || hit.hero_image_url) as string | undefined;
+              const Icon = (TYPE_ICONS[hit.type] || TrendingUp) as React.ComponentType<{
+                style?: React.CSSProperties;
+              }>;
+              const image = (hit.image_url || hit.cover_image_url || hit.hero_image_url) as
+                | string
+                | undefined;
               return (
                 <button
                   key={`trend-${hit.type}-${hit.id}`}
@@ -64,25 +84,32 @@ export function SearchPopoverEmpty({ trending, onSelectTrending, onBrowse }: Sea
                     style={{
                       height: 80,
                       background: 'hsl(var(--muted))',
-                      display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      overflow: 'hidden',
                     }}
+                    className="flex overflow-hidden"
                   >
                     {image ? (
-                      <img src={image} alt="" loading="lazy" style={{ height: '100%', width: '100%', objectFit: 'cover' }} />
+                      <img
+                        src={image}
+                        alt=""
+                        loading="lazy"
+                        style={{ height: '100%', width: '100%', objectFit: 'cover' }}
+                      />
                     ) : (
-                      <Icon style={{ height: 18, width: 18, color: 'hsl(var(--muted-foreground))' }} />
+                      <Icon style={{ height: 18, width: 18 }} className="text-muted-foreground" />
                     )}
                   </div>
                   <div style={{ padding: '6px 8px' }}>
-                    <div className="text-xs" style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div
+                      className="text-xs font-medium overflow-hidden whitespace-nowrap"
+                      style={{ textOverflow: 'ellipsis' }}
+                    >
                       {name}
                     </div>
                     <div
-                      className="text-[10px] text-muted-foreground"
-                      style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      className="text-2xs text-muted-foreground overflow-hidden whitespace-nowrap"
+                      style={{ textOverflow: 'ellipsis' }}
                     >
                       {[hit.city, hit.country].filter(Boolean).join(' · ') || hit.type}
                     </div>
@@ -94,8 +121,16 @@ export function SearchPopoverEmpty({ trending, onSelectTrending, onBrowse }: Sea
         </div>
       )}
 
-      <div style={{ padding: '12px 12px 16px', borderTop: tiles.length > 0 ? '1px solid hsl(var(--border))' : 0 }}>
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground" style={{ fontWeight: 600, marginBottom: 6, padding: '0 4px' }}>
+      <div
+        style={{
+          padding: '12px 12px 16px',
+          borderTop: tiles.length > 0 ? '1px solid hsl(var(--border))' : 0,
+        }}
+      >
+        <div
+          className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold mb-1.5"
+          style={{ padding: '0 4px' }}
+        >
           {t('search.browse', 'Browse')}
         </div>
         {browseLinks.map((link) => {
@@ -123,7 +158,7 @@ export function SearchPopoverEmpty({ trending, onSelectTrending, onBrowse }: Sea
                 (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
               }}
             >
-              <Icon style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+              <Icon style={{ height: 14, width: 14 }} className="text-muted-foreground shrink-0" />
               <span className="text-sm">{link.label}</span>
             </button>
           );

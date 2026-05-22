@@ -25,11 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import {
-  fetchTripShares,
-  createTripShare,
-  deleteTripShare,
-} from '@/hooks/useTripShares';
+import { fetchTripShares, createTripShare, deleteTripShare } from '@/hooks/useTripShares';
 
 interface Props {
   open: boolean;
@@ -126,8 +122,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
       }),
   });
 
-  const shareUrl = (token: string) =>
-    `${window.location.origin}/trips/shared/${token}`;
+  const shareUrl = (token: string) => `${window.location.origin}/trips/shared/${token}`;
 
   type IcalCategory = 'all' | 'places' | 'events' | 'reservations';
 
@@ -171,9 +166,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('trips.share.title')}</DialogTitle>
-            <DialogDescription>
-              {t('trips.share.description')}
-            </DialogDescription>
+            <DialogDescription>{t('trips.share.description')}</DialogDescription>
           </DialogHeader>
 
           {/* Existing shares */}
@@ -188,52 +181,39 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                   {t('trips.share.activeLinks', { count: activeShares.length })}
                 </p>
                 {(shares || []).map((share) => {
-                  const isExpired =
-                    share.expires_at && new Date(share.expires_at) < new Date();
+                  const isExpired = share.expires_at && new Date(share.expires_at) < new Date();
                   const stats = viewStats?.get(share.id);
                   return (
-                    <Card
-                      key={share.id}
-                      className="mb-1"
-                      style={{ opacity: isExpired ? 0.5 : 1 }}
-                    >
+                    <Card key={share.id} className="mb-1" style={{ opacity: isExpired ? 0.5 : 1 }}>
                       <CardContent>
                         <div className="flex items-center gap-2">
-                          <Link2 size={14} style={{ flexShrink: 0, opacity: 0.5 }} />
+                          <Link2 size={14} style={{ opacity: 0.5 }} className="shrink-0" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm truncate font-mono" style={{ fontSize: 12 }}>
                               {shareUrl(share.token)}
                             </p>
                             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                              <Badge variant="secondary">
-                                {t('trips.tabs.itinerary')}
-                              </Badge>
+                              <Badge variant="secondary">{t('trips.tabs.itinerary')}</Badge>
                               {share.permissions.budget && (
-                                <Badge variant="outline">
-                                  {t('trips.tabs.budget')}
-                                </Badge>
+                                <Badge variant="outline">{t('trips.tabs.budget')}</Badge>
                               )}
                               {share.permissions.notes && (
-                                <Badge variant="outline">
-                                  {t('trips.collaborate.notes')}
-                                </Badge>
+                                <Badge variant="outline">{t('trips.collaborate.notes')}</Badge>
                               )}
                               {share.permissions.packing && (
-                                <Badge variant="outline">
-                                  {t('trips.tabs.packing')}
-                                </Badge>
+                                <Badge variant="outline">{t('trips.tabs.packing')}</Badge>
                               )}
                               {share.expires_at && (
                                 <span
-                                  className={isExpired ? 'text-destructive' : 'text-muted-foreground'}
+                                  className={
+                                    isExpired ? 'text-destructive' : 'text-muted-foreground'
+                                  }
                                   style={{ fontSize: 10 }}
                                 >
                                   {isExpired
                                     ? t('trips.share.expired')
                                     : t('trips.share.expiresOn', {
-                                        date: new Date(
-                                          share.expires_at,
-                                        ).toLocaleDateString(),
+                                        date: new Date(share.expires_at).toLocaleDateString(),
                                       })}
                                 </span>
                               )}
@@ -277,7 +257,9 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                             aria-label={t('trips.share.copyAria')}
                             style={{
                               color:
-                                copied === shareUrl(share.token) ? 'hsl(var(--success))' : undefined,
+                                copied === shareUrl(share.token)
+                                  ? 'hsl(var(--success))'
+                                  : undefined,
                             }}
                           >
                             {copied === shareUrl(share.token) ? (
@@ -302,23 +284,28 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent>
-                                {(['all', 'places', 'events', 'reservations'] as const).map((cat) => (
-                                  <DropdownMenuItem
-                                    key={cat}
-                                    onClick={() => {
-                                      copyToClipboard(icalSubscriptionUrl(share.token, cat), 'ical');
-                                    }}
-                                  >
-                                    {t(`trips.share.icalCategory.${cat}`, {
-                                      defaultValue: {
-                                        all: 'Subscribe to everything',
-                                        places: 'Itinerary stops only',
-                                        events: 'Events only',
-                                        reservations: 'Reservations only',
-                                      }[cat],
-                                    })}
-                                  </DropdownMenuItem>
-                                ))}
+                                {(['all', 'places', 'events', 'reservations'] as const).map(
+                                  (cat) => (
+                                    <DropdownMenuItem
+                                      key={cat}
+                                      onClick={() => {
+                                        copyToClipboard(
+                                          icalSubscriptionUrl(share.token, cat),
+                                          'ical',
+                                        );
+                                      }}
+                                    >
+                                      {t(`trips.share.icalCategory.${cat}`, {
+                                        defaultValue: {
+                                          all: 'Subscribe to everything',
+                                          places: 'Itinerary stops only',
+                                          events: 'Events only',
+                                          reservations: 'Reservations only',
+                                        }[cat],
+                                      })}
+                                    </DropdownMenuItem>
+                                  ),
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           )}
@@ -399,7 +386,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
               {createShare.isPending ? (
                 <Loader2 size={16} className="mr-1 animate-spin" />
               ) : (
-                <Link2 size={16} style={{ marginRight: 6 }} />
+                <Link2 size={16} className="mr-1.5" />
               )}
               {t('trips.share.createButton')}
             </Button>
@@ -408,16 +395,11 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
       </Dialog>
 
       {/* Delete confirmation */}
-      <Dialog
-        open={!!deleteConfirmId}
-        onOpenChange={(o) => !o && setDeleteConfirmId(null)}
-      >
+      <Dialog open={!!deleteConfirmId} onOpenChange={(o) => !o && setDeleteConfirmId(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('trips.share.deleteTitle')}</DialogTitle>
-            <DialogDescription>
-              {t('trips.share.deleteConfirm')}
-            </DialogDescription>
+            <DialogDescription>{t('trips.share.deleteConfirm')}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
@@ -425,9 +407,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
             </Button>
             <Button
               variant="destructive"
-              onClick={() =>
-                deleteConfirmId && deleteShare.mutate(deleteConfirmId)
-              }
+              onClick={() => deleteConfirmId && deleteShare.mutate(deleteConfirmId)}
             >
               {t('trips.card.delete')}
             </Button>

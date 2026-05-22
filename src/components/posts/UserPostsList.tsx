@@ -13,15 +13,8 @@ interface UserPostsListProps {
 
 export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
   const { user } = useAuth();
-  const {
-    posts,
-    isLoading,
-    likePost,
-    unlikePost,
-    deletePost,
-    isLikingPost,
-    isDeletingPost
-  } = useCommunityPosts(userId);
+  const { posts, isLoading, likePost, unlikePost, deletePost, isLikingPost, isDeletingPost } =
+    useCommunityPosts(userId);
 
   if (isLoading) {
     return (
@@ -29,7 +22,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
         {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i}>
             <CardContent>
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-4 mb-4">
                 <div className="h-10 w-10 bg-muted rounded-full"></div>
                 <div className="flex flex-col gap-2">
                   <div className="h-4 bg-muted w-24"></div>
@@ -52,20 +45,19 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
     return (
       <Card>
         <CardContent>
-          <Users style={{ width: 48, height: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+          <Users size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
           <h6 className="text-base font-medium mb-2">
-            {isOwnProfile ? "You haven't posted anything yet" : "No posts yet"}
+            {isOwnProfile ? "You haven't posted anything yet" : 'No posts yet'}
           </h6>
           <p className="text-muted-foreground mb-4">
             {isOwnProfile
-              ? "Share your thoughts, experiences, or ask questions with the community."
-              : "This user hasn't shared any posts yet."
-            }
+              ? 'Share your thoughts, experiences, or ask questions with the community.'
+              : "This user hasn't shared any posts yet."}
           </p>
           {isOwnProfile && user && (
             <CreatePostDialog>
               <Button>
-                <PenSquare style={{ width: 16, height: 16, marginRight: 8 }} />
+                <PenSquare size={16} className="mr-2" />
                 Create Your First Post
               </Button>
             </CreatePostDialog>
@@ -83,7 +75,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
           <CardContent>
             <CreatePostDialog>
               <Button variant="outline">
-                <PenSquare style={{ width: 16, height: 16, marginRight: 8 }} />
+                <PenSquare size={16} className="mr-2" />
                 What's on your mind?
               </Button>
             </CreatePostDialog>

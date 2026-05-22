@@ -166,7 +166,10 @@ export function CityAutocompleteField({
               {currentValueLabel || field.placeholder || 'Search or create a city...'}
             </span>
             {loading || creating ? (
-              <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" aria-label="Loading" />
+              <Loader2
+                className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50"
+                aria-label="Loading"
+              />
             ) : (
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             )}
@@ -201,7 +204,10 @@ export function CityAutocompleteField({
                     <span>
                       {city.name}
                       {city.country_name && (
-                        <span style={{ color: 'hsl(var(--muted-foreground))', marginLeft: 6, fontSize: '0.85em' }}>
+                        <span
+                          style={{ fontSize: '0.85em' }}
+                          className="text-muted-foreground ml-1.5"
+                        >
                           {city.country_name}
                         </span>
                       )}

@@ -1,5 +1,19 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Eye, Trash2, Upload, MapPin, Clock, Users, Tag, Calendar, User, Building, Star } from 'lucide-react';
+import {
+  ArrowLeft,
+  Save,
+  Eye,
+  Trash2,
+  Upload,
+  MapPin,
+  Clock,
+  Users,
+  Tag,
+  Calendar,
+  User,
+  Building,
+  Star,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,12 +53,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
   }, [content]);
 
   const handleFieldChange = (field: string, value: unknown) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
     if (!user) {
-      toast({ title: "Authentication required", description: "You must be logged in to save changes", variant: "destructive" });
+      toast({
+        title: 'Authentication required',
+        description: 'You must be logged in to save changes',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -53,14 +71,14 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       const tableName = content.content_type;
       const changes: Record<string, unknown> = {};
 
-      Object.keys(formData).forEach(key => {
+      Object.keys(formData).forEach((key) => {
         if (formData[key] !== originalData[key] && key !== 'content_type' && key !== 'id') {
           changes[key] = formData[key];
         }
       });
 
       if (Object.keys(changes).length === 0) {
-        toast({ title: "No changes", description: "No changes were made to save" });
+        toast({ title: 'No changes', description: 'No changes were made to save' });
         setLoading(false);
         return;
       }
@@ -69,11 +87,15 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       const { error } = await updateRow(tableName as string, content.id, changes);
       if (error) throw error;
 
-      toast({ title: "Content updated", description: "Your changes have been saved successfully" });
+      toast({ title: 'Content updated', description: 'Your changes have been saved successfully' });
       onClose();
     } catch (error) {
       console.error('Error saving content:', error);
-      toast({ title: "Error", description: error instanceof Error ? error.message : 'Failed to save changes', variant: "destructive" });
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to save changes',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -86,9 +108,9 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
     return (
       <Card>
         <CardContent>
-          <p style={{ color: 'var(--muted-foreground)' }}>No content selected for editing</p>
+          <p className="text-muted-foreground">No content selected for editing</p>
           <Button onClick={onClose}>
-            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
         </CardContent>
@@ -97,9 +119,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
   }
 
   const tabIcons: Record<string, typeof Tag> = {
-    basic: Tag, datetime: Clock, location: MapPin, contact: Users,
-    details: Star, personal: User, media: Upload, metadata: Tag,
-    settings: Star, engagement: Users,
+    basic: Tag,
+    datetime: Clock,
+    location: MapPin,
+    contact: Users,
+    details: Star,
+    personal: User,
+    media: Upload,
+    metadata: Tag,
+    settings: Star,
+    engagement: Users,
   };
 
   return (
@@ -108,24 +137,26 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={onClose}>
-            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {content.image_url && (
               <Avatar style={{ height: 48, width: 48 }}>
                 <AvatarImage src={content.image_url as string} alt={content.title as string} />
                 <AvatarFallback>
-                  {content.content_type === 'events' && <Calendar style={{ height: 24, width: 24 }} />}
-                  {content.content_type === 'venues' && <Building style={{ height: 24, width: 24 }} />}
-                  {content.content_type === 'personalities' && <User style={{ height: 24, width: 24 }} />}
-                  {content.content_type === 'community_groups' && <Users style={{ height: 24, width: 24 }} />}
-                  {content.content_type === 'community_posts' && <Tag style={{ height: 24, width: 24 }} />}
+                  {content.content_type === 'events' && <Calendar size={24} />}
+                  {content.content_type === 'venues' && <Building size={24} />}
+                  {content.content_type === 'personalities' && <User size={24} />}
+                  {content.content_type === 'community_groups' && <Users size={24} />}
+                  {content.content_type === 'community_posts' && <Tag size={24} />}
                 </AvatarFallback>
               </Avatar>
             )}
             <div>
-              <h1 className="text-2xl font-bold">{(content.title || content.name || 'Edit Content') as string}</h1>
+              <h1 className="text-2xl font-bold">
+                {(content.title || content.name || 'Edit Content') as string}
+              </h1>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="outline">
                   {(content.content_type as string).replace('_', ' ')}
@@ -138,11 +169,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
         <div className="flex gap-2">
           <Button variant="outline" disabled>
-            <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Eye size={16} className="mr-2" />
             Preview
           </Button>
           <Button onClick={handleSave} disabled={loading}>
-            <Save style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Save size={16} className="mr-2" />
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
@@ -163,21 +194,21 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
-                  {tabs.map(tab => {
+                  {tabs.map((tab) => {
                     const TabIcon = tabIcons[tab] || Tag;
                     return (
                       <TabsTrigger key={tab} value={tab}>
-                        <TabIcon style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <TabIcon style={{ height: 16, width: 16 }} className="mr-2" />
                         {tab.replace('_', ' ')}
                       </TabsTrigger>
                     );
                   })}
                 </TabsList>
 
-                {tabs.map(tab => (
+                {tabs.map((tab) => (
                   <TabsContent key={tab} value={tab}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {fieldGroups[tab]?.map(field => (
+                      {fieldGroups[tab]?.map((field) => (
                         <EditorField
                           key={field.key}
                           field={field}
@@ -220,7 +251,10 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               {content.status && (
                 <div>
                   <Label>Status</Label>
-                  <Badge className="ml-2" variant={content.status === 'active' ? 'default' : 'secondary'}>
+                  <Badge
+                    className="ml-2"
+                    variant={content.status === 'active' ? 'default' : 'secondary'}
+                  >
                     {content.status as string}
                   </Badge>
                 </div>
@@ -234,15 +268,15 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </CardHeader>
             <CardContent>
               <Button variant="outline" size="sm" disabled>
-                <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
+                <Eye size={16} className="mr-2" />
                 View Public Page
               </Button>
               <Button variant="outline" size="sm" disabled>
-                <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
+                <Upload size={16} className="mr-2" />
                 Upload Media
               </Button>
               <Button variant="outline" size="sm" disabled>
-                <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
+                <Trash2 size={16} className="mr-2" />
                 Delete Content
               </Button>
             </CardContent>

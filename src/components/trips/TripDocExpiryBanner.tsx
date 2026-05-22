@@ -56,7 +56,7 @@ export function TripDocExpiryBanner({ trip }: Props) {
   return (
     <div
       role="alert"
-      className="flex items-start gap-3 px-4 py-3 mb-4"
+      className="flex items-start gap-4 px-4 py-4 mb-4"
       style={{
         backgroundColor: isSevere ? 'rgba(244, 67, 54, 0.08)' : 'rgba(255, 152, 0, 0.08)',
         borderLeft: '4px solid',
@@ -64,9 +64,9 @@ export function TripDocExpiryBanner({ trip }: Props) {
       }}
     >
       {isSevere ? (
-        <AlertTriangle style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
+        <AlertTriangle size={18} className="shrink-0 mt-0.5" />
       ) : (
-        <Clock style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
+        <Clock size={18} className="shrink-0 mt-0.5" />
       )}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold mb-1">
@@ -74,12 +74,11 @@ export function TripDocExpiryBanner({ trip }: Props) {
             ? t('trips.docs.expiredTitle', 'Document expired')
             : t('trips.docs.expiringTitle', 'Document expires before trip ends')}
         </p>
-        <ul className="m-0 pl-4" style={{ fontSize: '0.8125rem' }}>
+        <ul className="m-0 pl-4 text-13">
           {flags.map((f) => (
             <li key={f.doc.id}>
               <strong>{f.doc.title}</strong>{' '}
-              <span className="text-xs text-muted-foreground">({f.doc.doc_type})</span>{' '}
-              —{' '}
+              <span className="text-xs text-muted-foreground">({f.doc.doc_type})</span> —{' '}
               {f.level === 'expired'
                 ? t('trips.docs.expiredOn', 'expired {{date}}', {
                     date: new Date(f.doc.expiry_date!).toLocaleDateString(),
@@ -93,8 +92,7 @@ export function TripDocExpiryBanner({ trip }: Props) {
         </ul>
         <RouterLink
           to={`/trips/${trip.id}?tab=docs`}
-          className="inline-block mt-2 text-xs font-semibold text-primary hover:opacity-85"
-          style={{ textDecoration: 'none' }}
+          className="inline-block mt-2 text-xs font-semibold text-primary hover:opacity-85 no-underline"
         >
           {t('trips.docs.manageLink', 'Manage documents →')}
         </RouterLink>

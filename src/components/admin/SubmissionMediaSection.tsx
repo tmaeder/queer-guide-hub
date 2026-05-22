@@ -61,7 +61,7 @@ export function SubmissionMediaSection({
     <div className="mb-6 pt-4 border-t border-border">
       <p className="text-sm font-medium mb-2">Source &amp; AI Signal</p>
 
-      <div className="flex flex-row flex-wrap gap-1.5 mb-3">
+      <div className="flex flex-row flex-wrap gap-1.5 mb-4">
         {platform && <Badge variant="outline">{`platform: ${platform}`}</Badge>}
         {mediaProcessingStatus && (
           <Badge variant="outline">{`media: ${mediaProcessingStatus}`}</Badge>
@@ -71,7 +71,7 @@ export function SubmissionMediaSection({
       </div>
 
       {safetyFlags?.length ? (
-        <div className="mb-3">
+        <div className="mb-4">
           <span className="text-xs text-muted-foreground">Safety flags</span>
           <div className="flex flex-row flex-wrap gap-1 mt-1">
             {safetyFlags.map((f, i) => (
@@ -88,7 +88,7 @@ export function SubmissionMediaSection({
       ) : null}
 
       {mediaUrls?.length ? (
-        <div className="mb-3">
+        <div className="mb-4">
           <span className="text-xs text-muted-foreground">Media ({mediaUrls.length})</span>
           <div className="flex gap-2 flex-wrap mt-1">
             {mediaUrls.slice(0, 6).map((u, i) =>

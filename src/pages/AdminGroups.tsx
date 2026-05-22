@@ -44,25 +44,17 @@ export default function AdminGroups() {
       columnHelper.accessor('name', {
         header: 'Group',
         cell: (info) => (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div
-              className="flex items-center justify-center rounded-element shrink-0 text-white font-semibold"
-              style={{
-                height: 36,
-                width: 36,
-                background: 'hsl(var(--foreground))',
-                fontSize: '0.875rem',
-              }}
+              className="flex items-center justify-center rounded-element shrink-0 text-white font-semibold text-sm"
+              style={{ height: 36, width: 36, background: 'hsl(var(--foreground))' }}
             >
               {info.getValue().charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <div style={{ fontWeight: 500 }}>{info.getValue()}</div>
+              <div className="font-medium">{info.getValue()}</div>
               {info.row.original.description && (
-                <p
-                  className="text-muted-foreground truncate"
-                  style={{ fontSize: '0.75rem', maxWidth: 250 }}
-                >
+                <p className="text-muted-foreground truncate text-xs" style={{ maxWidth: 250 }}>
                   {info.row.original.description}
                 </p>
               )}
@@ -76,12 +68,12 @@ export default function AdminGroups() {
         cell: (info) =>
           info.getValue() ? (
             <Badge variant="secondary">
-              <Lock style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Lock size={12} className="mr-1" />
               Private
             </Badge>
           ) : (
             <Badge variant="outline">
-              <Globe style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Globe size={12} className="mr-1" />
               Public
             </Badge>
           ),
@@ -91,7 +83,7 @@ export default function AdminGroups() {
         header: 'Members',
         cell: (info) => (
           <div className="flex items-center gap-1">
-            <Users style={{ height: 14, width: 14 }} />
+            <Users size={14} />
             {info.getValue() ?? 0}
           </div>
         ),
@@ -101,7 +93,14 @@ export default function AdminGroups() {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>Featured</Badge>
+            <Badge
+              style={{
+                backgroundColor: 'hsl(var(--muted))',
+                color: 'hsl(var(--foreground) / 0.7)',
+              }}
+            >
+              Featured
+            </Badge>
           ) : null,
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
@@ -226,30 +225,21 @@ export default function AdminGroups() {
 }
 
 function PendingJoinRequestsPanel() {
-  const { requests, isLoading, approve, isApproving, reject, isRejecting } =
-    useGroupJoinRequests();
+  const { requests, isLoading, approve, isApproving, reject, isRejecting } = useGroupJoinRequests();
 
   if (isLoading) return null;
   if (!requests.length) return null;
 
   return (
-    <div className="flex flex-col gap-3 p-4 bg-background">
-      <h3 className="text-lg font-semibold">
-        Pending Join Requests ({requests.length})
-      </h3>
+    <div className="flex flex-col gap-4 p-4 bg-background">
+      <h3 className="text-lg font-semibold">Pending Join Requests ({requests.length})</h3>
       <div className="flex flex-col gap-2">
         {requests.map((req) => (
-          <div
-            key={req.id}
-            className="flex items-center justify-between gap-4 py-2"
-          >
+          <div key={req.id} className="flex items-center justify-between gap-4 py-2">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">
-                {req.group_name ?? req.group_id}
-              </p>
+              <p className="text-sm font-medium">{req.group_name ?? req.group_id}</p>
               <p className="text-xs text-muted-foreground">
-                User {req.user_id.slice(0, 8)}…
-                {req.message ? ` — ${req.message}` : ''} ·{' '}
+                User {req.user_id.slice(0, 8)}…{req.message ? ` — ${req.message}` : ''} ·{' '}
                 {new Date(req.created_at).toLocaleString()}
               </p>
             </div>
@@ -259,7 +249,7 @@ function PendingJoinRequestsPanel() {
                 onClick={() => approve(req.id)}
                 disabled={isApproving || isRejecting}
               >
-                <Check style={{ width: 14, height: 14, marginRight: 4 }} /> Approve
+                <Check size={14} className="mr-1" /> Approve
               </Button>
               <Button
                 size="sm"
@@ -267,7 +257,7 @@ function PendingJoinRequestsPanel() {
                 onClick={() => reject(req.id)}
                 disabled={isApproving || isRejecting}
               >
-                <X style={{ width: 14, height: 14, marginRight: 4 }} /> Reject
+                <X size={14} className="mr-1" /> Reject
               </Button>
             </div>
           </div>

@@ -10,7 +10,8 @@ function formatRange(start: string | null, end: string | null) {
   const s = new Date(start);
   const e = end ? new Date(end) : null;
   const sStr = s.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  if (!e || e.toDateString() === s.toDateString()) return { label: sStr, end: null as string | null };
+  if (!e || e.toDateString() === s.toDateString())
+    return { label: sStr, end: null as string | null };
   const eStr = e.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   return { label: `${sStr} – ${eStr}`, end: end };
 }
@@ -21,7 +22,7 @@ export function PrideScroller() {
 
   return (
     <section className="border border-border bg-background p-6 mb-8 rounded">
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-xl font-bold tracking-tight">
           {t('pages.travel.pride.title', 'Pride this season')}
         </h2>
@@ -35,7 +36,7 @@ export function PrideScroller() {
           role="group"
           aria-label={t('pages.travel.pride.title', 'Pride this season')}
           tabIndex={0}
-          className="flex gap-3 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex gap-4 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {[0, 1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-[140px] rounded shrink-0" style={{ width: 240 }} />
@@ -50,7 +51,7 @@ export function PrideScroller() {
           role="group"
           aria-label={t('pages.travel.pride.title', 'Pride this season')}
           tabIndex={0}
-          className="flex gap-3 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex gap-4 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {data.map((event) => {
             const range = formatRange(event.start_date, event.end_date);
@@ -58,13 +59,12 @@ export function PrideScroller() {
             return (
               <div
                 key={event.id}
-                className="shrink-0 border border-border bg-background p-3 hover:bg-muted transition-colors"
+                className="shrink-0 border border-border bg-background p-4 hover:bg-muted transition-colors"
                 style={{ width: 240 }}
               >
                 <LocalizedLink
                   to={`/events/${event.id}`}
-                  className="font-semibold text-sm truncate mb-2 block"
-                  style={{ textDecoration: 'none' }}
+                  className="font-semibold text-sm truncate mb-2 block no-underline"
                 >
                   {event.title}
                 </LocalizedLink>
@@ -91,7 +91,7 @@ export function PrideScroller() {
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex items-center gap-1 text-[11px] mt-1 text-left hover:text-foreground transition-colors"
+                          className="inline-flex items-center gap-1 text-xs2 mt-1 text-left hover:text-foreground transition-colors"
                           aria-label={t(
                             'pages.travel.pride.equalityAria',
                             'Equality score {{score}}: tap for explanation',

@@ -87,10 +87,11 @@ function formatFileSize(bytes: number): string {
 }
 
 function getMimeIcon(mimeType: string) {
-  if (mimeType.startsWith('image/')) return <ImageIcon size={40} className="text-gray-400" />;
-  if (mimeType.startsWith('video/')) return <Film size={40} className="text-gray-400" />;
-  if (mimeType.startsWith('audio/')) return <Music size={40} className="text-gray-400" />;
-  return <FileText size={40} className="text-gray-400" />;
+  if (mimeType.startsWith('image/'))
+    return <ImageIcon size={40} className="text-muted-foreground" />;
+  if (mimeType.startsWith('video/')) return <Film size={40} className="text-muted-foreground" />;
+  if (mimeType.startsWith('audio/')) return <Music size={40} className="text-muted-foreground" />;
+  return <FileText size={40} className="text-muted-foreground" />;
 }
 
 export default function MediaPickerDialog({
@@ -216,10 +217,7 @@ export default function MediaPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent
-        className="max-w-5xl w-full p-0 flex flex-col"
-        style={{ height: '80vh' }}
-      >
+      <DialogContent className="max-w-5xl w-full p-0 flex flex-col" style={{ height: '80vh' }}>
         <DialogHeader className="flex flex-row items-center justify-between pb-1 px-6 pt-4 space-y-0">
           <DialogTitle className="text-lg">Select Media</DialogTitle>
           <Button onClick={onClose} variant="ghost" size="sm" className="h-7 w-7 p-0">
@@ -237,7 +235,7 @@ export default function MediaPickerDialog({
               setSelectedExternal(null);
             }}
           >
-            <TabsList className="min-h-10 mb-3">
+            <TabsList className="min-h-10 mb-4">
               <TabsTrigger value="library">
                 <FolderOpen size={14} className="mr-1" />
                 Media Library
@@ -254,32 +252,28 @@ export default function MediaPickerDialog({
         {dialogMode === 'library' && (
           <>
             <div className="px-6 pb-1">
-              <div className="flex flex-row gap-3 items-center mb-3">
+              <div className="flex flex-row gap-4 items-center mb-4">
                 <div className="flex-1 relative">
                   <Search
                     size={16}
-                    className="text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
                   />
                   <Input
                     placeholder="Search files..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={handleSearchKeyDown}
-                    className="pl-9 h-9"
+                    className="pl-10 h-9"
                   />
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowUploader(!showUploader)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setShowUploader(!showUploader)}>
                   <Upload size={16} className="mr-1" />
                   Upload
                 </Button>
               </div>
 
               {showUploader && (
-                <div className="mb-3">
+                <div className="mb-4">
                   <MediaUploader
                     onUploaded={handleUploaded}
                     accept={mimeFilter ? `${mimeFilter}*` : undefined}
@@ -318,9 +312,9 @@ export default function MediaPickerDialog({
               )}
             </div>
 
-            <div className="flex-1 overflow-auto p-3 border-y border-border">
+            <div className="flex-1 overflow-auto p-4 border-y border-border">
               {error && (
-                <Alert variant="destructive" className="mb-3">
+                <Alert variant="destructive" className="mb-4">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
@@ -333,7 +327,7 @@ export default function MediaPickerDialog({
 
               {!loading && media.length === 0 && (
                 <div className="flex flex-col items-center py-12">
-                  <ImageIcon size={48} className="text-gray-300 mb-2" />
+                  <ImageIcon size={48} className="text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">
                     No media found. Upload a file or search external sources.
                   </p>
@@ -350,7 +344,7 @@ export default function MediaPickerDialog({
               )}
 
               {!loading && media.length > 0 && (
-                <div className="grid grid-cols-4 gap-3 m-0">
+                <div className="grid grid-cols-4 gap-4 m-0">
                   {media.map((item) => {
                     const isSelected = selectedId === item.id;
                     const isImage = item.mime_type.startsWith('image/');
@@ -372,10 +366,8 @@ export default function MediaPickerDialog({
                         role="button"
                         tabIndex={0}
                         aria-pressed={isSelected}
-                        className={`cursor-pointer rounded overflow-hidden border-2 relative bg-gray-50 hover:border-muted ${
-                          isSelected
-                            ? 'border-primary hover:border-primary'
-                            : 'border-transparent'
+                        className={`cursor-pointer rounded overflow-hidden border-2 relative bg-muted hover:border-muted ${
+                          isSelected ? 'border-primary hover:border-primary' : 'border-transparent'
                         }`}
                       >
                         {isImage ? (
@@ -383,16 +375,12 @@ export default function MediaPickerDialog({
                             src={getMediaThumbnailUrl(item)}
                             alt={item.alt_text?.en || item.filename}
                             loading="lazy"
-                            style={{
-                              width: '100%',
-                              height: 160,
-                              objectFit: 'cover',
-                              display: 'block',
-                            }}
+                            style={{ width: '100%', height: 160, objectFit: 'cover' }}
+                            className="block"
                           />
                         ) : (
                           <div
-                            className="w-full flex items-center justify-center bg-gray-100"
+                            className="w-full flex items-center justify-center bg-muted"
                             style={{ height: 160 }}
                           >
                             {getMimeIcon(item.mime_type)}
@@ -407,7 +395,7 @@ export default function MediaPickerDialog({
 
                         {/* External source badge */}
                         {item.external_source && (
-                          <span className="absolute top-1.5 left-1.5 h-5 px-1.5 text-[0.65rem] capitalize bg-black/60 text-white rounded flex items-center">
+                          <span className="absolute top-1.5 left-1.5 h-5 px-1.5 text-2xs capitalize bg-black/60 text-white rounded flex items-center">
                             {item.external_source}
                           </span>
                         )}
@@ -440,7 +428,7 @@ export default function MediaPickerDialog({
               )}
             </div>
 
-            <div className="px-6 py-3 flex items-center justify-between">
+            <div className="px-6 py-4 flex items-center justify-between">
               <span className="text-xs text-muted-foreground">
                 {totalCount} item{totalCount !== 1 ? 's' : ''}
               </span>
@@ -450,9 +438,7 @@ export default function MediaPickerDialog({
                     <PaginationItem>
                       <PaginationPrevious
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        className={
-                          page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
-                        }
+                        className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                       />
                     </PaginationItem>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
@@ -470,9 +456,7 @@ export default function MediaPickerDialog({
                       <PaginationNext
                         onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                         className={
-                          page === totalPages
-                            ? 'pointer-events-none opacity-50'
-                            : 'cursor-pointer'
+                          page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'
                         }
                       />
                     </PaginationItem>
@@ -485,11 +469,8 @@ export default function MediaPickerDialog({
 
         {/* External sources mode */}
         {dialogMode === 'external' && (
-          <div className="flex-1 overflow-auto p-3 border-y border-border">
-            <ExternalImageSearch
-              onSelect={handleExternalSelect}
-              initialQuery={searchHint || ''}
-            />
+          <div className="flex-1 overflow-auto p-4 border-y border-border">
+            <ExternalImageSearch onSelect={handleExternalSelect} initialQuery={searchHint || ''} />
           </div>
         )}
 

@@ -7,8 +7,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Grid, List, RefreshCw, Archive, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import type { ViewMode, SortBy, SortDir, StatusFilter, EntityTypeFilter, FormatFilter, SourceTypeFilter } from './types';
+import {
+  Search,
+  Grid,
+  List,
+  RefreshCw,
+  Archive,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from 'lucide-react';
+import type {
+  ViewMode,
+  SortBy,
+  SortDir,
+  StatusFilter,
+  EntityTypeFilter,
+  FormatFilter,
+  SourceTypeFilter,
+} from './types';
 
 interface MediaToolbarProps {
   search: string;
@@ -34,15 +51,24 @@ interface MediaToolbarProps {
 
 export function MediaToolbar(props: MediaToolbarProps) {
   const {
-    search, onSearchChange,
-    statusFilter, onStatusFilterChange,
-    entityTypeFilter, onEntityTypeFilterChange,
-    formatFilter, onFormatFilterChange,
-    sourceTypeFilter, onSourceTypeFilterChange,
-    sortBy, onSortByChange,
-    sortDir, onSortDirToggle,
-    viewMode, onViewModeChange,
-    bulkMode, onBulkModeToggle,
+    search,
+    onSearchChange,
+    statusFilter,
+    onStatusFilterChange,
+    entityTypeFilter,
+    onEntityTypeFilterChange,
+    formatFilter,
+    onFormatFilterChange,
+    sourceTypeFilter,
+    onSourceTypeFilterChange,
+    sortBy,
+    onSortByChange,
+    sortDir,
+    onSortDirToggle,
+    viewMode,
+    onViewModeChange,
+    bulkMode,
+    onBulkModeToggle,
     onRefresh,
   } = props;
 
@@ -54,15 +80,13 @@ export function MediaToolbar(props: MediaToolbarProps) {
   ].filter(Boolean).length;
 
   return (
-    <div className="flex flex-col gap-3 p-4 border border-border">
+    <div className="flex flex-col gap-4 p-4 border border-border">
       {/* Row 1: Search + view controls */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search
-            style={{
-              position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
-              height: 14, width: 14, color: 'var(--muted-foreground)',
-            }}
+            style={{ left: 10, top: '50%', transform: 'translateY(-50%)', height: 14, width: 14 }}
+            className="absolute text-muted-foreground"
           />
           <Input
             placeholder="Search name, alt text, URL... (alt: format: size:>1mb dim:>1920)"
@@ -79,7 +103,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
               size="sm"
               onClick={() => onViewModeChange('grid')}
             >
-              <Grid style={{ height: 14, width: 14 }} />
+              <Grid size={14} />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -87,17 +111,17 @@ export function MediaToolbar(props: MediaToolbarProps) {
               onClick={() => onViewModeChange('list')}
               style={{ borderLeft: '1px solid var(--border)' }}
             >
-              <List style={{ height: 14, width: 14 }} />
+              <List size={14} />
             </Button>
           </div>
 
           <Button variant="outline" size="sm" onClick={onBulkModeToggle}>
-            <Archive style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Archive size={14} className="mr-1" />
             {bulkMode ? 'Exit Bulk' : 'Bulk'}
           </Button>
 
           <Button variant="ghost" size="sm" onClick={onRefresh}>
-            <RefreshCw style={{ height: 14, width: 14 }} />
+            <RefreshCw size={14} />
           </Button>
         </div>
       </div>
@@ -111,7 +135,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
         )}
 
         <Select value={statusFilter} onValueChange={(v) => onStatusFilterChange(v as StatusFilter)}>
-          <SelectTrigger style={{ width: 140, fontSize: '0.8125rem' }}>
+          <SelectTrigger style={{ width: 140 }} className="text-13">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -128,8 +152,11 @@ export function MediaToolbar(props: MediaToolbarProps) {
           </SelectContent>
         </Select>
 
-        <Select value={entityTypeFilter} onValueChange={(v) => onEntityTypeFilterChange(v as EntityTypeFilter)}>
-          <SelectTrigger style={{ width: 140, fontSize: '0.8125rem' }}>
+        <Select
+          value={entityTypeFilter}
+          onValueChange={(v) => onEntityTypeFilterChange(v as EntityTypeFilter)}
+        >
+          <SelectTrigger style={{ width: 140 }} className="text-13">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -146,7 +173,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
         </Select>
 
         <Select value={formatFilter} onValueChange={(v) => onFormatFilterChange(v as FormatFilter)}>
-          <SelectTrigger style={{ width: 110, fontSize: '0.8125rem' }}>
+          <SelectTrigger style={{ width: 110 }} className="text-13">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -160,8 +187,11 @@ export function MediaToolbar(props: MediaToolbarProps) {
           </SelectContent>
         </Select>
 
-        <Select value={sourceTypeFilter} onValueChange={(v) => onSourceTypeFilterChange(v as SourceTypeFilter)}>
-          <SelectTrigger style={{ width: 120, fontSize: '0.8125rem' }}>
+        <Select
+          value={sourceTypeFilter}
+          onValueChange={(v) => onSourceTypeFilterChange(v as SourceTypeFilter)}
+        >
+          <SelectTrigger style={{ width: 120 }} className="text-13">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -174,8 +204,8 @@ export function MediaToolbar(props: MediaToolbarProps) {
         <div className="border-l border-border h-6 mx-1" />
 
         <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SortBy)}>
-          <SelectTrigger style={{ width: 120, fontSize: '0.8125rem' }}>
-            <ArrowUpDown style={{ height: 12, width: 12, marginRight: 4, flexShrink: 0 }} />
+          <SelectTrigger style={{ width: 120 }} className="text-13">
+            <ArrowUpDown size={12} className="mr-1 shrink-0" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -194,11 +224,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
           className="px-2"
           title={sortDir === 'asc' ? 'Ascending' : 'Descending'}
         >
-          {sortDir === 'asc' ? (
-            <ArrowUp style={{ height: 14, width: 14 }} />
-          ) : (
-            <ArrowDown style={{ height: 14, width: 14 }} />
-          )}
+          {sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
         </Button>
 
         {activeFilterCount > 0 && (

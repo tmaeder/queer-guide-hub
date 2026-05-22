@@ -45,13 +45,10 @@ export function TripsToolbar({
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-6">
+    <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-4 mb-6">
       {/* Search */}
-      <div className="flex items-center gap-2 bg-muted rounded-element px-3 h-10 min-w-full md:min-w-[260px] md:flex-none transition-colors focus-within:bg-accent">
-        <Search
-          style={{ width: 16, height: 16, opacity: 0.6, flexShrink: 0 }}
-          aria-hidden="true"
-        />
+      <div className="flex items-center gap-2 bg-muted rounded-element px-4 h-10 min-w-full md:min-w-[260px] md:flex-none transition-colors focus-within:bg-accent">
+        <Search size={16} style={{ opacity: 0.6 }} className="shrink-0" aria-hidden="true" />
         <input
           type="text"
           value={search}
@@ -78,7 +75,7 @@ export function TripsToolbar({
                 onClick={() => onStatusFilterChange(status)}
                 aria-label={status}
                 aria-pressed={selected}
-                className={`normal-case font-semibold text-[0.8125rem] px-3 py-1.5 whitespace-nowrap border-r border-border last:border-r-0 transition-colors ${
+                className={`normal-case font-semibold text-13 px-4 py-1.5 whitespace-nowrap border-r border-border last:border-r-0 transition-colors ${
                   selected
                     ? 'bg-[hsl(var(--foreground))] text-[hsl(var(--background))] hover:bg-[hsl(var(--foreground))]/90'
                     : 'text-muted-foreground hover:bg-muted'
@@ -86,7 +83,7 @@ export function TripsToolbar({
               >
                 {t(`trips.toolbar.status.${status}`)}
                 <span
-                  className="ml-1 text-[0.6875rem] opacity-70"
+                  className="ml-1 text-xs2 opacity-70"
                   style={{ fontVariantNumeric: 'tabular-nums' }}
                 >
                   {counts[status] ?? 0}
@@ -107,19 +104,13 @@ export function TripsToolbar({
               aria-label={t('trips.toolbar.sortAria')}
               className="h-10 w-10 p-0"
             >
-              <ArrowDownUp style={{ width: 16, height: 16 }} />
+              <ArrowDownUp size={16} />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {SORT_KEYS.map((key) => (
-              <DropdownMenuItem
-                key={key}
-                onClick={() => onSortChange(key)}
-                className="gap-2"
-              >
-                <span className="w-4 inline-flex">
-                  {key === sortKey && <Check style={{ width: 16, height: 16 }} />}
-                </span>
+              <DropdownMenuItem key={key} onClick={() => onSortChange(key)} className="gap-2">
+                <span className="w-4 inline-flex">{key === sortKey && <Check size={16} />}</span>
                 {t(`trips.toolbar.sort.${key}`)}
               </DropdownMenuItem>
             ))}

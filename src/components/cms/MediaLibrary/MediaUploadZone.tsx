@@ -119,13 +119,13 @@ export function MediaUploadZone() {
       >
         <input {...getInputProps()} />
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Upload style={{ height: 16, width: 16 }} />
+          <Upload size={16} />
           {isDragActive ? 'Drop files to upload' : 'Drop files here or click to upload'}
         </div>
       </div>
 
       {expanded && files.length > 0 && (
-        <div className="border border-border p-3 flex flex-col gap-2">
+        <div className="border border-border p-4 flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
               {activeCount > 0 && `Uploading ${activeCount}...`}
@@ -142,7 +142,7 @@ export function MediaUploadZone() {
                 size="sm"
                 onClick={() => { setExpanded(false); onDropEnd(); }}
               >
-                <X style={{ height: 14, width: 14 }} />
+                <X size={14} />
               </Button>
             </div>
           </div>
@@ -150,8 +150,8 @@ export function MediaUploadZone() {
           <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
             {files.map(f => (
               <div key={f.id} className="flex items-center gap-2 text-xs">
-                {f.status === 'done' && <CheckCircle style={{ height: 12, width: 12 }} />}
-                {f.status === 'error' && <AlertTriangle style={{ height: 12, width: 12 }} />}
+                {f.status === 'done' && <CheckCircle size={12} />}
+                {f.status === 'error' && <AlertTriangle size={12} />}
                 <span className="truncate flex-1">{f.file.name}</span>
                 {(f.status === 'uploading' || f.status === 'pending') && (
                   <Progress value={f.progress} className="w-20 h-1" />

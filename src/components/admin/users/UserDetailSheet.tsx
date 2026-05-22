@@ -22,15 +22,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { UserModerationActions } from './UserModerationActions';
-import {
-  X,
-  MapPin,
-  Calendar,
-  Clock,
-  User as UserIcon,
-  Shield,
-  Trash2,
-} from 'lucide-react';
+import { X, MapPin, Calendar, Clock, User as UserIcon, Shield, Trash2 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
@@ -110,11 +102,9 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
       sexual_orientation: string | null;
       location: string | null;
       date_of_birth: string | null;
-    }>(
-      'profiles',
-      'bio, gender_identity, pronouns, sexual_orientation, location, date_of_birth',
-      [{ col: 'user_id', val: user.user_id }],
-    );
+    }>('profiles', 'bio, gender_identity, pronouns, sexual_orientation, location, date_of_birth', [
+      { col: 'user_id', val: user.user_id },
+    ]);
     setFullProfile(rows[0] ?? null);
   };
 
@@ -179,9 +169,7 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
             </Avatar>
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-semibold leading-tight">{displayName}</h2>
-              {user.pronouns && (
-                <p className="text-sm text-muted-foreground">{user.pronouns}</p>
-              )}
+              {user.pronouns && <p className="text-sm text-muted-foreground">{user.pronouns}</p>}
               <div className="flex gap-1 mt-1 flex-wrap">
                 {userRoles.map((role) => (
                   <Badge
@@ -292,13 +280,12 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
                         style={{
                           borderColor: ROLE_COLORS[role],
                           color: ROLE_COLORS[role],
-                          display: 'inline-flex',
                           alignItems: 'center',
-                          gap: 4,
                           padding: '4px 10px',
                         }}
+                        className="inline-flex gap-1"
                       >
-                        <Shield style={{ height: 12, width: 12 }} />
+                        <Shield size={12} />
                         {role}
                         {isAdmin && (
                           <button
@@ -313,7 +300,7 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
                               display: 'flex',
                             }}
                           >
-                            <Trash2 style={{ height: 10, width: 10, opacity: 0.6 }} />
+                            <Trash2 size={10} style={{ opacity: 0.6 }} />
                           </button>
                         )}
                       </Badge>
@@ -404,8 +391,8 @@ function InfoRow({
   value: string | null | undefined;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <Icon style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+    <div className="flex items-center gap-4">
+      <Icon style={{ height: 14, width: 14 }} className="text-muted-foreground shrink-0" />
       <span className="text-sm text-muted-foreground min-w-[120px]">{label}</span>
       <span className="text-sm font-medium">{value || '-'}</span>
     </div>

@@ -103,8 +103,8 @@ export default function DedupDecisionsTab() {
           <div className="p-6 text-center text-muted-foreground text-xs">Loading…</div>
         ) : rows.length === 0 ? (
           <div className="p-8 text-center">
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 inline mr-1" />
-            <span className="text-sm text-green-600 dark:text-green-400 font-medium">No pending decisions — queue is clean</span>
+            <CheckCircle className="h-5 w-5 text-foreground dark:text-foreground inline mr-1" />
+            <span className="text-sm text-foreground dark:text-foreground font-medium">No pending decisions — queue is clean</span>
           </div>
         ) : (
           <div className="max-h-[600px] overflow-auto">
@@ -112,40 +112,40 @@ export default function DedupDecisionsTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Type', 'Method', 'Confidence', 'Canonical', 'Incoming', 'Created', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {rows.map(r => {
                   const confColor =
-                    r.confidence >= 0.85 ? 'text-green-600 dark:text-green-400'
-                    : r.confidence >= 0.75 ? 'text-amber-600 dark:text-amber-400'
+                    r.confidence >= 0.85 ? 'text-foreground dark:text-foreground'
+                    : r.confidence >= 0.75 ? 'text-foreground dark:text-foreground'
                     : 'text-muted-foreground';
                   return (
                     <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2">
+                      <td className="px-4 py-2">
                         <Badge variant="outline" className="text-2xs px-1.5 py-0 capitalize">{r.entity_type}</Badge>
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs">{r.match_method}</td>
-                      <td className={`px-3 py-2 font-mono tabular-nums font-semibold ${confColor}`}>
+                      <td className="px-4 py-2 font-mono text-xs">{r.match_method}</td>
+                      <td className={`px-4 py-2 font-mono tabular-nums font-semibold ${confColor}`}>
                         {r.confidence.toFixed(3)}
                       </td>
-                      <td className="px-3 py-2" title={r.entity_a_id ?? undefined}>
+                      <td className="px-4 py-2" title={r.entity_a_id ?? undefined}>
                         {r.entity_a_name
                           ? <span className="text-xs truncate max-w-[180px] inline-block align-bottom">{r.entity_a_name}</span>
                           : <code className="text-2xs bg-muted/60 px-1 rounded">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>}
                       </td>
-                      <td className="px-3 py-2" title={r.entity_b_id ?? undefined}>
+                      <td className="px-4 py-2" title={r.entity_b_id ?? undefined}>
                         {r.entity_b_name
                           ? <span className="text-xs truncate max-w-[180px] inline-block align-bottom">{r.entity_b_name}</span>
                           : <span className="text-xs2 font-mono text-muted-foreground">{r.incoming_source_name}/{r.incoming_source_id}</span>}
                       </td>
-                      <td className="px-3 py-2 text-xs2 text-muted-foreground"
+                      <td className="px-4 py-2 text-xs2 text-muted-foreground"
                           title={new Date(r.created_at).toISOString()}>
                         {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-4 py-2">
                         <div className="flex gap-1">
                           <Button
                             size="sm"

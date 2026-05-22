@@ -135,7 +135,7 @@ export default function PipelineToolbar(p: Props) {
             <SelectItem key={pp.id} value={pp.id} className="text-xs">
               <span className="flex items-center gap-1.5">
                 {!pp.is_enabled && <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground" title="disabled" />}
-                {pp.is_enabled && <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500" title="enabled" />}
+                {pp.is_enabled && <span className="inline-block w-1.5 h-1.5 rounded-full bg-foreground" title="enabled" />}
                 {pp.display_name || pp.name}
               </span>
             </SelectItem>
@@ -172,7 +172,7 @@ export default function PipelineToolbar(p: Props) {
             variant={p.isDirty ? 'default' : 'outline'}
             onClick={p.handleSave}
             disabled={p.isSaving}
-            className={p.showSavedPulse ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-900' : ''}
+            className={p.showSavedPulse ? 'bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40' : ''}
           >
             {p.isSaving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> :
              p.showSavedPulse ? <Check className="h-3.5 w-3.5 mr-1.5" /> :
@@ -318,7 +318,7 @@ export default function PipelineToolbar(p: Props) {
       />
 
       {p.activeRunId && p.runStatus && (
-        <Badge variant="outline" className={`text-xs ${p.runStatus === 'running' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 animate-pulse' : p.runStatus === 'completed' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : p.runStatus === 'failed' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300' : ''}`}>
+        <Badge variant="outline" className={`text-xs ${p.runStatus === 'running' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground animate-pulse' : p.runStatus === 'completed' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' : p.runStatus === 'failed' ? 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive' : ''}`}>
           {p.runStatus}
         </Badge>
       )}
@@ -346,7 +346,7 @@ export default function PipelineToolbar(p: Props) {
       <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
         <PresenceIndicator pipelineId={p.selectedPipelineId} isDirty={p.isDirty} />
         {p.viewingRunId && (
-          <Badge variant="outline" className="text-xs gap-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900">
+          <Badge variant="outline" className="text-xs gap-1 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40">
             <Clock className="h-3 w-3" />
             viewing historical
             <button className="ml-1 hover:underline" onClick={() => p.setViewingRunId(null)}>×</button>
@@ -356,9 +356,9 @@ export default function PipelineToolbar(p: Props) {
           <Badge
             variant="outline"
             className={`text-xs gap-1 ${
-              p.latestRun.status === 'completed' ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-900' :
-              p.latestRun.status === 'failed' ? 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900' :
-              p.latestRun.status === 'running' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900 animate-pulse' :
+              p.latestRun.status === 'completed' ? 'bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40' :
+              p.latestRun.status === 'failed' ? 'bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive' :
+              p.latestRun.status === 'running' ? 'bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40 animate-pulse' :
               'bg-muted text-muted-foreground'
             }`}
             title={`Run ${p.latestRun.id.slice(0, 8)} • ${p.latestRun.items_succeeded ?? 0}/${p.latestRun.items_total ?? 0} succeeded${p.latestRun.error_message ? ` • ${p.latestRun.error_message}` : ''}`}
@@ -372,7 +372,7 @@ export default function PipelineToolbar(p: Props) {
         {p.validationCount > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge variant="outline" className="text-xs gap-1 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900 cursor-help">
+              <Badge variant="outline" className="text-xs gap-1 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border cursor-help">
                 <AlertCircle className="h-3 w-3" />
                 {p.validationCount} incomplete
               </Badge>
@@ -382,13 +382,13 @@ export default function PipelineToolbar(p: Props) {
             </TooltipContent>
           </Tooltip>
         )}
-        {p.isDirty && <Badge variant="outline" className="text-xs bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900">unsaved</Badge>}
+        {p.isDirty && <Badge variant="outline" className="text-xs bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border">unsaved</Badge>}
         {(() => {
           const def = p.pipelineList?.find(pp => pp.id === p.selectedPipelineId);
           if (!def || !p.latestRun?.pipeline_version) return null;
           if (p.latestRun.pipeline_version === def.version) return null;
           return (
-            <Badge variant="outline" className="text-xs gap-1 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900">
+            <Badge variant="outline" className="text-xs gap-1 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border">
               v{p.latestRun.pipeline_version}→v{def.version}
             </Badge>
           );

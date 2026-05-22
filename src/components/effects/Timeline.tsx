@@ -26,7 +26,7 @@ export function Timeline({ data, className }: TimelineProps) {
               className="absolute -left-[7px] md:-left-[11px] top-1.5 h-3 w-3 rounded-full bg-foreground"
             />
             <h3 className="text-lg md:text-xl font-semibold tracking-tight">{entry.title}</h3>
-            <div className="mt-3 text-muted-foreground">{entry.content}</div>
+            <div className="mt-4 text-muted-foreground">{entry.content}</div>
           </section>
         ))}
       </div>

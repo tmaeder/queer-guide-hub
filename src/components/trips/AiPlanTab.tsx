@@ -123,10 +123,8 @@ export function AiPlanTab({ trip }: Props) {
   return (
     <div className="flex flex-col h-[520px] md:h-[640px]">
       <div className="flex items-center gap-2 mb-2">
-        <Sparkles size={18} style={{ color: 'var(--primary)' }} />
-        <h6 className="font-bold text-lg">
-          {t('trips.ai.conciergeTitle', 'AI concierge')}
-        </h6>
+        <Sparkles size={18} className="text-primary" />
+        <h6 className="font-bold text-lg">{t('trips.ai.conciergeTitle', 'AI concierge')}</h6>
       </div>
       <p className="text-sm mb-4 text-muted-foreground">
         {t(
@@ -135,10 +133,7 @@ export function AiPlanTab({ trip }: Props) {
         )}
       </p>
 
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto flex flex-col gap-3 pr-2 mb-4"
-      >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2 mb-4">
         {isLoading && (
           <div className="py-4 text-center text-muted-foreground">
             <Loader2 size={16} className="animate-spin inline" />
@@ -157,22 +152,16 @@ export function AiPlanTab({ trip }: Props) {
         {(messages ?? []).map((m) => {
           const mine = m.role === 'user';
           const draft = m.draft;
-          const placeCount =
-            draft?.days.reduce((sum, d) => sum + d.places.length, 0) ?? 0;
+          const placeCount = draft?.days.reduce((sum, d) => sum + d.places.length, 0) ?? 0;
           return (
-            <div
-              key={m.id}
-              className={`flex ${mine ? 'flex-row-reverse' : 'flex-row'}`}
-            >
+            <div key={m.id} className={`flex ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
               <div
-                className={`max-w-[85%] p-3 ${mine ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}
+                className={`max-w-[85%] p-4 ${mine ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}
               >
-                <p className="text-sm whitespace-pre-wrap">
-                  {m.content}
-                </p>
+                <p className="text-sm whitespace-pre-wrap">{m.content}</p>
 
                 {!mine && draft && draft.days.length > 0 && (
-                  <div className="mt-3 flex flex-col gap-2">
+                  <div className="mt-4 flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold">
                         {t('trips.ai.draftTitle', 'Proposed itinerary')}
@@ -186,11 +175,14 @@ export function AiPlanTab({ trip }: Props) {
                     </div>
                     {draft.days.map((day) => (
                       <Card key={day.date} className="border border-border">
-                        <CardContent className="p-3">
+                        <CardContent className="p-4">
                           <span className="text-xs font-bold flex items-center gap-2">
                             {day.date}
                             {!tripDayByDate.has(day.date) && (
-                              <Badge variant="secondary" className="ml-1 inline-flex items-center gap-1">
+                              <Badge
+                                variant="secondary"
+                                className="ml-1 inline-flex items-center gap-1"
+                              >
                                 <Info size={12} />
                                 {t('trips.ai.outsideDates', 'out of range')}
                               </Badge>
@@ -198,7 +190,7 @@ export function AiPlanTab({ trip }: Props) {
                           </span>
                           <ul className="pl-4 m-0 mt-1 list-disc">
                             {day.places.map((p, i) => (
-                              <li key={i} className="text-[0.8125rem]">
+                              <li key={i} className="text-13">
                                 {p.custom_name ?? p.venue_id ?? p.event_id ?? '—'}
                                 {p.notes && (
                                   <span className="text-muted-foreground ml-2 text-xs">
@@ -220,7 +212,7 @@ export function AiPlanTab({ trip }: Props) {
                         {applyingId === m.id ? (
                           <Loader2 size={14} className="animate-spin mr-1.5" />
                         ) : (
-                          <Check size={14} style={{ marginRight: 6 }} />
+                          <Check size={14} className="mr-1.5" />
                         )}
                         {t('trips.ai.apply', 'Apply to trip')}
                       </Button>
@@ -234,7 +226,7 @@ export function AiPlanTab({ trip }: Props) {
 
         {send.isPending && (
           <div className="flex">
-            <div className="p-3 bg-muted text-muted-foreground text-sm flex items-center gap-2">
+            <div className="p-4 bg-muted text-muted-foreground text-sm flex items-center gap-2">
               <Loader2 size={12} className="animate-spin" />
               {t('trips.ai.thinking', 'Concierge is thinking…')}
             </div>

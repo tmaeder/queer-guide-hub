@@ -204,15 +204,14 @@ export function BundledCheckoutDialog({
                 />
               ))}
             </div>
-            <p className="text-xs text-muted-foreground mb-3 block">
+            <p className="text-xs text-muted-foreground mb-4 block">
               {t('trips.bundledCheckout.stepOf', 'Step {{current}} of {{total}} · {{booked}} opened', { current: index + 1, total, booked: bookedCount })}
             </p>
 
             {/* Current card */}
-            <div className="p-5 bg-muted flex items-start gap-3 rounded">
+            <div className="p-6 bg-muted flex items-start gap-4 rounded">
               <div
-                className="shrink-0 w-10 h-10 flex items-center justify-center bg-background rounded"
-                style={{ color: 'hsl(var(--foreground))' }}
+                className="shrink-0 w-10 h-10 flex items-center justify-center bg-background rounded text-foreground"
               >
                 {current?.kind === 'hotel' ? <Hotel size={20} /> : <Ticket size={20} />}
               </div>
@@ -244,9 +243,9 @@ export function BundledCheckoutDialog({
                   rel="noopener sponsored noreferrer"
                   onClick={markBooked}
                 >
-                  <ExternalLink style={{ width: 14, height: 14, marginRight: 6 }} />
+                  <ExternalLink size={14} className="mr-1.5" />
                   {t('trips.bundledCheckout.openAndMarkBooked', 'Open & mark booked')}
-                  <ArrowRight style={{ width: 14, height: 14, marginLeft: 6 }} />
+                  <ArrowRight size={14} className="ml-1.5" />
                 </a>
               </Button>
             </>

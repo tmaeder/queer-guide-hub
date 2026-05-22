@@ -39,7 +39,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
       <CardContent>
         {/* Header Row */}
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             <Badge variant="outline">{pair.entity_type}</Badge>
             <Badge variant="secondary">{pair.match_method}</Badge>
             <ConfidenceBadge confidence={pair.confidence} />
@@ -52,7 +52,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
               onClick={() => setExpanded(!expanded)}
               style={{ display: 'flex', gap: 6 }}
             >
-              {expanded ? <ChevronUp style={{ width: 14, height: 14 }} /> : <Eye style={{ width: 14, height: 14 }} />}
+              {expanded ? <ChevronUp size={14} /> : <Eye size={14} />}
               {expanded ? 'Collapse' : 'Compare'}
             </Button>
             <Button
@@ -62,7 +62,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
               disabled={dismissMutation.isPending}
               style={{ display: 'flex', gap: 6 }}
             >
-              <X style={{ width: 14, height: 14 }} />
+              <X size={14} />
               Not Duplicate
             </Button>
             <Button
@@ -70,7 +70,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
               onClick={() => onMerge(pair)}
               style={{ display: 'flex', gap: 6, backgroundColor: 'hsl(var(--muted-foreground))', color: 'white' }}
             >
-              <Merge style={{ width: 14, height: 14 }} />
+              <Merge size={14} />
               Merge
             </Button>
           </div>
@@ -108,7 +108,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
                   <CardContent>
                     {entityA ? (
                       <>
-                        <p className="mb-2 text-sm font-semibold" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                        <p className="mb-2 text-sm font-semibold text-muted-foreground">
                           Record A: {String(entityA[nameField] || 'Unknown')}
                         </p>
                         <StructuredFieldDisplay entityType={pair.entity_type} data={entityA} />
@@ -124,7 +124,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
                   <CardContent>
                     {entityB ? (
                       <>
-                        <p className="mb-2 text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                        <p className="mb-2 text-sm font-semibold text-foreground">
                           Record B: {String(entityB[nameField] || 'Unknown')}
                         </p>
                         <StructuredFieldDisplay entityType={pair.entity_type} data={entityB} />

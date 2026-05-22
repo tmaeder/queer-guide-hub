@@ -145,10 +145,8 @@ export default function AdminVenueAmenities() {
         header: 'Name',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            <span className="block text-xs text-muted-foreground">
-              {info.row.original.slug}
-            </span>
+            <span className="font-medium">{info.getValue()}</span>
+            <span className="block text-xs text-muted-foreground">{info.row.original.slug}</span>
           </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -229,7 +227,7 @@ export default function AdminVenueAmenities() {
       ],
       toolbarActions: (
         <Button size="sm" onClick={openCreate}>
-          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          <Plus size={16} className="mr-1.5" />
           Add Amenity
         </Button>
       ),
@@ -269,7 +267,8 @@ export default function AdminVenueAmenities() {
                       variant="outline"
                       size="sm"
                       onClick={generateSlug}
-                      style={{ flexShrink: 0, height: 40 }}
+                      style={{ height: 40 }}
+                      className="shrink-0"
                     >
                       Gen
                     </Button>
@@ -330,7 +329,7 @@ export default function AdminVenueAmenities() {
                 <Label>Active</Label>
               </div>
             </div>
-            <DialogFooter style={{ marginTop: 16 }}>
+            <DialogFooter className="mt-4">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>

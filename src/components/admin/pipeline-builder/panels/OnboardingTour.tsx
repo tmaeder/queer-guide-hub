@@ -20,7 +20,7 @@ const STEPS: Array<{
     title: 'Welcome to the Pipeline Builder',
     description: (
       <>
-        <p className="mb-3">This is a visual DAG editor for your data pipelines. Build flows by dragging node types from the left palette onto the canvas, then connect them to define the data path.</p>
+        <p className="mb-4">This is a visual DAG editor for your data pipelines. Build flows by dragging node types from the left palette onto the canvas, then connect them to define the data path.</p>
         <p>A quick tour of the most powerful features takes about 30 seconds. Click <strong>Next</strong> to continue or <strong>Skip</strong> to jump straight in.</p>
       </>
     ),
@@ -87,7 +87,7 @@ const STEPS: Array<{
     title: "You're ready",
     description: (
       <>
-        <p className="mb-3">That's the core loop. Open the <kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">?</kbd> cheat sheet anytime to see the full list of shortcuts.</p>
+        <p className="mb-4">That's the core loop. Open the <kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">?</kbd> cheat sheet anytime to see the full list of shortcuts.</p>
         <p className="text-muted-foreground text-sm">This tour won't show again. You can relaunch it from the keyboard shortcuts dialog footer.</p>
       </>
     ),

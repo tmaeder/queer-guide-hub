@@ -16,11 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { useTrips, useTripMutations } from '@/hooks/useTrips';
-import {
-  useReservations,
-  useAttachBookingToTrip,
-  type Reservation,
-} from '@/hooks/useReservations';
+import { useReservations, useAttachBookingToTrip, type Reservation } from '@/hooks/useReservations';
 import { suggestTripGroupings, type TripSuggestion } from '@/utils/tripGrouping';
 import { useEmailForwardingAddress } from '@/hooks/useEmailForwardingAddress';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -67,7 +63,7 @@ const formatRange = (start: string | null, end: string | null): string | null =>
 
 const formatAmount = (amount: number | null, currency: string | null) => {
   if (!amount) return null;
-  const symbol = currency === 'EUR' ? '€' : currency === 'USD' ? '$' : currency ?? '';
+  const symbol = currency === 'EUR' ? '€' : currency === 'USD' ? '$' : (currency ?? '');
   return `${symbol}${Math.round(amount).toLocaleString()}`;
 };
 
@@ -85,10 +81,7 @@ export function TripsInboxSection() {
     () => (reservations ?? []).filter((r) => !r.trip_id),
     [reservations],
   );
-  const suggestions = useMemo(
-    () => suggestTripGroupings(orphanReservations),
-    [orphanReservations],
-  );
+  const suggestions = useMemo(() => suggestTripGroupings(orphanReservations), [orphanReservations]);
 
   const reservationIdsInSuggestions = useMemo(() => {
     const set = new Set<string>();
@@ -103,14 +96,13 @@ export function TripsInboxSection() {
 
   // Hide the section entirely when there's nothing to show and no
   // forwarding address to surface — keeps the Trips page clean.
-  const hasContent =
-    isLoading || !!error || orphanReservations.length > 0 || !!forwarding;
+  const hasContent = isLoading || !!error || orphanReservations.length > 0 || !!forwarding;
   if (!hasContent) return null;
 
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-4">
-        <InboxIcon style={{ width: 20, height: 20, color: 'var(--primary)' }} />
+        <InboxIcon size={20} className="text-primary" />
         <h2 className="text-base font-bold">
           {t('pages.inbox.title', 'Travel inbox')}
           {orphanReservations.length > 0 && (
@@ -125,7 +117,7 @@ export function TripsInboxSection() {
       </div>
 
       {isLoading && (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {[1, 2].map((i) => (
             <Skeleton key={i} className="h-24 rounded-element" />
           ))}
@@ -140,13 +132,13 @@ export function TripsInboxSection() {
 
       {suggestions.length > 0 && (
         <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles style={{ width: 16, height: 16, color: 'var(--primary)' }} />
-            <p className="font-bold text-[0.9375rem]">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={16} className="text-primary" />
+            <p className="font-bold text-15">
               {t('pages.inbox.suggestions.title', 'Suggested trips')}
             </p>
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {suggestions.map((s) => (
               <SuggestionCard
                 key={s.id}
@@ -174,7 +166,7 @@ export function TripsInboxSection() {
 
       {standaloneOrphans.length > 0 && (
         <div className="mb-6">
-          <p className="font-bold text-[0.9375rem] mb-3">
+          <p className="font-bold text-15 mb-4">
             {t('pages.inbox.orphans.title', 'Unattached reservations')}
           </p>
           <div className="flex flex-col gap-2">
@@ -217,7 +209,7 @@ function SuggestionCard({
   }, [dateRange, t]);
 
   return (
-    <div className="p-4 bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="p-4 bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="flex-1 min-w-0">
         <p className="font-bold">
           {t('pages.inbox.suggestions.headline', {
@@ -238,12 +230,8 @@ function SuggestionCard({
           ))}
         </div>
       </div>
-      <Button
-        variant="brand"
-        onClick={() => void onCreate(titleSuggestion)}
-        disabled={pending}
-      >
-        <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+      <Button variant="brand" onClick={() => void onCreate(titleSuggestion)} disabled={pending}>
+        <Plus size={16} className="mr-1.5" />
         {t('pages.inbox.suggestions.createCta', 'Create trip')}
       </Button>
     </div>
@@ -271,7 +259,7 @@ function OrphanRow({
   return (
     <div className="p-4 bg-background flex items-start gap-4 border border-border rounded-element">
       <div className="p-2 bg-muted rounded">
-        <Icon style={{ width: 22, height: 22, color: 'var(--primary)' }} />
+        <Icon style={{ width: 22, height: 22 }} className="text-primary" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
@@ -285,15 +273,13 @@ function OrphanRow({
         </p>
         {range && (
           <div className="flex items-center gap-1 mt-1">
-            <Calendar style={{ width: 13, height: 13, color: 'var(--muted-foreground)' }} />
+            <Calendar size={13} className="text-muted-foreground" />
             <span className="text-xs text-muted-foreground">{range}</span>
           </div>
         )}
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        {amount && (
-          <span className="font-bold text-primary whitespace-nowrap">{amount}</span>
-        )}
+        {amount && <span className="font-bold text-primary whitespace-nowrap">{amount}</span>}
         {canAttach && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -303,7 +289,7 @@ function OrphanRow({
                 disabled={trips.length === 0}
                 aria-label={t('pages.inbox.orphans.attach', 'Attach to trip')}
               >
-                <Link2 style={{ width: 16, height: 16, marginRight: 4 }} />
+                <Link2 size={16} className="mr-1" />
                 {t('pages.inbox.orphans.attach', 'Attach')}
               </Button>
             </DropdownMenuTrigger>
@@ -326,7 +312,7 @@ function OrphanRow({
               {trips.length > 0 && <DropdownMenuSeparator />}
               <DropdownMenuItem asChild>
                 <LocalizedLink to="/trips">
-                  <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
+                  <Plus size={14} className="mr-1.5" />
                   {t('pages.inbox.orphans.newTrip', 'Create new trip')}
                 </LocalizedLink>
               </DropdownMenuItem>
@@ -360,10 +346,8 @@ function ForwardingAddressCard() {
   return (
     <div className="mt-4 p-6 bg-muted">
       <div className="flex items-center gap-2 mb-2">
-        <Mail style={{ width: 18, height: 18, color: 'var(--primary)' }} />
-        <p className="font-bold">
-          {t('pages.inbox.forwarding.title', 'Forward bookings here')}
-        </p>
+        <Mail size={18} className="text-primary" />
+        <p className="font-bold">{t('pages.inbox.forwarding.title', 'Forward bookings here')}</p>
       </div>
       <p className="text-muted-foreground text-sm mb-4">
         {t(
@@ -371,7 +355,7 @@ function ForwardingAddressCard() {
           'Forward any confirmation email to this address and it will appear in your Inbox. Booking.com, Airbnb, and Lufthansa are recognized today.',
         )}
       </p>
-      <div className="flex items-center gap-2 p-3 bg-background font-mono text-[0.95rem] break-all">
+      <div className="flex items-center gap-2 p-4 bg-background font-mono text-15 break-all">
         <div className="flex-1 min-w-0">{data.address}</div>
         <Button
           variant="ghost"
@@ -379,11 +363,7 @@ function ForwardingAddressCard() {
           onClick={() => void copy()}
           aria-label={t('pages.inbox.forwarding.copy', 'Copy address')}
         >
-          {copied ? (
-            <Check style={{ width: 16, height: 16 }} />
-          ) : (
-            <Copy style={{ width: 16, height: 16 }} />
-          )}
+          {copied ? <Check size={16} /> : <Copy size={16} />}
         </Button>
       </div>
     </div>

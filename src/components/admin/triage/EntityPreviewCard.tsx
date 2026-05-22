@@ -55,7 +55,7 @@ function FallbackPreview({ item }: { item: TriageItem }) {
     : [];
 
   return (
-    <div className="p-4 space-y-3">
+    <div className="p-4 space-y-4">
       {item.subtitle && (
         <p className="text-xs text-muted-foreground">{item.subtitle}</p>
       )}
@@ -63,8 +63,8 @@ function FallbackPreview({ item }: { item: TriageItem }) {
       {metaFields.length > 0 && (
         <div className="divide-y border">
           {metaFields.map(([key, value]) => (
-            <div key={key} className="flex gap-3 px-3 py-2 text-xs">
-              <span className="text-muted-foreground shrink-0 w-28 text-[10px] uppercase tracking-wider">
+            <div key={key} className="flex gap-4 px-4 py-2 text-xs">
+              <span className="text-muted-foreground shrink-0 w-28 text-2xs uppercase tracking-wider">
                 {formatFieldKey(key)}
               </span>
               <span className="min-w-0 break-words">{formatFieldValue(value)}</span>

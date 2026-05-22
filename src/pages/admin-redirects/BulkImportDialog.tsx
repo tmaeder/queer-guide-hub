@@ -57,7 +57,15 @@ export function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogPr
           return obj;
         })
         .filter((item) => item.target);
-      const res = await onImport(items as Array<{ slug?: string; source_path?: string; target: string; status_code?: number; is_enabled?: boolean; }>);
+      const res = await onImport(
+        items as Array<{
+          slug?: string;
+          source_path?: string;
+          target: string;
+          status_code?: number;
+          is_enabled?: boolean;
+        }>,
+      );
       setResult(res);
     } catch (err: unknown) {
       setResult({ success: 0, errors: [err instanceof Error ? err.message : 'Import failed'] });
@@ -67,12 +75,17 @@ export function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogPr
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Bulk Import (CSV)</DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground" style={{ marginBottom: 16 }}>
+        <p className="text-sm text-muted-foreground mb-4">
           Paste CSV with headers: <code>slug,target,status_code,is_enabled</code> (for short links)
           or <code>source_path,target,status_code,is_enabled</code> (for path redirects).
         </p>
@@ -84,9 +97,9 @@ export function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogPr
           style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
         />
         {result && (
-          <div style={{ marginTop: 16 }}>
+          <div className="mt-4">
             {result.success > 0 && (
-              <Alert style={{ marginBottom: 8 }}>
+              <Alert className="mb-2">
                 <AlertDescription>Imported {result.success} redirect(s)</AlertDescription>
               </Alert>
             )}
@@ -102,7 +115,9 @@ export function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogPr
           </div>
         )}
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
           <Button onClick={handleImport} disabled={importing || !csvText.trim()}>
             {importing ? 'Importing...' : 'Import'}
           </Button>

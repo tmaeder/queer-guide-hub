@@ -68,7 +68,7 @@ const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>
 function TabSkeleton() {
   return (
     <div className="space-y-4 p-4">
-      <div className="flex gap-3">
+      <div className="flex gap-4">
         <Skeleton className="h-24 flex-1" />
         <Skeleton className="h-24 flex-1" />
         <Skeleton className="h-24 flex-1" />
@@ -86,7 +86,7 @@ class TabErrorBoundary extends Component<{ children: ReactNode; tab: string }, {
       return (
         <div className="flex flex-col items-center justify-center py-16 text-sm text-muted-foreground">
           <p className="font-medium text-destructive mb-1">Failed to load {this.props.tab}</p>
-          <p className="text-xs mb-3">{this.state.error.message}</p>
+          <p className="text-xs mb-4">{this.state.error.message}</p>
           <button className="text-xs underline" onClick={() => this.setState({ error: null })}>Retry</button>
         </div>
       );

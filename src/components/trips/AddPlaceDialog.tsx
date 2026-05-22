@@ -236,14 +236,14 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
     <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
       <DialogContent className="rounded-container">
         <DialogHeader>
-          <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-2">
+          <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-2">
             <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
             {t('trips.addPlace.eyebrow', 'New place')}
           </span>
           <DialogTitle className="text-2xl font-bold tracking-tight">{t('trips.addPlace.title', 'Add Place')}</DialogTitle>
         </DialogHeader>
 
-        <div className="mt-3 mb-1 flex flex-col gap-1.5">
+        <div className="mt-4 mb-1 flex flex-col gap-1.5">
           <Label htmlFor="add-place-day" className="text-xs uppercase tracking-wider text-muted-foreground">{t('trips.addPlace.assignToDay', 'Assign to Day')}</Label>
           <Select value={dayId || '__none__'} onValueChange={(v) => setDayId(v === '__none__' ? '' : v)}>
             <SelectTrigger id="add-place-day">
@@ -283,7 +283,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
             </div>
 
             {results.length === 0 && !searching && recentSearches.length > 0 && (
-              <div className="mt-3">
+              <div className="mt-4">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
                     <Clock size={12} /> {t('trips.addPlace.recent', 'Recent')}
@@ -325,7 +325,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
             )}
 
             {results.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
+              <div className="mt-4 flex flex-wrap gap-1.5">
                 {(['all', 'venue', 'event', 'hotel'] as TypeFilter[]).map((tf) => {
                   const count = countFor(tf);
                   if (tf !== 'all' && count === 0) return null;
@@ -335,7 +335,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                     <Badge
                       key={tf}
                       variant={active ? 'default' : 'outline'}
-                      className="cursor-pointer rounded-full px-3 py-1 transition-all hover:shadow-sm"
+                      className="cursor-pointer rounded-full px-4 py-1"
                       onClick={() => setTypeFilter(tf)}
                     >
                       {`${t(`trips.addPlace.filter.${tf}`, labelFallback)} (${count})`}
@@ -346,7 +346,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
             )}
 
             {filteredResults.length > 0 && (
-              <ul className="mt-3 max-h-[280px] overflow-auto flex flex-col gap-1 -mx-1 px-1">
+              <ul className="mt-4 max-h-[280px] overflow-auto flex flex-col gap-1 -mx-1 px-1">
                 {filteredResults.map((r) => {
                   const isSelected = selected?.id === r.id && selected?.type === r.type;
                   return (
@@ -354,11 +354,11 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                       <button
                         type="button"
                         onClick={() => setSelected(r)}
-                        className={`w-full text-left min-h-[52px] px-3 py-2.5 rounded-container border transition-all ${isSelected ? 'bg-muted border-foreground/40 shadow-sm' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
+                        className={`w-full text-left min-h-[52px] px-4 py-2.5 rounded-container border ${isSelected ? 'bg-muted border-foreground/40' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
                       >
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-medium">{r.name}</span>
-                          <Badge variant="outline" className="rounded-full text-[10px] uppercase tracking-wider">{r.type}</Badge>
+                          <Badge variant="outline" className="rounded-full text-2xs uppercase tracking-wider">{r.type}</Badge>
                           {r.type === 'venue' && (
                             <SocialSignalBadges signal={socialSignals?.get(r.id)} />
                           )}
@@ -390,7 +390,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
           </TabsContent>
 
           <TabsContent value="custom">
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="custom-name">{t('trips.addPlace.placeName', 'Place Name')} *</Label>
                 <Input
@@ -409,7 +409,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                   onChange={(e) => setCustomAddress(e.target.value)}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="custom-lat">{t('trips.addPlace.latitude', 'Latitude')}</Label>
                   <Input
@@ -450,7 +450,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
           </TabsContent>
         </Tabs>
 
-        <DialogFooter className="mt-3">
+        <DialogFooter className="mt-4">
           <Button variant="outline" onClick={resetAndClose}>{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || addPlace.isPending}>
             {addPlace.isPending && <Loader2 size={16} className="mr-1 animate-spin" aria-label="Loading" />}

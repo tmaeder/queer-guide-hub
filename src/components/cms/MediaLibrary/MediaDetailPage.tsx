@@ -82,7 +82,7 @@ export function MediaDetailPage() {
     return (
       <div className="max-w-screen-lg mx-auto p-6">
         <Button variant="ghost" onClick={() => navigate('/admin/media')}>
-          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+          <ArrowLeft size={16} className="mr-2" />
           Back to Media Library
         </Button>
         <p className="text-muted-foreground mt-4">Media item not found.</p>
@@ -123,9 +123,9 @@ export function MediaDetailPage() {
     <div className="max-w-screen-lg mx-auto p-6 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => navigate('/admin/media')}>
-            <ArrowLeft style={{ height: 16, width: 16 }} />
+            <ArrowLeft size={16} />
           </Button>
           <div>
             <h4 className="text-xl font-bold">{detail.display_name}</h4>
@@ -143,12 +143,12 @@ export function MediaDetailPage() {
             size="sm"
             onClick={() => mutations.toggleStar.mutate(detail as UnifiedMediaItem)}
           >
-            <Star style={{ height: 16, width: 16, fill: detail.starred ? 'currentColor' : 'none' }} />
+            <Star size={16} style={{ fill: detail.starred ? 'currentColor' : 'none' }} />
           </Button>
           {imageUrl && (
             <Button variant="outline" size="sm" asChild>
               <a href={imageUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+                <ExternalLink size={14} className="mr-1" />
                 Open
               </a>
             </Button>
@@ -159,7 +159,7 @@ export function MediaDetailPage() {
             onClick={() => setDeleteDialogOpen(true)}
             disabled={detail.usage_count > 0}
           >
-            <Trash2 style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Trash2 size={14} className="mr-1" />
             Delete
           </Button>
         </div>
@@ -177,7 +177,7 @@ export function MediaDetailPage() {
               />
               {detail.is_flagged && (
                 <Badge variant="destructive" className="absolute top-3 right-3">
-                  <Flag style={{ height: 12, width: 12, marginRight: 4 }} />
+                  <Flag size={12} className="mr-1" />
                   Flagged{detail.flagged_reason && `: ${detail.flagged_reason}`}
                 </Badge>
               )}
@@ -189,7 +189,7 @@ export function MediaDetailPage() {
             </div>
           ) : (
             <div className="flex items-center justify-center py-16 bg-muted">
-              <ImageIcon style={{ height: 48, width: 48 }} className="text-muted-foreground" />
+              <ImageIcon size={48} className="text-muted-foreground" />
             </div>
           )}
         </CardContent>
@@ -286,12 +286,12 @@ export function MediaDetailPage() {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" style={{ fontSize: '0.625rem' }}>
+                      <Badge variant="outline" className="text-2xs">
                         {entityTypeLabel(link.entity_type)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" style={{ fontSize: '0.625rem' }}>
+                      <Badge variant="secondary" className="text-2xs">
                         {link.role}
                       </Badge>
                     </TableCell>
@@ -308,7 +308,7 @@ export function MediaDetailPage() {
                             })}
                             title="Set as cover"
                           >
-                            <Crown style={{ height: 14, width: 14 }} />
+                            <Crown size={14} />
                           </Button>
                         )}
                         {detail.source_type === 'image_asset' && (
@@ -323,7 +323,7 @@ export function MediaDetailPage() {
                             })}
                             title="Remove link"
                           >
-                            <X style={{ height: 14, width: 14 }} />
+                            <X size={14} />
                           </Button>
                         )}
                       </div>
@@ -344,7 +344,7 @@ export function MediaDetailPage() {
             {getOptimizationStatusBadge(detail.optimization_status)}
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className="flex flex-col gap-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Original Size</p>
@@ -373,7 +373,7 @@ export function MediaDetailPage() {
               onClick={() => mutations.optimizeItem.mutate()}
               disabled={mutations.optimizeItem.isPending}
             >
-              <Zap style={{ height: 14, width: 14, marginRight: 4 }} />
+              <Zap size={14} className="mr-1" />
               {mutations.optimizeItem.isPending ? 'Optimizing...' : 'Optimize Now'}
             </Button>
           )}
@@ -386,15 +386,15 @@ export function MediaDetailPage() {
           <CardTitle className="text-base">Technical Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3 text-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {detail.phash && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Perceptual Hash</span>
                   <span className="flex items-center gap-1 font-mono text-xs">
                     {detail.phash.slice(0, 16)}
                     <Button variant="ghost" size="sm" onClick={() => copyToClipboard(detail.phash!)}>
-                      <Copy style={{ height: 12, width: 12 }} />
+                      <Copy size={12} />
                     </Button>
                   </span>
                 </div>
@@ -405,7 +405,7 @@ export function MediaDetailPage() {
                   <span className="flex items-center gap-1 font-mono text-xs">
                     {detail.content_hash.slice(0, 16)}
                     <Button variant="ghost" size="sm" onClick={() => copyToClipboard(detail.content_hash!)}>
-                      <Copy style={{ height: 12, width: 12 }} />
+                      <Copy size={12} />
                     </Button>
                   </span>
                 </div>
@@ -416,7 +416,7 @@ export function MediaDetailPage() {
                   <span className="flex items-center gap-1 font-mono text-xs max-w-md truncate">
                     {detail.url}
                     <Button variant="ghost" size="sm" onClick={() => copyToClipboard(detail.url!)}>
-                      <Copy style={{ height: 12, width: 12 }} />
+                      <Copy size={12} />
                     </Button>
                   </span>
                 </div>
@@ -425,7 +425,7 @@ export function MediaDetailPage() {
 
             <Separator />
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-muted-foreground">Created</p>
                 <p>{new Date(detail.created_at).toLocaleDateString()}</p>
@@ -488,7 +488,7 @@ function ExifDataSection({ metadata }: { metadata: Record<string, unknown> }) {
     return (
       <details>
         <summary className="text-muted-foreground cursor-pointer">Raw Metadata</summary>
-        <pre className="mt-2 p-3 bg-muted text-xs overflow-auto max-h-48">
+        <pre className="mt-2 p-4 bg-muted text-xs overflow-auto max-h-48">
           {JSON.stringify(metadata, null, 2)}
         </pre>
       </details>

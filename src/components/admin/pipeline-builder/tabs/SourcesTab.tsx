@@ -48,8 +48,8 @@ function statusFor(s: ScrapeSource): { key: StatusKey; icon: React.ComponentType
   if (s.consecutive_failures >= 3) return { key: 'failing', icon: AlertTriangle, className: 'text-destructive', label: `${s.consecutive_failures} failures` };
   if (!s.last_success_at) return { key: 'never', icon: Clock, className: 'text-muted-foreground', label: 'never run' };
   const hrs = (Date.now() - new Date(s.last_success_at).getTime()) / 3_600_000;
-  if (hrs > 48) return { key: 'stale', icon: AlertTriangle, className: 'text-amber-600 dark:text-amber-400', label: `stale ${Math.round(hrs)}h` };
-  return { key: 'healthy', icon: CheckCircle, className: 'text-green-600 dark:text-green-400', label: 'healthy' };
+  if (hrs > 48) return { key: 'stale', icon: AlertTriangle, className: 'text-foreground dark:text-foreground', label: `stale ${Math.round(hrs)}h` };
+  return { key: 'healthy', icon: CheckCircle, className: 'text-foreground dark:text-foreground', label: 'healthy' };
 }
 
 export default function SourcesTab() {
@@ -179,7 +179,7 @@ export default function SourcesTab() {
               <thead className="bg-muted/40 sticky top-0 z-10">
                 <tr className="border-b border-border">
                   {['Source', 'Target', 'Health', 'Last success', 'Last run', 'Runs / Items', 'Schedule', ''].map((h, i) => (
-                    <th key={i} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                    <th key={i} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -194,16 +194,16 @@ export default function SourcesTab() {
                   const StIcon = s._status.icon;
                   return (
                     <tr key={s.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2.5 align-top">
+                      <td className="px-4 py-2.5 align-top">
                         <div className="font-medium truncate max-w-[240px]" title={s.name}>{s.name}</div>
                         <div className="text-xs2 text-muted-foreground font-mono truncate max-w-[240px]">{s.slug}</div>
                       </td>
-                      <td className="px-3 py-2.5 align-top">
+                      <td className="px-4 py-2.5 align-top">
                         {s.target_table ? (
                           <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">{s.target_table}</Badge>
                         ) : <span className="text-muted-foreground">—</span>}
                       </td>
-                      <td className="px-3 py-2.5 align-top">
+                      <td className="px-4 py-2.5 align-top">
                         <div className={`flex items-center gap-1.5 text-xs ${s._status.className}`}>
                           <StIcon className="h-3 w-3" />
                           {s._status.label}
@@ -221,23 +221,23 @@ export default function SourcesTab() {
                           </Tooltip>
                         )}
                       </td>
-                      <td className="px-3 py-2.5 align-top text-xs2 text-muted-foreground"
+                      <td className="px-4 py-2.5 align-top text-xs2 text-muted-foreground"
                           title={s.last_success_at ? new Date(s.last_success_at).toISOString() : ''}>
                         {s.last_success_at ? formatDistanceToNow(new Date(s.last_success_at), { addSuffix: true }) : '—'}
                       </td>
-                      <td className="px-3 py-2.5 align-top text-xs2 text-muted-foreground"
+                      <td className="px-4 py-2.5 align-top text-xs2 text-muted-foreground"
                           title={s.last_run_at ? new Date(s.last_run_at).toISOString() : ''}>
                         {s.last_run_at ? formatDistanceToNow(new Date(s.last_run_at), { addSuffix: true }) : '—'}
                       </td>
-                      <td className="px-3 py-2.5 align-top text-xs tabular-nums">
+                      <td className="px-4 py-2.5 align-top text-xs tabular-nums">
                         <span className="text-foreground">{s.total_runs}</span>
                         <span className="text-muted-foreground"> / </span>
                         <span className="text-muted-foreground">{s.total_items_fetched}</span>
                       </td>
-                      <td className="px-3 py-2.5 align-top text-xs2 text-muted-foreground font-mono">
+                      <td className="px-4 py-2.5 align-top text-xs2 text-muted-foreground font-mono">
                         {s.schedule_cron ?? '—'}
                       </td>
-                      <td className="px-3 py-2.5 align-top">
+                      <td className="px-4 py-2.5 align-top">
                         <Button
                           size="sm"
                           variant={s.is_enabled ? 'outline' : 'default'}
@@ -256,7 +256,7 @@ export default function SourcesTab() {
           </div>
 
           {!isLoading && (
-            <div className="px-3 py-1.5 border-t border-border text-xs2 text-muted-foreground">
+            <div className="px-4 py-1.5 border-t border-border text-xs2 text-muted-foreground">
               Showing {filtered.length} of {counts.all} sources
             </div>
           )}

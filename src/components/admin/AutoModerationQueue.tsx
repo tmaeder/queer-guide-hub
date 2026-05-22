@@ -100,8 +100,15 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export function AutoModerationQueue() {
-  const { pendingFlags, stats: _stats, flagStats, isLoading, isReviewing, reviewFlag, bulkReviewFlags } =
-    useAutomationMonitor();
+  const {
+    pendingFlags,
+    stats: _stats,
+    flagStats,
+    isLoading,
+    isReviewing,
+    reviewFlag,
+    bulkReviewFlags,
+  } = useAutomationMonitor();
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -248,7 +255,7 @@ export function AutoModerationQueue() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
               <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="w-[18px] h-[18px]" style={{ color: 'hsl(var(--foreground))' }} />
+                <ShieldCheck className="w-[18px] h-[18px] text-foreground" />
                 <div className="text-sm font-semibold">Auto-Approve High Confidence</div>
               </div>
               <p className="text-xs text-muted-foreground">
@@ -361,7 +368,7 @@ export function AutoModerationQueue() {
       {/* Flag list */}
       {filteredFlags.length === 0 && !isLoading ? (
         <div className="text-center py-16">
-          <Bot className="w-12 h-12 text-gray-300 mb-4 mx-auto block" />
+          <Bot className="w-12 h-12 text-muted-foreground mb-4 mx-auto block" />
           <h3 className="text-base font-semibold mb-1">No pending automation flags</h3>
           <p className="text-muted-foreground">
             Automation modules haven't generated any flags needing review.
@@ -388,7 +395,7 @@ export function AutoModerationQueue() {
             </span>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {filteredFlags.map((flag) => (
               <FlagCard
                 key={flag.id}
@@ -440,18 +447,18 @@ function FlagCard({
 
   return (
     <Card
-      className="border transition-all duration-200 hover:shadow-md"
+      className="border transition-colors duration-200 hover:bg-muted/40"
       style={{ borderColor: selected ? 'hsl(var(--primary))' : undefined }}
     >
       <CardContent className="py-4">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-4">
           <Checkbox checked={selected} onCheckedChange={onToggleSelect} className="mt-1" />
           <div className="flex-1 min-w-0">
             {/* Top row */}
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge
-                style={{ backgroundColor: severityColor, color: 'hsl(var(--background))' }}
-                className="font-semibold text-[0.7rem] gap-1"
+                style={{ backgroundColor: severityColor }}
+                className="font-semibold text-xs2 gap-1 text-background"
               >
                 <SeverityIcon className="w-3 h-3" />
                 {flag.severity}
@@ -498,15 +505,15 @@ function FlagCard({
               {reviewPriority && (
                 <Badge
                   style={{
-                    backgroundColor: REVIEW_PRIORITY_COLORS[reviewPriority] || 'hsl(var(--muted-foreground))',
-                    color: 'hsl(var(--background))',
+                    backgroundColor:
+                      REVIEW_PRIORITY_COLORS[reviewPriority] || 'hsl(var(--muted-foreground))',
                   }}
-                  className="font-semibold text-[0.7rem]"
+                  className="font-semibold text-xs2 text-background"
                 >
                   Priority: {reviewPriority}
                 </Badge>
               )}
-              <Badge variant="outline" className="text-[0.7rem] gap-1">
+              <Badge variant="outline" className="text-xs2 gap-1">
                 <Bot className="w-3 h-3" />
                 {flag.module_name.replace(/-/g, ' ')}
               </Badge>
@@ -539,11 +546,7 @@ function FlagCard({
                 Dismiss
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onToggleExpand}>
-                {expanded ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
+                {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </div>
 
@@ -557,10 +560,10 @@ function FlagCard({
 
                   {/* Classifier-specific detail view */}
                   {isClassifierFlag && currentVal && (
-                    <div className="mb-3">
+                    <div className="mb-4">
                       {/* Relevance score bar */}
                       {relevanceScore != null && (
-                        <div className="mb-3">
+                        <div className="mb-4">
                           <p className="text-xs font-semibold block mb-1">
                             LGBTI Relevance: {(relevanceScore * 100).toFixed(0)}%
                           </p>
@@ -595,7 +598,7 @@ function FlagCard({
                               <Badge
                                 key={i}
                                 variant="outline"
-                                className="text-[0.7rem]"
+                                className="text-xs2"
                                 style={{
                                   backgroundColor: sensitivityColor
                                     ? `${sensitivityColor}15`
@@ -620,7 +623,7 @@ function FlagCard({
 
                   {/* Generic flag detail view (non-classifier flags) */}
                   {!isClassifierFlag && flag.current_value && (
-                    <div className="mb-3">
+                    <div className="mb-4">
                       <p className="text-xs font-semibold block mb-1 text-destructive">
                         Current Value:
                       </p>

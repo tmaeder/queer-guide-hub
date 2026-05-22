@@ -76,8 +76,8 @@ export const ReviewItemCard = ({
     <Card
       className={`mb-2 transition-all ${selected ? 'border-primary bg-accent' : 'border-border bg-background'}`}
     >
-      <CardContent className={`${compact ? 'py-2' : 'py-3'} px-4`}>
-        <div className="flex items-start gap-3">
+      <CardContent className={`${compact ? 'py-2' : 'py-4'} px-4`}>
+        <div className="flex items-start gap-4">
           {/* Selection checkbox */}
           {onSelect && (
             <Checkbox
@@ -93,12 +93,12 @@ export const ReviewItemCard = ({
               <p className="text-sm font-semibold truncate flex-1">{item.title}</p>
 
               {/* Content type chip */}
-              <Badge variant="outline" className="h-5 text-[0.65rem]">
+              <Badge variant="outline" className="h-5 text-2xs">
                 {CONTENT_TYPE_LABELS[item.content_type] || item.content_type}
               </Badge>
 
               {/* Status chip */}
-              <Badge variant={STATUS_VARIANTS[item.status] || 'outline'} className="h-5 text-[0.65rem]">
+              <Badge variant={STATUS_VARIANTS[item.status] || 'outline'} className="h-5 text-2xs">
                 {item.status}
               </Badge>
             </div>
@@ -145,7 +145,7 @@ export const ReviewItemCard = ({
             {onApprove && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-green-600" onClick={() => onApprove(item.id)}>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-foreground" onClick={() => onApprove(item.id)}>
                     <Check size={16} />
                   </Button>
                 </TooltipTrigger>

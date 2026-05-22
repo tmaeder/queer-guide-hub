@@ -41,7 +41,7 @@ export function MarketplacePriceHistory({ listingId }: { listingId: string }) {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex items-center justify-between mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-center justify-between mt-1 text-2xs uppercase tracking-wider text-muted-foreground">
         <span>Low {formatCurrency(min, 'USD')}</span>
         <span>High {formatCurrency(max, 'USD')}</span>
       </div>

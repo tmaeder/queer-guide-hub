@@ -73,7 +73,7 @@ function HealthStat({
   color: string;
 }) {
   return (
-    <div className="border p-3">
+    <div className="border p-4">
       <span className="block text-xs text-muted-foreground">{label}</span>
       <div className="text-2xl font-bold" style={{ color }}>
         {typeof value === 'number' ? value.toLocaleString() : value}
@@ -92,11 +92,8 @@ function InlineDiff({ before, after }: { before: string; after: string }) {
           return (
             <span
               key={i}
-              style={{
-                backgroundColor: 'hsl(var(--foreground) / 0.18)',
-                color: 'hsl(var(--foreground))',
-                padding: '0 2px',
-              }}
+              style={{ backgroundColor: 'hsl(var(--foreground) / 0.18)', padding: '0 2px' }}
+              className="text-foreground"
             >
               {s.text}
             </span>
@@ -107,10 +104,10 @@ function InlineDiff({ before, after }: { before: string; after: string }) {
             key={i}
             style={{
               backgroundColor: 'hsl(var(--destructive) / 0.18)',
-              color: 'hsl(var(--destructive))',
               textDecoration: 'line-through',
               padding: '0 2px',
             }}
+            className="text-destructive"
           >
             {s.text}
           </span>
@@ -124,9 +121,9 @@ function ScoreChip({ label, value }: { label: string; value: number | null }) {
   const v = value ?? 0;
   const tone =
     v >= 0.75
-      ? 'border-emerald-500 text-emerald-600'
+      ? 'border-foreground/40 text-foreground'
       : v >= 0.5
-        ? 'border-amber-500 text-amber-600'
+        ? 'border-border text-foreground'
         : 'border-muted text-muted-foreground';
   return (
     <Badge variant="outline" className={cn('font-normal', tone)}>
@@ -139,12 +136,17 @@ export default function NewsQualityReviewTab() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<ArticleRow | null>(null);
 
-  const { data: rows, isLoading, error } = useQuery({
+  const {
+    data: rows,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['news-quality-review'],
     queryFn: async () => {
-      const { data, error: e } = await sb.from('news_articles')
+      const { data, error: e } = await sb
+        .from('news_articles')
         .select(
-          'id,title,content,image_url,url,quality_status,quality_score,relevance_score,sentiment,quality_decision,auto_publish_blocked_reasons,last_quality_run_at'
+          'id,title,content,image_url,url,quality_status,quality_score,relevance_score,sentiment,quality_decision,auto_publish_blocked_reasons,last_quality_run_at',
         )
         .in('quality_status', STATUSES as unknown as string[])
         .order('last_quality_run_at', { ascending: false, nullsFirst: false })
@@ -157,7 +159,8 @@ export default function NewsQualityReviewTab() {
   const approve = useMutation({
     mutationFn: async (row: ArticleRow) => {
       const d = row.quality_decision;
-      const { error: e } = await sb.from('news_articles')
+      const { error: e } = await sb
+        .from('news_articles')
         .update({
           title: d?.title || row.title,
           content: d?.cleanedBody || row.content,
@@ -177,7 +180,8 @@ export default function NewsQualityReviewTab() {
 
   const markIrrelevant = useMutation({
     mutationFn: async (row: ArticleRow) => {
-      const { error: e } = await sb.from('news_articles')
+      const { error: e } = await sb
+        .from('news_articles')
         .update({ quality_status: 'rejected' })
         .eq('id', row.id);
       if (e) throw e;
@@ -192,13 +196,15 @@ export default function NewsQualityReviewTab() {
 
   const revert = useMutation({
     mutationFn: async (row: ArticleRow) => {
-      const { data: orig, error: e } = await sb.from('news_articles_originals')
+      const { data: orig, error: e } = await sb
+        .from('news_articles_originals')
         .select('original_title, original_content, original_image_url')
         .eq('article_id', row.id)
         .maybeSingle();
       if (e) throw e;
       if (!orig) throw new Error('No original snapshot — nothing to revert');
-      const { error: u } = await sb.from('news_articles')
+      const { error: u } = await sb
+        .from('news_articles')
         .update({
           title: orig.original_title,
           content: orig.original_content,
@@ -231,10 +237,16 @@ export default function NewsQualityReviewTab() {
       const { data, error: e } = await sb.from('news_quality_health').select('*').single();
       if (e) throw e;
       return data as {
-        passed: number; review: number; rejected: number; pending: number;
-        legacy_unprocessed: number; total: number;
-        avg_relevance: number | null; avg_quality_after: number | null;
-        avg_quality_delta: number | null; last_run_at: string | null;
+        passed: number;
+        review: number;
+        rejected: number;
+        pending: number;
+        legacy_unprocessed: number;
+        total: number;
+        avg_relevance: number | null;
+        avg_quality_after: number | null;
+        avg_quality_delta: number | null;
+        last_run_at: string | null;
       };
     },
     refetchInterval: 60_000,
@@ -243,9 +255,17 @@ export default function NewsQualityReviewTab() {
   const { data: settings } = useQuery({
     queryKey: ['news-quality-settings'],
     queryFn: async () => {
-      const { data, error: e } = await sb.from('news_quality_settings').select('*').eq('id', 1).maybeSingle();
+      const { data, error: e } = await sb
+        .from('news_quality_settings')
+        .select('*')
+        .eq('id', 1)
+        .maybeSingle();
       if (e) throw e;
-      return data as { enabled: boolean; auto_publish_enabled: boolean; image_replacement_enabled: boolean } | null;
+      return data as {
+        enabled: boolean;
+        auto_publish_enabled: boolean;
+        image_replacement_enabled: boolean;
+      } | null;
     },
   });
 
@@ -260,9 +280,14 @@ export default function NewsQualityReviewTab() {
         .limit(8);
       if (e) throw e;
       return (data ?? []) as Array<{
-        source_id: string; source_name: string; total: number;
-        passed: number; review: number; rejected: number;
-        reject_rate: number | null; avg_quality: number | null;
+        source_id: string;
+        source_name: string;
+        total: number;
+        passed: number;
+        review: number;
+        rejected: number;
+        reject_rate: number | null;
+        avg_quality: number | null;
       }>;
     },
     refetchInterval: 120_000,
@@ -270,7 +295,8 @@ export default function NewsQualityReviewTab() {
 
   const toggleEnabled = useMutation({
     mutationFn: async (enabled: boolean) => {
-      const { error: e } = await sb.from('news_quality_settings')
+      const { error: e } = await sb
+        .from('news_quality_settings')
         .update({ enabled, updated_at: new Date().toISOString() })
         .eq('id', 1);
       if (e) throw e;
@@ -324,7 +350,11 @@ export default function NewsQualityReviewTab() {
           <HealthStat label="Passed" value={health.passed} color="hsl(var(--foreground))" />
           <HealthStat label="Review" value={health.review} color="hsl(var(--foreground) / 0.55)" />
           <HealthStat label="Rejected" value={health.rejected} color="hsl(var(--destructive))" />
-          <HealthStat label="Legacy" value={health.legacy_unprocessed} color="hsl(var(--muted-foreground))" />
+          <HealthStat
+            label="Legacy"
+            value={health.legacy_unprocessed}
+            color="hsl(var(--muted-foreground))"
+          />
           <HealthStat
             label="Avg relevance"
             value={health.avg_relevance != null ? fmtPct(health.avg_relevance) : '—'}
@@ -348,9 +378,9 @@ export default function NewsQualityReviewTab() {
               const pct = s.reject_rate != null ? Math.round(s.reject_rate * 100) : 0;
               const tone =
                 pct > 50
-                  ? 'border-red-500 text-red-600'
+                  ? 'border-destructive text-destructive'
                   : pct > 25
-                    ? 'border-amber-500 text-amber-600'
+                    ? 'border-border text-foreground'
                     : '';
               return (
                 <div
@@ -372,10 +402,10 @@ export default function NewsQualityReviewTab() {
       )}
 
       <div className="mb-6 flex flex-wrap gap-2">
-        <Badge variant="outline" className="border-amber-500 text-amber-600">
+        <Badge variant="outline" className="border-border text-foreground">
           Review: {counts.review}
         </Badge>
-        <Badge variant="outline" className="border-red-500 text-red-600">
+        <Badge variant="outline" className="border-destructive text-destructive">
           Rejected: {counts.rejected}
         </Badge>
       </div>
@@ -403,20 +433,16 @@ export default function NewsQualityReviewTab() {
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <p className="text-base font-semibold">
-                  {r.quality_decision?.title || r.title}
-                </p>
+                <p className="text-base font-semibold">{r.quality_decision?.title || r.title}</p>
                 {r.quality_decision?.excerpt && (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {r.quality_decision.excerpt}
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{r.quality_decision.excerpt}</p>
                 )}
                 <div className="mt-2 flex flex-wrap gap-2">
                   <ScoreChip label="Relevance" value={r.relevance_score} />
                   <ScoreChip label="Quality" value={r.quality_score} />
                   {r.sentiment && <Badge variant="outline">{r.sentiment}</Badge>}
                   {r.quality_decision?.isSatire && (
-                    <Badge className="bg-amber-500 text-white">satire</Badge>
+                    <Badge className="bg-foreground text-white">satire</Badge>
                   )}
                   {(r.auto_publish_blocked_reasons ?? []).map((reason) => (
                     <Badge key={reason} variant="outline">
@@ -429,8 +455,8 @@ export default function NewsQualityReviewTab() {
                 variant="outline"
                 className={
                   r.quality_status === 'review'
-                    ? 'border-amber-500 text-amber-600'
-                    : 'border-red-500 text-red-600'
+                    ? 'border-border text-foreground'
+                    : 'border-destructive text-destructive'
                 }
               >
                 {r.quality_status ?? 'pending'}
@@ -478,7 +504,10 @@ export default function NewsQualityReviewTab() {
                     {selected.quality_decision?.title &&
                       selected.quality_decision.title !== selected.title && (
                         <Badge variant="outline">
-                          {(diffChangeRatio(selected.title, selected.quality_decision.title) * 100).toFixed(0)}% rewritten
+                          {(
+                            diffChangeRatio(selected.title, selected.quality_decision.title) * 100
+                          ).toFixed(0)}
+                          % rewritten
                         </Badge>
                       )}
                   </div>
@@ -495,13 +524,22 @@ export default function NewsQualityReviewTab() {
                     </span>
                     {selected.quality_decision?.cleanedBody && (
                       <Badge variant="outline">
-                        {(diffChangeRatio(selected.content ?? '', selected.quality_decision.cleanedBody) * 100).toFixed(0)}% rewritten
+                        {(
+                          diffChangeRatio(
+                            selected.content ?? '',
+                            selected.quality_decision.cleanedBody,
+                          ) * 100
+                        ).toFixed(0)}
+                        % rewritten
                       </Badge>
                     )}
                   </div>
                   <InlineDiff
                     before={(selected.content ?? '').slice(0, 4000)}
-                    after={(selected.quality_decision?.cleanedBody ?? selected.content ?? '').slice(0, 4000)}
+                    after={(selected.quality_decision?.cleanedBody ?? selected.content ?? '').slice(
+                      0,
+                      4000,
+                    )}
                   />
                 </div>
 
@@ -545,7 +583,7 @@ export default function NewsQualityReviewTab() {
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    className="border-red-500 text-red-600"
+                    className="border-destructive text-destructive"
                     onClick={() => markIrrelevant.mutate(selected)}
                     disabled={markIrrelevant.isPending}
                   >
@@ -553,7 +591,7 @@ export default function NewsQualityReviewTab() {
                     Mark irrelevant
                   </Button>
                   <Button
-                    className="bg-emerald-600 text-white hover:bg-emerald-700"
+                    className="bg-foreground text-white hover:bg-foreground"
                     onClick={() => approve.mutate(selected)}
                     disabled={approve.isPending}
                   >

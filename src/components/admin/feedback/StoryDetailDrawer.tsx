@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,14 +113,14 @@ export function StoryDetailDrawer({
   const [handoffExpanded, setHandoffExpanded] = useState(false);
   const [handoffStatus, setHandoffStatus] = useState<string | null>(null);
 
-  useMemo(() => {
+  useEffect(() => {
     if (story) {
       setTitleDraft(story.title);
       setSummaryDraft(story.summary ?? '');
       setBriefDraft(story.brief_title ?? '');
       setNarrativeDraft(story.narrative ?? '');
     }
-  }, [story?.id, story?.title, story?.summary, story?.brief_title, story?.narrative]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [story?.id, story?.title, story?.summary, story?.brief_title, story?.narrative]);
 
   if (!story) return null;
 
@@ -139,7 +139,9 @@ export function StoryDetailDrawer({
     const text = formatCombinedStoryPrompt(story, feedbackMembers, errorMembers);
     try {
       await navigator.clipboard.writeText(text);
-      setHandoffStatus(`Combined prompt copied (${feedbackMembers.length + errorMembers.length} items)`);
+      setHandoffStatus(
+        `Combined prompt copied (${feedbackMembers.length + errorMembers.length} items)`,
+      );
     } catch {
       setHandoffStatus('Copy failed');
     }
@@ -175,12 +177,18 @@ export function StoryDetailDrawer({
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-full md:max-w-[600px] sm:max-w-[600px] p-0">
-        <div className="p-5 flex flex-col gap-4">
+        <div className="p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
               Story · {story.origin === 'ai_suggested' ? 'AI-suggested' : 'Manual'}
             </span>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onClose} aria-label="Close">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={onClose}
+              aria-label="Close"
+            >
               <X size={16} />
             </Button>
           </div>
@@ -211,12 +219,12 @@ export function StoryDetailDrawer({
           {/* Narrative */}
           {onSaveNarrative && (
             <div
-              className="p-3 bg-muted flex flex-col gap-2"
+              className="p-4 bg-muted flex flex-col gap-2"
               style={{ borderLeft: '3px solid hsl(var(--foreground))' }}
             >
               <div
-                className="flex items-center gap-2 text-[0.65rem] font-bold uppercase"
-                style={{ color: 'hsl(var(--foreground))', letterSpacing: 0.5 }}
+                className="flex items-center gap-2 text-2xs font-bold uppercase text-foreground"
+                style={{ letterSpacing: 0.5 }}
               >
                 <Sparkles size={12} />
                 Story {story.narrative_edited ? '· edited' : ''}
@@ -227,9 +235,13 @@ export function StoryDetailDrawer({
                     variant="ghost"
                     disabled={renarrating}
                     onClick={onRenarrate}
-                    className="h-auto py-0 px-1 text-[0.65rem]"
+                    className="h-auto py-0 px-1 text-2xs"
                   >
-                    {renarrating ? 'Generating…' : story.narrative_edited ? 'Re-generate' : 'Refresh'}
+                    {renarrating
+                      ? 'Generating…'
+                      : story.narrative_edited
+                        ? 'Re-generate'
+                        : 'Refresh'}
                   </Button>
                 )}
               </div>
@@ -238,7 +250,10 @@ export function StoryDetailDrawer({
                 value={briefDraft}
                 onChange={(e) => setBriefDraft(e.target.value)}
                 onBlur={() => {
-                  if (briefDraft !== (story.brief_title ?? '') || narrativeDraft !== (story.narrative ?? '')) {
+                  if (
+                    briefDraft !== (story.brief_title ?? '') ||
+                    narrativeDraft !== (story.narrative ?? '')
+                  ) {
                     onSaveNarrative(briefDraft.trim(), narrativeDraft.trim());
                   }
                 }}
@@ -249,7 +264,10 @@ export function StoryDetailDrawer({
                 value={narrativeDraft}
                 onChange={(e) => setNarrativeDraft(e.target.value)}
                 onBlur={() => {
-                  if (briefDraft !== (story.brief_title ?? '') || narrativeDraft !== (story.narrative ?? '')) {
+                  if (
+                    briefDraft !== (story.brief_title ?? '') ||
+                    narrativeDraft !== (story.narrative ?? '')
+                  ) {
                     onSaveNarrative(briefDraft.trim(), narrativeDraft.trim());
                   }
                 }}
@@ -271,8 +289,12 @@ export function StoryDetailDrawer({
                   borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
                 }}
               >
-                <AlertCircle size={14} color="hsl(var(--foreground) / 0.55)" style={{ marginTop: 2, flexShrink: 0 }} />
-                <span className="text-[0.72rem] leading-snug">
+                <AlertCircle
+                  size={14}
+                  color="hsl(var(--foreground) / 0.55)"
+                  className="mt-0.5 shrink-0"
+                />
+                <span className="text-xs2 leading-snug">
                   {divergence.status_diff > 0 && (
                     <>
                       <strong>{divergence.status_diff}</strong> member
@@ -297,7 +319,10 @@ export function StoryDetailDrawer({
             )}
 
           <div className="flex items-center gap-2 flex-wrap">
-            <Select value={story.status} onValueChange={(v) => handleStatusSelect(v as StoryStatus)}>
+            <Select
+              value={story.status}
+              onValueChange={(v) => handleStatusSelect(v as StoryStatus)}
+            >
               <SelectTrigger className="min-w-[140px] w-[140px] h-9">
                 <SelectValue />
               </SelectTrigger>
@@ -356,7 +381,7 @@ export function StoryDetailDrawer({
                 <Badge
                   key={l}
                   variant="secondary"
-                  className="h-5 text-[0.7rem] gap-1 cursor-pointer"
+                  className="h-5 text-xs2 gap-1 cursor-pointer"
                   onClick={() => onRemoveLabel(l)}
                 >
                   {l}
@@ -395,7 +420,7 @@ export function StoryDetailDrawer({
                   key={item.id}
                   className="p-2.5 border border-border flex items-start gap-2 rounded"
                 >
-                  <MessageSquare size={14} style={{ marginTop: 2 }} />
+                  <MessageSquare size={14} className="mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">{item.data.title}</p>
                     <span className="text-xs text-muted-foreground block">
@@ -415,7 +440,10 @@ export function StoryDetailDrawer({
                       <DropdownMenuItem onClick={() => handlePerItemCopy(item.id, 'feedback')}>
                         <Copy size={12} className="mr-2" /> Copy prompt
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onRemoveMember(item.id)} className="text-destructive">
+                      <DropdownMenuItem
+                        onClick={() => onRemoveMember(item.id)}
+                        className="text-destructive"
+                      >
                         <Trash2 size={12} className="mr-2" /> Remove
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -427,7 +455,7 @@ export function StoryDetailDrawer({
                   key={item.id}
                   className="p-2.5 border border-border flex items-start gap-2 rounded"
                 >
-                  <AlertTriangle size={14} style={{ marginTop: 2 }} />
+                  <AlertTriangle size={14} className="mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">
                       {item.data.function_name}: {item.data.message}
@@ -449,7 +477,10 @@ export function StoryDetailDrawer({
                       <DropdownMenuItem onClick={() => handlePerItemCopy(item.id, 'api_error')}>
                         <Copy size={12} className="mr-2" /> Copy prompt
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onRemoveMember(item.id)} className="text-destructive">
+                      <DropdownMenuItem
+                        onClick={() => onRemoveMember(item.id)}
+                        className="text-destructive"
+                      >
                         <Trash2 size={12} className="mr-2" /> Remove
                       </DropdownMenuItem>
                     </DropdownMenuContent>

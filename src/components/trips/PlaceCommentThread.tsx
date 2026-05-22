@@ -102,11 +102,11 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 mb-0.5">
                       <span className="text-xs font-bold">{c.display_name}</span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-2xs text-muted-foreground">
                         {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
                       </span>
                     </div>
-                    <p className="text-[13px] whitespace-pre-wrap">{c.body}</p>
+                    <p className="text-13 whitespace-pre-wrap">{c.body}</p>
                   </div>
                   {canDelete(c) && (
                     <Button
@@ -133,7 +133,7 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
                   value={name}
                   onChange={(e) => setName(e.target.value.slice(0, 60))}
                   maxLength={60}
-                  className="h-8 text-[13px]"
+                  className="h-8 text-13"
                 />
               )}
               <div className="flex gap-1 items-end">
@@ -143,7 +143,7 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
                   onChange={(e) => setBody(e.target.value.slice(0, 600))}
                   maxLength={600}
                   rows={1}
-                  className="flex-1 text-[13px] min-h-8 max-h-24"
+                  className="flex-1 text-13 min-h-8 max-h-24"
                 />
                 <Button
                   variant="ghost"
@@ -157,7 +157,7 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
                 </Button>
               </div>
               {post.isError && (
-                <span className="text-[11px] text-destructive">
+                <span className="text-xs2 text-destructive">
                   Could not post comment.
                 </span>
               )}

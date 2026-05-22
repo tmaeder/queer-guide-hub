@@ -132,7 +132,7 @@ export default function Welcome() {
             </div>
 
             <div className="border-t border-border pt-8">
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-4 mb-4">
                 <KeyRound size={20} />
                 <p className="text-base font-semibold">
                   {t('onboarding.passkeyTitle', 'Set up a passkey')}
@@ -179,7 +179,7 @@ export default function Welcome() {
                 'Pick vibes, home city, and languages so search results learn what you like. You can do this later.',
               )}
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <Button
                 variant="outline"
                 onClick={() => navigate('/onboarding/search')}
@@ -199,15 +199,15 @@ export default function Welcome() {
             <p className="text-muted-foreground leading-relaxed mb-6">
               {t(
                 'onboarding.trustBlurb',
-                'Everyone starts as a Visitor. Verify your email, complete your profile, and contribute to unlock Explorer, Resident, and finally Guardian — each tier opens more of the community.',
+                'Everyone starts as a Visitor. Verify your email, complete your profile, and contribute to earn Explorer, Resident, and finally Guardian — each tier opens more of the community.',
               )}
             </p>
-            <div className="space-y-3 text-sm">
+            <div className="space-y-4 text-sm">
               {['Visitor', 'Explorer', 'Resident', 'Guardian'].map(
                 (tier, i) => (
                   <div
                     key={tier}
-                    className="flex items-center gap-3 border-t border-border pt-3"
+                    className="flex items-center gap-4 border-t border-border pt-4"
                   >
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs font-semibold">
                       {i + 1}

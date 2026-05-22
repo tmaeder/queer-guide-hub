@@ -1,7 +1,7 @@
-import { MapPin, Edit, Trash2, Star, CheckCircle, ExternalLink, Phone, Mail } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, Edit, Trash2, Star, CheckCircle, ExternalLink, Phone, Mail } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface VenueData {
   name: string;
@@ -27,27 +27,27 @@ interface VenueCardProps {
 
 export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
   const getPriceDisplay = (priceRange: number) => {
-    return "$".repeat(Math.max(1, Math.min(4, priceRange || 1)));
+    return '$'.repeat(Math.max(1, Math.min(4, priceRange || 1)));
   };
 
   return (
     <Card>
       <CardContent>
         <div className="flex flex-col md:flex-row gap-4 md:items-start md:justify-between">
-          <div className="flex-1 flex flex-col gap-3">
+          <div className="flex-1 flex flex-col gap-4">
             <div className="flex flex-wrap items-start gap-2">
               <h6 className="text-base font-semibold leading-tight">{venue.name}</h6>
               <div className="flex flex-wrap gap-1">
                 <Badge variant="outline">{venue.category}</Badge>
                 {venue.is_featured && (
                   <Badge>
-                    <Star style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <Star size={12} className="mr-1" />
                     Featured
                   </Badge>
                 )}
                 {venue.verified && (
                   <Badge>
-                    <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <CheckCircle size={12} className="mr-1" />
                     Verified
                   </Badge>
                 )}
@@ -56,8 +56,11 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
 
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <MapPin style={{ width: 12, height: 12 }} />
-                <span>{venue.city}{venue.state && `, ${venue.state}`}</span>
+                <MapPin size={12} />
+                <span>
+                  {venue.city}
+                  {venue.state && `, ${venue.state}`}
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="font-medium">Price: {getPriceDisplay(venue.price_range)}</span>
@@ -66,8 +69,13 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
 
             {venue.description && (
               <p
-                className="text-sm text-muted-foreground"
-                style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+                className="text-sm text-muted-foreground overflow-hidden"
+                style={{
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                }}
               >
                 {venue.description}
               </p>
@@ -76,19 +84,19 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
             <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
               {venue.phone && (
                 <div className="flex items-center gap-1">
-                  <Phone style={{ width: 12, height: 12 }} />
+                  <Phone size={12} />
                   <span>{venue.phone}</span>
                 </div>
               )}
               {venue.email && (
                 <div className="flex items-center gap-1">
-                  <Mail style={{ width: 12, height: 12 }} />
+                  <Mail size={12} />
                   <span>{venue.email}</span>
                 </div>
               )}
               {venue.website && (
                 <div className="flex items-center gap-1">
-                  <ExternalLink style={{ width: 12, height: 12 }} />
+                  <ExternalLink size={12} />
                   <span>Website</span>
                 </div>
               )}
@@ -102,9 +110,7 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
                   </Badge>
                 ))}
                 {venue.tags.length > 3 && (
-                  <Badge variant="secondary">
-                    +{venue.tags.length - 3} more
-                  </Badge>
+                  <Badge variant="secondary">+{venue.tags.length - 3} more</Badge>
                 )}
               </div>
             )}
@@ -112,11 +118,11 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
 
           <div className="flex md:flex-col gap-2">
             <Button variant="outline" size="sm" onClick={() => onEdit(venue)}>
-              <Edit style={{ width: 16, height: 16 }} className="md:mr-2" />
+              <Edit size={16} className="md:mr-2" />
               <span className="hidden md:inline">Edit</span>
             </Button>
             <Button variant="destructive" size="sm" onClick={() => onDelete(venue)}>
-              <Trash2 style={{ width: 16, height: 16 }} className="md:mr-2" />
+              <Trash2 size={16} className="md:mr-2" />
               <span className="hidden md:inline">Delete</span>
             </Button>
           </div>

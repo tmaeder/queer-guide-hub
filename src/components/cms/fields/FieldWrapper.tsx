@@ -24,7 +24,7 @@ export function FieldWrapper({ field, error, children, hideLabel }: FieldWrapper
         <Label htmlFor={field.name} className="text-sm font-medium">
           {field.label}
           {field.required && (
-            <span className="text-red-500 ml-0.5">*</span>
+            <span className="text-destructive ml-0.5">*</span>
           )}
         </Label>
       )}
@@ -36,7 +36,7 @@ export function FieldWrapper({ field, error, children, hideLabel }: FieldWrapper
       )}
 
       {error && (
-        <p id={`${field.name}-error`} role="alert" className="text-xs text-red-500">{error}</p>
+        <p id={`${field.name}-error`} role="alert" className="text-xs text-destructive">{error}</p>
       )}
     </div>
   );

@@ -11,13 +11,13 @@ import { PageLoadingState } from '@/components/layout/PageLoadingState';
 const GroupCardFixture = () => (
   <Card>
     <CardHeader>
-      <div className="pb-3">
-        <div className="flex items-start gap-3">
+      <div className="pb-4">
+        <div className="flex items-start gap-4">
           <Avatar><AvatarFallback>S</AvatarFallback></Avatar>
           <div className="flex-1">
             <p className="font-semibold">Sample Group</p>
             <div className="flex items-center gap-1">
-              <Users style={{ width: 12, height: 12 }} />
+              <Users size={12} />
               <p className="text-sm font-medium">42</p>
               <p className="text-sm text-muted-foreground">members</p>
             </div>
@@ -75,8 +75,8 @@ export const GroupCard = ({
   return (
     <Card>
       <CardHeader>
-        <div className="pb-3">
-          <div className="flex items-start gap-3">
+        <div className="pb-4">
+          <div className="flex items-start gap-4">
             <Avatar>
               <AvatarImage src={group.image_url || undefined} />
               <AvatarFallback>{group.name.charAt(0).toUpperCase()}</AvatarFallback>
@@ -93,15 +93,15 @@ export const GroupCard = ({
                   </p>
                 </LocalizedLink>
                 {group.is_private ? (
-                  <Lock style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                  <Lock size={16} color="var(--muted-foreground)" />
                 ) : (
-                  <Globe style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                  <Globe size={16} color="var(--muted-foreground)" />
                 )}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  <Users style={{ width: 12, height: 12 }} />
+                  <Users size={12} />
                   <p className="text-sm font-medium">{group.member_count}</p>
                   <p className="text-sm text-muted-foreground">members</p>
                 </div>
@@ -133,7 +133,7 @@ export const GroupCard = ({
                 onClick={() => onManage(group)}
                 aria-label="Manage group settings"
               >
-                <Settings style={{ width: 16, height: 16 }} />
+                <Settings size={16} />
               </Button>
             )}
           </div>
@@ -169,7 +169,7 @@ export const GroupCard = ({
           <Button asChild variant="ghost" size="sm">
             <LocalizedLink to={`/groups/${group.id}`}>
               <span className="flex items-center">
-                <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                <ExternalLink size={16} className="mr-2" />
                 View Group
               </span>
             </LocalizedLink>
@@ -179,7 +179,7 @@ export const GroupCard = ({
             group.is_private ? (
               group.has_pending_request ? (
                 <Button disabled variant="outline" size="sm">
-                  <Lock style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Lock size={16} className="mr-2" />
                   Requested
                 </Button>
               ) : (
@@ -188,7 +188,7 @@ export const GroupCard = ({
                   disabled={isRequesting}
                   size="sm"
                 >
-                  <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <UserPlus size={16} className="mr-2" />
                   {isRequesting ? 'Requesting...' : 'Request to Join'}
                 </Button>
               )
@@ -198,7 +198,7 @@ export const GroupCard = ({
                 disabled={isJoining}
                 size="sm"
               >
-                <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                <UserPlus size={16} className="mr-2" />
                 {isJoining ? 'Joining...' : 'Join'}
               </Button>
             )
@@ -209,7 +209,7 @@ export const GroupCard = ({
               variant="outline"
               size="sm"
             >
-              <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />
+              <UserMinus size={16} className="mr-2" />
               {isLeaving ? 'Leaving...' : 'Leave'}
             </Button>
           )}

@@ -126,7 +126,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   /* ---- render ---- */
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border bg-background rounded-t-lg">
+    <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border bg-background rounded-t-container">
       {/* ── Text formatting ──────────────────────────── */}
 
       <ToolbarButton

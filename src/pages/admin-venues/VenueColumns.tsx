@@ -14,11 +14,9 @@ export function useVenueColumns() {
         header: 'Name',
         cell: (info) => (
           <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <span className="font-medium">{info.getValue()}</span>
             {info.row.original.address && (
-              <p className="text-xs text-muted-foreground">
-                {info.row.original.address}
-              </p>
+              <p className="text-xs text-muted-foreground">{info.row.original.address}</p>
             )}
           </div>
         ),
@@ -34,7 +32,12 @@ export function useVenueColumns() {
             '-'
           );
         },
-        meta: { serverSortable: true, serverFilterable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          serverFilterable: true,
+          groupable: true,
+          hideable: true,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('city', {
         header: 'City',
@@ -42,41 +45,63 @@ export function useVenueColumns() {
           const val = info.getValue();
           return val ? (
             <div className="flex items-center gap-1">
-              <MapPin style={{ height: 12, width: 12 }} />
+              <MapPin size={12} />
               {val}
             </div>
           ) : (
             '-'
           );
         },
-        meta: { serverSortable: true, serverFilterable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          serverFilterable: true,
+          groupable: true,
+          hideable: true,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('country', {
         header: 'Country',
         cell: (info) => info.getValue() || '-',
-        meta: { serverSortable: true, defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('is_featured', {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
-              <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+            <Badge
+              style={{
+                backgroundColor: 'hsl(var(--muted))',
+                color: 'hsl(var(--foreground) / 0.7)',
+              }}
+            >
+              <Star size={12} className="mr-1" />
               Featured
             </Badge>
           ) : null,
-        meta: { serverSortable: true, serverFilterable: true, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          serverFilterable: true,
+          hideable: true,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('verified', {
         header: 'Verified',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>
-              <Check style={{ height: 12, width: 12, marginRight: 4 }} />
+            <Badge style={{ backgroundColor: 'hsl(var(--muted))' }} className="text-foreground">
+              <Check size={12} className="mr-1" />
               Verified
             </Badge>
           ) : null,
-        meta: { serverSortable: true, serverFilterable: true, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          serverFilterable: true,
+          hideable: true,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('foursquare_rating', {
         header: 'Rating',
@@ -84,7 +109,11 @@ export function useVenueColumns() {
           const val = info.getValue();
           return val ? `${val.toFixed(1)}/10` : '-';
         },
-        meta: { serverSortable: true, defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('price_range', {
         header: 'Price',
@@ -92,12 +121,20 @@ export function useVenueColumns() {
           const val = info.getValue();
           return val ? '$'.repeat(val) : '-';
         },
-        meta: { serverSortable: true, defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('created_at', {
         header: 'Created',
         cell: (info) => new Date(info.getValue()).toLocaleDateString(),
-        meta: { serverSortable: true, defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
       }),
     ],
     [],

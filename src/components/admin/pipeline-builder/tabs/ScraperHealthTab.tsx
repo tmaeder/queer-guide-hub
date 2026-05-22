@@ -41,8 +41,8 @@ interface QualityRow {
 function PctCell({ v }: { v: number | null }) {
   if (v == null) return <span className="text-muted-foreground">—</span>;
   const colorClass =
-    v >= 80 ? 'text-green-600 dark:text-green-400'
-    : v >= 50 ? 'text-amber-600 dark:text-amber-400'
+    v >= 80 ? 'text-foreground dark:text-foreground'
+    : v >= 50 ? 'text-foreground dark:text-foreground'
     : 'text-destructive';
   return <span className={`font-mono tabular-nums ${colorClass}`}>{v.toFixed(1)}%</span>;
 }
@@ -98,7 +98,7 @@ export default function ScraperHealthTab() {
   const totalOrphans = orphans.reduce((s, o) => s + o.orphan_count, 0);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {/* Orphans */}
       <div className="border border-border rounded-element bg-background overflow-hidden">
         <SectionHeader
@@ -106,32 +106,32 @@ export default function ScraperHealthTab() {
           title="Orphan mappings"
           badge={
             totalOrphans > 0
-              ? <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{totalOrphans} total</Badge>
+              ? <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive">{totalOrphans} total</Badge>
               : undefined
           }
         />
         {totalOrphans === 0 ? (
           <div className="p-6 text-center">
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 inline mr-1" />
-            <span className="text-sm text-green-600 dark:text-green-400 font-medium">No orphans — entity_map is clean</span>
+            <CheckCircle className="h-5 w-5 text-foreground dark:text-foreground inline mr-1" />
+            <span className="text-sm text-foreground dark:text-foreground font-medium">No orphans — entity_map is clean</span>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Entity type</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Orphans</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Action</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Entity type</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Orphans</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody>
               {orphans.map(o => (
                 <tr key={o.entity_type} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                  <td className="px-3 py-2 capitalize">{o.entity_type}</td>
-                  <td className={`px-3 py-2 tabular-nums font-semibold ${o.orphan_count > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  <td className="px-4 py-2 capitalize">{o.entity_type}</td>
+                  <td className={`px-4 py-2 tabular-nums font-semibold ${o.orphan_count > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                     {o.orphan_count}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-2">
                     {o.orphan_count > 0 && (
                       <Button
                         size="sm"
@@ -211,22 +211,22 @@ export default function ScraperHealthTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Entity', 'Source', 'N', 'min', 'p25', 'p50', 'p75', 'max', 'avg'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {quality.map((q, i) => (
                   <tr key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                    <td className="px-3 py-1.5 capitalize">{q.entity_type}</td>
-                    <td className="px-3 py-1.5 font-mono text-xs">{q.source_name}</td>
-                    <td className="px-3 py-1.5 tabular-nums">{q.n}</td>
-                    <td className="px-3 py-1.5 tabular-nums text-muted-foreground">{q.score_min}</td>
-                    <td className="px-3 py-1.5 tabular-nums">{q.score_p25}</td>
-                    <td className="px-3 py-1.5 tabular-nums font-semibold">{q.score_p50}</td>
-                    <td className="px-3 py-1.5 tabular-nums">{q.score_p75}</td>
-                    <td className="px-3 py-1.5 tabular-nums text-muted-foreground">{q.score_max}</td>
-                    <td className="px-3 py-1.5 tabular-nums font-mono">{q.score_avg.toFixed(1)}</td>
+                    <td className="px-4 py-1.5 capitalize">{q.entity_type}</td>
+                    <td className="px-4 py-1.5 font-mono text-xs">{q.source_name}</td>
+                    <td className="px-4 py-1.5 tabular-nums">{q.n}</td>
+                    <td className="px-4 py-1.5 tabular-nums text-muted-foreground">{q.score_min}</td>
+                    <td className="px-4 py-1.5 tabular-nums">{q.score_p25}</td>
+                    <td className="px-4 py-1.5 tabular-nums font-semibold">{q.score_p50}</td>
+                    <td className="px-4 py-1.5 tabular-nums">{q.score_p75}</td>
+                    <td className="px-4 py-1.5 tabular-nums text-muted-foreground">{q.score_max}</td>
+                    <td className="px-4 py-1.5 tabular-nums font-mono">{q.score_avg.toFixed(1)}</td>
                   </tr>
                 ))}
               </tbody>

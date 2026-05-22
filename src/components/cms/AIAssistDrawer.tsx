@@ -155,7 +155,7 @@ export function AIAssistDrawer({
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="right" className="w-full sm:w-[420px] p-5 overflow-auto">
+      <SheetContent side="right" className="w-full sm:w-[420px] p-6 overflow-auto">
         <div className="flex items-center mb-4">
           <Sparkles size={18} />
           <h6 className="text-lg font-bold ml-2 flex-1">AI Assist</h6>
@@ -189,7 +189,7 @@ export function AIAssistDrawer({
           </Alert>
         )}
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {ops.map((op) => {
             const meta = OP_META[op];
             const Icon = meta.icon;
@@ -198,20 +198,20 @@ export function AIAssistDrawer({
             return (
               <div
                 key={op}
-                className="border border-border rounded-element p-3 bg-background"
+                className="border border-border rounded-element p-4 bg-background"
               >
                 <div className="flex items-center mb-1">
                   <Icon size={14} />
                   <span className="text-sm font-semibold ml-2">{meta.label}</span>
                   {result?.cached && (
-                    <Badge variant="secondary" className="ml-2 h-[18px] text-[0.65rem]">
+                    <Badge variant="secondary" className="ml-2 h-[18px] text-2xs">
                       cached
                     </Badge>
                   )}
                 </div>
                 <p className="block text-xs text-muted-foreground mb-2">{meta.description}</p>
                 {result && (
-                  <pre className="m-0 mb-2 p-2 bg-gray-50 border border-border rounded text-xs whitespace-pre-wrap break-words max-h-40 overflow-auto">
+                  <pre className="m-0 mb-2 p-2 bg-muted border border-border rounded text-xs whitespace-pre-wrap break-words max-h-40 overflow-auto">
                     {typeof result.output === 'string'
                       ? result.output
                       : JSON.stringify(result.output, null, 2)}
@@ -238,7 +238,7 @@ export function AIAssistDrawer({
                     <Button
                       size="sm"
                       onClick={() => apply(op, result.output)}
-                      className="text-xs font-semibold gap-1 bg-green-600 hover:bg-green-700 text-white"
+                      className="text-xs font-semibold gap-1 bg-foreground hover:bg-foreground text-white"
                     >
                       <Check size={12} />
                       Apply

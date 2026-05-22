@@ -102,14 +102,16 @@ export function DataTableBulkEditDialog({
           {fields.map((field) => (
             <div
               key={field.key}
-              className={`flex items-start gap-2 p-3 rounded border ${enabledFields.has(field.key) ? 'border-primary opacity-100' : 'border-border opacity-60'}`}
+              className={`flex items-start gap-2 p-4 rounded border ${enabledFields.has(field.key) ? 'border-primary opacity-100' : 'border-border opacity-60'}`}
             >
               <Checkbox
                 checked={enabledFields.has(field.key)}
                 onCheckedChange={() => toggleField(field.key)}
               />
               <div className="flex-1 flex flex-col gap-1">
-                <Label style={{ fontSize: 13, fontWeight: 500 }}>{field.label}</Label>
+                <Label style={{ fontSize: 13 }} className="font-medium">
+                  {field.label}
+                </Label>
                 <BulkFieldInput
                   field={field}
                   value={values[field.key]}

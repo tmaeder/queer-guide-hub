@@ -19,7 +19,7 @@ export function AddMemberDialog({ groupId, existingMemberIds, onMemberAdded }: A
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild><Button size="sm"><UserPlus style={{ height: 16, width: 16, marginRight: 8 }} />Add Member</Button></DialogTrigger>
+      <DialogTrigger asChild><Button size="sm"><UserPlus size={16} className="mr-2" />Add Member</Button></DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle>Add Member</DialogTitle></DialogHeader>
         <Command shouldFilter={false}>

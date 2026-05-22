@@ -198,7 +198,7 @@ export function ReviewQueueEnhanced() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Filters */}
       <Card>
         <CardContent>
@@ -244,7 +244,7 @@ export function ReviewQueueEnhanced() {
                   placeholder="Search data..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-[200px] pl-7 h-9"
+                  className="w-[200px] pl-8 h-9"
                 />
               </div>
 
@@ -332,11 +332,11 @@ export function ReviewQueueEnhanced() {
               <AlertTriangle className="h-12 w-12 text-destructive" />
             </div>
             <h6 className="font-semibold text-lg mb-1">Failed to load staging items</h6>
-            <p className="text-muted-foreground mb-3">
+            <p className="text-muted-foreground mb-4">
               {error instanceof Error ? error.message : 'The staging query failed. Check the database connection.'}
             </p>
             <Button variant="outline" size="sm" onClick={() => refetch()} style={{ display: 'flex', gap: 6, margin: '0 auto' }}>
-              <RefreshCw style={{ width: 14, height: 14 }} /> Retry
+              <RefreshCw size={14} /> Retry
             </Button>
           </CardContent>
         </Card>
@@ -407,7 +407,7 @@ export function ReviewQueueEnhanced() {
                       {/* Header */}
                       <div className="flex items-center justify-between mb-0.5 flex-wrap gap-1">
                         <div className="flex items-center gap-1 flex-wrap">
-                          <span className="font-semibold text-[0.9rem]">{title}</span>
+                          <span className="font-semibold text-sm">{title}</span>
                           <Badge variant="outline">{item.target_table}</Badge>
                           {item.dedup_status !== 'pending' && item.dedup_status !== 'unique' && (
                             <Badge
@@ -423,7 +423,7 @@ export function ReviewQueueEnhanced() {
                             </Badge>
                           )}
                           <span
-                            className="inline-flex items-center gap-0.5 px-1.5 rounded text-[0.7rem] font-semibold"
+                            className="inline-flex items-center gap-0.5 px-1.5 rounded text-xs2 font-semibold"
                             style={{
                               backgroundColor: `${confidence.color}15`,
                               color: confidence.color,
@@ -546,7 +546,7 @@ export function ReviewQueueEnhanced() {
 
                           {/* Review Notes */}
                           <div className="flex flex-col gap-1">
-                            <span className="text-sm font-medium text-[0.8rem]">Review Notes</span>
+                            <span className="text-sm font-medium text-13">Review Notes</span>
                             <Textarea
                               placeholder="Add notes..."
                               value={reviewNotes}

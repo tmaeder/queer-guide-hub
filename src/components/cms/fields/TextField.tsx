@@ -48,7 +48,7 @@ export function TextField({ field, value, onChange, error, disabled }: FieldProp
         {field.maxLength && (
           <span
             className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs pointer-events-none ${
-              charCount > field.maxLength ? 'text-red-500' : 'text-muted-foreground'
+              charCount > field.maxLength ? 'text-destructive' : 'text-muted-foreground'
             }`}
           >
             {charCount}/{field.maxLength}

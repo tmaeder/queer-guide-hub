@@ -21,25 +21,22 @@ export function DataTableHeaderCell<TData>({ header, onSort }: DataTableHeaderCe
 
   return (
     <TableHead
-      style={{
-        cursor: canSort ? 'pointer' : 'default',
-        userSelect: canSort ? 'none' : undefined,
-        whiteSpace: 'nowrap',
-      }}
+      style={{ cursor: canSort ? 'pointer' : 'default', userSelect: canSort ? 'none' : undefined }}
+      className="whitespace-nowrap"
       onClick={handleClick}
     >
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ alignItems: 'center' }} className="inline-flex gap-1">
         {header.isPlaceholder
           ? null
           : flexRender(header.column.columnDef.header, header.getContext())}
         {canSort && (
-          <span style={{ opacity: sorted ? 1 : 0.3, display: 'inline-flex' }}>
+          <span style={{ opacity: sorted ? 1 : 0.3 }} className="inline-flex">
             {sorted === 'asc' ? (
-              <ArrowUp style={{ height: 14, width: 14 }} />
+              <ArrowUp size={14} />
             ) : sorted === 'desc' ? (
-              <ArrowDown style={{ height: 14, width: 14 }} />
+              <ArrowDown size={14} />
             ) : (
-              <ArrowUpDown style={{ height: 14, width: 14 }} />
+              <ArrowUpDown size={14} />
             )}
           </span>
         )}

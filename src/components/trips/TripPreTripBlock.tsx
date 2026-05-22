@@ -52,7 +52,7 @@ export function TripPreTripBlock({ trip }: Props) {
       aria-label={t('trips.preTrip.label', 'Pre-trip overview')}
       className="border border-border bg-background p-4 mb-4"
     >
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
           {t('trips.preTrip.title', 'Before you go')}
         </h2>
@@ -103,8 +103,8 @@ export function TripPreTripBlock({ trip }: Props) {
         </p>
       )}
 
-      <div className="mt-3 pt-3 border-t border-border flex items-center justify-between gap-3 flex-wrap">
-        <div className="inline-flex items-center gap-3 text-sm text-muted-foreground">
+      <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-4 flex-wrap">
+        <div className="inline-flex items-center gap-4 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <Ticket className="h-4 w-4" aria-hidden />
             {t('trips.preTrip.bookings', '{{count}} reservations', {

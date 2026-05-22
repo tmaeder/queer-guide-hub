@@ -18,12 +18,13 @@ export function renderPopupHTML(marker: MapMarker): string {
   const tViewDetails = i18next.t('map.popup.viewDetails', { defaultValue: 'View details' });
   const tShare = i18next.t('map.popup.share', { defaultValue: 'Share' });
 
+  const fg = 'hsl(var(--foreground))';
   const link = marker.linkTo
-    ? `<a href="${esc(marker.linkTo)}" style="color:#6366f1;text-decoration:none;font-size:11px;">${esc(tViewDetails)} →</a>`
+    ? `<a href="${esc(marker.linkTo)}" style="color:${fg};text-decoration:underline;font-size:11px;">${esc(tViewDetails)} →</a>`
     : '';
 
   const share = marker.linkTo
-    ? `<button type="button" data-share-id="${esc(marker.id)}" data-share-name="${esc(marker.name)}" data-share-url="${esc(marker.linkTo ?? '')}" data-share-subtitle="${esc(marker.subtitle ?? '')}" style="margin-left:8px;background:none;border:none;padding:0;color:#6366f1;text-decoration:none;font-size:11px;cursor:pointer;font-family:inherit;">${esc(tShare)}</button>`
+    ? `<button type="button" data-share-id="${esc(marker.id)}" data-share-name="${esc(marker.name)}" data-share-url="${esc(marker.linkTo ?? '')}" data-share-subtitle="${esc(marker.subtitle ?? '')}" style="margin-left:8px;background:none;border:none;padding:0;color:${fg};text-decoration:underline;font-size:11px;cursor:pointer;font-family:inherit;">${esc(tShare)}</button>`
     : '';
 
   switch (marker.type) {
@@ -46,7 +47,7 @@ export function renderPopupHTML(marker: MapMarker): string {
       return `
         <div style="min-width:180px;padding:6px 2px;">
           <strong style="font-size:14px;">${esc(marker.name)}</strong><br/>
-          ${marker.subtitle ? `<span style="font-size:12px;color:#ec4899;">${esc(marker.subtitle)}</span><br/>` : ''}
+          ${marker.subtitle ? `<span style="font-size:12px;color:${muted};">${esc(marker.subtitle)}</span><br/>` : ''}
           ${venue ? `<span style="font-size:11px;color:${muted};">@ ${esc(venue)}</span><br/>` : ''}
           ${city ? `<span style="font-size:11px;color:${muted};">${esc(city)}</span><br/>` : ''}
           ${link}
@@ -58,7 +59,7 @@ export function renderPopupHTML(marker: MapMarker): string {
       const pop = marker.meta?.population
         ? `Pop. ${Number(marker.meta.population).toLocaleString()}`
         : '';
-      const capital = marker.meta?.isCapital ? ' <b style="color:#f59e0b;">★ Capital</b>' : '';
+      const capital = marker.meta?.isCapital ? ' <b style="color:hsl(var(--foreground));">★ Capital</b>' : '';
       const cityPrecision = marker.meta?.precision as string | undefined;
       const cityBadge = cityPrecision
         ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;${badge};font-weight:500;margin-left:6px;">${esc(cityPrecision.charAt(0).toUpperCase() + cityPrecision.slice(1))}</span>`

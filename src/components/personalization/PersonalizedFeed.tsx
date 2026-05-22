@@ -7,10 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SkeletonCrossfade } from '@/components/effects';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
-import {
-  fetchPersonalizedCitiesByIds,
-  fetchTrendingCities,
-} from '@/hooks/usePersonalizedCities';
+import { fetchPersonalizedCitiesByIds, fetchTrendingCities } from '@/hooks/usePersonalizedCities';
 
 interface CityRec {
   id: string;
@@ -75,7 +72,7 @@ export function PersonalizedFeed() {
   });
 
   const isLoading = recsLoading || citiesLoading || trendingLoading;
-  const displayCities = (cities && cities.length > 0) ? cities : (trendingCities || []);
+  const displayCities = cities && cities.length > 0 ? cities : trendingCities || [];
   const isPersonalized = cities && cities.length > 0;
 
   if (displayCities.length === 0 && !isLoading) return null;
@@ -96,9 +93,9 @@ export function PersonalizedFeed() {
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-4">
         {isPersonalized ? (
-          <Sparkles style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+          <Sparkles size={20} className="text-primary" />
         ) : (
-          <TrendingUp style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+          <TrendingUp size={20} className="text-primary" />
         )}
         <h6 className="font-bold" style={{ fontSize: '1.1rem' }}>
           {isPersonalized ? 'Recommended for You' : 'Popular Destinations'}
@@ -114,42 +111,51 @@ export function PersonalizedFeed() {
         loading={isLoading}
         skeleton={
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={100} />)}
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} variant="rounded" height={100} />
+            ))}
           </div>
         }
       >
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {displayCities.map((city) => (
-          <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
-            <Card className="hover:shadow-[var(--shadow-aceternity-sm)] transition-shadow h-full">
-              <CardContent style={{ padding: 16 }}>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="font-bold" style={{ fontSize: '0.95rem' }}>{city.name}</p>
-                    <p className="text-muted-foreground" style={{ fontSize: '0.75rem' }}>{city.country_name}</p>
-                  </div>
-                  {city.equality_score != null && (
-                    <div className="flex items-center gap-1">
-                      <Shield
-                        style={{
-                          height: 14, width: 14,
-                          color: city.equality_score >= 70 ? 'var(--success)' : city.equality_score >= 40 ? 'var(--warning)' : 'var(--destructive)',
-                        }}
-                      />
-                      <span className="font-semibold" style={{ fontSize: '0.7rem' }}>{city.equality_score}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {displayCities.map((city) => (
+            <LocalizedLink key={city.id} to={`/city/${city.id}`} className="no-underline">
+              <Card className="h-full">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-bold" style={{ fontSize: '0.95rem' }}>
+                        {city.name}
+                      </p>
+                      <p className="text-muted-foreground text-xs">{city.country_name}</p>
                     </div>
+                    {city.equality_score != null && (
+                      <div className="flex items-center gap-1">
+                        <Shield
+                          size={14}
+                          style={{
+                            color:
+                              city.equality_score >= 70
+                                ? 'var(--success)'
+                                : city.equality_score >= 40
+                                  ? 'var(--warning)'
+                                  : 'var(--destructive)',
+                          }}
+                        />
+                        <span className="font-semibold" style={{ fontSize: '0.7rem' }}>
+                          {city.equality_score}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {city.reason !== 'trending' && (
+                    <Badge variant="outline">{reasonLabels[city.reason] || city.reason}</Badge>
                   )}
-                </div>
-                {city.reason !== 'trending' && (
-                  <Badge variant="outline">
-                    {reasonLabels[city.reason] || city.reason}
-                  </Badge>
-                )}
-              </CardContent>
-            </Card>
-          </LocalizedLink>
-        ))}
-      </div>
+                </CardContent>
+              </Card>
+            </LocalizedLink>
+          ))}
+        </div>
       </SkeletonCrossfade>
     </div>
   );

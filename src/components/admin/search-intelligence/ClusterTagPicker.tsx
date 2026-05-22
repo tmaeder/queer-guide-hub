@@ -111,7 +111,7 @@ export function ClusterTagPicker({ clusterId, onChange }: Props) {
   const filteredResults = results.filter((r) => !linkedIds.has(r.id));
 
   return (
-    <div className="mt-3 p-3 bg-black/5">
+    <div className="mt-4 p-4 bg-black/5">
       {error && (
         <Alert variant="destructive" className="mb-2">
           <AlertDescription>{error}</AlertDescription>
@@ -121,7 +121,7 @@ export function ClusterTagPicker({ clusterId, onChange }: Props) {
         Linked tags ({detail?.tags.length ?? 0})
       </p>
       {detail && detail.tags.length > 0 && (
-        <div className="flex flex-row flex-wrap gap-1 mb-3">
+        <div className="flex flex-row flex-wrap gap-1 mb-4">
           {detail.tags.map((t) => (
             <div key={t.tag_id} className="flex flex-row items-center gap-1 mr-1 mb-1">
               <Badge variant="secondary">

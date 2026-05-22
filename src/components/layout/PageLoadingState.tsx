@@ -21,7 +21,7 @@ export const PageLoadingState = ({
       <div className={`${wrapperClass} flex flex-col gap-4`}>
         {Array.from({ length: count }).map((_, i) => (
           <Card key={i}>
-            <CardContent className="flex items-center gap-3">
+            <CardContent className="flex items-center gap-4">
               <Skeleton className="w-20 h-15 rounded-element shrink-0" style={{ height: 60 }} />
               <div className="flex-1">
                 <Skeleton className="h-6 w-3/5" />
@@ -44,14 +44,14 @@ export const PageLoadingState = ({
       {Array.from({ length: count }).map((_, i) => (
         <Card key={i}>
           <CardContent>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Skeleton className="w-10 h-10 rounded-full" />
               <div className="flex-1">
                 <Skeleton className="h-6 w-[70%]" />
                 <Skeleton className="h-[18px] w-2/5 mt-2" />
               </div>
             </div>
-            <Skeleton className="h-4 w-full mt-3" />
+            <Skeleton className="h-4 w-full mt-4" />
             <Skeleton className="h-4 w-3/5 mt-2" />
             <div className="flex gap-2 mt-2">
               <Skeleton className="h-6 w-16 rounded-badge" />

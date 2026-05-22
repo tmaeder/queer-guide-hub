@@ -113,7 +113,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Globe style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Globe size={16} className="mr-2" />
           Batch Geo-Link
         </Button>
       </DialogTrigger>
@@ -121,7 +121,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
         <DialogHeader>
           <DialogTitle>
             <span className="flex items-center gap-2">
-              <Globe style={{ height: 20, width: 20 }} />
+              <Globe size={20} />
               Batch Geo-Link Content
             </span>
           </DialogTitle>
@@ -131,10 +131,10 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 mt-2">
+        <div className="flex flex-col gap-6 mt-2">
           {/* Unlinked counts */}
           {unlinkedCounts && (
-            <div className="border border-border rounded-element p-3 flex flex-col gap-1">
+            <div className="border border-border rounded-element p-4 flex flex-col gap-1">
               <span className="text-xs font-semibold mb-1">Unlinked Items</span>
               <div className="grid grid-cols-2 gap-1">
                 {[
@@ -145,9 +145,9 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                 ].map(item => (
                   <div key={item.label} className="flex items-center gap-1">
                     {item.count > 0 ? (
-                      <AlertCircle style={{ height: 12, width: 12, color: 'hsl(var(--foreground) / 0.55)' }} />
+                      <AlertCircle size={12} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                     ) : (
-                      <CheckCircle style={{ height: 12, width: 12, color: 'hsl(var(--foreground))' }} />
+                      <CheckCircle size={12} className="text-foreground" />
                     )}
                     <span className="text-xs">
                       <strong>{item.count}</strong> {item.label}
@@ -197,7 +197,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           </div>
 
           {/* Info box */}
-          <div className="bg-muted rounded p-3">
+          <div className="bg-muted rounded p-4">
             <span className="text-xs text-muted-foreground">
               <strong>No AI cost</strong> — Uses deterministic alias normalization and
               exact matching against 351 cities and 199 countries in the database.
@@ -208,7 +208,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           {loading && (
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Loader2 style={{ height: 16, width: 16 }} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" />
                 <span className="text-sm">Processing...</span>
               </div>
               <div className="h-1 w-full overflow-hidden rounded bg-secondary">
@@ -219,33 +219,33 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
 
           {/* Results */}
           {totals && !loading && (
-            <div className="border border-border rounded-element p-4 flex flex-col gap-3">
+            <div className="border border-border rounded-element p-4 flex flex-col gap-4">
               <div className="flex items-center gap-2">
-                <CheckCircle style={{ height: 18, width: 18, color: 'hsl(var(--foreground))' }} />
+                <CheckCircle size={18} className="text-foreground" />
                 <span className="text-sm font-semibold">Geo-Link Complete</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-1">
-                  <MapPin style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+                  <MapPin size={14} className="text-muted-foreground" />
                   <span className="text-sm">
                     <strong>{totals.processed}</strong> processed
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle style={{ height: 14, width: 14, color: 'hsl(var(--foreground))' }} />
+                  <CheckCircle size={14} className="text-foreground" />
                   <span className="text-sm">
                     <strong>{totals.linked}</strong> fully linked
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <AlertCircle style={{ height: 14, width: 14, color: 'hsl(var(--foreground) / 0.55)' }} />
+                  <AlertCircle size={14} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                   <span className="text-sm">
                     <strong>{totals.partial}</strong> partial
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <AlertCircle style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+                  <AlertCircle size={14} className="text-muted-foreground" />
                   <span className="text-sm">
                     <strong>{totals.skipped}</strong> skipped
                   </span>
@@ -263,7 +263,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           {/* Run button */}
           {!loading && (
             <Button onClick={handleRun}>
-              <Globe style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Globe size={16} className="mr-2" />
               {showResult ? 'Run Again' : 'Start Batch Geo-Link'}
             </Button>
           )}

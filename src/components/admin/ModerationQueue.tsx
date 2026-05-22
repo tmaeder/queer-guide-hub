@@ -176,7 +176,7 @@ export function ModerationQueue() {
       {selectedIds.length > 0 && (
         <div className="flex gap-2">
           <Button size="sm" onClick={() => openResolveDialog(selectedIds, 'RESOLVED')}>
-            <CheckCircle style={{ width: 14, height: 14, marginRight: 4 }} />
+            <CheckCircle size={14} className="mr-1" />
             Resolve ({selectedIds.length})
           </Button>
           <Button
@@ -184,7 +184,7 @@ export function ModerationQueue() {
             size="sm"
             onClick={() => openResolveDialog(selectedIds, 'REJECTED')}
           >
-            <XCircle style={{ width: 14, height: 14, marginRight: 4 }} />
+            <XCircle size={14} className="mr-1" />
             Reject ({selectedIds.length})
           </Button>
         </div>
@@ -263,7 +263,7 @@ export function ModerationQueue() {
       {/* Flags list */}
       {flags.length === 0 && !loading ? (
         <div className="text-center py-16">
-          <Flag className="w-12 h-12 text-gray-300 mb-4 mx-auto block" />
+          <Flag className="w-12 h-12 text-muted-foreground mb-4 mx-auto block" />
           <h6 className="font-semibold mb-1">No flags found</h6>
           <p className="text-muted-foreground">
             {Object.keys(filters).length > 0
@@ -286,17 +286,17 @@ export function ModerationQueue() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {flags.map((flag) => (
               <Card
                 key={flag.id}
                 className={cn(
-                  'border transition-all hover:shadow-md',
+                  'border transition-colors hover:bg-muted/40',
                   selectedIds.includes(flag.id) ? 'border-primary' : 'border-border',
                 )}
               >
                 <CardContent className="py-4">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-4">
                     <Checkbox
                       checked={selectedIds.includes(flag.id)}
                       onCheckedChange={() => toggleSelect(flag.id)}
@@ -306,7 +306,7 @@ export function ModerationQueue() {
                       {/* Top row: badges + actions */}
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <Badge
-                          className="text-white font-semibold text-[0.7rem]"
+                          className="text-white font-semibold text-xs2"
                           style={{ backgroundColor: STATUS_COLORS[flag.status] || 'hsl(var(--muted-foreground))' }}
                         >
                           {flag.status}
@@ -317,11 +317,11 @@ export function ModerationQueue() {
                         <Badge variant="outline">
                           {CONTENT_TYPE_LABELS[flag.content_type] || flag.content_type}
                         </Badge>
-                        <Badge variant="outline" className="gap-1 text-[0.7rem]">
+                        <Badge variant="outline" className="gap-1 text-xs2">
                           {flag.source === 'system' ? (
-                            <Bot style={{ width: 12, height: 12 }} />
+                            <Bot size={12} />
                           ) : (
-                            <User style={{ width: 12, height: 12 }} />
+                            <User size={12} />
                           )}
                           {flag.source === 'system' ? 'System' : 'User'}
                         </Badge>
@@ -343,7 +343,7 @@ export function ModerationQueue() {
                         {flag.status === 'OPEN' && (
                           <>
                             <Button size="sm" onClick={() => updateFlagStatus(flag.id, 'IN_REVIEW')}>
-                              <Eye style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <Eye size={12} className="mr-1" />
                               Review
                             </Button>
                             <Button
@@ -351,7 +351,7 @@ export function ModerationQueue() {
                               variant="outline"
                               onClick={() => openResolveDialog([flag.id], 'RESOLVED')}
                             >
-                              <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <CheckCircle size={12} className="mr-1" />
                               Resolve
                             </Button>
                             <Button
@@ -359,7 +359,7 @@ export function ModerationQueue() {
                               variant="outline"
                               onClick={() => openResolveDialog([flag.id], 'REJECTED')}
                             >
-                              <XCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <XCircle size={12} className="mr-1" />
                               Reject
                             </Button>
                           </>
@@ -367,7 +367,7 @@ export function ModerationQueue() {
                         {flag.status === 'IN_REVIEW' && (
                           <>
                             <Button size="sm" onClick={() => openResolveDialog([flag.id], 'RESOLVED')}>
-                              <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <CheckCircle size={12} className="mr-1" />
                               Resolve
                             </Button>
                             <Button
@@ -375,7 +375,7 @@ export function ModerationQueue() {
                               variant="outline"
                               onClick={() => openResolveDialog([flag.id], 'REJECTED')}
                             >
-                              <XCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <XCircle size={12} className="mr-1" />
                               Reject
                             </Button>
                           </>
@@ -387,9 +387,9 @@ export function ModerationQueue() {
                           onClick={() => setExpandedId(expandedId === flag.id ? null : flag.id)}
                         >
                           {expandedId === flag.id ? (
-                            <ChevronUp style={{ width: 16, height: 16 }} />
+                            <ChevronUp size={16} />
                           ) : (
-                            <ChevronDown style={{ width: 16, height: 16 }} />
+                            <ChevronDown size={16} />
                           )}
                         </Button>
                       </div>

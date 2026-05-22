@@ -38,13 +38,13 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
       <Card>
         <CardHeader>
           <CardTitle>
-            <Clock style={{ width: 16, height: 16 }} />
+            <Clock size={16} />
             Recent Activity
           </CardTitle>
         </CardHeader>
         <CardContent>
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-start gap-3 animate-pulse">
+            <div key={i} className="flex items-start gap-4 animate-pulse">
               <Skeleton />
               <div className="flex-1 flex flex-col gap-2">
                 <Skeleton />
@@ -62,7 +62,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
     <Card>
       <CardHeader>
         <CardTitle>
-          <Clock style={{ width: 16, height: 16 }} />
+          <Clock size={16} />
           Recent Activity
         </CardTitle>
         {onRefresh && (
@@ -71,14 +71,14 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
             size="sm"
             onClick={onRefresh}
           >
-            <RefreshCw style={{ width: 16, height: 16 }} />
+            <RefreshCw size={16} />
           </Button>
         )}
       </CardHeader>
       <CardContent>
         {activities.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <Clock style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+            <Clock size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
             <p>No recent activity</p>
           </div>
         ) : (
@@ -86,7 +86,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
             {activities.map((activity) => {
               const Icon = activity.icon;
               return (
-                <div key={activity.id} className="flex items-start gap-3 group">
+                <div key={activity.id} className="flex items-start gap-4 group">
                   <div className="p-2 bg-muted rounded-full">
                     <Icon style={{ width: 16, height: 16 }} />
                   </div>
@@ -106,7 +106,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
                       {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                     </p>
                   </div>
-                  <ArrowUpRight className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" style={{ width: 16, height: 16 }} />
+                  <ArrowUpRight className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
                 </div>
               );
             })}
@@ -115,7 +115,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
               <div className="pt-4 border-t border-border">
                 <Button variant="ghost" size="sm">
                   View All Activity
-                  <ArrowUpRight style={{ width: 16, height: 16, marginLeft: 8 }} />
+                  <ArrowUpRight size={16} className="ml-2" />
                 </Button>
               </div>
             )}

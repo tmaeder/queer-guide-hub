@@ -264,7 +264,7 @@ const Venues = () => {
   }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
 
   const gridClass =
-    'grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+    'grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
 
   return (
     <div className="min-h-screen overflow-x-hidden">
@@ -287,8 +287,8 @@ const Venues = () => {
         />
 
         {/* Toolbar */}
-        <div className="mb-4 mt-5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="mb-4 mt-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
             {!loading && venues.length > 0 && (() => {
               const hasActiveFilters = Object.keys(currentFilters).length > 0;
               const shown = filteredTotal ?? venues.length;
@@ -499,7 +499,7 @@ const Venues = () => {
               if (rail.length < 4) return null;
               return (
                 <section aria-label="Recently added venues" className="-mt-1">
-                  <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                     {t('pages.venues.recentlyAdded', 'Recently added')}
                   </h2>
                   <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
@@ -575,13 +575,13 @@ const Venues = () => {
             />
             {!loading && filteredTotal === 0 && Object.keys(currentFilters).length > 0 && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 pointer-events-none">
-                <div className="pointer-events-auto rounded-element bg-background p-6 text-center shadow-[var(--shadow-aceternity)]">
+                <div className="pointer-events-auto rounded-element bg-background p-6 text-center">
                   <MapPin className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                   <p className="text-sm font-medium">{t('pages.venues.filteredEmpty.title', 'No venues match your filters')}</p>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-3"
+                    className="mt-4"
                     onClick={() => handleFiltersChange({})}
                   >
                     {t('pages.venues.clearFilters', 'Clear Filters')}

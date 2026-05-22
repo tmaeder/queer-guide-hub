@@ -47,19 +47,18 @@ function Panel({ title, open, onOpenChange, badge, children }: PanelProps) {
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold">{title}</span>
               {badge !== undefined && badge > 0 && (
-                <Badge variant="secondary" className="h-5 text-[0.7rem] font-semibold px-1.5">
+                <Badge variant="secondary" className="h-5 text-xs2 font-semibold px-1.5">
                   {badge}
                 </Badge>
               )}
             </div>
             <ChevronDown
-              className={cn('transition-transform', open && 'rotate-180')}
-              style={{ width: 18, height: 18 }}
+              className={cn('transition-transform', open && 'rotate-180')} size={18}
             />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-4 pb-3 pt-0">{children}</div>
+          <div className="px-4 pb-4 pt-0">{children}</div>
         </CollapsibleContent>
       </div>
     </Collapsible>
@@ -115,7 +114,7 @@ export function EditorSidebar({
   };
 
   return (
-    <div className="p-4 flex flex-col gap-3">
+    <div className="p-4 flex flex-col gap-4">
       {/* Workflow Panel */}
       <Panel title="Workflow" open={expandedPanels.workflow} onOpenChange={setPanel('workflow')}>
         <WorkflowPanel contentType={contentType} itemId={itemId} />
@@ -160,7 +159,7 @@ export function EditorSidebar({
                   />
                 ) : (
                   <div className="flex items-center justify-center flex-shrink-0 bg-muted rounded w-10 h-10">
-                    <FileText className="text-muted-foreground" style={{ width: 16, height: 16 }} />
+                    <FileText className="text-muted-foreground" size={16} />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
@@ -215,7 +214,7 @@ function RevisionEntry({ revision }: { revision: CMSRevision }) {
   return (
     <div className="flex items-start gap-2 p-2 rounded-element hover:bg-muted/40 transition-colors">
       <div className="flex items-center justify-center flex-shrink-0 mt-0.5 rounded-full bg-muted w-7 h-7">
-        <Clock className="text-muted-foreground" style={{ width: 14, height: 14 }} />
+        <Clock className="text-muted-foreground" size={14} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">

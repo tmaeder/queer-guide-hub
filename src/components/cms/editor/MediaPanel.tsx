@@ -58,10 +58,10 @@ function getThumbnailUrl(storagePath: string, externalSource?: string): string {
 }
 
 function getMimeIcon(mimeType: string) {
-  if (mimeType.startsWith('image/')) return <ImageIcon size={20} className="text-gray-400" />;
-  if (mimeType.startsWith('video/')) return <Film size={20} className="text-gray-400" />;
-  if (mimeType.startsWith('audio/')) return <Music size={20} className="text-gray-400" />;
-  return <FileText size={20} className="text-gray-400" />;
+  if (mimeType.startsWith('image/')) return <ImageIcon size={20} className="text-muted-foreground" />;
+  if (mimeType.startsWith('video/')) return <Film size={20} className="text-muted-foreground" />;
+  if (mimeType.startsWith('audio/')) return <Music size={20} className="text-muted-foreground" />;
+  return <FileText size={20} className="text-muted-foreground" />;
 }
 
 function getRoleBadgeClass(role: MediaRole): string {
@@ -69,11 +69,11 @@ function getRoleBadgeClass(role: MediaRole): string {
     case 'cover':
       return 'border-primary text-primary';
     case 'gallery':
-      return 'border-blue-500 text-blue-700';
+      return 'border-foreground/40 text-foreground';
     case 'avatar':
-      return 'border-purple-500 text-purple-700';
+      return 'border-foreground/40 text-foreground';
     case 'thumbnail':
-      return 'border-green-500 text-green-700';
+      return 'border-foreground/40 text-foreground';
     default:
       return 'border-border text-foreground';
   }
@@ -154,9 +154,9 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
   return (
     <div className="border border-border rounded-element bg-background">
       {/* Header */}
-      <div className="flex flex-row items-center justify-between px-4 py-3 border-b border-border">
+      <div className="flex flex-row items-center justify-between px-4 py-4 border-b border-border">
         <div className="flex flex-row items-center gap-1">
-          <Paperclip size={16} className="text-gray-500" />
+          <Paperclip size={16} className="text-muted-foreground" />
           <p className="text-sm font-semibold">Media Attachments</p>
           {attachments.length > 0 && (
             <Badge variant="outline">{attachments.length}</Badge>
@@ -194,7 +194,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
           <div className="text-center py-8">
             <ImageIcon
               size={32}
-              className="text-gray-300"
+              className="text-muted-foreground"
               style={{ margin: '0 auto 8px' }}
             />
             <p className="text-sm text-muted-foreground">No media attached yet.</p>
@@ -205,7 +205,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
         )}
 
         {!loading && attachments.length > 0 && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {attachments.map((attachment) => {
               const media = attachment.media;
               if (!media) return null;
@@ -216,7 +216,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
               return (
                 <div
                   key={attachment.id}
-                  className={`flex items-center gap-3 p-2 rounded border border-border bg-gray-50 ${
+                  className={`flex items-center gap-4 p-2 rounded border border-border bg-muted ${
                     isDetaching ? 'opacity-50' : ''
                   }`}
                 >
@@ -228,7 +228,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
                       className="w-12 h-12 object-cover rounded-badge flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-badge flex-shrink-0">
+                    <div className="w-12 h-12 flex items-center justify-center bg-muted rounded-badge flex-shrink-0">
                       {getMimeIcon(media.mime_type)}
                     </div>
                   )}
@@ -267,7 +267,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
                   {/* Role badge */}
                   <Badge
                     variant="outline"
-                    className={`text-[0.65rem] h-5 ${getRoleBadgeClass(attachment.media_role)}`}
+                    className={`text-2xs h-5 ${getRoleBadgeClass(attachment.media_role)}`}
                   >
                     {attachment.media_role}
                   </Badge>
@@ -285,7 +285,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
                         {isDetaching ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Loading" />
                         ) : (
-                          <Trash2 size={14} className="text-gray-400" />
+                          <Trash2 size={14} className="text-muted-foreground" />
                         )}
                       </Button>
                     </TooltipTrigger>

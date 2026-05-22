@@ -92,13 +92,8 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
           />
           {village.featured && (
             <Badge
-              style={{
-                position: 'absolute',
-                top: 12,
-                right: 12,
-                backgroundColor: 'hsl(var(--primary))',
-                color: 'white',
-              }}
+              style={{ top: 12, right: 12, backgroundColor: 'hsl(var(--primary))', color: 'white' }}
+              className="absolute"
             >
               Featured
             </Badge>
@@ -108,21 +103,18 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
 
       <div className="mb-2 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="mb-1 text-[1.75rem] font-bold text-foreground lg:text-[2.25rem]">
+          <h1 className="mb-1 text-headline font-bold text-foreground lg:text-4xl">
             {village.countries?.flag_emoji && <>{village.countries.flag_emoji} </>}
             {village.name}
           </h1>
           <div className="flex items-center gap-1 text-muted-foreground">
-            <MapPin style={{ width: 16, height: 16 }} />
+            <MapPin size={16} />
             <p className="text-lg">
               {village.cities && (
                 <LocalizedLink
                   to={`/city/${village.cities.slug || village.cities.id}`}
-                  style={{
-                    color: 'inherit',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '2px',
-                  }}
+                  style={{ color: 'inherit', textUnderlineOffset: '2px' }}
+                  className="underline"
                 >
                   {village.cities.name}
                 </LocalizedLink>
@@ -131,11 +123,8 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
               {village.countries && (
                 <LocalizedLink
                   to={`/country/${village.countries.slug || village.countries.id}`}
-                  style={{
-                    color: 'inherit',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '2px',
-                  }}
+                  style={{ color: 'inherit', textUnderlineOffset: '2px' }}
+                  className="underline"
                 >
                   {village.countries.name}
                 </LocalizedLink>
@@ -157,25 +146,25 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
             currentData={village as Record<string, unknown>}
             onSaved={() => window.location.reload()}
           />
-                      <Button variant="outline" size="sm" onClick={onFavoriteToggle}>
-              <Heart
-                style={{
-                  height: 16,
-                  width: 16,
-                  marginRight: 6,
-                  ...(isFavorited ? { fill: 'currentColor' } : {}),
-                }}
-              />
-              {isFavorited ? 'Favorited' : 'Favorite'}
+          <Button variant="outline" size="sm" onClick={onFavoriteToggle}>
+            <Heart
+              style={{
+                height: 16,
+                width: 16,
+                marginRight: 6,
+                ...(isFavorited ? { fill: 'currentColor' } : {}),
+              }}
+            />
+            {isFavorited ? 'Favorited' : 'Favorite'}
+          </Button>
+          {village.website && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={village.website} target="_blank" rel="noopener noreferrer">
+                <ExternalLink size={16} className="mr-1.5" />
+                Website
+              </a>
             </Button>
-                    {village.website && (
-                          <Button variant="outline" size="sm" asChild>
-                <a href={village.website} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink style={{ height: 16, width: 16, marginRight: 6 }} />
-                  Website
-                </a>
-              </Button>
-                      )}
+          )}
         </div>
       </div>
 
@@ -203,85 +192,79 @@ export const villageTabIcons = {
 export function VillageOverviewTab({ village }: { village: VillageWithRelations }) {
   return (
     <ScrollReveal direction="up">
-    <div className="mt-6 flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[3fr_2fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Landmark style={{ height: 20, width: 20 }} />
-              About {village.name}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="leading-relaxed text-muted-foreground">
-              {village.description ||
-                `Discover ${village.name}, a vibrant LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="mt-6 flex flex-col gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-[3fr_2fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
+                <Landmark size={20} />
+                About {village.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="leading-relaxed text-muted-foreground">
+                {village.description ||
+                  `Discover ${village.name}, a vibrant LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <MapPin style={{ height: 20, width: 20 }} />
-              Notable Landmarks
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {village.notable_landmarks && village.notable_landmarks.length > 0 ? (
-              <div className="flex flex-col gap-2">
-                {village.notable_landmarks.map((landmark, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 rounded-element bg-accent p-3"
-                  >
-                    <Landmark
-                      className="text-muted-foreground"
-                      style={{ width: 16, height: 16, flexShrink: 0 }}
-                    />
-                    <p className="text-sm font-medium">{landmark}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No landmarks listed yet.</p>
-            )}
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
+                <MapPin size={20} />
+                Notable Landmarks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {village.notable_landmarks && village.notable_landmarks.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {village.notable_landmarks.map((landmark, i) => (
+                    <div key={i} className="flex items-center gap-2 rounded-element bg-accent p-4">
+                      <Landmark className="text-muted-foreground shrink-0" size={16} />
+                      <p className="text-sm font-medium">{landmark}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No landmarks listed yet.</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {village.history && (
+          <Card>
+            <CardHeader>
+              <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
+                <Globe size={20} />
+                History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
+                {village.history}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {village.latitude && village.longitude && (
+          <Card>
+            <CardHeader>
+              <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
+                <MapPin size={20} />
+                Location
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="font-mono text-sm text-muted-foreground">
+                {village.latitude.toFixed(4)}, {village.longitude.toFixed(4)}
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
-
-      {village.history && (
-        <Card>
-          <CardHeader>
-            <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Globe style={{ height: 20, width: 20 }} />
-              History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
-              {village.history}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {village.latitude && village.longitude && (
-        <Card>
-          <CardHeader>
-            <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <MapPin style={{ height: 20, width: 20 }} />
-              Location
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-mono text-sm text-muted-foreground">
-              {village.latitude.toFixed(4)}, {village.longitude.toFixed(4)}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
     </ScrollReveal>
   );
 }
@@ -297,37 +280,34 @@ export function VillageVenuesTab({
 }) {
   return (
     <ScrollReveal direction="up">
-    <div className="mt-6">
-      <h3 className="mb-4 text-lg font-semibold">
-        Venues in {village.cities?.name || 'the area'}
-      </h3>
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <p className="text-muted-foreground">Loading venues...</p>
-        </div>
-      ) : venues.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {venues.map((venue) => (
-            <VenueCard key={venue.id} venue={venue} />
-          ))}
-        </div>
-      ) : (
-        <div className="py-16 text-center">
-          <Building
-            style={{
-              height: 48,
-              width: 48,
-              color: 'hsl(var(--muted-foreground))',
-              margin: '0 auto 16px',
-            }}
-          />
-          <h3 className="text-lg text-muted-foreground">No venues found</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Check back later as we continue to add venues in this area.
-          </p>
-        </div>
-      )}
-    </div>
+      <div className="mt-6">
+        <h3 className="mb-4 text-lg font-semibold">
+          Venues in {village.cities?.name || 'the area'}
+        </h3>
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <p className="text-muted-foreground">Loading venues...</p>
+          </div>
+        ) : venues.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {venues.map((venue) => (
+              <VenueCard key={venue.id} venue={venue} />
+            ))}
+          </div>
+        ) : (
+          <div className="py-16 text-center">
+            <Building
+              size={48}
+              style={{ margin: '0 auto 16px' }}
+              className="text-muted-foreground"
+            />
+            <h3 className="text-lg text-muted-foreground">No venues found</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Check back later as we continue to add venues in this area.
+            </p>
+          </div>
+        )}
+      </div>
     </ScrollReveal>
   );
 }
@@ -343,37 +323,34 @@ export function VillageEventsTab({
 }) {
   return (
     <ScrollReveal direction="up">
-    <div className="mt-6">
-      <h3 className="mb-4 text-lg font-semibold">
-        Events in {village.cities?.name || 'the area'}
-      </h3>
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <p className="text-muted-foreground">Loading events...</p>
-        </div>
-      ) : events.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
-      ) : (
-        <div className="py-16 text-center">
-          <Calendar
-            style={{
-              height: 48,
-              width: 48,
-              color: 'hsl(var(--muted-foreground))',
-              margin: '0 auto 16px',
-            }}
-          />
-          <h3 className="text-lg text-muted-foreground">No upcoming events</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Check back later for events in this area.
-          </p>
-        </div>
-      )}
-    </div>
+      <div className="mt-6">
+        <h3 className="mb-4 text-lg font-semibold">
+          Events in {village.cities?.name || 'the area'}
+        </h3>
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <p className="text-muted-foreground">Loading events...</p>
+          </div>
+        ) : events.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {events.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        ) : (
+          <div className="py-16 text-center">
+            <Calendar
+              size={48}
+              style={{ margin: '0 auto 16px' }}
+              className="text-muted-foreground"
+            />
+            <h3 className="text-lg text-muted-foreground">No upcoming events</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Check back later for events in this area.
+            </p>
+          </div>
+        )}
+      </div>
     </ScrollReveal>
   );
 }
@@ -397,17 +374,12 @@ export function VillagePhotosTab({ village }: { village: VillageWithRelations })
       ) : (
         <div className="py-16 text-center">
           <ImageIcon
-            style={{
-              height: 48,
-              width: 48,
-              color: 'hsl(var(--muted-foreground))',
-              margin: '0 auto 16px',
-            }}
+            size={48}
+            style={{ margin: '0 auto 16px' }}
+            className="text-muted-foreground"
           />
           <h3 className="text-lg text-muted-foreground">No photos yet</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Photos will be added soon.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">Photos will be added soon.</p>
         </div>
       )}
     </div>
@@ -458,13 +430,7 @@ export function VillageMapTab({
   );
 }
 
-export function VillageTabLabel({
-  icon: Icon,
-  label,
-}: {
-  icon: typeof Landmark;
-  label: string;
-}) {
+export function VillageTabLabel({ icon: Icon, label }: { icon: typeof Landmark; label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
       <Icon style={{ height: 16, width: 16 }} />

@@ -73,23 +73,23 @@ export function HeroCTA({ hotlines, country }: { hotlines: Hotline[]; country: s
   const secondary = (hero.channels ?? []).filter((c) => c.kind !== 'phone');
 
   return (
-    <div className="mb-6 rounded-container border bg-card p-5 shadow-sm">
+    <div className="mb-6 rounded-container border bg-card p-6">
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t('help.hero_label', 'Recommended right now')}
         </span>
         {is247(hero.hours) && (
-          <Badge variant="default" className="text-[10px]">
+          <Badge variant="default" className="text-2xs">
             {t('help.badge_24_7', '24/7')}
           </Badge>
         )}
         {hero.free && (
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-2xs">
             {t('help.badge_free', 'Free')}
           </Badge>
         )}
         {hero.anonymous && (
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-2xs">
             {t('help.badge_anonymous', 'Anonymous')}
           </Badge>
         )}
@@ -98,7 +98,7 @@ export function HeroCTA({ hotlines, country }: { hotlines: Hotline[]; country: s
       <p className="mb-4 text-sm text-muted-foreground">{hero.description}</p>
 
       {primary && (
-        <Button asChild size="lg" className="mb-3 h-14 w-full justify-between text-base">
+        <Button asChild size="lg" className="mb-4 h-14 w-full justify-between text-base">
           <a href={channelHref(primary)}>
             <span className="flex items-center gap-2">
               <Phone size={20} />

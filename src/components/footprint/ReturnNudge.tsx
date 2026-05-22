@@ -10,7 +10,7 @@ export function ReturnNudge({ nudge }: { nudge: FootprintReturnNudge }) {
   )}`;
   return (
     <Card data-testid="footprint-return-nudge">
-      <CardContent className="py-4 flex items-center justify-between gap-3 flex-wrap">
+      <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <div className="font-medium">{nudge.city_name}</div>
           <div className="text-sm text-muted-foreground">

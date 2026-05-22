@@ -13,10 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import {
-  useCostEstimate,
-  type CostSuggestion,
-} from '@/hooks/useTripCostEstimate';
+import { useCostEstimate, type CostSuggestion } from '@/hooks/useTripCostEstimate';
 import { useBudgetMutations } from '@/hooks/useTripBudget';
 import type { TripMember } from '@/hooks/useTrips';
 
@@ -47,13 +44,7 @@ function formatAmount(amount: number, currency: string): string {
  * row is inserted with `paid_by = current user`, split evenly across
  * all members so the cost-split math still works.
  */
-export function EstimateCostsDialog({
-  open,
-  onClose,
-  tripId,
-  members,
-  currentUserId,
-}: Props) {
+export function EstimateCostsDialog({ open, onClose, tripId, members, currentUserId }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const estimate = useCostEstimate();
@@ -102,9 +93,7 @@ export function EstimateCostsDialog({
 
   const handleCommit = async () => {
     if (!estimate.data || !currentUserId) return;
-    const chosen: CostSuggestion[] = estimate.data.suggestions.filter((_, i) =>
-      selected.has(i),
-    );
+    const chosen: CostSuggestion[] = estimate.data.suggestions.filter((_, i) => selected.has(i));
     if (chosen.length === 0) return;
 
     const splitAmong = members.map((m) => m.user_id);
@@ -159,7 +148,7 @@ export function EstimateCostsDialog({
         </DialogHeader>
 
         {estimate.isPending && (
-          <div className="flex items-center gap-3 py-8 justify-center">
+          <div className="flex items-center gap-4 py-8 justify-center">
             <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
             <p className="text-sm text-muted-foreground">
               {t('trips.budget.estimate.loading', { defaultValue: 'Crunching numbers…' })}
@@ -185,7 +174,7 @@ export function EstimateCostsDialog({
 
         {estimate.data && estimate.data.suggestions.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <Badge variant="secondary">
                 {t('trips.budget.estimate.partySize', {
                   defaultValue: '{{count}} traveler(s)',
@@ -233,9 +222,7 @@ export function EstimateCostsDialog({
                       </span>
                     </div>
                     {s.notes && (
-                      <span className="block text-xs text-muted-foreground mt-0.5">
-                        {s.notes}
-                      </span>
+                      <span className="block text-xs text-muted-foreground mt-0.5">{s.notes}</span>
                     )}
                   </div>
                 </div>
@@ -246,8 +233,13 @@ export function EstimateCostsDialog({
 
         <DialogFooter>
           {estimate.data && (
-            <Button variant="outline" size="sm" onClick={handleRegenerate} disabled={estimate.isPending || committing}>
-              <RefreshCw size={14} style={{ marginRight: 6 }} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRegenerate}
+              disabled={estimate.isPending || committing}
+            >
+              <RefreshCw size={14} className="mr-1.5" />
               {t('trips.budget.estimate.regenerate', { defaultValue: 'Regenerate' })}
             </Button>
           )}

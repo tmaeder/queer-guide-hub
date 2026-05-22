@@ -30,10 +30,10 @@ interface SummaryRow {
 type Severity = 'fatal' | 'error' | 'warn' | 'info';
 
 const sevConfig: Record<Severity, { icon: React.ComponentType<{ className?: string }>; className: string; badgeClass: string }> = {
-  fatal: { icon: AlertCircle,    className: 'text-red-700 dark:text-red-300',    badgeClass: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900' },
-  error: { icon: AlertTriangle,  className: 'text-orange-600 dark:text-orange-400', badgeClass: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200' },
-  warn:  { icon: Bug,            className: 'text-yellow-600 dark:text-yellow-400', badgeClass: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900' },
-  info:  { icon: Info,           className: 'text-blue-600 dark:text-blue-400',   badgeClass: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900' },
+  fatal: { icon: AlertCircle,    className: 'text-destructive dark:text-destructive',    badgeClass: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive border-destructive dark:border-destructive' },
+  error: { icon: AlertTriangle,  className: 'text-foreground dark:text-foreground', badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-border' },
+  warn:  { icon: Bug,            className: 'text-foreground dark:text-foreground', badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-border dark:border-border' },
+  info:  { icon: Info,           className: 'text-foreground dark:text-foreground',   badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40' },
 };
 
 export default function ErrorsTab() {
@@ -89,14 +89,14 @@ export default function ErrorsTab() {
         <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
           {summary.length === 0 ? (
             <div className="col-span-full border border-border rounded-element bg-background p-6 text-center text-sm">
-              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 inline mr-1" />
-              <span className="text-green-600 dark:text-green-400 font-medium">No errors in the last 7 days</span>
+              <CheckCircle2 className="h-5 w-5 text-foreground dark:text-foreground inline mr-1" />
+              <span className="text-foreground dark:text-foreground font-medium">No errors in the last 7 days</span>
             </div>
           ) : summary.map(s => {
             const sc = sevConfig[s.severity as Severity] ?? sevConfig.info;
             const SIcon = sc.icon;
             return (
-              <div key={`${s.function_name}-${s.severity}`} className="border border-border rounded-element bg-background px-3 py-2.5 hover:bg-muted/30 transition-colors">
+              <div key={`${s.function_name}-${s.severity}`} className="border border-border rounded-element bg-background px-4 py-2.5 hover:bg-muted/30 transition-colors">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <SIcon className={`h-3.5 w-3.5 ${sc.className}`} />
                   <span className="text-xs2 font-mono truncate flex-1" title={s.function_name}>
@@ -106,7 +106,7 @@ export default function ErrorsTab() {
                     {s.severity}
                   </Badge>
                 </div>
-                <div className="flex gap-3 text-xs tabular-nums">
+                <div className="flex gap-4 text-xs tabular-nums">
                   <div><strong>{s.last_1h}</strong> <span className="text-muted-foreground">/ 1h</span></div>
                   <div><strong>{s.last_24h}</strong> <span className="text-muted-foreground">/ 24h</span></div>
                   <div><strong>{s.last_7d}</strong> <span className="text-muted-foreground">/ 7d</span></div>
@@ -158,7 +158,7 @@ export default function ErrorsTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['When', 'Function', 'Severity', 'Message'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -179,20 +179,20 @@ export default function ErrorsTab() {
                         selected?.id === e.id ? 'bg-primary/10' : 'hover:bg-muted/30'
                       }`}
                     >
-                      <td className="px-3 py-2 text-muted-foreground text-xs2 whitespace-nowrap align-top"
+                      <td className="px-4 py-2 text-muted-foreground text-xs2 whitespace-nowrap align-top"
                           title={new Date(e.created_at).toISOString()}>
                         {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs2 align-top truncate max-w-[160px]"
+                      <td className="px-4 py-2 font-mono text-xs2 align-top truncate max-w-[160px]"
                           title={e.function_name}>
                         {e.function_name}
                       </td>
-                      <td className="px-3 py-2 align-top">
+                      <td className="px-4 py-2 align-top">
                         <Badge variant="outline" className={`text-3xs px-1.5 py-0 ${sc.badgeClass}`}>
                           {e.severity}
                         </Badge>
                       </td>
-                      <td className="px-3 py-2 align-top max-w-[400px] truncate text-xs">
+                      <td className="px-4 py-2 align-top max-w-[400px] truncate text-xs">
                         {e.message}
                       </td>
                     </tr>
@@ -209,7 +209,7 @@ export default function ErrorsTab() {
                 Click a row to inspect
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 <div>
                   <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Message</div>
                   <div className="text-sm break-words font-mono">{selected.message}</div>

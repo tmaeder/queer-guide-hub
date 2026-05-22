@@ -33,7 +33,7 @@ export function FlatFieldGroup({
       )}
     >
       {(title || description) && (
-        <header className="mb-5">
+        <header className="mb-6">
           {title && (
             <h3 className="text-base font-semibold tracking-tight text-foreground">
               {title}

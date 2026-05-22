@@ -37,13 +37,9 @@ export function RunHistoryTable({ runs, modules }: Props) {
   if (runs.length === 0) {
     return (
       <div className="text-center py-12">
-        <Clock size={48} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }} />
-        <h3 className="text-lg text-muted-foreground">
-          No run history yet
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          Run a module to see execution logs here.
-        </p>
+        <Clock size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
+        <h3 className="text-lg text-muted-foreground">No run history yet</h3>
+        <p className="text-sm text-muted-foreground">Run a module to see execution logs here.</p>
       </div>
     );
   }
@@ -73,7 +69,7 @@ export function RunHistoryTable({ runs, modules }: Props) {
                   {mod?.display_name ?? run.module_id.slice(0, 8)}
                 </p>
                 {run.content_type && (
-                  <Badge variant="outline" className="h-[18px] text-[0.65rem] mt-0.5">
+                  <Badge variant="outline" className="h-[18px] text-2xs mt-0.5">
                     {run.content_type}
                   </Badge>
                 )}
@@ -92,18 +88,22 @@ export function RunHistoryTable({ runs, modules }: Props) {
                 </p>
               </TableCell>
               <TableCell className="text-right">
-                <p className={`text-sm ${run.changes_auto_approved > 0 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                <p
+                  className={`text-sm ${run.changes_auto_approved > 0 ? 'text-foreground' : 'text-muted-foreground'}`}
+                >
                   {run.changes_auto_approved}
                 </p>
               </TableCell>
               <TableCell className="text-right">
-                <p className={`text-sm ${run.changes_pending_review > 0 ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                <p
+                  className={`text-sm ${run.changes_pending_review > 0 ? 'text-foreground' : 'text-muted-foreground'}`}
+                >
                   {run.changes_pending_review}
                 </p>
               </TableCell>
               <TableCell className="text-right">
                 {hasErrors ? (
-                  <Badge variant="destructive" className="h-5 text-[0.7rem]">
+                  <Badge variant="destructive" className="h-5 text-xs2">
                     {run.errors}
                   </Badge>
                 ) : (
@@ -111,9 +111,7 @@ export function RunHistoryTable({ runs, modules }: Props) {
                 )}
               </TableCell>
               <TableCell className="text-right">
-                <span className="text-xs font-mono">
-                  {formatDuration(run.duration_ms)}
-                </span>
+                <span className="text-xs font-mono">{formatDuration(run.duration_ms)}</span>
               </TableCell>
             </TableRow>
           );

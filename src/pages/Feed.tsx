@@ -51,14 +51,14 @@ export default function Feed() {
   return (
     <AuthGate
       title="Feed"
-      description="Sign in to share posts, connect with the community, and discover what's happening around you."
+      description="Sign in to share posts, connect with the community, and see what's happening around you."
     >
       <div className="relative">
         <SpotlightV2 anchor="top-center" intensity={0.10} />
       <div className="container mx-auto py-8 px-4 relative">
         <PageHeader
           title={<ColourfulText text="Feed" />}
-          subtitle="Stay connected with the latest posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and discover what's happening around you."
+          subtitle="Stay connected with the latest posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you."
           center
         />
 
@@ -77,7 +77,7 @@ export default function Feed() {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <Heart className="h-6 w-6 mx-auto mb-2" style={{ color: 'hsl(var(--foreground))' }} />
+                  <Heart className="h-6 w-6 mx-auto mb-2 text-foreground" />
                   <h5 className="text-2xl font-bold">
                     {posts.reduce((sum, post) => sum + (post.likes_count || 0), 0)}
                   </h5>
@@ -100,7 +100,7 @@ export default function Feed() {
               <CardContent className="p-4">
                 <CreatePostDialog>
                   <Button variant="outline" className="w-full justify-start h-14 text-left">
-                    <PenSquare className="h-5 w-5 mr-3 text-muted-foreground" />
+                    <PenSquare className="h-5 w-5 mr-4 text-muted-foreground" />
                     <span className="text-muted-foreground">
                       What's on your mind? Share with the community...
                     </span>

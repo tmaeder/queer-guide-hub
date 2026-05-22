@@ -26,7 +26,12 @@ const TYPE_TO_MAP_KIND: Record<string, EntityMapMarker['type']> = {
   countries: 'countries',
 };
 
-export function ResultsMapView({ results, height = 480, onSelect, onAreaSearch }: ResultsMapViewProps) {
+export function ResultsMapView({
+  results,
+  height = 480,
+  onSelect,
+  onAreaSearch,
+}: ResultsMapViewProps) {
   const { t } = useTranslation();
   const lastBoundsRef = useRef<{ center: [number, number]; radius: number } | null>(null);
   const initialCenterRef = useRef<[number, number] | null>(null);
@@ -62,8 +67,8 @@ export function ResultsMapView({ results, height = 480, onSelect, onAreaSearch }
   if (markers.length === 0) {
     return (
       <div
-        className="flex items-center justify-center bg-muted"
-        style={{ height, color: 'hsl(var(--muted-foreground))', fontSize: '0.875rem' }}
+        className="flex items-center justify-center bg-muted text-muted-foreground text-sm"
+        style={{ height }}
       >
         {t('search.noMappable', 'No mappable results in this view.')}
       </div>
@@ -86,10 +91,13 @@ export function ResultsMapView({ results, height = 480, onSelect, onAreaSearch }
 
   return (
     <div
-      style={{ position: 'relative', height }}
+      style={{ height }}
+      className="relative"
       onClickCapture={(e) => {
         if (!onSelect) return;
-        const el = (e.target as HTMLElement | null)?.closest('[data-marker-id]') as HTMLElement | null;
+        const el = (e.target as HTMLElement | null)?.closest(
+          '[data-marker-id]',
+        ) as HTMLElement | null;
         const id = el?.getAttribute('data-marker-id');
         if (!id) return;
         const hit = results.find((r) => r.objectID === id);
@@ -139,7 +147,7 @@ export function ResultsMapView({ results, height = 480, onSelect, onAreaSearch }
             gap: 6,
           }}
         >
-          <Navigation style={{ width: 14, height: 14 }} />
+          <Navigation size={14} />
           {t('search.searchThisArea', 'Search this area')}
         </Button>
       )}

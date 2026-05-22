@@ -123,19 +123,17 @@ export function AirportAutocomplete({
 
   return (
     <div ref={containerRef} className="relative">
-      {label && (
-        <label className="text-sm font-medium mb-1 block">
-          {label}
-        </label>
-      )}
+      {label && <label className="text-sm font-medium mb-1 block">{label}</label>}
       <Input
         value={displayValue}
         onChange={(e) => handleInputChange(e.target.value)}
-        onFocus={() => { if (results.length > 0) setOpen(true); }}
+        onFocus={() => {
+          if (results.length > 0) setOpen(true);
+        }}
         placeholder={placeholder}
       />
       {open && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-background max-h-80 overflow-auto mt-1 border border-border rounded-element shadow-[var(--shadow-aceternity-sm)]">
+        <div className="absolute top-full left-0 right-0 z-50 bg-background max-h-80 overflow-auto mt-1 border border-border rounded-element">
           {results.map((airport) => (
             <div
               key={airport.iata_code}
@@ -151,13 +149,14 @@ export function AirportAutocomplete({
               aria-selected={false}
               className="px-4 py-2 cursor-pointer flex items-center gap-2 hover:bg-muted"
             >
-              <Plane style={{ height: 14, width: 14, flexShrink: 0, color: 'var(--muted-foreground)' }} />
+              <Plane size={14} className="shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">
                   {airport.city_name || airport.name} ({airport.iata_code})
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {airport.name}{airport.country_code ? ` · ${airport.country_code}` : ''}
+                  {airport.name}
+                  {airport.country_code ? ` · ${airport.country_code}` : ''}
                 </p>
               </div>
             </div>
@@ -165,7 +164,7 @@ export function AirportAutocomplete({
         </div>
       )}
       {open && loading && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-background p-4 mt-1 border border-border rounded-element shadow-[var(--shadow-aceternity-sm)]">
+        <div className="absolute top-full left-0 right-0 z-50 bg-background p-4 mt-1 border border-border rounded-element">
           <p className="text-sm text-muted-foreground text-center">Searching...</p>
         </div>
       )}

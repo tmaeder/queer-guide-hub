@@ -57,7 +57,12 @@ function resolveBookingUrl(deal: TravelDeal): string {
   });
 }
 
-export function TravelDealCard({ deal, loading = false, originCity, destinationCity }: TravelDealCardProps) {
+export function TravelDealCard({
+  deal,
+  loading = false,
+  originCity,
+  destinationCity,
+}: TravelDealCardProps) {
   if (loading || !deal) {
     return (
       <Skeleton name="travel-deal-card" loading={true} fallback={<PageLoadingState count={1} />}>
@@ -83,29 +88,28 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
   };
 
   return (
-    <Card className="hover:shadow-[var(--shadow-aceternity-sm)] transition-shadow">
-      <CardContent style={{ padding: 16 }}>
-        <div className="flex justify-between items-start mb-3">
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {deal.airline ? (
               <img
                 src={`https://pics.avs.io/32/32/${deal.airline}.png`}
                 alt={deal.airline}
                 role="presentation"
-                style={{ width: 20, height: 20, flexShrink: 0, borderRadius: '50%' }}
-                onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }}
+                className="rounded-full shrink-0"
+                style={{ width: 20, height: 20 }}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             ) : (
-              <Plane style={{ height: 16, width: 16, flexShrink: 0, color: 'var(--primary)' }} />
+              <Plane size={16} className="shrink-0 text-primary" />
             )}
             <div className="flex items-center gap-1 flex-wrap min-w-0">
-              <span className="font-bold text-sm">
-                {deal.origin}
-              </span>
-              <ArrowRight style={{ height: 14, width: 14, flexShrink: 0 }} />
-              <span className="font-bold text-sm">
-                {deal.destination}
-              </span>
+              <span className="font-bold text-sm">{deal.origin}</span>
+              <ArrowRight size={14} className="shrink-0" />
+              <span className="font-bold text-sm">{deal.destination}</span>
             </div>
           </div>
           <Badge className="font-bold text-sm">
@@ -119,7 +123,7 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
           </p>
         )}
 
-        <div className="flex gap-2 flex-wrap mb-3 items-center">
+        <div className="flex gap-2 flex-wrap mb-4 items-center">
           {deal.departure_date && (
             <span className="text-xs text-muted-foreground">
               {formatDate(deal.departure_date)}
@@ -127,17 +131,22 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
             </span>
           )}
           {deal.airline && (
-            <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>{deal.airline}</Badge>
+            <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+              {deal.airline}
+            </Badge>
           )}
           {deal.stops === 0 ? (
-            <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>Direct</Badge>
+            <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+              Direct
+            </Badge>
           ) : (
-            <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>{`${deal.stops} stop${deal.stops > 1 ? 's' : ''}`}</Badge>
+            <Badge
+              variant="outline"
+              style={{ fontSize: '0.7rem', height: 20 }}
+            >{`${deal.stops} stop${deal.stops > 1 ? 's' : ''}`}</Badge>
           )}
           {deal.duration && (
-            <span className="text-xs text-muted-foreground">
-              {formatDuration(deal.duration)}
-            </span>
+            <span className="text-xs text-muted-foreground">{formatDuration(deal.duration)}</span>
           )}
         </div>
 
@@ -147,7 +156,7 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
           onClick={handleBookClick}
           aria-label={`Book flight from ${deal.origin} to ${deal.destination}`}
         >
-          <ExternalLink style={{ height: 14, width: 14, marginRight: 6 }} />
+          <ExternalLink size={14} className="mr-1.5" />
           Book Flight
         </Button>
       </CardContent>

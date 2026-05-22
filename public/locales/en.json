@@ -231,7 +231,7 @@
       "resent": "Verification email sent. Please check your inbox.",
       "backToLogin": "Back to sign in",
       "continue": "Continue to The Queer Guide",
-      "banner": "Verify your email to unlock contributions and messaging.",
+      "banner": "Verify your email to enable contributions and messaging.",
       "bannerSent": "Verification email sent. Check your inbox.",
       "resendShort": "Resend",
       "gateTitle": "Verify your email first",
@@ -1531,7 +1531,7 @@
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
       "activitiesComingSoon": "Activities coming soon.",
       "browseDestinations": "Browse destinations",
-      "exploreCta": "Explore LGBTQ+ friendly destinations",
+      "exploreCta": "LGBTQ+ friendly destinations",
       "exploreDescription": "Browse cities and countries with detailed safety information and travel guides.",
       "hero": {
         "title": "Plan a trip",
@@ -1829,7 +1829,7 @@
       "tagCountTotal": "{{count}} tags total (across all subcategories)",
       "tagCountTotalAria": "{{count}} tags total across all subcategories",
       "totalChildHint": "Each subcategory's count is the number of tags directly assigned to it",
-      "supportNewsAlert": "Need immediate help? Browse our curated crisis hotlines directory.",
+      "supportNewsAlert": "Need immediate help? Browse our crisis hotlines directory.",
       "crisisHotlines": "Crisis Hotlines",
       "emptyTitle": "No tags in this category yet",
       "emptyDescription": "Check back soon — this bucket is being filled.",
@@ -1930,7 +1930,7 @@
     },
     "graph": {
       "title": "Tag Relationship Graph",
-      "description": "Explore how tags relate by semantic similarity and co-occurrence"
+      "description": "See how tags relate by semantic similarity and co-occurrence"
     }
   }
 }

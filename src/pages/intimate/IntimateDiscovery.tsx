@@ -40,7 +40,7 @@ export default function IntimateDiscovery() {
         </Link>
       </header>
 
-      <section className="mb-6 space-y-3 border-b pb-4">
+      <section className="mb-6 space-y-4 border-b pb-4">
         <FilterRow label="Role" options={ROLES as readonly string[]} selected={roles} onToggle={(v) => setRoles(toggle(roles, v))} />
         <FilterRow label="Into" options={INTO_TAGS as readonly string[]} selected={into} onToggle={(v) => setInto(toggle(into, v))} />
         <FilterRow label="Age" options={AGE_BANDS as readonly string[]} selected={ages} onToggle={(v) => setAges(toggle(ages, v))} />

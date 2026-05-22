@@ -89,7 +89,9 @@ export default function NewsDetail() {
   const [cityNames, setCityNames] = useState<Record<string, string>>({});
   const [countryNames, setCountryNames] = useState<Record<string, string>>({});
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
-  const [story, setStory] = useState<{ slug: string; title: string; article_count: number } | null>(null);
+  const [story, setStory] = useState<{ slug: string; title: string; article_count: number } | null>(
+    null,
+  );
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
 
   const articleIds = useMemo(() => (article ? [article.id] : []), [article]);
@@ -118,7 +120,9 @@ export default function NewsDetail() {
           headline: articleTitle,
           image: article.image_url ? [article.image_url] : undefined,
           datePublished: article.published_at || undefined,
-          author: article.author ? { '@type': 'Person', name: cleanAuthor(article.author) } : undefined,
+          author: article.author
+            ? { '@type': 'Person', name: cleanAuthor(article.author) }
+            : undefined,
           publisher: {
             '@type': 'Organization',
             name: 'Queer Guide',
@@ -186,13 +190,13 @@ export default function NewsDetail() {
 
         // Related
         if (data.category) {
-          fetchRelatedNewsArticles<RelatedArticle>(data.category, data.id).then(
-            setRelatedArticles,
-          );
+          fetchRelatedNewsArticles<RelatedArticle>(data.category, data.id).then(setRelatedArticles);
         }
 
         // Story membership
-        fetchStoryForArticle(data.id).then(setStory).catch(() => setStory(null));
+        fetchStoryForArticle(data.id)
+          .then(setStory)
+          .catch(() => setStory(null));
       } catch (err) {
         console.error('Error fetching article:', err);
         setArticle(null);
@@ -218,9 +222,11 @@ export default function NewsDetail() {
   };
 
   const getCategoryLabel = (category: string) => {
-    const dbCat = dbCategories.find(c => c.slug === category || c.name.toLowerCase() === category.toLowerCase());
+    const dbCat = dbCategories.find(
+      (c) => c.slug === category || c.name.toLowerCase() === category.toLowerCase(),
+    );
     if (dbCat) return dbCat.name;
-    return category?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return category?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   // Loading skeleton matching 2-column grid pattern
@@ -259,7 +265,7 @@ export default function NewsDetail() {
         </p>
         <LocalizedLink to="/news">
           <Button>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back to News
           </Button>
         </LocalizedLink>
@@ -284,19 +290,15 @@ export default function NewsDetail() {
       <div className="flex items-center gap-1 mb-4 flex-wrap">
         <LocalizedLink
           to="/news"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            color: 'inherit',
-            textDecoration: 'none',
-          }}
+          style={{ alignItems: 'center', color: 'inherit' }}
+          className="inline-flex no-underline"
         >
-          <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
+          <ArrowLeft size={14} className="mr-1" />
           <span className="text-sm text-muted-foreground hover:text-primary">News</span>
         </LocalizedLink>
         {article.category && article.category !== 'general' && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
+            <ChevronRight size={14} className="text-muted-foreground" />
             <button
               type="button"
               className="text-sm text-muted-foreground capitalize hover:text-primary cursor-pointer bg-transparent border-0 p-0"
@@ -306,7 +308,7 @@ export default function NewsDetail() {
             </button>
           </>
         )}
-        <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
+        <ChevronRight size={14} className="text-muted-foreground" />
         <span className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[300px]">
           {decodeHtmlEntities(article.title)}
         </span>
@@ -336,18 +338,23 @@ export default function NewsDetail() {
           {story && (
             <LocalizedLink
               to={`/news/story/${story.slug}`}
-              className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground mb-3 no-underline"
+              className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground mb-4 no-underline"
             >
-              <Layers style={{ width: 12, height: 12 }} aria-hidden="true" />
+              <Layers size={12} aria-hidden="true" />
               Part of story · {story.article_count} articles
             </LocalizedLink>
           )}
-          <div className="flex items-center gap-3 mb-2 flex-wrap">
+          <div className="flex items-center gap-4 mb-2 flex-wrap">
             <h1 className="text-2xl font-bold leading-tight m-0">
               {decodeHtmlEntities(article.title)}
             </h1>
             {article.is_featured && (
-              <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>Featured</Badge>
+              <Badge
+                style={{ backgroundColor: 'hsl(var(--foreground))' }}
+                className="text-background"
+              >
+                Featured
+              </Badge>
             )}
           </div>
 
@@ -355,13 +362,13 @@ export default function NewsDetail() {
           <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
             {authorName && (
               <div className="flex items-center gap-1">
-                <User style={{ width: 14, height: 14 }} />
+                <User size={14} />
                 <span className="text-sm">By {authorName}</span>
               </div>
             )}
             {article.published_at && (
               <div className="flex items-center gap-1">
-                <Calendar style={{ width: 14, height: 14 }} />
+                <Calendar size={14} />
                 <span className="text-sm">
                   {format(new Date(article.published_at), 'MMMM d, yyyy')}
                 </span>
@@ -369,7 +376,7 @@ export default function NewsDetail() {
             )}
             {article.published_at && (
               <div className="flex items-center gap-1">
-                <Clock style={{ width: 14, height: 14 }} />
+                <Clock size={14} />
                 <span className="text-sm">
                   {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
                 </span>
@@ -377,7 +384,7 @@ export default function NewsDetail() {
             )}
             {article.views_count > 0 && (
               <div className="flex items-center gap-1">
-                <Eye style={{ width: 14, height: 14 }} />
+                <Eye size={14} />
                 <span className="text-sm">{article.views_count} views</span>
               </div>
             )}
@@ -389,11 +396,11 @@ export default function NewsDetail() {
           <FavoriteButton itemId={article.id} type="news" />
           <ReportButton contentType="news_article" contentId={article.id} />
           <Button variant="outline" size="sm" onClick={handleShare}>
-            <Share2 style={{ width: 16, height: 16, marginRight: 6 }} />
+            <Share2 size={16} className="mr-1.5" />
             Share
           </Button>
           <Button size="sm" onClick={() => window.open(article.url, '_blank')}>
-            <ExternalLink style={{ width: 16, height: 16, marginRight: 6 }} />
+            <ExternalLink size={16} className="mr-1.5" />
             Read Full Article
           </Button>
         </div>
@@ -402,10 +409,7 @@ export default function NewsDetail() {
       {/* Category & Source badges */}
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         {article.category && article.category !== 'general' && (
-          <Badge
-            variant="outline"
-            style={{ textTransform: 'capitalize' }}
-          >
+          <Badge variant="outline" className="capitalize">
             {getCategoryLabel(article.category)}
           </Badge>
         )}
@@ -423,7 +427,10 @@ export default function NewsDetail() {
             </CardHeader>
             <CardContent>
               {contentText ? (
-                <p className="text-muted-foreground whitespace-pre-line" style={{ lineHeight: 1.8 }}>
+                <p
+                  className="text-muted-foreground whitespace-pre-line"
+                  style={{ lineHeight: 1.8 }}
+                >
                   {contentText}
                 </p>
               ) : excerptText ? (
@@ -460,7 +467,7 @@ export default function NewsDetail() {
                 style={{ display: 'flex', alignItems: 'center', gap: 8 }}
               >
                 Open Article
-                <ExternalLink style={{ width: 16, height: 16 }} />
+                <ExternalLink size={16} />
               </Button>
             </CardContent>
           </Card>
@@ -479,7 +486,10 @@ export default function NewsDetail() {
                       to={`/news/${related.slug || related.id}`}
                       className="flex flex-col rounded overflow-hidden no-underline text-inherit transition-all duration-200 hover:bg-muted border border-border"
                     >
-                      <div className="overflow-hidden" style={{ height: 120, background: 'hsl(var(--muted))' }}>
+                      <div
+                        className="overflow-hidden"
+                        style={{ height: 120, background: 'hsl(var(--muted))' }}
+                      >
                         {related.image_url ? (
                           <img
                             src={related.image_url}
@@ -495,15 +505,14 @@ export default function NewsDetail() {
                           />
                         ) : null}
                       </div>
-                      <div className="p-3">
+                      <div className="p-4">
                         <p
-                          className="text-sm font-semibold mb-1 overflow-hidden"
+                          className="text-sm font-semibold mb-1 overflow-hidden text-foreground"
                           style={{
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
                             textTransform: 'none',
-                            color: 'hsl(var(--foreground))',
                           }}
                         >
                           {decodeHtmlEntities(related.title)}
@@ -533,8 +542,8 @@ export default function NewsDetail() {
             </CardHeader>
             <CardContent>
               {article.published_at && (
-                <div className="flex items-center gap-3">
-                  <Calendar style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                <div className="flex items-center gap-4">
+                  <Calendar size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Published</p>
                     <p className="font-medium">
@@ -544,8 +553,8 @@ export default function NewsDetail() {
                 </div>
               )}
               {authorName && (
-                <div className="flex items-center gap-3">
-                  <User style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                <div className="flex items-center gap-4">
+                  <User size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Author</p>
                     <p className="font-medium">{authorName}</p>
@@ -553,8 +562,8 @@ export default function NewsDetail() {
                 </div>
               )}
               {sourceName && (
-                <div className="flex items-center gap-3">
-                  <Newspaper style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                <div className="flex items-center gap-4">
+                  <Newspaper size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Source</p>
                     <p className="font-medium">{sourceName}</p>
@@ -562,8 +571,8 @@ export default function NewsDetail() {
                 </div>
               )}
               {article.views_count > 0 && (
-                <div className="flex items-center gap-3">
-                  <Eye style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                <div className="flex items-center gap-4">
+                  <Eye size={16} className="text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm text-muted-foreground">Views</p>
                     <p className="font-medium">{article.views_count}</p>
@@ -577,8 +586,8 @@ export default function NewsDetail() {
           {tags.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Tag style={{ height: 16, width: 16 }} />
+                <CardTitle style={{ alignItems: 'center', gap: '8px' }} className="flex">
+                  <Tag size={16} />
                   Tags
                 </CardTitle>
               </CardHeader>
@@ -588,7 +597,8 @@ export default function NewsDetail() {
                     <Badge
                       key={tag}
                       variant="outline"
-                      style={{ fontSize: '0.75rem', cursor: 'pointer', padding: '4px 10px' }}
+                      style={{ padding: '4px 10px' }}
+                      className="text-xs cursor-pointer"
                       onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
                     >
                       {tag}
@@ -603,8 +613,8 @@ export default function NewsDetail() {
           {hasLocation && (
             <Card>
               <CardHeader>
-                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <MapPin style={{ height: 16, width: 16 }} />
+                <CardTitle style={{ alignItems: 'center', gap: '8px' }} className="flex">
+                  <MapPin size={16} />
                   Location
                 </CardTitle>
               </CardHeader>
@@ -645,7 +655,7 @@ export default function NewsDetail() {
                 style={{ width: '100%', justifyContent: 'flex-start' }}
                 onClick={() => window.open(article.url, '_blank')}
               >
-                <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                <ExternalLink size={16} className="mr-2" />
                 Original Article
               </Button>
               {sourceUrl && (
@@ -655,7 +665,7 @@ export default function NewsDetail() {
                   style={{ width: '100%', justifyContent: 'flex-start' }}
                   onClick={() => window.open(sourceUrl, '_blank')}
                 >
-                  <Newspaper style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Newspaper size={16} className="mr-2" />
                   {sourceName || 'Source Website'}
                 </Button>
               )}
@@ -663,7 +673,11 @@ export default function NewsDetail() {
           </Card>
         </div>
       </div>
-      <SimilarItems entity={{ type: 'news', id: article.id }} className="mt-8" title="Related news" />
+      <SimilarItems
+        entity={{ type: 'news', id: article.id }}
+        className="mt-8"
+        title="Related news"
+      />
       <MarketplaceRelated className="mt-10" />
     </TracingBeam>
   );
