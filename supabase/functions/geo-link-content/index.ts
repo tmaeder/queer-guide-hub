@@ -220,12 +220,22 @@ async function processVenuesOrEvents(
       continue;
     }
 
-    const country = existingCountryId
+    let country = existingCountryId
       ? countryById.get(existingCountryId) || null
       : resolveCountry(countryText);
     const city = existingCityId
       ? citiesCache.find(c => c.id === existingCityId) || null
       : resolveCity(cityText, country?.id);
+
+    // D10: trust city > country text. Source feeds sometimes ship a
+    // wrong country code (e.g. an Outsavvy event in Salford, UK arrives
+    // with addressCountry="US"), and the city lookup is anchored to
+    // population/coords. When the resolved city is in a different country
+    // than the text-resolved country, snap to the city's country. This
+    // prevents "Salford, United States" headers.
+    if (city && city.country_id && country && city.country_id !== country.id) {
+      country = countryById.get(city.country_id) || country;
+    }
 
     const newCityId = city?.id || null;
     const newCountryId = country?.id || null;

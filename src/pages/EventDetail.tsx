@@ -216,10 +216,20 @@ export default function EventDetail() {
   }
 
   const cityName = event?.cities?.name ?? event?.city ?? null;
-  const countryName = event?.countries?.name ?? event?.country ?? null;
+  // D10: prefer the city's country when it disagrees with the event's
+  // denormalised country. Cities are anchored to coords/population so they
+  // win over feed-supplied country strings like "US" on a Salford event.
+  const effectiveCountry =
+    event?.cities?.country_id &&
+    event?.countries?.id &&
+    event.cities.country_id !== event.countries.id &&
+    event.cities.countries
+      ? event.cities.countries
+      : event?.countries ?? null;
+  const countryName = effectiveCountry?.name ?? event?.country ?? null;
   const cityLink = event?.cities?.id ? `/city/${event.cities.slug || event.cities.id}` : null;
-  const countryLink = event?.countries?.id
-    ? `/country/${event.countries.slug || event.countries.id}`
+  const countryLink = effectiveCountry?.id
+    ? `/country/${effectiveCountry.slug || effectiveCountry.id}`
     : null;
   const heroImage = event ? resolveEntityImage('event', event).url : null;
   const locationLabel = event?.venues?.name || event?.venue_name || 'Location TBA';
