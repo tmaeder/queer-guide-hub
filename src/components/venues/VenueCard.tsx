@@ -180,9 +180,10 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                   </div>
                 )}
 
-                {/* Favorite + share — top right */}
+                {/* Favorite + share — top right. Both buttons meet the
+                    44×44 tap-target guideline for mobile. */}
                 <div
-                  className="absolute top-1 right-1 flex items-center gap-0.5"
+                  className="absolute top-1 right-1 flex items-center gap-1"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -194,11 +195,11 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                     type="button"
                     onClick={handleShare}
                     aria-label={`Share ${venue.name}`}
-                    className="h-9 w-9 rounded-full inline-flex items-center justify-center bg-background/70 hover:bg-background"
+                    className="h-11 w-11 rounded-full inline-flex items-center justify-center bg-background/70 hover:bg-background"
                   >
                     <Share2 size={16} aria-hidden="true" />
                   </button>
-                  <FavoriteButton itemId={venue.id} type="venue" />
+                  <FavoriteButton itemId={venue.id} type="venue" size="tap" />
                 </div>
 
                 {/* Open-now badge — bottom right */}

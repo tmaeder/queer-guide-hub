@@ -405,13 +405,13 @@ export const EventCard = memo(function EventCard({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-1">
                     <div
                       onClick={(e) => e.preventDefault()}
                       onKeyDown={(e) => e.stopPropagation()}
                       role="presentation"
                     >
-                      <FavoriteButton itemId={event.id} type="event" />
+                      <FavoriteButton itemId={event.id} type="event" size="tap" />
                     </div>
                     <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
                       <DropdownMenuTrigger asChild>
@@ -507,8 +507,17 @@ export const EventCard = memo(function EventCard({
 
                 {onUpdateAttendance && (
                   <div className="flex gap-1 pt-1">
+                    {/* D9: announce as toggleable. Cards don't currently
+                        thread per-event user attendance state, so we
+                        emit aria-pressed=false and dynamic aria-label that
+                        describes the action — full state announce ships
+                        with the per-card attendance hook follow-up. */}
                     <Button
                       size="sm"
+                      aria-pressed={false}
+                      aria-label={t('events.card.markGoing', `RSVP as going to ${event.title}`, {
+                        title: event.title,
+                      })}
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
@@ -521,6 +530,12 @@ export const EventCard = memo(function EventCard({
                     <Button
                       size="sm"
                       variant="outline"
+                      aria-pressed={false}
+                      aria-label={t(
+                        'events.card.markInterested',
+                        `Mark interest in ${event.title}`,
+                        { title: event.title },
+                      )}
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();

@@ -112,7 +112,7 @@ function MarketplaceCardImpl({
           )}
           {showFavoriteButton && (
             <div className="absolute top-2 right-2 z-10">
-              <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="sm" />
+              <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="tap" />
             </div>
           )}
         </div>

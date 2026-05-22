@@ -9,19 +9,24 @@ interface FavoriteButtonProps {
   itemId: string;
   type: FavoriteType;
   variant?: "default" | "ghost";
-  size?: "sm" | "md" | "lg";
+  // `tap` is a 44×44 hit-target variant for overlay buttons on cards.
+  // Use it where touch-target is the constraint; keep `sm` for list rows
+  // and compact controls where 32px is intentional.
+  size?: "sm" | "md" | "lg" | "tap";
 }
 
 const sizeStyles: Record<string, React.CSSProperties> = {
   sm: { height: 32, width: 32 },
   md: { height: 40, width: 40 },
   lg: { height: 48, width: 48 },
+  tap: { height: 44, width: 44 },
 };
 
 const iconPixels: Record<string, number> = {
   sm: 16,
   md: 20,
   lg: 24,
+  tap: 18,
 };
 
 export const FavoriteButton = ({
