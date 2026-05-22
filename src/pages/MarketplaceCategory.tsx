@@ -3,8 +3,10 @@ import { ArrowLeft } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
+import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
+import { isAdultCategorySlug } from '@/hooks/useAdultContent';
 
 function prettify(slug: string): string {
   return slug.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -53,6 +55,7 @@ export default function MarketplaceCategory() {
           emptyDescription="Check back soon or list a business."
         />
       </div>
+      <AdultContentGate active={isAdultCategorySlug(subcategory)} fallbackPath="/marketplace" />
     </div>
   );
 }

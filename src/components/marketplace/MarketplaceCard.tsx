@@ -13,6 +13,7 @@ import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
+import { isAdultListing } from '@/hooks/useAdultContent';
 import {
   formatListingPrice,
   getOutboundLink,
@@ -108,6 +109,13 @@ function MarketplaceCardImpl({
           {listing.featured && (
             <div className="absolute top-2 left-2 z-10">
               <Badge>Featured</Badge>
+            </div>
+          )}
+          {isAdultListing(listing) && (
+            <div className="absolute bottom-2 left-2 z-10">
+              <Badge variant="outline" aria-label="Adult content">
+                18+
+              </Badge>
             </div>
           )}
           {showFavoriteButton && (

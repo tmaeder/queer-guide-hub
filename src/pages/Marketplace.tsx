@@ -11,6 +11,8 @@ import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
 import { MarketplaceSpotlight } from '@/components/marketplace/MarketplaceSpotlight';
 import { MarketplaceCategoryTiles } from '@/components/marketplace/MarketplaceCategoryTiles';
+import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
+import { isAdultListing } from '@/hooks/useAdultContent';
 import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityChips';
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
 import { SavedSearchesButton } from '@/components/marketplace/SavedSearchesButton';
@@ -263,6 +265,8 @@ const Marketplace = () => {
   const visibleListingIds = useMemo(() => accumulated.map((l) => l.id), [accumulated]);
   const { assets: listingAssets } = useEntityImageAssets('marketplace_listing', visibleListingIds);
 
+  const hasAdultListings = useMemo(() => accumulated.some(isAdultListing), [accumulated]);
+
   const handleFiltersChange = (next: Record<string, unknown>) => {
     setFilters(next as MarketplaceFiltersInput);
     const q = (next as MarketplaceFiltersInput).search || '';
@@ -513,6 +517,7 @@ const Marketplace = () => {
 
           <AffiliateDisclosure />
         </div>
+        <AdultContentGate active={hasAdultListings} fallbackPath="/" />
       </div>
     </CuratedIdsProvider>
   );
