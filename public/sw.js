@@ -1,9 +1,17 @@
 // Service Worker for Queer Guide — optimized for Cloudflare Pages
-// v11 bump: discard caches poisoned with HTML SPA-fallback bodies that
-// were stored under hashed JS/CSS URLs after a deploy invalidated chunk
-// hashes. See validateStaticResponse() + fetch handler below.
-const STATIC_CACHE = 'static-v11';
-const DYNAMIC_CACHE = 'dynamic-v11';
+// v12: also synthesise a 404 when the *network* returns HTML for a
+// hashed-asset URL (CF Pages SPA-fallback issue when chunk hash no longer
+// exists). Previously we only refused to cache the bad response but
+// still returned it to the page, which then threw "Failed to load module
+// script: text/html" and blanked the entire app for any returning user
+// whose cached HTML still referenced a deleted chunk hash. Now the
+// browser gets a real 404 and Vite/Rollup's preload-helper retry path
+// can kick in (or at minimum the user sees a sensible error rather than
+// a blank screen). Paired with /assets/* 404 rule in public/_redirects
+// so the CF edge also stops returning the SPA fallback for missing
+// asset paths.
+const STATIC_CACHE = 'static-v12';
+const DYNAMIC_CACHE = 'dynamic-v12';
 const DYNAMIC_CACHE_LIMIT = 50;
 
 // Map asset file extensions to the response content-types we'll accept
@@ -186,12 +194,23 @@ self.addEventListener('fetch', event => {
 
         try {
           const networkResponse = await fetch(request);
-          if (
-            networkResponse.status === 200 &&
-            isResponseValidForUrl(networkResponse, url.pathname)
-          ) {
-            const cache = await caches.open(STATIC_CACHE);
-            cache.put(request, networkResponse.clone());
+          if (networkResponse.status === 200) {
+            if (isResponseValidForUrl(networkResponse, url.pathname)) {
+              const cache = await caches.open(STATIC_CACHE);
+              cache.put(request, networkResponse.clone());
+              return networkResponse;
+            }
+            // v12: CF Pages returned HTML for a JS/CSS/font URL — almost
+            // certainly the SPA-fallback firing because the chunk hash
+            // no longer exists. Returning that HTML poisons the page
+            // ("Failed to load module script: text/html"). Synthesise a
+            // 404 instead so the browser surfaces a real missing-asset
+            // error and any retry/error-boundary logic can recover.
+            return new Response('', {
+              status: 404,
+              statusText: 'Asset not found (stale chunk hash)',
+              headers: { 'Content-Type': 'text/plain' },
+            });
           }
           return networkResponse;
         } catch {
