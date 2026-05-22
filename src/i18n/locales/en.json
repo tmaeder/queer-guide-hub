@@ -1557,6 +1557,8 @@
     "hotels": {
       "title": "Hotels & BnBs",
       "subtitle": "LGBTQ+ friendly accommodations worldwide",
+      "eyebrow": "Where to sleep",
+      "planTrip": "Plan a trip",
       "submitHotel": "Submit Hotel",
       "noResults": "No hotels found",
       "noResultsHint": "Try adjusting your filters or check back later.",

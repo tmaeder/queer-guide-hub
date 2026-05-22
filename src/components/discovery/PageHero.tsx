@@ -31,16 +31,24 @@ const SECONDARY_CLASSES =
 
 function CtaButton({ cta, primary }: { cta: CTA; primary: boolean }) {
   const cls = primary ? PRIMARY_CLASSES : SECONDARY_CLASSES;
+  // Inline color is a defensive override: in some build/cascade orderings the
+  // anchor color from the global :where(a) reset wins over the Tailwind
+  // `text-background` utility, leaving the primary CTA's label invisible
+  // against the dark pill. Inline style has the highest non-!important
+  // specificity and guarantees the contrast that screen-readers already see.
+  const style = primary
+    ? { color: 'hsl(var(--background))' }
+    : undefined;
   if (cta.href) {
     return (
-      <LocalizedLink to={cta.href} className={cls}>
+      <LocalizedLink to={cta.href} className={cls} style={style}>
         {cta.icon}
         {cta.label}
       </LocalizedLink>
     );
   }
   return (
-    <button type="button" onClick={cta.onClick} className={cls}>
+    <button type="button" onClick={cta.onClick} className={cls} style={style}>
       {cta.icon}
       {cta.label}
     </button>
