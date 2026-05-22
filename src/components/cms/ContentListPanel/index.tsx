@@ -23,7 +23,6 @@ import { ContentListFilters } from './ContentListFilters';
 import { ContentListTable } from './ContentListTable';
 import { useContentListController } from './useContentListController';
 
-const BulkEnrichDialog = lazy(() => import('@/components/admin/BulkEnrichDialog'));
 const BulkActionsBar = lazy(() =>
   import('../BulkActionsBar').then((m) => ({ default: m.BulkActionsBar })),
 );
@@ -74,9 +73,6 @@ export function ContentListPanel(props: ContentListPanelProps) {
             </TooltipTrigger>
             <TooltipContent>Refresh</TooltipContent>
           </Tooltip>
-          <Suspense fallback={null}>
-            <BulkEnrichDialog onComplete={() => c.loadItems()} />
-          </Suspense>
           {c.config && (
             <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
               <Plus size={16} className="mr-1" />

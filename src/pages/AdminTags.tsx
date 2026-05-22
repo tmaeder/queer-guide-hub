@@ -34,7 +34,6 @@ import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
 import TagMergeCandidates from '@/components/admin/TagMergeCandidates';
 import { TagImageUpload } from '@/components/admin/TagImageUpload';
 import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
-import BatchAutoTagDialog from '@/components/admin/BatchAutoTagDialog';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
 import { normalizeTagName } from '@/utils/tagNormalization';
 import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
@@ -362,7 +361,6 @@ export default function AdminTags() {
             }}
           />
           <BulkCreateAITags onComplete={() => window.location.reload()} />
-          <BatchAutoTagDialog onComplete={() => window.location.reload()} />
           <BatchGeoLinkDialog onComplete={() => window.location.reload()} />
           <Button variant="outline" size="sm" onClick={handleBulkEditDescriptions}>
             <Edit className="h-3.5 w-3.5 mr-1" />
