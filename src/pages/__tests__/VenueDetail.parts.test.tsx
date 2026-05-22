@@ -123,6 +123,45 @@ describe('VenueDetail.parts', () => {
       const html = render(formatHours({ monday: '9am-5pm' }));
       expect(html).toContain('9am-5pm');
     });
+    it('prefers `display` over per-day rendering when present', () => {
+      const html = render(
+        formatHours({
+          display: 'Mon-Fri 10:00-18:00; Sat 12:00-22:00',
+          regular: [{ day: 1, open: '1000', close: '1800' }],
+        }),
+      );
+      expect(html).toContain('Mon-Fri 10:00-18:00');
+      expect(html).not.toContain('<span class="text-sm font-medium">Mon</span>');
+    });
+    it('renders from `regular` array (ISO day 1=Mon) when display absent', () => {
+      const html = render(
+        formatHours({
+          regular: [
+            { day: 1, open: '0900', close: '1700' },
+            { day: 1, open: '1900', close: '2300' }, // split shift
+            { day: 7, open: '1200', close: '2000' }, // Sun
+          ],
+        }),
+      );
+      expect(html).toContain('09:00–17:00, 19:00–23:00');
+      expect(html).toContain('12:00–20:00');
+      expect(html).toContain('Mon');
+      expect(html).toContain('Sun');
+    });
+    it('handles next-day overflow times ("+0100")', () => {
+      const html = render(
+        formatHours({
+          regular: [{ day: 6, open: '1500', close: '+0100' }],
+        }),
+      );
+      expect(html).toContain('15:00');
+      expect(html).toContain('01:00 (next day)');
+    });
+    it('hasUsableHours recognises the {display,regular} shape', () => {
+      expect(hasUsableHours({ display: 'Mon 10-5' })).toBe(true);
+      expect(hasUsableHours({ regular: [{ day: 1, open: '0900', close: '1700' }] })).toBe(true);
+      expect(hasUsableHours({ display: '', regular: [] })).toBe(false);
+    });
     it('never renders "[object Object]"', () => {
       const html = render(
         formatHours({

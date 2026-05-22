@@ -101,7 +101,15 @@ export function buildVenueBreadcrumbs(
 const HOURS_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const HOURS_DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// Hours rows can be a free-text string ("9am-5pm"), an object
+const fmtTime = (t: string): string => {
+  // "0900" → "09:00"; "+0100" (next-day overflow) → "01:00 (next day)"
+  const m = t.match(/^([+-]?)(\d{2})(\d{2})$/);
+  if (!m) return t;
+  const next = m[1] === '+' ? ' (next day)' : '';
+  return `${m[2]}:${m[3]}${next}`;
+};
+
+// Per-day hours can be a free-text string ("9am-5pm"), an object
 // ({open: "0900", close: "1700"} from Google Places), or absent.
 // Returns the rendered label or null when the day has no usable data.
 function renderHoursRow(value: unknown): string | null {
@@ -116,30 +124,85 @@ function renderHoursRow(value: unknown): string | null {
     const open = typeof obj.open === 'string' ? obj.open : null;
     const close = typeof obj.close === 'string' ? obj.close : null;
     if (!open || !close) return null;
-    const fmt = (t: string) => (/^\d{4}$/.test(t) ? `${t.slice(0, 2)}:${t.slice(2)}` : t);
-    return `${fmt(open)}–${fmt(close)}`;
+    return `${fmtTime(open)}–${fmtTime(close)}`;
   }
   return null;
 }
 
+// The actual stored shape from the scraper is
+// `{display, regular: [{day:1..7, open, close}], popular, open_now}`.
+// `display` is the human-readable string and is the right thing to
+// surface when present.
+type HoursPeriod = { day: number; open: string; close: string };
+function asHoursShape(
+  hours: unknown,
+): { display?: string; regular?: HoursPeriod[] } | null {
+  if (!hours || typeof hours !== 'object') return null;
+  return hours as { display?: string; regular?: HoursPeriod[] };
+}
+
+// Collapse the `regular` array into a record keyed by day-name. Multiple
+// open windows per day (e.g. lunch + dinner) are joined with ", ".
+function regularToDayMap(regular: HoursPeriod[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const p of regular) {
+    // day 1..7 = Mon..Sun (ISO). Some sources use 0..6 = Sun..Sat;
+    // accept both gracefully.
+    const idx = p.day >= 1 && p.day <= 7 ? p.day - 1 : (p.day + 6) % 7;
+    const dayName = HOURS_DAYS[idx];
+    if (!dayName) continue;
+    const span = renderHoursRow(p);
+    if (!span) continue;
+    out[dayName] = out[dayName] ? `${out[dayName]}, ${span}` : span;
+  }
+  return out;
+}
+
 export function hasUsableHours(hours: unknown): boolean {
-  if (!hours || typeof hours !== 'object') return false;
+  const shape = asHoursShape(hours);
+  if (!shape) return false;
+  if (typeof shape.display === 'string' && shape.display.trim()) return true;
+  if (Array.isArray(shape.regular) && shape.regular.length > 0) {
+    return Object.keys(regularToDayMap(shape.regular)).length > 0;
+  }
+  // Legacy {monday: {open,close} | string} shape.
   const rec = hours as Record<string, unknown>;
   return HOURS_DAYS.some((day) => renderHoursRow(rec[day]) !== null);
 }
 
 export function formatHours(hours: Record<string, unknown>) {
-  if (!hasUsableHours(hours))
-    return <p className="text-sm text-muted-foreground">Hours not available</p>;
-  return HOURS_DAYS.map((day, index) => {
-    const label = renderHoursRow(hours[day]);
+  const shape = asHoursShape(hours);
+  if (!shape) return <p className="text-sm text-muted-foreground">Hours not available</p>;
+
+  // Prefer the human-readable display string when the scraper produced
+  // one — it's already localised and handles split shifts naturally.
+  if (typeof shape.display === 'string' && shape.display.trim()) {
     return (
-      <div key={day} className="flex justify-between">
-        <span className="text-sm font-medium">{HOURS_DAY_NAMES[index]}</span>
-        <span className="text-sm text-muted-foreground">{label ?? 'Closed'}</span>
-      </div>
+      <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.6 }}>
+        {shape.display}
+      </p>
     );
-  });
+  }
+
+  // Build day rows from `regular` if present, else fall back to the
+  // legacy {monday: …} shape.
+  const dayMap: Record<string, string> = Array.isArray(shape.regular)
+    ? regularToDayMap(shape.regular)
+    : HOURS_DAYS.reduce<Record<string, string>>((acc, day) => {
+        const label = renderHoursRow((hours as Record<string, unknown>)[day]);
+        if (label) acc[day] = label;
+        return acc;
+      }, {});
+
+  if (Object.keys(dayMap).length === 0)
+    return <p className="text-sm text-muted-foreground">Hours not available</p>;
+
+  return HOURS_DAYS.map((day, index) => (
+    <div key={day} className="flex justify-between">
+      <span className="text-sm font-medium">{HOURS_DAY_NAMES[index]}</span>
+      <span className="text-sm text-muted-foreground">{dayMap[day] ?? 'Closed'}</span>
+    </div>
+  ));
 }
 
 interface VenueHeroProps {

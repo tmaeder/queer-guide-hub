@@ -773,22 +773,25 @@ export const ExploreMap = ({
       filter: ['has', 'point_count'],
       paint: {
         'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 26, 100, 32, 500, 40],
-        'circle-color': [
+        // Monochrome cluster ramp. Density encoded by alpha on the
+        // foreground token, not by hue — matches the heatmap ramp and
+        // the rest of the design system's no-color rule.
+        'circle-color': 'hsl(0 0% 4%)',
+        'circle-opacity': [
           'step',
           ['get', 'point_count'],
-          '#818cf8',
+          0.55,
           10,
-          '#6366f1',
+          0.65,
           50,
-          '#4f46e5',
+          0.75,
           100,
-          '#4338ca',
+          0.85,
           500,
-          '#3730a3',
+          0.95,
         ],
-        'circle-opacity': 0.85,
         'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff',
+        'circle-stroke-color': 'hsl(0 0% 100%)',
       },
     });
 
