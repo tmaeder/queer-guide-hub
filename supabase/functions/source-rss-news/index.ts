@@ -67,14 +67,40 @@ const rssNewsAdapter: SourceAdapter = {
           })
         }
 
-        await supabase.from('news_sources').update({
-          status: 'active',
-          last_fetched_at: new Date().toISOString(),
-          last_successful_fetch: new Date().toISOString(),
-          last_error: null,
-          consecutive_failures: 0,
-          backoff_until: null,
-        }).eq('id', source.id)
+        // Silent-zero detection: HTTP 200 with empty results (e.g. NewsAPI
+        // returning {articles: []} from a bad key or stale query) used to be
+        // marked as success. Track consecutive empties and auto-pause at 8,
+        // mirroring the failure path.
+        if (articles.length === 0) {
+          const { data: cur } = await supabase
+            .from('news_sources')
+            .select('consecutive_empty_fetches')
+            .eq('id', source.id)
+            .single()
+          const empties = ((cur?.consecutive_empty_fetches as number) ?? 0) + 1
+          const update: Record<string, unknown> = {
+            status: 'active',
+            last_fetched_at: new Date().toISOString(),
+            last_error: 'fetched 0 items (silent zero)',
+            consecutive_empty_fetches: empties,
+          }
+          if (empties >= 8) {
+            update.auto_paused = true
+            update.auto_paused_reason = `${empties} consecutive empty fetches (no items returned)`.slice(0, 500)
+          }
+          console.warn(`Source ${source.name} returned 0 items (empty streak: ${empties})`)
+          await supabase.from('news_sources').update(update).eq('id', source.id)
+        } else {
+          await supabase.from('news_sources').update({
+            status: 'active',
+            last_fetched_at: new Date().toISOString(),
+            last_successful_fetch: new Date().toISOString(),
+            last_error: null,
+            consecutive_failures: 0,
+            consecutive_empty_fetches: 0,
+            backoff_until: null,
+          }).eq('id', source.id)
+        }
       } catch (e) {
         // Failure: exponential backoff (5min * 2^n, capped at 24h),
         // auto-pause after 8 consecutive failures.
