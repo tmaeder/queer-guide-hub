@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { BentoGrid, BentoCell } from '@/components/ui/bento-grid';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import {
   LayoutDashboard,
   Activity,
@@ -337,29 +338,34 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <LayoutDashboard size={22} className="text-muted-foreground" aria-hidden />
-          <h1 className="text-lg font-bold">Cockpit</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <QuickActionsBar />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0 rounded-element"
-                onClick={() => refetch()}
-                aria-label="Refresh"
-              >
-                <RefreshCw size={15} aria-hidden />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Refresh</TooltipContent>
-          </Tooltip>
-        </div>
-      </div>
+      <AdminPageHeader
+        eyebrow="Admin Console"
+        title={
+          <span className="inline-flex items-center gap-3">
+            <LayoutDashboard size={26} className="text-muted-foreground" aria-hidden />
+            Cockpit
+          </span>
+        }
+        actions={
+          <>
+            <QuickActionsBar />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 rounded-element"
+                  onClick={() => refetch()}
+                  aria-label="Refresh"
+                >
+                  <RefreshCw size={15} aria-hidden />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Refresh</TooltipContent>
+            </Tooltip>
+          </>
+        }
+      />
 
       {isLoading || !data ? (
         <CockpitSkeleton />

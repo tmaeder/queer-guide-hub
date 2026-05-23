@@ -82,7 +82,7 @@ export function DataTableToolbar({
   const hideableColumns = columns.filter((c) => c.hideable);
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 bg-surface-container-low border-y border-hairline">
       {/* Top row: search + actions */}
       <div className="flex items-center gap-2 flex-wrap">
         {enableSearch && (
