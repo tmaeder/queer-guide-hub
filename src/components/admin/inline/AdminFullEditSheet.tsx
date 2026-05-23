@@ -17,9 +17,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useInlineSave } from '@/hooks/useInlineSave';
+import { useContentRow } from '@/hooks/useContentRow';
 import { getContentType, fieldGroupLabels } from '@/config/contentTypes';
 import type { FieldConfig, FieldGroup } from '@/types/cms';
-import { supabase } from '@/integrations/supabase/client';
 import { getEditorForFieldType } from './editors';
 
 interface Props {
@@ -51,31 +51,16 @@ export function AdminFullEditSheet({
 }: Props) {
   const config = getContentType(contentType);
   const [data, setData] = useState<Record<string, unknown>>(currentData ?? {});
-  const [loading, setLoading] = useState(false);
+
+  // Fetch only when the sheet is open AND the caller didn't seed currentData.
+  const needsFetch = open && !currentData;
+  const { data: fetched, isLoading: loading } = useContentRow(contentType, contentId, needsFetch);
 
   useEffect(() => {
-    if (!open || !config) return;
-    if (currentData) {
-      setData(currentData);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    (async () => {
-      // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only single-row fetch by id, refactor to hook tracked separately
-      const { data: row, error } = await supabase
-        .from(config.tableName as 'venues')
-        .select('*')
-        .eq('id', contentId)
-        .maybeSingle();
-      if (cancelled) return;
-      setLoading(false);
-      if (!error && row) setData(row as Record<string, unknown>);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [open, config, contentId, currentData]);
+    if (!open) return;
+    if (currentData) setData(currentData);
+    else if (fetched) setData(fetched);
+  }, [open, currentData, fetched]);
 
   const fieldsByGroup = useMemo(() => {
     if (!config) return new Map<FieldGroup, FieldConfig[]>();
