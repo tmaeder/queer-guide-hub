@@ -168,6 +168,7 @@ const FeedbackBoard = lazyRetry(() => import('./pages/FeedbackBoard'));
 const HelpHotlines = lazyRetry(() => import('./pages/HelpHotlines'));
 const CMSPage = lazyRetry(() => import('./pages/Page'));
 const ShareTarget = lazyRetry(() => import('./pages/ShareTarget'));
+const PridePage = lazyRetry(() => import('./pages/Pride'));
 
 /** Routes table + per-route ErrorBoundary/Suspense/MotionPage and a11y main element */
 export const AppRoutes = () => {
@@ -382,6 +383,8 @@ export const AppRoutes = () => {
                 <Route path="venues/:slug" element={<VenueDetail />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/:slug" element={<EventDetail />} />
+                <Route path="pride" element={<PridePage />} />
+                <Route path="pride/:year" element={<PridePage />} />
                 <Route path="marketplace" element={<Marketplace />} />
                 <Route path="marketplace/share" element={<MarketplaceShare />} />
                 <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
