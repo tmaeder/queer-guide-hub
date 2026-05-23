@@ -4,8 +4,10 @@
  * Supports filtering by action type and pagination.
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router';
 import { History, Clock, User, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useCMSAudit } from '@/hooks/useCMSAudit';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -99,12 +101,34 @@ interface AuditLogProps {
 
 const PAGE_SIZE = 20;
 
+type SinceOption = 'all' | '24h' | '7d' | '30d';
+
+const SINCE_LABEL: Record<SinceOption, string> = {
+  all: 'All',
+  '24h': 'Last 24h',
+  '7d': 'Last 7 days',
+  '30d': 'Last 30 days',
+};
+
+function sinceToIso(opt: SinceOption): string | undefined {
+  if (opt === 'all') return undefined;
+  const now = Date.now();
+  const ms = opt === '24h' ? 24 * 3600e3 : opt === '7d' ? 7 * 86400e3 : 30 * 86400e3;
+  return new Date(now - ms).toISOString();
+}
+
 export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
   const { entries, loading, error, totalCount, loadForContent, loadGlobal } = useCMSAudit();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sinceParam = searchParams.get('since');
+  const since: SinceOption = (['24h', '7d', '30d'] as const).includes(sinceParam as SinceOption)
+    ? (sinceParam as SinceOption)
+    : 'all';
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
 
   const isContentSpecific = !!(sourceTable && sourceId);
+  const sinceIso = useMemo(() => sinceToIso(since), [since]);
 
   const loadData = useCallback(() => {
     if (isContentSpecific) {
@@ -114,9 +138,21 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
         page,
         pageSize: PAGE_SIZE,
         action: actionFilter !== 'all' ? actionFilter : undefined,
+        since: sinceIso,
       });
     }
-  }, [isContentSpecific, sourceTable, sourceId, page, actionFilter, loadForContent, loadGlobal]);
+  }, [isContentSpecific, sourceTable, sourceId, page, actionFilter, sinceIso, loadForContent, loadGlobal]);
+
+  const setSince = useCallback(
+    (opt: SinceOption) => {
+      setPage(1);
+      const next = new URLSearchParams(searchParams);
+      if (opt === 'all') next.delete('since');
+      else next.set('since', opt);
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
 
   useEffect(() => {
     loadData();
@@ -149,32 +185,55 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
 
   return (
     <div>
-      <div className="flex flex-row items-center justify-between mb-2">
-        <div className="flex flex-row items-center gap-1">
-          <History size={18} className="text-muted-foreground" />
-          <p className="text-sm font-semibold">Audit Log</p>
-          {totalCount > 0 && (
-            <span className="text-xs text-muted-foreground">
-              ({totalCount} entr{totalCount !== 1 ? 'ies' : 'y'})
-            </span>
-          )}
+      <div className="flex flex-col gap-2 mb-2">
+        <div className="flex flex-row items-center justify-between flex-wrap gap-2">
+          <div className="flex flex-row items-center gap-1">
+            <History size={18} className="text-muted-foreground" />
+            <p className="text-sm font-semibold">Audit Log</p>
+            {totalCount > 0 && (
+              <span className="text-xs text-muted-foreground">
+                ({totalCount} entr{totalCount !== 1 ? 'ies' : 'y'})
+              </span>
+            )}
+          </div>
+
+          <Select value={actionFilter} onValueChange={handleFilterChange}>
+            <SelectTrigger className="h-8 min-w-[180px] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="text-xs">
+                All Actions
+              </SelectItem>
+              {uniqueActions.map((action) => (
+                <SelectItem key={action} value={action} className="text-xs">
+                  {formatAction(action)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <Select value={actionFilter} onValueChange={handleFilterChange}>
-          <SelectTrigger className="h-8 min-w-[180px] text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all" className="text-xs">
-              All Actions
-            </SelectItem>
-            {uniqueActions.map((action) => (
-              <SelectItem key={action} value={action} className="text-xs">
-                {formatAction(action)}
-              </SelectItem>
+        {!isContentSpecific && (
+          <div
+            role="radiogroup"
+            aria-label="Filter by date"
+            className="flex items-center gap-1"
+          >
+            {(['all', '24h', '7d', '30d'] as const).map((opt) => (
+              <Button
+                key={opt}
+                size="sm"
+                variant={since === opt ? 'default' : 'ghost'}
+                aria-pressed={since === opt}
+                className="h-6 px-2 text-2xs"
+                onClick={() => setSince(opt)}
+              >
+                {SINCE_LABEL[opt]}
+              </Button>
             ))}
-          </SelectContent>
-        </Select>
+          </div>
+        )}
       </div>
 
       {loading ? (
