@@ -46,6 +46,7 @@ export function DataTableBulkActions({
   const handleExportCsv = async () => {
     setExporting(true);
     try {
+      // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- one-off imperative CSV export, no caching benefit from useQuery
       const { data, error } = await supabase
         .from(tableName as never)
         .select('*')

@@ -42,6 +42,7 @@ interface AutomationRun {
 }
 
 async function fetchAutomations(): Promise<Automation[]> {
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level fetcher consumed by useQuery below
   const { data, error } = await supabase
     .from('admin_automations' as never)
     .select('*')
@@ -52,6 +53,7 @@ async function fetchAutomations(): Promise<Automation[]> {
 }
 
 async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level fetcher consumed by useQuery below
   let q = supabase
     .from('admin_automation_runs' as never)
     .select('*')
@@ -59,12 +61,6 @@ async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun
     .limit(50);
   if (slugFilter) q = q.eq('automation_slug', slugFilter);
   const { data, error } = await q;
-async function fetchRecentRuns(): Promise<AutomationRun[]> {
-  const { data, error } = await supabase
-    .from('admin_automation_runs' as never)
-    .select('*')
-    .order('started_at', { ascending: false })
-    .limit(25);
   if (error) throw error;
   return (data ?? []) as AutomationRun[];
 }
@@ -98,8 +94,6 @@ export default function AdminAutomation() {
   const runsQ = useQuery({
     queryKey: ['admin-automation-runs', filterSlug],
     queryFn: () => fetchRecentRuns(filterSlug),
-    queryKey: ['admin-automation-runs'],
-    queryFn: fetchRecentRuns,
     refetchInterval: 30_000,
   });
 
@@ -195,9 +189,6 @@ export default function AdminAutomation() {
                     <td className="px-4 py-2">
                       <div className="font-semibold">{a.name}</div>
                       <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
-                  <tr key={a.id} className="border-t border-border">
-                    <td className="px-4 py-2">
-                      <div className="font-semibold">{a.name}</div>
                       {a.description && (
                         <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
                       )}
@@ -253,7 +244,6 @@ export default function AdminAutomation() {
                           variant="outline"
                           size="sm"
                           onClick={(e) => { e.stopPropagation(); runNow(a.slug); }}
-                          onClick={() => runNow(a.slug)}
                           disabled={busySlug !== null || !a.enabled}
                           className="ml-2"
                           title={a.enabled ? 'Run now' : 'Enable to run'}
@@ -298,10 +288,6 @@ export default function AdminAutomation() {
             Click any automation row above to filter this list.
           </p>
         )}
-        <h2 className="text-title font-semibold mb-3 flex items-center gap-2">
-          <Play size={16} />
-          Recent runs
-        </h2>
         {runsQ.isLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : runsQ.data?.length === 0 ? (
