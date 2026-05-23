@@ -26,7 +26,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 		tracesSampleRate: 0.1,
 	});
 }
-import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities, fetchImageMap } from "./supabase";
+import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities, fetchDisplayMap } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
 import { detectScript, tokenize, isBareLgbtqQuery } from "./queryPrep";
@@ -340,26 +340,30 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 
 	// Fuse: Meili rankingScore + pgvector score via RRF.
 	const meiliHits = meili.hits.map((h, i: number) => ({ ...h, _source: "meili", _rank: i }));
-	// Enrich semantic hits with image_url from source tables — content_embeddings
-	// metadata never stored it, so the pgvector half of the fused list would
-	// otherwise always render placeholders on the frontend.
-	const semImgMap = await fetchImageMap(env, sem).catch(() => new Map<string, string>());
-	const semHits = sem.map((s, i) => ({
-		...s,
-		id: s.content_id,
-		objectID: s.content_id,
-		type: s.content_type,
-		title: s.metadata?.title,
-		city: s.metadata?.city,
-		country: s.metadata?.country,
-		category: s.metadata?.category,
-		tags: s.metadata?.tags || [],
-		slug: s.metadata?.slug,
-		image_url: s.metadata?.image_url ?? semImgMap.get(`${s.content_type}:${s.content_id}`) ?? null,
-		featured: s.metadata?.featured || false,
-		_source: "pg",
-		_rank: i,
-	}));
+	// Enrich semantic hits with title/slug/image_url/city/country from source
+	// tables — content_embeddings metadata only stored a minimal subset at
+	// index time, so the pgvector half of the fused list would otherwise have
+	// missing titles and placeholder images.
+	const semDisplay = await fetchDisplayMap(env, sem).catch(() => new Map());
+	const semHits = sem.map((s, i) => {
+		const d = semDisplay.get(`${s.content_type}:${s.content_id}`) ?? {};
+		return {
+			...s,
+			id: s.content_id,
+			objectID: s.content_id,
+			type: s.content_type,
+			title: s.metadata?.title ?? d.title,
+			city: s.metadata?.city ?? d.city,
+			country: s.metadata?.country ?? d.country,
+			category: s.metadata?.category,
+			tags: s.metadata?.tags || [],
+			slug: s.metadata?.slug ?? d.slug,
+			image_url: s.metadata?.image_url ?? d.image_url ?? null,
+			featured: s.metadata?.featured || false,
+			_source: "pg",
+			_rank: i,
+		};
+	});
 	const fused = rrfFuse([meiliHits, semHits], 60);
 
 	// Personalization nudges (boost/decay) + worker-side exact-title boost
@@ -636,13 +640,25 @@ async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Pro
 	const vec = parsePgVector(seed[0].embedding);
 	const results = await semanticSearch(env, { queryVec: vec, contentTypes: content_types, biasWeight: 0, limit: limit + 1 });
 	const filtered = results.filter((r) => !(r.content_type === entity_type && r.content_id === entity_id)).slice(0, limit);
-	// content_embeddings.metadata never carries image_url; enrich from the
-	// source tables so "More like this" rails don't all fall back to placeholders.
-	const imgMap = await fetchImageMap(env, filtered).catch(() => new Map<string, string>());
+	// content_embeddings.metadata carries only the minimal fields the embedding
+	// pipeline wrote at index time. Enrich title/slug/image_url/city/country
+	// from the source tables so "More like this" rails render proper cards.
+	const displayMap = await fetchDisplayMap(env, filtered).catch(() => new Map());
 	const enriched = filtered.map((r) => {
-		const url = imgMap.get(`${r.content_type}:${r.content_id}`);
-		if (!url) return r;
-		return { ...r, metadata: { ...(r.metadata ?? {}), image_url: r.metadata?.image_url ?? url } };
+		const d = displayMap.get(`${r.content_type}:${r.content_id}`);
+		if (!d) return r;
+		const m = r.metadata ?? {};
+		return {
+			...r,
+			metadata: {
+				...m,
+				title: m.title ?? d.title,
+				slug: m.slug ?? d.slug,
+				image_url: m.image_url ?? d.image_url,
+				city: m.city ?? d.city,
+				country: m.country ?? d.country,
+			},
+		};
 	});
 	return json({ results: enriched }, 200, cors);
 }

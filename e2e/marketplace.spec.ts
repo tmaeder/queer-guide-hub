@@ -31,10 +31,13 @@ test.describe('Marketplace — discovery surface', () => {
   });
 
   test('/marketplace/category/:slug filters listings', async ({ page }) => {
-    // Use a subcategory we know exists in production data
-    await page.goto('/marketplace/category/fetish_gear');
+    // 'underwear' is a non-adult subcategory with 291+ prod listings.
+    // Previous fixture 'fetish_gear' is in ADULT_CATEGORY_SLUGS, so the page
+    // mounts AdultContentGate which marks the rest of the document
+    // aria-hidden — getByRole('heading') then can't find the h1.
+    await page.goto('/marketplace/category/underwear');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.getByRole('heading', { name: /fetish gear/i, level: 1 })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('heading', { name: /underwear/i, level: 1 })).toBeVisible({ timeout: 30_000 });
     const cards = page.locator('main a[href^="/marketplace/"]:not([href*="category/"]):not([href*="merchants/"])');
     await expect(cards.first()).toBeVisible({ timeout: 30_000 });
   });

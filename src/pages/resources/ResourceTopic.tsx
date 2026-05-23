@@ -9,7 +9,7 @@
  * topics.config.ts when the query returns zero rows.
  */
 
-import { useMemo } from 'react';
+import { createElement, useMemo } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -23,6 +23,12 @@ import { Button } from '@/components/ui/button';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { TOPIC_HUBS } from '@/pages/resources/topics.config';
 import { ChevronLeft, ChevronRight, FileText, Newspaper } from 'lucide-react';
+
+// Render a Lucide icon by name without binding a per-render component
+// identity (avoids react-hooks/static-components when used inline).
+function renderTopicIcon(name: string) {
+  return createElement(topicIcon(name), { 'aria-hidden': true, style: { width: 18, height: 18 } });
+}
 
 function configFallback(): TopicHubRow[] {
   return TOPIC_HUBS.map((t, i) => ({
@@ -74,7 +80,7 @@ export default function ResourceTopic() {
     );
   }
 
-  const Icon = topicIcon(topic.icon_name);
+  const iconNode = renderTopicIcon(topic.icon_name);
 
   return (
     <div className="container mx-auto py-8 md:py-16 px-4">
@@ -88,7 +94,7 @@ export default function ResourceTopic() {
 
       <PageHeader title={topic.title} subtitle={topic.description}>
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <Icon aria-hidden style={{ width: 18, height: 18 }} />
+          {iconNode}
           <span>{t('resources.topic.stats', { guides: counts.guides, orgs: counts.orgs, news: counts.news })}</span>
         </div>
       </PageHeader>
