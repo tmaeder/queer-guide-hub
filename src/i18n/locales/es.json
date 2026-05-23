@@ -1883,7 +1883,8 @@
       "linkCopied": "Enlace copiado",
       "linkCopiedDescription": "Ya puedes pegarlo",
       "shareFailed": "Error al compartir"
-    }
+    },
+    "geolocate": {}
   },
   "resources": {
     "hero": {

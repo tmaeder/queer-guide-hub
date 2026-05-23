@@ -1881,7 +1881,8 @@
       "linkCopied": "تم نسخ الرابط",
       "linkCopiedDescription": "يمكنك لصقه الآن",
       "shareFailed": "فشل في المشاركة"
-    }
+    },
+    "geolocate": {}
   },
   "resources": {
     "hero": {

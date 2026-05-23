@@ -38,6 +38,12 @@ export default tseslint.config(
       "scripts/listen-triage/**",
       "listen/**",
       "infra/**",
+      // Scraper is a separate workspace with its own package.json + tsconfig
+      // + eslint.config.js. Including its files from the root parses them
+      // against the root tsconfig, which typescript-eslint v8's
+      // project-service then can't disambiguate (root + scraper/ both look
+      // like valid tsconfig roots). Lint scraper from `cd scraper && npm run lint`.
+      "scraper/**",
       // Legacy worker duplicates (superseded by workers/*/)
       "worker/**",
       "worker-ingest/**",
