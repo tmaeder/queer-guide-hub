@@ -204,7 +204,7 @@ export const adminNavSections: AdminNavSection[] = [
     ],
   },
 
-  // ── Import & Review (combined pipeline) ─────────────────────────
+  // ── Import & Review (humans-only work) ──────────────────────────
   {
     id: 'import-review',
     label: 'Import & Review',
@@ -226,8 +226,26 @@ export const adminNavSections: AdminNavSection[] = [
         reviewCountKey: 'review_feedback',
       },
       {
+        id: 'email-ingestions',
+        label: 'Email Ingestions',
+        icon: Mail,
+        route: '/admin/imports/email-ingestions',
+        countTable: 'email_ingestions',
+      },
+    ],
+  },
+
+  // ── Automation (system work) ────────────────────────────────────
+  {
+    id: 'automation',
+    label: 'Automation',
+    icon: Workflow,
+    collapsible: true,
+    defaultExpanded: false,
+    items: [
+      {
         id: 'automation',
-        label: 'Automation',
+        label: 'Automations',
         icon: Workflow,
         route: '/admin/automation',
       },
@@ -239,17 +257,17 @@ export const adminNavSections: AdminNavSection[] = [
         adminOnly: true,
       },
       {
-        id: 'email-ingestions',
-        label: 'Email Ingestions',
-        icon: Mail,
-        route: '/admin/imports/email-ingestions',
-        countTable: 'email_ingestions',
-      },
-      {
         id: 'ingestion-rules',
         label: 'Ingestion Rules',
         icon: Filter,
         route: '/admin/ingestion-rules',
+        adminOnly: true,
+      },
+      {
+        id: 'search-intelligence',
+        label: 'Search Intelligence',
+        icon: Search,
+        route: '/admin/search-intelligence',
         adminOnly: true,
       },
     ],
@@ -332,13 +350,6 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Audit Log',
         icon: History,
         route: '/admin/audit',
-        adminOnly: true,
-      },
-      {
-        id: 'search-intelligence',
-        label: 'Search Intelligence',
-        icon: Search,
-        route: '/admin/search-intelligence',
         adminOnly: true,
       },
       {
