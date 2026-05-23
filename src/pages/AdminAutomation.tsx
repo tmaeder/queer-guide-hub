@@ -46,6 +46,8 @@ interface Automation {
   trigger: Record<string, unknown>;
   conditions: Array<Record<string, unknown>>;
   action: Record<string, unknown>;
+  consecutive_failures: number;
+  auto_pause_threshold: number;
   created_at: string;
   updated_at: string;
 }
@@ -314,11 +316,19 @@ export default function AdminAutomation() {
                           {busySlug === `toggle:${a.slug}` ? (
                             <Loader2 size={11} className="mr-1 animate-spin" />
                           ) : null}
-                          {a.enabled ? 'enabled · click to pause' : 'paused · click to enable'}
+                          {a.enabled
+                            ? 'enabled · click to pause'
+                            : a.last_run_status === 'auto_paused'
+                              ? `auto-paused after ${a.consecutive_failures} errors · click to resume`
+                              : 'paused · click to enable'}
                         </Button>
                       ) : a.enabled ? (
                         <Badge variant="outline" className="font-normal">
                           enabled
+                        </Badge>
+                      ) : a.last_run_status === 'auto_paused' ? (
+                        <Badge variant="destructive" className="font-normal">
+                          auto-paused
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="font-normal">
@@ -490,6 +500,14 @@ export default function AdminAutomation() {
                 </dd>
                 <dt className="text-muted-foreground">Last status</dt>
                 <dd>{detailRow.last_run_status ?? '—'}</dd>
+                <dt className="text-muted-foreground">Consecutive failures</dt>
+                <dd
+                  className={
+                    detailRow.consecutive_failures > 0 ? 'text-destructive font-semibold' : ''
+                  }
+                >
+                  {detailRow.consecutive_failures} / {detailRow.auto_pause_threshold} before auto-pause
+                </dd>
                 <dt className="text-muted-foreground">Created</dt>
                 <dd>
                   {formatDistanceToNow(new Date(detailRow.created_at), { addSuffix: true })}
