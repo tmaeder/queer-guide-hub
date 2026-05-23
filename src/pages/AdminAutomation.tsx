@@ -94,8 +94,6 @@ export default function AdminAutomation() {
   const runsQ = useQuery({
     queryKey: ['admin-automation-runs', filterSlug],
     queryFn: () => fetchRecentRuns(filterSlug),
-    queryKey: ['admin-automation-runs'],
-    queryFn: fetchRecentRuns,
     refetchInterval: 30_000,
   });
 
