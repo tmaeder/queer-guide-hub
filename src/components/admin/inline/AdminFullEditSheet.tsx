@@ -17,9 +17,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useInlineSave } from '@/hooks/useInlineSave';
+import { useAdminContentRow } from '@/hooks/useAdminContentRow';
 import { getContentType, fieldGroupLabels } from '@/config/contentTypes';
 import type { FieldConfig, FieldGroup } from '@/types/cms';
-import { supabase } from '@/integrations/supabase/client';
 import { getEditorForFieldType } from './editors';
 
 interface Props {
@@ -51,30 +51,21 @@ export function AdminFullEditSheet({
 }: Props) {
   const config = getContentType(contentType);
   const [data, setData] = useState<Record<string, unknown>>(currentData ?? {});
-  const [loading, setLoading] = useState(false);
+
+  const shouldFetch = open && !!config && !currentData;
+  const { data: fetchedRow, loading } = useAdminContentRow(
+    config?.tableName,
+    contentId,
+    shouldFetch,
+  );
 
   useEffect(() => {
-    if (!open || !config) return;
-    if (currentData) {
-      setData(currentData);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    (async () => {
-      const { data: row, error } = await supabase
-        .from(config.tableName as 'venues')
-        .select('*')
-        .eq('id', contentId)
-        .maybeSingle();
-      if (cancelled) return;
-      setLoading(false);
-      if (!error && row) setData(row as Record<string, unknown>);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [open, config, contentId, currentData]);
+    if (currentData) setData(currentData);
+  }, [currentData]);
+
+  useEffect(() => {
+    if (fetchedRow) setData(fetchedRow);
+  }, [fetchedRow]);
 
   const fieldsByGroup = useMemo(() => {
     if (!config) return new Map<FieldGroup, FieldConfig[]>();
