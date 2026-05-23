@@ -11,6 +11,7 @@ import { SettingsTab } from '@/components/admin/search-intelligence/SettingsTab'
 import { TopicsTab } from '@/components/admin/search-intelligence/TopicsTab';
 import { SetupTab } from '@/components/admin/search-intelligence/SetupTab';
 import { PlaceholderTab } from '@/components/admin/search-intelligence/PlaceholderTab';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 const FEATURE_FLAG_ENABLED = import.meta.env.VITE_FEATURE_SEARCH_INTELLIGENCE === '1';
 
@@ -20,24 +21,28 @@ export default function AdminSearchIntelligence() {
   if (!FEATURE_FLAG_ENABLED) {
     return (
       <div className="container mx-auto max-w-screen-md px-4 py-8">
-        <h1 className="text-3xl font-bold mb-2">Search Intelligence</h1>
-        <p className="text-sm text-muted-foreground">
-          This admin surface is behind the <code>VITE_FEATURE_SEARCH_INTELLIGENCE</code> feature
-          flag. Set it to <code>1</code> at build time to enable. Backend (database + edge function)
-          is already deployable independently.
-        </p>
+        <AdminPageHeader
+          eyebrow="Import & Review"
+          title="Search Intelligence"
+          subtitle={
+            <>
+              This admin surface is behind the <code>VITE_FEATURE_SEARCH_INTELLIGENCE</code> feature
+              flag. Set it to <code>1</code> at build time to enable. Backend (database + edge function)
+              is already deployable independently.
+            </>
+          }
+        />
       </div>
     );
   }
 
   return (
     <div className="container mx-auto max-w-screen-xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Search Intelligence</h1>
-        <p className="text-sm text-muted-foreground">
-          Unified admin surface for tags, synonyms, geo, images, dates, and Meilisearch backend.
-        </p>
-      </div>
+      <AdminPageHeader
+        eyebrow="Import & Review"
+        title="Search Intelligence"
+        subtitle="Unified admin surface for tags, synonyms, geo, images, dates, and Meilisearch backend."
+      />
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="setup">Setup</TabsTrigger>

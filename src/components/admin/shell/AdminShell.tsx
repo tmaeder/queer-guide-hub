@@ -20,6 +20,9 @@ import { Menu, ChevronRight } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { getBreadcrumbsForRoute } from '@/config/adminNavigation';
+import { AdminCommandPaletteHost } from '@/components/admin/command-palette/AdminCommandPalette';
+import { AdminCommandActionsProvider } from '@/components/admin/command-palette/useAdminCommandActions';
+import { GlobalAdminActions } from '@/components/admin/command-palette/useGlobalAdminActions';
 
 // ── Editor Context ────────────────────────────────────────────────────────────
 
@@ -120,6 +123,9 @@ export function AdminShell() {
 
   return (
     <AdminShellContext.Provider value={{ openEditor, closeEditor }}>
+     <AdminCommandActionsProvider>
+      <AdminCommandPaletteHost />
+      <GlobalAdminActions />
       <a
         href="#admin-main-content"
         className="absolute -left-[9999px] top-2 z-[2000] px-4 py-2 bg-background text-foreground no-underline font-semibold focus:left-2 focus:outline-2 focus:outline-[hsl(var(--foreground))]"
@@ -127,7 +133,7 @@ export function AdminShell() {
         Skip to admin content
       </a>
       <div
-        className="flex w-full bg-muted/30"
+        className="flex w-full bg-surface-container-low"
         style={{ minHeight: 'var(--admin-content-min-h)' }}
       >
         {/* Mobile hamburger with "Admin Console" label */}
@@ -220,6 +226,7 @@ export function AdminShell() {
           </main>
         </div>
       </div>
+     </AdminCommandActionsProvider>
     </AdminShellContext.Provider>
   );
 }

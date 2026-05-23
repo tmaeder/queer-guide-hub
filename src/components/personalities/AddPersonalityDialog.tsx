@@ -118,7 +118,11 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   >([]);
 
   // Per-field validation errors. Keyed by field name; empty/undefined ⇒ no error.
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    birth_date?: string;
+    death_date?: string;
+  }>({});
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleFieldToggle = (field: string) => {
@@ -382,14 +386,40 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const errors: { name?: string } = {};
+    const errors: { name?: string; birth_date?: string; death_date?: string } = {};
     if (!formData.name.trim()) errors.name = 'Name is required';
     if (formData.name.length > 120) errors.name = 'Name is too long (max 120 characters)';
 
-    if (errors.name) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (formData.birth_date) {
+      const birth = new Date(formData.birth_date);
+      if (Number.isNaN(birth.getTime())) {
+        errors.birth_date = 'Ungültiges Geburtsdatum';
+      } else if (birth > today) {
+        errors.birth_date = 'Geburtsdatum darf nicht in der Zukunft liegen';
+      }
+    }
+
+    if (!formData.is_living && formData.death_date) {
+      const death = new Date(formData.death_date);
+      if (Number.isNaN(death.getTime())) {
+        errors.death_date = 'Ungültiges Todesdatum';
+      } else if (death > today) {
+        errors.death_date = 'Todesdatum darf nicht in der Zukunft liegen';
+      } else if (formData.birth_date && !errors.birth_date) {
+        const birth = new Date(formData.birth_date);
+        if (death <= birth) {
+          errors.death_date = 'Todesdatum muss nach dem Geburtsdatum liegen';
+        }
+      }
+    }
+
+    if (errors.name || errors.birth_date || errors.death_date) {
       setFieldErrors(errors);
       // Focus the first invalid field so screen readers announce the error.
-      nameInputRef.current?.focus();
+      if (errors.name) nameInputRef.current?.focus();
       return;
     }
 
@@ -622,10 +652,27 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     id="birth_date"
                     type="date"
                     value={formData.birth_date}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, birth_date: e.target.value }))
-                    }
+                    onChange={(e) => {
+                      setFormData((prev) => ({ ...prev, birth_date: e.target.value }));
+                      if (fieldErrors.birth_date || fieldErrors.death_date)
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          birth_date: undefined,
+                          death_date: undefined,
+                        }));
+                    }}
+                    aria-invalid={!!fieldErrors.birth_date}
+                    aria-describedby={fieldErrors.birth_date ? 'birth_date-error' : undefined}
                   />
+                  {fieldErrors.birth_date && (
+                    <p
+                      id="birth_date-error"
+                      role="alert"
+                      className="text-destructive text-sm mt-1"
+                    >
+                      {fieldErrors.birth_date}
+                    </p>
+                  )}
                 </div>
 
                 {!formData.is_living && (
@@ -636,10 +683,23 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         id="death_date"
                         type="date"
                         value={formData.death_date}
-                        onChange={(e) =>
-                          setFormData((prev) => ({ ...prev, death_date: e.target.value }))
-                        }
+                        onChange={(e) => {
+                          setFormData((prev) => ({ ...prev, death_date: e.target.value }));
+                          if (fieldErrors.death_date)
+                            setFieldErrors((prev) => ({ ...prev, death_date: undefined }));
+                        }}
+                        aria-invalid={!!fieldErrors.death_date}
+                        aria-describedby={fieldErrors.death_date ? 'death_date-error' : undefined}
                       />
+                      {fieldErrors.death_date && (
+                        <p
+                          id="death_date-error"
+                          role="alert"
+                          className="text-destructive text-sm mt-1"
+                        >
+                          {fieldErrors.death_date}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="death_place">Death Place</Label>

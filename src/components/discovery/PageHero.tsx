@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SpotlightV2 } from '@/components/effects/SpotlightV2';
+import { Eyebrow } from '@/components/ui/Eyebrow';
 import { cn } from '@/lib/utils';
 
 interface CTA {
@@ -62,9 +63,9 @@ const SIZE_PADDING: Record<NonNullable<PageHeroProps['size']>, string> = {
 };
 
 const SIZE_TITLE: Record<NonNullable<PageHeroProps['size']>, string> = {
-  sm: 'text-4xl md:text-5xl lg:text-6xl',
-  md: 'text-5xl md:text-6xl lg:text-7xl',
-  lg: 'text-5xl md:text-7xl lg:text-8xl',
+  sm: 'text-headline-lg md:text-display',
+  md: 'text-display md:text-hero',
+  lg: 'text-hero md:text-hero-xl',
 };
 
 export function PageHero({
@@ -95,11 +96,7 @@ export function PageHero({
           align === 'center' && 'text-center',
         )}
       >
-        {eyebrow && (
-          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {eyebrow}
-          </div>
-        )}
+        {eyebrow && <Eyebrow as="div">{eyebrow}</Eyebrow>}
         <h1
           className={cn(
             'mt-4 font-bold tracking-tight leading-[0.95] text-foreground',

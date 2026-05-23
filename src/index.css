@@ -104,6 +104,18 @@
   --color-text-muted:      hsl(var(--text-muted));
   --color-border-hairline: hsl(var(--border-hairline));
 
+  /* ── Surface elevation ladder (monochrome depth, no shadows) ─────
+     Light mode steps up via darker grays; dark mode steps up via
+     lighter grays. Defined in :root / .dark blocks below. */
+  --color-surface:                    hsl(var(--surface));
+  --color-surface-container-lowest:   hsl(var(--surface-container-lowest));
+  --color-surface-container-low:      hsl(var(--surface-container-low));
+  --color-surface-container:          hsl(var(--surface-container));
+  --color-surface-container-high:     hsl(var(--surface-container-high));
+  --color-surface-container-highest:  hsl(var(--surface-container-highest));
+  --color-surface-dim:                hsl(var(--surface-dim));
+  --color-inverse-surface:            hsl(var(--inverse-surface));
+
   --color-sidebar: hsl(var(--sidebar-background));
   --color-sidebar-foreground: hsl(var(--sidebar-foreground));
   --color-sidebar-primary: hsl(var(--sidebar-primary));

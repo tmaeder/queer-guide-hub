@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pencil, Trash2, X } from 'lucide-react';
+import { Download, Pencil, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { deleteRowsByIds } from '@/hooks/usePageFetchers';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { DataTableBulkEditDialog } from './DataTableBulkEditDialog';
 import type { BulkEditFieldConfig } from './types';
@@ -38,8 +39,52 @@ export function DataTableBulkActions({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   if (selectedCount === 0) return null;
+
+  const handleExportCsv = async () => {
+    setExporting(true);
+    try {
+      const { data, error } = await supabase
+        .from(tableName as never)
+        .select('*')
+        .in('id', Array.from(selectedIds));
+      if (error) throw error;
+      const rows = (data ?? []) as Array<Record<string, unknown>>;
+      if (rows.length === 0) {
+        toast.error('Nothing to export');
+        return;
+      }
+      const headers = Array.from(
+        rows.reduce<Set<string>>((acc, row) => {
+          Object.keys(row).forEach((k) => acc.add(k));
+          return acc;
+        }, new Set()),
+      );
+      const escape = (v: unknown) => {
+        if (v === null || v === undefined) return '';
+        const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
+        return `"${s.replace(/"/g, '""')}"`;
+      };
+      const csv = [
+        headers.join(','),
+        ...rows.map((r) => headers.map((h) => escape(r[h])).join(',')),
+      ].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${tableName}-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${rows.length} rows`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleBulkDelete = async () => {
     setDeleting(true);
@@ -83,6 +128,11 @@ export function DataTableBulkActions({
             Bulk Edit
           </Button>
         )}
+
+        <Button variant="outline" size="sm" onClick={handleExportCsv} disabled={exporting}>
+          <Download size={14} className="mr-1" />
+          {exporting ? 'Exporting…' : 'Export CSV'}
+        </Button>
 
         {extraActions}
 

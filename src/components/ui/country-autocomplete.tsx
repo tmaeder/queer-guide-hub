@@ -84,7 +84,7 @@ export function CountryAutocomplete({
           aria-describedby={ariaDescribedBy}
           disabled={disabled}
           className={cn(
-            'w-full justify-between font-normal',
+            'h-10 w-full justify-between rounded-element border border-input bg-background px-4.5 py-2 font-normal text-foreground transition-all hover:border-foreground/40 hover:bg-background hover:text-foreground focus:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0',
             !selectedCountry && 'text-muted-foreground',
             error && 'border-destructive',
           )}

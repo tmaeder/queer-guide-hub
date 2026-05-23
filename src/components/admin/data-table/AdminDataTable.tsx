@@ -55,6 +55,7 @@ export function AdminDataTable<TData extends { id: string }>({
     searchColumns = [],
     baseFilters,
     onRowClick,
+    rowClassName,
     onBulkEditSuccess,
     _onBulkDeleteSuccess,
   } = config;
@@ -258,10 +259,11 @@ export function AdminDataTable<TData extends { id: string }>({
           <TableBody>
             {table.getRowModel().rows.map((row) => {
               const isSelected = state.selectedIds.has(row.original.id);
+              const customRowClass = rowClassName?.(row.original);
               return (
                 <TableRow
                   key={row.id}
-                  className={`content-enter ${isSelected ? 'bg-muted' : ''}`}
+                  className={`content-enter ${isSelected ? 'bg-muted' : ''} ${customRowClass ?? ''}`}
                   style={{
                     transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
                     cursor: onRowClick ? 'pointer' : undefined,

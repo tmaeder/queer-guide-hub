@@ -11,6 +11,7 @@ import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AppleCardsCarousel, type CarouselCard } from '@/components/effects/AppleCardsCarousel';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { Eyebrow } from '@/components/ui/Eyebrow';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -89,8 +90,11 @@ const Index = React.memo(() => {
       <div className="relative flex flex-col md:flex-row md:min-h-[calc(100vh-64px)] bg-background overflow-hidden">
         {/* Text panel */}
         <div className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0">
+          <Eyebrow as="div" className="mb-3">
+            {t('home.eyebrow', 'Queer Guide')}
+          </Eyebrow>
           <h1
-            className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold leading-[1.05] mb-4 text-foreground"
+            className="text-display sm:text-hero md:text-hero lg:text-hero-xl font-bold leading-[1.05] mb-4 text-foreground"
             style={{ letterSpacing: '-0.04em' }}
           >
             {t('home.heroLine1', 'Queer venues,')} {t('home.heroLine2', 'events, and people.')}{' '}
@@ -206,12 +210,17 @@ const Index = React.memo(() => {
       <section className="px-4 sm:px-6 md:px-8 py-10 md:py-14">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end justify-between mb-4">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              {t('home.trendingCities', 'Trending cities')}
-            </h2>
+            <div>
+              <Eyebrow as="div" className="mb-2">
+                {t('home.discover', 'Discover')}
+              </Eyebrow>
+              <h2 className="text-headline md:text-headline-lg font-bold tracking-tight">
+                {t('home.trendingCities', 'Trending cities')}
+              </h2>
+            </div>
             <LocalizedLink
               to="/cities"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-13 text-muted-foreground hover:text-foreground transition-colors"
             >
               {t('home.viewAll', 'View all')} →
             </LocalizedLink>
@@ -274,31 +283,36 @@ const Index = React.memo(() => {
       </section>
 
       {/* ── Browse categories ───────────────────────────────────────── */}
-      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-8">
-          {t('home.browse', 'Browse')}
-        </h2>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border">
-          {featureDefs.map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <li key={feature.titleKey} className="bg-background">
-                <LocalizedLink
-                  to={feature.link}
-                  className="flex h-full items-start gap-4 p-6 transition-colors hover:bg-muted/40 no-underline"
-                >
-                  <Icon size={20} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-xl font-bold tracking-tight">{t(feature.titleKey)}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground leading-[1.5]">
-                      {t(feature.descKey)}
-                    </p>
-                  </div>
-                </LocalizedLink>
-              </li>
-            );
-          })}
-        </ul>
+      <section className="bg-surface-container-low border-y border-hairline">
+        <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
+          <Eyebrow as="div" className="mb-2">
+            {t('home.explore', 'Explore')}
+          </Eyebrow>
+          <h2 className="text-headline md:text-headline-lg font-bold tracking-tight mb-8">
+            {t('home.browse', 'Browse')}
+          </h2>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border">
+            {featureDefs.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <li key={feature.titleKey} className="bg-background">
+                  <LocalizedLink
+                    to={feature.link}
+                    className="flex h-full items-start gap-4 p-6 transition-colors hover:bg-muted/40 no-underline"
+                  >
+                    <Icon size={20} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h3 className="text-xl font-bold tracking-tight">{t(feature.titleKey)}</h3>
+                      <p className="mt-2 text-sm text-muted-foreground leading-[1.5]">
+                        {t(feature.descKey)}
+                      </p>
+                    </div>
+                  </LocalizedLink>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </section>
 
       {/* ── Upcoming Events Near You (hero + index + 14-day strip) ───── */}
@@ -318,7 +332,7 @@ const Index = React.memo(() => {
       {/* ── Final CTA — plain monochrome ─────────────────────────── */}
       <section className="px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background text-center">
         <h2
-          className="text-3xl md:text-5xl font-bold tracking-tight max-w-3xl mx-auto"
+          className="text-display md:text-hero font-bold tracking-tight max-w-3xl mx-auto"
           style={{ letterSpacing: '-0.03em' }}
         >
           {t('home.cta.title', 'Built by the community,')}{' '}
