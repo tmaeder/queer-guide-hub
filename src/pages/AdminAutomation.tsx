@@ -196,6 +196,40 @@ export default function AdminAutomation() {
       : null,
   );
 
+  async function dryRunAll() {
+    setBusySlug('dry-all');
+    try {
+      const { data, error } = await supabase.rpc('admin_automation_dry_run_all');
+      if (error) throw error;
+      const d = data as {
+        automations_examined: number;
+        total_would_change: number;
+        per_slug: Record<string, number | { error: string }>;
+      };
+      const details = Object.entries(d.per_slug)
+        .map(([slug, val]) =>
+          typeof val === 'number' ? `${slug}: ${val}` : `${slug}: ${val.error}`,
+        )
+        .join('\n');
+      toast(
+        `Dry-run all: would change ${d.total_would_change} items across ${d.automations_examined} automation${d.automations_examined === 1 ? '' : 's'}`,
+        { description: details, duration: 8000 },
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Dry-run all failed');
+    } finally {
+      setBusySlug(null);
+      qc.invalidateQueries({ queryKey: ['admin-automation-runs'] });
+    }
+  }
+
+  useRegisterAdminCommandAction({
+    id: 'automation.dry-run-all',
+    label: 'Dry-run all automations',
+    keywords: 'preview simulate everything',
+    perform: () => dryRunAll(),
+  });
+
   async function dryRun(slug: string) {
     setBusySlug(`dry:${slug}`);
     try {
@@ -225,8 +259,23 @@ export default function AdminAutomation() {
             Things the system is doing on its own. Each row is a rule; runs are audited below.
           </p>
         </div>
+        <div className="flex gap-2 flex-shrink-0 flex-wrap">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={dryRunAll}
+            disabled={busySlug !== null}
+            title="Preview every enabled automation in one click"
+          >
+            {busySlug === 'dry-all' ? (
+              <Loader2 size={12} className="mr-1 animate-spin" />
+            ) : (
+              <FlaskConical size={12} className="mr-1" />
+            )}
+            Dry-run all
+          </Button>
         {isAdmin && (
-          <div className="flex gap-2 flex-shrink-0">
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -250,8 +299,9 @@ export default function AdminAutomation() {
               ) : null}
               Resume all
             </Button>
-          </div>
+          </>
         )}
+        </div>
       </header>
 
       {/* Registry */}
