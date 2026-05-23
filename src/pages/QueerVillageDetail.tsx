@@ -34,6 +34,7 @@ export default function QueerVillageDetail() {
     data: village,
     isLoading,
     error,
+    refetch,
   } = useEntityDetail<VillageWithRelations>({
     table: 'queer_villages',
     slug,
@@ -100,7 +101,7 @@ export default function QueerVillageDetail() {
         {
           id: 'overview',
           label: <VillageTabLabel icon={villageTabIcons.Landmark} label="Overview" />,
-          content: <VillageOverviewTab village={village} />,
+          content: <VillageOverviewTab village={village} onContentUpdated={refetch} />,
         },
         {
           id: 'venues',
@@ -137,6 +138,7 @@ export default function QueerVillageDetail() {
               village={village}
               isFavorited={isFavorited(village.id)}
               onFavoriteToggle={handleFavoriteToggle}
+              onContentUpdated={refetch}
             />
           ) : null
         }

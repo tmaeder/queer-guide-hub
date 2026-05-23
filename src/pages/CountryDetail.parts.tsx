@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { Editable } from '@/components/admin/inline/Editable';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { WeatherForecast } from '@/components/weather/WeatherForecast';
 import { LocationInfo } from '@/components/location/LocationInfo';
@@ -97,9 +98,10 @@ export interface CountryHeroProps {
   country: CountryRelation;
   cities: CityRelation[];
   weatherData: WeatherDataType;
+  onContentUpdated?: () => void;
 }
 
-export function CountryHero({ country, cities, weatherData }: CountryHeroProps) {
+export function CountryHero({ country, cities, weatherData, onContentUpdated }: CountryHeroProps) {
   const continentName = (country as unknown as Record<string, { name?: string }>).continents?.name;
   const regionName = (country as unknown as Record<string, { name?: string }>).regions?.name;
   const subtitle = [continentName, regionName].filter(Boolean).join(', ');
@@ -114,7 +116,16 @@ export function CountryHero({ country, cities, weatherData }: CountryHeroProps) 
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-4">
             <h3 className="text-3xl lg:text-5xl font-bold text-foreground">
-              {country.flag_emoji} {country.name}
+              {country.flag_emoji}{' '}
+              <Editable
+                contentType="countries"
+                recordId={country.id}
+                field="name"
+                value={country.name}
+                onSaved={onContentUpdated}
+              >
+                {country.name}
+              </Editable>
             </h3>
           </div>
           {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
