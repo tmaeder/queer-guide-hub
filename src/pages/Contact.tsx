@@ -28,6 +28,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ColourfulText } from '@/components/effects/ColourfulText';
+import { WobbleCard } from '@/components/effects/WobbleCard';
+import { TracingBeam } from '@/components/effects/TracingBeam';
+import { EditorialHero } from '@/components/editorial/EditorialHero';
+import { EDITORIAL_IMAGES } from '@/lib/editorialImages';
 
 const categories = [
   {
@@ -133,17 +137,17 @@ export default function Contact() {
 
   return (
     <div>
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-2">
-            <ColourfulText text="Contact Us" />
-          </h1>
-          <div className="text-muted-foreground">
-            <span className="mr-1.5">Send us a</span>
-            <span className="text-foreground font-semibold">question</span>
-            <span className="ml-1.5">— we read everything.</span>
-          </div>
-        </div>
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <EditorialHero
+          eyebrow="Contact"
+          title={<ColourfulText text="Say hello." />}
+          subtitle="Send us a question — partnership, safety, bug report, or just a thought. We read everything."
+          image={EDITORIAL_IMAGES.contact.hero}
+          imagePosition="side"
+          decoration="none"
+          height="md"
+          className="mb-12 md:mb-16"
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Contact Form */}
@@ -246,27 +250,29 @@ export default function Contact() {
             {categories
               .filter((c) => c.value !== 'other')
               .map((method) => (
-                <Card key={method.value}>
-                  <CardContent>
-                    <div className="flex items-start gap-4">
-                      <method.icon
-                        style={{ width: 20, height: 20 }}
-                        className="text-primary shrink-0 mt-0.5"
-                      />
-                      <div className="flex-1">
-                        <p className="font-semibold text-15">{method.label}</p>
-                        <div className="flex items-center justify-between mt-1">
-                          <a href={`mailto:${method.email}`} className="text-sm text-primary">
-                            {method.email}
-                          </a>
-                          <span className="text-xs text-muted-foreground">
-                            ~{method.responseTime}
-                          </span>
+                <WobbleCard key={method.value}>
+                  <Card>
+                    <CardContent>
+                      <div className="flex items-start gap-4">
+                        <method.icon
+                          style={{ width: 20, height: 20 }}
+                          className="text-primary shrink-0 mt-0.5"
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold text-15">{method.label}</p>
+                          <div className="flex items-center justify-between mt-1">
+                            <a href={`mailto:${method.email}`} className="text-sm text-primary">
+                              {method.email}
+                            </a>
+                            <span className="text-xs text-muted-foreground">
+                              ~{method.responseTime}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </WobbleCard>
               ))}
 
             <Card>
@@ -289,38 +295,40 @@ export default function Contact() {
         </div>
 
         {/* FAQ */}
-        <section>
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <HelpCircle size={24} className="text-primary" />
-            Frequently Asked Questions
-          </h2>
-          <div className="flex flex-col gap-4">
-            {faqs.map((faq, index) => (
-              <Card key={index}>
-                <Collapsible
-                  open={openFaq === index}
-                  onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}
-                >
-                  <CollapsibleTrigger className="flex w-full flex-col gap-1.5 p-6 text-left">
-                    <div className="flex w-full items-center justify-between">
-                      <p className="font-semibold text-15">{faq.question}</p>
-                      {openFaq === index ? (
-                        <ChevronDown size={18} className="shrink-0" />
-                      ) : (
-                        <ChevronRight size={18} className="shrink-0" />
-                      )}
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">{faq.answer}</p>
-                    </CardContent>
-                  </CollapsibleContent>
-                </Collapsible>
-              </Card>
-            ))}
-          </div>
-        </section>
+        <TracingBeam>
+          <section>
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <HelpCircle size={24} className="text-primary" />
+              Frequently Asked Questions
+            </h2>
+            <div className="flex flex-col gap-4">
+              {faqs.map((faq, index) => (
+                <Card key={index}>
+                  <Collapsible
+                    open={openFaq === index}
+                    onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}
+                  >
+                    <CollapsibleTrigger className="flex w-full flex-col gap-1.5 p-6 text-left">
+                      <div className="flex w-full items-center justify-between">
+                        <p className="font-semibold text-15">{faq.question}</p>
+                        {openFaq === index ? (
+                          <ChevronDown size={18} className="shrink-0" />
+                        ) : (
+                          <ChevronRight size={18} className="shrink-0" />
+                        )}
+                      </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">{faq.answer}</p>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </Card>
+              ))}
+            </div>
+          </section>
+        </TracingBeam>
       </div>
     </div>
   );
