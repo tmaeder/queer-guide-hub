@@ -263,7 +263,7 @@ export function AIAssistDrawer({
                     <Button
                       size="sm"
                       onClick={() => apply(op, result.output)}
-                      className="text-xs font-semibold gap-1 bg-foreground hover:bg-foreground text-white"
+                      className="text-xs font-semibold gap-1 bg-foreground hover:bg-foreground text-background"
                     >
                       <Check size={12} />
                       Apply
