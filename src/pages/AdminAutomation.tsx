@@ -108,6 +108,23 @@ export default function AdminAutomation() {
     qc.invalidateQueries({ queryKey: ['admin-automations'] });
   }
 
+  async function toggleEnabled(slug: string, next: boolean) {
+    setBusySlug(`toggle:${slug}`);
+    try {
+      const { error } = await supabase.rpc('admin_automation_set_enabled', {
+        p_slug: slug,
+        p_enabled: next,
+      });
+      if (error) throw error;
+      toast.success(next ? `Enabled ${slug}` : `Paused ${slug}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Toggle failed');
+    } finally {
+      setBusySlug(null);
+      qc.invalidateQueries({ queryKey: ['admin-automations'] });
+    }
+  }
+
   async function dryRun(slug: string) {
     setBusySlug(`dry:${slug}`);
     try {
@@ -178,14 +195,23 @@ export default function AdminAutomation() {
                         : 'Never'}
                     </td>
                     <td className="px-4 py-2">
-                      {a.enabled ? (
-                        <Badge variant="outline" className="font-normal">
-                          enabled
-                        </Badge>
+                      {isAdmin ? (
+                        <Button
+                          variant={a.enabled ? 'outline' : 'secondary'}
+                          size="sm"
+                          onClick={() => toggleEnabled(a.slug, !a.enabled)}
+                          disabled={busySlug !== null}
+                          className="font-normal h-6 text-2xs"
+                        >
+                          {busySlug === `toggle:${a.slug}` ? (
+                            <Loader2 size={11} className="mr-1 animate-spin" />
+                          ) : null}
+                          {a.enabled ? 'enabled · click to pause' : 'paused · click to enable'}
+                        </Button>
+                      ) : a.enabled ? (
+                        <Badge variant="outline" className="font-normal">enabled</Badge>
                       ) : (
-                        <Badge variant="secondary" className="font-normal">
-                          paused
-                        </Badge>
+                        <Badge variant="secondary" className="font-normal">paused</Badge>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
