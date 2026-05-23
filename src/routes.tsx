@@ -33,6 +33,7 @@ const About = lazyRetry(() => import('./pages/About'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const AuthCallback = lazyRetry(() => import('./pages/AuthCallback'));
+const ClaimUsername = lazyRetry(() => import('./pages/ClaimUsername'));
 const ExtensionInstall = lazyRetry(() => import('./pages/ExtensionInstall'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
 const SearchPersonalization = lazyRetry(() => import('./pages/onboarding/SearchPersonalization'));
@@ -231,6 +232,7 @@ export const AppRoutes = () => {
               {/* Auth routes — no locale prefix */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/claim-username" element={<ClaimUsername />} />
               <Route path="/extension" element={<ExtensionInstall />} />
               <Route path="/pattern-library" element={<PatternLibrary />} />
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
