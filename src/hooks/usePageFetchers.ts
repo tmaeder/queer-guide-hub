@@ -89,13 +89,22 @@ export async function fetchRedirectById<T = unknown>(id: string): Promise<T | nu
   return (data as T | null) ?? null;
 }
 
-/** EventDetail.tsx — upsert attendance. */
+/** EventDetail.tsx — upsert attendance.
+ *
+ * D4: must specify `onConflict: 'event_id,user_id'` because the table's
+ * primary key is `id` (auto-generated) while uniqueness is enforced by
+ * the (event_id, user_id) constraint. Without onConflict, the second
+ * call for the same (event, user) tries to INSERT a new row and hits a
+ * 23505 unique violation surfaced as "Failed to update attendance".
+ */
 export async function upsertEventAttendance(payload: {
   event_id: string;
   user_id: string;
-  status: string;
+  status: 'going' | 'interested' | 'not_going';
 }) {
-  const { error } = await supabase.from('event_attendees').upsert(payload);
+  const { error } = await supabase
+    .from('event_attendees')
+    .upsert(payload, { onConflict: 'event_id,user_id' });
   return { error };
 }
 
@@ -175,20 +184,25 @@ export async function fetchEventBySlugOrId<T extends { id: string }>(
   return { ...event, attendee_counts, user_attendance };
 }
 
-/** PersonalityDetail.parts.tsx — public personality by slug, then by id. */
+/** PersonalityDetail.parts.tsx — public personality by slug, then by id.
+ * Joins city.historical_names so the detail page can resolve period-correct
+ * birthplaces (e.g. "Ost-Berlin, DDR") without a second round-trip. */
+const PERSONALITY_DETAIL_SELECT =
+  '*, birth_city:cities!city_id(id,name,name_de,name_en,historical_names,country:countries!country_id(code,name,flag_emoji))';
+
 export async function fetchPublicPersonalityBySlugOrId<T = unknown>(
   slugOrId: string,
 ): Promise<T | null> {
   let { data, error } = await supabase
     .from('personalities')
-    .select('*')
+    .select(PERSONALITY_DETAIL_SELECT)
     .eq('slug', slugOrId)
     .eq('visibility', 'public')
     .maybeSingle();
   if (!data && !error) {
     const fb = await supabase
       .from('personalities')
-      .select('*')
+      .select(PERSONALITY_DETAIL_SELECT)
       .eq('id', slugOrId)
       .eq('visibility', 'public')
       .maybeSingle();

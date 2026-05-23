@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +29,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   );
   const [loading, setLoading] = useState(!localStorage.getItem(STORAGE_KEY));
   const [geoResolved, setGeoResolved] = useState(false);
+  // Tracks whether the user has explicitly picked a currency in this session
+  // (either by clicking the selector, or by having a prior choice already in
+  // localStorage). Profile-sync below must not override an explicit choice —
+  // otherwise the GBP-was-just-set-but-displays-as-EUR-after-nav bug returns.
+  const userPickedRef = useRef<boolean>(!!localStorage.getItem(STORAGE_KEY));
 
   // Resolve currency from geo when no stored preference exists
   useEffect(() => {
@@ -69,11 +74,17 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const { profile } = useProfile();
   useEffect(() => {
     if (!user || !profile) return;
+    // Only seed from the profile when the user has not made an explicit
+    // selection in this session. After the first ingest, profile updates
+    // (including the round-trip from our own setCurrency below) must not
+    // overwrite the active state.
+    if (userPickedRef.current) return;
     const saved = (profile.preferences as Record<string, unknown> | null)?.currency;
     if (typeof saved === 'string' && saved.length === 3) {
       const code = saved.toUpperCase();
       setCurrencyState(code);
       localStorage.setItem(STORAGE_KEY, code);
+      userPickedRef.current = true;
     }
   }, [user?.id, profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -83,6 +94,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       const upper = code.toUpperCase();
       setCurrencyState(upper);
       localStorage.setItem(STORAGE_KEY, upper);
+      userPickedRef.current = true;
 
       // Persist to profile for authenticated users.
       // Read existing preferences from the cached profile (no extra fetch),

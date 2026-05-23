@@ -33,6 +33,7 @@ const About = lazyRetry(() => import('./pages/About'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const AuthCallback = lazyRetry(() => import('./pages/AuthCallback'));
+const ClaimUsername = lazyRetry(() => import('./pages/ClaimUsername'));
 const ExtensionInstall = lazyRetry(() => import('./pages/ExtensionInstall'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
 const SearchPersonalization = lazyRetry(() => import('./pages/onboarding/SearchPersonalization'));
@@ -92,6 +93,8 @@ const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'))
 const AdminHotels = lazy(() => import('./pages/AdminHotels'));
 const AdminQueerVillages = lazy(() => import('./pages/AdminQueerVillages'));
 const AdminReview = lazy(() => import('./pages/AdminReview'));
+const AdminInbox = lazy(() => import('./pages/AdminInbox'));
+const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 // CMS components rendered as admin views
@@ -166,6 +169,7 @@ const FeedbackBoard = lazyRetry(() => import('./pages/FeedbackBoard'));
 const HelpHotlines = lazyRetry(() => import('./pages/HelpHotlines'));
 const CMSPage = lazyRetry(() => import('./pages/Page'));
 const ShareTarget = lazyRetry(() => import('./pages/ShareTarget'));
+const PridePage = lazyRetry(() => import('./pages/Pride'));
 
 /** Routes table + per-route ErrorBoundary/Suspense/MotionPage and a11y main element */
 export const AppRoutes = () => {
@@ -228,6 +232,7 @@ export const AppRoutes = () => {
               {/* Auth routes — no locale prefix */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/claim-username" element={<ClaimUsername />} />
               <Route path="/extension" element={<ExtensionInstall />} />
               <Route path="/pattern-library" element={<PatternLibrary />} />
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
@@ -274,8 +279,9 @@ export const AppRoutes = () => {
                 <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 
                 {/* Review & Workflow section -- unified dashboard */}
-                <Route path="automation" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="review" element={<AdminReview />} />
+                <Route path="inbox" element={<AdminInbox />} />
+                <Route path="automation" element={<AdminAutomation />} />
                 <Route path="feedback" element={<AdminFeedback />} />
                 <Route
                   path="moderation"
@@ -379,6 +385,8 @@ export const AppRoutes = () => {
                 <Route path="venues/:slug" element={<VenueDetail />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/:slug" element={<EventDetail />} />
+                <Route path="pride" element={<PridePage />} />
+                <Route path="pride/:year" element={<PridePage />} />
                 <Route path="marketplace" element={<Marketplace />} />
                 <Route path="marketplace/share" element={<MarketplaceShare />} />
                 <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
@@ -463,6 +471,10 @@ export const AppRoutes = () => {
                 <Route path="submit/:contentType" element={<SubmitForm />} />
                 <Route path="p/:slug" element={<CMSPage />} />
                 <Route path="share-target" element={<ShareTarget />} />
+                {/* Inner catch-all: paths like /de/unknown or /en/typo
+                  fall through to NotFound instead of rendering nothing
+                  inside the locale layout. */}
+                <Route path="*" element={<NotFound />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

@@ -28,14 +28,29 @@ export function useModeration() {
   const createFlag = useCallback(async (params: CreateFlagParams) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-moderation-flag', {
-        body: params,
-      });
+      // Direct insert — RLS policy "Authenticated users can create flags"
+      // requires auth.uid() IS NOT NULL. The legacy create-moderation-flag
+      // edge function was removed in 83830700.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Must be logged in to create a report');
+
+      const { data, error } = await supabase
+        .from('moderation_flags')
+        .insert({
+          content_type:      params.content_type,
+          content_id:        params.content_id,
+          flag_type:         params.flag_type,
+          reason:            params.reason,
+          suggested_changes: params.suggested_changes ?? null,
+          reporter_user_id:  user.id,
+          source:            'user',
+          status:            'OPEN',
+        })
+        .select()
+        .single();
 
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      return { success: true, flag: data.flag };
+      return { success: true, flag: data };
     } catch (error: unknown) {
       return { success: false, error: error instanceof Error ? error.message : String(error) || 'Failed to create report' };
     } finally {

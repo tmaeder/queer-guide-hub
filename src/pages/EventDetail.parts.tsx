@@ -54,7 +54,23 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
     latitude: number | null;
     longitude: number | null;
   } | null;
-  cities?: { id: string; slug?: string; name: string } | null;
+  cities?: {
+    id: string;
+    slug?: string;
+    name: string;
+    country_id?: string | null;
+    // D10: include the city's country so the detail page can prefer it
+    // when the event's denormalised country_id disagrees with the city's
+    // (the upstream feed wins normally — this is a coordinate-anchored
+    // safety net for cases like Salford getting tagged as US).
+    countries?: {
+      id: string;
+      slug?: string;
+      name: string;
+      equality_score: number | null;
+      lgbti_criminalization: Record<string, unknown> | null;
+    } | null;
+  } | null;
   countries?: {
     id: string;
     slug?: string;
@@ -90,7 +106,7 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
 export const EVENT_SELECT_FIELDS = `
   *,
   venues!venue_id(id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
-  cities:city_id(id, slug, name),
+  cities:city_id(id, slug, name, country_id, countries:country_id(id, slug, name, equality_score, lgbti_criminalization)),
   countries:country_id(id, slug, name, equality_score, lgbti_criminalization),
   festivals:festival_id(id, name),
   organizer:venues!organizer_id(id, slug, name, website, email, instagram, phone, organizer_handles)
@@ -457,7 +473,17 @@ export function EventOverview({
               <div className="flex gap-4">
                 <Button
                   variant={userAttendance === 'going' ? 'default' : 'outline'}
-                  onClick={() => onAttendanceUpdate('going')}
+                  // D4: clicking the active state clears RSVP (writes 'not_going').
+                  onClick={() =>
+                    onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')
+                  }
+                  // D9: announce toggle state to assistive tech.
+                  aria-pressed={userAttendance === 'going'}
+                  aria-label={
+                    userAttendance === 'going'
+                      ? 'Cancel RSVP — currently marked as going'
+                      : 'Mark RSVP as going'
+                  }
                   style={{ flex: 1 }}
                 >
                   <Users size={16} className="mr-2" />
@@ -465,7 +491,17 @@ export function EventOverview({
                 </Button>
                 <Button
                   variant={userAttendance === 'interested' ? 'default' : 'outline'}
-                  onClick={() => onAttendanceUpdate('interested')}
+                  onClick={() =>
+                    onAttendanceUpdate(
+                      userAttendance === 'interested' ? 'not_going' : 'interested',
+                    )
+                  }
+                  aria-pressed={userAttendance === 'interested'}
+                  aria-label={
+                    userAttendance === 'interested'
+                      ? 'Cancel RSVP — currently marked as interested'
+                      : 'Mark RSVP as interested'
+                  }
                   style={{ flex: 1 }}
                 >
                   <Users size={16} className="mr-2" />

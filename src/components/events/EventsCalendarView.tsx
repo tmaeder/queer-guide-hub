@@ -69,9 +69,17 @@ export const EventsCalendarView = ({
       const eventDate = parseISO(event.start_date);
       return eventDate >= monthStart && eventDate <= monthEnd;
     });
+    // D3: filter null/empty event_type so the "Categories" stat reflects
+    // real types only. Previously a single null in the Set inflated the
+    // count and produced misleading values.
+    const distinctTypes = new Set(
+      monthEvents
+        .map((e) => e.event_type)
+        .filter((t): t is string => typeof t === 'string' && t.trim().length > 0),
+    );
     return {
       totalEvents: monthEvents.length,
-      eventTypes: [...new Set(monthEvents.map((e) => e.event_type))].length,
+      eventTypes: distinctTypes.size,
       freeEvents: monthEvents.filter((e) => e.is_free).length,
     };
   }, [events, currentMonth]);
@@ -276,8 +284,21 @@ export const EventsCalendarView = ({
                           <div className="flex flex-col gap-2 mb-4">
                             <div className="flex items-center gap-2 text-muted-foreground">
                               <Clock className="h-3 w-3 flex-shrink-0" />
-                              <span className="text-xs">
-                                {formatEventTime(event.start_date, event.end_date)}
+                              <span
+                                className="text-xs"
+                                title={
+                                  (event as { timezone?: string | null }).timezone
+                                    ? `Times shown in ${(event as { timezone?: string | null }).timezone}`
+                                    : 'Times shown in your local timezone'
+                                }
+                              >
+                                {/* D11: pass event.timezone so calendar-day
+                                    times stay event-local. */}
+                                {formatEventTime(
+                                  event.start_date,
+                                  event.end_date,
+                                  (event as { timezone?: string | null }).timezone,
+                                )}
                               </span>
                             </div>
 
@@ -338,13 +359,18 @@ export const EventsCalendarView = ({
                                     >
                                       Interested
                                     </Button>
+                                    {/* D4: rename "Not Going" → "Clear RSVP".
+                                        Status 'not_going' is the schema's
+                                        third valid value and preserves
+                                        history while removing the user
+                                        from going/interested counts. */}
                                     <Button
                                       size="sm"
                                       variant="ghost"
                                       className="w-full text-muted-foreground"
                                       onClick={() => onAttendanceUpdate(event.id, 'not_going')}
                                     >
-                                      Not Going
+                                      Clear RSVP
                                     </Button>
                                   </div>
                                 </PopoverContent>

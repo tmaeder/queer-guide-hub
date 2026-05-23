@@ -29,6 +29,7 @@ import {
   VenuePhotos,
   VenueEventsTab,
   VenueReviewsTab,
+  buildVenueBreadcrumbs,
 } from './VenueDetail.parts';
 
 export default function VenueDetail() {
@@ -174,8 +175,12 @@ export default function VenueDetail() {
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
-  const cityName = venue?.cities?.name ?? venue?.city ?? null;
-  const countryName = venue?.countries?.name ?? venue?.country ?? null;
+  // Only use the joined city/country names. The raw `venue.city` /
+  // `venue.country` text columns contain inconsistent data — full names
+  // for some rows, ISO codes for others — and would surface as "CH" or
+  // "DE" in the breadcrumb. Omit the segment instead.
+  const cityName = venue?.cities?.name ?? null;
+  const countryName = venue?.countries?.name ?? null;
   const cityLink = venue?.cities?.id ? `/city/${venue.cities.slug || venue.cities.id}` : null;
   const countryLink = venue?.countries?.id
     ? `/country/${venue.countries.slug || venue.countries.id}`
@@ -184,14 +189,7 @@ export default function VenueDetail() {
   const remainingImages =
     venue?.images && venue.images.length > 1 ? venue.images.slice(1) : venue?.images || [];
 
-  const breadcrumbs = venue
-    ? [
-        { label: 'Venues', href: '/venues' },
-        ...(countryName ? [{ label: countryName, href: countryLink ?? undefined }] : []),
-        ...(cityName ? [{ label: cityName, href: cityLink ?? undefined }] : []),
-        { label: venue.name },
-      ]
-    : undefined;
+  const breadcrumbs = buildVenueBreadcrumbs(venue);
 
   const tabs: EntityDetailTab[] = venue
     ? [

@@ -47,14 +47,26 @@ import {
 } from './_lib/routeMeta';
 import { homepageJsonLd } from './_lib/jsonLd';
 import { isBotUserAgent } from './_lib/botUa';
-import { buildBodyHtml } from './_lib/routeBody';
+import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
+import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath } from './_lib/detail';
 import { resolveLandingRoute } from './_lib/landing';
+import {
+  applySecurityHeaders,
+  generateCspNonce,
+} from './_lib/securityHeaders';
 import type { Env } from './_lib/sitemap';
 
-const SKIP_PREFIXES = ['/api/', '/functions/', '/assets/', '/icons/', '/images/', '/fonts/'];
-const SKIP_SUFFIXES = [
+// Prefixes that look like static assets. If the SPA catch-all in
+// _redirects falls through and we'd otherwise serve index.html for one
+// of these, return a real 404 instead — module loaders reject text/html
+// for a .js URL ("Expected a JavaScript module") and caches happily
+// store HTML under a hashed-asset URL, which then bricks every
+// subsequent navigation. See finding F2.
+const ASSET_PREFIXES = ['/assets/', '/icons/', '/images/', '/fonts/'];
+const ASSET_SUFFIXES = [
   '.js',
+  '.mjs',
   '.css',
   '.map',
   '.png',
@@ -64,20 +76,43 @@ const SKIP_SUFFIXES = [
   '.avif',
   '.svg',
   '.ico',
-  '.json',
-  '.xml',
-  '.txt',
   '.woff',
   '.woff2',
 ];
 
+// Path prefixes the route-meta middleware never touches (no HTML to
+// rewrite). /assets/ is intentionally NOT in this list any more — the
+// middleware *does* look at /assets/ responses to convert HTML SPA
+// fallbacks into real 404s.
+const SKIP_PREFIXES = ['/api/', '/functions/'];
+const SKIP_SUFFIXES = ['.json', '.xml', '.txt'];
+
+function looksLikeAssetPath(pathname: string): boolean {
+  if (ASSET_PREFIXES.some((p) => pathname.startsWith(p))) return true;
+  return ASSET_SUFFIXES.some((s) => pathname.endsWith(s));
+}
+
 const escapeAttr = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+class HtmlLangRewriter {
+  constructor(private readonly lang: string) {}
+  element(el: Element) {
+    el.setAttribute('lang', this.lang);
+  }
+}
 
 class TitleRewriter {
   constructor(private readonly title: string) {}
   element(el: Element) {
     el.setInnerContent(this.title);
+  }
+}
+
+class NoscriptRewriter {
+  constructor(private readonly html: string) {}
+  element(el: Element) {
+    el.setInnerContent(this.html, { html: true });
   }
 }
 
@@ -102,13 +137,43 @@ class RootBodyInjector {
   }
 }
 
+// Stamps a fresh CSP nonce on every <script> element in the rewritten
+// HTML so the nonce-based CSP can drop 'unsafe-inline' from script-src
+// without breaking the theme bootstrap or the umami loader.
+class ScriptNonceInjector {
+  constructor(private readonly nonce: string) {}
+  element(el: Element) {
+    el.setAttribute('nonce', this.nonce);
+  }
+}
+
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, next, env } = context;
   const url = new URL(request.url);
   const { pathname } = url;
 
+  // Per-request CSP nonce. Generated up front so both the HTML rewriter
+  // and any synthetic 404 we may emit share the same value.
+  const cspNonce = generateCspNonce();
+
   if (SKIP_PREFIXES.some((p) => pathname.startsWith(p))) return next();
   if (SKIP_SUFFIXES.some((s) => pathname.endsWith(s))) return next();
+
+  const isAssetLikePath = looksLikeAssetPath(pathname);
+
+  // Static-asset paths: let the CF Pages static handler answer. If the
+  // file exists we hand the response through untouched (the static
+  // handler sets the right Content-Type and the _headers rules apply).
+  // If the SPA catch-all in _redirects has rewritten the response to
+  // index.html (text/html), convert it into a real 404 — see F2.
+  if (isAssetLikePath) {
+    const assetResponse = await next();
+    const assetCt = (assetResponse.headers.get('content-type') ?? '').toLowerCase();
+    if (assetCt.includes('text/html')) {
+      return notFoundAssetResponse(pathname, cspNonce);
+    }
+    return assetResponse;
+  }
 
   // Strip the optional /:locale prefix so route resolution operates on the
   // canonical (default-locale) path. Each translated URL keeps its own
@@ -119,29 +184,74 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // /pride/:year/:city) bypass the SPA shell and return a complete HTML
   // document.
   const landing = await resolveLandingRoute(env, basePath);
-  if (landing) return landing;
+  if (landing) {
+    applySecurityHeaders(landing, cspNonce);
+    return landing;
+  }
 
-  const response = await next();
-  const contentType = response.headers.get('content-type') ?? '';
+  let response = await next();
+  let contentType = response.headers.get('content-type') ?? '';
+
+  // SPA fallback. With a Pages Function claiming `/*`, the `_redirects`
+  // rule `/*  /index.html  200` is bypassed: the static-asset layer
+  // returns the built-in 404 page for any path that isn't an actual
+  // file. Refetch the SPA shell so React Router can render the route.
+  //
+  // Fetch `/` rather than `/index.html` — CF Pages redirects
+  // `/index.html` → `/` (308) and `env.ASSETS.fetch` does NOT auto-follow,
+  // which made the original fallback silently fail (indexResponse.ok =
+  // false on a 308) and 404-ed every deep route. See feedback 81017609.
+  //
+  // Detail routes that look like SPA routes but have no matching DB row
+  // still 404 — that branch runs after this block.
+  if (response.status === 404 && contentType.includes('text/html')) {
+    const indexResponse = await env.ASSETS.fetch(
+      new URL('/', request.url).toString(),
+    );
+    if (indexResponse.ok) {
+      response = new Response(indexResponse.body, {
+        status: 200,
+        headers: indexResponse.headers,
+      });
+      contentType = response.headers.get('content-type') ?? '';
+    }
+  }
+
   if (!contentType.includes('text/html')) return response;
+  // Bail on non-200 responses — error pages, redirects, and 410 Gone
+  // (functions/news/[slug].ts) ship complete HTML that the head-rewriter
+  // would clobber.
+  if (response.status !== 200) return response;
 
-  const indexable = isIndexable(basePath);
+  const pathIndexable = isIndexable(basePath);
+
+  // P3.1 — unlocalised locale-prefixed URLs are noindexed so Google doesn't
+  // index 10 English duplicates of every page. Default locale (no prefix)
+  // is always indexable. See scripts/seo-localised-locales.mjs.
+  const localeIndexable = !locale || locale === DEFAULT_LOCALE || isLocaleLocalised(locale);
 
   // Detail routes look up the row in Supabase and override meta/body/JSON-LD.
   // Returns null if the path isn't a detail route OR the row isn't found.
   const detail = await resolveDetailRoute(env, basePath);
 
+  // Per-row indexability (P1.1): seo_indexable=false on the row vetoes
+  // indexing even if the path is otherwise indexable.
+  const indexable =
+    pathIndexable && localeIndexable && (detail ? detail.indexable !== false : true);
+
   // Hard 404 for unknown detail slugs. We only return 404 when the path
   // *looks like* a detail route — for non-detail paths a null detail just
   // means "no override needed" and the SPA renders normally.
   if (!detail && isDetailPath(basePath)) {
-    return new Response(notFoundHtml(basePath), {
+    const notFound = new Response(notFoundHtml(basePath), {
       status: 404,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, s-maxage=60, max-age=30',
       },
     });
+    applySecurityHeaders(notFound, cspNonce);
+    return notFound;
   }
 
   const meta = detail?.meta ?? resolveMeta(basePath);
@@ -178,7 +288,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // Each locale's URL points to itself; the default locale is no-prefix
   // English.
   if (indexable) {
-    for (const l of SUPPORTED_LOCALES) {
+    // P3.1 — only emit hreflang for locales that have meaningful
+    // translations. Untranslated locales produced duplicate English
+    // content with no signal value; emitting them as alternates told
+    // Google to index 10 identical English pages per URL. The localised
+    // set is regenerated by scripts/seo-localised-locales.mjs.
+    void SUPPORTED_LOCALES; // keep the import live so future changes stay in sync
+    for (const l of LOCALISED_LOCALES) {
       headInjections.push(
         `<link rel="alternate" hreflang="${l}" href="${escapeAttr(localizedUrl(l, basePath))}">`,
       );
@@ -198,9 +314,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   const rewriter = new HTMLRewriter()
+    .on('html', new HtmlLangRewriter(locale))
     .on('title', new TitleRewriter(meta.title))
     .on('meta[name="description"]', new MetaContentRewriter(meta.description))
+    .on('script', new ScriptNonceInjector(cspNonce))
     .on('head', new HeadInjector(headInjections.join('\n    ')));
+
+  // P3.3 — per-route noscript fallback. Crisis routes keep the global
+  // crisis-hotline default that ships in index.html (buildNoscriptHtml
+  // returns null for them). Other indexable routes get a route-specific
+  // summary + internal links so pre-JS visitors see meaningful content.
+  const noscriptHtml = indexable ? buildNoscriptHtml(basePath) : null;
+  if (noscriptHtml) {
+    rewriter.on('noscript', new NoscriptRewriter(noscriptHtml));
+  }
 
   const isBot = indexable && isBotUserAgent(request.headers.get('user-agent'));
   if (isBot) {
@@ -210,6 +337,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   const rewritten = rewriter.transform(response);
+  applySecurityHeaders(rewritten, cspNonce);
 
   // Vary on UA so downstream caches don't serve bot HTML to humans.
   // We branch on User-Agent for indexable HTML responses, so downstream
@@ -292,6 +420,24 @@ function notFoundKindFor(pathname: string): NotFoundKind {
     backLabel: 'Home',
     backHref: '/',
   };
+}
+
+// Synthetic 404 for missing static-asset paths. Body is plain text so
+// a JS/CSS module loader hitting this URL fails with a clear "404",
+// not "Expected JavaScript module but received text/html". Security
+// headers are applied so even error responses carry CSP (finding F6).
+function notFoundAssetResponse(pathname: string, nonce: string): Response {
+  const res = new Response(`404 Not Found: ${pathname}\n`, {
+    status: 404,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      // Don't let edges or browsers cache a 404 for a hashed asset:
+      // a follow-up deploy may legitimately republish the file.
+      'Cache-Control': 'no-store',
+    },
+  });
+  applySecurityHeaders(res, nonce);
+  return res;
 }
 
 function notFoundHtml(pathname: string): string {

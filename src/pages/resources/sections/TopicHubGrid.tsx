@@ -7,6 +7,7 @@
  * topics.config.ts when the query returns zero rows (offline / unseeded DB).
  */
 
+import { createElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TOPIC_HUBS } from '@/pages/resources/topics.config';
@@ -50,7 +51,15 @@ export function TopicHubGrid() {
 }
 
 function TopicCard({ topic }: { topic: TopicHubRow }) {
-  const Icon = topicIcon(topic.icon_name);
+  // `topicIcon()` returns a lucide-react component type from a stable
+  // module-scope map. Aliasing it as a JSX-tagged identifier (`const Icon =
+  // ...; <Icon />`) trips react-hooks/static-components even though the
+  // component type is in fact stable; we render via React.createElement to
+  // make that intent explicit.
+  const iconElement = createElement(topicIcon(topic.icon_name), {
+    'aria-hidden': true,
+    style: { width: 18, height: 18, opacity: 0.75 },
+  });
   return (
     <LocalizedLink
       to={`/resources/topic/${topic.slug}`}
@@ -58,7 +67,7 @@ function TopicCard({ topic }: { topic: TopicHubRow }) {
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
-          <Icon aria-hidden style={{ width: 18, height: 18, opacity: 0.75 }} />
+          {iconElement}
           <span className="font-semibold text-sm">{topic.title}</span>
         </div>
         <ChevronRight

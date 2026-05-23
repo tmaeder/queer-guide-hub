@@ -6,6 +6,7 @@ import { addDays, format, isSameDay, startOfDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { dedupeEvents } from '@/utils/eventDedup';
 
 type Event = {
   id: string;
@@ -51,7 +52,9 @@ const RegionalEventsCalendar = () => {
   }, [userLocation?.city, locationLoading, fetchEvents]);
 
   const { hero, list, days, eventsByDay, today } = useMemo(() => {
-    const all = events as Event[];
+    // D2: collapse near-dupes before hero/list selection so the homepage
+    // "Upcoming Events" rail doesn't surface the same event 3×.
+    const all = dedupeEvents(events as Event[]);
     const featured = all.find((e) => e.is_featured);
     const heroEvent = featured ?? all[0] ?? null;
     const rest = all.filter((e) => e.id !== heroEvent?.id).slice(0, 6);

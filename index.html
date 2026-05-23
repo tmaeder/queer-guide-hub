@@ -26,10 +26,29 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+    <!-- Sync theme before paint. Reads the same localStorage key the
+         ThemeProvider uses and applies the .light/.dark class to <html>
+         immediately, so the first paint matches the user's saved choice.
+         Without this the page rendered as light first, then flipped to
+         dark when React hydrated. -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('ui-theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var resolved = saved === 'dark' || saved === 'light'
+            ? saved
+            : (prefersDark ? 'dark' : 'light');
+          document.documentElement.classList.remove('light', 'dark');
+          document.documentElement.classList.add(resolved);
+        } catch (e) { /* private mode or no localStorage — fall back to light */ }
+      })();
+    </script>
+
     <!-- GetYourGuide widget script is loaded on-demand by ActivitiesWidget component -->
 
-    <!-- Umami Analytics - Self-hosted -->
-    <script defer src="/umami.js" data-website-id="queer-guide"></script>
+    <!-- Umami Analytics is loaded only after the user grants analytics
+         consent. See src/utils/analyticsLoader.ts (finding F5). -->
 
     <!-- Default OG/Twitter tags. The Pages middleware (functions/_middleware.ts)
          appends per-route og:url, og:title, og:description, twitter:title and

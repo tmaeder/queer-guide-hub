@@ -193,7 +193,8 @@ export type AIAssistOp =
   | 'alt_text'
   | 'seo_draft'
   | 'auto_tag'
-  | 'fact_check';
+  | 'fact_check'
+  | 'quality_review';
 
 export interface AIAssistConfig {
   ops: AIAssistOp[];

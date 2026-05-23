@@ -139,12 +139,12 @@ export const UserDirectoryGrid = ({
                       </div>
                     )}
                     <div className="flex flex-wrap gap-1">
-                      {(profile as Record<string, unknown>)?.user_mode && (
-                        <UserModeBadge
-                          mode={(profile as Record<string, unknown>).user_mode}
-                          size="sm"
-                        />
-                      )}
+                      {(() => {
+                        const mode = (profile as Record<string, unknown>)?.user_mode;
+                        return typeof mode === 'string' && mode.length > 0
+                          ? <UserModeBadge mode={mode} size="sm" />
+                          : null;
+                      })()}
                       {profile.is_business && (
                         <Badge
                           variant="outline"
@@ -214,10 +214,16 @@ export const UserDirectoryGrid = ({
                       </div>
                     )}
 
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar size={16} className="mr-2" />
-                      Joined {new Date(profile.created_at).toLocaleDateString()}
-                    </div>
+                    {(() => {
+                      const joined = profile.created_at ? new Date(profile.created_at) : null;
+                      if (!joined || Number.isNaN(joined.getTime())) return null;
+                      return (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Calendar size={16} className="mr-2" />
+                          Joined {joined.toLocaleDateString()}
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
 

@@ -42,6 +42,35 @@ interface LocationInfoProps {
   className?: string;
 }
 
+async function fetchWikipediaSummary(query: string): Promise<WikipediaInfo | null> {
+  try {
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return null;
+    const data = await res.json() as {
+      title?: string;
+      extract?: string;
+      description?: string;
+      content_urls?: { desktop?: { page?: string } };
+      thumbnail?: { source?: string };
+      coordinates?: { lat: number; lon: number };
+    };
+    if (!data.extract) return null;
+    return {
+      title:       data.title ?? query,
+      extract:     data.extract,
+      description: data.description,
+      content:     data.extract,
+      pageUrl:     data.content_urls?.desktop?.page ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(query)}`,
+      thumbnail:   data.thumbnail?.source,
+      coordinates: data.coordinates,
+    };
+  } catch (err) {
+    console.error('Wikipedia fetch failed:', err);
+    return null;
+  }
+}
+
 export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
   const [wikipediaInfo, setWikipediaInfo] = useState<WikipediaInfo | null>(null);
   const [images, setImages] = useState<PexelsImage[]>([]);
@@ -62,21 +91,18 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
     setError(null);
 
     try {
-      // Fetch Wikipedia info and Pexels images in parallel
-      const [wikipediaResponse, imagesResponse] = await Promise.all([
-        supabase.functions.invoke('get-wikipedia-info', {
-          body: { query: name, type },
-        }),
+      // Wikipedia: direct REST API (CORS-friendly, no auth). The
+      // get-wikipedia-info edge function was admin-only enrichment, never a
+      // runtime fetcher. fetchWikipediaSummary returns null on miss/error
+      // (any failure should degrade gracefully, not break the page).
+      const [wikipediaInfoResult, imagesResponse] = await Promise.all([
+        fetchWikipediaSummary(name),
         supabase.functions.invoke('get-pexels-images', {
           body: { query: name, type },
         }),
       ]);
 
-      if (wikipediaResponse.error) {
-        console.error('Wikipedia error:', wikipediaResponse.error);
-      } else if (wikipediaResponse.data?.success) {
-        setWikipediaInfo(wikipediaResponse.data);
-      }
+      if (wikipediaInfoResult) setWikipediaInfo(wikipediaInfoResult);
 
       if (imagesResponse.error) {
         console.error('Pexels error:', imagesResponse.error);

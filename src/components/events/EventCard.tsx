@@ -334,8 +334,25 @@ export const EventCard = memo(function EventCard({
                   </div>
                   <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {formatEventTime(event.start_date, event.end_date)}
+                    <span
+                      className="text-sm"
+                      title={
+                        (event as { timezone?: string | null }).timezone
+                          ? `Times shown in ${(event as { timezone?: string | null }).timezone}`
+                          : 'Times shown in your local timezone'
+                      }
+                    >
+                      {/* D11: pass event.timezone so the card shows times in
+                          the event-local zone (e.g. a Berlin party at 22:00
+                          local stays 22:00 instead of rendering as the
+                          visitor's wall-clock time, which produced the
+                          "4:30 AM doors" QA repro). Falls back to browser
+                          local when timezone is null. */}
+                      {formatEventTime(
+                        event.start_date,
+                        event.end_date,
+                        (event as { timezone?: string | null }).timezone,
+                      )}
                     </span>
                   </div>
                 </div>
@@ -405,13 +422,13 @@ export const EventCard = memo(function EventCard({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-1">
                     <div
                       onClick={(e) => e.preventDefault()}
                       onKeyDown={(e) => e.stopPropagation()}
                       role="presentation"
                     >
-                      <FavoriteButton itemId={event.id} type="event" />
+                      <FavoriteButton itemId={event.id} type="event" size="tap" />
                     </div>
                     <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
                       <DropdownMenuTrigger asChild>
@@ -507,8 +524,17 @@ export const EventCard = memo(function EventCard({
 
                 {onUpdateAttendance && (
                   <div className="flex gap-1 pt-1">
+                    {/* D9: announce as toggleable. Cards don't currently
+                        thread per-event user attendance state, so we
+                        emit aria-pressed=false and dynamic aria-label that
+                        describes the action — full state announce ships
+                        with the per-card attendance hook follow-up. */}
                     <Button
                       size="sm"
+                      aria-pressed={false}
+                      aria-label={t('events.card.markGoing', `RSVP as going to ${event.title}`, {
+                        title: event.title,
+                      })}
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
@@ -521,6 +547,12 @@ export const EventCard = memo(function EventCard({
                     <Button
                       size="sm"
                       variant="outline"
+                      aria-pressed={false}
+                      aria-label={t(
+                        'events.card.markInterested',
+                        `Mark interest in ${event.title}`,
+                        { title: event.title },
+                      )}
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();

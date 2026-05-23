@@ -1,7 +1,16 @@
 import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry } from './_lib/sitemap';
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
-  const rows = await fetchRows(env, 'events', 'slug,updated_at', 'slug=not.is.null', 5000);
+  // P1.1 — seo_indexable gate; also drop past/cancelled events from the
+  // sitemap so Google doesn't waste crawl on stale event pages.
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = await fetchRows(
+    env,
+    'events',
+    'slug,updated_at',
+    `slug=not.is.null&seo_indexable=eq.true&status=neq.cancelled&start_date=gte.${today}`,
+    5000,
+  );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
     .map((r) => ({

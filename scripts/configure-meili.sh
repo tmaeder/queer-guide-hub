@@ -65,7 +65,10 @@ apply cities '["type","country"]' '[]' '["title","description","country"]'
 apply countries '["type","continent"]' '[]' '["title","description","continent"]'
 apply personalities '["type","profession","nationality"]' '[]' '["title","name","description","profession","nationality"]'
 apply news '["type","category","is_featured"]' '["is_featured","updated_at"]' '["title","description","category"]'
-apply marketplace '["type","category","featured"]' '["featured"]' '["title","description","category"]'
+apply marketplace \
+	'["type","category","subcategory","business_type","merchant_domain","tags","featured","price"]' \
+	'["featured","price"]' \
+	'["title","description","business_name","brand","category","subcategory"]'
 apply tags '["type","category"]' '[]' '["title","description","category"]'
 apply queer_villages '["type","city","country","featured"]' '["featured"]' '["title","description","city","country"]'
 

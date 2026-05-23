@@ -156,11 +156,35 @@ export const MapShell = ({
           zoom: Math.max(state.viewport?.zoom ?? 12, 12),
         });
       },
-      () => {
-        toast({
-          title: t('map.geolocate.denied', { defaultValue: 'Location denied' }),
-          variant: 'destructive',
-        });
+      (err) => {
+        // Match the PositionError codes so the user knows why we fell back
+        // to the default view instead of getting a silent or generic
+        // "denied" message for what might be a timeout or hardware issue.
+        let title: string;
+        switch (err.code) {
+          case 1: // PERMISSION_DENIED
+            title = t('map.geolocate.denied', {
+              defaultValue: 'Location access is off — showing the default area',
+            });
+            break;
+          case 2: // POSITION_UNAVAILABLE
+            title = t('map.geolocate.unavailable', {
+              defaultValue: "Couldn't get your location — showing the default area",
+            });
+            break;
+          case 3: // TIMEOUT
+            title = t('map.geolocate.timeout', {
+              defaultValue: 'Location lookup timed out — showing the default area',
+            });
+            break;
+          default:
+            title = t('map.geolocate.denied', {
+              defaultValue: 'Location access is off — showing the default area',
+            });
+        }
+        // Informational, not destructive — the map stays usable and we
+        // tell the user what happened.
+        toast({ title });
       },
       { enableHighAccuracy: true, timeout: 8000 },
     );

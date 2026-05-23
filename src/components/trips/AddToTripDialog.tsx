@@ -128,11 +128,29 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
   const handleCreateAndAdd = async () => {
     if (!newTripTitle.trim()) return;
 
+    // Geo is required at DB level (NOT NULL on trips.primary_city_id /
+    // primary_country_id). Without it, the insert fails silently from the
+    // user's POV and the spinner appears to hang. Surface a clear error
+    // instead of firing a doomed mutation.
+    if (!entity.city_id || !entity.country_id) {
+      toast({
+        title: t('trips.addTo.missingGeoTitle', 'Add a city first'),
+        description: t(
+          'trips.addTo.missingGeoDesc',
+          'This place is missing city or country data. Open the full trip planner to start a trip from a city.',
+        ),
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       const trip = await createTrip.mutateAsync({
         title: newTripTitle.trim(),
         start_date: newTripStart || undefined,
         end_date: newTripEnd || undefined,
+        primary_city_id: entity.city_id,
+        primary_country_id: entity.country_id,
       });
 
       await addPlace.mutateAsync({

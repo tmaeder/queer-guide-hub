@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
-const WebScrapersPanel = lazy(() => import('@/components/admin/WebScrapersPanel').then(m => ({ default: m.WebScrapersPanel })));
 const IngestionSourcesManager = lazy(() => import('@/components/admin/IngestionSourcesManager').then(m => ({ default: m.IngestionSourcesManager })));
 const NewsSourcesManager = lazy(() => import('@/components/admin/NewsSourcesManager').then(m => ({ default: m.NewsSourcesManager })));
 const ApiKeysManager = lazy(() => import('@/components/admin/ApiKeysManager').then(m => ({ default: m.ApiKeysManager })));
@@ -262,7 +261,6 @@ export default function SourcesTab() {
           )}
         </div>
 
-        <Suspense fallback={panelFallback}><WebScrapersPanel /></Suspense>
         <Suspense fallback={panelFallback}><IngestionSourcesManager /></Suspense>
         <Suspense fallback={panelFallback}><NewsSourcesManager /></Suspense>
         <Suspense fallback={panelFallback}><ApiKeysManager /></Suspense>

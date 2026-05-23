@@ -61,7 +61,7 @@ export const INDEX_FACETS: Record<string, string[]> = {
 	cities: ["type", "country"],
 	countries: ["type", "continent"],
 	news: ["type", "category", "is_featured"],
-	marketplace: ["type", "category", "featured"],
+	marketplace: ["type", "category", "subcategory", "business_type", "merchant_domain", "tags", "featured", "price"],
 	personalities: ["type", "profession", "nationality"],
 	tags: ["type", "category"],
 	queer_villages: ["type", "city", "country", "featured"],
@@ -112,6 +112,13 @@ export interface SearchFilters {
 	radius?: number;
 	date_from?: string | number | Date;
 	date_to?: string | number | Date;
+	// Marketplace-specific. Need matching filterableAttributes on the
+	// marketplace Meili index — see meilisearch/configure-indexes.sh.
+	subcategory?: string;
+	business_type?: string;
+	merchant_domain?: string;
+	price_min?: number;
+	price_max?: number;
 }
 
 export function buildFilters(filters: SearchFilters | null | undefined): string | undefined {
@@ -133,6 +140,11 @@ export function buildFilters(filters: SearchFilters | null | undefined): string 
 		const t = filters.tags.map((c: string) => `tags = "${esc(c)}"`).join(" OR ");
 		parts.push(`(${t})`);
 	}
+	if (filters.subcategory) parts.push(`subcategory = "${esc(filters.subcategory)}"`);
+	if (filters.business_type) parts.push(`business_type = "${esc(filters.business_type)}"`);
+	if (filters.merchant_domain) parts.push(`merchant_domain = "${esc(filters.merchant_domain)}"`);
+	if (typeof filters.price_min === "number") parts.push(`price >= ${filters.price_min}`);
+	if (typeof filters.price_max === "number") parts.push(`price <= ${filters.price_max}`);
 	if (filters.cluster_ids?.length) {
 		const c = filters.cluster_ids.map((id) => `cluster_ids = "${esc(id)}"`).join(" OR ");
 		parts.push(`(${c})`);

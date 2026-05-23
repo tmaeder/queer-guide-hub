@@ -1321,6 +1321,25 @@
     },
     "news": {
       "title": "Latest News"
+    },
+    "discover": "Discover",
+    "destinationsTitle": "Where the scene lives.",
+    "destinationsSubtitle": "Six cities our community keeps coming back to.",
+    "allCities": "All cities",
+    "exploreCity": "Explore",
+    "browseEyebrow": "The index",
+    "browseTitle": "Browse everything.",
+    "browseSections": "sections",
+    "browse": {
+      "count": {
+        "venues": "venues",
+        "events": "events",
+        "cities": "cities",
+        "hotels": "hotels",
+        "marketplace": "products",
+        "groups": "groups",
+        "resources": "resources"
+      }
     }
   },
   "header": {
@@ -1557,6 +1576,8 @@
     "hotels": {
       "title": "Hotels & BnBs",
       "subtitle": "LGBTQ+ friendly accommodations worldwide",
+      "eyebrow": "Where to sleep",
+      "planTrip": "Plan a trip",
       "submitHotel": "Submit Hotel",
       "noResults": "No hotels found",
       "noResultsHint": "Try adjusting your filters or check back later.",
@@ -1859,6 +1880,12 @@
       "linkCopied": "Link copied",
       "linkCopiedDescription": "You can paste it now",
       "shareFailed": "Share failed"
+    },
+    "geolocate": {
+      "unsupported": "Geolocation unavailable",
+      "denied": "Location access is off — showing the default area",
+      "unavailable": "Couldn't get your location — showing the default area",
+      "timeout": "Location lookup timed out — showing the default area"
     }
   },
   "resources": {

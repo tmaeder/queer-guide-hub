@@ -1,7 +1,49 @@
 // Service Worker for Queer Guide — optimized for Cloudflare Pages
-const STATIC_CACHE = 'static-v10';
-const DYNAMIC_CACHE = 'dynamic-v10';
+// v12: also synthesise a 404 when the *network* returns HTML for a
+// hashed-asset URL (CF Pages SPA-fallback issue when chunk hash no longer
+// exists). Previously we only refused to cache the bad response but
+// still returned it to the page, which then threw "Failed to load module
+// script: text/html" and blanked the entire app for any returning user
+// whose cached HTML still referenced a deleted chunk hash. Now the
+// browser gets a real 404 and Vite/Rollup's preload-helper retry path
+// can kick in (or at minimum the user sees a sensible error rather than
+// a blank screen). Paired with /assets/* 404 rule in public/_redirects
+// so the CF edge also stops returning the SPA fallback for missing
+// asset paths.
+const STATIC_CACHE = 'static-v12';
+const DYNAMIC_CACHE = 'dynamic-v12';
 const DYNAMIC_CACHE_LIMIT = 50;
+
+// Map asset file extensions to the response content-types we'll accept
+// when caching or serving from cache. If the response doesn't match
+// (e.g. text/html because CF Pages served the SPA fallback for a chunk
+// that no longer exists), we MUST NOT cache it and MUST NOT serve it —
+// otherwise the browser rejects it with "Expected JavaScript module but
+// got text/html" and the whole app fails to boot.
+const EXT_CONTENT_TYPES = {
+  js:    ['application/javascript', 'text/javascript', 'application/ecmascript'],
+  mjs:   ['application/javascript', 'text/javascript'],
+  css:   ['text/css'],
+  woff:  ['font/woff', 'application/font-woff'],
+  woff2: ['font/woff2', 'application/font-woff2'],
+  json:  ['application/json'],
+};
+
+function expectedTypesForUrl(pathname) {
+  const m = pathname.match(/\.([a-z0-9]+)$/i);
+  if (!m) return null;
+  return EXT_CONTENT_TYPES[m[1].toLowerCase()] || null;
+}
+
+// True if the response's Content-Type matches what we expect for the URL.
+// Returns true (permissive) for files we don't have a strict rule for
+// (e.g. images) — only the strict whitelist above is enforced.
+function isResponseValidForUrl(response, pathname) {
+  const expected = expectedTypesForUrl(pathname);
+  if (!expected) return true;
+  const ct = (response.headers.get('content-type') || '').toLowerCase();
+  return expected.some((t) => ct.includes(t));
+}
 
 // Cache name prefix used by Today-mode for per-trip offline snapshots.
 // Populated from the page via the Cache API directly (see offlineTripPack.ts).
@@ -129,18 +171,46 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Static assets (JS, CSS, fonts, images) — Cache First
+  // Static assets (JS, CSS, fonts, images) — Cache First, but only cache
+  // and serve responses whose Content-Type matches the requested file's
+  // extension. This guards against the failure mode where a stale
+  // index.html requests a hashed chunk that no longer exists; CF Pages
+  // SPA-fallback serves index.html (200 text/html), and a naive cache
+  // would store that and serve it forever, blanking the entire app.
   if (CACHE_STRATEGIES.static.test(url.pathname)) {
     event.respondWith(
       (async () => {
         const cached = await caches.match(request);
-        if (cached) return cached;
+        if (cached && isResponseValidForUrl(cached, url.pathname)) {
+          return cached;
+        }
+        // Cache was poisoned in a previous SW version: drop the entry so
+        // we don't keep serving HTML for a .js URL.
+        if (cached) {
+          const staticCache = await caches.open(STATIC_CACHE);
+          const dynamicCache = await caches.open(DYNAMIC_CACHE);
+          await Promise.all([staticCache.delete(request), dynamicCache.delete(request)]);
+        }
 
         try {
           const networkResponse = await fetch(request);
           if (networkResponse.status === 200) {
-            const cache = await caches.open(STATIC_CACHE);
-            cache.put(request, networkResponse.clone());
+            if (isResponseValidForUrl(networkResponse, url.pathname)) {
+              const cache = await caches.open(STATIC_CACHE);
+              cache.put(request, networkResponse.clone());
+              return networkResponse;
+            }
+            // v12: CF Pages returned HTML for a JS/CSS/font URL — almost
+            // certainly the SPA-fallback firing because the chunk hash
+            // no longer exists. Returning that HTML poisons the page
+            // ("Failed to load module script: text/html"). Synthesise a
+            // 404 instead so the browser surfaces a real missing-asset
+            // error and any retry/error-boundary logic can recover.
+            return new Response('', {
+              status: 404,
+              statusText: 'Asset not found (stale chunk hash)',
+              headers: { 'Content-Type': 'text/plain' },
+            });
           }
           return networkResponse;
         } catch {

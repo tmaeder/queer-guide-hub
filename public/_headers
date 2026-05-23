@@ -1,4 +1,18 @@
 # Cloudflare Pages Headers for Security and Performance
+#
+# HTML responses run through functions/_middleware.ts, which sets a
+# nonce-based Content-Security-Policy per-request (no 'unsafe-inline'
+# on script-src) and overrides the CSP below. The CSP here covers
+# static-asset and other non-HTML responses, where a nonce is not
+# meaningful — they cannot execute inline scripts at all.
+#
+# X-XSS-Protection has been removed (finding F8): it is deprecated,
+# unsupported in all modern browsers, and CSP supersedes it.
+#
+# HSTS max-age is 2 years (63072000s) — well above the HSTS preload
+# list 1-year minimum (F7). If a Cloudflare dashboard zone-level HSTS
+# setting is active it may override this; confirm the live header
+# matches after deploy.
 
 # Global security headers and default cache for ALL paths (must be first for widest match)
 # SPA routes (e.g. /places, /events) are served as HTML via _redirects catch-all.
@@ -8,19 +22,21 @@
   Cache-Control: public, max-age=0, must-revalidate
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
-  X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(self), usb=()
   Cross-Origin-Opener-Policy: same-origin
   X-Permitted-Cross-Domain-Policies: none
   Onion-Location: http://rlxm6jtzwf2r3brzxyim6kuutj3l2b2da2ceayoe37bwrhmsz3nugcid.onion%{REQUEST_URI}
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://widget.getyourguide.com https://www.googletagmanager.com https://www.clarity.ms https://scripts.clarity.ms; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https://protomaps.github.io; connect-src 'self' https://*.supabase.co https://*.maeder-tobiassimon.workers.dev https://*.queer.guide https://protomaps.github.io https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://ipapi.co https://commons.wikimedia.org https://widget.getyourguide.com https://*.getyourguide.com https://api.travelpayouts.com https://pics.avs.io https://*.hotellook.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.ingest.us.sentry.io https://www.google-analytics.com https://*.clarity.ms wss://*.supabase.co; frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://widget.getyourguide.com https://*.getyourguide.com; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://widget.getyourguide.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https://protomaps.github.io; connect-src 'self' https://*.supabase.co https://*.maeder-tobiassimon.workers.dev https://*.queer.guide https://protomaps.github.io https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://commons.wikimedia.org https://widget.getyourguide.com https://*.getyourguide.com https://api.travelpayouts.com https://pics.avs.io https://*.hotellook.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.ingest.us.sentry.io wss://*.supabase.co; frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://widget.getyourguide.com https://*.getyourguide.com; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
 
 # Service worker - MUST come before /*.js or CF Pages applies the wrong
 # long-cache rule. The SW is the update escape hatch; revalidate every load.
+# no-store is intentional: a long-cached SW from an earlier incident was
+# unable to receive a fix-in-place update, blanking the entire site for
+# returning users. Never edge-cache or browser-cache this file.
 /sw.js
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate, no-cache, no-store
 
 # Static assets - long cache with immutable
 /assets/*
@@ -67,9 +83,11 @@
 /*.json
   Cache-Control: public, max-age=300
 
-# Service worker - never cache
+# Service worker - never cache (redundant final rule; latter rule wins
+# in CF Pages headers so this guarantees max-age=0 even if /*.js above
+# is interpreted as more specific).
 /sw.js
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate, no-cache, no-store
 
 # Manifest
 /manifest.json

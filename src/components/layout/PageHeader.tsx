@@ -48,7 +48,7 @@ export const PageHeader = ({
             initial={reduced ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-            className={`text-3xl sm:text-4xl font-bold tracking-tight ${subtitle ? 'mb-2' : ''}`}
+            className={`text-headline md:text-headline-lg font-bold tracking-tight ${subtitle ? 'mb-2' : ''}`}
           >
             {title}
           </motion.h1>

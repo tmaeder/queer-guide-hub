@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Search, Filter, X, Sliders } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
-import { useMarketplaceFacets } from '@/hooks/useMarketplaceQueries';
+import { useMarketplaceFacets, useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 500;
@@ -23,7 +23,9 @@ interface MarketplaceFiltersProps {
   initialSearch?: string;
   onFiltersChange: (filters: {
     search?: string;
+    /** products / services (was labelled "Category", now "Type"). */
     category?: string;
+    /** canonical subcategory slug (fetish_gear, sex_toys, …). */
     subcategory?: string;
     location?: string;
     priceRange?: { min: number; max: number };
@@ -32,34 +34,16 @@ interface MarketplaceFiltersProps {
   }) => void;
 }
 
-const categories = ['products', 'services'];
+// "Type" was previously labelled "Category" but its options are the
+// products/services enum, duplicating the tabs. The real category
+// dimension is the canonical subcategory_slug column populated by the
+// ingestion pipeline (fetish_gear, sex_toys, underwear, …) — wired
+// below via useMarketplaceSubcategoryTiles().
+const types = ['products', 'services'];
 
-const subcategories: Record<string, string[]> = {
-  products: [
-    'clothing',
-    'jewelry',
-    'art',
-    'books',
-    'food',
-    'crafts',
-    'beauty',
-    'electronics',
-    'home-goods',
-    'handmade',
-  ],
-  services: [
-    'photography',
-    'design',
-    'marketing',
-    'therapy',
-    'legal',
-    'financial',
-    'consulting',
-    'wellness',
-    'creative',
-    'professional',
-  ],
-};
+function prettifySlug(slug: string): string {
+  return slug.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 const businessTypes = ['online', 'physical', 'both'];
 
@@ -68,6 +52,13 @@ export function MarketplaceFilters({
   onFiltersChange,
 }: MarketplaceFiltersProps) {
   const [search, setSearch] = useState(initialSearch);
+  // Re-sync the input when the URL `?q=` changes externally (back/forward
+  // nav, saved-search restore). Without this, the typed and URL search
+  // paths can drift apart — the same query string yielded different
+  // result counts depending on which surface set it.
+  useEffect(() => {
+    setSearch(initialSearch);
+  }, [initialSearch]);
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
   const [location, setLocation] = useState('');
@@ -101,6 +92,15 @@ export function MarketplaceFilters({
 
   const handleSearch = () => {
     onFiltersChange(buildFilters());
+  };
+
+  // Apply Filters: fire onFiltersChange AND collapse the panel so the
+  // user sees the updated results immediately. Without the collapse,
+  // the QA report rightly complained that clicking Apply "produced no
+  // visible change".
+  const handleApply = () => {
+    onFiltersChange(buildFilters());
+    setShowAllFilters(false);
   };
 
   const isFirstRun = useRef(true);
@@ -148,9 +148,8 @@ export function MarketplaceFilters({
     priceTouched ||
     selectedTags.length > 0;
 
-  const handleCategoryChange = (newCategory: string) => {
-    setCategory(newCategory);
-    setSubcategory('');
+  const handleTypeChange = (newType: string) => {
+    setCategory(newType);
   };
 
   const { data: facets } = useMarketplaceFacets({
@@ -158,7 +157,8 @@ export function MarketplaceFilters({
     subcategory: subcategory && subcategory !== 'all' ? subcategory : undefined,
     businessType: businessType && businessType !== 'all' ? businessType : undefined,
   });
-  const fmtCount = (n: number | undefined) => (n != null && n > 0 ? ` (${n})` : '');
+  const { data: subcategoryOptions } = useMarketplaceSubcategoryTiles();
+  const fmtCount = (n: number | undefined) => (n != null && n > 0 ? ` (${n.toLocaleString()})` : '');
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-background">
@@ -194,17 +194,17 @@ export function MarketplaceFilters({
         <div className="flex flex-col gap-4 pt-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={handleCategoryChange}>
+              <Label htmlFor="type">Type</Label>
+              <Select value={category} onValueChange={handleTypeChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories{fmtCount(facets.total)}</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      {fmtCount(facets.category.get(cat))}
+                  <SelectItem value="all">All Types{fmtCount(facets.total)}</SelectItem>
+                  {types.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                      {fmtCount(facets.category.get(t))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -212,20 +212,19 @@ export function MarketplaceFilters({
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="subcategory">Subcategory</Label>
-              <Select value={subcategory} onValueChange={setSubcategory} disabled={!category}>
+              <Label htmlFor="subcategory">Category</Label>
+              <Select value={subcategory} onValueChange={setSubcategory}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select subcategory" />
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Subcategories</SelectItem>
-                  {category &&
-                    subcategories[category]?.map((subcat) => (
-                      <SelectItem key={subcat} value={subcat}>
-                        {subcat.charAt(0).toUpperCase() + subcat.slice(1)}
-                        {fmtCount(facets.subcategory.get(subcat))}
-                      </SelectItem>
-                    ))}
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {subcategoryOptions.map((opt) => (
+                    <SelectItem key={opt.slug} value={opt.slug}>
+                      {prettifySlug(opt.slug)}
+                      {fmtCount(facets.subcategory.get(opt.slug) ?? opt.count)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -295,7 +294,7 @@ export function MarketplaceFilters({
           />
 
           <div className="flex gap-2 pt-2">
-            <Button onClick={handleSearch}>
+            <Button onClick={handleApply}>
               <Sliders size={16} />
               Apply Filters
             </Button>
@@ -320,13 +319,13 @@ export function MarketplaceFilters({
           )}
           {category && category !== 'all' && (
             <Badge variant="secondary">
-              {category}
+              Type: {category}
               <X size={12} className="cursor-pointer" onClick={() => setCategory('')} />
             </Badge>
           )}
           {subcategory && subcategory !== 'all' && (
             <Badge variant="secondary">
-              {subcategory}
+              Category: {prettifySlug(subcategory)}
               <X size={12} className="cursor-pointer" onClick={() => setSubcategory('')} />
             </Badge>
           )}

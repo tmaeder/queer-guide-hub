@@ -65,29 +65,40 @@ export async function rewriteQuery(
 		return null;
 	}
 
-	const text: string = res?.response ?? "";
-	const match = text.match(/\{[\s\S]*\}/);
-	if (!match) return null;
-	let parsed: Record<string, unknown>;
 	try {
-		parsed = JSON.parse(match[0]) as Record<string, unknown>;
-	} catch {
+		// Workers AI sometimes returns a non-string `response` (e.g. an object
+		// when the model emits a tool call instead of text). `text.match` then
+		// throws "text.match is not a function" and the whole /search request
+		// 500s. Coerce defensively.
+		const text: string = typeof res?.response === "string" ? res.response : "";
+		const match = text.match(/\{[\s\S]*\}/);
+		if (!match) return null;
+		let parsed: Record<string, unknown>;
+		try {
+			parsed = JSON.parse(match[0]) as Record<string, unknown>;
+		} catch {
+			return null;
+		}
+
+		const synonymsRaw = parsed.synonyms;
+		const out: RewrittenQuery = {
+			q_en: String(parsed.q_en || "").toLowerCase().slice(0, 100),
+			synonyms: Array.isArray(synonymsRaw)
+				? synonymsRaw.slice(0, 4).map((s) => String(s).toLowerCase())
+				: [],
+			city: parsed.city ? String(parsed.city).toLowerCase() : null,
+			type_hint: typeof parsed.type_hint === "string" ? parsed.type_hint : null,
+		};
+		try {
+			await env.EMBED_CACHE.put(cacheKey, JSON.stringify(out), { expirationTtl: 86400 * 30 });
+		} catch {
+			/* KV quota — skip cache */
+		}
+		return out;
+	} catch (e) {
+		// Rewriting is best-effort — never let a parse / cast error escape and
+		// fail the whole search request.
+		console.warn("rewrite parse failed", (e as Error).message);
 		return null;
 	}
-
-	const synonymsRaw = parsed.synonyms;
-	const out: RewrittenQuery = {
-		q_en: String(parsed.q_en || "").toLowerCase().slice(0, 100),
-		synonyms: Array.isArray(synonymsRaw)
-			? synonymsRaw.slice(0, 4).map((s) => String(s).toLowerCase())
-			: [],
-		city: parsed.city ? String(parsed.city).toLowerCase() : null,
-		type_hint: typeof parsed.type_hint === "string" ? parsed.type_hint : null,
-	};
-	try {
-		await env.EMBED_CACHE.put(cacheKey, JSON.stringify(out), { expirationTtl: 86400 * 30 });
-	} catch {
-		/* KV quota — skip cache */
-	}
-	return out;
 }

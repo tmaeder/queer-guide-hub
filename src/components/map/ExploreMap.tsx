@@ -114,6 +114,22 @@ const NEIGHBOURHOOD_BOUNDARY_CONFIG: BoundaryLayerConfig = {
 const DEFAULT_CENTER: [number, number] = [0, 20];
 const DEFAULT_ZOOM = 2.2;
 
+// Gated debug logger — env-flag or localStorage opt-in. Cheap insurance
+// against future regressions in the points-data → markers flow.
+const mapDebug = (...args: unknown[]): void => {
+  try {
+    if (
+      import.meta.env.DEV ||
+      (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
+    ) {
+      // eslint-disable-next-line no-console
+      console.debug('[venues-map]', ...args);
+    }
+  } catch {
+    /* localStorage may throw in some sandboxed contexts */
+  }
+};
+
 export interface ExploreMapProps {
   height?: number | string;
   defaultLayers?: LayerType[];
@@ -170,6 +186,15 @@ export const ExploreMap = ({
   // ── State ────────────────────────────────────────────────────────────────
   const [mapReady, setMapReady] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(initialZoom ?? DEFAULT_ZOOM);
+  // Count of currently-rendered point features inside the visible map
+  // bounds. Recomputed on moveend (debounced) so the "X results in view"
+  // counter matches what the user actually sees, not the padded fetch
+  // bbox.
+  const [inBoundsCount, setInBoundsCount] = useState(0);
+  // True from the instant the user starts panning/zooming until the next
+  // count recomputes. Without this the pill shows the OLD count for the
+  // 100-200ms debounce window, which reads as "the map is lying."
+  const [isCounterStale, setIsCounterStale] = useState(false);
 
   const [enabledLayers, setEnabledLayers] = useState<LayerType[]>(
     () =>
@@ -195,7 +220,10 @@ export const ExploreMap = ({
   const pointEnabledLayers = enabledLayers.filter((l) => POINT_LAYER_TYPES.includes(l));
   const {
     geojson: pointsGeoJSON,
-    totalCount: pointsTotalCount,
+    // totalCount from the hook is the padded-bbox count; we compute an
+    // in-bounds count locally instead. Keep destructure stable for the
+    // hook's interface — discard via underscore.
+    totalCount: _padCount,
     isFetching: pointsFetching,
     layerCounts: pointLayerCounts,
     onViewportChange,
@@ -245,10 +273,16 @@ export const ExploreMap = ({
   // empty desert and shows no markers, which reads as "the site is broken").
   const FALLBACK_CENTER: [number, number] = [13.405, 52.52];
   const FALLBACK_ZOOM = 10;
+  // Berlin fallback fired (cosmetic, prevents repeat toast).
   const fallbackFiredRef = useRef(false);
+  // True only when we flew to the *user's* real location. Berlin fallback
+  // does NOT set this, so a late-arriving visitorGeo still overrides Berlin.
+  const userGeoFiredRef = useRef(false);
 
   useEffect(() => {
     if (skipAutoFly || initialCenter || !visitorGeo) return;
+    if (userGeoFiredRef.current) return;
+    userGeoFiredRef.current = true;
     setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
     flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
     toast({
@@ -260,7 +294,7 @@ export const ExploreMap = ({
   useEffect(() => {
     if (skipAutoFly || initialCenter || fallbackFiredRef.current) return;
     const timer = setTimeout(() => {
-      if (visitorGeo || fallbackFiredRef.current) return;
+      if (visitorGeo || fallbackFiredRef.current || userGeoFiredRef.current) return;
       fallbackFiredRef.current = true;
       setViewport({ center: FALLBACK_CENTER, zoom: FALLBACK_ZOOM });
       flyToLocation(FALLBACK_CENTER[0], FALLBACK_CENTER[1], FALLBACK_ZOOM);
@@ -282,6 +316,42 @@ export const ExploreMap = ({
       east: bounds.getEast(),
       north: bounds.getNorth(),
     });
+  }, []);
+
+  // ── Helper: recompute in-bounds count (debounced) ────────────────────────
+  // The padded fetch returns 15% more features than the visible viewport
+  // (for cache reuse). The counter should reflect what the user actually
+  // sees on the map. Debounce on moveend to avoid thrash during panning.
+  const inBoundsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recomputeInBoundsCount = useCallback(() => {
+    if (inBoundsTimerRef.current) clearTimeout(inBoundsTimerRef.current);
+    inBoundsTimerRef.current = setTimeout(() => {
+      const map = mapRef.current;
+      if (!map) return;
+      const b = map.getBounds();
+      const w = b.getWest();
+      const e = b.getEast();
+      const s = b.getSouth();
+      const n = b.getNorth();
+      let count = 0;
+      for (const f of pointsGeoJSON.features) {
+        const [lng, lat] = (f.geometry as GeoJSON.Point).coordinates;
+        if (lng >= w && lng <= e && lat >= s && lat <= n) count++;
+      }
+      setInBoundsCount(count);
+      setIsCounterStale(false);
+    }, 100);
+  }, [pointsGeoJSON]);
+
+  // Recompute whenever the fetched data changes (not just on pan).
+  useEffect(() => {
+    recomputeInBoundsCount();
+  }, [pointsGeoJSON, recomputeInBoundsCount]);
+
+  useEffect(() => {
+    return () => {
+      if (inBoundsTimerRef.current) clearTimeout(inBoundsTimerRef.current);
+    };
   }, []);
 
   // ── Helper: show popup with navigation ───────────────────────────────────
@@ -373,6 +443,11 @@ export const ExploreMap = ({
       zoom: initialZoom ?? viewport.zoom,
       attributionControl: false,
     });
+    // Assign immediately so the early-return at the top of this effect
+    // bails on the next render rather than re-initialising the map.
+    // `mapReady` (toggled in `load`) still gates marker / layer
+    // rendering.
+    mapRef.current = map;
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
@@ -389,7 +464,6 @@ export const ExploreMap = ({
 
     map.on('load', () => {
       setMapReady(true);
-      mapRef.current = map;
 
       const tryInitialFetch = () => {
         const canvas = map.getCanvas();
@@ -405,6 +479,10 @@ export const ExploreMap = ({
       }
     });
 
+    map.on('movestart', () => {
+      setIsCounterStale(true);
+    });
+
     map.on('moveend', () => {
       const canvas = map.getCanvas();
       if (!canvas.clientWidth || !canvas.clientHeight) return;
@@ -414,6 +492,7 @@ export const ExploreMap = ({
       setCurrentZoom(z);
       const c = map.getCenter();
       onViewportChangeProp?.({ center: [c.lng, c.lat], zoom: z });
+      recomputeInBoundsCount();
     });
 
     return () => {
@@ -656,10 +735,22 @@ export const ExploreMap = ({
 
     const existingSource = map.getSource(POINTS_SOURCE) as GeoJSONSource | undefined;
     if (existingSource) {
+      mapDebug('setData', { features: filteredGeoJSON.features.length });
       existingSource.setData(filteredGeoJSON);
       return;
     }
 
+    // Defer source + layer creation until we actually have features.
+    // Adding a clustered source with `data: []` and then calling
+    // `setData()` after the map's initial flyTo settle has been observed
+    // to leave the cluster index empty — markers never appear even
+    // though the data arrived. Waiting for non-empty data fixes that.
+    if (filteredGeoJSON.features.length === 0) {
+      mapDebug('skip-empty-source-create');
+      return;
+    }
+
+    mapDebug('addSource', { features: filteredGeoJSON.features.length });
     map.addSource(POINTS_SOURCE, {
       type: 'geojson',
       data: filteredGeoJSON,
@@ -680,22 +771,25 @@ export const ExploreMap = ({
       filter: ['has', 'point_count'],
       paint: {
         'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 26, 100, 32, 500, 40],
-        'circle-color': [
+        // Monochrome cluster ramp. Density encoded by alpha on the
+        // foreground token, not by hue — matches the heatmap ramp and
+        // the rest of the design system's no-color rule.
+        'circle-color': 'hsl(0 0% 4%)',
+        'circle-opacity': [
           'step',
           ['get', 'point_count'],
-          '#818cf8',
+          0.55,
           10,
-          '#6366f1',
+          0.65,
           50,
-          '#4f46e5',
+          0.75,
           100,
-          '#4338ca',
+          0.85,
           500,
-          '#3730a3',
+          0.95,
         ],
-        'circle-opacity': 0.85,
         'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff',
+        'circle-stroke-color': 'hsl(0 0% 100%)',
       },
     });
 
@@ -945,18 +1039,24 @@ export const ExploreMap = ({
         />
       )}
 
-      {/* Fetching indicator + result count */}
+      {/* Fetching indicator + result count.
+          Sits above MapLibre's bottom-right AttributionControl (~24px tall);
+          bottom: 40 keeps the pill clear of the © Protomaps © OSM text. */}
       <div
         className="absolute z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/85 px-4 py-1.5 pointer-events-none transition-opacity duration-200"
         style={{
-          bottom: 12,
-          right: 56,
-          opacity: isFetching || pointsTotalCount > 0 ? 1 : 0,
+          bottom: 40,
+          right: 8,
+          opacity: isFetching || isCounterStale || inBoundsCount > 0 ? 1 : 0,
         }}
       >
-        {isFetching && <Loader2 className="h-3 w-3 animate-spin" aria-label="Loading" />}
+        {(isFetching || isCounterStale) && (
+          <Loader2 className="h-3 w-3 animate-spin" aria-label="Loading" />
+        )}
         <span className="text-xs text-muted-foreground">
-          {isFetching ? 'Loading...' : `${pointsTotalCount.toLocaleString()} results in view`}
+          {isFetching || isCounterStale
+            ? 'Loading...'
+            : `${inBoundsCount.toLocaleString()} results in view`}
         </span>
       </div>
 

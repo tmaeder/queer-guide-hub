@@ -11,6 +11,8 @@ import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
 import { MarketplaceSpotlight } from '@/components/marketplace/MarketplaceSpotlight';
 import { MarketplaceCategoryTiles } from '@/components/marketplace/MarketplaceCategoryTiles';
+import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
+import { isAdultListing } from '@/hooks/useAdultContent';
 import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityChips';
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
 import { SavedSearchesButton } from '@/components/marketplace/SavedSearchesButton';
@@ -87,9 +89,8 @@ function MainGridSection({
     <>
       <div className="flex items-center justify-between mb-6">
         <p className="text-muted-foreground">
-          {visible.length === total
-            ? `${total} listing${total !== 1 ? 's' : ''}`
-            : `Showing ${visible.length} of ${total} listings`}
+          Showing {visible.length.toLocaleString()} of {total.toLocaleString()} listing
+          {total !== 1 ? 's' : ''}
         </p>
       </div>
 
@@ -101,7 +102,7 @@ function MainGridSection({
             : undefined
         }
       >
-        {visible.map((listing) => (
+        {visible.map((listing, index) => (
           <div key={listing.id}>
             <MarketplaceCard
               listing={listing}
@@ -110,6 +111,7 @@ function MainGridSection({
               showFavoriteButton={userPresent}
               searchQuery={searchQuery}
               imageAsset={listingAssets.get(listing.id)}
+              priority={index < 8}
             />
           </div>
         ))}
@@ -264,6 +266,8 @@ const Marketplace = () => {
   const visibleListingIds = useMemo(() => accumulated.map((l) => l.id), [accumulated]);
   const { assets: listingAssets } = useEntityImageAssets('marketplace_listing', visibleListingIds);
 
+  const hasAdultListings = useMemo(() => accumulated.some(isAdultListing), [accumulated]);
+
   const handleFiltersChange = (next: Record<string, unknown>) => {
     setFilters(next as MarketplaceFiltersInput);
     const q = (next as MarketplaceFiltersInput).search || '';
@@ -377,7 +381,7 @@ const Marketplace = () => {
           )}
 
           <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
-            <div className="sticky top-0 z-20 border border-border rounded-element p-4 mb-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <div className="sticky top-0 z-20 border border-border rounded-element p-4 mb-6 bg-surface-container-low/95 backdrop-blur supports-[backdrop-filter]:bg-surface-container-low/80">
               <div className="mb-4">
                 <MarketplaceFilters initialSearch={qParam} onFiltersChange={handleFiltersChange} />
               </div>
@@ -394,10 +398,13 @@ const Marketplace = () => {
                   ))}
                 </TabsList>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                   <SavedSearchesButton />
                   <Select value={sortBy} onValueChange={handleSortChange}>
-                    <SelectTrigger style={{ width: 200 }} aria-label="Sort listings">
+                    <SelectTrigger
+                      className="w-[160px] sm:w-[200px]"
+                      aria-label="Sort listings"
+                    >
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
@@ -514,6 +521,7 @@ const Marketplace = () => {
 
           <AffiliateDisclosure />
         </div>
+        <AdultContentGate active={hasAdultListings} fallbackPath="/" />
       </div>
     </CuratedIdsProvider>
   );

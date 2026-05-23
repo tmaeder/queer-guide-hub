@@ -8,6 +8,7 @@ import { MemoryRouter, Routes, Route } from 'react-router';
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
 vi.mock('../AdminSidebar', () => ({ AdminSidebar: () => <nav data-testid="sidebar" /> }));
 vi.mock('@/config/adminNavigation', () => ({
+  adminNavSections: [],
   getBreadcrumbsForRoute: () => [{ label: 'Admin' }, { label: 'Dashboard' }],
 }));
 vi.mock('@/components/cms/editor/CMSEditorLayout', () => ({

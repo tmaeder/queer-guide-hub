@@ -38,6 +38,13 @@ interface CardImageProps {
   fallbackIcon?: LucideIcon;
   children?: React.ReactNode;
   className?: string;
+  /**
+   * Eager-load (above-the-fold). Sets loading="eager" +
+   * fetchpriority="high" so the browser can't skip the request when
+   * the card lives inside a transformed parent (CardHoverEffect's
+   * translateZ) that confuses native lazy loading.
+   */
+  priority?: boolean;
 }
 
 /**
@@ -71,22 +78,40 @@ const CardImage = ({
   fallbackIcon: _FallbackIcon,
   children,
   className,
+  priority = false,
 }: CardImageProps) => {
   const [error, setError] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
   const fallbackSrc = React.useMemo(() => getRandomFallbackImage(), []);
 
+  // Reset state when src changes — without this, an earlier error on one
+  // src would permanently route a new src to the fallback. Also schedules
+  // a timeout: some Pexels URLs return 200 OK and then stall mid-stream;
+  // the browser never fires onLoad or onError, so the card sits empty.
+  // After 8 s without a settled load, treat it as failed and fall back.
+  React.useEffect(() => {
+    setError(false);
+    setLoaded(false);
+    if (!src) return;
+    const timer = setTimeout(() => {
+      setError((prev) => prev || !loaded);
+    }, 8000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src]);
+
   const effectiveSrc = (!src || error) ? fallbackSrc : src;
   const referrerPolicy = isTrustedSrc(effectiveSrc) ? undefined : 'no-referrer';
 
   return (
-    <div className="relative overflow-hidden rounded-t-container" style={{ height }}>
+    <div className="relative overflow-hidden rounded-t-container bg-muted" style={{ height }}>
       <img
         src={effectiveSrc}
         alt={alt}
         role="presentation"
-        loading="lazy"
-        decoding="async"
+        loading={priority ? 'eager' : 'lazy'}
+        decoding={priority ? 'sync' : 'async'}
+        fetchPriority={priority ? 'high' : 'auto'}
         referrerPolicy={referrerPolicy}
         onLoad={() => setLoaded(true)}
         onError={() => {

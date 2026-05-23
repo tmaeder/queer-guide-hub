@@ -15,7 +15,7 @@ import { UserDirectoryFilters } from '@/components/user-directory/UserDirectoryF
 import { UserDirectoryGrid } from '@/components/user-directory/UserDirectoryGrid';
 
 const UserDirectory = () => {
-  const { _t } = useTranslation();
+  useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
   const [filters, setFilters] = useState<UserFilters>(defaultUserFilters);

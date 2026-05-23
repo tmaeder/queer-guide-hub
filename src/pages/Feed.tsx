@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,7 +9,10 @@ import {
   PenSquare,
   Search,
   Heart,
-  MessageCircle
+  MessageCircle,
+  AlertTriangle,
+  RefreshCw,
+  Home,
 } from 'lucide-react';
 import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
@@ -29,15 +33,17 @@ export default function Feed() {
   const {
     posts,
     isLoading,
+    error,
+    refetch,
     likePost,
     unlikePost,
     deletePost,
     isLikingPost,
-    isDeletingPost
+    isDeletingPost,
   } = useCommunityPosts();
 
   const filteredPosts = posts.filter(post =>
-    post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.profiles?.display_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -64,6 +70,33 @@ export default function Feed() {
 
         {isLoading ? (
           <PageLoadingState count={3} variant="list" />
+        ) : error ? (
+          <div className="min-h-[40vh] flex items-center justify-center">
+            <div className="text-center flex flex-col gap-4 max-w-md">
+              <AlertTriangle className="h-12 w-12 text-destructive mx-auto" aria-hidden="true" />
+              <h6 className="text-base font-semibold">
+                {t('pages.feed.errorTitle', "We couldn't load the feed")}
+              </h6>
+              <p className="text-sm text-muted-foreground">
+                {t(
+                  'pages.feed.errorDescription',
+                  'Something went wrong while loading community posts. Check your connection and try again.',
+                )}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button variant="outline" onClick={() => refetch()} className="inline-flex gap-2">
+                  <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                  {t('common.tryAgain', 'Try Again')}
+                </Button>
+                <Button asChild className="inline-flex gap-2">
+                  <LocalizedLink to="/">
+                    <Home className="h-4 w-4" aria-hidden="true" />
+                    {t('common.goHome', 'Go Home')}
+                  </LocalizedLink>
+                </Button>
+              </div>
+            </div>
+          </div>
         ) : (
           <>
             {/* Stats */}

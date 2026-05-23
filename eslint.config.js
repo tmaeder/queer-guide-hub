@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -7,6 +9,12 @@ import unusedImports from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
 import noSupabaseFromInPages from "./eslint-rules/no-supabase-from-in-pages.js";
+
+// typescript-eslint v8 throws when its project-service auto-detect sees
+// multiple candidate root dirs (here: repo root + scraper/). Pin it via
+// fileURLToPath — works on every Node 14+ regardless of loader specifics
+// (import.meta.dirname is newer and can be undefined under jiti).
+const TSCONFIG_ROOT_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 export default tseslint.config(
   {
@@ -30,6 +38,12 @@ export default tseslint.config(
       "scripts/listen-triage/**",
       "listen/**",
       "infra/**",
+      // Scraper is a separate workspace with its own package.json + tsconfig
+      // + eslint.config.js. Including its files from the root parses them
+      // against the root tsconfig, which typescript-eslint v8's
+      // project-service then can't disambiguate (root + scraper/ both look
+      // like valid tsconfig roots). Lint scraper from `cd scraper && npm run lint`.
+      "scraper/**",
       // Legacy worker duplicates (superseded by workers/*/)
       "worker/**",
       "worker-ingest/**",
@@ -44,6 +58,7 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 2024,
       globals: globals.browser,
+      parserOptions: { tsconfigRootDir: TSCONFIG_ROOT_DIR },
     },
     plugins: {
       "react-hooks": reactHooks,

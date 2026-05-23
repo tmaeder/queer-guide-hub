@@ -10,19 +10,44 @@
  */
 import { fetchRows, type Env } from './sitemap';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
+import { safeOgImage } from './safeOgImage';
+import { categoryLabel, categoryLabelTitle } from './categoryLabels';
 
 export type DetailResult = {
   meta: RouteMeta;
   body: string;
   jsonLd: string;
+  /**
+   * Per-row indexability (P1.1). When false, the middleware emits a
+   * <meta name="robots" content="noindex,nofollow"> and skips hreflang
+   * alternates. Source: the row's seo_indexable column (default true).
+   */
+  indexable?: boolean;
 };
 
 const TITLE_SUFFIX = ' | Queer Guide';
 const MAX_TITLE = 60;
 const MAX_DESC = 155;
 
-const truncate = (s: string, max: number) =>
-  s.length <= max ? s : `${s.slice(0, max - 1).replace(/\s+\S*$/, '')}…`;
+/**
+ * Cuts a string to max chars. Prefers a sentence boundary inside the last
+ * 30 chars before the limit so descriptions don't end mid-thought; falls
+ * back to a word boundary + ellipsis when no sentence end is found.
+ * P2.7 of the SEO remediation.
+ */
+const truncate = (s: string, max: number) => {
+  if (s.length <= max) return s;
+  const head = s.slice(0, max);
+  const lookbehind = head.slice(Math.max(0, head.length - 30));
+  // Sentence-end punctuation followed by whitespace or string end.
+  const idx = lookbehind.search(/[.!?](?=\s|$)/);
+  if (idx >= 0) {
+    const cut = head.length - 30 + idx + 1;
+    return head.slice(0, cut);
+  }
+  const wordCut = head.slice(0, max - 1).replace(/\s+\S*$/, '');
+  return `${wordCut}…`;
+};
 
 const escape = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -82,17 +107,32 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   const address = stringField(row, 'address');
   const city = stringField(row, 'city');
   const country = stringField(row, 'country');
-  const subtype = stringField(row, 'venue_subtype') ?? stringField(row, 'category') ?? 'Venue';
+  const rawSubtype = stringField(row, 'venue_subtype');
+  const rawCategory = stringField(row, 'category');
+  // P2.1 — derive a human label that never says "other"; defaults to "space".
+  const label = categoryLabel(rawSubtype, rawCategory);
+  const labelTitle = categoryLabelTitle(rawSubtype, rawCategory);
+  const subtype = rawSubtype ?? rawCategory ?? 'Venue';
 
+  // P2.1+P2.2 — venue title and description templates. Title puts the
+  // venue name + city so the click signal stays clear; description leads
+  // with a typed clause ("Gay bar in Berlin · …") to lift CTR for
+  // category-intent queries. When the row has its own description we use
+  // that and only fall back to the template.
+  const titledClause = `${labelTitle} in ${city ?? country ?? 'the LGBTQ+ community'}`;
   const meta: RouteMeta = {
     title: truncate(`${name}${city ? ` — ${city}` : ''}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(
-      description ||
-        `${name}${city ? ` in ${city}` : ''} — LGBTQ+ ${subtype.toLowerCase()} on Queer Guide.`,
+      description
+        ? description
+        : `${titledClause} · ${name} on Queer Guide${
+            country && country !== city ? `, ${country}` : ''
+          }. Hours, location, photos, and recent reviews.`,
       MAX_DESC,
     ),
-    ogImage: (arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
+  void label;
 
   const body = `<main data-prerendered="bot-ua">
     <article>
@@ -124,8 +164,12 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     name,
     url: `${SITE_ORIGIN}${pathname}`,
     description: description || undefined,
+    // P2.3 — only emit PostalAddress when we have a real streetAddress.
+    // Schema.org/Google flags PostalAddress entries without streetAddress
+    // as invalid LocalBusiness markup. City + country alone go into the
+    // areaServed field below; they don't pretend to be a postal address.
     address:
-      address || city
+      address
         ? {
             '@type': 'PostalAddress',
             streetAddress: address,
@@ -134,6 +178,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
             addressCountry: country,
           }
         : undefined,
+    areaServed: !address && (city || country) ? [city, country].filter(Boolean).join(', ') : undefined,
     geo:
       numField(row, 'latitude') !== undefined && numField(row, 'longitude') !== undefined
         ? {
@@ -196,7 +241,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
         } on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: (arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -275,7 +320,10 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
   if (!row) return null;
 
   const title = stringField(row, 'title') ?? slug;
-  const excerpt = stringField(row, 'excerpt') ?? '';
+  // P2.4 — excerpt occasionally contains inline HTML (anchors, em). The
+  // meta description tag must be plain text or social previews render
+  // raw tags. Strip + collapse whitespace before truncating.
+  const excerpt = collapseWs(stripHtml(stringField(row, 'excerpt') ?? ''));
   const author = stringField(row, 'author');
   const publisher = stringField(row, 'publisher_name');
   const image = stringField(row, 'image_url');
@@ -283,7 +331,7 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
   const meta: RouteMeta = {
     title: truncate(`${title}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(excerpt || `${title} — LGBTQ+ news on Queer Guide.`, MAX_DESC),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const sourceLink = stringField(row, 'url');
@@ -327,7 +375,10 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     isBasedOn: sourceLink,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(articleLd)) };
+  // P1.2 / P1.1 — /news/:slug is hard-removed at the CDN (public/_redirects
+  // serves 410 Gone). This codepath only runs if the redirect rule somehow
+  // misses; mark the row noindex as defense-in-depth.
+  return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: false };
 }
 
 // Personalities
@@ -360,7 +411,7 @@ async function personalityDetail(
       description || bio || `${name} — notable LGBTQ+ figure on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -446,7 +497,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
         `Queer venues, events, hotels and travel tips for ${name}. ${venues.length} venues, ${events.length} upcoming events on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const venuesList = venues
@@ -552,7 +603,7 @@ async function countryDetail(env: Env, slug: string, pathname: string): Promise<
         `LGBTQ+ legal status, safety, venues and travel guide for ${name}. ${legal ? `Legal status: ${legal}.` : ''}`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -610,7 +661,7 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
       description || `LGBTQ+ friendly hotel${city ? ` in ${city}` : ''} on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: (arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -689,7 +740,7 @@ async function villageDetail(env: Env, slug: string, pathname: string): Promise<
       description || `${name} — historic queer neighborhood and travel destination on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const landmarksList = landmarks
@@ -759,7 +810,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
       description || `Articles, venues and events about ${name} on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: image ?? DEFAULT_OG_IMAGE,
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">

@@ -102,6 +102,7 @@ const Events = () => {
     error,
     hasMore,
     datasetTotal,
+    totalCount,
     fetchEvents,
     updateAttendance,
     loadingTimedOut,
@@ -184,20 +185,52 @@ const Events = () => {
       append: false,
     });
   };
+  // D6 follow-up: handlePresetSelect both calls fetchEvents() and mutates
+  // filter state that the `otherFiltersMounted` useEffect listens to. Without
+  // this skip flag we'd fire two fetches per preset toggle. The flag is set
+  // before the state batch and the useEffect drops one tick when it sees it.
+  const suppressFilterRefetch = useRef(false);
+
   const handlePresetSelect = async (preset: EventPresetId | null) => {
-    // Clear any previously applied preset-specific state
-    setIsFree(false);
-    setFeaturedOnly(false);
-    if (preset === null || preset === activePreset) {
+    // D6: toggling a preset OFF must fully reverse every state it set.
+    // Previously eventType='pride' leaked after un-toggling Pride, and
+    // isFree/featuredOnly were always cleared on every press (even when
+    // activating a different preset that shouldn't touch them).
+    suppressFilterRefetch.current = true;
+    const isToggleOff = preset === null || preset === activePreset;
+    if (isToggleOff) {
+      const wasActive = activePreset;
       setActivePreset(null);
-      setStartDate(undefined);
-      setEndDate(undefined);
-      if (preset === 'near-me' || activePreset === 'near-me') {
+      if (wasActive === 'pride') setEventType('');
+      if (wasActive === 'free') setIsFree(false);
+      if (wasActive === 'featured') setFeaturedOnly(false);
+      if (wasActive === 'this-weekend' || wasActive === 'this-month' || wasActive === 'pride') {
+        setStartDate(undefined);
+        setEndDate(undefined);
+      }
+      if (wasActive === 'near-me') {
         setNearMe(false);
         setUserLocation(null);
       }
+      setPage(1);
+      setAutoLoadedCount(0);
+      await fetchEvents(
+        {
+          search: search || undefined,
+          city: city || undefined,
+          tags: selectedTags.length > 0 ? selectedTags : undefined,
+          includePast: showPast || undefined,
+          sort,
+        },
+        { page: 1, pageSize: PAGE_SIZE, append: false },
+      );
       return;
     }
+    // Activating a new preset: reset state owned by other presets first,
+    // then apply this preset's state.
+    setIsFree(false);
+    setFeaturedOnly(false);
+    if (activePreset === 'pride' && preset !== 'pride') setEventType('');
     setActivePreset(preset);
     const range = getPresetDateRange(preset);
     if (range) {
@@ -405,6 +438,25 @@ const Events = () => {
     handleFiltersChange();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sort]);
+
+  // D6: re-fetch when any of the remaining filter dimensions change.
+  // Pill `×` handlers call setX() but did not trigger a refetch on their
+  // own; this guard mirrors the existing cityMounted / sortMounted pattern.
+  // suppressFilterRefetch is set by handlePresetSelect to avoid double
+  // fetches when the preset handler already issued one.
+  const otherFiltersMounted = useRef(false);
+  useEffect(() => {
+    if (!otherFiltersMounted.current) {
+      otherFiltersMounted.current = true;
+      return;
+    }
+    if (suppressFilterRefetch.current) {
+      suppressFilterRefetch.current = false;
+      return;
+    }
+    handleFiltersChange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventType, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags]);
 
   // Debounced search — apply ~300ms after the user stops typing so the
   // list filters live. Enter still flushes immediately via onKeyDown.
@@ -799,6 +851,40 @@ const Events = () => {
                   />
                 </Badge>
               )}
+              {/* D13: pills for boolean filters that previously had no pill.
+                  Clearing flips the matching preset chip back to inactive. */}
+              {isFree && (
+                <Badge variant="secondary" className="inline-flex gap-1">
+                  {t('pages.events.filterFree', 'Free')}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
+                    role="button"
+                    aria-label={t('pages.events.clearFilterFree', 'Clear free filter')}
+                    onClick={() => {
+                      setIsFree(false);
+                      if (activePreset === 'free') setActivePreset(null);
+                    }}
+                  />
+                </Badge>
+              )}
+              {featuredOnly && (
+                <Badge variant="secondary" className="inline-flex gap-1">
+                  {t('pages.events.filterFeatured', 'Featured')}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
+                    role="button"
+                    aria-label={t('pages.events.clearFilterFeatured', 'Clear featured filter')}
+                    onClick={() => {
+                      setFeaturedOnly(false);
+                      if (activePreset === 'featured') setActivePreset(null);
+                    }}
+                  />
+                </Badge>
+              )}
               {selectedTags.map((tag) => (
                 <Badge key={tag} variant="secondary" className="inline-flex gap-1">
                   {tag}
@@ -827,16 +913,32 @@ const Events = () => {
         {!loading && !error && (
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <p className="text-sm text-muted-foreground" aria-live="polite">
+              {/* D7: show "Showing N of M events" whenever the true total
+                  exceeds what's currently rendered, so users aren't misled
+                  that "24" means "24 in the world". */}
               {autoLocationLabel && city === autoLocationLabel
-                ? t('pages.events.resultsNear', {
-                    count: events.length,
-                    city: displayCityName(autoLocationLabel, i18n.language),
-                    defaultValue: `${events.length} events near ${displayCityName(autoLocationLabel, i18n.language)}`,
-                  })
-                : t('pages.events.resultsCount', {
-                    count: events.length,
-                    defaultValue: `${events.length} ${events.length === 1 ? 'event' : 'events'}`,
-                  })}
+                ? totalCount && totalCount > events.length
+                  ? t('pages.events.resultsNearOfTotal', {
+                      count: events.length,
+                      total: totalCount,
+                      city: displayCityName(autoLocationLabel, i18n.language),
+                      defaultValue: `Showing ${events.length} of ${totalCount} events near ${displayCityName(autoLocationLabel, i18n.language)}`,
+                    })
+                  : t('pages.events.resultsNear', {
+                      count: events.length,
+                      city: displayCityName(autoLocationLabel, i18n.language),
+                      defaultValue: `${events.length} events near ${displayCityName(autoLocationLabel, i18n.language)}`,
+                    })
+                : totalCount && totalCount > events.length
+                  ? t('pages.events.resultsCountOfTotal', {
+                      count: events.length,
+                      total: totalCount,
+                      defaultValue: `Showing ${events.length} of ${totalCount} events`,
+                    })
+                  : t('pages.events.resultsCount', {
+                      count: events.length,
+                      defaultValue: `${events.length} ${events.length === 1 ? 'event' : 'events'}`,
+                    })}
               {autoLocationLabel && city === autoLocationLabel && (
                 <button
                   type="button"

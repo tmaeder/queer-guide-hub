@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
+import { searchFetch } from '@/lib/searchFetch';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 type MarketplaceListingInsert = Database['public']['Tables']['marketplace_listings']['Insert'];
@@ -47,6 +48,62 @@ export function useMarketplace() {
       setLoading(true);
       setLoadingTimedOut(false);
       setError(null);
+
+      // ── Search branch ─────────────────────────────────────────────
+      // When a query is set, route through the search-proxy worker /
+      // Meilisearch. The old Postgres `.or(title.ilike.%X%,...)` path
+      // broke on whitespace inside the OR-expression, returning 0 hits
+      // for any multi-word query. Meili tokenises naturally and ranks.
+      //
+      // We get back IDs + scores; then fetch the full listing rows from
+      // Supabase (preserving order) so cards keep their joined reviews,
+      // favorites, and venue data. On any search-proxy failure we fall
+      // back to the legacy ilike path so the site keeps working.
+      if (filters?.search && filters.search.trim().length >= 2) {
+        try {
+          const data = await searchFetch<{
+            hits?: Array<{ id?: string; objectID?: string; type?: string }>;
+            totalHits?: number;
+          }>('/', {
+            query: filters.search.trim(),
+            filters: { types: ['marketplace'] },
+            hitsPerPage: PAGE_SIZE,
+            // search-proxy expects 0-based page indices (validInt min:0,
+            // default:0) and computes Meili offset = page * limit. Sending
+            // page+1 here skipped the first PAGE_SIZE hits and returned
+            // empty arrays for narrow queries like "M2193" (4 total hits,
+            // none surfaced because offset jumped past them).
+            page,
+          });
+          const hits = data?.hits ?? [];
+          const ids = hits
+            .map((h) => (h?.id ?? h?.objectID ?? '').toString())
+            .filter(Boolean);
+          if (ids.length === 0) {
+            setListings([]);
+            setTotal(data?.totalHits ?? 0);
+            return;
+          }
+          const { data: rows, error: rowsErr } = await supabase
+            .from('marketplace_listings')
+            .select(
+              `*, marketplace_reviews(rating), marketplace_favorites(id), venues(name, address, city)`,
+            )
+            .eq('status', 'active')
+            .in('id', ids);
+          if (rowsErr) throw rowsErr;
+          const byId = new Map((rows ?? []).map((r) => [r.id, r] as const));
+          const ordered = ids.map((id) => byId.get(id)).filter(Boolean) as MarketplaceListing[];
+          setListings(ordered);
+          setTotal(data?.totalHits ?? ordered.length);
+          return;
+        } catch (searchErr) {
+          // Fall through to the Postgres path. Log for triage but don't
+          // surface — the user gets results either way.
+          console.warn('marketplace search-proxy failed, falling back', searchErr);
+        }
+      }
+
       let query = supabase
         .from('marketplace_listings')
         .select(
@@ -97,7 +154,13 @@ export function useMarketplace() {
       }
 
       if (filters?.subcategory) {
-        query = query.eq('subcategory', filters.subcategory);
+        // Match against the canonical generated column so the URL slug
+        // (`fetish_gear`) lines up with stored values that may have come
+        // through hyphenated or title-cased ("Fetish Gear").
+        const slug = filters.subcategory
+          .toLowerCase()
+          .replace(/[\s-]+/g, '_');
+        query = query.eq('subcategory_slug', slug);
       }
 
       if (filters?.location) {

@@ -294,7 +294,12 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 {post.profiles?.display_name || 'Unknown User'}
               </LocalizedLink>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+                <span>{(() => {
+                  const d = post.created_at ? new Date(post.created_at) : null;
+                  return d && !Number.isNaN(d.getTime())
+                    ? formatDistanceToNow(d, { addSuffix: true })
+                    : '';
+                })()}</span>
                 <span>&bull;</span>
                 <div className="flex items-center gap-1">
                   {getVisibilityIcon()}

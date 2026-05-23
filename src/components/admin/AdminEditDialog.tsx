@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/select';
 import { useAdminEdit } from '@/hooks/useAdminEdit';
 import { toast } from 'sonner';
-import { History, Check, Loader2, Sparkles } from 'lucide-react';
+import { History, Check, Loader2 } from 'lucide-react';
 import {
   contentTypeRegistry,
   getFieldsByGroup,
@@ -41,7 +41,6 @@ import {
   type AddressComponents,
 } from '@/components/ui/location-autocomplete';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
-import { supabase } from '@/integrations/supabase/client';
 
 interface AdminEditDialogProps {
   open: boolean;
@@ -76,8 +75,6 @@ export function AdminEditDialog({
   const [editLog, setEditLog] = useState<EditLogEntry[]>([]);
   const [logLoading, setLogLoading] = useState(false);
   const [resolvedFields, setResolvedFields] = useState<Record<string, boolean>>({});
-  const [enriching, setEnriching] = useState(false);
-  const [enrichedFields, setEnrichedFields] = useState<Set<string>>(new Set());
 
   const { resolveAddress, resolveNationality, resolveBirthPlace, resolving } = useAddressResolver();
 
@@ -302,62 +299,6 @@ export function AdminEditDialog({
     return changes;
   };
 
-  const handleEnrich = async () => {
-    setEnriching(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('content-automation', {
-        body: {
-          module: 'ai-content-enhancer',
-          content_type: contentType,
-          content_id: contentId,
-        },
-      });
-
-      if (error) throw error;
-      if (!data?.suggestions || Object.keys(data.suggestions).length === 0) {
-        toast.info('No enrichment suggestions available');
-        return;
-      }
-
-      const suggestions = data.suggestions as Record<string, unknown>;
-      const newEnrichedFields = new Set<string>();
-
-      setFormData((prev) => {
-        const updates = { ...prev };
-        for (const [key, value] of Object.entries(suggestions)) {
-          if (key === 'suggested_tags') continue;
-          const field = editableFields.find((f) => f.name === key);
-          if (field && !field.readOnly) {
-            const currentVal = prev[key];
-            if (!currentVal || String(currentVal).trim() === '') {
-              updates[key] = value;
-              newEnrichedFields.add(key);
-            } else if (
-              typeof value === 'string' &&
-              typeof currentVal === 'string' &&
-              value.length > currentVal.length * 1.3
-            ) {
-              updates[key] = value;
-              newEnrichedFields.add(key);
-            }
-          }
-        }
-        return updates;
-      });
-
-      setEnrichedFields(newEnrichedFields);
-      const count = newEnrichedFields.size;
-      if (count > 0) {
-        toast.success(`AI suggested improvements for ${count} field${count > 1 ? 's' : ''}`);
-      } else {
-        toast.info('Content already looks good — no changes suggested');
-      }
-    } catch (err: unknown) {
-      toast.error(`Enrichment failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setEnriching(false);
-    }
-  };
 
   const handleSubmit = async () => {
     const changes = getChangedFields();
@@ -381,12 +322,8 @@ export function AdminEditDialog({
   const renderField = (field: FieldConfig) => {
     const value = formData[field.name];
     const isReadOnly = field.readOnly === true;
-    const isEnriched = enrichedFields.has(field.name);
-    const labelText = isEnriched ? `${field.label} ✨` : field.label;
+    const labelText = field.label;
     const fieldId = `field-${field.name}`;
-    const enrichedClass = isEnriched
-      ? 'border-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--foreground))]'
-      : '';
 
     switch (field.type) {
       case 'boolean':
@@ -440,12 +377,10 @@ export function AdminEditDialog({
               onChange={(e) => handleChange(field.name, e.target.value)}
               disabled={isReadOnly}
               maxLength={field.maxLength}
-              className={enrichedClass}
+              
             />
-            {(isEnriched || field.helpText) && (
-              <span className="text-xs text-muted-foreground">
-                {isEnriched ? 'AI-enriched — review before saving' : field.helpText}
-              </span>
+            {field.helpText && (
+              <span className="text-xs text-muted-foreground">{field.helpText}</span>
             )}
           </div>
         );
@@ -605,7 +540,7 @@ export function AdminEditDialog({
                 disabled={isReadOnly}
                 placeholder={field.placeholder}
                 maxLength={field.maxLength}
-                className={enrichedClass}
+                
               />
               {hasResolver && (
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -616,10 +551,8 @@ export function AdminEditDialog({
                 </div>
               )}
             </div>
-            {(isEnriched || field.helpText) && (
-              <span className="text-xs text-muted-foreground">
-                {isEnriched ? 'AI-enriched — review before saving' : field.helpText}
-              </span>
+            {field.helpText && (
+              <span className="text-xs text-muted-foreground">{field.helpText}</span>
             )}
             {hasResolver && isResolved && (
               <span className="text-xs block text-foreground">
@@ -729,13 +662,9 @@ export function AdminEditDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={loading || enriching}
+            disabled={loading}
           >
             Cancel
-          </Button>
-          <Button variant="outline" onClick={handleEnrich} disabled={loading || enriching}>
-            {enriching ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-            {enriching ? 'Enriching...' : 'Enrich with AI'}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || changedCount === 0}>
             {loading ? <Loader2 size={16} className="animate-spin" aria-label="Loading" /> : null}

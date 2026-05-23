@@ -25,7 +25,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { updateRow } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { AutoTagPanel } from '@/components/cms/AutoTagPanel';
 import { GeoLinkPanel } from '@/components/cms/GeoLinkPanel';
 import { TranslationPanel } from '@/components/cms/TranslationPanel';
 import { getFieldGroups } from './editor/fieldGroups';
@@ -281,13 +280,6 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               </Button>
             </CardContent>
           </Card>
-
-          {content?.id && content?.content_type && (
-            <AutoTagPanel
-              contentType={content.content_type as string}
-              contentId={content.id as string}
-            />
-          )}
 
           {content?.id && content?.content_type && (
             <GeoLinkPanel

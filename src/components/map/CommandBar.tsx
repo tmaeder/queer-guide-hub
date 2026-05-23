@@ -28,6 +28,8 @@ import {
   type SearchSuggestion,
 } from '@/hooks/useSearchSuggestions';
 import { hapticTrigger } from '@/hooks/useHaptics';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_DEFS } from './ExploreMapLayers';
@@ -105,6 +107,8 @@ export const CommandBar = ({
   className,
 }: CommandBarProps) => {
   const navigate = useLocalizedNavigate();
+  const { toast } = useToast();
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -159,12 +163,45 @@ export const CommandBar = ({
         if (next.nearMe) {
           delete next.nearMe;
         } else if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition((pos) => {
-            onFiltersChange({
-              ...filters,
-              nearMe: { lat: pos.coords.latitude, lng: pos.coords.longitude, radiusKm: 10 },
-            });
-          });
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              onFiltersChange({
+                ...filters,
+                nearMe: { lat: pos.coords.latitude, lng: pos.coords.longitude, radiusKm: 10 },
+              });
+            },
+            (err) => {
+              // Without an error callback the popup closed silently when the
+              // user denied permission — no signal that "Near me" requires
+              // location. Map the standard PositionError codes to plain
+              // English and show an informational toast so the user knows
+              // why nothing changed.
+              let title: string;
+              switch (err.code) {
+                case 1: // PERMISSION_DENIED
+                  title = t('map.geolocate.denied', {
+                    defaultValue: 'Location access is off — "Near me" needs your location',
+                  });
+                  break;
+                case 2: // POSITION_UNAVAILABLE
+                  title = t('map.geolocate.unavailable', {
+                    defaultValue: "Couldn't get your location — try again in a moment",
+                  });
+                  break;
+                case 3: // TIMEOUT
+                  title = t('map.geolocate.timeout', {
+                    defaultValue: 'Location lookup timed out — try again',
+                  });
+                  break;
+                default:
+                  title = t('map.geolocate.denied', {
+                    defaultValue: 'Location access is off — "Near me" needs your location',
+                  });
+              }
+              toast({ title });
+            },
+            { enableHighAccuracy: true, timeout: 8000 },
+          );
           setFilterOpen(false);
           return;
         }

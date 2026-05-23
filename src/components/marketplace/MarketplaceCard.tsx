@@ -11,6 +11,9 @@ import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
+import { useCurrency } from '@/hooks/useCurrency';
+import { useFxRates } from '@/hooks/useFxRates';
+import { isAdultListing } from '@/hooks/useAdultContent';
 import {
   formatListingPrice,
   getOutboundLink,
@@ -42,6 +45,8 @@ interface MarketplaceCardProps {
   loading?: boolean;
   searchQuery?: string;
   imageAsset?: EntityImageAsset;
+  /** Eager-load the image (above-the-fold cards). */
+  priority?: boolean;
 }
 
 function HighlightedText({ text, query }: { text: string; query?: string }) {
@@ -67,7 +72,11 @@ function MarketplaceCardImpl({
   showFavoriteButton = false,
   searchQuery,
   imageAsset,
+  priority = false,
 }: MarketplaceCardProps) {
+  const { currency } = useCurrency();
+  const { data: rates } = useFxRates();
+
   if (loading || !listing) {
     return (
       <Skeleton name="marketplace-card" loading={true} fallback={<PageLoadingState count={1} />}>
@@ -81,7 +90,7 @@ function MarketplaceCardImpl({
       listing.marketplace_reviews.length
     : 0;
 
-  const price = formatListingPrice(listing);
+  const price = formatListingPrice(listing, { displayCurrency: currency, rates });
   const listingImage = resolveImageUrl({
     imageUrl: listing.images?.[0] ?? null,
     optimizedUrl: imageAsset?.optimized_url ?? null,
@@ -99,15 +108,28 @@ function MarketplaceCardImpl({
     <CardHoverEffect>
       <Card className="group transition-colors duration-300 hover:border-foreground/40">
         <div className="relative">
-          <CardImage src={listingImage} alt={listing.title} fallbackIcon={Store} height={160} />
+          <CardImage
+            src={listingImage}
+            alt={listing.title}
+            fallbackIcon={Store}
+            height={160}
+            priority={priority}
+          />
           {listing.featured && (
             <div className="absolute top-2 left-2 z-10">
               <Badge>Featured</Badge>
             </div>
           )}
+          {isAdultListing(listing) && (
+            <div className="absolute bottom-2 left-2 z-10">
+              <Badge variant="outline" aria-label="Adult content">
+                18+
+              </Badge>
+            </div>
+          )}
           {showFavoriteButton && (
             <div className="absolute top-2 right-2 z-10">
-              <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="sm" />
+              <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="tap" />
             </div>
           )}
         </div>
@@ -218,7 +240,7 @@ function MarketplaceCardImpl({
                 <p className="text-xs text-muted-foreground mt-0.5">{price.secondary}</p>
               )}
               {viewsCount > 50 && (
-                <p className="text-xs2 text-muted-foreground/80 mt-0.5">{viewsCount.toLocaleString()} views</p>
+                <p className="text-xs2 text-muted-foreground mt-0.5">{viewsCount.toLocaleString()} views</p>
               )}
               <div className="flex items-center gap-1.5 mt-1.5">
                 {listing.shipping_available && <Badge variant="outline">Ships</Badge>}
@@ -254,13 +276,22 @@ function MarketplaceCardImpl({
 
             <div className="flex items-center gap-2">
               {outbound ? (
+                // `style` is non-negotiable: a Tailwind preflight `a { color:
+                // inherit }` rule beats the layered `.text-background`
+                // utility, so without explicit inline color the label
+                // renders foreground-on-foreground (invisible). The inline
+                // CSS-variable refs follow the active light/dark theme.
                 <a
                   href={outbound.url}
                   target="_blank"
                   rel={outbound.rel}
                   onClick={(e) => e.stopPropagation()}
                   data-affiliate={outbound.isAffiliate ? 'true' : undefined}
-                  className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                  style={{
+                    backgroundColor: 'hsl(var(--foreground))',
+                    color: 'hsl(var(--background))',
+                  }}
                   aria-label={`${outbound.label} (opens in new tab)`}
                 >
                   {outbound.label}

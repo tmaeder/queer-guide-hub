@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import * as Sentry from '@sentry/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
@@ -67,32 +68,68 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-[50vh] flex items-center justify-center p-8">
-          <div className="text-center flex flex-col gap-4">
-            <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
-            <h6 className="text-base font-semibold">Something went wrong</h6>
-            <p className="text-sm text-muted-foreground">
-              An unexpected error occurred. Please try refreshing the page.
-            </p>
-            {import.meta.env.DEV && this.state.error && (
-              <pre className="text-xs font-mono text-left p-4 bg-muted rounded-element max-h-40 overflow-auto break-all">
-                {this.state.error.name}: {this.state.error.message}
-              </pre>
-            )}
-            <div className="flex gap-4 justify-center">
-              <Button onClick={this.handleRetry} variant="outline" size="sm">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again
-              </Button>
-              <Button onClick={() => window.location.href = '/'} size="sm">
-                Go Home
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ErrorFallback
+          error={this.state.error}
+          onRetry={this.handleRetry}
+        />
       );
     }
 
     return this.props.children;
   }
+}
+
+/**
+ * Render-side fallback so we can read the QueryClient via a hook. "Try Again"
+ * invalidates all queries before resetting the boundary, otherwise a query in
+ * an error state would re-throw on the next render.
+ */
+function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
+  // useQueryClient may throw if there's no QueryClientProvider above us
+  // (very-early-boot path uses the outer boundary before providers mount).
+  // Guard defensively.
+  let queryClient: ReturnType<typeof useQueryClient> | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- intentional defensive call; see comment above
+    queryClient = useQueryClient();
+  } catch {
+    queryClient = null;
+  }
+
+  const handleRetry = () => {
+    if (queryClient) {
+      try {
+        queryClient.invalidateQueries();
+      } catch {
+        // Never block retry on cache invalidation failure.
+      }
+    }
+    onRetry();
+  };
+
+  return (
+    <div className="min-h-[50vh] flex items-center justify-center p-8">
+      <div className="text-center flex flex-col gap-4">
+        <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
+        <h6 className="text-base font-semibold">Something went wrong</h6>
+        <p className="text-sm text-muted-foreground">
+          An unexpected error occurred. Please try refreshing the page.
+        </p>
+        {import.meta.env.DEV && error && (
+          <pre className="text-xs font-mono text-left p-4 bg-muted rounded-element max-h-40 overflow-auto break-all">
+            {error.name}: {error.message}
+          </pre>
+        )}
+        <div className="flex gap-4 justify-center">
+          <Button onClick={handleRetry} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+          <Button onClick={() => (window.location.href = '/')} size="sm">
+            Go Home
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
