@@ -12,8 +12,8 @@ const { useAuthMock, useAdminRolesMock, dialogSpy } = vi.hoisted(() => ({
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: useAuthMock }));
 vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: useAdminRolesMock }));
-vi.mock('../AdminEditDialog', () => ({
-  AdminEditDialog: (props: { open: boolean; contentType: string }) => {
+vi.mock('../inline/AdminFullEditSheet', () => ({
+  AdminFullEditSheet: (props: { open: boolean; contentType: string }) => {
     dialogSpy(props);
     return props.open ? <div data-testid="dialog">{props.contentType}</div> : null;
   },
@@ -44,19 +44,19 @@ describe('AdminEditButton', () => {
   it('renders button when canManageContent', () => {
     useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
     render(<AdminEditButton contentType="venue" contentId="v1" />);
-    expect(screen.getByRole('button', { name: /Edit content/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Edit all fields/i })).toBeInTheDocument();
   });
 
   it('renders button for owner even without admin role', () => {
     useAdminRolesMock.mockReturnValue({ canManageContent: () => false, loading: false });
     render(<AdminEditButton contentType="venue" contentId="v1" ownerUserId="u1" />);
-    expect(screen.getByRole('button', { name: /Edit content/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Edit all fields/i })).toBeInTheDocument();
   });
 
   it('opens dialog on click', () => {
     useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
     render(<AdminEditButton contentType="venue" contentId="v1" />);
-    fireEvent.click(screen.getByRole('button', { name: /Edit content/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Edit all fields/i }));
     expect(screen.getByTestId('dialog')).toHaveTextContent('venue');
   });
 });
