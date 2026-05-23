@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
 import { useCitiesDirectory } from '@/hooks/useCitiesDirectory';
 import { useCitiesUrlState } from '@/hooks/useCitiesUrlState';
-import { Input } from '@/components/ui/input';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { PageHero } from '@/components/discovery';
+import { CitiesFilterBar } from './cities/CitiesFilterBar';
 import { CityListPane } from './cities/CityListPane';
 
 export default function Cities() {
@@ -22,7 +22,14 @@ export default function Cities() {
     [url.q, url.continents, url.tiers, url.sort],
   );
 
-  const { filtered, venueCounts, cities, loading, error } = useCitiesDirectory(filterParams);
+  const {
+    cities,
+    filtered,
+    continents,
+    venueCounts,
+    loading,
+    error,
+  } = useCitiesDirectory(filterParams);
 
   useMeta({
     title: t('cities.metaTitle', 'Cities'),
@@ -56,38 +63,33 @@ export default function Cities() {
         }}
         size="sm"
       />
-      <div className="container mx-auto py-8 md:py-12 px-4 relative">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div className="max-w-[480px] flex-1">
-            <Input
-              aria-label={t('cities.searchAriaLabel', 'Search cities')}
-              placeholder={t('cities.searchPlaceholder', 'Search cities…')}
-              value={url.q}
-              onChange={(e) => url.setQ(e.target.value)}
+      <div className="container mx-auto px-4 relative">
+        <CitiesFilterBar
+          q={url.q}
+          onQChange={url.setQ}
+          continents={continents}
+          selectedContinents={url.continents}
+          onToggleContinent={url.toggleContinent}
+          selectedTiers={url.tiers}
+          onToggleTier={url.toggleTier}
+          sort={url.sort}
+          onSortChange={url.setSort}
+          totalCount={cities.length}
+          filteredCount={filtered.length}
+          onReset={url.reset}
+        />
+        <div className="py-6">
+          {error ? (
+            <ErrorState message={error} />
+          ) : (
+            <CityListPane
+              cities={filtered}
+              loading={loading}
+              venueCounts={venueCounts}
+              hasActiveFilters={hasActiveFilters}
             />
-          </div>
-          <p
-            className="text-13 text-muted-foreground shrink-0"
-            aria-live="polite"
-            role="status"
-          >
-            {t('cities.resultCount', '{{shown}} of {{total}} cities', {
-              shown: filtered.length,
-              total: cities.length,
-            })}
-          </p>
+          )}
         </div>
-
-        {error ? (
-          <ErrorState message={error} />
-        ) : (
-          <CityListPane
-            cities={filtered}
-            loading={loading}
-            venueCounts={venueCounts}
-            hasActiveFilters={hasActiveFilters}
-          />
-        )}
       </div>
     </div>
   );
