@@ -51,12 +51,14 @@ async function fetchAutomations(): Promise<Automation[]> {
   return (data ?? []) as Automation[];
 }
 
-async function fetchRecentRuns(): Promise<AutomationRun[]> {
-  const { data, error } = await supabase
+async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
+  let q = supabase
     .from('admin_automation_runs' as never)
     .select('*')
     .order('started_at', { ascending: false })
-    .limit(25);
+    .limit(50);
+  if (slugFilter) q = q.eq('automation_slug', slugFilter);
+  const { data, error } = await q;
   if (error) throw error;
   return (data ?? []) as AutomationRun[];
 }
@@ -73,6 +75,7 @@ export default function AdminAutomation() {
   const qc = useQueryClient();
   const { isAdmin } = useAdminRoles();
   const [busySlug, setBusySlug] = useState<string | null>(null);
+  const [filterSlug, setFilterSlug] = useState<string | null>(null);
 
   useRegisterAdminCommandAction({
     id: 'automation.view',
@@ -87,8 +90,8 @@ export default function AdminAutomation() {
 
   const automationsQ = useQuery({ queryKey: ['admin-automations'], queryFn: fetchAutomations });
   const runsQ = useQuery({
-    queryKey: ['admin-automation-runs'],
-    queryFn: fetchRecentRuns,
+    queryKey: ['admin-automation-runs', filterSlug],
+    queryFn: () => fetchRecentRuns(filterSlug),
     refetchInterval: 30_000,
   });
 
@@ -176,9 +179,14 @@ export default function AdminAutomation() {
               </thead>
               <tbody>
                 {automationsQ.data?.map((a) => (
-                  <tr key={a.id} className="border-t border-border">
+                  <tr
+                    key={a.id}
+                    className={`border-t border-border cursor-pointer hover:bg-muted/40 ${filterSlug === a.slug ? 'bg-muted/60' : ''}`}
+                    onClick={() => setFilterSlug(filterSlug === a.slug ? null : a.slug)}
+                  >
                     <td className="px-4 py-2">
                       <div className="font-semibold">{a.name}</div>
+                      <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
                       {a.description && (
                         <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
                       )}
@@ -199,7 +207,7 @@ export default function AdminAutomation() {
                         <Button
                           variant={a.enabled ? 'outline' : 'secondary'}
                           size="sm"
-                          onClick={() => toggleEnabled(a.slug, !a.enabled)}
+                          onClick={(e) => { e.stopPropagation(); toggleEnabled(a.slug, !a.enabled); }}
                           disabled={busySlug !== null}
                           className="font-normal h-6 text-2xs"
                         >
@@ -218,7 +226,7 @@ export default function AdminAutomation() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => dryRun(a.slug)}
+                        onClick={(e) => { e.stopPropagation(); dryRun(a.slug); }}
                         disabled={busySlug !== null}
                         title="Preview without mutating"
                       >
@@ -233,7 +241,7 @@ export default function AdminAutomation() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => runNow(a.slug)}
+                          onClick={(e) => { e.stopPropagation(); runNow(a.slug); }}
                           disabled={busySlug !== null || !a.enabled}
                           className="ml-2"
                           title={a.enabled ? 'Run now' : 'Enable to run'}
@@ -257,10 +265,27 @@ export default function AdminAutomation() {
 
       {/* Recent runs */}
       <section>
-        <h2 className="text-title font-semibold mb-3 flex items-center gap-2">
-          <Play size={16} />
-          Recent runs
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-title font-semibold flex items-center gap-2">
+            <Play size={16} />
+            Recent runs
+            {filterSlug && (
+              <span className="text-13 font-mono text-muted-foreground">
+                · {filterSlug}
+              </span>
+            )}
+          </h2>
+          {filterSlug && (
+            <Button variant="ghost" size="sm" onClick={() => setFilterSlug(null)}>
+              Clear filter
+            </Button>
+          )}
+        </div>
+        {!filterSlug && (
+          <p className="text-2xs text-muted-foreground -mt-2 mb-2">
+            Click any automation row above to filter this list.
+          </p>
+        )}
         {runsQ.isLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : runsQ.data?.length === 0 ? (
