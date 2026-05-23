@@ -29,6 +29,7 @@ const EMPTY_FILTERS: PrideFilters = {
   continents: [],
   countries: [],
   featuredOnly: false,
+  verifiedOnly: false,
   query: '',
 };
 
@@ -38,6 +39,7 @@ function filtersFromParams(params: URLSearchParams): PrideFilters {
     continents: (params.get('r') ?? '').split(',').filter(Boolean),
     countries: (params.get('c') ?? '').split(',').filter(Boolean),
     featuredOnly: params.get('f') === '1',
+    verifiedOnly: params.get('v') === '1',
     query: params.get('q') ?? '',
   };
 }
@@ -48,6 +50,7 @@ function filtersToParams(filters: PrideFilters): Record<string, string> {
   if (filters.continents.length) out.r = filters.continents.join(',');
   if (filters.countries.length) out.c = filters.countries.join(',');
   if (filters.featuredOnly) out.f = '1';
+  if (filters.verifiedOnly) out.v = '1';
   if (filters.query) out.q = filters.query;
   return out;
 }
