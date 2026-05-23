@@ -231,14 +231,6 @@ export default function AdminAutomation() {
                         <Badge variant="outline" className="font-normal">enabled</Badge>
                       ) : (
                         <Badge variant="secondary" className="font-normal">paused</Badge>
-                      {a.enabled ? (
-                        <Badge variant="outline" className="font-normal">
-                          enabled
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="font-normal">
-                          paused
-                        </Badge>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
@@ -246,7 +238,6 @@ export default function AdminAutomation() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); dryRun(a.slug); }}
-                        onClick={() => dryRun(a.slug)}
                         disabled={busySlug !== null}
                         title="Preview without mutating"
                       >
