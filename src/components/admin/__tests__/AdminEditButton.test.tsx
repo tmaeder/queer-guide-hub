@@ -4,18 +4,18 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
-const { useAuthMock, useAdminRolesMock, dialogSpy } = vi.hoisted(() => ({
+const { useAuthMock, useAdminRolesMock, sheetSpy } = vi.hoisted(() => ({
   useAuthMock: vi.fn(),
   useAdminRolesMock: vi.fn(),
-  dialogSpy: vi.fn(),
+  sheetSpy: vi.fn(),
 }));
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: useAuthMock }));
 vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: useAdminRolesMock }));
 vi.mock('../inline/AdminFullEditSheet', () => ({
   AdminFullEditSheet: (props: { open: boolean; contentType: string }) => {
-    dialogSpy(props);
-    return props.open ? <div data-testid="dialog">{props.contentType}</div> : null;
+    sheetSpy(props);
+    return props.open ? <div data-testid="sheet">{props.contentType}</div> : null;
   },
 }));
 
@@ -24,7 +24,7 @@ import { AdminEditButton } from '../AdminEditButton';
 beforeEach(() => {
   useAuthMock.mockReset();
   useAdminRolesMock.mockReset();
-  dialogSpy.mockReset();
+  sheetSpy.mockReset();
   useAuthMock.mockReturnValue({ user: { id: 'u1' } });
 });
 
@@ -53,10 +53,10 @@ describe('AdminEditButton', () => {
     expect(screen.getByRole('button', { name: /Edit all fields/i })).toBeInTheDocument();
   });
 
-  it('opens dialog on click', () => {
+  it('opens side sheet on click', () => {
     useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
     render(<AdminEditButton contentType="venue" contentId="v1" />);
     fireEvent.click(screen.getByRole('button', { name: /Edit all fields/i }));
-    expect(screen.getByTestId('dialog')).toHaveTextContent('venue');
+    expect(screen.getByTestId('sheet')).toHaveTextContent('venue');
   });
 });

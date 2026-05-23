@@ -31,6 +31,7 @@ import {
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { adminAction } from '@/lib/adminAction';
+import { formatNextFire } from '@/lib/nextCronFire';
 import { toast } from 'sonner';
 
 interface Automation {
@@ -321,6 +322,7 @@ export default function AdminAutomation() {
                   <th className="px-4 py-2 font-semibold">Name</th>
                   <th className="px-4 py-2 font-semibold">Managed by</th>
                   <th className="px-4 py-2 font-semibold">Schedule</th>
+                  <th className="px-4 py-2 font-semibold">Next run</th>
                   <th className="px-4 py-2 font-semibold">Last run</th>
                   <th className="px-4 py-2 font-semibold">Status</th>
                   <th className="px-4 py-2 font-semibold text-right">Actions</th>
@@ -346,6 +348,9 @@ export default function AdminAutomation() {
                       </Badge>
                     </td>
                     <td className="px-4 py-2 font-mono text-2xs">{a.schedule ?? '—'}</td>
+                    <td className="px-4 py-2 text-2xs text-muted-foreground tabular-nums">
+                      {a.enabled ? formatNextFire(a.schedule) : '—'}
+                    </td>
                     <td className="px-4 py-2">
                       {a.last_run_at
                         ? formatDistanceToNow(new Date(a.last_run_at), { addSuffix: true })
@@ -542,6 +547,8 @@ export default function AdminAutomation() {
                 <dd>{detailRow.enabled ? 'enabled' : 'paused'}</dd>
                 <dt className="text-muted-foreground">Schedule</dt>
                 <dd className="font-mono text-2xs">{detailRow.schedule ?? '—'}</dd>
+                <dt className="text-muted-foreground">Next run</dt>
+                <dd>{detailRow.enabled ? formatNextFire(detailRow.schedule) : 'paused'}</dd>
                 <dt className="text-muted-foreground">Last run</dt>
                 <dd>
                   {detailRow.last_run_at
