@@ -20,6 +20,7 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { Editable } from '@/components/admin/inline/Editable';
 import type { Database } from '@/integrations/supabase/types';
 import { formatCurrency } from '@/lib/currency';
 import {
@@ -83,6 +84,7 @@ interface HeroProps {
   onToggleFavorite: () => void;
   onShare: () => void;
   heroImage: string | null;
+  onContentUpdated?: () => void;
 }
 
 export function MarketplaceHero({
@@ -93,6 +95,7 @@ export function MarketplaceHero({
   onToggleFavorite,
   onShare,
   heroImage,
+  onContentUpdated,
 }: HeroProps) {
   return (
     <>
@@ -114,7 +117,17 @@ export function MarketplaceHero({
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-4 mb-2 flex-wrap">
-              <h4 className="text-2xl font-bold">{listing.title}</h4>
+              <h4 className="text-2xl font-bold">
+                <Editable
+                  contentType="marketplace_listings"
+                  recordId={listing.id}
+                  field="title"
+                  value={listing.title}
+                  onSaved={onContentUpdated}
+                >
+                  {listing.title}
+                </Editable>
+              </h4>
               {listing.featured && <Badge>Featured</Badge>}
             </div>
 
@@ -184,9 +197,10 @@ interface OverviewProps {
   listing: MarketplaceListing;
   reviews: MarketplaceReview[];
   t: (k: string, d?: string) => string;
+  onContentUpdated?: () => void;
 }
 
-export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
+export function MarketplaceOverview({ listing, reviews, t, onContentUpdated }: OverviewProps) {
   const remainingImages =
     listing.images && listing.images.length > 1 ? listing.images.slice(1) : [];
 
@@ -243,7 +257,17 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
               <CardTitle>{t('pages.marketplaceDetail.description', 'Description')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground whitespace-pre-wrap">{listing.description}</p>
+              <Editable
+                contentType="marketplace_listings"
+                recordId={listing.id}
+                field="description"
+                value={listing.description}
+                onSaved={onContentUpdated}
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                <p className="text-muted-foreground whitespace-pre-wrap">{listing.description}</p>
+              </Editable>
             </CardContent>
           </Card>
         )}

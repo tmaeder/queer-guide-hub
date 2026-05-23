@@ -1903,7 +1903,6 @@
       "linkCopiedDescription": "貼り付けることができます",
       "shareFailed": "共有に失敗しました"
     },
-    "geolocate": {}
     "geolocate": {
       "unsupported": "Geolocation unavailable",
       "denied": "Location access is off — showing the default area",

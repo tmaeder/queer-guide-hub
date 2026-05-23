@@ -15,7 +15,7 @@ interface UseCMSAuditReturn {
   /** Load audit entries for a specific content item */
   loadForContent: (sourceTable: string, sourceId: string) => Promise<void>;
   /** Load global audit entries (all content) */
-  loadGlobal: (options?: { page?: number; pageSize?: number; action?: string }) => Promise<void>;
+  loadGlobal: (options?: { page?: number; pageSize?: number; action?: string; since?: string }) => Promise<void>;
   /** Write an audit entry */
   writeEntry: (entry: {
     sourceTable: string;
@@ -59,7 +59,7 @@ export function useCMSAudit(): UseCMSAuditReturn {
     }
   }, []);
 
-  const loadGlobal = useCallback(async (options?: { page?: number; pageSize?: number; action?: string }) => {
+  const loadGlobal = useCallback(async (options?: { page?: number; pageSize?: number; action?: string; since?: string }) => {
     const page = options?.page ?? 1;
     const pageSize = options?.pageSize ?? 50;
     const from = (page - 1) * pageSize;
@@ -77,6 +77,9 @@ export function useCMSAudit(): UseCMSAuditReturn {
 
       if (options?.action) {
         query = query.eq('action', options.action);
+      }
+      if (options?.since) {
+        query = query.gte('timestamp', options.since);
       }
 
       const { data, error: fetchError, count } = await query;

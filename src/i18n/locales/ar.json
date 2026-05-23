@@ -1903,7 +1903,6 @@
       "linkCopiedDescription": "يمكنك لصقه الآن",
       "shareFailed": "فشل في المشاركة"
     },
-    "geolocate": {}
     "geolocate": {
       "unsupported": "Geolocation unavailable",
       "denied": "Location access is off — showing the default area",

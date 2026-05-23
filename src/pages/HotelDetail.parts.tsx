@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { Editable } from '@/components/admin/inline/Editable';
 import { EntityMap } from '@/components/map/EntityMap';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
 import type { Database } from '@/integrations/supabase/types';
@@ -45,9 +46,10 @@ interface HeroProps {
   tripCount?: number;
   isInTrip?: boolean;
   onAddToTrip: () => void;
+  onContentUpdated?: () => void;
 }
 
-export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, onAddToTrip }: HeroProps) {
+export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, onAddToTrip, onContentUpdated }: HeroProps) {
   const heroImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
   // Website is only useful when it points somewhere different than the
   // booking URL — otherwise it's a duplicate of "Book Now".
@@ -65,7 +67,17 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
       <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-2xl font-bold">{hotel.name}</h4>
+            <h4 className="text-2xl font-bold">
+              <Editable
+                contentType="hotels"
+                recordId={hotel.id}
+                field="name"
+                value={hotel.name}
+                onSaved={onContentUpdated}
+              >
+                {hotel.name}
+              </Editable>
+            </h4>
             {hotel.verified && <Shield className="w-5 h-5" />}
           </div>
           <p className="text-muted-foreground">
@@ -135,7 +147,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
   );
 }
 
-export function HotelOverview({ hotel, t }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string }) {
+export function HotelOverview({ hotel, t, onContentUpdated }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string; onContentUpdated?: () => void }) {
   const hasMap = typeof hotel.latitude === 'number' && typeof hotel.longitude === 'number';
   return (
     <ScrollReveal direction="up">
@@ -144,7 +156,17 @@ export function HotelOverview({ hotel, t }: { hotel: HotelWithRelations; t: (k: 
         <Card>
           <CardHeader><CardTitle>{t('pages.hotelDetail.about', 'About')}</CardTitle></CardHeader>
           <CardContent>
-            <p className="whitespace-pre-wrap">{hotel.description}</p>
+            <Editable
+              contentType="hotels"
+              recordId={hotel.id}
+              field="description"
+              value={hotel.description}
+              onSaved={onContentUpdated}
+              fieldOverride={{ type: 'textarea' }}
+              as="div"
+            >
+              <p className="whitespace-pre-wrap">{hotel.description}</p>
+            </Editable>
           </CardContent>
         </Card>
       )}

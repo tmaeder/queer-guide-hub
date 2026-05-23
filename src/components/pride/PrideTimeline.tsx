@@ -10,6 +10,10 @@ interface PrideTimelineProps {
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const TRACK_WIDTH = 1800;
+const PX_PER_MONTH = TRACK_WIDTH / 12;
+const LABEL_PX = 96;
+const ROW_HEIGHT = 28;
 
 interface PlacedEvent {
   event: PrideCalendarEvent;
@@ -18,63 +22,54 @@ interface PlacedEvent {
   row: number;
 }
 
+// Greedy row placement so labels (not just dots) don't overlap horizontally.
 function placeEvents(events: PrideCalendarEvent[]): PlacedEvent[] {
-  const byMonth: Record<number, PlacedEvent[]> = {};
+  const dayPx = PX_PER_MONTH / 31;
+  const minDaySeparation = Math.max(2, Math.ceil(LABEL_PX / dayPx));
+  const sorted = [...events].sort(
+    (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+  );
+  const rows: { lastDayOfYear: number }[] = [];
   const placed: PlacedEvent[] = [];
-  for (const e of events) {
+  for (const e of sorted) {
     const d = new Date(e.start_date);
     const monthIndex = d.getUTCMonth();
     const dayInMonth = d.getUTCDate();
-    const monthList = (byMonth[monthIndex] ??= []);
-    // find row: lowest row where no event within 2 days exists
+    const dayOfYear = monthIndex * 31 + dayInMonth;
     let row = 0;
-    while (monthList.some((p) => p.row === row && Math.abs(p.dayInMonth - dayInMonth) < 2)) {
-      row++;
-    }
-    const item = { event: e, monthIndex, dayInMonth, row };
-    monthList.push(item);
-    placed.push(item);
+    while (rows[row] && dayOfYear - rows[row].lastDayOfYear < minDaySeparation) row++;
+    rows[row] = { lastDayOfYear: dayOfYear };
+    placed.push({ event: e, monthIndex, dayInMonth, row });
   }
   return placed;
 }
 
 export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimelineProps) {
   const placed = useMemo(() => placeEvents(events), [events]);
-  const maxRow = useMemo(
-    () => placed.reduce((m, p) => (p.row > m ? p.row : m), 0),
-    [placed],
-  );
+  const maxRow = useMemo(() => placed.reduce((m, p) => (p.row > m ? p.row : m), 0), [placed]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const today = new Date();
   const showToday = today.getUTCFullYear() === year;
   const todayMonthIndex = today.getUTCMonth();
   const todayDay = today.getUTCDate();
 
-  // Scroll selected into view
   useEffect(() => {
     if (!selectedId || !scrollRef.current) return;
-    const el = scrollRef.current.querySelector<HTMLButtonElement>(`[data-event-id="${selectedId}"]`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      el.focus({ preventScroll: true });
-    }
+    const el = scrollRef.current.querySelector<HTMLElement>(`[data-event-id="${selectedId}"]`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }, [selectedId]);
 
-  const rowHeight = 26;
-  const trackHeight = (maxRow + 1) * rowHeight + 16;
+  const trackHeight = (maxRow + 1) * ROW_HEIGHT + 48;
 
   return (
     <div className="w-full">
-      {/* Month chips */}
+      {/* Month chips — quick scroll */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin">
         {MONTHS.map((m, i) => {
           const count = placed.filter((p) => p.monthIndex === i).length;
           if (count === 0) {
             return (
-              <span
-                key={m}
-                className="px-2 py-1 text-xs2 text-foreground/40 rounded-badge border border-foreground/10"
-              >
+              <span key={m} className="px-2 py-1 text-xs2 text-foreground/40 rounded-badge border border-foreground/10">
                 {m}
               </span>
             );
@@ -87,7 +82,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
                 const el = scrollRef.current?.querySelector<HTMLDivElement>(`[data-month="${i}"]`);
                 el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
               }}
-              className="px-2 py-1 text-xs2 rounded-badge border border-foreground/20 hover:bg-muted transition-colors"
+              className="px-2 py-1 text-xs2 rounded-badge border border-foreground/20 hover:bg-muted transition-colors min-h-0"
             >
               {m} <span className="text-foreground/50">{count}</span>
             </button>
@@ -102,10 +97,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
         role="region"
         aria-label="Pride events timeline"
       >
-        <div
-          className="relative"
-          style={{ width: '1800px', height: trackHeight, minWidth: '100%' }}
-        >
+        <div className="relative" style={{ width: `${TRACK_WIDTH}px`, height: trackHeight, minWidth: '100%' }}>
           {/* Month columns */}
           <div className="absolute inset-0 grid" style={{ gridTemplateColumns: 'repeat(12, 1fr)' }}>
             {MONTHS.map((m, i) => (
@@ -128,9 +120,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
           {showToday && (
             <div
               className="absolute top-7 bottom-2 w-px bg-foreground/80 z-20"
-              style={{
-                left: `${((todayMonthIndex + (todayDay - 1) / 31) / 12) * 100}%`,
-              }}
+              style={{ left: `${((todayMonthIndex + (todayDay - 1) / 31) / 12) * 100}%` }}
               aria-hidden="true"
             >
               <div className="absolute -top-1 -translate-x-1/2 text-[9px] uppercase tracking-wider bg-foreground text-background px-1 rounded-badge">
@@ -139,39 +129,56 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
             </div>
           )}
 
-          {/* Event dots */}
+          {/* Events: dot + label */}
           {placed.map((p) => {
             const xPct = ((p.monthIndex + (p.dayInMonth - 1) / 31) / 12) * 100;
             const isSelected = selectedId === p.event.id;
+            const y = 36 + p.row * ROW_HEIGHT;
+            const dateLabel = new Date(p.event.start_date).toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+            });
             return (
               <button
                 key={p.event.id}
                 type="button"
                 data-event-id={p.event.id}
                 onClick={() => onSelect?.(isSelected ? null : p.event.id)}
-                title={`${p.event.title} — ${new Date(p.event.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
-                className={cn(
-                  'absolute -translate-x-1/2 min-h-0 min-w-0 p-0 rounded-full border border-foreground transition-all',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2',
-                  isSelected
-                    ? 'bg-foreground w-4 h-4 z-30'
-                    : p.event.is_featured
-                      ? 'bg-foreground w-3 h-3 z-10 hover:scale-125'
-                      : 'bg-background w-2.5 h-2.5 z-10 hover:scale-125 hover:bg-foreground',
-                )}
-                style={{
-                  left: `${xPct}%`,
-                  top: `${36 + p.row * rowHeight}px`,
-                }}
-                aria-label={`${p.event.title} on ${new Date(p.event.start_date).toLocaleDateString()}`}
+                title={`${p.event.title} — ${dateLabel}`}
+                aria-label={`${p.event.title} on ${dateLabel}`}
                 aria-pressed={isSelected}
-              />
+                className={cn(
+                  'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 rounded-badge',
+                )}
+                style={{ left: `${xPct}%`, top: `${y}px`, height: '20px', maxWidth: `${LABEL_PX + 16}px` }}
+              >
+                <span
+                  className={cn(
+                    'shrink-0 rounded-full border border-foreground transition-all',
+                    isSelected
+                      ? 'bg-foreground w-3 h-3'
+                      : p.event.is_featured
+                        ? 'bg-foreground w-2.5 h-2.5 group-hover:scale-125'
+                        : 'bg-background w-2 h-2 group-hover:scale-125 group-hover:bg-foreground',
+                  )}
+                />
+                <span
+                  className={cn(
+                    'text-[10px] leading-none whitespace-nowrap overflow-hidden text-ellipsis',
+                    isSelected || p.event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
+                    'group-hover:text-foreground group-hover:font-medium',
+                  )}
+                >
+                  {p.event.city ?? p.event.title}
+                </span>
+              </button>
             );
           })}
         </div>
       </div>
       <p className="text-xs2 text-foreground/50 mt-2">
-        {placed.length} prides in {year} · click a dot to view details · solid dots are featured
+        {placed.length} prides in {year} · click a row to select · solid dots are featured
       </p>
     </div>
   );

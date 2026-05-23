@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { Editable } from '@/components/admin/inline/Editable';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import type { Personality } from '@/hooks/usePersonalities';
 import { fetchPublicPersonalityBySlugOrId } from '@/hooks/usePageFetchers';
@@ -138,6 +139,7 @@ interface PersonalityHeroProps {
   countryId: string | null;
   onShare: () => void;
   onProfessionClick: (profession: string) => void;
+  onContentUpdated?: () => void;
 }
 
 export function PersonalityHero({
@@ -145,6 +147,7 @@ export function PersonalityHero({
   countryId,
   onShare,
   onProfessionClick,
+  onContentUpdated,
 }: PersonalityHeroProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -162,7 +165,17 @@ export function PersonalityHero({
 
         <div>
           <div className="flex items-center gap-4 mb-2">
-            <h1 className="text-3xl font-bold">{personality.name}</h1>
+            <h1 className="text-3xl font-bold">
+              <Editable
+                contentType="personalities"
+                recordId={personality.id}
+                field="name"
+                value={personality.name}
+                onSaved={onContentUpdated}
+              >
+                {personality.name}
+              </Editable>
+            </h1>
             {personality.is_featured && (
               <Badge
                 variant="secondary"
@@ -373,9 +386,11 @@ function RelatedContent({ personality }: { personality: Personality }) {
 export function PersonalityOverview({
   personality,
   similarPersonalities,
+  onContentUpdated,
 }: {
   personality: Personality;
   similarPersonalities: SimilarPersonality[];
+  onContentUpdated?: () => void;
 }) {
   return (
     <ScrollReveal direction="up">
@@ -386,7 +401,17 @@ export function PersonalityOverview({
               <CardTitle>About</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">{personality.description}</p>
+              <Editable
+                contentType="personalities"
+                recordId={personality.id}
+                field="description"
+                value={personality.description}
+                onSaved={onContentUpdated}
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                <p className="text-muted-foreground">{personality.description}</p>
+              </Editable>
             </CardContent>
           </Card>
         )}
