@@ -63,6 +63,7 @@ interface AutomationRun {
 }
 
 async function fetchAutomations(): Promise<Automation[]> {
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
   const { data, error } = await supabase
     .from('admin_automations' as never)
     .select('*')
@@ -73,6 +74,7 @@ async function fetchAutomations(): Promise<Automation[]> {
 }
 
 async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
   let q = supabase
     .from('admin_automation_runs' as never)
     .select('*')
@@ -362,6 +364,7 @@ export default function AdminAutomation() {
                             e.stopPropagation();
                             runNow(a.slug);
                           }}
+                          onClick={(e) => { e.stopPropagation(); runNow(a.slug); }}
                           disabled={busySlug !== null || !a.enabled}
                           className="ml-2"
                           title={a.enabled ? 'Run now' : 'Enable to run'}

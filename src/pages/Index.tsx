@@ -3,64 +3,144 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTranslation } from 'react-i18next';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { MapPin, Calendar, Store, Plane, Users, BookOpen, Building } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AppleCardsCarousel, type CarouselCard } from '@/components/effects/AppleCardsCarousel';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
 const RegionalEventsCalendar = React.lazy(() => import('@/components/home/RegionalEventsCalendar'));
 
-const featureDefs = [
+type BrowseCategory = {
+  titleKey: string;
+  descKey: string;
+  link: string;
+  statKey:
+    | 'venues'
+    | 'events'
+    | 'marketplace'
+    | 'cities'
+    | 'profiles'
+    | 'groups'
+    | 'personalities'
+    | null;
+  countLabelKey: string;
+};
+
+const browseCategories: BrowseCategory[] = [
   {
-    icon: MapPin,
     titleKey: 'home.features.venues',
     descKey: 'home.features.venuesDesc',
     link: '/venues',
+    statKey: 'venues',
+    countLabelKey: 'home.browse.count.venues',
   },
   {
-    icon: Calendar,
     titleKey: 'home.features.events',
     descKey: 'home.features.eventsDesc',
     link: '/events',
+    statKey: 'events',
+    countLabelKey: 'home.browse.count.events',
   },
   {
-    icon: Store,
-    titleKey: 'home.features.marketplace',
-    descKey: 'home.features.marketplaceDesc',
-    link: '/marketplace',
-  },
-  {
-    icon: Plane,
     titleKey: 'home.features.places',
     descKey: 'home.features.placesDesc',
     link: '/places',
+    statKey: 'cities',
+    countLabelKey: 'home.browse.count.cities',
   },
   {
-    icon: Building,
     titleKey: 'home.features.hotels',
     descKey: 'home.features.hotelsDesc',
     link: '/hotels',
+    statKey: null,
+    countLabelKey: 'home.browse.count.hotels',
   },
   {
-    icon: Users,
+    titleKey: 'home.features.marketplace',
+    descKey: 'home.features.marketplaceDesc',
+    link: '/marketplace',
+    statKey: 'marketplace',
+    countLabelKey: 'home.browse.count.marketplace',
+  },
+  {
     titleKey: 'home.features.community',
     descKey: 'home.features.communityDesc',
     link: '/groups',
+    statKey: 'groups',
+    countLabelKey: 'home.browse.count.groups',
   },
   {
-    icon: BookOpen,
     titleKey: 'home.features.resources',
     descKey: 'home.features.resourcesDesc',
     link: '/resources',
+    statKey: null,
+    countLabelKey: 'home.browse.count.resources',
   },
 ];
+
+type Destination = {
+  city: string;
+  country: string;
+  href: string;
+  image: string;
+  blurb: string;
+};
+
+const trendingDestinations: Destination[] = [
+  {
+    city: 'Berlin',
+    country: 'Germany',
+    href: '/city/berlin',
+    image: '/images/fallback/eugene-golovesov--WHbksuuyd8-unsplash.webp',
+    blurb: 'Clubs, queer landmarks, year-round scene.',
+  },
+  {
+    city: 'Mexico City',
+    country: 'Mexico',
+    href: '/city/mexico-city',
+    image: '/images/fallback/maria-orlova-bU8TeXhsPcY-unsplash.webp',
+    blurb: 'Zona Rosa, ballroom culture, food worth flying for.',
+  },
+  {
+    city: 'Bangkok',
+    country: 'Thailand',
+    href: '/city/bangkok',
+    image: '/images/fallback/pexels-anniroenkae-2832456.webp',
+    blurb: 'Silom nights and one of Asia’s most open scenes.',
+  },
+  {
+    city: 'Tel Aviv',
+    country: 'Israel',
+    href: '/city/tel-aviv',
+    image: '/images/fallback/pexels-didsss-2911544.webp',
+    blurb: 'Mediterranean coastline, all-night Pride pulse.',
+  },
+  {
+    city: 'New York',
+    country: 'United States',
+    href: '/city/new-york',
+    image: '/images/fallback/solen-feyissa-VpcT2lx8vNA-unsplash.webp',
+    blurb: 'Where the movement was born — still defining it.',
+  },
+  {
+    city: 'Buenos Aires',
+    country: 'Argentina',
+    href: '/city/buenos-aires',
+    image: '/images/fallback/susan-wilkinson-l9URCYPsJPE-unsplash.webp',
+    blurb: 'South America’s most progressive capital.',
+  },
+];
+
+function formatCompact(n: number | null | undefined): string {
+  if (typeof n !== 'number' || !Number.isFinite(n) || n <= 0) return '—';
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, '')}k`;
+  return String(n);
+}
 
 const Index = React.memo(() => {
   const { stats: realStats, loading, error: statsError } = useConsolidatedStats();
@@ -206,112 +286,197 @@ const Index = React.memo(() => {
         </div>
       )}
 
-      {/* ── Trending Cities carousel (Aceternity AppleCardsCarousel) ── */}
-      <section className="px-4 sm:px-6 md:px-8 py-10 md:py-14">
+      {/* ── Discover · Destinations bento ───────────────────────────── */}
+      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-20">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-4">
+          <div className="flex items-end justify-between mb-8 md:mb-10">
             <div>
               <Eyebrow as="div" className="mb-2">
                 {t('home.discover', 'Discover')}
               </Eyebrow>
-              <h2 className="text-headline md:text-headline-lg font-bold tracking-tight">
-                {t('home.trendingCities', 'Trending cities')}
+              <h2
+                className="text-headline md:text-headline-lg font-bold tracking-tight"
+                style={{ letterSpacing: '-0.02em' }}
+              >
+                {t('home.destinationsTitle', 'Where the scene lives.')}
               </h2>
+              <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-md">
+                {t(
+                  'home.destinationsSubtitle',
+                  'Six cities our community keeps coming back to.',
+                )}
+              </p>
             </div>
             <LocalizedLink
               to="/cities"
-              className="text-13 text-muted-foreground hover:text-foreground transition-colors"
+              className="hidden sm:inline-flex items-center gap-1 text-13 font-medium text-muted-foreground hover:text-foreground transition-colors group no-underline"
             >
-              {t('home.viewAll', 'View all')} →
+              {t('home.allCities', 'All cities')}
+              <span className="transition-transform group-hover:translate-x-1">→</span>
             </LocalizedLink>
           </div>
-          <AppleCardsCarousel
-            items={
-              [
-                {
-                  title: 'Berlin',
-                  category: 'Germany',
-                  href: '/city/berlin',
-                  src: getRandomFallbackImage(),
-                },
-                {
-                  title: 'New York',
-                  category: 'United States',
-                  href: '/city/new-york',
-                  src: getRandomFallbackImage(),
-                },
-                {
-                  title: 'Mexico City',
-                  category: 'Mexico',
-                  href: '/city/mexico-city',
-                  src: getRandomFallbackImage(),
-                },
-                {
-                  title: 'Bangkok',
-                  category: 'Thailand',
-                  href: '/city/bangkok',
-                  src: getRandomFallbackImage(),
-                },
-                {
-                  title: 'Tel Aviv',
-                  category: 'Israel',
-                  href: '/city/tel-aviv',
-                  src: getRandomFallbackImage(),
-                },
-                {
-                  title: 'Buenos Aires',
-                  category: 'Argentina',
-                  href: '/city/buenos-aires',
-                  src: getRandomFallbackImage(),
-                },
-                {
-                  title: 'Cape Town',
-                  category: 'South Africa',
-                  href: '/city/cape-town',
-                  src: getRandomFallbackImage(),
-                },
-                {
-                  title: 'Tokyo',
-                  category: 'Japan',
-                  href: '/city/tokyo',
-                  src: getRandomFallbackImage(),
-                },
-              ] satisfies CarouselCard[]
-            }
-          />
+
+          {/* Bento: 1 hero (col-span-2 row-span-2) + 4 small cards on md+ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-3 md:gap-4 auto-rows-[14rem] sm:auto-rows-[16rem] md:auto-rows-[15rem]">
+            {trendingDestinations.slice(0, 5).map((d, i) => {
+              const isHero = i === 0;
+              return (
+                <LocalizedLink
+                  key={d.city}
+                  to={d.href}
+                  aria-label={`${d.city}, ${d.country}`}
+                  className={[
+                    'group relative overflow-hidden rounded-container bg-muted no-underline',
+                    isHero ? 'md:col-span-2 md:row-span-2 sm:col-span-2' : '',
+                  ].join(' ')}
+                >
+                  <img
+                    src={d.image}
+                    alt=""
+                    aria-hidden="true"
+                    loading={isHero ? 'eager' : 'lazy'}
+                    className="absolute inset-0 h-full w-full object-cover grayscale transition-transform duration-500 group-hover:scale-[1.04]"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent"
+                  />
+                  <div
+                    className={[
+                      'relative h-full flex flex-col justify-end text-background',
+                      isHero ? 'p-6 md:p-8' : 'p-4 md:p-5',
+                    ].join(' ')}
+                  >
+                    <span
+                      className="text-2xs font-semibold uppercase tracking-label opacity-80"
+                      style={{ letterSpacing: 'var(--tracking-label)' }}
+                    >
+                      {d.country}
+                    </span>
+                    <h3
+                      className={[
+                        'font-bold leading-[1.05] mt-1',
+                        isHero
+                          ? 'text-headline-lg md:text-display'
+                          : 'text-title md:text-headline',
+                      ].join(' ')}
+                      style={{ letterSpacing: '-0.02em' }}
+                    >
+                      {d.city}
+                    </h3>
+                    {isHero && (
+                      <p className="mt-3 max-w-md text-sm md:text-base opacity-85 leading-[1.5]">
+                        {d.blurb}
+                      </p>
+                    )}
+                    <span className="mt-3 inline-flex items-center gap-1 text-13 font-medium opacity-90">
+                      {t('home.exploreCity', 'Explore')}
+                      <span className="transition-transform group-hover:translate-x-1">→</span>
+                    </span>
+                  </div>
+                </LocalizedLink>
+              );
+            })}
+          </div>
+
+          {/* Mobile-only: all cities CTA */}
+          <div className="mt-6 sm:hidden">
+            <LocalizedLink
+              to="/cities"
+              className="inline-flex items-center gap-1 text-13 font-medium text-muted-foreground hover:text-foreground transition-colors group no-underline"
+            >
+              {t('home.allCities', 'All cities')}
+              <span className="transition-transform group-hover:translate-x-1">→</span>
+            </LocalizedLink>
+          </div>
         </div>
       </section>
 
-      {/* ── Browse categories ───────────────────────────────────────── */}
-      <section className="bg-surface-container-low border-y border-hairline">
-        <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
-          <Eyebrow as="div" className="mb-2">
-            {t('home.explore', 'Explore')}
-          </Eyebrow>
-          <h2 className="text-headline md:text-headline-lg font-bold tracking-tight mb-8">
-            {t('home.browse', 'Browse')}
-          </h2>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border">
-            {featureDefs.map((feature) => {
-              const Icon = feature.icon;
+      {/* ── Browse · Numbered editorial index ───────────────────────── */}
+      <section className="bg-muted/30 border-y border-border">
+        <div className="px-4 sm:px-6 md:px-8 py-16 md:py-24 max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-10 md:mb-12">
+            <div>
+              <Eyebrow as="div" className="mb-2">
+                {t('home.browseEyebrow', 'The index')}
+              </Eyebrow>
+              <h2
+                className="text-headline md:text-headline-lg font-bold tracking-tight"
+                style={{ letterSpacing: '-0.02em' }}
+              >
+                {t('home.browseTitle', 'Browse everything.')}
+              </h2>
+            </div>
+            <span
+              className="hidden sm:inline-block text-2xs font-semibold uppercase tracking-label text-muted-foreground"
+              style={{ letterSpacing: 'var(--tracking-label)', fontVariantNumeric: 'tabular-nums' }}
+            >
+              {String(browseCategories.length).padStart(2, '0')} {t('home.browseSections', 'sections')}
+            </span>
+          </div>
+
+          <ol className="grid grid-cols-1 md:grid-cols-2 gap-x-12">
+            {browseCategories.map((cat, i) => {
+              const num = String(i + 1).padStart(2, '0');
+              const count =
+                cat.statKey && typeof realStats[cat.statKey] === 'number'
+                  ? formatCompact(realStats[cat.statKey] as number)
+                  : null;
               return (
-                <li key={feature.titleKey} className="bg-background">
+                <li
+                  key={cat.titleKey}
+                  className={[
+                    'border-t border-border last:border-b md:last:border-b-0',
+                    // Bottom border on every odd item in single-col view, handled by last:border-b
+                  ].join(' ')}
+                >
                   <LocalizedLink
-                    to={feature.link}
-                    className="flex h-full items-start gap-4 p-6 transition-colors hover:bg-muted/40 no-underline"
+                    to={cat.link}
+                    className="group grid grid-cols-[3.5rem_1fr_auto] md:grid-cols-[4rem_1fr_auto] items-start gap-x-4 md:gap-x-6 py-6 md:py-8 no-underline"
                   >
-                    <Icon size={20} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="text-xl font-bold tracking-tight">{t(feature.titleKey)}</h3>
-                      <p className="mt-2 text-sm text-muted-foreground leading-[1.5]">
-                        {t(feature.descKey)}
+                    <span
+                      className="text-title md:text-headline font-bold text-muted-foreground/60 leading-none transition-colors group-hover:text-foreground"
+                      style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}
+                    >
+                      {num}
+                    </span>
+                    <div className="min-w-0">
+                      <h3
+                        className="text-title md:text-headline font-bold leading-[1.1] transition-opacity group-hover:opacity-70"
+                        style={{ letterSpacing: '-0.02em' }}
+                      >
+                        {t(cat.titleKey)}
+                      </h3>
+                      <p className="mt-2 text-sm md:text-base text-muted-foreground leading-[1.5] max-w-md">
+                        {t(cat.descKey)}
                       </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2 pt-1">
+                      {count ? (
+                        <span
+                          className="text-2xs font-semibold uppercase tracking-label text-muted-foreground whitespace-nowrap"
+                          style={{
+                            letterSpacing: 'var(--tracking-label)',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          {count} {t(cat.countLabelKey, '')}
+                        </span>
+                      ) : loading ? (
+                        <Skeleton className="h-3 w-12" />
+                      ) : null}
+                      <span
+                        aria-hidden="true"
+                        className="text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground"
+                      >
+                        →
+                      </span>
                     </div>
                   </LocalizedLink>
                 </li>
               );
             })}
-          </ul>
+          </ol>
         </div>
       </section>
 
