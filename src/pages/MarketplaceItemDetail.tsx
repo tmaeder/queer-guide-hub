@@ -43,6 +43,7 @@ export default function MarketplaceItemDetail() {
     data,
     isLoading,
     error,
+    refetch,
   } = useQuery<ListingBundle | null>({
     queryKey: ['marketplace-detail', slug, user?.id ?? null],
     enabled: Boolean(slug),
@@ -198,7 +199,7 @@ export default function MarketplaceItemDetail() {
         {
           id: 'overview',
           label: 'Overview',
-          content: <MarketplaceOverview listing={listing} reviews={reviews} t={t} />,
+          content: <MarketplaceOverview listing={listing} reviews={reviews} t={t} onContentUpdated={refetch} />,
         },
       ]
     : [];
@@ -218,6 +219,7 @@ export default function MarketplaceItemDetail() {
             onToggleFavorite={handleToggleFavorite}
             onShare={handleShare}
             heroImage={heroImage}
+            onContentUpdated={refetch}
           />
         ) : null
       }

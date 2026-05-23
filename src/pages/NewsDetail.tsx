@@ -41,6 +41,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { fetchStoryForArticle } from '@/hooks/useNewsStories';
 import { Layers } from 'lucide-react';
 import { TracingBeam } from '@/components/effects/TracingBeam';
+import { Editable } from '@/components/admin/inline/Editable';
 
 interface NewsArticle {
   id: string;
@@ -352,7 +353,17 @@ export default function NewsDetail() {
           )}
           <div className="flex items-center gap-4 mb-3 flex-wrap">
             <h1 className="text-display md:text-headline-lg font-bold leading-[1.05] tracking-tight m-0">
-              {decodeHtmlEntities(article.title)}
+              <Editable
+                contentType="news_articles"
+                recordId={article.id}
+                field="title"
+                value={article.title}
+                onSaved={(next) =>
+                  setArticle((prev) => (prev ? { ...prev, title: String(next ?? '') } : prev))
+                }
+              >
+                {decodeHtmlEntities(article.title)}
+              </Editable>
             </h1>
             {article.is_featured && (
               <Badge
@@ -432,28 +443,47 @@ export default function NewsDetail() {
               <CardTitle>{t('pages.newsDetail.article', 'Article')}</CardTitle>
             </CardHeader>
             <CardContent>
-              {contentText ? (
-                <p
-                  className="text-muted-foreground whitespace-pre-line"
-                  style={{ lineHeight: 1.8 }}
-                >
-                  {contentText}
-                </p>
-              ) : excerptText ? (
-                <div>
-                  <p className="text-muted-foreground mb-4" style={{ lineHeight: 1.8 }}>
-                    {excerptText}
+              <Editable
+                contentType="news_articles"
+                recordId={article.id}
+                field={contentText || !excerptText ? 'content' : 'excerpt'}
+                value={contentText || excerptText || ''}
+                onSaved={(next) =>
+                  setArticle((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          [contentText || !excerptText ? 'content' : 'excerpt']: String(next ?? ''),
+                        }
+                      : prev,
+                  )
+                }
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                {contentText ? (
+                  <p
+                    className="text-muted-foreground whitespace-pre-line"
+                    style={{ lineHeight: 1.8 }}
+                  >
+                    {contentText}
                   </p>
+                ) : excerptText ? (
+                  <div>
+                    <p className="text-muted-foreground mb-4" style={{ lineHeight: 1.8 }}>
+                      {excerptText}
+                    </p>
+                    <p className="text-sm text-muted-foreground italic">
+                      To read the full article, click "Read Full Article" above.
+                    </p>
+                  </div>
+                ) : (
                   <p className="text-sm text-muted-foreground italic">
-                    To read the full article, click "Read Full Article" above.
+                    This article is available on the original source. Click "Read Full Article" to
+                    read it.
                   </p>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">
-                  This article is available on the original source. Click "Read Full Article" to
-                  read it.
-                </p>
-              )}
+                )}
+              </Editable>
             </CardContent>
           </Card>
 

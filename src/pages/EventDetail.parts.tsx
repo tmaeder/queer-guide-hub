@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { Editable } from '@/components/admin/inline/Editable';
 import { EntityMap } from '@/components/map/EntityMap';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
@@ -174,6 +175,7 @@ interface HeroProps {
   showSendButton: boolean;
   heroImage: string | null;
   locationLabel: string;
+  onContentUpdated?: () => void;
 }
 
 export function EventHero({
@@ -195,6 +197,7 @@ export function EventHero({
   showSendButton,
   heroImage,
   locationLabel,
+  onContentUpdated,
 }: HeroProps) {
   const { t } = useTranslation();
   return (
@@ -245,7 +248,15 @@ export function EventHero({
               className="text-2xl font-bold min-w-0 flex-[1_1_100%] sm:flex-[1_1_auto] break-words pl-[1px]"
               style={{ overflowWrap: 'anywhere' }}
             >
-              {event.title}
+              <Editable
+                contentType="events"
+                recordId={event.id}
+                field="title"
+                value={event.title}
+                onSaved={onContentUpdated}
+              >
+                {event.title}
+              </Editable>
             </h1>
             {event.is_featured && (
               <Badge
@@ -439,6 +450,7 @@ interface OverviewProps {
   isPast: boolean;
   userAttendance: string | null;
   onAttendanceUpdate: (status: 'going' | 'interested' | 'not_going') => void;
+  onContentUpdated?: () => void;
 }
 
 export function EventOverview({
@@ -447,6 +459,7 @@ export function EventOverview({
   isPast,
   userAttendance,
   onAttendanceUpdate,
+  onContentUpdated,
 }: OverviewProps) {
   const goingCount = event.attendee_counts?.going ?? 0;
   const interestedCount = event.attendee_counts?.interested ?? 0;
@@ -460,9 +473,19 @@ export function EventOverview({
               <CardTitle>About This Event</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground whitespace-pre-wrap" style={{ lineHeight: 1.7 }}>
-                {event.description}
-              </p>
+              <Editable
+                contentType="events"
+                recordId={event.id}
+                field="description"
+                value={event.description}
+                onSaved={onContentUpdated}
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                <p className="text-muted-foreground whitespace-pre-wrap" style={{ lineHeight: 1.7 }}>
+                  {event.description}
+                </p>
+              </Editable>
             </CardContent>
           </Card>
         )}

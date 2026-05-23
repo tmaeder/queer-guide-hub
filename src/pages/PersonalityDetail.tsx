@@ -32,6 +32,7 @@ export default function PersonalityDetail() {
     data: personality,
     isLoading,
     error,
+    refetch,
   } = useQuery<Personality | null>({
     queryKey: ['personality-detail', slug],
     enabled: Boolean(slug),
@@ -153,6 +154,7 @@ export default function PersonalityDetail() {
             <PersonalityOverview
               personality={personality}
               similarPersonalities={similarPersonalities}
+              onContentUpdated={refetch}
             />
           ),
         },
@@ -177,6 +179,7 @@ export default function PersonalityDetail() {
               onProfessionClick={(profession) =>
                 navigate(`/personalities?profession=${encodeURIComponent(profession)}`)
               }
+              onContentUpdated={refetch}
             />
           ) : null
         }
