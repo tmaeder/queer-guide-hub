@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "최신 뉴스"
+    },
+    "discover": "[KO] Discover",
+    "destinationsTitle": "[KO] Where the scene lives.",
+    "destinationsSubtitle": "[KO] Six cities our community keeps coming back to.",
+    "allCities": "[KO] All cities",
+    "exploreCity": "[KO] Explore",
+    "browseEyebrow": "[KO] The index",
+    "browseTitle": "[KO] Browse everything.",
+    "browseSections": "[KO] sections",
+    "browse": {
+      "count": {
+        "venues": "[KO] venues",
+        "events": "[KO] events",
+        "cities": "[KO] cities",
+        "hotels": "[KO] hotels",
+        "marketplace": "[KO] products",
+        "groups": "[KO] groups",
+        "resources": "[KO] resources"
+      }
     }
   },
   "header": {
@@ -1586,7 +1605,9 @@
       "filteredEmpty": {
         "title": "필터와 일치하는 호텔이 없습니다",
         "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
-      }
+      },
+      "eyebrow": "Where to sleep",
+      "planTrip": "Plan a trip"
     },
     "hotelDetail": {
       "loadFailed": "호텔 상세 정보를 불러올 수 없습니다.",
@@ -1883,6 +1904,12 @@
       "shareFailed": "공유 실패"
     },
     "geolocate": {}
+    "geolocate": {
+      "unsupported": "Geolocation unavailable",
+      "denied": "Location access is off — showing the default area",
+      "unavailable": "Couldn't get your location — showing the default area",
+      "timeout": "Location lookup timed out — showing the default area"
+    }
   },
   "resources": {
     "hero": {

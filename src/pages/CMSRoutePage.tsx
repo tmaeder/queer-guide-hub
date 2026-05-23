@@ -24,8 +24,21 @@ import { useCMSPage } from '@/hooks/useCMSPage';
 import DOMPurify from 'dompurify';
 import { useMeta } from '@/hooks/useMeta';
 import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
+import { EditorialHero } from '@/components/editorial/EditorialHero';
+import { EDITORIAL_IMAGES, type EditorialImage } from '@/lib/editorialImages';
 import type { CMSPage } from '@/types/cms';
 import type { LucideIcon } from 'lucide-react';
+
+// Slugs that get the polished EditorialHero treatment in the default CMS layout
+// (instead of the raw cover_image_url <img>).
+const EDITORIAL_SLUGS = new Set(['accessibility']);
+
+function getEditorialImage(slug: string): EditorialImage | undefined {
+  if (slug in EDITORIAL_IMAGES) {
+    return EDITORIAL_IMAGES[slug as keyof typeof EDITORIAL_IMAGES]?.hero;
+  }
+  return undefined;
+}
 
 interface CMSRoutePageProps {
   slug: string;
@@ -85,6 +98,7 @@ const HTML_BODY_CSS = `
 .qg-cms-body strong { font-weight: 600; }
 .qg-cms-body .legal-intro { font-size: 1.0625rem; color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem; }
 .qg-cms-body--legal h1 { display: none; }
+.qg-cms-body--no-title h1:first-child { display: none; }
 `;
 
 function CmsBodyStyles() {
@@ -206,11 +220,16 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   if (isLegalHub) {
     return (
       <div className="mx-auto w-full max-w-[900px] px-4 py-8 sm:px-6 md:py-12">
-        <h1 className="mb-1 text-3xl font-bold md:text-4xl">The Legal Stuff</h1>
-        <p className="mb-8 max-w-[600px] text-base text-muted-foreground">
-          Transparency matters. Here's everything about how we operate, protect your data, and keep
-          this space safe.
-        </p>
+        <EditorialHero
+          eyebrow="Legal"
+          title="The Legal Stuff"
+          subtitle="Transparency matters. Here's everything about how we operate, protect your data, and keep this space safe."
+          image={EDITORIAL_IMAGES.legal.hero}
+          imagePosition="cover"
+          decoration="none"
+          height="sm"
+          className="mb-8 md:mb-10"
+        />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {childPages.map((child) => (
@@ -257,6 +276,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           subtitle={page.subtitle || undefined}
           lastUpdated={page.updated_at ? formatDate(page.updated_at) : undefined}
           sections={sections}
+          heroImage={getEditorialImage(slug)}
         >
           <div
             className="qg-cms-body qg-cms-body--legal"
@@ -268,6 +288,8 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   }
 
   // ── Default CMS page layout ─────────────────────────────────────────────
+  const editorialHero = EDITORIAL_SLUGS.has(slug) ? getEditorialImage(slug) : undefined;
+
   return (
     <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
       <CmsBodyStyles />
@@ -277,16 +299,32 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         </div>
       )}
 
-      {page.cover_image_url && (
-        <img
-          src={page.cover_image_url}
-          alt={page.cover_image_alt || page.title}
-          className="mb-6 max-h-[400px] w-full object-cover"
+      {editorialHero ? (
+        <EditorialHero
+          eyebrow={page.subtitle ? undefined : 'queer.guide'}
+          title={page.title}
+          subtitle={page.subtitle || undefined}
+          image={editorialHero}
+          imagePosition="cover"
+          decoration="none"
+          height="sm"
+          className="mb-8 md:mb-10"
         />
+      ) : (
+        page.cover_image_url && (
+          <img
+            src={page.cover_image_url}
+            alt={page.cover_image_alt || page.title}
+            className="mb-6 max-h-[400px] w-full object-cover"
+          />
+        )
       )}
 
       {sanitizedHtml && (
-        <div className="qg-cms-body" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+        <div
+          className={editorialHero ? 'qg-cms-body qg-cms-body--no-title' : 'qg-cms-body'}
+          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+        />
       )}
 
       {childPages.length > 0 && (

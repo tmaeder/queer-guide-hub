@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { BentoGrid, BentoCell } from '@/components/ui/bento-grid';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import {
   LayoutDashboard,
   Activity,
@@ -42,6 +43,7 @@ import {
 } from 'lucide-react';
 import { useAdminCockpit } from '@/hooks/useAdminCockpit';
 import type { CockpitData } from '@/hooks/useAdminCockpit';
+import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
 
 // ── Cell heading helper ─────────────────────────────────────────────
 
@@ -128,6 +130,7 @@ function ReviewQueueCell({ data }: { data: CockpitData }) {
   const { review } = data;
   const queues = [
     { label: 'Staging', count: review.staging, icon: Inbox, tab: 'staging' },
+    { label: 'Submissions', count: review.submissions, icon: UsersRound, tab: 'submissions' },
     { label: 'Moderation', count: review.moderation, icon: Flag, tab: 'moderation' },
     { label: 'Automation', count: review.automation, icon: Bot, tab: 'automation' },
     { label: 'Content', count: review.cmsReview, icon: FileCheck, tab: 'content' },
@@ -193,6 +196,49 @@ function ImportStatusCell({ data }: { data: CockpitData }) {
         <Metric label="Failed" value={imports.failedToday.toString()} ok={imports.failedToday === 0} />
         <Metric label="Error Rate" value={`${imports.errorRate}%`} ok={imports.errorRate < 10} />
       </div>
+    </BentoCell>
+  );
+}
+
+// ── Automation Activity ─────────────────────────────────────────────
+
+function AutomationCell({ data }: { data: CockpitData }) {
+  const { automation } = data;
+  const hasActivity = automation.runsToday > 0;
+  return (
+    <BentoCell
+      span={3}
+      title={
+        <CellTitle
+          icon={Bot}
+          label="Automation Today"
+          action={{ label: 'Open', route: '/admin/automation' }}
+        />
+      }
+    >
+      <div className="grid grid-cols-2 gap-px bg-border">
+        <Metric label="Runs" value={automation.runsToday.toString()} ok />
+        <Metric
+          label="Items Changed"
+          value={automation.itemsChangedToday.toString()}
+          ok
+        />
+        <Metric
+          label="Errors"
+          value={automation.errorsToday.toString()}
+          ok={automation.errorsToday === 0}
+        />
+        <Metric
+          label="Last Slug"
+          value={automation.lastRunSlug ? automation.lastRunSlug.split('_')[0] : '—'}
+          ok
+        />
+      </div>
+      {!hasActivity && (
+        <p className="text-2xs text-muted-foreground mt-2">
+          No runs today yet. Crons fire 03:30 + 03:45 UTC.
+        </p>
+      )}
     </BentoCell>
   );
 }
@@ -335,31 +381,44 @@ function CockpitSkeleton() {
 export default function AdminDashboard() {
   const { data, isLoading, refetch } = useAdminCockpit();
 
+  useRegisterAdminCommandAction({
+    id: 'dashboard.refresh',
+    label: 'Refresh cockpit',
+    keywords: 'reload metrics',
+    shortcut: '⌘R',
+    perform: () => refetch(),
+  });
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <LayoutDashboard size={22} className="text-muted-foreground" aria-hidden />
-          <h1 className="text-lg font-bold">Cockpit</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <QuickActionsBar />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0 rounded-element"
-                onClick={() => refetch()}
-                aria-label="Refresh"
-              >
-                <RefreshCw size={15} aria-hidden />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Refresh</TooltipContent>
-          </Tooltip>
-        </div>
-      </div>
+      <AdminPageHeader
+        eyebrow="Admin Console"
+        title={
+          <span className="inline-flex items-center gap-3">
+            <LayoutDashboard size={26} className="text-muted-foreground" aria-hidden />
+            Cockpit
+          </span>
+        }
+        actions={
+          <>
+            <QuickActionsBar />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 rounded-element"
+                  onClick={() => refetch()}
+                  aria-label="Refresh"
+                >
+                  <RefreshCw size={15} aria-hidden />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Refresh</TooltipContent>
+            </Tooltip>
+          </>
+        }
+      />
 
       {isLoading || !data ? (
         <CockpitSkeleton />
@@ -368,6 +427,7 @@ export default function AdminDashboard() {
           <SystemStatusCell data={data} />
           <ReviewQueueCell data={data} />
           <ImportStatusCell data={data} />
+          <AutomationCell data={data} />
           <QualityCell data={data} />
           <ContentOverviewCell stats={data.stats} />
         </BentoGrid>

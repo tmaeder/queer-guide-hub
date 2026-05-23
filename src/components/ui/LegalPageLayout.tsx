@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { List, ChevronDown, ChevronUp } from 'lucide-react';
+import { EditorialHero } from '@/components/editorial/EditorialHero';
+import type { EditorialImage } from '@/lib/editorialImages';
 
 interface Section {
   id: string;
@@ -13,6 +15,8 @@ interface LegalPageLayoutProps {
   lastUpdated?: string;
   sections: Section[];
   children: React.ReactNode;
+  heroImage?: EditorialImage;
+  eyebrow?: string;
 }
 
 export const LegalPageLayout = ({
@@ -21,6 +25,8 @@ export const LegalPageLayout = ({
   lastUpdated,
   sections,
   children,
+  heroImage,
+  eyebrow,
 }: LegalPageLayoutProps) => {
   const [tocOpen, setTocOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
@@ -46,8 +52,23 @@ export const LegalPageLayout = ({
 
   return (
     <div className="container mx-auto py-8 px-4" style={{ maxWidth: 1100 }}>
-      <h3 className="text-3xl font-bold mb-1">{title}</h3>
-      {subtitle && <p className="text-base text-muted-foreground mb-2 max-w-xl">{subtitle}</p>}
+      {heroImage ? (
+        <EditorialHero
+          eyebrow={eyebrow ?? 'Legal'}
+          title={title}
+          subtitle={subtitle}
+          image={heroImage}
+          imagePosition="cover"
+          decoration="none"
+          height="sm"
+          className="mb-6"
+        />
+      ) : (
+        <>
+          <h3 className="text-3xl font-bold mb-1">{title}</h3>
+          {subtitle && <p className="text-base text-muted-foreground mb-2 max-w-xl">{subtitle}</p>}
+        </>
+      )}
       {lastUpdated && (
         <span
           className="text-xs mb-8 block"

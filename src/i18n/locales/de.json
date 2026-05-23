@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "Aktuelle Nachrichten"
+    },
+    "discover": "[DE] Discover",
+    "destinationsTitle": "[DE] Where the scene lives.",
+    "destinationsSubtitle": "[DE] Six cities our community keeps coming back to.",
+    "allCities": "[DE] All cities",
+    "exploreCity": "[DE] Explore",
+    "browseEyebrow": "[DE] The index",
+    "browseTitle": "[DE] Browse everything.",
+    "browseSections": "[DE] sections",
+    "browse": {
+      "count": {
+        "venues": "[DE] venues",
+        "events": "[DE] events",
+        "cities": "[DE] cities",
+        "hotels": "[DE] hotels",
+        "marketplace": "[DE] products",
+        "groups": "[DE] groups",
+        "resources": "[DE] resources"
+      }
     }
   },
   "header": {
@@ -1586,7 +1605,9 @@
       "filteredEmpty": {
         "title": "Keine Hotels passen zu deinen Filtern",
         "body": "Passe deine Filter oder Suche an, um mehr Ergebnisse zu sehen."
-      }
+      },
+      "eyebrow": "Where to sleep",
+      "planTrip": "Plan a trip"
     },
     "hotelDetail": {
       "loadFailed": "Hoteldetails konnten nicht geladen werden.",
@@ -1885,6 +1906,12 @@
       "shareFailed": "Teilen fehlgeschlagen"
     },
     "geolocate": {}
+    "geolocate": {
+      "unsupported": "Geolocation unavailable",
+      "denied": "Location access is off — showing the default area",
+      "unavailable": "Couldn't get your location — showing the default area",
+      "timeout": "Location lookup timed out — showing the default area"
+    }
   },
   "resources": {
     "hero": {

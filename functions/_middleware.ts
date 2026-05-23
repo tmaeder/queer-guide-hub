@@ -189,8 +189,34 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return landing;
   }
 
-  const response = await next();
-  const contentType = response.headers.get('content-type') ?? '';
+  let response = await next();
+  let contentType = response.headers.get('content-type') ?? '';
+
+  // SPA fallback. With a Pages Function claiming `/*`, the `_redirects`
+  // rule `/*  /index.html  200` is bypassed: the static-asset layer
+  // returns the built-in 404 page for any path that isn't an actual
+  // file. Refetch the SPA shell so React Router can render the route.
+  //
+  // Fetch `/` rather than `/index.html` — CF Pages redirects
+  // `/index.html` → `/` (308) and `env.ASSETS.fetch` does NOT auto-follow,
+  // which made the original fallback silently fail (indexResponse.ok =
+  // false on a 308) and 404-ed every deep route. See feedback 81017609.
+  //
+  // Detail routes that look like SPA routes but have no matching DB row
+  // still 404 — that branch runs after this block.
+  if (response.status === 404 && contentType.includes('text/html')) {
+    const indexResponse = await env.ASSETS.fetch(
+      new URL('/', request.url).toString(),
+    );
+    if (indexResponse.ok) {
+      response = new Response(indexResponse.body, {
+        status: 200,
+        headers: indexResponse.headers,
+      });
+      contentType = response.headers.get('content-type') ?? '';
+    }
+  }
+
   if (!contentType.includes('text/html')) return response;
   // Bail on non-200 responses — error pages, redirects, and 410 Gone
   // (functions/news/[slug].ts) ship complete HTML that the head-rewriter

@@ -61,7 +61,7 @@ export function ImageField({ field, value, onChange, error, disabled }: FieldPro
                 href={imageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-full bg-white/90 hover:bg-white text-foreground mr-2"
+                className="p-2 rounded-full bg-background/90 hover:bg-background text-foreground mr-2"
                 title="Open in new tab"
               >
                 <ExternalLink className="w-4 h-4" />

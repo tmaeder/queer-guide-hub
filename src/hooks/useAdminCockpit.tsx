@@ -22,6 +22,7 @@ export interface ReviewSummary {
   automation: number;
   cmsReview: number;
   tagSuggestions: number;
+  submissions: number;
   total: number;
 }
 
@@ -55,12 +56,21 @@ export interface ContentStats {
   users: number;
 }
 
+export interface AutomationSummary {
+  runsToday: number;
+  itemsChangedToday: number;
+  errorsToday: number;
+  lastRunAt: string | null;
+  lastRunSlug: string | null;
+}
+
 export interface CockpitData {
   system: SystemHealth;
   review: ReviewSummary;
   imports: ImportSummary;
   quality: QualityIndex;
   stats: ContentStats;
+  automation: AutomationSummary;
 }
 
 // ── Fetch Functions ─────────────────────────────────────────────────────
@@ -82,7 +92,7 @@ async function fetchSystemHealth(): Promise<SystemHealth> {
 }
 
 async function fetchReviewSummary(): Promise<ReviewSummary> {
-  const [stagingRes, cmsRes, modRes, autoRes, tagRes] = await Promise.all([
+  const [stagingRes, cmsRes, modRes, autoRes, tagRes, subRes] = await Promise.all([
     supabase
       .from('ingestion_staging' as 'venues')
       .select('id', { count: 'exact', head: true })
@@ -104,6 +114,10 @@ async function fetchReviewSummary(): Promise<ReviewSummary> {
       .from('tag_suggestions' as 'venues')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending'),
+    supabase
+      .from('community_submissions' as 'venues')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
   ]);
 
   const staging = stagingRes.count ?? 0;
@@ -111,6 +125,7 @@ async function fetchReviewSummary(): Promise<ReviewSummary> {
   const moderation = modRes.count ?? 0;
   const automation = autoRes.count ?? 0;
   const tagSuggestions = tagRes.count ?? 0;
+  const submissions = subRes.count ?? 0;
 
   return {
     staging,
@@ -118,7 +133,8 @@ async function fetchReviewSummary(): Promise<ReviewSummary> {
     moderation,
     automation,
     tagSuggestions,
-    total: staging + cmsReview + moderation + automation + tagSuggestions,
+    submissions,
+    total: staging + cmsReview + moderation + automation + tagSuggestions + submissions,
   };
 }
 
@@ -226,16 +242,58 @@ async function fetchContentStats(): Promise<ContentStats> {
   return stats as unknown as ContentStats;
 }
 
+async function fetchAutomationSummary(): Promise<AutomationSummary> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayISO = today.toISOString();
+
+  const { data, error } = await supabase
+    .from('admin_automation_runs' as 'venues')
+    .select('automation_slug, status, items_changed, started_at')
+    .gte('started_at', todayISO)
+    .order('started_at', { ascending: false })
+    .limit(100);
+
+  if (error) {
+    return {
+      runsToday: 0,
+      itemsChangedToday: 0,
+      errorsToday: 0,
+      lastRunAt: null,
+      lastRunSlug: null,
+    };
+  }
+
+  const rows = (data ?? []) as Array<{
+    automation_slug: string;
+    status: string;
+    items_changed: number;
+    started_at: string;
+  }>;
+
+  const errorsToday = rows.filter((r) => r.status === 'error').length;
+  const itemsChangedToday = rows.reduce((s, r) => s + (r.items_changed ?? 0), 0);
+
+  return {
+    runsToday: rows.length,
+    itemsChangedToday,
+    errorsToday,
+    lastRunAt: rows[0]?.started_at ?? null,
+    lastRunSlug: rows[0]?.automation_slug ?? null,
+  };
+}
+
 async function fetchCockpitData(): Promise<CockpitData> {
-  const [system, review, imports, quality, stats] = await Promise.all([
+  const [system, review, imports, quality, stats, automation] = await Promise.all([
     fetchSystemHealth(),
     fetchReviewSummary(),
     fetchImportSummary(),
     fetchQualityIndex(),
     fetchContentStats(),
+    fetchAutomationSummary(),
   ]);
 
-  return { system, review, imports, quality, stats };
+  return { system, review, imports, quality, stats, automation };
 }
 
 // ── Hook ────────────────────────────────────────────────────────────────

@@ -279,7 +279,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                 onClick={handleRestoreConfirm}
                 disabled={isRestoring}
                 size="sm"
-                className="bg-foreground hover:bg-foreground text-white"
+                className="bg-foreground hover:bg-foreground text-background"
               >
                 {isRestoring ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Loading" /> : <RotateCcw size={14} />}
                 {isRestoring ? 'Restoring...' : 'Restore'}

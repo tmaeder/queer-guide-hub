@@ -1,10 +1,18 @@
 /**
- * /api/geo — returns the visitor's country code from CF edge geolocation.
+ * /api/geo — returns the visitor's coarse geo from CF edge geolocation.
  * No IP stored, no per-request logging. CORS-restricted to queer.guide.
  */
 
 interface Env {
   ALLOWED_ORIGINS: string;
+}
+
+interface CfGeo {
+  country?: string;
+  city?: string;
+  region?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 export default {
@@ -25,10 +33,19 @@ export default {
       return new Response(null, { headers, status: 204 });
     }
 
-    // request.cf is provided by Cloudflare in production.
-    const cf = (request as unknown as { cf?: { country?: string } }).cf ?? {};
+    const cf = (request as unknown as { cf?: CfGeo }).cf ?? {};
     const country = (cf.country ?? '').toUpperCase() || null;
+    const lat = cf.latitude ? parseFloat(cf.latitude) : null;
+    const lon = cf.longitude ? parseFloat(cf.longitude) : null;
 
-    return new Response(JSON.stringify({ country }), { headers });
+    const body = {
+      country,
+      city: cf.city ?? null,
+      region: cf.region ?? null,
+      latitude: Number.isFinite(lat) ? lat : null,
+      longitude: Number.isFinite(lon) ? lon : null,
+    };
+
+    return new Response(JSON.stringify(body), { headers });
   },
 };

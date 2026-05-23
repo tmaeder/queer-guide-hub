@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "最新资讯"
+    },
+    "discover": "[ZH] Discover",
+    "destinationsTitle": "[ZH] Where the scene lives.",
+    "destinationsSubtitle": "[ZH] Six cities our community keeps coming back to.",
+    "allCities": "[ZH] All cities",
+    "exploreCity": "[ZH] Explore",
+    "browseEyebrow": "[ZH] The index",
+    "browseTitle": "[ZH] Browse everything.",
+    "browseSections": "[ZH] sections",
+    "browse": {
+      "count": {
+        "venues": "[ZH] venues",
+        "events": "[ZH] events",
+        "cities": "[ZH] cities",
+        "hotels": "[ZH] hotels",
+        "marketplace": "[ZH] products",
+        "groups": "[ZH] groups",
+        "resources": "[ZH] resources"
+      }
     }
   },
   "header": {
@@ -1586,7 +1605,9 @@
       "filteredEmpty": {
         "title": "没有匹配筛选条件的酒店",
         "body": "尝试调整筛选条件或搜索以查看更多结果。"
-      }
+      },
+      "eyebrow": "Where to sleep",
+      "planTrip": "Plan a trip"
     },
     "hotelDetail": {
       "loadFailed": "无法加载酒店详情。",
@@ -1883,6 +1904,12 @@
       "shareFailed": "分享失败"
     },
     "geolocate": {}
+    "geolocate": {
+      "unsupported": "Geolocation unavailable",
+      "denied": "Location access is off — showing the default area",
+      "unavailable": "Couldn't get your location — showing the default area",
+      "timeout": "Location lookup timed out — showing the default area"
+    }
   },
   "resources": {
     "hero": {

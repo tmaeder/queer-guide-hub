@@ -32,7 +32,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { llmChatCompletion, isLlmConfigured } from '../_shared/llm-client.ts';
 
-type AIOp = 'summarize' | 'alt_text' | 'seo_draft' | 'auto_tag' | 'fact_check';
+type AIOp = 'summarize' | 'alt_text' | 'seo_draft' | 'auto_tag' | 'fact_check' | 'quality_review';
 
 interface Body {
   op: AIOp;
@@ -83,6 +83,17 @@ function buildPrompt(op: AIOp, body: Body): { system: string; user: string } {
       return {
         system: `You flag potentially-stale or unverifiable claims in editorial content. Output strict JSON: {"issues": [{"field": "...", "claim": "...", "concern": "..."}]}. Empty array if nothing to flag.`,
         user: `Review this ${body.content_type} for stale or unverified claims:\n${src}`,
+      };
+    case 'quality_review':
+      return {
+        system: `You audit data quality for entries on an LGBTQ+ travel platform. Output strict JSON only:
+{
+  "quality_score": 0-100,
+  "issues": [{"field": "string", "severity": "low"|"medium"|"high", "message": "string"}],
+  "suggestions": [{"field": "string", "value": "string", "why": "string"}]
+}
+Be strict. Penalize missing description, missing location, generic boilerplate, broken URLs, untranslated placeholders. Suggestions must be drop-in field values (not commentary). Empty arrays if nothing to flag.`,
+        user: `Audit this ${body.content_type} record:\n${src}`,
       };
   }
 }
@@ -146,7 +157,11 @@ Deno.serve(async (req: Request) => {
   }
 
   const prompt = buildPrompt(body.op, body);
-  const wantsJson = body.op === 'seo_draft' || body.op === 'auto_tag' || body.op === 'fact_check';
+  const wantsJson =
+    body.op === 'seo_draft' ||
+    body.op === 'auto_tag' ||
+    body.op === 'fact_check' ||
+    body.op === 'quality_review';
 
   let result;
   try {

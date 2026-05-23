@@ -5,7 +5,6 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { TripContextBar } from '@/components/trips/TripContextBar';
 import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
-import { ClaimUsernameBanner } from '@/components/auth/ClaimUsernameBanner';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
@@ -75,7 +74,6 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         </ErrorBoundary>
         <ErrorBoundary section="banners" fallback={null}>
           <EmailVerifyBanner />
-          <ClaimUsernameBanner />
           <TripContextBar />
         </ErrorBoundary>
       </div>
