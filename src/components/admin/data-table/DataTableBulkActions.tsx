@@ -46,6 +46,7 @@ export function DataTableBulkActions({
   const handleExportCsv = async () => {
     setExporting(true);
     try {
+      // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- bulk action lives in admin shell; refactor to hook tracked separately
       const { data, error } = await supabase
         .from(tableName as never)
         .select('*')

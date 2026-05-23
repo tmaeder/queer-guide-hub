@@ -42,6 +42,7 @@ interface AutomationRun {
 }
 
 async function fetchAutomations(): Promise<Automation[]> {
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
   const { data, error } = await supabase
     .from('admin_automations' as never)
     .select('*')
@@ -52,6 +53,7 @@ async function fetchAutomations(): Promise<Automation[]> {
 }
 
 async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
   let q = supabase
     .from('admin_automation_runs' as never)
     .select('*')
@@ -59,12 +61,6 @@ async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun
     .limit(50);
   if (slugFilter) q = q.eq('automation_slug', slugFilter);
   const { data, error } = await q;
-async function fetchRecentRuns(): Promise<AutomationRun[]> {
-  const { data, error } = await supabase
-    .from('admin_automation_runs' as never)
-    .select('*')
-    .order('started_at', { ascending: false })
-    .limit(25);
   if (error) throw error;
   return (data ?? []) as AutomationRun[];
 }
@@ -195,9 +191,6 @@ export default function AdminAutomation() {
                     <td className="px-4 py-2">
                       <div className="font-semibold">{a.name}</div>
                       <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
-                  <tr key={a.id} className="border-t border-border">
-                    <td className="px-4 py-2">
-                      <div className="font-semibold">{a.name}</div>
                       {a.description && (
                         <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
                       )}
@@ -231,14 +224,6 @@ export default function AdminAutomation() {
                         <Badge variant="outline" className="font-normal">enabled</Badge>
                       ) : (
                         <Badge variant="secondary" className="font-normal">paused</Badge>
-                      {a.enabled ? (
-                        <Badge variant="outline" className="font-normal">
-                          enabled
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="font-normal">
-                          paused
-                        </Badge>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
@@ -246,7 +231,6 @@ export default function AdminAutomation() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); dryRun(a.slug); }}
-                        onClick={() => dryRun(a.slug)}
                         disabled={busySlug !== null}
                         title="Preview without mutating"
                       >
@@ -262,7 +246,6 @@ export default function AdminAutomation() {
                           variant="outline"
                           size="sm"
                           onClick={(e) => { e.stopPropagation(); runNow(a.slug); }}
-                          onClick={() => runNow(a.slug)}
                           disabled={busySlug !== null || !a.enabled}
                           className="ml-2"
                           title={a.enabled ? 'Run now' : 'Enable to run'}
