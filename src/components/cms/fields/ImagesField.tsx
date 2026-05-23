@@ -103,7 +103,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
                     <button
                       type="button"
                       onClick={() => moveImage(index, index - 1)}
-                      className="p-1 rounded bg-white/90 hover:bg-white text-foreground text-xs"
+                      className="p-1 rounded bg-background/90 hover:bg-background text-foreground text-xs"
                       title="Move left"
                     >
                       <GripVertical className="w-3 h-3 rotate-90" />
@@ -123,7 +123,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
                     <button
                       type="button"
                       onClick={() => moveImage(index, index + 1)}
-                      className="p-1 rounded bg-white/90 hover:bg-white text-foreground text-xs"
+                      className="p-1 rounded bg-background/90 hover:bg-background text-foreground text-xs"
                       title="Move right"
                     >
                       <GripVertical className="w-3 h-3 -rotate-90" />

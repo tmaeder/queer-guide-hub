@@ -191,7 +191,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
                     onClick={() => handleTransitionClick(trans)}
                     className={cn(
                       'w-full justify-start font-medium normal-case',
-                      isPublish && 'bg-foreground hover:bg-foreground text-white',
+                      isPublish && 'bg-foreground hover:bg-foreground text-background',
                     )}
                   >
                     {isTransitioning ? (
