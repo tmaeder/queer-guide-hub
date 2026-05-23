@@ -233,7 +233,7 @@ export const venueContentType: ContentTypeConfig = {
   translatableFields: ['name', 'description', 'accessibility_notes'],
   commentable: true,
   aiAssist: {
-    ops: ['summarize', 'seo_draft', 'auto_tag', 'fact_check'],
+    ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag', 'fact_check'],
     writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
   },
 };

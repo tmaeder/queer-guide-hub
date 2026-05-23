@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { useAdminCockpit } from '@/hooks/useAdminCockpit';
 import type { CockpitData } from '@/hooks/useAdminCockpit';
+import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
 
 // ── Cell heading helper ─────────────────────────────────────────────
 
@@ -198,6 +199,49 @@ function ImportStatusCell({ data }: { data: CockpitData }) {
   );
 }
 
+// ── Automation Activity ─────────────────────────────────────────────
+
+function AutomationCell({ data }: { data: CockpitData }) {
+  const { automation } = data;
+  const hasActivity = automation.runsToday > 0;
+  return (
+    <BentoCell
+      span={3}
+      title={
+        <CellTitle
+          icon={Bot}
+          label="Automation Today"
+          action={{ label: 'Open', route: '/admin/automation' }}
+        />
+      }
+    >
+      <div className="grid grid-cols-2 gap-px bg-border">
+        <Metric label="Runs" value={automation.runsToday.toString()} ok />
+        <Metric
+          label="Items Changed"
+          value={automation.itemsChangedToday.toString()}
+          ok
+        />
+        <Metric
+          label="Errors"
+          value={automation.errorsToday.toString()}
+          ok={automation.errorsToday === 0}
+        />
+        <Metric
+          label="Last Slug"
+          value={automation.lastRunSlug ? automation.lastRunSlug.split('_')[0] : '—'}
+          ok
+        />
+      </div>
+      {!hasActivity && (
+        <p className="text-2xs text-muted-foreground mt-2">
+          No runs today yet. Crons fire 03:30 + 03:45 UTC.
+        </p>
+      )}
+    </BentoCell>
+  );
+}
+
 // ── Quality Index ───────────────────────────────────────────────────
 
 function QualityCell({ data }: { data: CockpitData }) {
@@ -336,6 +380,14 @@ function CockpitSkeleton() {
 export default function AdminDashboard() {
   const { data, isLoading, refetch } = useAdminCockpit();
 
+  useRegisterAdminCommandAction({
+    id: 'dashboard.refresh',
+    label: 'Refresh cockpit',
+    keywords: 'reload metrics',
+    shortcut: '⌘R',
+    perform: () => refetch(),
+  });
+
   return (
     <div>
       <AdminPageHeader
@@ -374,6 +426,7 @@ export default function AdminDashboard() {
           <SystemStatusCell data={data} />
           <ReviewQueueCell data={data} />
           <ImportStatusCell data={data} />
+          <AutomationCell data={data} />
           <QualityCell data={data} />
           <ContentOverviewCell stats={data.stats} />
         </BentoGrid>

@@ -132,7 +132,7 @@ export const personalityContentType: ContentTypeConfig = {
   translatableFields: ['name', 'profession', 'description', 'bio'],
   commentable: true,
   aiAssist: {
-    ops: ['summarize', 'seo_draft', 'fact_check'],
+    ops: ['quality_review', 'summarize', 'seo_draft', 'fact_check'],
     writableFields: ['bio', 'description', 'meta_title', 'meta_description'],
   },
 };
