@@ -16,6 +16,8 @@ export interface Personality {
   bio?: string;
   birth_date?: string;
   death_date?: string;
+  death_place?: string;
+  cause_of_death?: string;
   is_living: boolean;
   profession?: string;
   fields: string[];
@@ -64,6 +66,8 @@ function transformRow(row: PersonalityRow): Personality {
     bio: row.bio || undefined,
     birth_date: row.birth_date || undefined,
     death_date: row.death_date || undefined,
+    death_place: (row as Record<string, unknown>).death_place as string || undefined,
+    cause_of_death: (row as Record<string, unknown>).cause_of_death as string || undefined,
     profession: row.profession || undefined,
     image_url: row.image_url || undefined,
     website_url: row.website_url || undefined,
