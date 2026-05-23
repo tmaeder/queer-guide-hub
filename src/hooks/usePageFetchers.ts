@@ -957,6 +957,22 @@ export async function deleteRowsByIds(
   return { error: error ? { message: error.message } : null };
 }
 
+/** Fetch many rows by id list — generic for any table. */
+export async function fetchRowsByIds(
+  table: string,
+  ids: string[],
+): Promise<{ data: Array<Record<string, unknown>>; error: { message: string } | null }> {
+  if (ids.length === 0) return { data: [], error: null };
+  const { data, error } = await supabase
+    .from(table as never)
+    .select('*')
+    .in('id', ids);
+  return {
+    data: (data ?? []) as Array<Record<string, unknown>>,
+    error: error ? { message: error.message } : null,
+  };
+}
+
 /** Insert multiple rows. */
 export async function insertRows(
   table: string,

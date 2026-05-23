@@ -14,56 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import {
+  fetchAutomations,
+  fetchRecentAutomationRuns,
+  type AutomationRun,
+} from '@/hooks/useAdminAutomations';
 import { adminAction } from '@/lib/adminAction';
 import { toast } from 'sonner';
-
-interface Automation {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  managed_by: 'user' | 'system';
-  enabled: boolean;
-  schedule: string | null;
-  last_run_at: string | null;
-  last_run_status: string | null;
-}
-
-interface AutomationRun {
-  id: number;
-  automation_slug: string;
-  started_at: string;
-  finished_at: string | null;
-  status: 'success' | 'partial' | 'error' | 'dry_run';
-  items_examined: number;
-  items_changed: number;
-  summary: Record<string, unknown> | null;
-  error: string | null;
-}
-
-async function fetchAutomations(): Promise<Automation[]> {
-  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
-  const { data, error } = await supabase
-    .from('admin_automations' as never)
-    .select('*')
-    .order('managed_by', { ascending: false })
-    .order('name', { ascending: true });
-  if (error) throw error;
-  return (data ?? []) as Automation[];
-}
-
-async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
-  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
-  let q = supabase
-    .from('admin_automation_runs' as never)
-    .select('*')
-    .order('started_at', { ascending: false })
-    .limit(50);
-  if (slugFilter) q = q.eq('automation_slug', slugFilter);
-  const { data, error } = await q;
-  if (error) throw error;
-  return (data ?? []) as AutomationRun[];
-}
 
 function StatusIcon({ status }: { status: AutomationRun['status'] }) {
   if (status === 'success') return <CheckCircle2 size={14} className="text-foreground" />;
@@ -93,9 +50,7 @@ export default function AdminAutomation() {
   const automationsQ = useQuery({ queryKey: ['admin-automations'], queryFn: fetchAutomations });
   const runsQ = useQuery({
     queryKey: ['admin-automation-runs', filterSlug],
-    queryFn: () => fetchRecentRuns(filterSlug),
-    queryKey: ['admin-automation-runs'],
-    queryFn: fetchRecentRuns,
+    queryFn: () => fetchRecentAutomationRuns(filterSlug),
     refetchInterval: 30_000,
   });
 
@@ -191,9 +146,6 @@ export default function AdminAutomation() {
                     <td className="px-4 py-2">
                       <div className="font-semibold">{a.name}</div>
                       <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
-                      {a.description && (
-                        <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
-                      )}
                     </td>
                     <td className="px-4 py-2">
                       <Badge variant={a.managed_by === 'system' ? 'secondary' : 'outline'}>
@@ -290,10 +242,6 @@ export default function AdminAutomation() {
             Click any automation row above to filter this list.
           </p>
         )}
-        <h2 className="text-title font-semibold mb-3 flex items-center gap-2">
-          <Play size={16} />
-          Recent runs
-        </h2>
         {runsQ.isLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : runsQ.data?.length === 0 ? (

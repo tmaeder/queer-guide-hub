@@ -11,8 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { deleteRowsByIds } from '@/hooks/usePageFetchers';
-import { supabase } from '@/integrations/supabase/client';
+import { deleteRowsByIds, fetchRowsByIds } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { DataTableBulkEditDialog } from './DataTableBulkEditDialog';
 import type { BulkEditFieldConfig } from './types';
@@ -46,13 +45,8 @@ export function DataTableBulkActions({
   const handleExportCsv = async () => {
     setExporting(true);
     try {
-      // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- bulk action lives in admin shell; refactor to hook tracked separately
-      const { data, error } = await supabase
-        .from(tableName as never)
-        .select('*')
-        .in('id', Array.from(selectedIds));
-      if (error) throw error;
-      const rows = (data ?? []) as Array<Record<string, unknown>>;
+      const { data: rows, error } = await fetchRowsByIds(tableName, Array.from(selectedIds));
+      if (error) throw new Error(error.message);
       if (rows.length === 0) {
         toast.error('Nothing to export');
         return;
