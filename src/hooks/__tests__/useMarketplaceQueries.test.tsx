@@ -35,6 +35,13 @@ vi.mock('@/integrations/supabase/client', () => ({
       );
       return builder;
     },
+    rpc(name: string, args?: unknown) {
+      state.calls.push({
+        table: `rpc:${name}`,
+        chain: [{ method: 'rpc', args: [name, args] }],
+      });
+      return Promise.resolve(state.results.shift() ?? { data: null, error: null });
+    },
   },
 }));
 
@@ -57,16 +64,14 @@ beforeEach(() => {
 });
 
 describe('useMarketplaceSubcategoryTiles', () => {
-  it('aggregates, ranks, and hides subcategories with fewer than 5 listings', async () => {
-    const rep = (slug: string, n: number) =>
-      Array.from({ length: n }, () => ({ subcategory: slug }));
+  it('passes through RPC slug/count rows, dropping null slugs and null counts, max 8', async () => {
     withResults({
       data: [
-        ...rep('art', 12),
-        ...rep('fashion', 8),
-        ...rep('jewelry', 5),
-        ...rep('rare', 2),
-        { subcategory: null },
+        { slug: 'art', count: 12 },
+        { slug: 'fashion', count: 8 },
+        { slug: 'jewelry', count: 5 },
+        { slug: null, count: 99 },
+        { slug: 'orphan', count: null },
       ],
       error: null,
     });
@@ -79,6 +84,7 @@ describe('useMarketplaceSubcategoryTiles', () => {
       { slug: 'fashion', count: 8 },
       { slug: 'jewelry', count: 5 },
     ]);
+    expect(state.calls[0].table).toBe('rpc:get_marketplace_subcategory_counts');
   });
 
   it('returns [] on error', async () => {
@@ -213,14 +219,14 @@ describe('useMarketplaceSimilarListings', () => {
 });
 
 describe('useMarketplaceFacets', () => {
-  it('aggregates category / subcategory / business_type Maps + total', async () => {
+  it('parses the RPC payload into Maps + total', async () => {
     withResults({
-      data: [
-        { category: 'art', subcategory: 'prints', business_type: 'individual' },
-        { category: 'art', subcategory: 'prints', business_type: 'individual' },
-        { category: 'art', subcategory: 'paintings', business_type: 'business' },
-        { category: 'fashion', subcategory: null, business_type: 'business' },
-      ],
+      data: {
+        total: 4,
+        by_category: { art: 3, fashion: 1 },
+        by_subcategory: { prints: 2, paintings: 1 },
+        by_business_type: { individual: 2, business: 2 },
+      },
       error: null,
     });
 
@@ -232,7 +238,6 @@ describe('useMarketplaceFacets', () => {
     expect(result.current.data.category.get('fashion')).toBe(1);
     expect(result.current.data.subcategory.get('prints')).toBe(2);
     expect(result.current.data.subcategory.get('paintings')).toBe(1);
-    // Null subcategory not counted.
     expect(result.current.data.subcategory.size).toBe(2);
     expect(result.current.data.business_type.get('individual')).toBe(2);
     expect(result.current.data.business_type.get('business')).toBe(2);
@@ -246,19 +251,20 @@ describe('useMarketplaceFacets', () => {
     expect(result.current.data.category.size).toBe(0);
   });
 
-  it('applies filter eq() calls when scoped', async () => {
-    withResults({ data: [], error: null });
+  it('passes filter args to get_marketplace_facets when scoped', async () => {
+    withResults({ data: null, error: null });
     renderHook(() =>
       useMarketplaceFacets({ category: 'art', businessType: 'business' }),
     );
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const eqCols = state.calls[0].chain
-      .filter(s => s.method === 'eq')
-      .map(e => (e.args as [string, unknown])[0]);
-    expect(eqCols).toContain('category');
-    expect(eqCols).toContain('business_type');
-    expect(eqCols).toContain('status');
+    const call = state.calls[0];
+    expect(call.table).toBe('rpc:get_marketplace_facets');
+    const rpcArgs = call.chain[0].args[1] as Record<string, unknown>;
+    expect(rpcArgs.p_category).toBe('art');
+    expect(rpcArgs.p_business_type).toBe('business');
+    expect(rpcArgs.p_subcategory).toBeNull();
+    expect(rpcArgs.p_category_id).toBeNull();
   });
 });
 
