@@ -7,6 +7,7 @@
 
 import {
   LayoutDashboard,
+  Inbox,
   BarChart3,
   Shield,
   Cloud,
@@ -79,6 +80,12 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Overview',
         icon: LayoutDashboard,
         route: '/admin',
+      },
+      {
+        id: 'inbox',
+        label: 'Inbox',
+        icon: Inbox,
+        route: '/admin/inbox',
       },
     ],
   },

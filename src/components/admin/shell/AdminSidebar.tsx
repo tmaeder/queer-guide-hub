@@ -33,11 +33,27 @@ function IconBadge({ icon: Icon, size = 16 }: { icon: React.ComponentType<{ size
   );
 }
 
-function CountBadge({ count }: { count: number | undefined }) {
+function CountBadge({ count, overdue }: { count: number | undefined; overdue?: number }) {
   if (count === undefined) return null;
+  const hasOverdue = (overdue ?? 0) > 0;
   return (
-    <span className="bg-muted text-muted-foreground inline-flex items-center justify-center rounded h-5 min-w-7 px-1.5 text-2xs font-semibold">
-      {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
+    <span className="inline-flex items-center gap-1">
+      {hasOverdue && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              aria-label={`${overdue} overdue`}
+              className="inline-block w-1.5 h-1.5 rounded-full bg-[hsl(var(--destructive))]"
+            />
+          </TooltipTrigger>
+          <TooltipContent>{overdue} overdue</TooltipContent>
+        </Tooltip>
+      )}
+      <span
+        className={`inline-flex items-center justify-center rounded h-5 min-w-7 px-1.5 text-2xs font-semibold ${hasOverdue ? 'bg-[hsl(var(--destructive))]/10 text-foreground' : 'bg-muted text-muted-foreground'}`}
+      >
+        {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
+      </span>
     </span>
   );
 }
@@ -61,6 +77,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
   });
 
   const [loadedCounts, setLoadedCounts] = useState<Record<string, number>>({});
+  const [overdueCounts, setOverdueCounts] = useState<Record<string, number>>({});
   const [countsLoading, setCountsLoading] = useState(true);
 
   const loadCounts = useCallback(async () => {
@@ -70,6 +87,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
       if (!error && data) {
         const raw = data as Record<string, number>;
         const counts: Record<string, number> = {};
+        const overdue: Record<string, number> = {};
         for (const section of adminNavSections) {
           for (const item of section.items) {
             if (item.countTable && raw[item.countTable] !== undefined) {
@@ -77,10 +95,13 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
             }
             if (item.reviewCountKey && raw[item.reviewCountKey] !== undefined) {
               counts[item.id] = raw[item.reviewCountKey];
+              const overdueKey = `${item.reviewCountKey}_overdue`;
+              if (raw[overdueKey] !== undefined) overdue[item.id] = raw[overdueKey];
             }
           }
         }
         setLoadedCounts(counts);
+        setOverdueCounts(overdue);
       }
     } catch {
       // ignore
@@ -212,7 +233,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                             (countsLoading ? (
                               <Skeleton className="w-7 h-[18px] rounded-[9px]" />
                             ) : (
-                              <CountBadge count={count} />
+                              <CountBadge count={count} overdue={overdueCounts[item.id]} />
                             ))}
                         </button>
                       );
