@@ -7,11 +7,12 @@ import {
 } from '../adminNavigation';
 
 describe('adminNavSections shape', () => {
-  it('has cockpit, content, import-review, system sections', () => {
+  it('has cockpit, content, import-review, automation, system sections', () => {
     expect(adminNavSections.map(s => s.id)).toEqual([
       'cockpit',
       'content',
       'import-review',
+      'automation',
       'system',
     ]);
   });
