@@ -1618,7 +1618,9 @@
       "filteredEmpty": {
         "title": "Нет отелей, подходящих под фильтры",
         "body": "Попробуй изменить фильтры или поиск, чтобы увидеть больше результатов."
-      }
+      },
+      "eyebrow": "[RU] Where to sleep",
+      "planTrip": "[RU] Plan a trip"
     },
     "hotelDetail": {
       "loadFailed": "Не удалось загрузить информацию об отеле.",
@@ -1913,6 +1915,12 @@
       "linkCopied": "Ссылка скопирована",
       "linkCopiedDescription": "Теперь её можно вставить",
       "shareFailed": "Не удалось поделиться"
+    },
+    "geolocate": {
+      "unsupported": "[RU] Geolocation unavailable",
+      "denied": "[RU] Location access is off — showing the default area",
+      "unavailable": "[RU] Couldn't get your location — showing the default area",
+      "timeout": "[RU] Location lookup timed out — showing the default area"
     }
   },
   "resources": {
