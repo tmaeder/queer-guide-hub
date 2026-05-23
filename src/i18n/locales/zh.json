@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "最新资讯"
+    },
+    "discover": "[ZH] Discover",
+    "destinationsTitle": "[ZH] Where the scene lives.",
+    "destinationsSubtitle": "[ZH] Six cities our community keeps coming back to.",
+    "allCities": "[ZH] All cities",
+    "exploreCity": "[ZH] Explore",
+    "browseEyebrow": "[ZH] The index",
+    "browseTitle": "[ZH] Browse everything.",
+    "browseSections": "[ZH] sections",
+    "browse": {
+      "count": {
+        "venues": "[ZH] venues",
+        "events": "[ZH] events",
+        "cities": "[ZH] cities",
+        "hotels": "[ZH] hotels",
+        "marketplace": "[ZH] products",
+        "groups": "[ZH] groups",
+        "resources": "[ZH] resources"
+      }
     }
   },
   "header": {

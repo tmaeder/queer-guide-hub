@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "آخر الأخبار"
+    },
+    "discover": "[AR] Discover",
+    "destinationsTitle": "[AR] Where the scene lives.",
+    "destinationsSubtitle": "[AR] Six cities our community keeps coming back to.",
+    "allCities": "[AR] All cities",
+    "exploreCity": "[AR] Explore",
+    "browseEyebrow": "[AR] The index",
+    "browseTitle": "[AR] Browse everything.",
+    "browseSections": "[AR] sections",
+    "browse": {
+      "count": {
+        "venues": "[AR] venues",
+        "events": "[AR] events",
+        "cities": "[AR] cities",
+        "hotels": "[AR] hotels",
+        "marketplace": "[AR] products",
+        "groups": "[AR] groups",
+        "resources": "[AR] resources"
+      }
     }
   },
   "header": {
