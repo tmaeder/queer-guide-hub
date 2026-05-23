@@ -20,7 +20,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import type { Personality } from '@/hooks/usePersonalities';
 import { fetchPublicPersonalityBySlugOrId } from '@/hooks/usePageFetchers';
-import { formatPersonDate, isoDateAttr } from '@/lib/personDate';
+import { formatPersonDateRange, isoDateAttr } from '@/lib/personDate';
 import { usePersonalityRelated } from '@/hooks/usePersonalityRelated';
 import { useTranslation } from 'react-i18next';
 import {
@@ -501,32 +501,42 @@ export function PersonalitySidebar({
             <CardTitle>Personal Information</CardTitle>
           </CardHeader>
           <CardContent style={{ flexDirection: 'column', gap: '0.75rem' }} className="flex">
-            {personality.birth_date && (
-              <div className="flex items-center gap-4">
-                <Calendar size={16} className="text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Born</p>
-                  <p className="font-medium">
-                    <time dateTime={isoDateAttr(personality.birth_date) ?? undefined}>
-                      {formatPersonDate(personality.birth_date) ?? personality.birth_date}
-                    </time>
-                  </p>
-                </div>
-              </div>
-            )}
-            {personality.death_date && (
-              <div className="flex items-center gap-4">
-                <Calendar size={16} className="text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Died</p>
-                  <p className="font-medium">
-                    <time dateTime={isoDateAttr(personality.death_date) ?? undefined}>
-                      {formatPersonDate(personality.death_date) ?? personality.death_date}
-                    </time>
-                  </p>
-                </div>
-              </div>
-            )}
+            {(() => {
+              const range = formatPersonDateRange(
+                personality.birth_date,
+                personality.death_date,
+              );
+              return (
+                <>
+                  {personality.birth_date && (
+                    <div className="flex items-center gap-4">
+                      <Calendar size={16} className="text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Born</p>
+                        <p className="font-medium">
+                          <time dateTime={isoDateAttr(personality.birth_date) ?? undefined}>
+                            {range.birth ?? personality.birth_date}
+                          </time>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {personality.death_date && (
+                    <div className="flex items-center gap-4">
+                      <Calendar size={16} className="text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Died</p>
+                        <p className="font-medium">
+                          <time dateTime={isoDateAttr(personality.death_date) ?? undefined}>
+                            {range.death ?? personality.death_date}
+                          </time>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
             {personality.nationality && (
               <div className="flex items-center gap-4">
                 <MapPin size={16} className="text-muted-foreground" />
