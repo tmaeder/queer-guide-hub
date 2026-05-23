@@ -1935,7 +1935,6 @@
       "linkCopiedDescription": "Теперь её можно вставить",
       "shareFailed": "Не удалось поделиться"
     },
-    "geolocate": {}
     "geolocate": {
       "unsupported": "Geolocation unavailable",
       "denied": "Location access is off — showing the default area",
