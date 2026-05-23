@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Pencil } from 'lucide-react';
 import {
   Sheet,
@@ -17,9 +17,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useInlineSave } from '@/hooks/useInlineSave';
+import { useAdminFullEditRow } from '@/hooks/useAdminFullEditRow';
 import { getContentType, fieldGroupLabels } from '@/config/contentTypes';
 import type { FieldConfig, FieldGroup } from '@/types/cms';
-import { supabase } from '@/integrations/supabase/client';
 import { getEditorForFieldType } from './editors';
 
 interface Props {
@@ -50,32 +50,12 @@ export function AdminFullEditSheet({
   onSaved,
 }: Props) {
   const config = getContentType(contentType);
-  const [data, setData] = useState<Record<string, unknown>>(currentData ?? {});
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!open || !config) return;
-    if (currentData) {
-      setData(currentData);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    (async () => {
-      // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only single-row fetch by id, refactor to hook tracked separately
-      const { data: row, error } = await supabase
-        .from(config.tableName as 'venues')
-        .select('*')
-        .eq('id', contentId)
-        .maybeSingle();
-      if (cancelled) return;
-      setLoading(false);
-      if (!error && row) setData(row as Record<string, unknown>);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [open, config, contentId, currentData]);
+  const { data, setData, loading } = useAdminFullEditRow(
+    config?.tableName,
+    contentId,
+    open && !!config,
+    currentData,
+  );
 
   const fieldsByGroup = useMemo(() => {
     if (!config) return new Map<FieldGroup, FieldConfig[]>();
