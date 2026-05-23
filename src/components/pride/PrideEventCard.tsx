@@ -71,6 +71,11 @@ export function PrideEventCard({ event, highlighted, compact, onSelect }: PrideE
             In your trip window
           </div>
         )}
+        {event.verification_status !== 'verified' && (
+          <div className="inline-flex items-center px-2 py-0.5 text-2xs rounded-badge border border-foreground/30 text-foreground/60">
+            Date estimated
+          </div>
+        )}
       </div>
       {!compact && (
         <div className="flex items-center gap-2 px-4 py-2 border-t border-foreground/10">
