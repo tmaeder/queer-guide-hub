@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "최신 뉴스"
+    },
+    "discover": "[KO] Discover",
+    "destinationsTitle": "[KO] Where the scene lives.",
+    "destinationsSubtitle": "[KO] Six cities our community keeps coming back to.",
+    "allCities": "[KO] All cities",
+    "exploreCity": "[KO] Explore",
+    "browseEyebrow": "[KO] The index",
+    "browseTitle": "[KO] Browse everything.",
+    "browseSections": "[KO] sections",
+    "browse": {
+      "count": {
+        "venues": "[KO] venues",
+        "events": "[KO] events",
+        "cities": "[KO] cities",
+        "hotels": "[KO] hotels",
+        "marketplace": "[KO] products",
+        "groups": "[KO] groups",
+        "resources": "[KO] resources"
+      }
     }
   },
   "header": {

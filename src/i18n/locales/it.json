@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "Ultime notizie"
+    },
+    "discover": "[IT] Discover",
+    "destinationsTitle": "[IT] Where the scene lives.",
+    "destinationsSubtitle": "[IT] Six cities our community keeps coming back to.",
+    "allCities": "[IT] All cities",
+    "exploreCity": "[IT] Explore",
+    "browseEyebrow": "[IT] The index",
+    "browseTitle": "[IT] Browse everything.",
+    "browseSections": "[IT] sections",
+    "browse": {
+      "count": {
+        "venues": "[IT] venues",
+        "events": "[IT] events",
+        "cities": "[IT] cities",
+        "hotels": "[IT] hotels",
+        "marketplace": "[IT] products",
+        "groups": "[IT] groups",
+        "resources": "[IT] resources"
+      }
     }
   },
   "header": {
