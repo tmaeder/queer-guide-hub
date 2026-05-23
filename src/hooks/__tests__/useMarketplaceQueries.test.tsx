@@ -35,6 +35,10 @@ vi.mock('@/integrations/supabase/client', () => ({
       );
       return builder;
     },
+    async rpc(fn: string, args?: unknown) {
+      state.calls.push({ table: `rpc:${fn}`, chain: [{ method: 'rpc', args: [args] }] });
+      return state.results.shift() ?? { data: null, error: null };
+    },
   },
 }));
 
@@ -57,16 +61,15 @@ beforeEach(() => {
 });
 
 describe('useMarketplaceSubcategoryTiles', () => {
-  it('aggregates, ranks, and hides subcategories with fewer than 5 listings', async () => {
-    const rep = (slug: string, n: number) =>
-      Array.from({ length: n }, () => ({ subcategory: slug }));
+  // Hook moved from client-side aggregation to server-side
+  // get_marketplace_subcategory_counts RPC. Mock returns pre-aggregated rows.
+  it('rpc returns {slug,count} pre-aggregated; hook drops nullish + caps to 8', async () => {
     withResults({
       data: [
-        ...rep('art', 12),
-        ...rep('fashion', 8),
-        ...rep('jewelry', 5),
-        ...rep('rare', 2),
-        { subcategory: null },
+        { slug: 'art', count: 12 },
+        { slug: 'fashion', count: 8 },
+        { slug: 'jewelry', count: 5 },
+        { slug: null, count: 99 },
       ],
       error: null,
     });
@@ -81,7 +84,7 @@ describe('useMarketplaceSubcategoryTiles', () => {
     ]);
   });
 
-  it('returns [] on error', async () => {
+  it('returns [] on rpc error', async () => {
     withResults({ data: null, error: { message: 'fail' } });
     const { result } = renderHook(() => useMarketplaceSubcategoryTiles());
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -213,14 +216,16 @@ describe('useMarketplaceSimilarListings', () => {
 });
 
 describe('useMarketplaceFacets', () => {
-  it('aggregates category / subcategory / business_type Maps + total', async () => {
+  // Hook moved to server-side get_marketplace_facets RPC. RPC returns
+  // pre-aggregated payload {total, by_category, by_subcategory, by_business_type}.
+  it('decodes RPC payload into Maps + total', async () => {
     withResults({
-      data: [
-        { category: 'art', subcategory: 'prints', business_type: 'individual' },
-        { category: 'art', subcategory: 'prints', business_type: 'individual' },
-        { category: 'art', subcategory: 'paintings', business_type: 'business' },
-        { category: 'fashion', subcategory: null, business_type: 'business' },
-      ],
+      data: {
+        total: 4,
+        by_category: { art: 3, fashion: 1 },
+        by_subcategory: { prints: 2, paintings: 1 },
+        by_business_type: { individual: 2, business: 2 },
+      },
       error: null,
     });
 
@@ -232,13 +237,11 @@ describe('useMarketplaceFacets', () => {
     expect(result.current.data.category.get('fashion')).toBe(1);
     expect(result.current.data.subcategory.get('prints')).toBe(2);
     expect(result.current.data.subcategory.get('paintings')).toBe(1);
-    // Null subcategory not counted.
-    expect(result.current.data.subcategory.size).toBe(2);
     expect(result.current.data.business_type.get('individual')).toBe(2);
     expect(result.current.data.business_type.get('business')).toBe(2);
   });
 
-  it('returns EMPTY_FACETS on error', async () => {
+  it('returns EMPTY_FACETS on rpc error', async () => {
     withResults({ data: null, error: { message: 'rls' } });
     const { result } = renderHook(() => useMarketplaceFacets({}));
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -246,19 +249,19 @@ describe('useMarketplaceFacets', () => {
     expect(result.current.data.category.size).toBe(0);
   });
 
-  it('applies filter eq() calls when scoped', async () => {
-    withResults({ data: [], error: null });
+  it('passes scope params to the RPC call', async () => {
+    withResults({ data: { total: 0 }, error: null });
     renderHook(() =>
       useMarketplaceFacets({ category: 'art', businessType: 'business' }),
     );
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const eqCols = state.calls[0].chain
-      .filter(s => s.method === 'eq')
-      .map(e => (e.args as [string, unknown])[0]);
-    expect(eqCols).toContain('category');
-    expect(eqCols).toContain('business_type');
-    expect(eqCols).toContain('status');
+    const call = state.calls[0];
+    expect(call.table).toBe('rpc:get_marketplace_facets');
+    const rpcArgs = call.chain[0].args[0] as Record<string, unknown>;
+    expect(rpcArgs.p_category).toBe('art');
+    expect(rpcArgs.p_business_type).toBe('business');
+    expect(rpcArgs.p_subcategory).toBeNull();
   });
 });
 
