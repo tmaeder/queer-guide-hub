@@ -441,8 +441,10 @@ body {
 
 /* ── Touch target minimum (WCAG 2.5.5) ─────────────────────────────── */
 
-a, button, [role="button"], input, select, textarea {
-  min-height: 44px;
+@layer base {
+  a, button, [role="button"], input, select, textarea {
+    min-height: 44px;
+  }
 }
 
 /* Inline links inside body text are underlined. In a strict B&W system,
