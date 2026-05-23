@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "Últimas noticias"
+    },
+    "discover": "[ES] Discover",
+    "destinationsTitle": "[ES] Where the scene lives.",
+    "destinationsSubtitle": "[ES] Six cities our community keeps coming back to.",
+    "allCities": "[ES] All cities",
+    "exploreCity": "[ES] Explore",
+    "browseEyebrow": "[ES] The index",
+    "browseTitle": "[ES] Browse everything.",
+    "browseSections": "[ES] sections",
+    "browse": {
+      "count": {
+        "venues": "[ES] venues",
+        "events": "[ES] events",
+        "cities": "[ES] cities",
+        "hotels": "[ES] hotels",
+        "marketplace": "[ES] products",
+        "groups": "[ES] groups",
+        "resources": "[ES] resources"
+      }
     }
   },
   "header": {
