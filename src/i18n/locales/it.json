@@ -1586,7 +1586,9 @@
       "filteredEmpty": {
         "title": "Nessun hotel corrisponde ai tuoi filtri",
         "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
-      }
+      },
+      "eyebrow": "Where to sleep",
+      "planTrip": "Plan a trip"
     },
     "hotelDetail": {
       "loadFailed": "Impossibile caricare i dettagli dell'hotel.",
@@ -1884,7 +1886,12 @@
       "linkCopiedDescription": "Ora puoi incollarlo",
       "shareFailed": "Condivisione non riuscita"
     },
-    "geolocate": {}
+    "geolocate": {
+      "unsupported": "Geolocation unavailable",
+      "denied": "Location access is off — showing the default area",
+      "unavailable": "Couldn't get your location — showing the default area",
+      "timeout": "Location lookup timed out — showing the default area"
+    }
   },
   "resources": {
     "hero": {
