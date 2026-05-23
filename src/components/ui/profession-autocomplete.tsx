@@ -43,7 +43,10 @@ export function ProfessionAutocomplete({
           role="combobox"
           aria-expanded={open}
           aria-required={required}
-          className={cn("w-full justify-between font-normal", !value && "text-muted-foreground")}
+          className={cn(
+            "h-10 w-full justify-between rounded-element border border-input bg-background px-4.5 py-2 font-normal text-foreground transition-all hover:border-foreground/40 hover:bg-background hover:text-foreground focus:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0",
+            !value && "text-muted-foreground",
+          )}
         >
           <span className="truncate">{value || placeholder}</span>
           {loading ? (

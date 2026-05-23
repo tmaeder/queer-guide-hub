@@ -184,20 +184,25 @@ export async function fetchEventBySlugOrId<T extends { id: string }>(
   return { ...event, attendee_counts, user_attendance };
 }
 
-/** PersonalityDetail.parts.tsx — public personality by slug, then by id. */
+/** PersonalityDetail.parts.tsx — public personality by slug, then by id.
+ * Joins city.historical_names so the detail page can resolve period-correct
+ * birthplaces (e.g. "Ost-Berlin, DDR") without a second round-trip. */
+const PERSONALITY_DETAIL_SELECT =
+  '*, birth_city:cities!city_id(id,name,name_de,name_en,historical_names,country:countries!country_id(code,name,flag_emoji))';
+
 export async function fetchPublicPersonalityBySlugOrId<T = unknown>(
   slugOrId: string,
 ): Promise<T | null> {
   let { data, error } = await supabase
     .from('personalities')
-    .select('*')
+    .select(PERSONALITY_DETAIL_SELECT)
     .eq('slug', slugOrId)
     .eq('visibility', 'public')
     .maybeSingle();
   if (!data && !error) {
     const fb = await supabase
       .from('personalities')
-      .select('*')
+      .select(PERSONALITY_DETAIL_SELECT)
       .eq('id', slugOrId)
       .eq('visibility', 'public')
       .maybeSingle();

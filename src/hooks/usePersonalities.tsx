@@ -25,6 +25,7 @@ export interface Personality {
   website_url?: string;
   nationality?: string;
   birth_place?: string;
+  death_place?: string;
   tags: string[];
   verification_status: 'pending' | 'verified' | 'disputed';
   visibility: 'public' | 'private' | 'draft';

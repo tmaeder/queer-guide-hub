@@ -26,6 +26,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import type { AdminTableConfig } from '@/components/admin/data-table/types';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
@@ -226,22 +227,21 @@ export default function AdminRedirects() {
 
   return (
     <div className="mx-auto flex flex-col p-6 gap-6" style={{ maxWidth: 1200 }}>
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft size={16} /> Back to Admin
-        </Button>
-        <div>
-          <h1 style={{ fontSize: '1.875rem' }} className="font-bold">
-            Redirects & Short Links
-          </h1>
-          <p className="text-muted-foreground">Manage URL redirects, short links, and analytics</p>
-        </div>
-      </div>
+      <AdminPageHeader
+        eyebrow="System"
+        title="Redirects & Short Links"
+        subtitle="Manage URL redirects, short links, and analytics"
+        actions={
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/admin')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <ArrowLeft size={16} /> Back to Admin
+          </Button>
+        }
+      />
 
       <AdminDataTable config={tableConfig} />
 

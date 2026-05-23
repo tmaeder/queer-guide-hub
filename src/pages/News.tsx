@@ -524,7 +524,7 @@ export default function News() {
           <div
             role="tablist"
             aria-label={t('pages.news.categoriesLabel', 'News categories')}
-            className="flex gap-2 mb-6 overflow-x-auto pb-2 sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 -mx-4 px-4 pt-2"
+            className="flex gap-2 mb-6 overflow-x-auto pb-2 sticky top-0 z-20 bg-surface-container-low/95 backdrop-blur supports-[backdrop-filter]:bg-surface-container-low/75 border-b border-hairline -mx-4 px-4 pt-2"
             style={{ scrollbarWidth: 'none' }}
           >
             <button

@@ -20,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Eyebrow } from '@/components/ui/Eyebrow';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { supabase } from '@/integrations/supabase/client';
@@ -338,14 +339,19 @@ export default function NewsDetail() {
           {story && (
             <LocalizedLink
               to={`/news/story/${story.slug}`}
-              className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground mb-4 no-underline"
+              className="mb-4 inline-flex items-center gap-1.5 no-underline hover:text-foreground"
             >
               <Layers size={12} aria-hidden="true" />
-              Part of story · {story.article_count} articles
+              <Eyebrow>Part of story · {story.article_count} articles</Eyebrow>
             </LocalizedLink>
           )}
-          <div className="flex items-center gap-4 mb-2 flex-wrap">
-            <h1 className="text-2xl font-bold leading-tight m-0">
+          {!story && article.category && article.category !== 'general' && (
+            <Eyebrow as="div" className="mb-3">
+              {getCategoryLabel(article.category)}
+            </Eyebrow>
+          )}
+          <div className="flex items-center gap-4 mb-3 flex-wrap">
+            <h1 className="text-display md:text-headline-lg font-bold leading-[1.05] tracking-tight m-0">
               {decodeHtmlEntities(article.title)}
             </h1>
             {article.is_featured && (
@@ -359,17 +365,17 @@ export default function NewsDetail() {
           </div>
 
           {/* Meta row */}
-          <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
+          <div className="flex items-center gap-4 text-muted-foreground flex-wrap text-13">
             {authorName && (
               <div className="flex items-center gap-1">
                 <User size={14} />
-                <span className="text-sm">By {authorName}</span>
+                <span>By {authorName}</span>
               </div>
             )}
             {article.published_at && (
               <div className="flex items-center gap-1">
                 <Calendar size={14} />
-                <span className="text-sm">
+                <span>
                   {format(new Date(article.published_at), 'MMMM d, yyyy')}
                 </span>
               </div>
@@ -377,7 +383,7 @@ export default function NewsDetail() {
             {article.published_at && (
               <div className="flex items-center gap-1">
                 <Clock size={14} />
-                <span className="text-sm">
+                <span>
                   {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
                 </span>
               </div>
@@ -385,7 +391,7 @@ export default function NewsDetail() {
             {article.views_count > 0 && (
               <div className="flex items-center gap-1">
                 <Eye size={14} />
-                <span className="text-sm">{article.views_count} views</span>
+                <span>{article.views_count} views</span>
               </div>
             )}
           </div>

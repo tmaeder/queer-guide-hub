@@ -131,7 +131,7 @@ export function AdminShell() {
         Skip to admin content
       </a>
       <div
-        className="flex w-full bg-muted/30"
+        className="flex w-full bg-surface-container-low"
         style={{ minHeight: 'var(--admin-content-min-h)' }}
       >
         {/* Mobile hamburger with "Admin Console" label */}

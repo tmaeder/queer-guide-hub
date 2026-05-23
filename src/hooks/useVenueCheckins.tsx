@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -38,7 +38,7 @@ export function useVenueCheckins() {
     });
   };
 
-  const checkInAtVenue = async (venueId: string, venueLat: number, venueLng: number, privacySettings = { isPublic: false, locationVisibility: 'private' }) => {
+  const checkInAtVenue = useCallback(async (venueId: string, venueLat: number, venueLng: number, privacySettings = { isPublic: false, locationVisibility: 'private' }) => {
     setLoading(true);
     
     try {
@@ -121,9 +121,9 @@ export function useVenueCheckins() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const getVenueCheckins = async (venueId: string) => {
+  const getVenueCheckins = useCallback(async (venueId: string) => {
     // SECURITY: Use secure function that applies proper privacy controls
     const { data, error } = await supabase
       .rpc('get_secure_venue_checkins', {
@@ -147,9 +147,9 @@ export function useVenueCheckins() {
       is_public: checkin.is_public,
       can_view_precise_location: checkin.can_view_precise_location
     }));
-  };
+  }, []);
 
-  const getUserCheckins = async () => {
+  const getUserCheckins = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
@@ -185,7 +185,7 @@ export function useVenueCheckins() {
       ...checkin,
       venues: venues?.find(v => v.id === checkin.venue_id) || null
     }));
-  };
+  }, []);
 
   return {
     checkInAtVenue,

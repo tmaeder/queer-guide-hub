@@ -13,6 +13,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useQuests, useQuestMutations, type Quest } from '@/hooks/useQuests';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 const STATUSES: Quest['status'][] = ['draft', 'scheduled', 'active', 'completed', 'archived'];
 const ENTITY_TYPES = ['venue', 'event', 'personality', 'news', 'place'] as const;
@@ -149,13 +150,12 @@ export default function AdminQuests() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Editorial Quests</h1>
-          <p className="text-sm text-muted-foreground">Time-bounded community challenges. One per month, community-led.</p>
-        </div>
-        <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" />New quest</Button>
-      </div>
+      <AdminPageHeader
+        eyebrow="Content"
+        title="Editorial Quests"
+        subtitle="Time-bounded community challenges. One per month, community-led."
+        actions={<Button onClick={openNew}><Plus className="mr-2 h-4 w-4" />New quest</Button>}
+      />
 
       {isLoading ? (
         <p className="text-muted-foreground">Loading…</p>

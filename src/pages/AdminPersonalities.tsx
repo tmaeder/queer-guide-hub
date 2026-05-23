@@ -501,6 +501,9 @@ export default function AdminPersonalities() {
           <ExportExcelButton onExport={handleExportExcel} />
         </div>
       ),
+      // Visually mark personalities that are NOT publicly displayed (draft/private)
+      // so admins can spot hidden entries at a glance.
+      rowClassName: (p) => (p.visibility !== 'public' ? 'bg-muted/50 opacity-70' : undefined),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers are stable, adding would defeat memoization
     [columns],
