@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { adminAction } from '@/lib/adminAction';
@@ -27,6 +28,11 @@ interface Automation {
   schedule: string | null;
   last_run_at: string | null;
   last_run_status: string | null;
+  trigger: Record<string, unknown>;
+  conditions: Array<Record<string, unknown>>;
+  action: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
 }
 
 interface AutomationRun {
@@ -51,12 +57,14 @@ async function fetchAutomations(): Promise<Automation[]> {
   return (data ?? []) as Automation[];
 }
 
-async function fetchRecentRuns(): Promise<AutomationRun[]> {
-  const { data, error } = await supabase
+async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
+  let q = supabase
     .from('admin_automation_runs' as never)
     .select('*')
     .order('started_at', { ascending: false })
-    .limit(25);
+    .limit(50);
+  if (slugFilter) q = q.eq('automation_slug', slugFilter);
+  const { data, error } = await q;
   if (error) throw error;
   return (data ?? []) as AutomationRun[];
 }
@@ -73,6 +81,8 @@ export default function AdminAutomation() {
   const qc = useQueryClient();
   const { isAdmin } = useAdminRoles();
   const [busySlug, setBusySlug] = useState<string | null>(null);
+  const [filterSlug, setFilterSlug] = useState<string | null>(null);
+  const [detailSlug, setDetailSlug] = useState<string | null>(null);
 
   useRegisterAdminCommandAction({
     id: 'automation.view',
@@ -87,10 +97,31 @@ export default function AdminAutomation() {
 
   const automationsQ = useQuery({ queryKey: ['admin-automations'], queryFn: fetchAutomations });
   const runsQ = useQuery({
-    queryKey: ['admin-automation-runs'],
-    queryFn: fetchRecentRuns,
+    queryKey: ['admin-automation-runs', filterSlug],
+    queryFn: () => fetchRecentRuns(filterSlug),
     refetchInterval: 30_000,
   });
+
+  const detailRow = detailSlug
+    ? automationsQ.data?.find((a) => a.slug === detailSlug) ?? null
+    : null;
+
+  async function toggleEnabled(slug: string, next: boolean) {
+    setBusySlug(`toggle:${slug}`);
+    try {
+      const { error } = await supabase.rpc('admin_automation_set_enabled', {
+        p_slug: slug,
+        p_enabled: next,
+      });
+      if (error) throw error;
+      toast.success(next ? `Enabled ${slug}` : `Paused ${slug}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Toggle failed');
+    } finally {
+      setBusySlug(null);
+      qc.invalidateQueries({ queryKey: ['admin-automations'] });
+    }
+  }
 
   async function runNow(slug: string) {
     setBusySlug(`run:${slug}`);
@@ -159,9 +190,14 @@ export default function AdminAutomation() {
               </thead>
               <tbody>
                 {automationsQ.data?.map((a) => (
-                  <tr key={a.id} className="border-t border-border">
+                  <tr
+                    key={a.id}
+                    className={`border-t border-border cursor-pointer hover:bg-muted/40 ${filterSlug === a.slug ? 'bg-muted/60' : ''}`}
+                    onClick={() => setDetailSlug(a.slug)}
+                  >
                     <td className="px-4 py-2">
                       <div className="font-semibold">{a.name}</div>
+                      <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
                       {a.description && (
                         <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
                       )}
@@ -178,23 +214,41 @@ export default function AdminAutomation() {
                         : 'Never'}
                     </td>
                     <td className="px-4 py-2">
-                      {a.enabled ? (
-                        <Badge variant="outline" className="font-normal">
-                          enabled
-                        </Badge>
+                      {isAdmin ? (
+                        <Button
+                          variant={a.enabled ? 'outline' : 'secondary'}
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); toggleEnabled(a.slug, !a.enabled); }}
+                          disabled={busySlug !== null}
+                          className="font-normal h-6 text-2xs"
+                        >
+                          {busySlug === `toggle:${a.slug}` ? (
+                            <Loader2 size={11} className="mr-1 animate-spin" />
+                          ) : null}
+                          {a.enabled ? 'enabled · click to pause' : 'paused · click to enable'}
+                        </Button>
+                      ) : a.enabled ? (
+                        <Badge variant="outline" className="font-normal">enabled</Badge>
                       ) : (
-                        <Badge variant="secondary" className="font-normal">
-                          paused
-                        </Badge>
+                        <Badge variant="secondary" className="font-normal">paused</Badge>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => dryRun(a.slug)}
+                        onClick={(e) => { e.stopPropagation(); setFilterSlug(filterSlug === a.slug ? null : a.slug); }}
+                        title="Filter runs to this rule"
+                      >
+                        {filterSlug === a.slug ? 'Clear filter' : 'Filter runs'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); dryRun(a.slug); }}
                         disabled={busySlug !== null}
                         title="Preview without mutating"
+                        className="ml-2"
                       >
                         {busySlug === `dry:${a.slug}` ? (
                           <Loader2 size={12} className="mr-1 animate-spin" />
@@ -207,7 +261,7 @@ export default function AdminAutomation() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => runNow(a.slug)}
+                          onClick={(e) => { e.stopPropagation(); runNow(a.slug); }}
                           disabled={busySlug !== null || !a.enabled}
                           className="ml-2"
                           title={a.enabled ? 'Run now' : 'Enable to run'}
@@ -231,10 +285,25 @@ export default function AdminAutomation() {
 
       {/* Recent runs */}
       <section>
-        <h2 className="text-title font-semibold mb-3 flex items-center gap-2">
-          <Play size={16} />
-          Recent runs
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-title font-semibold flex items-center gap-2">
+            <Play size={16} />
+            Recent runs
+            {filterSlug && (
+              <span className="text-13 font-mono text-muted-foreground">· {filterSlug}</span>
+            )}
+          </h2>
+          {filterSlug && (
+            <Button variant="ghost" size="sm" onClick={() => setFilterSlug(null)}>
+              Clear filter
+            </Button>
+          )}
+        </div>
+        {!filterSlug && (
+          <p className="text-2xs text-muted-foreground -mt-2 mb-2">
+            Use "Filter runs" on any automation row above to drill into its history.
+          </p>
+        )}
         {runsQ.isLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : runsQ.data?.length === 0 ? (
@@ -284,6 +353,80 @@ export default function AdminAutomation() {
           </div>
         )}
       </section>
+
+      {/* Detail drawer */}
+      <Sheet open={!!detailRow} onOpenChange={(o) => !o && setDetailSlug(null)}>
+        <SheetContent side="right" className="w-full sm:w-[520px] p-6 overflow-auto">
+          {detailRow && (
+            <>
+              <SheetHeader className="mb-4">
+                <SheetTitle className="text-headline">{detailRow.name}</SheetTitle>
+                <SheetDescription className="font-mono text-2xs">{detailRow.slug}</SheetDescription>
+              </SheetHeader>
+
+              {detailRow.description && (
+                <p className="text-13 text-muted-foreground mb-4">{detailRow.description}</p>
+              )}
+
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-13 mb-6">
+                <dt className="text-muted-foreground">Managed by</dt>
+                <dd>{detailRow.managed_by}</dd>
+                <dt className="text-muted-foreground">Status</dt>
+                <dd>{detailRow.enabled ? 'enabled' : 'paused'}</dd>
+                <dt className="text-muted-foreground">Schedule</dt>
+                <dd className="font-mono text-2xs">{detailRow.schedule ?? '—'}</dd>
+                <dt className="text-muted-foreground">Last run</dt>
+                <dd>
+                  {detailRow.last_run_at
+                    ? formatDistanceToNow(new Date(detailRow.last_run_at), { addSuffix: true })
+                    : 'Never'}
+                </dd>
+                <dt className="text-muted-foreground">Last run status</dt>
+                <dd>{detailRow.last_run_status ?? '—'}</dd>
+                <dt className="text-muted-foreground">Created</dt>
+                <dd>{formatDistanceToNow(new Date(detailRow.created_at), { addSuffix: true })}</dd>
+              </dl>
+
+              <h3 className="text-title font-semibold mb-2">Trigger</h3>
+              <pre className="p-3 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
+                {JSON.stringify(detailRow.trigger, null, 2)}
+              </pre>
+
+              <h3 className="text-title font-semibold mb-2">Conditions</h3>
+              <pre className="p-3 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
+                {JSON.stringify(detailRow.conditions, null, 2)}
+              </pre>
+
+              <h3 className="text-title font-semibold mb-2">Action</h3>
+              <pre className="p-3 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
+                {JSON.stringify(detailRow.action, null, 2)}
+              </pre>
+
+              <div className="flex gap-2 pt-2 border-t border-border">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setFilterSlug(detailRow.slug);
+                    setDetailSlug(null);
+                  }}
+                >
+                  Show runs only
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => dryRun(detailRow.slug)}
+                  disabled={busySlug !== null}
+                >
+                  <FlaskConical size={12} className="mr-1" />
+                  Dry-run
+                </Button>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
