@@ -256,6 +256,7 @@ export default function EventDetail() {
               isPast={isPast}
               userAttendance={userAttendance}
               onAttendanceUpdate={handleAttendanceUpdate}
+              onContentUpdated={refetch}
             />
           ),
         },
@@ -289,6 +290,7 @@ export default function EventDetail() {
               showSendButton={Boolean(user)}
               heroImage={heroImage}
               locationLabel={locationLabel}
+              onContentUpdated={refetch}
             />
           ) : null
         }
