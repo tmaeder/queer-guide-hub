@@ -22,6 +22,7 @@ export interface ReviewSummary {
   automation: number;
   cmsReview: number;
   tagSuggestions: number;
+  submissions: number;
   total: number;
 }
 
@@ -91,7 +92,7 @@ async function fetchSystemHealth(): Promise<SystemHealth> {
 }
 
 async function fetchReviewSummary(): Promise<ReviewSummary> {
-  const [stagingRes, cmsRes, modRes, autoRes, tagRes] = await Promise.all([
+  const [stagingRes, cmsRes, modRes, autoRes, tagRes, subRes] = await Promise.all([
     supabase
       .from('ingestion_staging' as 'venues')
       .select('id', { count: 'exact', head: true })
@@ -113,6 +114,10 @@ async function fetchReviewSummary(): Promise<ReviewSummary> {
       .from('tag_suggestions' as 'venues')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending'),
+    supabase
+      .from('community_submissions' as 'venues')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
   ]);
 
   const staging = stagingRes.count ?? 0;
@@ -120,6 +125,7 @@ async function fetchReviewSummary(): Promise<ReviewSummary> {
   const moderation = modRes.count ?? 0;
   const automation = autoRes.count ?? 0;
   const tagSuggestions = tagRes.count ?? 0;
+  const submissions = subRes.count ?? 0;
 
   return {
     staging,
@@ -127,7 +133,8 @@ async function fetchReviewSummary(): Promise<ReviewSummary> {
     moderation,
     automation,
     tagSuggestions,
-    total: staging + cmsReview + moderation + automation + tagSuggestions,
+    submissions,
+    total: staging + cmsReview + moderation + automation + tagSuggestions + submissions,
   };
 }
 
