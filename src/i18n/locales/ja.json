@@ -1587,8 +1587,8 @@
         "title": "フィルターに一致するホテルがありません",
         "body": "フィルターや検索を調整して、より多くの結果を表示してください。"
       },
-      "eyebrow": "[JA] Where to sleep",
-      "planTrip": "[JA] Plan a trip"
+      "eyebrow": "Where to sleep",
+      "planTrip": "Plan a trip"
     },
     "hotelDetail": {
       "loadFailed": "ホテルの詳細を読み込めませんでした。",
@@ -1885,10 +1885,10 @@
       "shareFailed": "共有に失敗しました"
     },
     "geolocate": {
-      "unsupported": "[JA] Geolocation unavailable",
-      "denied": "[JA] Location access is off — showing the default area",
-      "unavailable": "[JA] Couldn't get your location — showing the default area",
-      "timeout": "[JA] Location lookup timed out — showing the default area"
+      "unsupported": "Geolocation unavailable",
+      "denied": "Location access is off — showing the default area",
+      "unavailable": "Couldn't get your location — showing the default area",
+      "timeout": "Location lookup timed out — showing the default area"
     }
   },
   "resources": {

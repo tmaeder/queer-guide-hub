@@ -73,6 +73,8 @@ export interface AdminTableConfig<TData> {
   exportColumns?: ExportColumnDef<TData>[];
   contentTypeId?: string;
   onRowClick?: (row: TData) => void;
+  /** Optional per-row className for visual emphasis (e.g. mark hidden entities). */
+  rowClassName?: (row: TData) => string | undefined;
   /** Callback after bulk edit mutation succeeds */
   onBulkEditSuccess?: () => void;
   /** Callback after bulk delete mutation succeeds */
