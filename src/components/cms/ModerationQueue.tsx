@@ -213,7 +213,7 @@ export function ModerationQueue() {
                       </Badge>
                     )}
                     {item.priority > 0 && (
-                      <Badge className="h-[22px] text-xs2 gap-1 bg-foreground text-white hover:bg-foreground">
+                      <Badge className="h-[22px] text-xs2 gap-1 bg-foreground text-background hover:bg-foreground">
                         <ShieldAlert size={12} />
                         Priority {item.priority}
                       </Badge>
@@ -243,7 +243,7 @@ export function ModerationQueue() {
                     onClick={() =>
                       transition(item.id, { feedback_status: 'approved', status: 'approved' })
                     }
-                    className="font-semibold text-xs bg-foreground hover:bg-foreground text-white"
+                    className="font-semibold text-xs bg-foreground hover:bg-foreground text-background"
                   >
                     <ThumbsUp size={14} />
                     Approve
