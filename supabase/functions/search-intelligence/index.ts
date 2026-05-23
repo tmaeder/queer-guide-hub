@@ -738,13 +738,20 @@ async function driveSyncTypeAndUpdate(
 ): Promise<unknown> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (!supabaseUrl || !serviceKey) {
-    return await failJob(ctx, jobId, ['SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing'])
+  // anon key is JWT-format; gateway accepts it as `apikey`. Required because
+  // SUPABASE_SERVICE_ROLE_KEY may now be the non-JWT `sb_secret_*` format,
+  // which the gateway rejects when sent as Authorization Bearer alone.
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+  if (!supabaseUrl || !serviceKey || !anonKey) {
+    return await failJob(ctx, jobId, [
+      'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / SUPABASE_ANON_KEY missing',
+    ])
   }
   try {
     const res = await fetch(`${supabaseUrl}/functions/v1/meilisearch-sync`, {
       method: 'POST',
       headers: {
+        apikey: anonKey,
         Authorization: `Bearer ${serviceKey}`,
         'Content-Type': 'application/json',
       },
