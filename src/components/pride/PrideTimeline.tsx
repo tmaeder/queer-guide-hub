@@ -151,7 +151,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
                 onClick={() => onSelect?.(isSelected ? null : p.event.id)}
                 title={`${p.event.title} — ${new Date(p.event.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
                 className={cn(
-                  'absolute -translate-x-1/2 rounded-full border border-foreground transition-all',
+                  'absolute -translate-x-1/2 min-h-0 min-w-0 p-0 rounded-full border border-foreground transition-all',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2',
                   isSelected
                     ? 'bg-foreground w-4 h-4 z-30'

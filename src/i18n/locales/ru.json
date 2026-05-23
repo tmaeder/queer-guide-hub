@@ -1367,6 +1367,25 @@
     },
     "news": {
       "title": "Последние новости"
+    },
+    "discover": "[RU] Discover",
+    "destinationsTitle": "[RU] Where the scene lives.",
+    "destinationsSubtitle": "[RU] Six cities our community keeps coming back to.",
+    "allCities": "[RU] All cities",
+    "exploreCity": "[RU] Explore",
+    "browseEyebrow": "[RU] The index",
+    "browseTitle": "[RU] Browse everything.",
+    "browseSections": "[RU] sections",
+    "browse": {
+      "count": {
+        "venues": "[RU] venues",
+        "events": "[RU] events",
+        "cities": "[RU] cities",
+        "hotels": "[RU] hotels",
+        "marketplace": "[RU] products",
+        "groups": "[RU] groups",
+        "resources": "[RU] resources"
+      }
     }
   },
   "header": {
