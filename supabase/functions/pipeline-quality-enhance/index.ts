@@ -66,7 +66,10 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
-    const batchSize     = Math.min(50, body.batch_size ?? 10)
+    // Each item triggers an LLM call that can take 8-15s. With the 150s
+    // edge-function wall clock, 5 items is the safe ceiling. The executor
+    // re-enqueues remaining rows on the next tick.
+    const batchSize     = Math.min(50, body.batch_size ?? 5)
     const dryRun        = body.dry_run === true
 
     let q = supabase

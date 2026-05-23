@@ -135,27 +135,68 @@ const SCRAPED_KEYS = ['cleaned_title', 'cleaned_description', 'suggested_tags', 
 /**
  * Parse AI response JSON and strip unexpected fields.
  * Only keys present in `allowedKeys` are kept to prevent field injection.
+ *
+ * Handles three flavours of LLM output:
+ *  1. Bare JSON (well-behaved OpenAI with response_format=json_object)
+ *  2. ```json fenced blocks (Llama default)
+ *  3. Prose + JSON + trailing commentary (Llama without response_format)
  */
 function parseAIResponse<T>(content: string, allowedKeys?: string[]): T | null {
-  try {
-    // Handle both raw JSON and markdown-wrapped JSON
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) return null
-    const parsed = JSON.parse(jsonMatch[0])
-
-    if (!allowedKeys) return parsed as T
-
-    const sanitized: Record<string, unknown> = {}
-    for (const key of allowedKeys) {
-      if (key in parsed) {
-        sanitized[key] = parsed[key]
+  const candidates = extractJsonCandidates(content)
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate)
+      if (!allowedKeys) return parsed as T
+      const sanitized: Record<string, unknown> = {}
+      for (const key of allowedKeys) {
+        if (key in parsed) sanitized[key] = parsed[key]
       }
+      // Reject if zero allowed keys present — that's not the JSON we wanted.
+      if (Object.keys(sanitized).length === 0) continue
+      return sanitized as T
+    } catch {
+      // Try the next candidate
     }
-    return sanitized as T
-  } catch {
-    console.warn('Failed to parse AI response as JSON:', content.slice(0, 200))
-    return null
   }
+  console.error('parseAIResponse: no parseable JSON in LLM output (full):', content)
+  return null
+}
+
+/** Yield candidate JSON strings from raw LLM content, best-first. */
+function extractJsonCandidates(content: string): string[] {
+  const out: string[] = []
+  // 1. ```json ... ``` fenced block
+  const fence = content.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  if (fence) out.push(fence[1].trim())
+  // 2. Smallest balanced {...} starting at the first '{'
+  const balanced = extractBalancedObject(content)
+  if (balanced) out.push(balanced)
+  // 3. Last resort: greedy match (legacy behaviour)
+  const greedy = content.match(/\{[\s\S]*\}/)
+  if (greedy) out.push(greedy[0])
+  return out
+}
+
+/** Walk the string and return the first balanced {...} substring, respecting strings. */
+function extractBalancedObject(s: string): string | null {
+  const start = s.indexOf('{')
+  if (start === -1) return null
+  let depth = 0
+  let inStr = false
+  let escaped = false
+  for (let i = start; i < s.length; i++) {
+    const c = s[i]
+    if (escaped) { escaped = false; continue }
+    if (c === '\\') { escaped = true; continue }
+    if (c === '"') { inStr = !inStr; continue }
+    if (inStr) continue
+    if (c === '{') depth++
+    else if (c === '}') {
+      depth--
+      if (depth === 0) return s.slice(start, i + 1)
+    }
+  }
+  return null
 }
 
 // ---------------------------------------------------------------------------
@@ -188,6 +229,7 @@ Respond with JSON:
       ],
       temperature: 0.3,
       max_tokens: 500,
+      response_format: { type: 'json_object' },
     })
 
     return parseAIResponse<VenueEnrichment>(result.content, VENUE_KEYS)
@@ -226,6 +268,7 @@ Respond with JSON:
       ],
       temperature: 0.3,
       max_tokens: 500,
+      response_format: { type: 'json_object' },
     })
 
     return parseAIResponse<EventEnrichment>(result.content, EVENT_KEYS)
@@ -264,6 +307,7 @@ Respond with JSON:
       ],
       temperature: 0.3,
       max_tokens: 800,
+      response_format: { type: 'json_object' },
     })
 
     return parseAIResponse<PersonalityEnrichment>(result.content, PERSONALITY_KEYS)
@@ -301,6 +345,7 @@ Respond with JSON:
       ],
       temperature: 0.2,
       max_tokens: 500,
+      response_format: { type: 'json_object' },
     })
 
     return parseAIResponse<NewsEnrichment>(result.content, NEWS_KEYS)
@@ -338,6 +383,7 @@ Respond with JSON:
       ],
       temperature: 0.2,
       max_tokens: 600,
+      response_format: { type: 'json_object' },
     })
 
     return parseAIResponse<ScrapedContentEnrichment>(result.content, SCRAPED_KEYS)

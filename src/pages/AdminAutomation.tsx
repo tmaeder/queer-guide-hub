@@ -42,6 +42,7 @@ interface AutomationRun {
 }
 
 async function fetchAutomations(): Promise<Automation[]> {
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level fetcher consumed by useQuery below
   // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
   const { data, error } = await supabase
     .from('admin_automations' as never)
@@ -53,6 +54,7 @@ async function fetchAutomations(): Promise<Automation[]> {
 }
 
 async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level fetcher consumed by useQuery below
   // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
   let q = supabase
     .from('admin_automation_runs' as never)
@@ -288,10 +290,6 @@ export default function AdminAutomation() {
             Click any automation row above to filter this list.
           </p>
         )}
-        <h2 className="text-title font-semibold mb-3 flex items-center gap-2">
-          <Play size={16} />
-          Recent runs
-        </h2>
         {runsQ.isLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : runsQ.data?.length === 0 ? (
