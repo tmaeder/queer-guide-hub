@@ -14,6 +14,8 @@ import { OAuthButtons } from './OAuthButtons';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { EmailVerificationScreen } from './EmailVerificationScreen';
 import { UsernameSelector } from './UsernameSelector';
+import { AvatarQuickPick } from '@/components/profile/AvatarQuickPick';
+import { generateRandomConfig, type AvatarConfig } from '@/components/profile/AvatarBuilder';
 
 interface Props {
   onBack: () => void;
@@ -36,6 +38,7 @@ export default function Signup({ onBack }: Props) {
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
   const [step, setStep] = useState<'form' | 'username'>('form');
   const [pendingUsername, setPendingUsername] = useState<string | null>(null);
+  const [pendingAvatar, setPendingAvatar] = useState<AvatarConfig | null>(() => generateRandomConfig());
 
   useEffect(() => {
     emit('signup_landing_view');
@@ -68,13 +71,14 @@ export default function Signup({ onBack }: Props) {
     setStep('username');
   };
 
-  const performSignup = async (username: string) => {
+  const performSignup = async (username: string, avatar: AvatarConfig) => {
     setIsLoading(true);
     setError(null);
     const now = new Date().toISOString();
     const { error: signUpError } = await signUp(email, password, {
       display_name: email.split('@')[0],
       username,
+      avatar_config: avatar,
       preferred_language: i18n.language,
       terms_accepted_at: now,
       privacy_accepted_at: now,
@@ -103,10 +107,10 @@ export default function Signup({ onBack }: Props) {
       <Card className="max-w-md mx-auto rounded-container">
         <CardHeader>
           <CardTitle className="text-2xl font-bold tracking-tight text-center text-balance">
-            Pick your username
+            Set up your profile
           </CardTitle>
           <CardDescription className="text-center text-sm">
-            Your unique queer.guide identity.
+            Pick a username and an avatar.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
@@ -116,6 +120,7 @@ export default function Signup({ onBack }: Props) {
             </Alert>
           )}
           <UsernameSelector value={pendingUsername} onChange={setPendingUsername} />
+          <AvatarQuickPick value={pendingAvatar} onChange={setPendingAvatar} />
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -126,8 +131,10 @@ export default function Signup({ onBack }: Props) {
             </Button>
             <Button
               className="flex-1"
-              disabled={!pendingUsername || isLoading}
-              onClick={() => pendingUsername && performSignup(pendingUsername)}
+              disabled={!pendingUsername || !pendingAvatar || isLoading}
+              onClick={() =>
+                pendingUsername && pendingAvatar && performSignup(pendingUsername, pendingAvatar)
+              }
             >
               {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Create account

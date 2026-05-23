@@ -7,12 +7,15 @@ import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile, type Profile } from '@/hooks/useProfile';
 import { UsernameSelector } from '@/components/auth/UsernameSelector';
+import { AvatarQuickPick } from '@/components/profile/AvatarQuickPick';
+import { generateRandomConfig, type AvatarConfig } from '@/components/profile/AvatarBuilder';
 
 export default function ClaimUsername() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading, updateProfile } = useProfile();
-  const [pending, setPending] = useState<string | null>(null);
+  const [pendingUsername, setPendingUsername] = useState<string | null>(null);
+  const [pendingAvatar, setPendingAvatar] = useState<AvatarConfig | null>(() => generateRandomConfig());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,10 +33,15 @@ export default function ClaimUsername() {
   }, [authLoading, profileLoading, user, username, navigate]);
 
   const handleSave = async () => {
-    if (!pending) return;
+    if (!pendingUsername || !pendingAvatar) return;
     setSaving(true);
     setError(null);
-    const { error: updateError } = await updateProfile({ username: pending } as Partial<Profile>);
+    const { error: updateError } = await updateProfile({
+      username: pendingUsername,
+      avatar_config: pendingAvatar,
+      avatar_url: null,
+      avatar_type: 'builder',
+    } as Partial<Profile>);
     setSaving(false);
     if (updateError) {
       setError(updateError);
@@ -55,10 +63,10 @@ export default function ClaimUsername() {
       <Card className="max-w-md mx-auto rounded-container">
         <CardHeader>
           <CardTitle className="text-2xl font-bold tracking-tight text-center text-balance">
-            Pick your username
+            Set up your profile
           </CardTitle>
           <CardDescription className="text-center text-sm">
-            Your unique queer.guide identity.
+            Pick a username and an avatar. You can change both later in profile settings.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
@@ -67,14 +75,15 @@ export default function ClaimUsername() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <UsernameSelector value={pending} onChange={setPending} />
+          <UsernameSelector value={pendingUsername} onChange={setPendingUsername} />
+          <AvatarQuickPick value={pendingAvatar} onChange={setPendingAvatar} />
           <Button
             className="w-full"
-            disabled={!pending || saving}
+            disabled={!pendingUsername || !pendingAvatar || saving}
             onClick={handleSave}
           >
             {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Save username
+            Save and continue
           </Button>
         </CardContent>
       </Card>
