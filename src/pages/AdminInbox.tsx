@@ -20,6 +20,13 @@ export default function AdminInbox() {
     perform: () => navigate('/admin/review'),
   });
 
+  useRegisterAdminCommandAction({
+    id: 'inbox.automation',
+    label: 'Open Automation',
+    keywords: 'rules cron audit',
+    perform: () => navigate('/admin/automation'),
+  });
+
   useEffect(() => {
     document.title = 'Inbox · Admin · Queer Guide';
   }, []);
