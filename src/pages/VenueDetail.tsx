@@ -201,6 +201,7 @@ export default function VenueDetail() {
               venue={venue}
               checkinRefresh={checkinRefresh}
               navigate={navigate}
+              onContentUpdated={refetch}
               t={t}
             />
           ),
@@ -253,6 +254,7 @@ export default function VenueDetail() {
               socialSignal={socialSignals?.get(venue.id)}
               onAddToTrip={() => setAddToTripOpen(true)}
               onCheckInSuccess={() => setCheckinRefresh((prev) => prev + 1)}
+              onContentUpdated={refetch}
               t={t}
             />
           ) : null
