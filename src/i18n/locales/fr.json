@@ -1343,6 +1343,25 @@
     },
     "news": {
       "title": "Actualités"
+    },
+    "discover": "[FR] Discover",
+    "destinationsTitle": "[FR] Where the scene lives.",
+    "destinationsSubtitle": "[FR] Six cities our community keeps coming back to.",
+    "allCities": "[FR] All cities",
+    "exploreCity": "[FR] Explore",
+    "browseEyebrow": "[FR] The index",
+    "browseTitle": "[FR] Browse everything.",
+    "browseSections": "[FR] sections",
+    "browse": {
+      "count": {
+        "venues": "[FR] venues",
+        "events": "[FR] events",
+        "cities": "[FR] cities",
+        "hotels": "[FR] hotels",
+        "marketplace": "[FR] products",
+        "groups": "[FR] groups",
+        "resources": "[FR] resources"
+      }
     }
   },
   "header": {
