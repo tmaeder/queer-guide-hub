@@ -104,7 +104,7 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
         size="sm"
         disabled={busy}
         onClick={() => updateState('published')}
-        className="bg-foreground hover:bg-foreground text-white normal-case font-semibold"
+        className="bg-foreground hover:bg-foreground text-background normal-case font-semibold"
       >
         {busy ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />

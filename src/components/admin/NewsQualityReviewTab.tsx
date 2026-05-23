@@ -442,7 +442,7 @@ export default function NewsQualityReviewTab() {
                   <ScoreChip label="Quality" value={r.quality_score} />
                   {r.sentiment && <Badge variant="outline">{r.sentiment}</Badge>}
                   {r.quality_decision?.isSatire && (
-                    <Badge className="bg-foreground text-white">satire</Badge>
+                    <Badge className="bg-foreground text-background">satire</Badge>
                   )}
                   {(r.auto_publish_blocked_reasons ?? []).map((reason) => (
                     <Badge key={reason} variant="outline">
@@ -591,7 +591,7 @@ export default function NewsQualityReviewTab() {
                     Mark irrelevant
                   </Button>
                   <Button
-                    className="bg-foreground text-white hover:bg-foreground"
+                    className="bg-foreground text-background hover:bg-foreground"
                     onClick={() => approve.mutate(selected)}
                     disabled={approve.isPending}
                   >

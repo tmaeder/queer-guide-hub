@@ -59,6 +59,12 @@ async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun
     .limit(50);
   if (slugFilter) q = q.eq('automation_slug', slugFilter);
   const { data, error } = await q;
+async function fetchRecentRuns(): Promise<AutomationRun[]> {
+  const { data, error } = await supabase
+    .from('admin_automation_runs' as never)
+    .select('*')
+    .order('started_at', { ascending: false })
+    .limit(25);
   if (error) throw error;
   return (data ?? []) as AutomationRun[];
 }
@@ -92,6 +98,8 @@ export default function AdminAutomation() {
   const runsQ = useQuery({
     queryKey: ['admin-automation-runs', filterSlug],
     queryFn: () => fetchRecentRuns(filterSlug),
+    queryKey: ['admin-automation-runs'],
+    queryFn: fetchRecentRuns,
     refetchInterval: 30_000,
   });
 
@@ -187,6 +195,9 @@ export default function AdminAutomation() {
                     <td className="px-4 py-2">
                       <div className="font-semibold">{a.name}</div>
                       <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
+                  <tr key={a.id} className="border-t border-border">
+                    <td className="px-4 py-2">
+                      <div className="font-semibold">{a.name}</div>
                       {a.description && (
                         <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
                       )}
@@ -220,6 +231,14 @@ export default function AdminAutomation() {
                         <Badge variant="outline" className="font-normal">enabled</Badge>
                       ) : (
                         <Badge variant="secondary" className="font-normal">paused</Badge>
+                      {a.enabled ? (
+                        <Badge variant="outline" className="font-normal">
+                          enabled
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="font-normal">
+                          paused
+                        </Badge>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
@@ -227,6 +246,7 @@ export default function AdminAutomation() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); dryRun(a.slug); }}
+                        onClick={() => dryRun(a.slug)}
                         disabled={busySlug !== null}
                         title="Preview without mutating"
                       >
@@ -242,6 +262,7 @@ export default function AdminAutomation() {
                           variant="outline"
                           size="sm"
                           onClick={(e) => { e.stopPropagation(); runNow(a.slug); }}
+                          onClick={() => runNow(a.slug)}
                           disabled={busySlug !== null || !a.enabled}
                           className="ml-2"
                           title={a.enabled ? 'Run now' : 'Enable to run'}
@@ -286,6 +307,10 @@ export default function AdminAutomation() {
             Click any automation row above to filter this list.
           </p>
         )}
+        <h2 className="text-title font-semibold mb-3 flex items-center gap-2">
+          <Play size={16} />
+          Recent runs
+        </h2>
         {runsQ.isLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : runsQ.data?.length === 0 ? (
