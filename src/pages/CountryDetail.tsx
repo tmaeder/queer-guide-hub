@@ -36,7 +36,7 @@ export default function CountryDetail() {
   const [weatherData, setWeatherData] = useState<WeatherDataType>(null);
 
   const { track } = useTrackEvent();
-  const { country, loading: countryLoading } = useOptimizedCountry(countrySlug ?? '');
+  const { country, loading: countryLoading, refetch: refetchCountry } = useOptimizedCountry(countrySlug ?? '');
   const { cities, loading: citiesLoading } = useOptimizedCities({
     countryId: country?.id ?? '',
     limit: 12,
@@ -220,7 +220,7 @@ export default function CountryDetail() {
         loading={false}
         error={null}
         breadcrumbs={breadcrumbs}
-        hero={<CountryHero country={country} cities={cities} weatherData={weatherData} />}
+        hero={<CountryHero country={country} cities={cities} weatherData={weatherData} onContentUpdated={refetchCountry} />}
         tabs={tabs}
         entityType="country"
         entityId={country.id}

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { Editable } from '@/components/admin/inline/Editable';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { DetailHero } from '@/components/layout/DetailHero';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
@@ -55,7 +56,15 @@ export function CityHero({
           <div className="flex items-center gap-4 mb-1">
             <h3 className="text-3xl lg:text-5xl font-bold text-foreground">
               {city.countries?.flag_emoji && <>{city.countries.flag_emoji} </>}
-              {city.name}
+              <Editable
+                contentType="cities"
+                recordId={city.id}
+                field="name"
+                value={city.name}
+                onSaved={refetchCity}
+              >
+                {city.name}
+              </Editable>
             </h3>
             {city.countries?.equality_score != null && (
               <EqualityScoreBadge score={city.countries.equality_score} size="md" />

@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { Editable } from '@/components/admin/inline/Editable';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
 import { EntityMap } from '@/components/map/EntityMap';
@@ -74,9 +75,10 @@ interface VillageHeroProps {
   village: VillageWithRelations;
   isFavorited: boolean;
   onFavoriteToggle: () => void;
+  onContentUpdated?: () => void;
 }
 
-export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageHeroProps) {
+export function VillageHero({ village, isFavorited, onFavoriteToggle, onContentUpdated }: VillageHeroProps) {
   return (
     <div>
       {village.image_url && (
@@ -105,7 +107,15 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
         <div>
           <h1 className="mb-1 text-headline font-bold text-foreground lg:text-4xl">
             {village.countries?.flag_emoji && <>{village.countries.flag_emoji} </>}
-            {village.name}
+            <Editable
+              contentType="queer_villages"
+              recordId={village.id}
+              field="name"
+              value={village.name}
+              onSaved={onContentUpdated}
+            >
+              {village.name}
+            </Editable>
           </h1>
           <div className="flex items-center gap-1 text-muted-foreground">
             <MapPin size={16} />
@@ -189,7 +199,7 @@ export const villageTabIcons = {
   MapPin,
 };
 
-export function VillageOverviewTab({ village }: { village: VillageWithRelations }) {
+export function VillageOverviewTab({ village, onContentUpdated }: { village: VillageWithRelations; onContentUpdated?: () => void }) {
   return (
     <ScrollReveal direction="up">
       <div className="mt-6 flex flex-col gap-6">
@@ -202,10 +212,20 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="leading-relaxed text-muted-foreground">
-                {village.description ||
-                  `Discover ${village.name}, a vibrant LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
-              </p>
+              <Editable
+                contentType="queer_villages"
+                recordId={village.id}
+                field="description"
+                value={village.description ?? ''}
+                onSaved={onContentUpdated}
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                <p className="leading-relaxed text-muted-foreground">
+                  {village.description ||
+                    `Discover ${village.name}, a vibrant LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
+                </p>
+              </Editable>
             </CardContent>
           </Card>
 

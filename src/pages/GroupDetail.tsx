@@ -37,6 +37,7 @@ import { AddMemberDialog } from '@/components/groups/AddMemberDialog';
 import { CreateGroupEventDialog } from '@/components/groups/CreateGroupEventDialog';
 import { GroupEventCard } from '@/components/groups/GroupEventCard';
 import { useTranslation } from 'react-i18next';
+import { Editable } from '@/components/admin/inline/Editable';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -174,7 +175,21 @@ export default function GroupDetail() {
             <div className="flex-1 text-center md:text-left flex flex-col gap-4">
               <div>
                 <div className="flex items-center gap-4 justify-center md:justify-start mb-2">
-                  <h1 className="text-3xl font-bold">{group.name}</h1>
+                  <h1 className="text-3xl font-bold">
+                    <Editable
+                      contentType="community_groups"
+                      recordId={group.id}
+                      field="name"
+                      value={group.name}
+                      onSaved={(next) =>
+                        setGroup((prev) =>
+                          prev ? { ...prev, name: String(next ?? '') } : prev,
+                        )
+                      }
+                    >
+                      {group.name}
+                    </Editable>
+                  </h1>
                   {group.is_private ? (
                     <Lock size={20} className="text-muted-foreground" />
                   ) : (
@@ -209,7 +224,23 @@ export default function GroupDetail() {
                 )}
               </div>
 
-              {group.description && <p className="text-muted-foreground">{group.description}</p>}
+              {group.description && (
+                <Editable
+                  contentType="community_groups"
+                  recordId={group.id}
+                  field="description"
+                  value={group.description}
+                  onSaved={(next) =>
+                    setGroup((prev) =>
+                      prev ? { ...prev, description: String(next ?? '') } : prev,
+                    )
+                  }
+                  fieldOverride={{ type: 'textarea' }}
+                  as="div"
+                >
+                  <p className="text-muted-foreground">{group.description}</p>
+                </Editable>
+              )}
 
               {group.tags && group.tags.length > 0 && (
                 <div className="flex flex-col gap-2">
