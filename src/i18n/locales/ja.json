@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "最新ニュース"
+    },
+    "discover": "[JA] Discover",
+    "destinationsTitle": "[JA] Where the scene lives.",
+    "destinationsSubtitle": "[JA] Six cities our community keeps coming back to.",
+    "allCities": "[JA] All cities",
+    "exploreCity": "[JA] Explore",
+    "browseEyebrow": "[JA] The index",
+    "browseTitle": "[JA] Browse everything.",
+    "browseSections": "[JA] sections",
+    "browse": {
+      "count": {
+        "venues": "[JA] venues",
+        "events": "[JA] events",
+        "cities": "[JA] cities",
+        "hotels": "[JA] hotels",
+        "marketplace": "[JA] products",
+        "groups": "[JA] groups",
+        "resources": "[JA] resources"
+      }
     }
   },
   "header": {

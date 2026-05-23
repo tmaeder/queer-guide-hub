@@ -1339,6 +1339,25 @@
     },
     "news": {
       "title": "Aktuelle Nachrichten"
+    },
+    "discover": "[DE] Discover",
+    "destinationsTitle": "[DE] Where the scene lives.",
+    "destinationsSubtitle": "[DE] Six cities our community keeps coming back to.",
+    "allCities": "[DE] All cities",
+    "exploreCity": "[DE] Explore",
+    "browseEyebrow": "[DE] The index",
+    "browseTitle": "[DE] Browse everything.",
+    "browseSections": "[DE] sections",
+    "browse": {
+      "count": {
+        "venues": "[DE] venues",
+        "events": "[DE] events",
+        "cities": "[DE] cities",
+        "hotels": "[DE] hotels",
+        "marketplace": "[DE] products",
+        "groups": "[DE] groups",
+        "resources": "[DE] resources"
+      }
     }
   },
   "header": {
