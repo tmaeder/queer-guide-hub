@@ -155,7 +155,7 @@ export const newsArticleContentType: ContentTypeConfig = {
   translatableFields: ['title', 'excerpt', 'content'],
   commentable: true,
   aiAssist: {
-    ops: ['summarize', 'seo_draft', 'auto_tag'],
+    ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag'],
     writableFields: ['excerpt', 'meta_title', 'meta_description', 'tags'],
   },
 };

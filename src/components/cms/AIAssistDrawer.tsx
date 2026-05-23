@@ -16,6 +16,7 @@ import {
   Search,
   Globe,
   Loader2,
+  Gauge,
 } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,11 @@ const OP_META: Record<
     label: 'Translate',
     icon: Globe,
     description: 'Translate translatable fields to another locale.',
+  },
+  quality_review: {
+    label: 'Quality review',
+    icon: Gauge,
+    description: 'Score the record 0-100 and surface field-level issues + drop-in fixes.',
   },
 };
 
@@ -148,6 +154,25 @@ export function AIAssistDrawer({
       } else if (op === 'auto_tag' && output && typeof output === 'object') {
         const tags = (output as { tags?: string[] }).tags ?? [];
         onApply('tags', tags);
+      } else if (op === 'quality_review' && output && typeof output === 'object') {
+        const writable = config.aiAssist?.writableFields ?? [];
+        const suggestions = (output as { suggestions?: Array<{ field: string; value: unknown }> })
+          .suggestions ?? [];
+        let applied = 0;
+        for (const s of suggestions) {
+          if (!s.field) continue;
+          if (writable.length && !writable.includes(s.field)) continue;
+          const fld = config.fields.find((f) => f.name === s.field);
+          if (fld) {
+            const parsed = fieldToZod(fld).safeParse(s.value);
+            if (!parsed.success) continue;
+            onApply(s.field, s.value);
+            applied++;
+          }
+        }
+        if (applied === 0) {
+          setError('No suggestions were applicable to writable fields.');
+        }
       }
     },
     [config, onApply],

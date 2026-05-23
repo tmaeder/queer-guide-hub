@@ -203,7 +203,7 @@ export const eventContentType: ContentTypeConfig = {
   translatableFields: ['title', 'description', 'accessibility_notes'],
   commentable: true,
   aiAssist: {
-    ops: ['summarize', 'seo_draft', 'auto_tag'],
+    ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag'],
     writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
   },
 };
