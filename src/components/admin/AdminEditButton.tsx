@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AdminEditDialog } from './AdminEditDialog';
+import { AdminFullEditSheet } from './inline/AdminFullEditSheet';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -43,15 +43,15 @@ export function AdminEditButton({
               variant="outline"
               size={size}
               onClick={() => setOpen(true)}
-              aria-label="Edit content"
+              aria-label="Edit all fields"
             >
               <Pencil size={16} />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Edit (Admin)</TooltipContent>
+          <TooltipContent>Edit all fields (Admin) · Alt-click any field for inline edit</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <AdminEditDialog
+      <AdminFullEditSheet
         open={open}
         onOpenChange={setOpen}
         contentType={contentType}
