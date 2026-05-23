@@ -4,7 +4,9 @@ import { useMeta } from '@/hooks/useMeta';
 import { useCitiesDirectory } from '@/hooks/useCitiesDirectory';
 import { useCitiesUrlState } from '@/hooks/useCitiesUrlState';
 import { ErrorState } from '@/components/ui/EmptyState';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHero } from '@/components/discovery';
+import { cn } from '@/lib/utils';
 import { CitiesFilterBar } from './cities/CitiesFilterBar';
 import { CityListPane } from './cities/CityListPane';
 import { CitiesMapPane } from './cities/CitiesMapPane';
@@ -51,6 +53,8 @@ export default function Cities() {
   });
 
   const hasActiveFilters = url.q.length > 0 || url.continents.size > 0 || url.tiers.size > 0;
+  const showList = url.view === 'list';
+  const showMap = url.view === 'map';
 
   return (
     <div className="relative">
@@ -86,27 +90,53 @@ export default function Cities() {
             <ErrorState message={error} />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[440px_minmax(0,1fr)] lg:gap-6 py-6">
-            <div className="lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-2">
-              <CityListPane
-                cities={filtered}
-                loading={loading}
-                venueCounts={venueCounts}
-                selectedCityId={url.city || null}
-                onHoverCity={setHoveredCityId}
-                hasActiveFilters={hasActiveFilters}
-              />
+          <>
+            {/* Mobile-only tabs */}
+            <div className="lg:hidden pt-4">
+              <Tabs
+                value={url.view}
+                onValueChange={(v) => url.setView(v === 'map' ? 'map' : 'list')}
+              >
+                <TabsList aria-label={t('cities.viewToggleAriaLabel', 'Toggle list and map')}>
+                  <TabsTrigger value="list">{t('cities.viewList', 'List')}</TabsTrigger>
+                  <TabsTrigger value="map">{t('cities.viewMap', 'Map')}</TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
-            <div className="hidden lg:block lg:sticky lg:top-[200px] lg:self-start lg:h-[calc(100vh-220px)] rounded-container overflow-hidden border border-border bg-muted">
-              <CitiesMapPane
-                cities={filtered}
-                selectedCityId={url.city || null}
-                hoveredCityId={hoveredCityId}
-                onSelectCity={url.setCity}
-                onHoverCity={setHoveredCityId}
-              />
+
+            <div className="grid grid-cols-1 lg:grid-cols-[440px_minmax(0,1fr)] lg:gap-6 py-6">
+              <div
+                className={cn(
+                  'lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-2 lg:block',
+                  !showList && 'hidden',
+                )}
+              >
+                <CityListPane
+                  cities={filtered}
+                  loading={loading}
+                  venueCounts={venueCounts}
+                  selectedCityId={url.city || null}
+                  onHoverCity={setHoveredCityId}
+                  hasActiveFilters={hasActiveFilters}
+                />
+              </div>
+              <div
+                className={cn(
+                  'lg:block lg:sticky lg:top-[200px] lg:self-start lg:h-[calc(100vh-220px)] rounded-container overflow-hidden border border-border bg-muted',
+                  // On mobile, take ~60vh when map view is active.
+                  showMap ? 'h-[60vh]' : 'hidden',
+                )}
+              >
+                <CitiesMapPane
+                  cities={filtered}
+                  selectedCityId={url.city || null}
+                  hoveredCityId={hoveredCityId}
+                  onSelectCity={url.setCity}
+                  onHoverCity={setHoveredCityId}
+                />
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

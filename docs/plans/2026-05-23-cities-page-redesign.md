@@ -395,6 +395,38 @@ None blocking. The following can be deferred:
 - Should the equality tier definitions live in a shared constant (also used on `/map`)? — **yes, but in a follow-up refactor PR** that touches `/map` too
 - Backend cron to backfill `cities.image_url` from Pexels so list thumbs aren't placeholders? — **separate ticket**, unblocks the design but isn't required
 
+## 18.5 Implementation deviations
+
+Recorded after the build for honesty:
+
+- **No virtualization.** Section 10 called for `@tanstack/react-virtual`, but
+  that package isn't installed and ~250 simple 84px rows render fine in modern
+  browsers without it. Skipped to avoid a new dep + integration risk; revisit
+  if first-paint or scroll perf regresses past Lighthouse 85.
+- **Equality tier cutoffs.** Aligned with the existing `src/utils/equalityScore.ts`
+  cutoffs (80/60/40/20/<20/null) instead of the 75/50/25 originally drafted —
+  avoids a parallel taxonomy. Tier slugs are `very-high`/`high`/`moderate`/`low`/
+  `very-low`/`unknown`.
+- **Continent slug.** Uses `continents.code` lowercased (`eu`, `as`, `na`, …) —
+  there is no `slug` column on `continents`, only `code` + `name`.
+- **No i18n locale fan-out.** New UI strings use `t('cities.x', 'English fallback')`
+  pattern consistent with the previous /cities page. Other 10 locales fall back
+  to the English string; future PR can add a top-level `cities.*` namespace
+  to all of `src/i18n/locales/*.json`.
+- **Pride-soon pill deferred.** Section 9 designed for an upcoming-pride pill
+  on each row. Not wired in this PR — needs `usePrideCalendar` integration and
+  city → next-pride mapping. Tracked as a follow-up.
+- **Map pane is bespoke, not `ExploreMap`.** Section 8 proposed wrapping
+  `ExploreMap` with `enabledLayers=['cities']`. Built a leaner dedicated
+  component (`CitiesMapPane`) instead because `ExploreMap` ships its own
+  data fetch, layer toggles, and filters that would need to be torn down or
+  hidden to fit the directory use case. The new component is ~330 lines and
+  only does what /cities needs: city pins with equality coloring + hover/
+  click sync + bounds-fit on filter change.
+- **Mobile pattern.** Tabs (List / Map), per Section 3.2 — built with the
+  existing shadcn `Tabs` primitive. Visible only below `lg`; desktop ignores
+  them and shows both panes via CSS grid.
+
 ## 19. Acceptance
 
 Page ships when:
