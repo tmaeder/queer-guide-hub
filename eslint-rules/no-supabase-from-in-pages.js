@@ -29,6 +29,8 @@ const rule = {
     },
   },
   create(ctx) {
+    // ESLint 10 removed ctx.getFilename(); use ctx.filename (added in v8.40).
+    const file = (ctx.filename ?? ctx.getFilename()).replace(/\\/g, '/');
     // ESLint 10 removed ctx.getFilename(); ctx.filename has been the
     // canonical property since v8.40.
     const file = (ctx.filename ?? ctx.physicalFilename ?? '').replace(/\\/g, '/');
