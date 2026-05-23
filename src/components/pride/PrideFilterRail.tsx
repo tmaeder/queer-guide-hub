@@ -9,6 +9,7 @@ export interface PrideFilters {
   continents: string[];
   countries: string[];
   featuredOnly: boolean;
+  verifiedOnly: boolean;
   query: string;
 }
 
@@ -57,6 +58,7 @@ export function applyPrideFilters(
     if (filters.continents.length && !filters.continents.includes(continentOf(e.country))) return false;
     if (filters.countries.length && !filters.countries.includes(e.country ?? '')) return false;
     if (filters.featuredOnly && !e.is_featured) return false;
+    if (filters.verifiedOnly && e.verification_status !== 'verified') return false;
     if (filters.query) {
       const q = filters.query.toLowerCase();
       if (
@@ -116,6 +118,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
     filters.continents.length > 0 ||
     filters.countries.length > 0 ||
     filters.featuredOnly ||
+    filters.verifiedOnly ||
     filters.query.length > 0;
 
   return (
@@ -209,7 +212,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
         </div>
       )}
 
-      <div>
+      <div className="space-y-2">
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input
             type="checkbox"
@@ -219,6 +222,15 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
           />
           Featured only
         </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={filters.verifiedOnly}
+            onChange={(e) => setFilters({ ...filters, verifiedOnly: e.target.checked })}
+            className="accent-foreground"
+          />
+          Confirmed dates only
+        </label>
       </div>
 
       {hasActive && (
@@ -226,7 +238,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
           variant="outline"
           size="sm"
           onClick={() =>
-            setFilters({ months: [], continents: [], countries: [], featuredOnly: false, query: '' })
+            setFilters({ months: [], continents: [], countries: [], featuredOnly: false, verifiedOnly: false, query: '' })
           }
           className="w-full"
         >

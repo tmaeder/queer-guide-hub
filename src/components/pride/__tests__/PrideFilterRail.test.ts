@@ -21,7 +21,7 @@ const mk = (overrides: Partial<PrideCalendarEvent> = {}): PrideCalendarEvent => 
   ...overrides,
 });
 
-const EMPTY = { months: [], continents: [], countries: [], featuredOnly: false, query: '' };
+const EMPTY = { months: [], continents: [], countries: [], featuredOnly: false, verifiedOnly: false, query: '' };
 
 describe('continentOf', () => {
   it('maps ISO2 to continent', () => {
@@ -68,6 +68,15 @@ describe('applyPrideFilters', () => {
   it('filters by country ISO2', () => {
     const r = applyPrideFilters(events, { ...EMPTY, countries: ['US', 'TW'] });
     expect(r.map((e) => e.title).sort()).toEqual(['NYC Pride', 'Taipei Pride']);
+  });
+
+  it('filters by verifiedOnly', () => {
+    const evs = [
+      mk({ title: 'Berlin', verification_status: 'verified' }),
+      mk({ title: 'Sofia', verification_status: 'unverified' }),
+    ];
+    const r = applyPrideFilters(evs, { ...EMPTY, verifiedOnly: true });
+    expect(r.map((e) => e.title)).toEqual(['Berlin']);
   });
 
   it('filters by featuredOnly', () => {
