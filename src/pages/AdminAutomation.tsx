@@ -3,15 +3,19 @@
  * v0: read-only listing. Visual rule builder lands in a follow-up.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { Workflow, Play, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { Workflow, Play, CheckCircle2, XCircle, Clock, AlertCircle, FlaskConical, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
+import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { adminAction } from '@/lib/adminAction';
+import { toast } from 'sonner';
 
 interface Automation {
   id: string;
@@ -66,6 +70,9 @@ function StatusIcon({ status }: { status: AutomationRun['status'] }) {
 
 export default function AdminAutomation() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const { isAdmin } = useAdminRoles();
+  const [busySlug, setBusySlug] = useState<string | null>(null);
 
   useRegisterAdminCommandAction({
     id: 'automation.view',
@@ -84,6 +91,39 @@ export default function AdminAutomation() {
     queryFn: fetchRecentRuns,
     refetchInterval: 30_000,
   });
+
+  async function runNow(slug: string) {
+    setBusySlug(`run:${slug}`);
+    await adminAction({
+      label: `Run ${slug}`,
+      perform: async () => {
+        const { data, error } = await supabase.rpc('admin_automation_run', { p_slug: slug });
+        if (error) throw error;
+        return data;
+      },
+      successMessage: `Ran ${slug}`,
+    });
+    setBusySlug(null);
+    qc.invalidateQueries({ queryKey: ['admin-automation-runs'] });
+    qc.invalidateQueries({ queryKey: ['admin-automations'] });
+  }
+
+  async function dryRun(slug: string) {
+    setBusySlug(`dry:${slug}`);
+    try {
+      const { data, error } = await supabase.rpc('admin_automation_dry_run', { p_slug: slug });
+      if (error) throw error;
+      const would = (data as { would_change: number })?.would_change ?? 0;
+      toast(`Dry-run: would change ${would} item${would === 1 ? '' : 's'}`, {
+        description: slug,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Dry-run failed');
+    } finally {
+      setBusySlug(null);
+      qc.invalidateQueries({ queryKey: ['admin-automation-runs'] });
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -114,6 +154,7 @@ export default function AdminAutomation() {
                   <th className="px-4 py-2 font-semibold">Schedule</th>
                   <th className="px-4 py-2 font-semibold">Last run</th>
                   <th className="px-4 py-2 font-semibold">Status</th>
+                  <th className="px-4 py-2 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,6 +186,39 @@ export default function AdminAutomation() {
                         <Badge variant="secondary" className="font-normal">
                           paused
                         </Badge>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-right whitespace-nowrap">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => dryRun(a.slug)}
+                        disabled={busySlug !== null}
+                        title="Preview without mutating"
+                      >
+                        {busySlug === `dry:${a.slug}` ? (
+                          <Loader2 size={12} className="mr-1 animate-spin" />
+                        ) : (
+                          <FlaskConical size={12} className="mr-1" />
+                        )}
+                        Dry-run
+                      </Button>
+                      {isAdmin && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => runNow(a.slug)}
+                          disabled={busySlug !== null || !a.enabled}
+                          className="ml-2"
+                          title={a.enabled ? 'Run now' : 'Enable to run'}
+                        >
+                          {busySlug === `run:${a.slug}` ? (
+                            <Loader2 size={12} className="mr-1 animate-spin" />
+                          ) : (
+                            <Play size={12} className="mr-1" />
+                          )}
+                          Run now
+                        </Button>
                       )}
                     </td>
                   </tr>
