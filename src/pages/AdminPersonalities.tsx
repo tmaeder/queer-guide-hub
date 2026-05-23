@@ -10,6 +10,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,6 +59,8 @@ interface PersonalityRow {
   birth_place: string | null;
   birth_date: string | null;
   death_date: string | null;
+  death_place: string | null;
+  cause_of_death: string | null;
   is_living: boolean;
   verification_status: string;
   visibility: string;
@@ -66,6 +69,20 @@ interface PersonalityRow {
   website_url: string | null;
   created_at: string;
 }
+
+// Keep in sync with src/config/contentTypes/personality.ts
+const CAUSE_OF_DEATH_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: 'natural', label: 'Natural causes' },
+  { value: 'illness', label: 'Illness' },
+  { value: 'hiv_aids', label: 'HIV/AIDS' },
+  { value: 'suicide', label: 'Suicide' },
+  { value: 'homicide', label: 'Homicide / violent death' },
+  { value: 'accident', label: 'Accident' },
+  { value: 'overdose', label: 'Overdose' },
+  { value: 'execution', label: 'Execution' },
+  { value: 'unknown', label: 'Unknown' },
+  { value: 'other', label: 'Other' },
+];
 
 const columnHelper = createColumnHelper<PersonalityRow>();
 
@@ -117,6 +134,47 @@ export default function AdminPersonalities() {
   const [internalNotesLoaded, setInternalNotesLoaded] = useState('');
   const [notesLoading, setNotesLoading] = useState(false);
   const [notesSaving, setNotesSaving] = useState(false);
+  const [deathDate, setDeathDate] = useState('');
+  const [deathPlace, setDeathPlace] = useState('');
+  const [causeOfDeath, setCauseOfDeath] = useState('');
+  const [isLiving, setIsLiving] = useState(true);
+  const [deathSaving, setDeathSaving] = useState(false);
+
+  useEffect(() => {
+    if (!editDialogOpen || !selectedPersonality) {
+      setDeathDate('');
+      setDeathPlace('');
+      setCauseOfDeath('');
+      setIsLiving(true);
+      return;
+    }
+    setDeathDate(selectedPersonality.death_date ?? '');
+    setDeathPlace(selectedPersonality.death_place ?? '');
+    setCauseOfDeath(selectedPersonality.cause_of_death ?? '');
+    setIsLiving(selectedPersonality.is_living);
+  }, [editDialogOpen, selectedPersonality]);
+
+  const saveDeathInfo = async () => {
+    if (!selectedPersonality) return;
+    setDeathSaving(true);
+    try {
+      await updatePersonality(selectedPersonality.id, {
+        death_date: deathDate || undefined,
+        death_place: deathPlace || undefined,
+        cause_of_death: causeOfDeath || undefined,
+        is_living: isLiving,
+      });
+      setSelectedPersonality({
+        ...selectedPersonality,
+        death_date: deathDate || null,
+        death_place: deathPlace || null,
+        cause_of_death: causeOfDeath || null,
+        is_living: isLiving,
+      });
+    } finally {
+      setDeathSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (!editDialogOpen || !selectedPersonality) {
@@ -382,7 +440,7 @@ export default function AdminPersonalities() {
     () => ({
       tableName: 'personalities',
       select:
-        'id,name,pronouns,image_url,profession,nationality,birth_place,birth_date,death_date,is_living,verification_status,visibility,is_featured,view_count,website_url,created_at',
+        'id,name,pronouns,image_url,profession,nationality,birth_place,birth_date,death_date,death_place,cause_of_death,is_living,verification_status,visibility,is_featured,view_count,website_url,created_at',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 50,
@@ -570,6 +628,76 @@ export default function AdminPersonalities() {
                     onChange={(e) => handleFeaturedToggle(selectedPersonality.id, e.target.checked)}
                   />
                   <Label htmlFor="featured">Featured Personality</Label>
+                </div>
+                <div className="flex flex-col gap-4 border-t pt-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="is_living"
+                      checked={isLiving}
+                      onChange={(e) => setIsLiving(e.target.checked)}
+                    />
+                    <Label htmlFor="is_living">Lebt noch</Label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="death_date">Todesdatum</Label>
+                      <Input
+                        id="death_date"
+                        type="date"
+                        value={deathDate}
+                        onChange={(e) => setDeathDate(e.target.value)}
+                        disabled={isLiving}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="death_place">Sterbeort</Label>
+                      <Input
+                        id="death_place"
+                        type="text"
+                        value={deathPlace}
+                        onChange={(e) => setDeathPlace(e.target.value)}
+                        placeholder="Stadt, Land"
+                        disabled={isLiving}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="cause_of_death">Todesursache</Label>
+                    <Select
+                      value={causeOfDeath || '__none__'}
+                      onValueChange={(v) => setCauseOfDeath(v === '__none__' ? '' : v)}
+                      disabled={isLiving}
+                    >
+                      <SelectTrigger id="cause_of_death">
+                        <SelectValue placeholder="Nicht angegeben" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Nicht angegeben</SelectItem>
+                        {CAUSE_OF_DEATH_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={saveDeathInfo}
+                      disabled={
+                        deathSaving ||
+                        (deathDate === (selectedPersonality.death_date ?? '') &&
+                          deathPlace === (selectedPersonality.death_place ?? '') &&
+                          causeOfDeath === (selectedPersonality.cause_of_death ?? '') &&
+                          isLiving === selectedPersonality.is_living)
+                      }
+                    >
+                      {deathSaving ? 'Speichern…' : 'Sterbedaten speichern'}
+                    </Button>
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="internal-notes">Interne Notizen</Label>

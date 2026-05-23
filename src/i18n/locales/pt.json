@@ -1905,6 +1905,7 @@
       "linkCopiedDescription": "Já podes colá-lo",
       "shareFailed": "Falha ao partilhar"
     },
+    "geolocate": {}
     "geolocate": {
       "unsupported": "Geolocation unavailable",
       "denied": "Location access is off — showing the default area",

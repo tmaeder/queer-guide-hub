@@ -1903,6 +1903,7 @@
       "linkCopiedDescription": "이제 붙여넣을 수 있습니다",
       "shareFailed": "공유 실패"
     },
+    "geolocate": {}
     "geolocate": {
       "unsupported": "Geolocation unavailable",
       "denied": "Location access is off — showing the default area",

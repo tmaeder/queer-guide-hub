@@ -63,8 +63,7 @@ interface AutomationRun {
 }
 
 async function fetchAutomations(): Promise<Automation[]> {
-  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level fetcher consumed by useQuery below
-  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level admin fetcher consumed by useQuery; refactor to hook tracked separately
   const { data, error } = await supabase
     .from('admin_automations' as never)
     .select('*')
@@ -75,8 +74,7 @@ async function fetchAutomations(): Promise<Automation[]> {
 }
 
 async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
-  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level fetcher consumed by useQuery below
-  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only fetcher, refactor to hook tracked separately
+  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level admin fetcher consumed by useQuery; refactor to hook tracked separately
   let q = supabase
     .from('admin_automation_runs' as never)
     .select('*')
