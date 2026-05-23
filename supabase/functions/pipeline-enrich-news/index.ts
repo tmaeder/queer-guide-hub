@@ -57,6 +57,12 @@ Deno.serve(withErrorReporting('pipeline-enrich-news', async (req) => {
       }
 
       if (!dryRun) {
+        // A null `ai` without a thrown error means the LLM returned content
+        // that parseAIResponse() rejected (no balanced JSON / no allowed keys).
+        // Treat it as a hard failure so apply_enrichment writes
+        // enrichment_status='failed' — otherwise the row stays 'pending'
+        // and gets reprocessed forever, starving fresh rows.
+        if (!ai && !aiError) aiError = 'llm_returned_unparseable_output'
         const status = ai ? 'success' : (aiError ? 'failed' : 'skipped')
 
         if (ai) {
