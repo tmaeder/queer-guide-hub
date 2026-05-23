@@ -83,7 +83,28 @@ export default function AuthCallback() {
         if (error) throw error;
       }
       setStatus("ok");
-      setTimeout(() => { window.location.href = "/"; }, 600);
+
+      // OAuth providers don't populate raw_user_meta_data.username, so the
+      // handle_new_user() trigger leaves profiles.username = NULL. Force a
+      // one-time claim step before landing on the app. If a username already
+      // exists (returning user), skip straight to home.
+      const { data: { user } } = await supabase.auth.getUser();
+      let destination = "/";
+      if (user) {
+        // Imperative one-shot lookup inside the OAuth callback flow — can't
+        // be expressed as a useQuery without delaying navigation behind a
+        // re-render cycle, so the rule is disabled for this single line.
+        // eslint-disable-next-line queerguide/no-supabase-from-in-pages
+        const { data: profileRow } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (!profileRow?.username) {
+          destination = "/claim-username";
+        }
+      }
+      setTimeout(() => { window.location.href = destination; }, 600);
     } catch (e) {
       setStatus("error");
       setErrorMsg(e instanceof Error ? e.message : String(e));
