@@ -93,6 +93,7 @@ const AdminHotels = lazy(() => import('./pages/AdminHotels'));
 const AdminQueerVillages = lazy(() => import('./pages/AdminQueerVillages'));
 const AdminReview = lazy(() => import('./pages/AdminReview'));
 const AdminInbox = lazy(() => import('./pages/AdminInbox'));
+const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 // CMS components rendered as admin views
@@ -275,9 +276,9 @@ export const AppRoutes = () => {
                 <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 
                 {/* Review & Workflow section -- unified dashboard */}
-                <Route path="automation" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="review" element={<AdminReview />} />
                 <Route path="inbox" element={<AdminInbox />} />
+                <Route path="automation" element={<AdminAutomation />} />
                 <Route path="feedback" element={<AdminFeedback />} />
                 <Route
                   path="moderation"

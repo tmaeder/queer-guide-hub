@@ -226,6 +226,12 @@ export const adminNavSections: AdminNavSection[] = [
         reviewCountKey: 'review_feedback',
       },
       {
+        id: 'automation',
+        label: 'Automation',
+        icon: Workflow,
+        route: '/admin/automation',
+      },
+      {
         id: 'pipelines',
         label: 'Pipelines',
         icon: Workflow,
