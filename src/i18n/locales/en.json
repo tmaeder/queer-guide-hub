@@ -1321,6 +1321,25 @@
     },
     "news": {
       "title": "Latest News"
+    },
+    "discover": "Discover",
+    "destinationsTitle": "Where the scene lives.",
+    "destinationsSubtitle": "Six cities our community keeps coming back to.",
+    "allCities": "All cities",
+    "exploreCity": "Explore",
+    "browseEyebrow": "The index",
+    "browseTitle": "Browse everything.",
+    "browseSections": "sections",
+    "browse": {
+      "count": {
+        "venues": "venues",
+        "events": "events",
+        "cities": "cities",
+        "hotels": "hotels",
+        "marketplace": "products",
+        "groups": "groups",
+        "resources": "resources"
+      }
     }
   },
   "header": {
