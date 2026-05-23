@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { PWAProvider } from '@/components/pwa/PWAProvider';
 import { CurrencyProvider } from '@/hooks/useCurrency';
 import { SafeModeProvider } from '@/providers/SafeModeProvider';
+import { AdminEditModeProvider } from '@/hooks/useAdminEditMode';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
 
 const queryClient = createOptimizedQueryClient();
@@ -30,11 +31,13 @@ export const AppProviders = ({ children }: { children: React.ReactNode }) => (
             <AuthProvider>
               <CurrencyProvider>
                 <SafeModeProvider>
-                  <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    {children}
-                  </TooltipProvider>
+                  <AdminEditModeProvider>
+                    <TooltipProvider>
+                      <Toaster />
+                      <Sonner />
+                      {children}
+                    </TooltipProvider>
+                  </AdminEditModeProvider>
                 </SafeModeProvider>
               </CurrencyProvider>
             </AuthProvider>

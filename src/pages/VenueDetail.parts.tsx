@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { Editable } from '@/components/admin/inline/Editable';
 import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
@@ -219,6 +220,7 @@ interface VenueHeroProps {
   socialSignal: NonNullable<SocialSignals> extends Map<string, infer V> ? V | undefined : undefined;
   onAddToTrip: () => void;
   onCheckInSuccess: () => void;
+  onContentUpdated?: () => void;
   t: (key: string, fallback?: string) => string;
 }
 
@@ -236,6 +238,7 @@ export function VenueHero({
   socialSignal,
   onAddToTrip,
   onCheckInSuccess,
+  onContentUpdated,
   t,
 }: VenueHeroProps) {
   return (
@@ -291,7 +294,17 @@ export function VenueHero({
                 }}
               />
             )}
-            <h1 className="text-2xl font-bold">{venue.name}</h1>
+            <h1 className="text-2xl font-bold">
+              <Editable
+                contentType="venues"
+                recordId={venue.id}
+                field="name"
+                value={venue.name}
+                onSaved={onContentUpdated}
+              >
+                {venue.name}
+              </Editable>
+            </h1>
             {venue.verified && (
               <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
             )}
@@ -413,10 +426,17 @@ interface VenueOverviewProps {
   venue: VenueWithRelations;
   checkinRefresh: number;
   navigate: (path: string) => void;
+  onContentUpdated?: () => void;
   t: (key: string, fallback?: string) => string;
 }
 
-export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverviewProps) {
+export function VenueOverview({
+  venue,
+  checkinRefresh,
+  navigate,
+  onContentUpdated,
+  t,
+}: VenueOverviewProps) {
   return (
     <ScrollReveal direction="up">
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 mt-2">
@@ -429,9 +449,19 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 <CardTitle>{t('pages.venueDetail.about', 'About')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
-                  {venue.description}
-                </p>
+                <Editable
+                  contentType="venues"
+                  recordId={venue.id}
+                  field="description"
+                  value={venue.description}
+                  onSaved={onContentUpdated}
+                  fieldOverride={{ type: 'textarea' }}
+                  as="div"
+                >
+                  <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
+                    {venue.description}
+                  </p>
+                </Editable>
               </CardContent>
             </Card>
           )}
@@ -512,7 +542,16 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                   <MapPin size={16} className="text-muted-foreground shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm">
-                      {venue.address}
+                      <Editable
+                        contentType="venues"
+                        recordId={venue.id}
+                        field="address"
+                        value={venue.address}
+                        onSaved={onContentUpdated}
+                        fieldOverride={{ type: 'text' }}
+                      >
+                        {venue.address}
+                      </Editable>
                       {venue.postal_code ? `, ${venue.postal_code}` : ''}
                     </p>
                     {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
@@ -533,46 +572,89 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               {venue.phone && (
                 <div className="flex items-center gap-4">
                   <Phone size={16} className="text-muted-foreground" />
-                  <a href={`tel:${venue.phone}`} className="text-sm text-primary hover:underline">
-                    {venue.phone}
-                  </a>
+                  <span className="text-sm">
+                    <Editable
+                      contentType="venues"
+                      recordId={venue.id}
+                      field="phone"
+                      value={venue.phone}
+                      onSaved={onContentUpdated}
+                    >
+                      <a
+                        href={`tel:${venue.phone}`}
+                        className="text-primary hover:underline"
+                      >
+                        {venue.phone}
+                      </a>
+                    </Editable>
+                  </span>
                 </div>
               )}
               {venue.email && (
                 <div className="flex items-center gap-4">
                   <Mail size={16} className="text-muted-foreground" />
-                  <a
-                    href={`mailto:${venue.email}`}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    {venue.email}
-                  </a>
+                  <span className="text-sm">
+                    <Editable
+                      contentType="venues"
+                      recordId={venue.id}
+                      field="email"
+                      value={venue.email}
+                      onSaved={onContentUpdated}
+                    >
+                      <a
+                        href={`mailto:${venue.email}`}
+                        className="text-primary hover:underline"
+                      >
+                        {venue.email}
+                      </a>
+                    </Editable>
+                  </span>
                 </div>
               )}
               {venue.website && (
                 <div className="flex items-center gap-4">
                   <Globe size={16} className="text-muted-foreground" />
-                  <a
-                    href={venue.website}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="text-sm text-primary hover:underline overflow-hidden text-ellipsis whitespace-nowrap"
-                  >
-                    {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                  </a>
+                  <span className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">
+                    <Editable
+                      contentType="venues"
+                      recordId={venue.id}
+                      field="website"
+                      value={venue.website}
+                      onSaved={onContentUpdated}
+                    >
+                      <a
+                        href={venue.website}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="text-primary hover:underline"
+                      >
+                        {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                      </a>
+                    </Editable>
+                  </span>
                 </div>
               )}
               {venue.instagram && (
                 <div className="flex items-center gap-4">
                   <Instagram size={16} className="text-muted-foreground" />
-                  <a
-                    href={`https://instagram.com/${venue.instagram}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    @{venue.instagram}
-                  </a>
+                  <span className="text-sm">
+                    <Editable
+                      contentType="venues"
+                      recordId={venue.id}
+                      field="instagram"
+                      value={venue.instagram}
+                      onSaved={onContentUpdated}
+                    >
+                      <a
+                        href={`https://instagram.com/${venue.instagram}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        @{venue.instagram}
+                      </a>
+                    </Editable>
+                  </span>
                 </div>
               )}
             </CardContent>
