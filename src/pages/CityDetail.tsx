@@ -234,6 +234,7 @@ export default function CityDetail() {
           entity={{ type: 'city', id: city.id }}
           className="mt-6"
           title="Similar cities"
+          contentTypes={['city']}
         />
       </TracingBeam>
 

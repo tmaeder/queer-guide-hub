@@ -168,48 +168,96 @@ function formatVec(v: number[]): string {
 	return `[${v.join(",")}]`;
 }
 
-// Per-content-type table + image-source spec for image enrichment.
-// `content_embeddings.metadata` doesn't carry image_url, so /similar and the
-// pgvector half of /search came back imageless. We backfill by batching one
-// PostgREST select per type and picking the first non-null URL.
-const IMAGE_SOURCES: Record<
+// Per-content-type table + display-field spec for metadata enrichment.
+// `content_embeddings.metadata` only carries the minimal fields the embedding
+// pipeline wrote at index time (often just FK ids), so /similar and the
+// pgvector half of /search came back with broken titles/images. We backfill by
+// batching one PostgREST select per type and projecting display fields.
+export interface DisplayRecord {
+	title?: string;
+	slug?: string;
+	image_url?: string;
+	city?: string;
+	country?: string;
+}
+
+const DISPLAY_SOURCES: Record<
 	string,
-	{ table: string; columns: string[]; pick: (r: Record<string, unknown>) => string | null }
+	{ table: string; columns: string[]; map: (r: Record<string, unknown>) => DisplayRecord }
 > = {
 	venue: {
 		table: "venues",
-		columns: ["id", "logo_url", "images"],
-		pick: (r) => firstStr((r.images as unknown[])?.[0]) ?? firstStr(r.logo_url),
+		columns: ["id", "name", "slug", "logo_url", "images", "city", "country"],
+		map: (r) => ({
+			title: firstStr(r.name) ?? undefined,
+			slug: firstStr(r.slug) ?? undefined,
+			image_url:
+				firstStr((r.images as unknown[])?.[0]) ?? firstStr(r.logo_url) ?? undefined,
+			city: firstStr(r.city) ?? undefined,
+			country: firstStr(r.country) ?? undefined,
+		}),
 	},
 	event: {
 		table: "events",
-		columns: ["id", "logo_url", "images"],
-		pick: (r) => firstStr((r.images as unknown[])?.[0]) ?? firstStr(r.logo_url),
+		columns: ["id", "title", "slug", "logo_url", "images", "city", "country"],
+		map: (r) => ({
+			title: firstStr(r.title) ?? undefined,
+			slug: firstStr(r.slug) ?? undefined,
+			image_url:
+				firstStr((r.images as unknown[])?.[0]) ?? firstStr(r.logo_url) ?? undefined,
+			city: firstStr(r.city) ?? undefined,
+			country: firstStr(r.country) ?? undefined,
+		}),
 	},
 	city: {
+		// Embedded FK pulls the country name in one round-trip.
 		table: "cities",
-		columns: ["id", "curated_image_url", "image_url"],
-		pick: (r) => firstStr(r.curated_image_url) ?? firstStr(r.image_url),
+		columns: ["id", "name", "slug", "curated_image_url", "image_url", "countries(name)"],
+		map: (r) => {
+			const countries = r.countries as { name?: unknown } | null | undefined;
+			return {
+				title: firstStr(r.name) ?? undefined,
+				slug: firstStr(r.slug) ?? undefined,
+				image_url: firstStr(r.curated_image_url) ?? firstStr(r.image_url) ?? undefined,
+				country: firstStr(countries?.name) ?? undefined,
+			};
+		},
 	},
 	country: {
 		table: "countries",
-		columns: ["id", "curated_image_url", "image_url"],
-		pick: (r) => firstStr(r.curated_image_url) ?? firstStr(r.image_url),
+		columns: ["id", "name", "slug", "curated_image_url", "image_url"],
+		map: (r) => ({
+			title: firstStr(r.name) ?? undefined,
+			slug: firstStr(r.slug) ?? undefined,
+			image_url: firstStr(r.curated_image_url) ?? firstStr(r.image_url) ?? undefined,
+		}),
 	},
 	personality: {
 		table: "personalities",
-		columns: ["id", "image_url"],
-		pick: (r) => firstStr(r.image_url),
+		columns: ["id", "name", "slug", "image_url"],
+		map: (r) => ({
+			title: firstStr(r.name) ?? undefined,
+			slug: firstStr(r.slug) ?? undefined,
+			image_url: firstStr(r.image_url) ?? undefined,
+		}),
 	},
 	news: {
 		table: "news_articles",
-		columns: ["id", "image_url"],
-		pick: (r) => firstStr(r.image_url),
+		columns: ["id", "title", "slug", "image_url"],
+		map: (r) => ({
+			title: firstStr(r.title) ?? undefined,
+			slug: firstStr(r.slug) ?? undefined,
+			image_url: firstStr(r.image_url) ?? undefined,
+		}),
 	},
 	marketplace: {
 		table: "marketplace_listings",
-		columns: ["id", "image_url"],
-		pick: (r) => firstStr(r.image_url),
+		columns: ["id", "title", "slug", "image_url"],
+		map: (r) => ({
+			title: firstStr(r.title) ?? undefined,
+			slug: firstStr(r.slug) ?? undefined,
+			image_url: firstStr(r.image_url) ?? undefined,
+		}),
 	},
 };
 
@@ -218,15 +266,16 @@ function firstStr(v: unknown): string | null {
 }
 
 /**
- * Batch-fetch image URLs for a set of (content_type, content_id) hits.
- * Returns Map keyed by `${type}:${id}`. Fail-soft: any per-type error yields
- * an empty contribution rather than throwing.
+ * Batch-fetch display fields (title, slug, image_url, city, country) for a set
+ * of (content_type, content_id) hits. Returns Map keyed by `${type}:${id}`.
+ * Fail-soft: any per-type error yields an empty contribution rather than
+ * throwing.
  */
-export async function fetchImageMap(
+export async function fetchDisplayMap(
 	env: Env,
 	hits: Array<{ content_type: string; content_id: string }>,
-): Promise<Map<string, string>> {
-	const out = new Map<string, string>();
+): Promise<Map<string, DisplayRecord>> {
+	const out = new Map<string, DisplayRecord>();
 	if (!hits.length) return out;
 	const byType = new Map<string, Set<string>>();
 	for (const h of hits) {
@@ -237,7 +286,7 @@ export async function fetchImageMap(
 	}
 	await Promise.all(
 		Array.from(byType.entries()).map(async ([type, ids]) => {
-			const spec = IMAGE_SOURCES[type];
+			const spec = DISPLAY_SOURCES[type];
 			if (!spec) return;
 			const idList = Array.from(ids);
 			// PostgREST `in.(...)` accepts up to a few thousand uuids comfortably.
@@ -247,7 +296,7 @@ export async function fetchImageMap(
 				`?id=in.(${encodeURIComponent(inList)})` +
 				`&select=${spec.columns.join(",")}`;
 			const controller = new AbortController();
-			const timer = setTimeout(() => controller.abort("img-enrich-timeout"), RPC_TIMEOUT_MS);
+			const timer = setTimeout(() => controller.abort("display-enrich-timeout"), RPC_TIMEOUT_MS);
 			try {
 				const res = await fetch(url, {
 					headers: {
@@ -261,11 +310,10 @@ export async function fetchImageMap(
 				for (const r of rows) {
 					const id = String(r.id ?? "");
 					if (!id) continue;
-					const pick = spec.pick(r);
-					if (pick) out.set(`${type}:${id}`, pick);
+					out.set(`${type}:${id}`, spec.map(r));
 				}
 			} catch (e) {
-				console.warn("fetchImageMap", type, (e as Error).message);
+				console.warn("fetchDisplayMap", type, (e as Error).message);
 			} finally {
 				clearTimeout(timer);
 			}
