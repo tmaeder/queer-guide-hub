@@ -269,7 +269,9 @@ function ScopeRow({
         cursor: 'pointer',
         minHeight: 28,
         background: active || focused ? 'hsl(var(--accent))' : 'transparent',
-        opacity: hasZero ? 0.5 : 1,
+        // opacity 0.5 dropped label contrast to 3.69:1 (axe-fail). 0.6 keeps the
+        // "this scope has 0 results" visual cue but preserves WCAG AA 4.5:1.
+        opacity: hasZero ? 0.6 : 1,
         outline: focused ? '1px solid hsl(var(--ring))' : 'none',
         outlineOffset: -1,
       }}
