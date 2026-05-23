@@ -195,12 +195,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // SPA fallback. With a Pages Function claiming `/*`, the `_redirects`
   // rule `/*  /index.html  200` is bypassed: the static-asset layer
   // returns the built-in 404 page for any path that isn't an actual
-  // file. Refetch /index.html as the SPA shell so React Router can
-  // render the route. Detail routes that look like SPA routes but have
-  // no matching DB row still 404 — that branch runs after this block.
+  // file. Refetch the SPA shell so React Router can render the route.
+  //
+  // Fetch `/` rather than `/index.html` — CF Pages redirects
+  // `/index.html` → `/` (308) and `env.ASSETS.fetch` does NOT auto-follow,
+  // which made the original fallback silently fail (indexResponse.ok =
+  // false on a 308) and 404-ed every deep route. See feedback 81017609.
+  //
+  // Detail routes that look like SPA routes but have no matching DB row
+  // still 404 — that branch runs after this block.
   if (response.status === 404 && contentType.includes('text/html')) {
     const indexResponse = await env.ASSETS.fetch(
-      new URL('/index.html', request.url).toString(),
+      new URL('/', request.url).toString(),
     );
     if (indexResponse.ok) {
       response = new Response(indexResponse.body, {
