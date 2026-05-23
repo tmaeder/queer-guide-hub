@@ -62,6 +62,7 @@ export function AdminFullEditSheet({
     let cancelled = false;
     setLoading(true);
     (async () => {
+      // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- admin-only single-row fetch by id, refactor to hook tracked separately
       const { data: row, error } = await supabase
         .from(config.tableName as 'venues')
         .select('*')
