@@ -51,6 +51,14 @@ async function fetchAutomations(): Promise<Automation[]> {
   return (data ?? []) as Automation[];
 }
 
+async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
+  let q = supabase
+    .from('admin_automation_runs' as never)
+    .select('*')
+    .order('started_at', { ascending: false })
+    .limit(50);
+  if (slugFilter) q = q.eq('automation_slug', slugFilter);
+  const { data, error } = await q;
 async function fetchRecentRuns(): Promise<AutomationRun[]> {
   const { data, error } = await supabase
     .from('admin_automation_runs' as never)
@@ -73,6 +81,7 @@ export default function AdminAutomation() {
   const qc = useQueryClient();
   const { isAdmin } = useAdminRoles();
   const [busySlug, setBusySlug] = useState<string | null>(null);
+  const [filterSlug, setFilterSlug] = useState<string | null>(null);
 
   useRegisterAdminCommandAction({
     id: 'automation.view',
@@ -87,6 +96,8 @@ export default function AdminAutomation() {
 
   const automationsQ = useQuery({ queryKey: ['admin-automations'], queryFn: fetchAutomations });
   const runsQ = useQuery({
+    queryKey: ['admin-automation-runs', filterSlug],
+    queryFn: () => fetchRecentRuns(filterSlug),
     queryKey: ['admin-automation-runs'],
     queryFn: fetchRecentRuns,
     refetchInterval: 30_000,
@@ -106,6 +117,23 @@ export default function AdminAutomation() {
     setBusySlug(null);
     qc.invalidateQueries({ queryKey: ['admin-automation-runs'] });
     qc.invalidateQueries({ queryKey: ['admin-automations'] });
+  }
+
+  async function toggleEnabled(slug: string, next: boolean) {
+    setBusySlug(`toggle:${slug}`);
+    try {
+      const { error } = await supabase.rpc('admin_automation_set_enabled', {
+        p_slug: slug,
+        p_enabled: next,
+      });
+      if (error) throw error;
+      toast.success(next ? `Enabled ${slug}` : `Paused ${slug}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Toggle failed');
+    } finally {
+      setBusySlug(null);
+      qc.invalidateQueries({ queryKey: ['admin-automations'] });
+    }
   }
 
   async function dryRun(slug: string) {
@@ -159,6 +187,14 @@ export default function AdminAutomation() {
               </thead>
               <tbody>
                 {automationsQ.data?.map((a) => (
+                  <tr
+                    key={a.id}
+                    className={`border-t border-border cursor-pointer hover:bg-muted/40 ${filterSlug === a.slug ? 'bg-muted/60' : ''}`}
+                    onClick={() => setFilterSlug(filterSlug === a.slug ? null : a.slug)}
+                  >
+                    <td className="px-4 py-2">
+                      <div className="font-semibold">{a.name}</div>
+                      <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
                   <tr key={a.id} className="border-t border-border">
                     <td className="px-4 py-2">
                       <div className="font-semibold">{a.name}</div>
@@ -178,6 +214,23 @@ export default function AdminAutomation() {
                         : 'Never'}
                     </td>
                     <td className="px-4 py-2">
+                      {isAdmin ? (
+                        <Button
+                          variant={a.enabled ? 'outline' : 'secondary'}
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); toggleEnabled(a.slug, !a.enabled); }}
+                          disabled={busySlug !== null}
+                          className="font-normal h-6 text-2xs"
+                        >
+                          {busySlug === `toggle:${a.slug}` ? (
+                            <Loader2 size={11} className="mr-1 animate-spin" />
+                          ) : null}
+                          {a.enabled ? 'enabled · click to pause' : 'paused · click to enable'}
+                        </Button>
+                      ) : a.enabled ? (
+                        <Badge variant="outline" className="font-normal">enabled</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="font-normal">paused</Badge>
                       {a.enabled ? (
                         <Badge variant="outline" className="font-normal">
                           enabled
@@ -192,6 +245,7 @@ export default function AdminAutomation() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={(e) => { e.stopPropagation(); dryRun(a.slug); }}
                         onClick={() => dryRun(a.slug)}
                         disabled={busySlug !== null}
                         title="Preview without mutating"
@@ -207,6 +261,7 @@ export default function AdminAutomation() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={(e) => { e.stopPropagation(); runNow(a.slug); }}
                           onClick={() => runNow(a.slug)}
                           disabled={busySlug !== null || !a.enabled}
                           className="ml-2"
@@ -231,6 +286,27 @@ export default function AdminAutomation() {
 
       {/* Recent runs */}
       <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-title font-semibold flex items-center gap-2">
+            <Play size={16} />
+            Recent runs
+            {filterSlug && (
+              <span className="text-13 font-mono text-muted-foreground">
+                · {filterSlug}
+              </span>
+            )}
+          </h2>
+          {filterSlug && (
+            <Button variant="ghost" size="sm" onClick={() => setFilterSlug(null)}>
+              Clear filter
+            </Button>
+          )}
+        </div>
+        {!filterSlug && (
+          <p className="text-2xs text-muted-foreground -mt-2 mb-2">
+            Click any automation row above to filter this list.
+          </p>
+        )}
         <h2 className="text-title font-semibold mb-3 flex items-center gap-2">
           <Play size={16} />
           Recent runs

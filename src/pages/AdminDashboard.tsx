@@ -130,6 +130,7 @@ function ReviewQueueCell({ data }: { data: CockpitData }) {
   const { review } = data;
   const queues = [
     { label: 'Staging', count: review.staging, icon: Inbox, tab: 'staging' },
+    { label: 'Submissions', count: review.submissions, icon: UsersRound, tab: 'submissions' },
     { label: 'Moderation', count: review.moderation, icon: Flag, tab: 'moderation' },
     { label: 'Automation', count: review.automation, icon: Bot, tab: 'automation' },
     { label: 'Content', count: review.cmsReview, icon: FileCheck, tab: 'content' },
