@@ -23,6 +23,33 @@ import { fetchPublicPersonalityBySlugOrId } from '@/hooks/usePageFetchers';
 import { formatPersonDate, isoDateAttr } from '@/lib/personDate';
 import { usePersonalityRelated } from '@/hooks/usePersonalityRelated';
 import { useTranslation } from 'react-i18next';
+import {
+  resolveHistoricalPlace,
+  type HistoricalNameEntry,
+} from '@/lib/historicalPlace';
+import { codeToFlagEmoji } from '@/lib/countryFlag';
+
+export interface PersonalityBirthCity {
+  id: string;
+  name: string | null;
+  name_de?: string | null;
+  name_en?: string | null;
+  historical_names?: HistoricalNameEntry[] | null;
+  country?: { code?: string | null; name: string | null; flag_emoji?: string | null } | null;
+}
+
+export interface PersonalityDeathCity {
+  id: string;
+  name: string | null;
+  name_de?: string | null;
+  name_en?: string | null;
+  country?: { code?: string | null; name: string | null; flag_emoji?: string | null } | null;
+}
+
+export type PersonalityWithBirthCity = Personality & {
+  birth_city?: PersonalityBirthCity | null;
+  death_city?: PersonalityDeathCity | null;
+};
 
 export interface SimilarPersonality {
   id: string;
@@ -38,7 +65,9 @@ export interface SimilarPersonality {
   similarity: number;
 }
 
-export function transformPersonality(data: Record<string, unknown>): Personality {
+export function transformPersonality(data: Record<string, unknown>): PersonalityWithBirthCity {
+  const birthCity = (data.birth_city ?? null) as PersonalityBirthCity | null;
+  const deathCity = (data.death_city ?? null) as PersonalityDeathCity | null;
   return {
     ...(data as unknown as Personality),
     fields: Array.isArray(data.fields) ? (data.fields as string[]) : [],
@@ -48,10 +77,14 @@ export function transformPersonality(data: Record<string, unknown>): Personality
     verification_status:
       (data.verification_status as 'pending' | 'verified' | 'disputed') || 'pending',
     visibility: (data.visibility as 'public' | 'private' | 'draft') || 'public',
+    birth_city: birthCity,
+    death_city: deathCity,
   };
 }
 
-export async function fetchPersonalityBySlug(slug: string): Promise<Personality | null> {
+export async function fetchPersonalityBySlug(
+  slug: string,
+): Promise<PersonalityWithBirthCity | null> {
   const data = await fetchPublicPersonalityBySlugOrId<Record<string, unknown>>(slug);
   if (!data) return null;
   return transformPersonality(data);
@@ -526,15 +559,73 @@ export function PersonalitySidebar({
                 </div>
               </div>
             )}
-            {personality.birth_place && (
-              <div className="flex items-center gap-4">
-                <MapPin size={16} className="text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Birth Place</p>
-                  <p className="font-medium">{personality.birth_place}</p>
+            {personality.birth_place && (() => {
+              const p = personality as PersonalityWithBirthCity;
+              const city = p.birth_city ?? null;
+              const flag = city?.country?.flag_emoji ?? codeToFlagEmoji(city?.country?.code);
+              const resolved = resolveHistoricalPlace({
+                historicalNames: city?.historical_names ?? [],
+                rawPlace: p.birth_place ?? null,
+                birthDate: p.birth_date ?? null,
+                currentName: city?.name ?? null,
+                currentNameDe: city?.name_de ?? null,
+                currentNameEn: city?.name_en ?? null,
+                currentCountry: city?.country?.name ?? null,
+                locale: 'de',
+              });
+              const display = resolved.country
+                ? `${resolved.name ?? p.birth_place}, ${resolved.country}`
+                : (resolved.name ?? p.birth_place);
+              const today =
+                resolved.historical && city?.name
+                  ? `heute ${city.name}${city.country?.name ? ', ' + city.country.name : ''}`
+                  : null;
+              return (
+                <div className="flex items-center gap-4">
+                  <MapPin size={16} className="text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Birth Place</p>
+                    <p className="font-medium">
+                      {flag && !resolved.historical && (
+                        <span aria-hidden="true" className="mr-2">{flag}</span>
+                      )}
+                      {display}
+                    </p>
+                    {today && (
+                      <p className="text-xs text-muted-foreground">
+                        {flag && (
+                          <span aria-hidden="true" className="mr-2">{flag}</span>
+                        )}
+                        {today}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
+            {personality.death_place && (() => {
+              const p = personality as PersonalityWithBirthCity;
+              const city = p.death_city ?? null;
+              const flag = city?.country?.flag_emoji ?? codeToFlagEmoji(city?.country?.code);
+              const country = city?.country?.name ?? null;
+              const display = country
+                ? `${p.death_place}, ${country}`
+                : p.death_place;
+              return (
+                <div className="flex items-center gap-4">
+                  <MapPin size={16} className="text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Death Place</p>
+                    <p className="font-medium">
+                      {flag && (
+                        <span aria-hidden="true" className="mr-2">{flag}</span>
+                      )}
+                      {display}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
 
