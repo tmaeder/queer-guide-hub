@@ -1887,7 +1887,8 @@
       "linkCopied": "Lien copié",
       "linkCopiedDescription": "Vous pouvez le coller",
       "shareFailed": "Échec du partage"
-    }
+    },
+    "geolocate": {}
   },
   "resources": {
     "hero": {

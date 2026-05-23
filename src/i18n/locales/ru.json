@@ -1913,7 +1913,8 @@
       "linkCopied": "Ссылка скопирована",
       "linkCopiedDescription": "Теперь её можно вставить",
       "shareFailed": "Не удалось поделиться"
-    }
+    },
+    "geolocate": {}
   },
   "resources": {
     "hero": {
