@@ -273,17 +273,16 @@ export const ExploreMap = ({
   // empty desert and shows no markers, which reads as "the site is broken").
   const FALLBACK_CENTER: [number, number] = [13.405, 52.52];
   const FALLBACK_ZOOM = 10;
+  // Berlin fallback fired (cosmetic, prevents repeat toast).
   const fallbackFiredRef = useRef(false);
-  // Track whether we've already auto-flown once. Without this, both the
-  // visitorGeo effect and the fallback timeout could fire in sequence,
-  // producing a moveend storm that races useViewportPoints' debounced
-  // fetch and the cluster source's data update.
-  const autoFlyFiredRef = useRef(false);
+  // True only when we flew to the *user's* real location. Berlin fallback
+  // does NOT set this, so a late-arriving visitorGeo still overrides Berlin.
+  const userGeoFiredRef = useRef(false);
 
   useEffect(() => {
     if (skipAutoFly || initialCenter || !visitorGeo) return;
-    if (autoFlyFiredRef.current) return;
-    autoFlyFiredRef.current = true;
+    if (userGeoFiredRef.current) return;
+    userGeoFiredRef.current = true;
     setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
     flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
     toast({
@@ -295,9 +294,8 @@ export const ExploreMap = ({
   useEffect(() => {
     if (skipAutoFly || initialCenter || fallbackFiredRef.current) return;
     const timer = setTimeout(() => {
-      if (visitorGeo || fallbackFiredRef.current || autoFlyFiredRef.current) return;
+      if (visitorGeo || fallbackFiredRef.current || userGeoFiredRef.current) return;
       fallbackFiredRef.current = true;
-      autoFlyFiredRef.current = true;
       setViewport({ center: FALLBACK_CENTER, zoom: FALLBACK_ZOOM });
       flyToLocation(FALLBACK_CENTER[0], FALLBACK_CENTER[1], FALLBACK_ZOOM);
       toast({
