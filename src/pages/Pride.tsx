@@ -151,11 +151,12 @@ export default function PridePage() {
         </p>
       </header>
 
-      {/* Two-col layout: filter rail + main */}
-      <div className="grid lg:grid-cols-[260px_1fr] gap-8">
+      {/* Filters above the timeline */}
+      <div className="mb-6">
         <PrideFilterRail filters={filters} setFilters={setFilters} events={events} />
+      </div>
 
-        <div className="space-y-12 min-w-0">
+      <div className="space-y-12 min-w-0">
           {/* Timeline */}
           <section aria-labelledby="timeline-heading">
             <h2 id="timeline-heading" className="sr-only">
@@ -247,7 +248,6 @@ export default function PridePage() {
               </Button>
             </div>
           )}
-        </div>
       </div>
     </div>
   );
