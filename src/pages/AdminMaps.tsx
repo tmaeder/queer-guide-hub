@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { MapShell } from '@/components/map/MapShell';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 /**
  * Admin map view — geographic visualization of ingestion + content state.
@@ -13,17 +14,14 @@ export default function AdminMaps() {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-4">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {t('admin.maps.title', { defaultValue: 'Maps' })}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t('admin.maps.description', {
-            defaultValue:
-              'Geographic view of platform content. Switch lenses to see density, individual entities, or boundaries.',
-          })}
-        </p>
-      </header>
+      <AdminPageHeader
+        eyebrow="Cockpit"
+        title={t('admin.maps.title', { defaultValue: 'Maps' })}
+        subtitle={t('admin.maps.description', {
+          defaultValue:
+            'Geographic view of platform content. Switch lenses to see density, individual entities, or boundaries.',
+        })}
+      />
       <div className="border border-border" style={{ height: 'calc(100dvh - 200px)' }}>
         <MapShell surface="admin" height="100%" />
       </div>
