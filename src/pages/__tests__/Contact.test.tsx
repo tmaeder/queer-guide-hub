@@ -8,6 +8,15 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: { functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) } },
 }));
 vi.mock('@/components/effects', () => ({ FloatingInput: () => null }));
+vi.mock('@/components/effects/ColourfulText', () => ({
+  ColourfulText: (p: { text: string }) => <>{p.text}</>,
+}));
+vi.mock('@/components/effects/WobbleCard', () => ({
+  WobbleCard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+vi.mock('@/components/effects/TracingBeam', () => ({
+  TracingBeam: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 
 import Contact from '../Contact';

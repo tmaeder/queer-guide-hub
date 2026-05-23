@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import {
   Heart,
@@ -21,14 +21,24 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
-import { BackgroundDots } from '@/components/effects/BackgroundDots';
 import { Timeline } from '@/components/effects/Timeline';
 import { LampEffect } from '@/components/effects/LampEffect';
 import { ShineButton } from '@/components/effects/ShineButton';
 import { HoverBorderGradient } from '@/components/effects/HoverBorderGradient';
-import { Sparkles as SparklesEffect } from '@/components/effects/Sparkles';
+import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
+import { EditorialHero } from '@/components/editorial/EditorialHero';
+import { EDITORIAL_IMAGES } from '@/lib/editorialImages';
 
-const features = [
+interface FeatureItem {
+  icon: typeof MapPin;
+  title: string;
+  description: string;
+  link: string;
+  image?: { src: string; alt: string; fallback?: string };
+  colSpan?: 1 | 2;
+}
+
+const featuresBase = [
   {
     icon: MapPin,
     title: 'Venues',
@@ -63,7 +73,7 @@ const features = [
       'Queer-friendly cities and countries. Know before you go — safety info, rights, and local tips.',
     link: '/places',
   },
-];
+] as const;
 
 const values = [
   {
@@ -133,33 +143,35 @@ export default function About() {
     [stats],
   );
 
+  // Inject images into Venues + Community tiles (matches the bento rhythm).
+  const aboutExtras = EDITORIAL_IMAGES.about.extras ?? [];
+  const features: FeatureItem[] = featuresBase.map((f) => {
+    if (f.title === 'Venues' && aboutExtras[0]) {
+      return { ...f, image: aboutExtras[0], colSpan: 2 };
+    }
+    if (f.title === 'Community' && aboutExtras[2]) {
+      return { ...f, image: aboutExtras[2], colSpan: 2 };
+    }
+    return f;
+  });
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative py-14 sm:py-[72px] md:py-24 px-4 sm:px-6 md:px-8 bg-background overflow-hidden">
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-          <SparklesEffect density={50} />
-        </div>
-        <div className="relative">
-          <h1
-            className="font-bold leading-[1.05] mb-4 md:mb-6 text-display sm:text-hero md:text-hero-xl"
-            style={{ letterSpacing: '0.02em' }}
-          >
-            Built by queers, for everyone.
-          </h1>
-          <div className="text-lg md:text-title text-muted-foreground mb-4">
-            <span className="mr-1.5">A guide for queer</span>
-            <span className="text-foreground font-semibold">travellers</span>
-          </div>
-          <p className="text-body-lg sm:text-lg md:text-title text-muted-foreground leading-[1.7] max-w-[720px]">
-            The Queer Guide connects LGBTQ+ people and allies with safe venues, vibrant events, and
-            communities that get you — wherever you are in the world.
-          </p>
-        </div>
+      <section className="px-4 sm:px-6 md:px-8 pt-8 md:pt-12">
+        <EditorialHero
+          eyebrow="About us"
+          title="Built by queers, for everyone."
+          subtitle="The Queer Guide connects LGBTQ+ people and allies with safe venues, vibrant events, and communities that get you — wherever you are in the world."
+          image={EDITORIAL_IMAGES.about.hero}
+          imagePosition="cover"
+          decoration="grid"
+          height="lg"
+        />
       </section>
 
       {/* Stats Strip */}
-      <div className="py-10 md:py-14 px-4 sm:px-6 md:px-8 bg-foreground text-background">
+      <div className="py-10 md:py-14 mt-12 md:mt-16 px-4 sm:px-6 md:px-8 bg-foreground text-background">
         <StaggerGrid stagger={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {statItems.map((stat, i) => (
             <div key={i} className="text-center">
@@ -235,43 +247,54 @@ export default function About() {
         </section>
       </ScrollReveal>
 
-      {/* What We Offer */}
-      <BackgroundDots
+      {/* What We Offer — BentoGrid with inset imagery */}
+      <section
         className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
         style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
       >
-        <h2 className="reveal-up font-bold mb-8 md:mb-10 text-headline md:text-4xl">
-          What We Offer
-        </h2>
+        <h2 className="font-bold mb-8 md:mb-10 text-headline md:text-4xl">What We Offer</h2>
 
-        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <BentoGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:grid-cols-4">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <LocalizedLink to={feature.link} key={feature.title} className="no-underline block">
-                <Card style={{ height: '100%' }} className="cursor-pointer">
-                  <CardContent
-                    style={{ padding: isMobile ? 20 : 28, height: '100%', flexDirection: 'column' }}
-                    className="flex gap-4"
-                  >
-                    <p className="font-bold text-base md:text-body-lg flex items-center gap-2">
-                      <Icon
-                        style={{ width: 18, height: 18 }}
-                        className="shrink-0"
-                        aria-hidden="true"
-                      />
-                      {feature.title}
-                    </p>
-                    <p className="text-sm text-muted-foreground leading-[1.6]">
-                      {feature.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </LocalizedLink>
+              <BentoGridItem
+                key={feature.title}
+                colSpan={feature.colSpan ?? 1}
+                className="rounded-container p-0 overflow-hidden"
+              >
+                <LocalizedLink
+                  to={feature.link}
+                  className="no-underline block h-full text-foreground"
+                >
+                  {feature.image ? (
+                    <FeatureImageTile
+                      title={feature.title}
+                      description={feature.description}
+                      Icon={Icon}
+                      image={feature.image}
+                    />
+                  ) : (
+                    <div className="flex flex-col gap-4 p-6 md:p-8 h-full">
+                      <p className="font-bold text-base md:text-body-lg flex items-center gap-2">
+                        <Icon
+                          style={{ width: 18, height: 18 }}
+                          className="shrink-0"
+                          aria-hidden="true"
+                        />
+                        {feature.title}
+                      </p>
+                      <p className="text-sm text-muted-foreground leading-[1.6]">
+                        {feature.description}
+                      </p>
+                    </div>
+                  )}
+                </LocalizedLink>
+              </BentoGridItem>
             );
           })}
-        </StaggerGrid>
-      </BackgroundDots>
+        </BentoGrid>
+      </section>
 
       {/* Our Values */}
       <ScrollReveal direction="up">
@@ -466,6 +489,40 @@ export default function About() {
           </LocalizedLink>
         </div>
       </LampEffect>
+    </div>
+  );
+}
+
+interface FeatureImageTileProps {
+  title: string;
+  description: string;
+  Icon: typeof MapPin;
+  image: { src: string; alt: string; fallback?: string };
+}
+
+function FeatureImageTile({ title, description, Icon, image }: FeatureImageTileProps) {
+  const [src, setSrc] = useState(image.src);
+  return (
+    <div className="relative h-full min-h-[240px] md:min-h-[260px] overflow-hidden">
+      <img
+        src={src}
+        alt={image.alt}
+        loading="lazy"
+        decoding="async"
+        onError={() => image.fallback && setSrc(image.fallback)}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/15 to-black/65 dark:from-black/35 dark:to-black/[0.78]"
+      />
+      <div className="relative z-[1] flex h-full flex-col justify-end gap-2 p-6 md:p-8 text-white">
+        <p className="font-bold text-base md:text-body-lg flex items-center gap-2">
+          <Icon style={{ width: 18, height: 18 }} className="shrink-0" aria-hidden="true" />
+          {title}
+        </p>
+        <p className="text-sm text-white/90 leading-[1.6] max-w-[420px]">{description}</p>
+      </div>
     </div>
   );
 }
