@@ -671,7 +671,18 @@ export function VenueOverview({
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent>{formatHours(venue.hours as Record<string, unknown>)}</CardContent>
+              <CardContent>
+                <Editable
+                  contentType="venues"
+                  recordId={venue.id}
+                  field="hours"
+                  value={venue.hours}
+                  onSaved={onContentUpdated}
+                  as="div"
+                >
+                  {formatHours(venue.hours as Record<string, unknown>)}
+                </Editable>
+              </CardContent>
             </Card>
           )}
 
@@ -682,18 +693,27 @@ export function VenueOverview({
                 <CardTitle>{t('pages.venueDetail.tags', 'Tags')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {venue.tags.map((tag, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="cursor-pointer"
-                      onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                <Editable
+                  contentType="venues"
+                  recordId={venue.id}
+                  field="tags"
+                  value={venue.tags}
+                  onSaved={onContentUpdated}
+                  as="div"
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {venue.tags.map((tag, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="cursor-pointer"
+                        onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </Editable>
               </CardContent>
             </Card>
           )}
@@ -705,22 +725,15 @@ export function VenueOverview({
 
 interface VenuePhotosProps {
   venue: VenueWithRelations;
+  onContentUpdated?: () => void;
   t: (key: string, fallback?: string) => string;
 }
 
-export function VenuePhotos({ venue, t }: VenuePhotosProps) {
-  if (!venue.images || venue.images.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">
-          {t('pages.venueDetail.noPhotos', 'No photos available')}
-        </p>
-      </div>
-    );
-  }
-  return (
+export function VenuePhotos({ venue, onContentUpdated, t }: VenuePhotosProps) {
+  const hasImages = venue.images && venue.images.length > 0;
+  const inner = hasImages ? (
     <StaggerGrid className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2">
-      {venue.images.map((imageUrl, index) => (
+      {venue.images!.map((imageUrl, index) => (
         <button
           type="button"
           key={index}
@@ -740,6 +753,25 @@ export function VenuePhotos({ venue, t }: VenuePhotosProps) {
         </button>
       ))}
     </StaggerGrid>
+  ) : (
+    <div className="text-center py-12">
+      <p className="text-muted-foreground">
+        {t('pages.venueDetail.noPhotos', 'No photos available')}
+      </p>
+    </div>
+  );
+
+  return (
+    <Editable
+      contentType="venues"
+      recordId={venue.id}
+      field="images"
+      value={venue.images}
+      onSaved={onContentUpdated}
+      as="div"
+    >
+      {inner}
+    </Editable>
   );
 }
 

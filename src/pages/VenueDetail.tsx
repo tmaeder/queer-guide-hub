@@ -211,7 +211,7 @@ export default function VenueDetail() {
               {
                 id: 'photos',
                 label: `Photos ${venue.images && venue.images.length > 0 ? `(${venue.images.length})` : ''}`,
-                content: <VenuePhotos venue={venue} t={t} />,
+                content: <VenuePhotos venue={venue} onContentUpdated={refetch} t={t} />,
               },
             ]
           : []),
