@@ -139,6 +139,46 @@ export default function AdminAutomation() {
     qc.invalidateQueries({ queryKey: ['admin-automations'] });
   }
 
+  async function pauseAll(enabled: boolean) {
+    const verb = enabled ? 'Resume' : 'Pause';
+    if (!window.confirm(`${verb} ALL automations? This affects every cron job.`)) return;
+    setBusySlug(`pause-all:${enabled}`);
+    try {
+      const { data, error } = await supabase.rpc('admin_automation_pause_all', {
+        p_enabled: enabled,
+      });
+      if (error) throw error;
+      const n = (data as { changed: number })?.changed ?? 0;
+      toast.success(`${verb}d ${n} automation${n === 1 ? '' : 's'}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed');
+    } finally {
+      setBusySlug(null);
+      qc.invalidateQueries({ queryKey: ['admin-automations'] });
+    }
+  }
+
+  useRegisterAdminCommandAction(
+    isAdmin
+      ? {
+          id: 'automation.pause-all',
+          label: 'Pause all automations',
+          keywords: 'emergency kill switch stop',
+          perform: () => pauseAll(false),
+        }
+      : null,
+  );
+  useRegisterAdminCommandAction(
+    isAdmin
+      ? {
+          id: 'automation.resume-all',
+          label: 'Resume all automations',
+          keywords: 'enable restart',
+          perform: () => pauseAll(true),
+        }
+      : null,
+  );
+
   async function dryRun(slug: string) {
     setBusySlug(`dry:${slug}`);
     try {
@@ -158,14 +198,43 @@ export default function AdminAutomation() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-headline font-bold flex items-center gap-2">
-          <Workflow size={22} />
-          Automation
-        </h1>
-        <p className="text-13 text-muted-foreground mt-1">
-          Things the system is doing on its own. Each row is a rule; runs are audited below.
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-headline font-bold flex items-center gap-2">
+            <Workflow size={22} />
+            Automation
+          </h1>
+          <p className="text-13 text-muted-foreground mt-1">
+            Things the system is doing on its own. Each row is a rule; runs are audited below.
+          </p>
+        </div>
+        {isAdmin && (
+          <div className="flex gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => pauseAll(false)}
+              disabled={busySlug !== null}
+              title="Disable every automation (emergency kill switch)"
+            >
+              {busySlug === 'pause-all:false' ? (
+                <Loader2 size={12} className="mr-1 animate-spin" />
+              ) : null}
+              Pause all
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => pauseAll(true)}
+              disabled={busySlug !== null}
+            >
+              {busySlug === 'pause-all:true' ? (
+                <Loader2 size={12} className="mr-1 animate-spin" />
+              ) : null}
+              Resume all
+            </Button>
+          </div>
+        )}
       </header>
 
       {/* Registry */}
