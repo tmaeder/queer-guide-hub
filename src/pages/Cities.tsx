@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
 import { useCitiesDirectory } from '@/hooks/useCitiesDirectory';
@@ -7,10 +7,12 @@ import { ErrorState } from '@/components/ui/EmptyState';
 import { PageHero } from '@/components/discovery';
 import { CitiesFilterBar } from './cities/CitiesFilterBar';
 import { CityListPane } from './cities/CityListPane';
+import { CitiesMapPane } from './cities/CitiesMapPane';
 
 export default function Cities() {
   const { t } = useTranslation();
   const url = useCitiesUrlState();
+  const [hoveredCityId, setHoveredCityId] = useState<string | null>(null);
 
   const filterParams = useMemo(
     () => ({
@@ -78,18 +80,34 @@ export default function Cities() {
           filteredCount={filtered.length}
           onReset={url.reset}
         />
-        <div className="py-6">
-          {error ? (
+
+        {error ? (
+          <div className="py-6">
             <ErrorState message={error} />
-          ) : (
-            <CityListPane
-              cities={filtered}
-              loading={loading}
-              venueCounts={venueCounts}
-              hasActiveFilters={hasActiveFilters}
-            />
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-[440px_minmax(0,1fr)] lg:gap-6 py-6">
+            <div className="lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-2">
+              <CityListPane
+                cities={filtered}
+                loading={loading}
+                venueCounts={venueCounts}
+                selectedCityId={url.city || null}
+                onHoverCity={setHoveredCityId}
+                hasActiveFilters={hasActiveFilters}
+              />
+            </div>
+            <div className="hidden lg:block lg:sticky lg:top-[200px] lg:self-start lg:h-[calc(100vh-220px)] rounded-container overflow-hidden border border-border bg-muted">
+              <CitiesMapPane
+                cities={filtered}
+                selectedCityId={url.city || null}
+                hoveredCityId={hoveredCityId}
+                onSelectCity={url.setCity}
+                onHoverCity={setHoveredCityId}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

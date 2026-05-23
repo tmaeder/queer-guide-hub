@@ -154,6 +154,8 @@ export default tseslint.config(
       "src/components/country/SafetyAlertBanner.tsx",
       // Cities directory chip uses the equality-score functional scale dot.
       "src/pages/cities/EqualityChip.tsx",
+      // Cities map paints pins with the equality-score functional scale.
+      "src/pages/cities/CitiesMapPane.tsx",
       // Risk traffic-light (low/moderate/high/critical) for travel safety.
       "src/components/trips/TripSafetyBriefing.tsx",
       // Categorical news/topic taxonomy palette (politics, health, sports…).

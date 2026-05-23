@@ -24,6 +24,9 @@ vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/components/discovery', () => ({
   PageHero: () => <div data-testid="hero" />,
 }));
+vi.mock('../cities/CitiesMapPane', () => ({
+  CitiesMapPane: () => <div data-testid="map-pane" />,
+}));
 
 import Cities from '../Cities';
 
