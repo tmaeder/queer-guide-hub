@@ -14,6 +14,12 @@ vi.mock('react-i18next', () => ({
     },
   }),
 }));
+vi.mock('@/hooks/useEntityTripStatus', () => ({
+  useEntityTripStatus: () => ({ data: { isInTrip: false, trips: [] }, isLoading: false, error: null }),
+}));
+vi.mock('@/components/trips/AddToTripDialog', () => ({
+  AddToTripDialog: ({ open }: { open: boolean }) => (open ? <div data-testid="add-to-trip-dialog" /> : null),
+}));
 
 import { EventHoverCard } from '../EventHoverCard';
 import type { Database } from '@/integrations/supabase/types';
@@ -60,10 +66,8 @@ describe('EventHoverCard', () => {
         </EventHoverCard>
       </MemoryRouter>,
     );
-    // Radix HoverCard opens on pointerenter; using focus is more deterministic in jsdom
     const trigger = screen.getByTestId('t');
     fireEvent.focus(trigger);
-    // The popover content is portaled; query by accessible name pattern
     const going = await screen.findByRole('button', { name: /Going/i });
     fireEvent.click(going);
     expect(onRsvp).toHaveBeenCalledWith('rsvp1', 'going');
@@ -78,7 +82,20 @@ describe('EventHoverCard', () => {
       </MemoryRouter>,
     );
     fireEvent.focus(screen.getByTestId('t2'));
-    // No Going / Interested buttons rendered
     expect(screen.queryByRole('button', { name: /Going/i })).toBeNull();
+  });
+
+  it('opens AddToTripDialog when enableSaveToTrip is set and Save is clicked', async () => {
+    render(
+      <MemoryRouter>
+        <EventHoverCard event={ev({ id: 'save1' })} enableSaveToTrip>
+          <button data-testid="t3">trigger</button>
+        </EventHoverCard>
+      </MemoryRouter>,
+    );
+    fireEvent.focus(screen.getByTestId('t3'));
+    const save = await screen.findByRole('button', { name: /Save to trip/i });
+    fireEvent.click(save);
+    expect(screen.getByTestId('add-to-trip-dialog')).toBeTruthy();
   });
 });
