@@ -1,3 +1,35 @@
+# Recharts cross-route chunk leak — RESOLVED
+
+**Status:** resolved by [#1122](https://github.com/tmaeder/queer-guide-hub/pull/1122) on 2026-05-24
+**First spotted:** Lighthouse run on /cities ([#1094](https://github.com/tmaeder/queer-guide-hub/pull/1094))
+**Failed attempt:** [#1098](https://github.com/tmaeder/queer-guide-hub/pull/1098) — `optimizeDeps.include` didn't apply to prod builds
+**Working fix:** [#1122](https://github.com/tmaeder/queer-guide-hub/pull/1122) — `output.advancedChunks.groups` with priority-based assignment
+
+## TL;DR of the fix
+
+```ts
+// vite.config.ts > build > rollupOptions > output
+advancedChunks: {
+  groups: [
+    {
+      name: 'styling-utils',
+      test: /[\\/]node_modules[\\/](clsx|tailwind-merge|class-variance-authority)[\\/]/,
+      priority: 100,
+    },
+  ],
+}
+```
+
+Priority 100 wins over rolldown's default chunking, so clsx is owned by its
+own `styling-utils` chunk and rolldown stops baking duplicate copies into
+recharts/pdf chunks that happen to use it. The same fix also broke the
+**pdfjs leak (~122 KB raw)** and split recharts into per-chart-type chunks
+that only load on chart-using routes. Total /cities entry-preload bytes
+saved: ~457 KB raw (recharts 335 KB + pdf 122 KB).
+
+The historical investigation below is kept for reference.
+
+---
 # Recharts cross-route chunk leak — open follow-up
 
 **Status:** unresolved as of 2026-05-24
@@ -102,3 +134,28 @@ combined lifts to ~70–80; fixing this would push closer to 90.
 If you pick this up, the highest-leverage next step is probably the recharts
 patch — it removes clsx duplication at the source and unblocks the rolldown
 chunking heuristic.
+
+## Measured impact of the wins that DID land
+
+Two Lighthouse runs against https://queer.guide/cities post-#1095/#1099,
+desktop preset:
+
+| Metric | Baseline (#1094) | Run 1 | Run 2 |
+|---|---|---|---|
+| Performance | 54 | 50 | 61 |
+| TBT | 850 ms | 1390 ms | 590 ms |
+| LCP | 2.5 s | 2.4 s | 2.3 s |
+| TTI | 2.7 s | 3.2 s | 2.4 s |
+| maplibre scripting | 1.1 s | — | 0.24 s ✓ |
+
+Big variance between runs (CF bot-challenge script dominates at ~1.4 s scripting
+regardless), so the score number is noisy. The unambiguous signal: **maplibre
+scripting dropped from 1100 ms to 240 ms** — the lazy-mount in #1095 is doing
+its job. That alone is the biggest individual win and it's real.
+
+The score isn't climbing as fast as the bytes-on-the-wire savings would predict
+because Cloudflare's challenge platform is doing 1.3-1.5 s of scripting on
+every cold load. That's outside the app's control.
+
+Take with several grains of salt: Lighthouse on this site fluctuates ±10 points
+run-to-run because of CF challenge timing.
