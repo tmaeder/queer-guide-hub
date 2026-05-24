@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
+
+type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
 export interface Wishlist {
   id: string;
@@ -228,4 +231,53 @@ export function useWishlists() {
     removeFromWishlist,
     quickSave,
   };
+}
+
+/**
+ * Resolve a wishlist by slug + load its items. Used by the public
+ * `/wishlists/:slug` page. Goes via the SECURITY DEFINER RPC so unlisted
+ * lists open by-link without leaking through broad SELECT queries.
+ */
+export function useWishlistBySlug(slug: string | undefined) {
+  const [wishlist, setWishlist] = useState<Wishlist | null>(null);
+  const [listings, setListings] = useState<MarketplaceListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setNotFound(false);
+      const { data, error } = await supabase.rpc('get_wishlist_by_slug', { p_slug: slug });
+      if (cancelled) return;
+      const row = Array.isArray(data) ? data[0] : data;
+      if (error || !row) {
+        setWishlist(null);
+        setListings([]);
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      setWishlist(row as Wishlist);
+      const { data: items } = await supabase
+        .from('wishlist_items')
+        .select('listing_id, position, added_at, marketplace_listings(*)')
+        .eq('wishlist_id', (row as Wishlist).id)
+        .order('position', { ascending: true })
+        .order('added_at', { ascending: false });
+      if (cancelled) return;
+      const rows = (items ?? [])
+        .map((r) => (r as { marketplace_listings: MarketplaceListing | null }).marketplace_listings)
+        .filter((l): l is MarketplaceListing => !!l);
+      setListings(rows);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  return { wishlist, listings, loading, notFound };
 }

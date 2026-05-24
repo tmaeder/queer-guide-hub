@@ -115,4 +115,56 @@ export function useMarketplaceCollectionListings(collectionId: string | null, li
   return { listings, loading };
 }
 
+/**
+ * Single collection + its full listing rows fetched by slug. Used by
+ * the `/marketplace/collection/:slug` drilldown page. Returns notFound
+ * when the slug doesn't resolve to a published collection.
+ */
+export function useMarketplaceCollectionBySlug(slug: string | undefined) {
+  const [collection, setCollection] = useState<MarketplaceCollection | null>(null);
+  const [listings, setListings] = useState<MarketplaceListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setNotFound(false);
+      const { data: col } = await supabase
+        .from('marketplace_collections')
+        .select('id, slug, title, subtitle, editor_blurb, cover_image_url, display_mode, status, sort_order, published_at, pin_until')
+        .eq('slug', slug)
+        .eq('status', 'published')
+        .maybeSingle();
+      if (cancelled) return;
+      if (!col) {
+        setCollection(null);
+        setListings([]);
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      setCollection(col as MarketplaceCollection);
+      const { data: items } = await supabase
+        .from('marketplace_collection_items')
+        .select('position, marketplace_listings(*)')
+        .eq('collection_id', (col as MarketplaceCollection).id)
+        .order('position', { ascending: true });
+      if (cancelled) return;
+      const rows = (items ?? [])
+        .map((r) => (r as { marketplace_listings: MarketplaceListing | null }).marketplace_listings)
+        .filter((l): l is MarketplaceListing => !!l);
+      setListings(rows);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  return { collection, listings, loading, notFound };
+}
+
 export type { CollectionItem };
