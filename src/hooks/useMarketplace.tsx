@@ -21,6 +21,16 @@ export interface MarketplaceFiltersInput {
   businessType?: string;
   categoryId?: string;
   merchantDomain?: string;
+  /** snake_case slugs: queer_owned, trans_owned, bipoc_owned, women_owned, … */
+  communityOwned?: string[];
+  /** ISO-4217 currency code. */
+  currency?: string;
+  /** When 'in_stock', hides listings where availability !== 'in_stock'. */
+  availability?: 'in_stock' | 'any';
+  /** lgbti_relevance_score floor 0–1. Skipped when null/undefined or 0. */
+  relevanceMin?: number;
+  /** last_verified_at within N days. Skipped when null/undefined or 0. */
+  verifiedWithinDays?: number;
 }
 
 export function useMarketplace() {
@@ -185,6 +195,31 @@ export function useMarketplace() {
 
       if (filters?.tags && filters.tags.length > 0) {
         query = query.overlaps('tags', filters.tags);
+      }
+
+      if (filters?.communityOwned && filters.communityOwned.length > 0) {
+        query = query.overlaps('community_owned_tags', filters.communityOwned);
+      }
+
+      if (filters?.currency) {
+        query = query.eq('currency', filters.currency);
+      }
+
+      // Default behaviour: include only listings explicitly in stock. The
+      // ingestion pipeline writes 'in_stock' / 'out_of_stock' / 'limited'
+      // / null; only the explicit out-of-stock should be hidden so legacy
+      // null-availability listings stay visible.
+      if (filters?.availability === 'in_stock') {
+        query = query.or('availability.is.null,availability.neq.out_of_stock');
+      }
+
+      if (filters?.relevanceMin && filters.relevanceMin > 0) {
+        query = query.gte('lgbti_relevance_score', filters.relevanceMin);
+      }
+
+      if (filters?.verifiedWithinDays && filters.verifiedWithinDays > 0) {
+        const since = new Date(Date.now() - filters.verifiedWithinDays * 86_400_000).toISOString();
+        query = query.gte('last_verified_at', since);
       }
 
       if (filters?.search) {
