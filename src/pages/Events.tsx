@@ -144,10 +144,11 @@ const Events = () => {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
-  // New filter dimensions (Phase B.2)
+  // New filter dimensions (Phase B.2 + B.4)
   const [accessibilityAttrs, setAccessibilityAttrs] = useState<string[]>([]);
   const [targetGroupsFilter, setTargetGroupsFilter] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
+  const [ageRestriction, setAgeRestriction] = useState<string>('');
   const { accessibilityAttributes: accAttrOptions } = useAccessibilityAttributes();
   const { targetGroups: tgOptions } = useTargetGroups();
 
@@ -176,6 +177,7 @@ const Events = () => {
       accessibilityAttributes: accessibilityAttrs.length > 0 ? accessibilityAttrs : undefined,
       targetGroups: targetGroupsFilter.length > 0 ? targetGroupsFilter : undefined,
       languages: languages.length > 0 ? languages : undefined,
+      ageRestriction: ageRestriction || undefined,
       dateRange,
       nearMe: nearMe ? userLocation : undefined,
       includePast: showPast || undefined,
@@ -327,6 +329,7 @@ const Events = () => {
     setAccessibilityAttrs([]);
     setTargetGroupsFilter([]);
     setLanguages([]);
+    setAgeRestriction('');
     setStartDate(undefined);
     setEndDate(undefined);
     setNearMe(false);
@@ -392,6 +395,7 @@ const Events = () => {
     accessibilityAttrs.length > 0 ||
     targetGroupsFilter.length > 0 ||
     languages.length > 0 ||
+    ageRestriction ||
     startDate ||
     endDate ||
     nearMe ||
@@ -468,8 +472,7 @@ const Events = () => {
     }
     handleFiltersChange();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventType, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags, accessibilityAttrs, targetGroupsFilter, languages]);
-  }, [eventTypes, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags]);
+  }, [eventTypes, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags, accessibilityAttrs, targetGroupsFilter, languages, ageRestriction]);
 
   // Debounced search — apply ~300ms after the user stops typing so the
   // list filters live. Enter still flushes immediately via onKeyDown.
@@ -494,7 +497,7 @@ const Events = () => {
       tags: selectedTags,
       accessibility: accessibilityAttrs,
       languages,
-      ageRestriction: '',
+      ageRestriction,
       organizerId: '',
       from: startDate ? startDate.toISOString() : undefined,
       to: endDate ? endDate.toISOString() : undefined,
@@ -516,6 +519,7 @@ const Events = () => {
     selectedTags,
     accessibilityAttrs,
     languages,
+    ageRestriction,
     startDate,
     endDate,
     nearMe,
@@ -535,6 +539,7 @@ const Events = () => {
     if (parsed.tags.length) setSelectedTags(parsed.tags);
     if (parsed.accessibility.length) setAccessibilityAttrs(parsed.accessibility);
     if (parsed.languages.length) setLanguages(parsed.languages);
+    if (parsed.ageRestriction) setAgeRestriction(parsed.ageRestriction);
     if (parsed.from) setStartDate(new Date(parsed.from));
     if (parsed.to) setEndDate(new Date(parsed.to));
     if (parsed.nearMe) setNearMe(true);
@@ -739,8 +744,8 @@ const Events = () => {
                 </div>
               )}
 
-              {/* Accessibility + Target groups + Language */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Accessibility + Target groups + Language + Age */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="accessibility">
                     {t('pages.events.accessibility', 'Accessibility')}
@@ -795,6 +800,25 @@ const Events = () => {
                     selected={languages}
                     onChange={setLanguages}
                   />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="age-restriction">
+                    {t('pages.events.ageRestriction', 'Age restriction')}
+                  </Label>
+                  <Select
+                    value={ageRestriction || 'any'}
+                    onValueChange={(v) => setAgeRestriction(v === 'any' ? '' : v)}
+                  >
+                    <SelectTrigger aria-label={t('pages.events.ageRestriction', 'Age restriction')}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">{t('pages.events.ageAny', 'Any')}</SelectItem>
+                      <SelectItem value="all_ages">{t('pages.events.ageAllAges', 'All ages')}</SelectItem>
+                      <SelectItem value="18+">{t('pages.events.age18Plus', '18+')}</SelectItem>
+                      <SelectItem value="21+">{t('pages.events.age21Plus', '21+')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -977,6 +1001,19 @@ const Events = () => {
                       setFeaturedOnly(false);
                       if (activePreset === 'featured') setActivePreset(null);
                     }}
+                  />
+                </Badge>
+              )}
+              {ageRestriction && (
+                <Badge variant="secondary" className="inline-flex gap-1">
+                  {t('pages.events.filterAge', { value: ageRestriction, defaultValue: `Age: ${ageRestriction}` })}
+                  <X
+                    size={12}
+                    style={{ margin: -8, boxSizing: 'content-box' }}
+                    className="cursor-pointer p-2"
+                    role="button"
+                    aria-label={t('pages.events.clearFilterAge', 'Clear age filter')}
+                    onClick={() => setAgeRestriction('')}
                   />
                 </Badge>
               )}
