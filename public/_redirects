@@ -10,9 +10,10 @@
 # (CF Pages _redirects doesn't support 410). The news index page at /news
 # survives as a curated headline list rendered by the SPA.
 
-# P1.5 — /places was deprecated in favor of /city. Keep the index alive
-# as a redirect so old inbound links don't 404.
-/places  /city  301
+# P1.5 redirect removed 2026-05-24: /places revived as the editorial Atlas
+# (cover destination + passport layer + editor rails). The SPA handles it.
+# Sub-paths still redirect to /city for legacy compatibility — old /places/:slug
+# style links pointed at city slugs.
 /places/*  /city/:splat  301
 
 # Asset paths get a real 404 when missing. Without these rules the SPA
