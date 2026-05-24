@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Search, SlidersHorizontal } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
 
@@ -22,8 +23,7 @@ function HighlightedText({
     return (
       <span
         dangerouslySetInnerHTML={{ __html: sanitizeMeiliHighlight(html) }}
-        style={{ ['--em-weight' as string]: '700' } as React.CSSProperties}
-        className="qg-search-highlight"
+        className="qg-search-highlight [&_em]:font-bold [&_em]:not-italic"
       />
     );
   }
@@ -34,10 +34,7 @@ function HighlightedText({
   return (
     <>
       {text.slice(0, idx)}
-      <mark
-        style={{ background: 'transparent', color: 'inherit', textUnderlineOffset: 2 }}
-        className="font-bold underline"
-      >
+      <mark className="bg-transparent text-inherit font-bold underline underline-offset-2">
         {text.slice(idx, idx + q.length)}
       </mark>
       {text.slice(idx + q.length)}
@@ -95,35 +92,18 @@ export function SearchPopoverResults({
     : `${scopeLabel}`;
 
   return (
-    <div style={{ flex: 1, minWidth: 0, flexDirection: 'column' }} className="flex">
-      <div
-        style={{
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '8px 12px',
-          borderBottom: '1px solid hsl(var(--border))',
-          minHeight: 36,
-        }}
-        className="flex gap-2"
-      >
-        <span
-          className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap"
-          style={{ textOverflow: 'ellipsis' }}
-        >
-          {headerText}
-        </span>
+    <div className="flex flex-1 min-w-0 flex-col">
+      <div className="flex min-h-9 items-center justify-between gap-2 border-b border-border px-3 py-2">
+        <span className="truncate text-xs text-muted-foreground">{headerText}</span>
         <button
           type="button"
           onClick={onToggleFilters}
           aria-pressed={filtersOpen}
           aria-label={t('search.filters', 'Filters')}
-          className="text-xs inline-flex gap-1 text-foreground cursor-pointer shrink-0"
-          style={{
-            alignItems: 'center',
-            padding: '3px 8px',
-            border: '1px solid hsl(var(--border))',
-            background: filtersOpen ? 'hsl(var(--accent))' : 'transparent',
-          }}
+          className={cn(
+            'inline-flex shrink-0 items-center gap-1 border border-border px-2 py-0.5 text-xs text-foreground transition-colors',
+            filtersOpen ? 'bg-accent' : 'bg-transparent hover:bg-accent',
+          )}
         >
           <SlidersHorizontal size={12} />
           {t('search.filters', 'Filters')}
@@ -136,24 +116,19 @@ export function SearchPopoverResults({
       <div
         role="listbox"
         aria-label={t('search.results', 'Results')}
-        style={{ flex: 1, overflowY: 'auto', maxHeight: 480 }}
+        className="flex-1 overflow-y-auto"
+        style={{ maxHeight: 480 }}
       >
         {error && (
           <div
             role="alert"
-            style={{
-              padding: '12px',
-              borderBottom: '1px solid hsl(var(--border))',
-              fontSize: '0.8rem',
-            }}
-            className="text-destructive"
+            className="border-b border-border p-4 text-sm text-destructive"
           >
             {t('search.unavailable', 'Search unavailable')}.{' '}
             <button
               type="button"
               onClick={onSearchAll}
-              style={{ background: 'transparent', border: 0, color: 'inherit' }}
-              className="underline p-0 cursor-pointer"
+              className="cursor-pointer bg-transparent p-0 text-inherit underline"
             >
               {t('search.retry', 'Retry')}
             </button>
@@ -163,24 +138,11 @@ export function SearchPopoverResults({
         {loading && suggestions.length === 0 && (
           <div className="p-2">
             {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                style={{ alignItems: 'center', padding: '6px 8px' }}
-                className="flex gap-2.5"
-              >
-                <div
-                  style={{ height: 40, width: 40, background: 'hsl(var(--muted))' }}
-                  className="animate-pulse"
-                />
-                <div style={{ flex: 1, flexDirection: 'column' }} className="flex gap-1.5">
-                  <div
-                    className="animate-pulse"
-                    style={{ height: 10, width: '60%', background: 'hsl(var(--muted))' }}
-                  />
-                  <div
-                    className="animate-pulse"
-                    style={{ height: 8, width: '40%', background: 'hsl(var(--muted))' }}
-                  />
+              <div key={i} className="flex items-center gap-2.5 px-2 py-1.5">
+                <div className="h-10 w-10 animate-pulse bg-muted" />
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <div className="h-2.5 w-3/5 animate-pulse bg-muted" />
+                  <div className="h-2 w-2/5 animate-pulse bg-muted" />
                 </div>
               </div>
             ))}
@@ -188,8 +150,8 @@ export function SearchPopoverResults({
         )}
 
         {!loading && !error && query.length >= 2 && suggestions.length === 0 && (
-          <div style={{ padding: '32px 12px' }} className="text-center">
-            <Search size={24} style={{ opacity: 0.4, margin: '0 auto 8px' }} />
+          <div className="p-8 text-center">
+            <Search size={24} className="mx-auto mb-2 opacity-40" />
             <p className="text-sm">
               {activeScope
                 ? t('search.noScopeResults', {
@@ -199,13 +161,12 @@ export function SearchPopoverResults({
                   })
                 : t('search.noResults', { defaultValue: 'No results for "{{query}}"', query })}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-2 text-xs text-muted-foreground">
               {activeScope ? (
                 <button
                   type="button"
                   onClick={onClearScope}
-                  style={{ background: 'transparent', border: 0, color: 'inherit' }}
-                  className="underline p-0 cursor-pointer"
+                  className="cursor-pointer bg-transparent p-0 text-inherit underline"
                 >
                   {t('search.tryAll', 'Try All')} →
                 </button>
@@ -217,7 +178,7 @@ export function SearchPopoverResults({
         )}
 
         {suggestions.map((suggestion, i) => {
-          const Icon = suggestion.icon as React.ComponentType<{ style?: React.CSSProperties }>;
+          const Icon = suggestion.icon as React.ComponentType<{ className?: string }>;
           const focused = focusedIndex === i;
           const displayName = suggestion.name || suggestion.title || '';
           return (
@@ -235,69 +196,45 @@ export function SearchPopoverResults({
                 onPrefetch(suggestion);
               }}
               tabIndex={-1}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '8px 12px',
-                cursor: 'pointer',
-                minHeight: 52,
-                background: focused ? 'hsl(var(--accent))' : 'transparent',
-                outline: focused ? '1px solid hsl(var(--ring))' : 'none',
-                outlineOffset: -1,
-              }}
+              className={cn(
+                'flex cursor-pointer items-center gap-2 px-3 py-2 transition-colors min-h-[52px]',
+                focused ? 'bg-accent outline outline-1 -outline-offset-1 outline-ring' : 'hover:bg-accent',
+              )}
             >
-              <div
-                style={{
-                  height: 40,
-                  width: 40,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--muted))',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                className="shrink-0 flex overflow-hidden"
-              >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden border border-border bg-muted">
                 {suggestion.image ? (
-                  // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a load event, not user interaction
                   <img
                     src={suggestion.image}
                     alt=""
                     loading="lazy"
-                    style={{ height: '100%', width: '100%', objectFit: 'cover' }}
+                    className="h-full w-full object-cover"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = 'none';
                     }}
                   />
                 ) : (
-                  <Icon style={{ height: 16, width: 16 }} className="text-muted-foreground" />
+                  <Icon className="h-4 w-4 text-muted-foreground" />
                 )}
               </div>
-              <div style={{ flex: 1, minWidth: 0, flexDirection: 'column' }} className="flex">
-                <span
-                  className="text-sm font-medium overflow-hidden whitespace-nowrap"
-                  style={{ textOverflow: 'ellipsis' }}
-                >
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-sm font-medium">
                   <HighlightedText text={displayName} query={query} html={suggestion.nameHtml} />
                 </span>
                 {(suggestion.subtitle || suggestion.city || suggestion.country) && (
-                  <span
-                    className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap"
-                    style={{ textOverflow: 'ellipsis' }}
-                  >
+                  <span className="truncate text-xs text-muted-foreground">
                     {[suggestion.subtitle, suggestion.city, suggestion.country]
                       .filter(Boolean)
                       .join(' · ')}
                   </span>
                 )}
               </div>
-              <Icon style={{ height: 12, width: 12 }} className="text-muted-foreground shrink-0" />
+              <Icon className="h-3 w-3 shrink-0 text-muted-foreground" />
             </div>
           );
         })}
 
         {loading && suggestions.length > 0 && (
-          <div style={{ justifyContent: 'center' }} className="flex p-2">
+          <div className="flex justify-center p-2">
             <Loader2 className="animate-spin text-muted-foreground" size={14} />
           </div>
         )}

@@ -401,7 +401,7 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 bg-background/70 backdrop-blur-xl border-b border-border/50"
+      className="sticky top-0 border-b border-border bg-background/80 backdrop-blur-xl"
       style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="px-4 sm:px-6 md:px-8">
@@ -421,12 +421,7 @@ export function Header() {
                 className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
                 style={{ height: 28, width: 28 }}
               />
-              <span
-                className="absolute overflow-hidden"
-                style={{ width: 1, height: 1, clip: 'rect(0,0,0,0)' }}
-              >
-                Queer Guide
-              </span>
+              <span className="sr-only">Queer Guide</span>
             </Link>
           )}
 
@@ -480,12 +475,7 @@ export function Header() {
                         className="absolute bg-destructive"
                         style={{ top: 8, right: 8, width: 8, height: 8 }}
                       />
-                      <span
-                        role="status"
-                        aria-live="polite"
-                        className="absolute overflow-hidden"
-                        style={{ width: 1, height: 1, clip: 'rect(0,0,0,0)' }}
-                      >
+                      <span role="status" aria-live="polite" className="sr-only">
                         {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
                       </span>
                     </>
