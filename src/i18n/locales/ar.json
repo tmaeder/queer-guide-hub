@@ -1585,7 +1585,14 @@
       "share": "[AR] Share",
       "shareCopied": "[AR] Copied",
       "shareFilters": "[AR] Copy share link",
-      "shareFiltersHint": "[AR] Copy a link to these filters"
+      "shareFiltersHint": "[AR] Copy a link to these filters",
+      "ageRestriction": "[AR] Age restriction",
+      "ageAny": "[AR] Any",
+      "ageAllAges": "[AR] All ages",
+      "age18Plus": "[AR] 18+",
+      "age21Plus": "[AR] 21+",
+      "filterAge": "[AR] Age: {{value}}",
+      "clearFilterAge": "[AR] Clear age filter"
     },
     "eventDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل الفعالية.",
