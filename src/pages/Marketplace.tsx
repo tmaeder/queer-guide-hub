@@ -13,6 +13,7 @@ import { MarketplaceSpotlight } from '@/components/marketplace/MarketplaceSpotli
 import { MarketplaceCategoryTiles } from '@/components/marketplace/MarketplaceCategoryTiles';
 import { OccasionChips } from '@/components/marketplace/OccasionChips';
 import { HeroCollection } from '@/components/marketplace/HeroCollection';
+import { ForYouRail } from '@/components/marketplace/ForYouRail';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { isAdultListing } from '@/hooks/useAdultContent';
 import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityChips';
@@ -376,6 +377,7 @@ const Marketplace = () => {
             <>
               <OccasionChips />
               <HeroCollection />
+              <ForYouRail />
               <MarketplaceSpotlight />
               <MarketplaceCategoryTiles />
               <MarketplaceRow
