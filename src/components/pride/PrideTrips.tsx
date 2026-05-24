@@ -20,8 +20,13 @@ interface TripCluster {
   totalKm: number;
 }
 
-const MAX_DAYS_APART = 14;
-const MAX_KM_BETWEEN = 1500;
+// Constraints that keep clusters realistic as multi-city pride trips
+// (not sprawling chronological chains).
+const MAX_DAYS_APART = 14; // leg-to-leg
+const MAX_KM_BETWEEN = 1500; // leg-to-leg
+const MAX_CHAIN_EVENTS = 4; // total prides in one trip
+const MAX_TOTAL_SPAN_DAYS = 21; // start-to-end of trip
+const MAX_TOTAL_KM = 4000; // sum across all legs
 
 export function buildClusters(events: PrideCalendarEvent[]): TripCluster[] {
   const geo = events.filter((e) => e.latitude != null && e.longitude != null);
@@ -35,7 +40,7 @@ export function buildClusters(events: PrideCalendarEvent[]): TripCluster[] {
     if (seen.has(sorted[i].id)) continue;
     const chain: PrideCalendarEvent[] = [sorted[i]];
     let totalKm = 0;
-    for (let j = i + 1; j < sorted.length; j++) {
+    for (let j = i + 1; j < sorted.length && chain.length < MAX_CHAIN_EVENTS; j++) {
       const prev = chain[chain.length - 1];
       const cand = sorted[j];
       if (seen.has(cand.id)) continue;
@@ -43,6 +48,11 @@ export function buildClusters(events: PrideCalendarEvent[]): TripCluster[] {
         (new Date(cand.start_date).getTime() - new Date(prev.start_date).getTime()) / 86_400_000,
       );
       if (days > MAX_DAYS_APART) break;
+      const totalSpan = Math.abs(
+        (new Date(cand.start_date).getTime() - new Date(chain[0].start_date).getTime()) /
+          86_400_000,
+      );
+      if (totalSpan > MAX_TOTAL_SPAN_DAYS) break;
       const km = calculateDistanceKm(
         prev.latitude as number,
         prev.longitude as number,
@@ -50,6 +60,7 @@ export function buildClusters(events: PrideCalendarEvent[]): TripCluster[] {
         cand.longitude as number,
       );
       if (km > MAX_KM_BETWEEN) continue;
+      if (totalKm + km > MAX_TOTAL_KM) continue;
       chain.push(cand);
       totalKm += km;
     }
@@ -86,10 +97,11 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
 
   return (
     <section aria-labelledby="trips-heading">
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-baseline justify-between gap-2 flex-wrap mb-3">
         <h2 id="trips-heading" className="text-title font-medium">
           {t('pride.trips.title')}
         </h2>
+        <span className="text-xs2 text-foreground/50">Up to 4 prides · within 21 days · &lt;4000&nbsp;km</span>
         <span className="text-xs2 text-foreground/50">{t('pride.trips.subtitle')}</span>
       </div>
 
@@ -101,6 +113,8 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
           >
             <div className="flex items-baseline justify-between gap-3 flex-wrap">
               <p className="text-xs2 uppercase tracking-label text-foreground/60">
+                {c.events.length} prides · {c.span} day{c.span === 1 ? '' : 's'}
+                {c.totalKm > 0 && ` · ${Math.round(c.totalKm).toLocaleString()} km`}
                 {c.totalKm > 0
                   ? t('pride.trips.metaWithKm', {
                       count: c.events.length,

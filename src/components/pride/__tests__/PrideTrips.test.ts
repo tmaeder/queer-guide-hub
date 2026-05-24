@@ -110,4 +110,28 @@ describe('buildClusters', () => {
       seen.add(e.id);
     }
   });
+
+  it('caps a single cluster at 4 events', () => {
+    const events: PrideCalendarEvent[] = [
+      mk({ id: 'berlin',    latitude: 52.52, longitude: 13.4,  start_date: '2026-07-01T00:00:00Z' }),
+      mk({ id: 'cologne',   latitude: 50.94, longitude: 6.96, start_date: '2026-07-04T00:00:00Z' }),
+      mk({ id: 'amsterdam', latitude: 52.37, longitude: 4.9,  start_date: '2026-07-08T00:00:00Z' }),
+      mk({ id: 'brussels',  latitude: 50.85, longitude: 4.35, start_date: '2026-07-12T00:00:00Z' }),
+      mk({ id: 'paris',     latitude: 48.86, longitude: 2.35, start_date: '2026-07-15T00:00:00Z' }),
+    ];
+    const r = buildClusters(events);
+    expect(r).toHaveLength(1);
+    expect(r[0].events).toHaveLength(4);
+  });
+
+  it('caps a single cluster span at 21 days', () => {
+    const events: PrideCalendarEvent[] = [
+      mk({ id: 'a', latitude: 52.52, longitude: 13.4,  start_date: '2026-07-01T00:00:00Z' }),
+      mk({ id: 'b', latitude: 50.94, longitude: 6.96, start_date: '2026-07-14T00:00:00Z' }), // +13d
+      mk({ id: 'c', latitude: 52.37, longitude: 4.9,  start_date: '2026-07-26T00:00:00Z' }), // +25d total → over 21d
+    ];
+    const r = buildClusters(events);
+    expect(r).toHaveLength(1);
+    expect(r[0].events.map((e) => e.id)).toEqual(['a', 'b']);
+  });
 });
