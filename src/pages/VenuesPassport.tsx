@@ -1,8 +1,32 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as Icons from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import {
+  Award,
+  CalendarDays,
+  Crown,
+  Flag,
+  Flame,
+  Footprints,
+  Globe,
+  Globe2,
+  Heart,
+  LayoutGrid,
+  Map,
+  MapPin,
+  Moon,
+  Sparkles,
+  type LucideIcon,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+
+// Explicit registry so Rollup tree-shakes lucide-react. A wildcard
+// `import * as Icons` here would force the entire library into the
+// public bundle (~600 KB raw). Add new icons to this map when the
+// achievements_catalog gains new icon strings.
+const ACHIEVEMENT_ICONS: Record<string, LucideIcon> = {
+  CalendarDays, Crown, Flag, Flame, Footprints, Globe, Globe2,
+  Heart, LayoutGrid, Map, MapPin, Moon, Sparkles,
+};
 import { useMeta } from '@/hooks/useMeta';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VenuesPersonalStrip } from '@/components/venues/VenuesPersonalStrip';
@@ -68,7 +92,7 @@ const VenuesPassport = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {catalog.map((a) => {
               const earned = earnedSet.has(a.slug);
-              const Icon = (Icons[a.icon as keyof typeof Icons] as LucideIcon | undefined) ?? Icons.Award;
+              const Icon = ACHIEVEMENT_ICONS[a.icon] ?? Award;
               return (
                 <div
                   key={a.slug}

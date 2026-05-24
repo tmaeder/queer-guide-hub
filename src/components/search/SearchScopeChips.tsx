@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
 
 const SCOPE_ICONS: Record<string, typeof Building2> = {
@@ -32,11 +33,6 @@ const SCOPE_ORDER = [
   'queer_village',
 ];
 
-interface SearchScopeChipsProps {
-  activeScope: string | null;
-  onScopeChange: (scope: string | null) => void;
-}
-
 const SCOPE_I18N_KEY: Record<string, string> = {
   venue: 'venues',
   event: 'events',
@@ -48,6 +44,11 @@ const SCOPE_I18N_KEY: Record<string, string> = {
   queer_village: 'places',
 };
 
+interface SearchScopeChipsProps {
+  activeScope: string | null;
+  onScopeChange: (scope: string | null) => void;
+}
+
 export function SearchScopeChips({ activeScope, onScopeChange }: SearchScopeChipsProps) {
   const { t } = useTranslation();
   const scopes = SCOPE_ORDER.map((id) => CONTENT_TYPES.find((c) => c.id === id)).filter(
@@ -58,12 +59,7 @@ export function SearchScopeChips({ activeScope, onScopeChange }: SearchScopeChip
     <div
       role="tablist"
       aria-label={t('search.scope.all', 'Search scope')}
-      className="flex items-center overflow-x-auto gap-1.5"
-      style={{
-        padding: '8px 12px',
-        borderBottom: '1px solid hsl(var(--border))',
-        scrollbarWidth: 'thin',
-      }}
+      className="flex items-center gap-1.5 overflow-x-auto border-b border-border px-3 py-2 [scrollbar-width:thin]"
     >
       <ScopeChip
         label={t('search.scope.all', 'All')}
@@ -106,16 +102,14 @@ function ScopeChip({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      style={{
-        alignItems: 'center',
-        padding: '4px 10px',
-        background: active ? 'hsl(var(--foreground))' : 'transparent',
-        color: active ? 'hsl(var(--background))' : 'hsl(var(--foreground))',
-        border: '1px solid hsl(var(--border))',
-      }}
-      className="inline-flex gap-1 text-xs whitespace-nowrap cursor-pointer shrink-0"
+      className={cn(
+        'inline-flex shrink-0 cursor-pointer items-center gap-1 whitespace-nowrap border border-border px-2.5 py-1 text-xs transition-colors',
+        active
+          ? 'bg-foreground text-background'
+          : 'bg-transparent text-foreground hover:bg-accent',
+      )}
     >
-      <Icon style={{ height: 12, width: 12 }} />
+      <Icon className="h-3 w-3" />
       {label}
     </button>
   );

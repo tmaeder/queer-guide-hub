@@ -57,16 +57,16 @@ describe('MarketplaceFilters', () => {
     expect(queryByText('Subcategory')).toBeNull();
   });
 
-  it('Apply Filters collapses the panel and fires onFiltersChange', () => {
+  it('Apply filters collapses the panel and fires onFiltersChange', () => {
     const onFiltersChange = vi.fn();
     const { getByText, getByLabelText, queryByText } = render(
       wrap(<MarketplaceFilters onFiltersChange={onFiltersChange} />),
     );
     fireEvent.click(getByLabelText('Toggle filters'));
-    expect(queryByText('Apply Filters')).toBeTruthy();
-    fireEvent.click(getByText('Apply Filters'));
-    // Panel collapses → "Apply Filters" no longer visible.
-    expect(queryByText('Apply Filters')).toBeNull();
+    expect(queryByText('Apply filters')).toBeTruthy();
+    fireEvent.click(getByText('Apply filters'));
+    // Panel collapses → "Apply filters" no longer visible.
+    expect(queryByText('Apply filters')).toBeNull();
     expect(onFiltersChange).toHaveBeenCalled();
   });
 });

@@ -165,7 +165,6 @@ export default tseslint.config(
       "src/components/profile/UserModeBadge.tsx",
       // OG/recap PNG generated via canvas — hex literals are required by the canvas API.
       "src/pages/profile/Footprint.tsx",
-      "src/components/user-directory/UserDirectoryGrid.tsx",
       // Map style + security dashboards = data-viz, hardcoded by design.
       "src/components/map/**",
       "src/components/hotels/HotelsMap.tsx",
@@ -183,7 +182,6 @@ export default tseslint.config(
       // Functional gradients / scales / state colors that are intentional.
       "src/components/auth/PasswordStrengthMeter.tsx",
       "src/components/country/WorldBankDataPanel.tsx",
-      "src/components/user-directory/UserDirectoryFilters.tsx",
       "src/components/personalities/AddPersonalityDialog.tsx",
       "src/hooks/useExploreMapData.ts",
       "src/hooks/useReviewBulkActions.ts",
@@ -357,8 +355,6 @@ export default tseslint.config(
       "src/components/profile/UserModeBadge.tsx",
       "src/components/profile/PhotoGallery.tsx",
       "src/pages/profile/Footprint.tsx",
-      "src/components/user-directory/UserDirectoryGrid.tsx",
-      "src/components/user-directory/UserDirectoryFilters.tsx",
       "src/components/map/**",
       "src/components/hotels/HotelsMap.tsx",
       "src/components/events/EventsMapView.tsx",
