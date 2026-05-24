@@ -2036,5 +2036,40 @@
       "title": "رسم علاقات الوسوم",
       "description": "كيف ترتبط الوسوم بالتشابه الدلالي والتزامن"
     }
+  },
+  "cities": {
+    "metaTitle": "[AR] Cities",
+    "metaDescription": "[AR] Browse LGBTQ+ friendly cities around the world.",
+    "eyebrow": "[AR] Destinations",
+    "title": "[AR] Cities.",
+    "subtitle": "[AR] LGBTQ+ friendly cities around the world.",
+    "planTrip": "[AR] Plan a trip",
+    "openDirectory": "[AR] Open the directory",
+    "searchAriaLabel": "[AR] Search cities",
+    "searchPlaceholder": "[AR] Search cities…",
+    "resultCount": "[AR] {{shown}} of {{total}} cities",
+    "filtersAriaLabel": "[AR] Filter cities",
+    "continentsAriaLabel": "[AR] Filter by continent",
+    "equalityAriaLabel": "[AR] Filter by equality score",
+    "sortLabel": "[AR] Sort",
+    "sortAriaLabel": "[AR] Sort cities",
+    "sort": {
+      "population": "[AR] Population",
+      "name": "[AR] Name (A–Z)",
+      "equality": "[AR] Equality",
+      "venues": "[AR] Venues"
+    },
+    "reset": "[AR] Reset",
+    "resetFilters": "[AR] Reset filters",
+    "viewToggleAriaLabel": "[AR] Toggle list and map",
+    "viewList": "[AR] List",
+    "viewMap": "[AR] Map",
+    "listLabel": "[AR] Cities",
+    "emptyTitle": "[AR] No cities found",
+    "empty": "[AR] No cities are currently listed.",
+    "emptyFiltered": "[AR] Try removing a filter or clearing the search.",
+    "suggestTitle": "[AR] Missing a city?",
+    "suggestLede": "[AR] Suggest one — adds to the directory after review.",
+    "suggestCta": "[AR] Suggest a city"
   }
 }

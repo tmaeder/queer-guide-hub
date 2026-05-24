@@ -2068,5 +2068,40 @@
       "title": "Граф связей тегов",
       "description": "Как теги связаны по семантическому сходству и совместной встречаемости"
     }
+  },
+  "cities": {
+    "metaTitle": "[RU] Cities",
+    "metaDescription": "[RU] Browse LGBTQ+ friendly cities around the world.",
+    "eyebrow": "[RU] Destinations",
+    "title": "[RU] Cities.",
+    "subtitle": "[RU] LGBTQ+ friendly cities around the world.",
+    "planTrip": "[RU] Plan a trip",
+    "openDirectory": "[RU] Open the directory",
+    "searchAriaLabel": "[RU] Search cities",
+    "searchPlaceholder": "[RU] Search cities…",
+    "resultCount": "[RU] {{shown}} of {{total}} cities",
+    "filtersAriaLabel": "[RU] Filter cities",
+    "continentsAriaLabel": "[RU] Filter by continent",
+    "equalityAriaLabel": "[RU] Filter by equality score",
+    "sortLabel": "[RU] Sort",
+    "sortAriaLabel": "[RU] Sort cities",
+    "sort": {
+      "population": "[RU] Population",
+      "name": "[RU] Name (A–Z)",
+      "equality": "[RU] Equality",
+      "venues": "[RU] Venues"
+    },
+    "reset": "[RU] Reset",
+    "resetFilters": "[RU] Reset filters",
+    "viewToggleAriaLabel": "[RU] Toggle list and map",
+    "viewList": "[RU] List",
+    "viewMap": "[RU] Map",
+    "listLabel": "[RU] Cities",
+    "emptyTitle": "[RU] No cities found",
+    "empty": "[RU] No cities are currently listed.",
+    "emptyFiltered": "[RU] Try removing a filter or clearing the search.",
+    "suggestTitle": "[RU] Missing a city?",
+    "suggestLede": "[RU] Suggest one — adds to the directory after review.",
+    "suggestCta": "[RU] Suggest a city"
   }
 }

@@ -2,11 +2,13 @@ import { memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
 import { EqualityChip } from './EqualityChip';
+import { formatPrideDate, type NextPride } from '@/utils/prideForCity';
 import type { DirectoryCity } from '@/hooks/useCitiesDirectory';
 
 interface CityListRowProps {
   city: DirectoryCity;
   venueCount: number | undefined;
+  nextPride?: NextPride;
   selected?: boolean;
   onHover?: (cityId: string | null) => void;
 }
@@ -21,11 +23,18 @@ function formatVenueCount(n: number | undefined): string | null {
   return `${n} venues`;
 }
 
-function CityListRowImpl({ city, venueCount, selected = false, onHover }: CityListRowProps) {
+function CityListRowImpl({
+  city,
+  venueCount,
+  nextPride,
+  selected = false,
+  onHover,
+}: CityListRowProps) {
   const thumb = city.image_url ?? city.curated_image_url ?? null;
   const initials = city.name.slice(0, 1).toUpperCase();
   const venueLabel = formatVenueCount(venueCount);
   const continentName = city.countries?.continents?.code ?? null;
+  const prideLabel = nextPride ? `Pride · ${formatPrideDate(nextPride.date)}` : null;
 
   return (
     <li
@@ -79,7 +88,17 @@ function CityListRowImpl({ city, venueCount, selected = false, onHover }: CityLi
               {city.countries?.name ?? '—'}
               {continentName ? ` · ${continentName}` : ''}
             </p>
-            {venueLabel && <span className="shrink-0">{venueLabel}</span>}
+            <span className="flex items-center gap-2 shrink-0">
+              {prideLabel && (
+                <span
+                  className="inline-flex items-center rounded-badge border border-foreground/20 px-1.5 py-0.5 text-xs2 font-medium text-foreground"
+                  aria-label={`${nextPride!.title} on ${formatPrideDate(nextPride!.date)}`}
+                >
+                  {prideLabel}
+                </span>
+              )}
+              {venueLabel && <span>{venueLabel}</span>}
+            </span>
           </div>
         </div>
       </LocalizedLink>

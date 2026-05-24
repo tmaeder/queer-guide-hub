@@ -2038,5 +2038,40 @@
       "title": "Gráfico de relaciones",
       "description": "Cómo se relacionan las etiquetas por similitud semántica y co-ocurrencia"
     }
+  },
+  "cities": {
+    "metaTitle": "[ES] Cities",
+    "metaDescription": "[ES] Browse LGBTQ+ friendly cities around the world.",
+    "eyebrow": "[ES] Destinations",
+    "title": "[ES] Cities.",
+    "subtitle": "[ES] LGBTQ+ friendly cities around the world.",
+    "planTrip": "[ES] Plan a trip",
+    "openDirectory": "[ES] Open the directory",
+    "searchAriaLabel": "[ES] Search cities",
+    "searchPlaceholder": "[ES] Search cities…",
+    "resultCount": "[ES] {{shown}} of {{total}} cities",
+    "filtersAriaLabel": "[ES] Filter cities",
+    "continentsAriaLabel": "[ES] Filter by continent",
+    "equalityAriaLabel": "[ES] Filter by equality score",
+    "sortLabel": "[ES] Sort",
+    "sortAriaLabel": "[ES] Sort cities",
+    "sort": {
+      "population": "[ES] Population",
+      "name": "[ES] Name (A–Z)",
+      "equality": "[ES] Equality",
+      "venues": "[ES] Venues"
+    },
+    "reset": "[ES] Reset",
+    "resetFilters": "[ES] Reset filters",
+    "viewToggleAriaLabel": "[ES] Toggle list and map",
+    "viewList": "[ES] List",
+    "viewMap": "[ES] Map",
+    "listLabel": "[ES] Cities",
+    "emptyTitle": "[ES] No cities found",
+    "empty": "[ES] No cities are currently listed.",
+    "emptyFiltered": "[ES] Try removing a filter or clearing the search.",
+    "suggestTitle": "[ES] Missing a city?",
+    "suggestLede": "[ES] Suggest one — adds to the directory after review.",
+    "suggestCta": "[ES] Suggest a city"
   }
 }

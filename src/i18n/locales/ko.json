@@ -2036,5 +2036,40 @@
       "title": "태그 관계 그래프",
       "description": "의미적 유사성과 동시 발생을 통한 태그 관계 탐색"
     }
+  },
+  "cities": {
+    "metaTitle": "[KO] Cities",
+    "metaDescription": "[KO] Browse LGBTQ+ friendly cities around the world.",
+    "eyebrow": "[KO] Destinations",
+    "title": "[KO] Cities.",
+    "subtitle": "[KO] LGBTQ+ friendly cities around the world.",
+    "planTrip": "[KO] Plan a trip",
+    "openDirectory": "[KO] Open the directory",
+    "searchAriaLabel": "[KO] Search cities",
+    "searchPlaceholder": "[KO] Search cities…",
+    "resultCount": "[KO] {{shown}} of {{total}} cities",
+    "filtersAriaLabel": "[KO] Filter cities",
+    "continentsAriaLabel": "[KO] Filter by continent",
+    "equalityAriaLabel": "[KO] Filter by equality score",
+    "sortLabel": "[KO] Sort",
+    "sortAriaLabel": "[KO] Sort cities",
+    "sort": {
+      "population": "[KO] Population",
+      "name": "[KO] Name (A–Z)",
+      "equality": "[KO] Equality",
+      "venues": "[KO] Venues"
+    },
+    "reset": "[KO] Reset",
+    "resetFilters": "[KO] Reset filters",
+    "viewToggleAriaLabel": "[KO] Toggle list and map",
+    "viewList": "[KO] List",
+    "viewMap": "[KO] Map",
+    "listLabel": "[KO] Cities",
+    "emptyTitle": "[KO] No cities found",
+    "empty": "[KO] No cities are currently listed.",
+    "emptyFiltered": "[KO] Try removing a filter or clearing the search.",
+    "suggestTitle": "[KO] Missing a city?",
+    "suggestLede": "[KO] Suggest one — adds to the directory after review.",
+    "suggestCta": "[KO] Suggest a city"
   }
 }
