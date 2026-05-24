@@ -2036,5 +2036,40 @@
       "title": "标签关系图",
       "description": "通过语义相似度和共现关系了解标签如何相互关联"
     }
+  },
+  "cities": {
+    "metaTitle": "[ZH] Cities",
+    "metaDescription": "[ZH] Browse LGBTQ+ friendly cities around the world.",
+    "eyebrow": "[ZH] Destinations",
+    "title": "[ZH] Cities.",
+    "subtitle": "[ZH] LGBTQ+ friendly cities around the world.",
+    "planTrip": "[ZH] Plan a trip",
+    "openDirectory": "[ZH] Open the directory",
+    "searchAriaLabel": "[ZH] Search cities",
+    "searchPlaceholder": "[ZH] Search cities…",
+    "resultCount": "[ZH] {{shown}} of {{total}} cities",
+    "filtersAriaLabel": "[ZH] Filter cities",
+    "continentsAriaLabel": "[ZH] Filter by continent",
+    "equalityAriaLabel": "[ZH] Filter by equality score",
+    "sortLabel": "[ZH] Sort",
+    "sortAriaLabel": "[ZH] Sort cities",
+    "sort": {
+      "population": "[ZH] Population",
+      "name": "[ZH] Name (A–Z)",
+      "equality": "[ZH] Equality",
+      "venues": "[ZH] Venues"
+    },
+    "reset": "[ZH] Reset",
+    "resetFilters": "[ZH] Reset filters",
+    "viewToggleAriaLabel": "[ZH] Toggle list and map",
+    "viewList": "[ZH] List",
+    "viewMap": "[ZH] Map",
+    "listLabel": "[ZH] Cities",
+    "emptyTitle": "[ZH] No cities found",
+    "empty": "[ZH] No cities are currently listed.",
+    "emptyFiltered": "[ZH] Try removing a filter or clearing the search.",
+    "suggestTitle": "[ZH] Missing a city?",
+    "suggestLede": "[ZH] Suggest one — adds to the directory after review.",
+    "suggestCta": "[ZH] Suggest a city"
   }
 }

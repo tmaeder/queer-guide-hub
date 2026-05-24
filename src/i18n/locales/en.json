@@ -2014,5 +2014,40 @@
       "title": "Tag Relationship Graph",
       "description": "Explore how tags relate by semantic similarity and co-occurrence"
     }
+  },
+  "cities": {
+    "metaTitle": "Cities",
+    "metaDescription": "Browse LGBTQ+ friendly cities around the world.",
+    "eyebrow": "Destinations",
+    "title": "Cities.",
+    "subtitle": "LGBTQ+ friendly cities around the world.",
+    "planTrip": "Plan a trip",
+    "openDirectory": "Open the directory",
+    "searchAriaLabel": "Search cities",
+    "searchPlaceholder": "Search cities…",
+    "resultCount": "{{shown}} of {{total}} cities",
+    "filtersAriaLabel": "Filter cities",
+    "continentsAriaLabel": "Filter by continent",
+    "equalityAriaLabel": "Filter by equality score",
+    "sortLabel": "Sort",
+    "sortAriaLabel": "Sort cities",
+    "sort": {
+      "population": "Population",
+      "name": "Name (A–Z)",
+      "equality": "Equality",
+      "venues": "Venues"
+    },
+    "reset": "Reset",
+    "resetFilters": "Reset filters",
+    "viewToggleAriaLabel": "Toggle list and map",
+    "viewList": "List",
+    "viewMap": "Map",
+    "listLabel": "Cities",
+    "emptyTitle": "No cities found",
+    "empty": "No cities are currently listed.",
+    "emptyFiltered": "Try removing a filter or clearing the search.",
+    "suggestTitle": "Missing a city?",
+    "suggestLede": "Suggest one — adds to the directory after review.",
+    "suggestCta": "Suggest a city"
   }
 }

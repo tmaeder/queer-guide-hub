@@ -3,11 +3,13 @@ import { Building2 } from 'lucide-react';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { CityListRow } from './CityListRow';
 import type { DirectoryCity } from '@/hooks/useCitiesDirectory';
+import type { NextPride } from '@/utils/prideForCity';
 
 interface CityListPaneProps {
   cities: DirectoryCity[];
   loading: boolean;
   venueCounts: ReadonlyMap<string, number>;
+  prideByCity?: ReadonlyMap<string, NextPride>;
   selectedCityId?: string | null;
   onHoverCity?: (cityId: string | null) => void;
   /** Show this hint when the list is empty but a search/filter is active. */
@@ -30,6 +32,7 @@ export function CityListPane({
   cities,
   loading,
   venueCounts,
+  prideByCity,
   selectedCityId,
   onHoverCity,
   hasActiveFilters = false,
@@ -71,6 +74,7 @@ export function CityListPane({
           key={city.id}
           city={city}
           venueCount={venueCounts.get(city.id)}
+          nextPride={prideByCity?.get(city.id)}
           selected={!!selectedCityId && (selectedCityId === city.id || selectedCityId === city.slug)}
           onHover={onHoverCity}
         />
