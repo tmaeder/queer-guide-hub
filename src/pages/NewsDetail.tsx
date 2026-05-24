@@ -42,6 +42,8 @@ import { fetchStoryForArticle } from '@/hooks/useNewsStories';
 import { Layers } from 'lucide-react';
 import { TracingBeam } from '@/components/effects/TracingBeam';
 import { Editable } from '@/components/admin/inline/Editable';
+import { useUserNewsReads } from '@/hooks/useUserNewsReads';
+import { ReadingProgressBar } from '@/components/news/editorial/ReadingProgressBar';
 
 interface NewsArticle {
   id: string;
@@ -61,6 +63,7 @@ interface NewsArticle {
   tags: string[] | null;
   publisher_name: string | null;
   created_at: string;
+  editorial_note?: string | null;
 }
 
 interface DbCategory {
@@ -95,6 +98,12 @@ export default function NewsDetail() {
     null,
   );
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
+  const { markRead } = useUserNewsReads();
+
+  // Mark the article as read once we have its id (drives streak + challenge progress).
+  useEffect(() => {
+    if (article?.id) void markRead(article.id);
+  }, [article?.id, markRead]);
 
   const articleIds = useMemo(() => (article ? [article.id] : []), [article]);
   const { assets: articleAssets } = useEntityImageAssets('news_article', articleIds);
@@ -288,6 +297,7 @@ export default function NewsDetail() {
 
   return (
     <TracingBeam className="container mx-auto py-8 px-4 pb-24">
+      <ReadingProgressBar />
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 mb-4 flex-wrap">
         <LocalizedLink
@@ -437,6 +447,21 @@ export default function NewsDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
         {/* Main Content */}
         <div className="flex flex-col gap-6">
+          {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote. */}
+          {article.editorial_note && (
+            <aside
+              aria-label="Why this matters"
+              className="border-l-2 border-foreground pl-6 py-2"
+            >
+              <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground m-0">
+                Why this matters
+              </p>
+              <p className="mt-3 m-0 text-base italic leading-relaxed">
+                {article.editorial_note}
+              </p>
+            </aside>
+          )}
+
           {/* Article Content Card */}
           <Card>
             <CardHeader>

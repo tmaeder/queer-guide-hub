@@ -47,12 +47,29 @@ interface NewsCardProps {
   sourcesMap?: Record<string, { id: string; name: string; url?: string }>;
   tags?: string[];
   categoriesMap?: Record<string, NewsCategory>;
-  variant?: 'default' | 'headline' | 'featured' | 'compact';
+  variant?: 'default' | 'headline' | 'featured' | 'compact' | 'lead' | 'section-hero';
   priority?: boolean;
   hideDate?: boolean;
   density?: 'comfortable' | 'compact';
   imageAsset?: EntityImageAsset;
 }
+
+// Pull the first sentence of an excerpt to use as a magazine-style "dek".
+// Falls back to the whole excerpt if no sentence boundary is found within 180 chars.
+const extractDek = (excerpt: string): string => {
+  if (!excerpt) return '';
+  const trimmed = excerpt.trim();
+  const match = trimmed.match(/^(.+?[.!?])(\s|$)/);
+  if (match && match[1].length <= 180) return match[1];
+  return trimmed.length > 180 ? trimmed.slice(0, 180).trimEnd() + '…' : trimmed;
+};
+
+// Dot pulses next to the timestamp for articles published in the last 60min.
+const RECENCY_WINDOW_MS = 60 * 60 * 1000;
+const isFreshArticle = (publishedAt: string | null | undefined): boolean => {
+  if (!publishedAt) return false;
+  return Date.now() - new Date(publishedAt).getTime() < RECENCY_WINDOW_MS;
+};
 
 const buildShareHandler = (slug: string, title: string) => (e: React.MouseEvent) => {
   e.preventDefault();
@@ -150,6 +167,8 @@ export const NewsCard = ({
     !hideDate && article.published_at
       ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true })
       : null;
+  const fresh = isFreshArticle(article.published_at);
+  const dek = excerptText ? extractDek(excerptText) : '';
 
   const eyebrowParts = [
     categoryDisplay,
@@ -158,6 +177,124 @@ export const NewsCard = ({
     isPremium ? 'Premium' : null,
     hideDate && article.is_featured ? 'Featured' : null,
   ].filter(Boolean) as string[];
+
+  // Lead variant: full-bleed magazine hero. Title at --text-hero-xl, dek with
+  // drop cap, byline row beneath. Image fills the container with a quiet
+  // black scrim to keep the title legible. Single CTA: open the article.
+  if (variant === 'lead') {
+    return (
+      <LocalizedLink
+        to={`/news/${article.slug}`}
+        aria-label={safeTitle}
+        className="group block relative overflow-hidden rounded-container no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-muted">
+          <img
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
+            referrerPolicy="no-referrer"
+            src={effectiveImage}
+            alt=""
+            role="presentation"
+            width={1600}
+            height={900}
+            className="block w-full h-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            onError={() => setImgFailed(true)}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent"
+          />
+        </div>
+        <div className="absolute inset-x-0 bottom-0 p-6 md:p-10 text-background">
+          {eyebrowParts.length > 0 && (
+            <p className="text-2xs uppercase tracking-wider opacity-90 flex items-center gap-2">
+              {fresh && (
+                <span
+                  aria-hidden="true"
+                  className="inline-block w-1.5 h-1.5 rounded-full bg-background animate-pulse motion-reduce:animate-none"
+                />
+              )}
+              {eyebrowParts.join(' · ')}
+            </p>
+          )}
+          <h2 className="m-0 mt-2 text-display md:text-hero font-bold leading-[0.95] tracking-tight max-w-4xl">
+            {safeTitle}
+          </h2>
+          {dek && (
+            <p className="news-lead-dek mt-4 max-w-2xl text-base md:text-lg italic leading-snug opacity-95">
+              {dek}
+            </p>
+          )}
+          <div className="mt-6 flex items-center gap-4 text-2xs uppercase tracking-wider opacity-90">
+            {authorName && <span>By {authorName}</span>}
+            {readingTime !== null && (
+              <span className="inline-flex items-center gap-1">
+                <BookOpen size={12} aria-hidden="true" /> {readingTime} min read
+              </span>
+            )}
+          </div>
+        </div>
+      </LocalizedLink>
+    );
+  }
+
+  // Section-hero variant: asymmetric text-left / image-right. Used as the
+  // first card inside each <SectionBand/>. Title at --text-headline-lg,
+  // italic dek beneath, byline + read-time row.
+  if (variant === 'section-hero') {
+    return (
+      <LocalizedLink
+        to={`/news/${article.slug}`}
+        aria-label={safeTitle}
+        className="group grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-container"
+      >
+        <div className="md:col-span-7 flex flex-col justify-center gap-4">
+          {eyebrowParts.length > 0 && (
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              {fresh && (
+                <span
+                  aria-hidden="true"
+                  className="inline-block w-1.5 h-1.5 rounded-full bg-foreground animate-pulse motion-reduce:animate-none"
+                />
+              )}
+              {eyebrowParts.join(' · ')}
+            </p>
+          )}
+          <h3 className="m-0 text-headline md:text-headline-lg font-bold leading-[1.05] tracking-tight">
+            {safeTitle}
+          </h3>
+          {dek && (
+            <p className="text-15 italic text-muted-foreground leading-relaxed">{dek}</p>
+          )}
+          <div className="flex items-center gap-4 text-2xs uppercase tracking-wider text-muted-foreground mt-2">
+            {authorName && <span>By {authorName}</span>}
+            {readingTime !== null && (
+              <span className="inline-flex items-center gap-1">
+                <BookOpen size={12} aria-hidden="true" /> {readingTime} min
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="md:col-span-5 overflow-hidden rounded-container bg-muted">
+          <img
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
+            referrerPolicy="no-referrer"
+            src={effectiveImage}
+            alt=""
+            role="presentation"
+            width={800}
+            height={600}
+            className="block w-full h-full object-cover aspect-[4/3] transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            onError={() => setImgFailed(true)}
+          />
+        </div>
+      </LocalizedLink>
+    );
+  }
 
   // Headline variant: ultra-compact, no image
   if (variant === 'headline') {
