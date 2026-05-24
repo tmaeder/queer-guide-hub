@@ -81,25 +81,46 @@ async function fetchCitiesDirectory(): Promise<CitiesDirectoryFetch> {
   return { cities, continents };
 }
 
+/**
+ * Chunk size for the venue-count IN() query. PostgREST + Cloudflare cap URL
+ * length around 8KB; 36-char UUIDs + %2C separators ≈ 39 chars each, so 100
+ * IDs ≈ 4KB — well under the limit and leaves room for the rest of the
+ * request. Without batching, a 400-city payload trips a 400 response.
+ */
+export const VENUE_COUNT_BATCH_SIZE = 100;
+
 async function fetchVenueCounts(cityIds: string[]): Promise<Map<string, number>> {
   if (cityIds.length === 0) return new Map();
-  const { data, error } = await supabase
-    .from('venues')
-    .select('city_id')
-    .eq('status', 'approved')
-    .not('city_id', 'is', null)
-    .in('city_id', cityIds);
 
-  if (error) {
-    // Venue counts are decoration — never block the directory on this failing.
-    return new Map();
+  const batches: string[][] = [];
+  for (let i = 0; i < cityIds.length; i += VENUE_COUNT_BATCH_SIZE) {
+    batches.push(cityIds.slice(i, i + VENUE_COUNT_BATCH_SIZE));
   }
 
   const counts = new Map<string, number>();
-  for (const row of (data ?? []) as Array<{ city_id: string | null }>) {
-    if (!row.city_id) continue;
-    counts.set(row.city_id, (counts.get(row.city_id) ?? 0) + 1);
+
+  const results = await Promise.all(
+    batches.map((batch) =>
+      supabase
+        .from('venues')
+        .select('city_id')
+        .eq('status', 'approved')
+        .not('city_id', 'is', null)
+        .in('city_id', batch),
+    ),
+  );
+
+  for (const { data, error } of results) {
+    // Venue counts are decoration — never block the directory on a failed
+    // batch. Surface zero for those city ids; the row simply omits the
+    // venue suffix.
+    if (error) continue;
+    for (const row of (data ?? []) as Array<{ city_id: string | null }>) {
+      if (!row.city_id) continue;
+      counts.set(row.city_id, (counts.get(row.city_id) ?? 0) + 1);
+    }
   }
+
   return counts;
 }
 
