@@ -168,6 +168,15 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                     </span>
                   )}
                 </p>
+                {(() => {
+                  const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
+                  if (!blurb || blurb.length < 12) return null;
+                  return (
+                    <p className="mt-2 text-13 text-muted-foreground line-clamp-2">
+                      {blurb}
+                    </p>
+                  );
+                })()}
                 {topTags.length > 0 && (
                   <p className="mt-2 text-2xs text-muted-foreground truncate">
                     {topTags.join(' · ')}
