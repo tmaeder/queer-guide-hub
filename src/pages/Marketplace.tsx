@@ -14,6 +14,7 @@ import { MarketplaceCategoryTiles } from '@/components/marketplace/MarketplaceCa
 import { OccasionChips } from '@/components/marketplace/OccasionChips';
 import { HeroCollection } from '@/components/marketplace/HeroCollection';
 import { ForYouRail } from '@/components/marketplace/ForYouRail';
+import { GuidesStream } from '@/components/marketplace/GuidesStream';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { isAdultListing } from '@/hooks/useAdultContent';
 import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityChips';
@@ -385,6 +386,7 @@ const Marketplace = () => {
             <>
               <OccasionChips />
               <HeroCollection />
+              <GuidesStream limit={6} />
               <ForYouRail />
               <MarketplaceSpotlight />
               <MarketplaceCategoryTiles />
