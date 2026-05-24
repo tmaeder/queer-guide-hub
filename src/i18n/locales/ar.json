@@ -1477,7 +1477,6 @@
       "subtitle": "اكتشف وشارك في فعاليات المجتمع في منطقتك",
       "submitEvent": "إضافة فعالية",
       "gridView": "عرض شبكي",
-      "calendarView": "عرض التقويم",
       "city": "المدينة",
       "eventType": "نوع الفعالية",
       "startDate": "تاريخ البدء",
@@ -1569,7 +1568,8 @@
       "resultsCount_other": "{{count}} حدث",
       "resultsNear_one": "حدث {{count}} بالقرب من {{city}}",
       "resultsNear_other": "{{count}} حدث بالقرب من {{city}}",
-      "showWorldwide": "عرض حول العالم"
+      "showWorldwide": "عرض حول العالم",
+      "timelineView": "عرض الجدول الزمني"
     },
     "eventDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل الفعالية.",

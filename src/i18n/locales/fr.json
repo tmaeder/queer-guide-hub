@@ -1481,7 +1481,6 @@
       "subtitle": "Découvre et participe aux événements communautaires près de chez toi",
       "submitEvent": "Proposer un événement",
       "gridView": "Vue en grille",
-      "calendarView": "Vue calendrier",
       "city": "Ville",
       "eventType": "Type d'événement",
       "startDate": "Date de début",
@@ -1573,7 +1572,8 @@
       "resultsCount_other": "{{count}} événements",
       "resultsNear_one": "{{count}} événement près de {{city}}",
       "resultsNear_other": "{{count}} événements près de {{city}}",
-      "showWorldwide": "Voir dans le monde entier"
+      "showWorldwide": "Voir dans le monde entier",
+      "timelineView": "Vue chronologie"
     },
     "eventDetail": {
       "loadFailed": "Impossible de charger les détails de l'événement.",
