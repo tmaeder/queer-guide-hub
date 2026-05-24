@@ -1128,7 +1128,115 @@
     "review": "Bewertung schreiben",
     "photos": "Fotos",
     "amenities": "Ausstattung",
-    "services": "Angebote"
+    "services": "Angebote",
+    "rails": {
+      "nearYou": {
+        "title": "In deiner Nähe",
+        "subtitle": "Orte im Umkreis von 30 km, nach Entfernung sortiert."
+      },
+      "forYou": {
+        "title": "Für deinen Geschmack",
+        "subtitle": "Ausgewählt nach deinen Interessen und Besuchen."
+      },
+      "forYouPromo": {
+        "label": "Personalisiere deine Orte",
+        "kicker": "Für deinen Geschmack",
+        "title": "Erzähl uns, was du liebst.",
+        "body": "Melde dich an und beantworte vier kurze Fragen — wir sortieren Orte nach deinen Interessen.",
+        "cta": "Loslegen"
+      },
+      "new": {
+        "title": "Neu diesen Monat",
+        "subtitle": "Frische Ergänzungen zum Guide."
+      },
+      "topInCity": {
+        "title": "Top in {{city}}",
+        "subtitle": "Gerade beliebt in der Community."
+      },
+      "editors": {
+        "title": "Empfehlungen der Redaktion",
+        "subtitle": "Handverlesene Highlights."
+      }
+    },
+    "hero": {
+      "kicker": "Diese Woche im Fokus",
+      "cta": "Mehr erfahren",
+      "label": "Hervorgehobener Ort"
+    },
+    "personalStrip": {
+      "title": "{{name}} · Level {{level}}",
+      "label": "Deine Orte-Statistik",
+      "passport": "Reisepass ansehen",
+      "points": "Punkte",
+      "venues": "Orte",
+      "streak": "Tage in Folge",
+      "checkins": "Check-ins",
+      "nextLevel": "Nächstes: {{name}}"
+    },
+    "results": {
+      "title": "Passende Orte"
+    },
+    "quickFilters": {
+      "openNow": "Jetzt geöffnet",
+      "radius": "Entfernung",
+      "radiusKm": "Im Umkreis von {{km}} km",
+      "anyDistance": "Beliebige Entfernung",
+      "price": "Preis",
+      "anyPrice": "Beliebiger Preis",
+      "clear": "Zurücksetzen"
+    },
+    "leaderboard": {
+      "title": "Rangliste",
+      "subtitle": "Top-Entdecker:innen nach besuchten Orten.",
+      "tabs": {
+        "global": "Weltweit",
+        "city": "In {{city}}"
+      },
+      "empty": "Noch keine Daten — sei die erste, die eincheckt.",
+      "venuesShort": "Orte",
+      "widget": {
+        "label": "Top-Entdecker:innen",
+        "titleCity": "Top in {{city}}",
+        "titleGlobal": "Top-Entdecker:innen",
+        "viewAll": "Alle ansehen",
+        "anon": "Anonyme:r Entdecker:in",
+        "you": "Du"
+      }
+    },
+    "passport": {
+      "title": "Dein Reisepass",
+      "subtitle": "Alle Orte, in denen du eingecheckt hast, und alle Abzeichen.",
+      "achievements": "Erfolge",
+      "earned": "Erhalten",
+      "locked": "+{{pts}} Pkt.",
+      "visited": "{{count}} Orte besucht",
+      "empty": "Noch keine Check-ins. Besuche einen Ort, um deinen Pass zu starten.",
+      "signInPrompt": "Melde dich an, um deinen Reisepass zu sehen."
+    },
+    "onboarding": {
+      "progress": "Schritt {{current}} von {{total}}",
+      "step1": {
+        "title": "Welche Arten von Orten liebst du?"
+      },
+      "step2": {
+        "title": "Zu welchen Communities gehörst du?"
+      },
+      "step3": {
+        "title": "Welche Vibes magst du?"
+      },
+      "step4": {
+        "title": "Wo verbringst du die meiste Zeit?"
+      },
+      "cityPlaceholder": "Deine Stadt eingeben",
+      "citySelected": "Ausgewählt: {{city}}",
+      "finish": "Fertig",
+      "saveError": "Konnte nicht gespeichert werden",
+      "saveSuccess": "Vorlieben gespeichert"
+    },
+    "achievementToast": {
+      "unlocked": "Freigeschaltet: {{name}}",
+      "fallback": "Neuer Erfolg erhalten"
+    }
   },
   "marketplace": {
     "title": "Marktplatz",
@@ -1368,7 +1476,8 @@
       "filteredEmpty": {
         "title": "Keine Orte passen zu deinen Filtern",
         "body": "Passe deine Filter oder Suche an, um mehr Ergebnisse zu sehen."
-      }
+      },
+      "sortRelevance": "Für dich"
     },
     "venueDetail": {
       "loadFailed": "Details zum Ort konnten nicht geladen werden.",

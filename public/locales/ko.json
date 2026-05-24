@@ -993,7 +993,115 @@
     "review": "리뷰 작성",
     "photos": "사진",
     "amenities": "편의시설",
-    "services": "서비스"
+    "services": "서비스",
+    "rails": {
+      "nearYou": {
+        "title": "내 근처",
+        "subtitle": "30km 이내, 거리순."
+      },
+      "forYou": {
+        "title": "나의 취향",
+        "subtitle": "관심사와 방문 기록 기반."
+      },
+      "forYouPromo": {
+        "label": "장소 맞춤 설정",
+        "kicker": "나의 취향",
+        "title": "무엇을 좋아하는지 알려주세요.",
+        "body": "로그인하고 4가지 짧은 질문에 답해주세요. 관심사에 따라 정렬해드립니다.",
+        "cta": "시작하기"
+      },
+      "new": {
+        "title": "이달의 새 장소",
+        "subtitle": "가이드에 새로 추가됨."
+      },
+      "topInCity": {
+        "title": "{{city}} 인기",
+        "subtitle": "커뮤니티에서 인기."
+      },
+      "editors": {
+        "title": "에디터 추천",
+        "subtitle": "엄선한 하이라이트."
+      }
+    },
+    "hero": {
+      "kicker": "이번 주 추천",
+      "cta": "더 보기",
+      "label": "추천 장소"
+    },
+    "personalStrip": {
+      "title": "{{name}} · 레벨 {{level}}",
+      "label": "나의 통계",
+      "passport": "여권 보기",
+      "points": "포인트",
+      "venues": "장소",
+      "streak": "연속 일수",
+      "checkins": "체크인",
+      "nextLevel": "다음: {{name}}"
+    },
+    "results": {
+      "title": "일치하는 장소"
+    },
+    "quickFilters": {
+      "openNow": "지금 영업",
+      "radius": "거리",
+      "radiusKm": "{{km}}km 이내",
+      "anyDistance": "거리 무관",
+      "price": "가격",
+      "anyPrice": "가격 무관",
+      "clear": "지우기"
+    },
+    "leaderboard": {
+      "title": "리더보드",
+      "subtitle": "방문 장소 수 기준 상위 탐험가.",
+      "tabs": {
+        "global": "전 세계",
+        "city": "{{city}}"
+      },
+      "empty": "아직 데이터 없음.",
+      "venuesShort": "장소",
+      "widget": {
+        "label": "상위 탐험가",
+        "titleCity": "{{city}} 상위",
+        "titleGlobal": "상위 탐험가",
+        "viewAll": "전체 보기",
+        "anon": "익명 탐험가",
+        "you": "당신"
+      }
+    },
+    "passport": {
+      "title": "나의 여권",
+      "subtitle": "방문한 모든 장소와 획득한 배지.",
+      "achievements": "업적",
+      "earned": "획득",
+      "locked": "+{{pts}} pt",
+      "visited": "{{count}}개 장소 방문",
+      "empty": "체크인 없음.",
+      "signInPrompt": "로그인하여 여권을 확인하세요."
+    },
+    "onboarding": {
+      "progress": "단계 {{current}}/{{total}}",
+      "step1": {
+        "title": "어떤 장소를 좋아하나요?"
+      },
+      "step2": {
+        "title": "어떤 커뮤니티에 속해 있나요?"
+      },
+      "step3": {
+        "title": "어떤 분위기를 찾나요?"
+      },
+      "step4": {
+        "title": "주로 어디서 시간을 보내나요?"
+      },
+      "cityPlaceholder": "도시 입력",
+      "citySelected": "선택됨: {{city}}",
+      "finish": "완료",
+      "saveError": "저장 실패",
+      "saveSuccess": "취향 저장됨"
+    },
+    "achievementToast": {
+      "unlocked": "잠금 해제: {{name}}",
+      "fallback": "새 업적 획득"
+    }
   },
   "marketplace": {
     "title": "마켓플레이스",
@@ -1368,7 +1476,8 @@
       "filteredEmpty": {
         "title": "필터와 일치하는 장소가 없습니다",
         "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
-      }
+      },
+      "sortRelevance": "맞춤"
     },
     "venueDetail": {
       "loadFailed": "장소 상세 정보를 불러올 수 없습니다.",

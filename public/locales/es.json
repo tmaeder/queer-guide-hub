@@ -993,7 +993,115 @@
     "review": "Escribir reseña",
     "photos": "Fotos",
     "amenities": "Servicios",
-    "services": "Prestaciones"
+    "services": "Prestaciones",
+    "rails": {
+      "nearYou": {
+        "title": "Cerca de ti",
+        "subtitle": "Lugares en un radio de 30 km, ordenados por distancia."
+      },
+      "forYou": {
+        "title": "Para tu gusto",
+        "subtitle": "Elegidos por tus intereses y visitas."
+      },
+      "forYouPromo": {
+        "label": "Personaliza tus lugares",
+        "kicker": "Para tu gusto",
+        "title": "Dinos qué te encanta.",
+        "body": "Inicia sesión y responde cuatro preguntas — ordenaremos los lugares según tus intereses.",
+        "cta": "Empezar"
+      },
+      "new": {
+        "title": "Nuevo este mes",
+        "subtitle": "Adiciones recientes a la guía."
+      },
+      "topInCity": {
+        "title": "Top en {{city}}",
+        "subtitle": "Populares ahora en la comunidad."
+      },
+      "editors": {
+        "title": "Recomendaciones del editor",
+        "subtitle": "Selección curada."
+      }
+    },
+    "hero": {
+      "kicker": "Destacado esta semana",
+      "cta": "Leer más",
+      "label": "Lugar destacado"
+    },
+    "personalStrip": {
+      "title": "{{name}} · Nivel {{level}}",
+      "label": "Tus estadísticas",
+      "passport": "Ver pasaporte",
+      "points": "Puntos",
+      "venues": "Lugares",
+      "streak": "Días seguidos",
+      "checkins": "Check-ins",
+      "nextLevel": "Siguiente: {{name}}"
+    },
+    "results": {
+      "title": "Lugares que coinciden"
+    },
+    "quickFilters": {
+      "openNow": "Abierto ahora",
+      "radius": "Distancia",
+      "radiusKm": "En {{km}} km",
+      "anyDistance": "Cualquier distancia",
+      "price": "Precio",
+      "anyPrice": "Cualquier precio",
+      "clear": "Limpiar"
+    },
+    "leaderboard": {
+      "title": "Tabla de líderes",
+      "subtitle": "Top exploradores por lugares visitados.",
+      "tabs": {
+        "global": "Global",
+        "city": "En {{city}}"
+      },
+      "empty": "Aún no hay datos.",
+      "venuesShort": "lugares",
+      "widget": {
+        "label": "Top exploradores",
+        "titleCity": "Top en {{city}}",
+        "titleGlobal": "Top exploradores",
+        "viewAll": "Ver todo",
+        "anon": "Explorador anónimo",
+        "you": "Tú"
+      }
+    },
+    "passport": {
+      "title": "Tu pasaporte",
+      "subtitle": "Cada lugar visitado y cada insignia ganada.",
+      "achievements": "Logros",
+      "earned": "Obtenido",
+      "locked": "+{{pts}} pts",
+      "visited": "{{count}} lugares visitados",
+      "empty": "Aún no hay check-ins.",
+      "signInPrompt": "Inicia sesión para ver tu pasaporte."
+    },
+    "onboarding": {
+      "progress": "Paso {{current}} de {{total}}",
+      "step1": {
+        "title": "¿Qué tipo de lugares amas?"
+      },
+      "step2": {
+        "title": "¿A qué comunidades perteneces?"
+      },
+      "step3": {
+        "title": "¿Qué ambientes buscas?"
+      },
+      "step4": {
+        "title": "¿Dónde pasas más tiempo?"
+      },
+      "cityPlaceholder": "Escribe tu ciudad",
+      "citySelected": "Seleccionada: {{city}}",
+      "finish": "Finalizar",
+      "saveError": "No se pudo guardar",
+      "saveSuccess": "Gustos guardados"
+    },
+    "achievementToast": {
+      "unlocked": "Desbloqueado: {{name}}",
+      "fallback": "Nuevo logro obtenido"
+    }
   },
   "marketplace": {
     "title": "Mercado",
@@ -1368,7 +1476,8 @@
       "filteredEmpty": {
         "title": "Ningún lugar coincide con tus filtros",
         "body": "Intenta ajustar tus filtros o búsqueda para ver más resultados."
-      }
+      },
+      "sortRelevance": "Para ti"
     },
     "venueDetail": {
       "loadFailed": "No se pudieron cargar los detalles del lugar.",

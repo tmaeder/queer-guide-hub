@@ -993,7 +993,115 @@
     "review": "撰写评价",
     "photos": "照片",
     "amenities": "设施",
-    "services": "服务"
+    "services": "服务",
+    "rails": {
+      "nearYou": {
+        "title": "你附近",
+        "subtitle": "30公里范围内的场所，按距离排序。"
+      },
+      "forYou": {
+        "title": "为你推荐",
+        "subtitle": "根据兴趣和访问记录精选。"
+      },
+      "forYouPromo": {
+        "label": "个性化你的场所",
+        "kicker": "为你推荐",
+        "title": "告诉我们你喜欢什么。",
+        "body": "登录并回答四个简短问题——我们将根据你的兴趣排序。",
+        "cta": "开始"
+      },
+      "new": {
+        "title": "本月新增",
+        "subtitle": "指南的最新添加。"
+      },
+      "topInCity": {
+        "title": "{{city}}热门",
+        "subtitle": "社区中正在流行。"
+      },
+      "editors": {
+        "title": "编辑推荐",
+        "subtitle": "精挑细选。"
+      }
+    },
+    "hero": {
+      "kicker": "本周精选",
+      "cta": "了解更多",
+      "label": "精选场所"
+    },
+    "personalStrip": {
+      "title": "{{name}} · {{level}}级",
+      "label": "你的统计",
+      "passport": "查看护照",
+      "points": "积分",
+      "venues": "场所",
+      "streak": "连续天数",
+      "checkins": "签到",
+      "nextLevel": "下一级：{{name}}"
+    },
+    "results": {
+      "title": "匹配的场所"
+    },
+    "quickFilters": {
+      "openNow": "现在营业",
+      "radius": "距离",
+      "radiusKm": "{{km}}公里内",
+      "anyDistance": "不限距离",
+      "price": "价格",
+      "anyPrice": "不限价格",
+      "clear": "清除"
+    },
+    "leaderboard": {
+      "title": "排行榜",
+      "subtitle": "按访问场所数排名。",
+      "tabs": {
+        "global": "全球",
+        "city": "{{city}}"
+      },
+      "empty": "暂无数据。",
+      "venuesShort": "场所",
+      "widget": {
+        "label": "顶级探索者",
+        "titleCity": "{{city}}顶级",
+        "titleGlobal": "顶级探索者",
+        "viewAll": "查看全部",
+        "anon": "匿名探索者",
+        "you": "你"
+      }
+    },
+    "passport": {
+      "title": "你的护照",
+      "subtitle": "所有访问的场所和获得的徽章。",
+      "achievements": "成就",
+      "earned": "已获得",
+      "locked": "+{{pts}}分",
+      "visited": "访问了{{count}}个场所",
+      "empty": "尚无签到。",
+      "signInPrompt": "登录以查看你的护照。"
+    },
+    "onboarding": {
+      "progress": "步骤 {{current}}/{{total}}",
+      "step1": {
+        "title": "你喜欢什么样的场所？"
+      },
+      "step2": {
+        "title": "你属于哪些社群？"
+      },
+      "step3": {
+        "title": "你喜欢什么样的氛围？"
+      },
+      "step4": {
+        "title": "你大部分时间在哪里？"
+      },
+      "cityPlaceholder": "输入你的城市",
+      "citySelected": "已选择：{{city}}",
+      "finish": "完成",
+      "saveError": "保存失败",
+      "saveSuccess": "已保存偏好"
+    },
+    "achievementToast": {
+      "unlocked": "已解锁：{{name}}",
+      "fallback": "获得新成就"
+    }
   },
   "marketplace": {
     "title": "市场",
@@ -1368,7 +1476,8 @@
       "filteredEmpty": {
         "title": "没有匹配筛选条件的场地",
         "body": "尝试调整筛选条件或搜索以查看更多结果。"
-      }
+      },
+      "sortRelevance": "为你"
     },
     "venueDetail": {
       "loadFailed": "无法加载场所详情。",
