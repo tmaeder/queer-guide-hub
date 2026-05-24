@@ -1,20 +1,46 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router';
 import { Calendar as CalendarIcon, MapPin, Star, Ticket } from 'lucide-react';
-import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfWeek, startOfQuarter, addDays, addWeeks, addMonths, addQuarters, differenceInMilliseconds } from 'date-fns';
+import {
+  format,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  startOfQuarter,
+  addDays,
+  addWeeks,
+  addMonths,
+  addQuarters,
+} from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { placeOnRows, pickColumnUnit, type ColumnUnit } from '@/utils/timelineLayout';
+import { placeOnRows } from '@/utils/timelineLayout';
 import { formatEventTime } from '@/lib/event-time';
+import {
+  type Viewport,
+  panBy,
+  zoomBy,
+  centerOn,
+  fitToData,
+  defaultViewport,
+  pxForMs as pxForMsFn,
+  msForPx,
+  stepFor,
+} from '@/utils/timelineViewport';
+import { TimelineToolbar } from './TimelineToolbar';
+import { TimelineMinimap } from './TimelineMinimap';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
 interface EventsTimelineViewProps {
   events: Event[];
   onEventSelect?: (event: Event) => void;
+  viewport?: Viewport;
+  onViewportChange?: (v: Viewport) => void;
+  loading?: boolean;
 }
 
 const TRACK_TARGET_WIDTH = 1800;
@@ -23,6 +49,7 @@ const ROW_HEIGHT = 30;
 const BAR_HEIGHT = 18;
 const CLUSTER_PX = 24;
 const CLUSTER_MIN = 3;
+const DRAG_THRESHOLD_PX = 5;
 
 interface Bucket {
   startMs: number;
@@ -30,12 +57,14 @@ interface Bucket {
   label: string;
 }
 
-function buildBuckets(rangeStart: Date, rangeEnd: Date, unit: ColumnUnit): Bucket[] {
+function buildBuckets(viewport: Viewport): Bucket[] {
+  const step = stepFor(viewport);
   const buckets: Bucket[] = [];
   let cursor: Date;
-  switch (unit) {
+  const rangeEnd = new Date(viewport.endMs);
+  switch (step.unit) {
     case 'day':
-      cursor = startOfDay(rangeStart);
+      cursor = startOfDay(new Date(viewport.startMs));
       while (cursor < rangeEnd) {
         const next = addDays(cursor, 1);
         buckets.push({ startMs: cursor.getTime(), endMs: next.getTime(), label: format(cursor, 'MMM d') });
@@ -43,7 +72,7 @@ function buildBuckets(rangeStart: Date, rangeEnd: Date, unit: ColumnUnit): Bucke
       }
       break;
     case 'week':
-      cursor = startOfWeek(rangeStart, { weekStartsOn: 1 });
+      cursor = startOfWeek(new Date(viewport.startMs), { weekStartsOn: 1 });
       while (cursor < rangeEnd) {
         const next = addWeeks(cursor, 1);
         buckets.push({ startMs: cursor.getTime(), endMs: next.getTime(), label: format(cursor, 'MMM d') });
@@ -51,7 +80,7 @@ function buildBuckets(rangeStart: Date, rangeEnd: Date, unit: ColumnUnit): Bucke
       }
       break;
     case 'month':
-      cursor = startOfMonth(rangeStart);
+      cursor = startOfMonth(new Date(viewport.startMs));
       while (cursor < rangeEnd) {
         const next = addMonths(cursor, 1);
         const sameYear = cursor.getFullYear() === new Date().getFullYear();
@@ -64,7 +93,7 @@ function buildBuckets(rangeStart: Date, rangeEnd: Date, unit: ColumnUnit): Bucke
       }
       break;
     case 'quarter':
-      cursor = startOfQuarter(rangeStart);
+      cursor = startOfQuarter(new Date(viewport.startMs));
       while (cursor < rangeEnd) {
         const next = addQuarters(cursor, 1);
         buckets.push({
@@ -112,7 +141,6 @@ function buildItems(events: Event[], pxForMs: (ms: number) => number): TrackItem
     })
     .sort((a, b) => a.startMs - b.startMs);
 
-  // Cluster single-day-ish events that bunch within CLUSTER_PX
   const items: TrackItem[] = [];
   let i = 0;
   while (i < placeables.length) {
@@ -123,7 +151,6 @@ function buildItems(events: Event[], pxForMs: (ms: number) => number): TrackItem
       i++;
       continue;
     }
-    // collect short events within CLUSTER_PX of p
     const groupStartPx = pxForMs(p.startMs);
     const group: PlaceableEvent[] = [p];
     let j = i + 1;
@@ -155,84 +182,175 @@ function buildItems(events: Event[], pxForMs: (ms: number) => number): TrackItem
   return items;
 }
 
-export function EventsTimelineView({ events, onEventSelect }: EventsTimelineViewProps) {
+export function EventsTimelineView({
+  events,
+  onEventSelect,
+  viewport: controlledViewport,
+  onViewportChange,
+  loading,
+}: EventsTimelineViewProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const trackRef = useRef<HTMLDivElement | null>(null);
   const [openCluster, setOpenCluster] = useState<string | null>(null);
 
-  const { rangeStart, rangeEnd, unit, buckets, trackWidth, pxForMs } = useMemo(() => {
-    if (events.length === 0) {
-      const now = new Date();
-      const start = startOfMonth(now);
-      const end = endOfMonth(now);
-      return {
-        rangeStart: start,
-        rangeEnd: end,
-        unit: 'day' as ColumnUnit,
-        buckets: [],
-        trackWidth: TRACK_TARGET_WIDTH,
-        pxForMs: () => 0,
-      };
-    }
-    const starts = events.map((e) => new Date(e.start_date).getTime());
-    const ends = events.map((e) => new Date(e.end_date ?? e.start_date).getTime());
-    const minMs = Math.min(...starts);
-    const maxMs = Math.max(...ends);
-    const rangeMs = maxMs - minMs;
-    const unit = pickColumnUnit(rangeMs);
-    let start: Date;
-    let end: Date;
-    switch (unit) {
-      case 'day':
-        start = startOfDay(new Date(minMs));
-        end = endOfDay(new Date(maxMs));
-        break;
-      case 'week':
-        start = startOfWeek(new Date(minMs), { weekStartsOn: 1 });
-        end = addWeeks(startOfWeek(new Date(maxMs), { weekStartsOn: 1 }), 1);
-        break;
-      case 'month':
-        start = startOfMonth(new Date(minMs));
-        end = addMonths(startOfMonth(new Date(maxMs)), 1);
-        break;
-      case 'quarter':
-        start = startOfQuarter(new Date(minMs));
-        end = addQuarters(startOfQuarter(new Date(maxMs)), 1);
-        break;
-    }
-    const buckets = buildBuckets(start, end, unit);
-    const totalMs = differenceInMilliseconds(end, start);
-    const trackWidth = Math.max(TRACK_TARGET_WIDTH, buckets.length * 80);
-    const pxForMs = (ms: number) => ((ms - start.getTime()) / totalMs) * trackWidth;
-    return { rangeStart: start, rangeEnd: end, unit, buckets, trackWidth, pxForMs };
-  }, [events]);
+  const [internalViewport, setInternalViewport] = useState<Viewport>(() => {
+    if (controlledViewport) return controlledViewport;
+    const starts = events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n));
+    const ends = events.map((e) => new Date(e.end_date ?? e.start_date).getTime()).filter((n) => !isNaN(n));
+    return fitToData(starts, ends) ?? defaultViewport();
+  });
+  const viewport = controlledViewport ?? internalViewport;
 
-  const items = useMemo(() => buildItems(events, pxForMs), [events, pxForMs]);
+  const setViewport = useCallback(
+    (next: Viewport) => {
+      if (!controlledViewport) setInternalViewport(next);
+      onViewportChange?.(next);
+    },
+    [controlledViewport, onViewportChange],
+  );
+
+  const userInteractedRef = useRef(false);
+  useEffect(() => {
+    if (controlledViewport || userInteractedRef.current) return;
+    const starts = events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n));
+    const ends = events.map((e) => new Date(e.end_date ?? e.start_date).getTime()).filter((n) => !isNaN(n));
+    const fit = fitToData(starts, ends);
+    if (fit) setInternalViewport(fit);
+  }, [events, controlledViewport]);
+
+  const buckets = useMemo(() => buildBuckets(viewport), [viewport]);
+  const trackWidth = Math.max(TRACK_TARGET_WIDTH, buckets.length * 80);
+  const pxForMs = useCallback(
+    (ms: number) => pxForMsFn(viewport, ms, trackWidth),
+    [viewport, trackWidth],
+  );
+
+  const visibleEvents = useMemo(
+    () =>
+      events.filter((e) => {
+        const s = new Date(e.start_date).getTime();
+        const eEnd = new Date(e.end_date ?? e.start_date).getTime();
+        return eEnd >= viewport.startMs && s <= viewport.endMs;
+      }),
+    [events, viewport.startMs, viewport.endMs],
+  );
+
+  const items = useMemo(() => buildItems(visibleEvents, pxForMs), [visibleEvents, pxForMs]);
   const placed = useMemo(
-    () => placeOnRows(items.map((it) => ({ id: it.id, startMs: it.startMs, endMs: it.endMs, _item: it })), pxForMs, LABEL_PX),
+    () =>
+      placeOnRows(
+        items.map((it) => ({ id: it.id, startMs: it.startMs, endMs: it.endMs, _item: it })),
+        pxForMs,
+        LABEL_PX,
+      ),
     [items, pxForMs],
   );
   const maxRow = placed.reduce((m, p) => (p.row > m ? p.row : m), 0);
   const trackHeight = (maxRow + 1) * ROW_HEIGHT + 48;
 
   const today = new Date();
-  const showToday = today >= rangeStart && today < rangeEnd;
+  const showToday = today.getTime() >= viewport.startMs && today.getTime() < viewport.endMs;
 
-  const bucketCounts = useMemo(() => {
-    return buckets.map((b) => events.filter((e) => {
-      const s = new Date(e.start_date).getTime();
-      return s >= b.startMs && s < b.endMs;
-    }).length);
-  }, [buckets, events]);
+  const bucketCounts = useMemo(
+    () =>
+      buckets.map(
+        (b) =>
+          visibleEvents.filter((e) => {
+            const s = new Date(e.start_date).getTime();
+            return s >= b.startMs && s < b.endMs;
+          }).length,
+      ),
+    [buckets, visibleEvents],
+  );
 
-  if (events.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground text-sm">No events to display.</div>
-    );
-  }
+  const panState = useRef<{
+    pointerId: number;
+    startX: number;
+    origStart: number;
+    origEnd: number;
+    moved: boolean;
+  } | null>(null);
+
+  const onPointerDownTrack = (e: React.PointerEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('a, button')) return;
+    panState.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      origStart: viewport.startMs,
+      origEnd: viewport.endMs,
+      moved: false,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMoveTrack = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!panState.current) return;
+    const dx = e.clientX - panState.current.startX;
+    if (!panState.current.moved && Math.abs(dx) < DRAG_THRESHOLD_PX) return;
+    panState.current.moved = true;
+    userInteractedRef.current = true;
+    const w = trackWidth;
+    const span = panState.current.origEnd - panState.current.origStart;
+    const deltaMs = -(dx / w) * span;
+    setViewport({
+      startMs: panState.current.origStart + deltaMs,
+      endMs: panState.current.origEnd + deltaMs,
+    });
+  };
+
+  const onPointerUpTrack = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (panState.current?.pointerId === e.pointerId) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      panState.current = null;
+    }
+  };
+
+  const onWheelTrack = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (!(e.metaKey || e.ctrlKey) || !scrollRef.current || !trackRef.current) return;
+    e.preventDefault();
+    userInteractedRef.current = true;
+    const rect = trackRef.current.getBoundingClientRect();
+    const scrollLeft = scrollRef.current.scrollLeft;
+    const px = e.clientX - rect.left + scrollLeft;
+    const anchorMs = msForPx(viewport, px, trackWidth);
+    const factor = e.deltaY > 0 ? 1.2 : 1 / 1.2;
+    setViewport(zoomBy(viewport, factor, anchorMs));
+  };
 
   return (
     <div className="w-full">
-      {/* Period chips */}
+      <TimelineToolbar
+        viewport={viewport}
+        onPan={(d) => {
+          userInteractedRef.current = true;
+          setViewport(panBy(viewport, d));
+        }}
+        onCenter={(ms) => {
+          userInteractedRef.current = true;
+          setViewport(centerOn(viewport, ms));
+        }}
+        onZoom={(f) => {
+          userInteractedRef.current = true;
+          const center = (viewport.startMs + viewport.endMs) / 2;
+          setViewport(zoomBy(viewport, f, center));
+        }}
+        onFit={() => {
+          const starts = events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n));
+          const ends = events.map((e) => new Date(e.end_date ?? e.start_date).getTime()).filter((n) => !isNaN(n));
+          const fit = fitToData(starts, ends);
+          if (fit) {
+            userInteractedRef.current = false;
+            setViewport(fit);
+          }
+        }}
+        canFit={events.length > 0}
+      />
+
       <div className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin">
         {buckets.map((b, i) => {
           const count = bucketCounts[i];
@@ -262,7 +380,12 @@ export function EventsTimelineView({ events, onEventSelect }: EventsTimelineView
         })}
       </div>
 
-      {/* Timeline track */}
+      {loading && (
+        <div className="h-0.5 bg-foreground/10 overflow-hidden mb-1" aria-label="Loading events">
+          <div className="h-full w-1/3 bg-foreground/60 animate-pulse" />
+        </div>
+      )}
+
       <div
         ref={scrollRef}
         className="relative overflow-x-auto border border-foreground/10 rounded-container bg-background"
@@ -270,14 +393,16 @@ export function EventsTimelineView({ events, onEventSelect }: EventsTimelineView
         aria-label="Events timeline"
       >
         <div
-          className="relative"
+          ref={trackRef}
+          className="relative cursor-grab active:cursor-grabbing select-none touch-pan-y"
           style={{ width: `${trackWidth}px`, height: trackHeight, minWidth: '100%' }}
+          onPointerDown={onPointerDownTrack}
+          onPointerMove={onPointerMoveTrack}
+          onPointerUp={onPointerUpTrack}
+          onPointerCancel={onPointerUpTrack}
+          onWheel={onWheelTrack}
         >
-          {/* Bucket columns */}
-          <div
-            className="absolute inset-0 grid"
-            style={{ gridTemplateColumns: `repeat(${buckets.length}, 1fr)` }}
-          >
+          <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${buckets.length}, 1fr)` }}>
             {buckets.map((b, i) => (
               <div
                 key={b.startMs}
@@ -294,7 +419,6 @@ export function EventsTimelineView({ events, onEventSelect }: EventsTimelineView
             ))}
           </div>
 
-          {/* Today marker */}
           {showToday && (
             <div
               className="absolute top-7 bottom-2 w-px bg-foreground/80 z-20"
@@ -307,7 +431,6 @@ export function EventsTimelineView({ events, onEventSelect }: EventsTimelineView
             </div>
           )}
 
-          {/* Items: bars, dots, clusters */}
           <TooltipProvider delayDuration={200} skipDelayDuration={300}>
             {placed.map((p) => {
               const item = (p.item as unknown as { _item: TrackItem })._item;
@@ -402,7 +525,14 @@ export function EventsTimelineView({ events, onEventSelect }: EventsTimelineView
                       to={`/events/${event.slug}`}
                       data-event-id={event.id}
                       aria-label={`${event.title} on ${dateLabel}`}
-                      onClick={() => onEventSelect?.(event)}
+                      onClick={(e) => {
+                        if (panState.current?.moved) {
+                          e.preventDefault();
+                          return;
+                        }
+                        onEventSelect?.(event);
+                      }}
+                      draggable={false}
                       className={cn(
                         'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group no-underline',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 rounded-badge',
@@ -425,9 +555,7 @@ export function EventsTimelineView({ events, onEventSelect }: EventsTimelineView
                           )}
                           style={{ width: `${widthPx}px`, height: `${BAR_HEIGHT}px` }}
                         >
-                          <span className="truncate text-[10px] leading-none font-medium">
-                            {event.title}
-                          </span>
+                          <span className="truncate text-[10px] leading-none font-medium">{event.title}</span>
                         </span>
                       ) : (
                         <>
@@ -442,9 +570,7 @@ export function EventsTimelineView({ events, onEventSelect }: EventsTimelineView
                           <span
                             className={cn(
                               'flex items-center gap-1 text-[10px] leading-none whitespace-nowrap overflow-hidden min-w-0',
-                              event.is_featured
-                                ? 'text-foreground font-medium'
-                                : 'text-foreground/70',
+                              event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
                               'group-hover:text-foreground group-hover:font-medium',
                             )}
                           >
@@ -499,8 +625,19 @@ export function EventsTimelineView({ events, onEventSelect }: EventsTimelineView
           </TooltipProvider>
         </div>
       </div>
+
+      <TimelineMinimap
+        viewport={viewport}
+        eventStarts={events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n))}
+        onViewportChange={(v) => {
+          userInteractedRef.current = true;
+          setViewport(v);
+        }}
+      />
+
       <p className="text-xs2 text-foreground/50 mt-2">
-        {events.length} {events.length === 1 ? 'event' : 'events'} · grouped by {unit} · solid markers are featured
+        {visibleEvents.length} of {events.length} {events.length === 1 ? 'event' : 'events'} visible · drag to
+        pan, cmd+scroll to zoom · solid markers are featured
       </p>
     </div>
   );

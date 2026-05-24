@@ -77,6 +77,7 @@ const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
 const AdminQuests = lazy(() => import('./pages/AdminQuests'));
+const AdminPlacesEditorial = lazy(() => import('./pages/AdminPlacesEditorial'));
 const Quests = lazyRetry(() => import('./pages/Quests'));
 const QuestDetail = lazyRetry(() => import('./pages/QuestDetail'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
@@ -334,6 +335,7 @@ export const AppRoutes = () => {
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
                 <Route path="quests" element={<AdminQuests />} />
+                <Route path="places-editorial" element={<AdminPlacesEditorial />} />
                 <Route path="marketplace" element={<AdminMarketplace />} />
                 <Route path="groups" element={<AdminGroups />} />
                 <Route path="news-sources" element={<AdminNewsSources />} />

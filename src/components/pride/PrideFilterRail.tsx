@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { X, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -68,6 +69,7 @@ export function applyPrideFilters(
 }
 
 export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRailProps) {
+  const { t } = useTranslation();
   const continents = useMemo(() => {
     const c = new Set<string>();
     for (const e of events) c.add(continentOf(e.country));
@@ -118,7 +120,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
   return (
     <div
       className="rounded-container border border-foreground/15 bg-background p-4 lg:p-6 space-y-4"
-      aria-label="Pride filters"
+      aria-label={t('pride.filters.aria')}
     >
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px] max-w-md">
@@ -128,8 +130,8 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
             type="search"
             value={filters.query}
             onChange={(e) => setFilters({ ...filters, query: e.target.value })}
-            placeholder="Search prides, cities, countries…"
-            aria-label="Search prides"
+            placeholder={t('pride.filters.searchPlaceholder')}
+            aria-label={t('pride.filters.searchAria')}
             className="w-full rounded-element border border-foreground/20 bg-background pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
           />
         </div>
@@ -141,7 +143,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
             onChange={(e) => setFilters({ ...filters, featuredOnly: e.target.checked })}
             className="accent-foreground"
           />
-          Featured
+          {t('pride.filters.featured')}
         </label>
         <label className="flex items-center gap-1.5 text-sm cursor-pointer">
           <input
@@ -150,7 +152,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
             onChange={(e) => setFilters({ ...filters, verifiedOnly: e.target.checked })}
             className="accent-foreground"
           />
-          Confirmed dates
+          {t('pride.filters.verified')}
         </label>
 
         {hasActive && (
@@ -163,13 +165,13 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
             className="ml-auto min-h-0"
           >
             <X className="size-3.5 mr-1" />
-            Clear all
+            {t('pride.filters.clearAll')}
           </Button>
         )}
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">Month</span>
+        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">{t('pride.filters.month')}</span>
         {MONTHS.map((m, i) => {
           const on = filters.months.includes(i);
           return (
@@ -181,12 +183,12 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">Region</span>
+        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">{t('pride.filters.region')}</span>
         {continents.map((c) => {
           const on = filters.continents.includes(c);
           return (
             <button key={c} type="button" onClick={() => toggleContinent(c)} aria-pressed={on} className={chip(on)}>
-              {c}
+              {t(`pride.continents.${c}` as 'pride.continents.Europe')}
             </button>
           );
         })}
@@ -194,7 +196,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
 
       {filters.continents.length > 0 && (
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">Country</span>
+          <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">{t('pride.filters.country')}</span>
           {filters.continents.flatMap((cont) =>
             Array.from(countriesByContinent.get(cont) ?? []).sort().map((cc) => {
               const on = filters.countries.includes(cc);
