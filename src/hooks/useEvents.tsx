@@ -45,7 +45,9 @@ export function useEvents(autoFetch: boolean = true) {
   const fetchEvents = useCallback(async (
     filters?: {
       city?: string;
+      cities?: string[];
       eventType?: string;
+      eventTypes?: string[];
       dateRange?: { start: string; end: string };
       tags?: string[];
       accessibilityAttributes?: string[];
@@ -80,6 +82,8 @@ export function useEvents(autoFetch: boolean = true) {
         !filters?.featured &&
         !filters?.isFree &&
         !filters?.sort &&
+        !filters?.cities?.length &&
+        !filters?.eventTypes?.length &&
         (Boolean(filters?.city) || Boolean(filters?.dateRange));
 
       let data: Event[] | null = null;
@@ -160,7 +164,9 @@ export function useEvents(autoFetch: boolean = true) {
           query = query.gte('start_date', nowIso);
         }
 
-        if (filters?.eventType) {
+        if (filters?.eventTypes?.length) {
+          query = query.in('event_type', filters.eventTypes);
+        } else if (filters?.eventType) {
           query = query.eq('event_type', filters.eventType);
         }
 
@@ -177,7 +183,11 @@ export function useEvents(autoFetch: boolean = true) {
           query = query.eq('is_free', true);
         }
 
-        if (filters?.city) {
+        if (filters?.cities?.length) {
+          // Multi-city: chained OR with sanitized ilike clauses
+          const parts = filters.cities.map((c) => `city.ilike.${c.replace(/[,()*]/g, '')}`);
+          query = query.or(parts.join(','));
+        } else if (filters?.city) {
           query = query.ilike('city', filters.city);
         }
 
