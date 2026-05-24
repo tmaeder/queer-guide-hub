@@ -53,10 +53,15 @@ describe('buildContentSecurityPolicy', () => {
     expect(csp).toContain("object-src 'none'");
   });
 
-  it("allow-lists Cloudflare's bot-management inline-script hashes", () => {
+  it('does NOT hash-allow-list the GTM bootstrap stubs', () => {
+    // Earlier these hashes were added thinking they came from CF's bot
+    // management. They are actually the inline stubs that load Google
+    // Tag Manager + Microsoft Clarity. Allowing them re-enables the
+    // analytics chain the project intentionally turned off (see comment
+    // at top of securityHeaders.ts). Keep them blocked.
     const csp = buildContentSecurityPolicy('x');
-    expect(csp).toContain("'sha256-xN+1I4nJkqNT1TN3imzsKuRrdUJwqycndmk/7+tjN0w='");
-    expect(csp).toContain("'sha256-gpv3+1ui2RRNM14g5v6XIjymGrMZxrbVxUzdTeKXUlE='");
+    expect(csp).not.toContain('sha256-xN+1I4nJkqNT1TN3imzsKuRrdUJwqycndmk');
+    expect(csp).not.toContain('sha256-gpv3+1ui2RRNM14g5v6XIjymGrMZxrbVxUzdTeKXUlE');
   });
 });
 

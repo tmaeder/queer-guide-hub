@@ -56,19 +56,6 @@ const SCRIPT_SRC_HOSTS = [
   'https://widget.getyourguide.com',
 ];
 
-// Inline-script hashes for third-party content that doesn't pick up
-// our per-request nonce. Today this is Cloudflare's automatic bot-
-// management JavaScript Detection — two tiny stubs CF injects late in
-// page load via an iframe document, so the parent nonce is unavailable.
-// Hashes were taken straight from the CSP-violation report — Chrome
-// suggests them next to the block message and they are stable across
-// CF's deploys for this feature. If CF changes their stubs the
-// console will show new hashes; rotate them here.
-const SCRIPT_SRC_HASHES = [
-  "'sha256-xN+1I4nJkqNT1TN3imzsKuRrdUJwqycndmk/7+tjN0w='",
-  "'sha256-gpv3+1ui2RRNM14g5v6XIjymGrMZxrbVxUzdTeKXUlE='",
-];
-
 const FRAME_SRC = [
   "'self'",
   'https://challenges.cloudflare.com',
@@ -83,7 +70,7 @@ const FONT_SRC = ["'self'", 'data:', 'https://protomaps.github.io'];
 export function buildContentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'self'",
-    `script-src ${SCRIPT_SRC_HOSTS.join(' ')} 'nonce-${nonce}' ${SCRIPT_SRC_HASHES.join(' ')}`,
+    `script-src ${SCRIPT_SRC_HOSTS.join(' ')} 'nonce-${nonce}'`,
     // style-src keeps 'unsafe-inline' for Tailwind / a few inline
     // style= attributes — tightening this is tracked separately.
     "style-src 'self' 'unsafe-inline'",
