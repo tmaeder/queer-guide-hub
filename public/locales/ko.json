@@ -2059,5 +2059,40 @@
       "title": "태그 관계 그래프",
       "description": "의미적 유사성과 동시 발생을 통한 태그 관계 탐색"
     }
+  },
+  "cities": {
+    "metaTitle": "도시",
+    "metaDescription": "전 세계의 LGBTQ+ 친화적인 도시를 둘러보세요.",
+    "eyebrow": "목적지",
+    "title": "도시.",
+    "subtitle": "전 세계의 LGBTQ+ 친화적인 도시.",
+    "planTrip": "여행 계획하기",
+    "openDirectory": "디렉토리 열기",
+    "searchAriaLabel": "도시 검색",
+    "searchPlaceholder": "도시 검색…",
+    "resultCount": "{{total}}개 도시 중 {{shown}}개",
+    "filtersAriaLabel": "도시 필터",
+    "continentsAriaLabel": "대륙별 필터",
+    "equalityAriaLabel": "평등 점수별 필터",
+    "sortLabel": "정렬",
+    "sortAriaLabel": "도시 정렬",
+    "sort": {
+      "population": "인구",
+      "name": "이름 (A–Z)",
+      "equality": "평등",
+      "venues": "장소"
+    },
+    "reset": "초기화",
+    "resetFilters": "필터 초기화",
+    "viewToggleAriaLabel": "목록과 지도 전환",
+    "viewList": "목록",
+    "viewMap": "지도",
+    "listLabel": "도시",
+    "emptyTitle": "도시를 찾을 수 없습니다",
+    "empty": "현재 등록된 도시가 없습니다.",
+    "emptyFiltered": "필터를 제거하거나 검색을 지워보세요.",
+    "suggestTitle": "도시가 누락되었나요?",
+    "suggestLede": "도시를 제안하세요 — 검토 후 디렉토리에 추가됩니다.",
+    "suggestCta": "도시 제안하기"
   }
 }

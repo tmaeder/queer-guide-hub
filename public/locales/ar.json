@@ -2059,5 +2059,40 @@
       "title": "رسم علاقات الوسوم",
       "description": "كيف ترتبط الوسوم بالتشابه الدلالي والتزامن"
     }
+  },
+  "cities": {
+    "metaTitle": "المدن",
+    "metaDescription": "استكشف المدن الصديقة لمجتمع الميم حول العالم.",
+    "eyebrow": "الوجهات",
+    "title": "المدن.",
+    "subtitle": "مدن صديقة لمجتمع الميم حول العالم.",
+    "planTrip": "خطّط لرحلة",
+    "openDirectory": "افتح الدليل",
+    "searchAriaLabel": "ابحث عن مدن",
+    "searchPlaceholder": "ابحث عن مدن…",
+    "resultCount": "{{shown}} من أصل {{total}} مدينة",
+    "filtersAriaLabel": "تصفية المدن",
+    "continentsAriaLabel": "تصفية حسب القارة",
+    "equalityAriaLabel": "تصفية حسب درجة المساواة",
+    "sortLabel": "ترتيب",
+    "sortAriaLabel": "ترتيب المدن",
+    "sort": {
+      "population": "عدد السكان",
+      "name": "الاسم (أ–ي)",
+      "equality": "المساواة",
+      "venues": "الأماكن"
+    },
+    "reset": "إعادة تعيين",
+    "resetFilters": "إعادة تعيين عوامل التصفية",
+    "viewToggleAriaLabel": "تبديل القائمة والخريطة",
+    "viewList": "قائمة",
+    "viewMap": "خريطة",
+    "listLabel": "المدن",
+    "emptyTitle": "لم يتم العثور على مدن",
+    "empty": "لا توجد مدن مدرجة حاليًا.",
+    "emptyFiltered": "حاول إزالة عامل تصفية أو مسح البحث.",
+    "suggestTitle": "هل تنقصك مدينة؟",
+    "suggestLede": "اقترح واحدة — تُضاف إلى الدليل بعد المراجعة.",
+    "suggestCta": "اقترح مدينة"
   }
 }

@@ -2059,5 +2059,40 @@
       "title": "タグ関係グラフ",
       "description": "意味的類似度と共起でタグの関係を探る"
     }
+  },
+  "cities": {
+    "metaTitle": "都市",
+    "metaDescription": "世界中のLGBTQ+フレンドリーな都市を探そう。",
+    "eyebrow": "目的地",
+    "title": "都市。",
+    "subtitle": "世界中のLGBTQ+フレンドリーな都市。",
+    "planTrip": "旅行を計画する",
+    "openDirectory": "ディレクトリを開く",
+    "searchAriaLabel": "都市を検索",
+    "searchPlaceholder": "都市を検索…",
+    "resultCount": "{{total}}都市中{{shown}}件",
+    "filtersAriaLabel": "都市を絞り込む",
+    "continentsAriaLabel": "大陸で絞り込む",
+    "equalityAriaLabel": "平等スコアで絞り込む",
+    "sortLabel": "並び順",
+    "sortAriaLabel": "都市を並び替え",
+    "sort": {
+      "population": "人口",
+      "name": "名前 (A–Z)",
+      "equality": "平等度",
+      "venues": "スポット数"
+    },
+    "reset": "リセット",
+    "resetFilters": "フィルターをリセット",
+    "viewToggleAriaLabel": "リストと地図を切り替え",
+    "viewList": "リスト",
+    "viewMap": "地図",
+    "listLabel": "都市",
+    "emptyTitle": "都市が見つかりません",
+    "empty": "現在、登録されている都市はありません。",
+    "emptyFiltered": "フィルターを外すか、検索をクリアしてみてください。",
+    "suggestTitle": "都市が見つかりませんか？",
+    "suggestLede": "提案してください — 確認後にディレクトリに追加されます。",
+    "suggestCta": "都市を提案する"
   }
 }
