@@ -11,7 +11,7 @@ interface Props {
 const HREF: Record<'country' | 'city' | 'village', (slug: string) => string> = {
   country: (s) => `/country/${s}`,
   city: (s) => `/city/${s}`,
-  village: (s) => `/village/${s}`,
+  village: (s) => `/villages/${s}`,
 };
 
 export function AtlasHero({ featuredCountryNames }: Props) {
