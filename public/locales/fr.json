@@ -2065,5 +2065,40 @@
       "title": "Graphe des relations",
       "description": "Comment les tags se relient par similarité sémantique et co-occurrence"
     }
+  },
+  "cities": {
+    "metaTitle": "Villes",
+    "metaDescription": "Découvrez les villes LGBTQ+ friendly à travers le monde.",
+    "eyebrow": "Destinations",
+    "title": "Villes.",
+    "subtitle": "Les villes LGBTQ+ friendly à travers le monde.",
+    "planTrip": "Planifier un voyage",
+    "openDirectory": "Ouvrir l'annuaire",
+    "searchAriaLabel": "Rechercher des villes",
+    "searchPlaceholder": "Rechercher des villes…",
+    "resultCount": "{{shown}} sur {{total}} villes",
+    "filtersAriaLabel": "Filtrer les villes",
+    "continentsAriaLabel": "Filtrer par continent",
+    "equalityAriaLabel": "Filtrer par score d'égalité",
+    "sortLabel": "Trier",
+    "sortAriaLabel": "Trier les villes",
+    "sort": {
+      "population": "Population",
+      "name": "Nom (A–Z)",
+      "equality": "Égalité",
+      "venues": "Lieux"
+    },
+    "reset": "Réinitialiser",
+    "resetFilters": "Réinitialiser les filtres",
+    "viewToggleAriaLabel": "Basculer entre liste et carte",
+    "viewList": "Liste",
+    "viewMap": "Carte",
+    "listLabel": "Villes",
+    "emptyTitle": "Aucune ville trouvée",
+    "empty": "Aucune ville n'est actuellement listée.",
+    "emptyFiltered": "Essayez d'enlever un filtre ou d'effacer la recherche.",
+    "suggestTitle": "Une ville manque ?",
+    "suggestLede": "Suggérez-la — ajoutée à l'annuaire après vérification.",
+    "suggestCta": "Suggérer une ville"
   }
 }
