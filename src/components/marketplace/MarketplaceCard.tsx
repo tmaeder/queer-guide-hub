@@ -4,7 +4,7 @@ import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Store, ExternalLink } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { FavoriteButton } from '@/components/ui/favorite-button';
+import { WishlistPicker } from '@/components/marketplace/WishlistPicker';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
@@ -92,7 +92,7 @@ function MarketplaceCardImpl({
           />
           {showFavoriteButton && (
             <div className="absolute top-2 right-2 z-10">
-              <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="tap" />
+              <WishlistPicker listingId={listing.id} />
             </div>
           )}
         </div>

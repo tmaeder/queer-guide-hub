@@ -19,11 +19,11 @@ interface MarketplaceFilteredViewProps {
 
 const SORT_OPTIONS: Array<{ value: MarketplaceSort; label: string }> = [
   { value: 'newest', label: 'Newest first' },
+  { value: 'most_loved', label: 'Most loved' },
+  { value: 'best_value', label: 'Best value' },
+  { value: 'editor_choice', label: "Editor's choice" },
   { value: 'price_asc', label: 'Price: low to high' },
   { value: 'price_desc', label: 'Price: high to low' },
-  { value: 'most_viewed', label: 'Most viewed' },
-  { value: 'az', label: 'A–Z' },
-  { value: 'za', label: 'Z–A' },
 ];
 
 export function MarketplaceFilteredView({
