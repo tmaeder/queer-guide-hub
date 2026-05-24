@@ -2073,5 +2073,97 @@
     "suggestTitle": "[DE] Missing a city?",
     "suggestLede": "[DE] Suggest one — adds to the directory after review.",
     "suggestCta": "[DE] Suggest a city"
+  },
+  "pride": {
+    "eyebrow": "[DE] Pride Calendar",
+    "export": "[DE] Export .ics",
+    "loading": "[DE] Loading…",
+    "previousYear": "[DE] Previous year",
+    "nextYear": "[DE] Next year",
+    "summary": "[DE] {{count}} pride · {{countries}} countries · {{cities}} cities",
+    "summary_other": "[DE] {{count}} prides · {{countries}} countries · {{cities}} cities",
+    "noMatches": "[DE] No prides match your filters.",
+    "clearFilters": "[DE] Clear filters",
+    "estimated": "[DE] Date estimated",
+    "inTripWindow": "[DE] In your trip window",
+    "featured": "[DE] Featured",
+    "filters": {
+      "aria": "[DE] Pride filters",
+      "searchPlaceholder": "[DE] Search prides, cities, countries…",
+      "searchAria": "[DE] Search prides",
+      "featured": "[DE] Featured",
+      "verified": "[DE] Confirmed dates",
+      "clearAll": "[DE] Clear all",
+      "month": "[DE] Month",
+      "region": "[DE] Region",
+      "country": "[DE] Country"
+    },
+    "continents": {
+      "Europe": "[DE] Europe",
+      "Americas": "[DE] Americas",
+      "Oceania": "[DE] Oceania",
+      "Asia": "[DE] Asia",
+      "Africa": "[DE] Africa",
+      "Other": "[DE] Other"
+    },
+    "timeline": {
+      "aria": "[DE] Pride events timeline",
+      "srTitle": "[DE] Pride timeline",
+      "today": "[DE] Today",
+      "helper": "[DE] {{count}} prides in {{year}} · click a row to select · solid dots are featured"
+    },
+    "upNext": {
+      "title": "[DE] Up next",
+      "subtitle": "[DE] Soonest first",
+      "past": "[DE] Past",
+      "today": "[DE] Today",
+      "tomorrow": "[DE] Tomorrow",
+      "inDays": "[DE] In {{count}} days",
+      "inWeeks": "[DE] In {{count}} weeks",
+      "inMonths": "[DE] In {{count}} months",
+      "inYears": "[DE] In {{count}}y"
+    },
+    "spotlight": {
+      "eyebrow": "[DE] Spotlight",
+      "dismiss": "[DE] Dismiss",
+      "startsIn": "[DE] Starts in {{count}} day",
+      "startsIn_other": "[DE] Starts in {{count}} days",
+      "today": "[DE] Happening today",
+      "endedDaysAgo": "[DE] Ended {{count}} day ago",
+      "endedDaysAgo_other": "[DE] Ended {{count}} days ago",
+      "viewPride": "[DE] View pride",
+      "addToTrip": "[DE] Add to trip",
+      "signInToAdd": "[DE] Sign in to add to trip",
+      "showOnMap": "[DE] Show on map",
+      "venuesInCity": "[DE] Queer venues in {{city}}"
+    },
+    "map": {
+      "title": "[DE] World map",
+      "aria": "[DE] Pride events world map",
+      "popupView": "[DE] View pride"
+    },
+    "trips": {
+      "title": "[DE] Pride trip ideas",
+      "subtitle": "[DE] Up to 4 prides · within 21 days · <4000 km",
+      "meta": "[DE] {{count}} prides · {{days}} days",
+      "metaWithKm": "[DE] {{count}} prides · {{days}} days · {{km}} km",
+      "buildTrip": "[DE] Build this trip",
+      "featured": "[DE] Featured"
+    },
+    "table": {
+      "title": "[DE] All prides",
+      "count": "[DE] {{count}} pride",
+      "count_other": "[DE] {{count}} prides",
+      "when": "[DE] When",
+      "pride": "[DE] Pride",
+      "location": "[DE] Location",
+      "region": "[DE] Region",
+      "estimated": "[DE] Estimated"
+    },
+    "card": {
+      "view": "[DE] View",
+      "addToTrip": "[DE] Add to trip",
+      "signIn": "[DE] Sign in"
+    }
   }
 }

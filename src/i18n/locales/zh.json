@@ -2071,5 +2071,97 @@
     "suggestTitle": "[ZH] Missing a city?",
     "suggestLede": "[ZH] Suggest one — adds to the directory after review.",
     "suggestCta": "[ZH] Suggest a city"
+  },
+  "pride": {
+    "eyebrow": "[ZH] Pride Calendar",
+    "export": "[ZH] Export .ics",
+    "loading": "[ZH] Loading…",
+    "previousYear": "[ZH] Previous year",
+    "nextYear": "[ZH] Next year",
+    "summary": "[ZH] {{count}} pride · {{countries}} countries · {{cities}} cities",
+    "summary_other": "[ZH] {{count}} prides · {{countries}} countries · {{cities}} cities",
+    "noMatches": "[ZH] No prides match your filters.",
+    "clearFilters": "[ZH] Clear filters",
+    "estimated": "[ZH] Date estimated",
+    "inTripWindow": "[ZH] In your trip window",
+    "featured": "[ZH] Featured",
+    "filters": {
+      "aria": "[ZH] Pride filters",
+      "searchPlaceholder": "[ZH] Search prides, cities, countries…",
+      "searchAria": "[ZH] Search prides",
+      "featured": "[ZH] Featured",
+      "verified": "[ZH] Confirmed dates",
+      "clearAll": "[ZH] Clear all",
+      "month": "[ZH] Month",
+      "region": "[ZH] Region",
+      "country": "[ZH] Country"
+    },
+    "continents": {
+      "Europe": "[ZH] Europe",
+      "Americas": "[ZH] Americas",
+      "Oceania": "[ZH] Oceania",
+      "Asia": "[ZH] Asia",
+      "Africa": "[ZH] Africa",
+      "Other": "[ZH] Other"
+    },
+    "timeline": {
+      "aria": "[ZH] Pride events timeline",
+      "srTitle": "[ZH] Pride timeline",
+      "today": "[ZH] Today",
+      "helper": "[ZH] {{count}} prides in {{year}} · click a row to select · solid dots are featured"
+    },
+    "upNext": {
+      "title": "[ZH] Up next",
+      "subtitle": "[ZH] Soonest first",
+      "past": "[ZH] Past",
+      "today": "[ZH] Today",
+      "tomorrow": "[ZH] Tomorrow",
+      "inDays": "[ZH] In {{count}} days",
+      "inWeeks": "[ZH] In {{count}} weeks",
+      "inMonths": "[ZH] In {{count}} months",
+      "inYears": "[ZH] In {{count}}y"
+    },
+    "spotlight": {
+      "eyebrow": "[ZH] Spotlight",
+      "dismiss": "[ZH] Dismiss",
+      "startsIn": "[ZH] Starts in {{count}} day",
+      "startsIn_other": "[ZH] Starts in {{count}} days",
+      "today": "[ZH] Happening today",
+      "endedDaysAgo": "[ZH] Ended {{count}} day ago",
+      "endedDaysAgo_other": "[ZH] Ended {{count}} days ago",
+      "viewPride": "[ZH] View pride",
+      "addToTrip": "[ZH] Add to trip",
+      "signInToAdd": "[ZH] Sign in to add to trip",
+      "showOnMap": "[ZH] Show on map",
+      "venuesInCity": "[ZH] Queer venues in {{city}}"
+    },
+    "map": {
+      "title": "[ZH] World map",
+      "aria": "[ZH] Pride events world map",
+      "popupView": "[ZH] View pride"
+    },
+    "trips": {
+      "title": "[ZH] Pride trip ideas",
+      "subtitle": "[ZH] Up to 4 prides · within 21 days · <4000 km",
+      "meta": "[ZH] {{count}} prides · {{days}} days",
+      "metaWithKm": "[ZH] {{count}} prides · {{days}} days · {{km}} km",
+      "buildTrip": "[ZH] Build this trip",
+      "featured": "[ZH] Featured"
+    },
+    "table": {
+      "title": "[ZH] All prides",
+      "count": "[ZH] {{count}} pride",
+      "count_other": "[ZH] {{count}} prides",
+      "when": "[ZH] When",
+      "pride": "[ZH] Pride",
+      "location": "[ZH] Location",
+      "region": "[ZH] Region",
+      "estimated": "[ZH] Estimated"
+    },
+    "card": {
+      "view": "[ZH] View",
+      "addToTrip": "[ZH] Add to trip",
+      "signIn": "[ZH] Sign in"
+    }
   }
 }
