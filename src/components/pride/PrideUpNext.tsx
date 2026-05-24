@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Calendar, MapPin, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -28,13 +28,14 @@ function relativeDateLabel(iso: string): string {
 }
 
 export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUpNextProps) {
+  // Pin "now" once per mount so the upcoming list is stable across renders.
+  const [now] = useState(() => Date.now());
   const upcoming = useMemo(() => {
-    const now = Date.now();
     return events
       .filter((e) => new Date(e.start_date).getTime() >= now - 86_400_000)
       .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
       .slice(0, limit);
-  }, [events, limit]);
+  }, [events, limit, now]);
 
   if (upcoming.length === 0) return null;
 

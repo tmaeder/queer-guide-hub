@@ -57,7 +57,6 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
         'inline-flex items-center gap-1 text-xs2 uppercase tracking-label text-foreground/60 hover:text-foreground min-h-0',
         align === 'right' && 'flex-row-reverse',
       )}
-      aria-sort={sortKey === key ? (sortAsc ? 'ascending' : 'descending') : 'none'}
     >
       {label}
       {sortKey === key && (sortAsc ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />)}
@@ -79,9 +78,27 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
         <table className="w-full text-sm">
           <thead className="bg-muted/40">
             <tr>
-              <th scope="col" className="py-2 px-3 text-left w-[140px]">{headerBtn('When', 'date')}</th>
-              <th scope="col" className="py-2 px-3 text-left">{headerBtn('Pride', 'name')}</th>
-              <th scope="col" className="py-2 px-3 text-left hidden sm:table-cell">{headerBtn('Location', 'location')}</th>
+              <th
+                scope="col"
+                className="py-2 px-3 text-left w-[140px]"
+                aria-sort={sortKey === 'date' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+              >
+                {headerBtn('When', 'date')}
+              </th>
+              <th
+                scope="col"
+                className="py-2 px-3 text-left"
+                aria-sort={sortKey === 'name' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+              >
+                {headerBtn('Pride', 'name')}
+              </th>
+              <th
+                scope="col"
+                className="py-2 px-3 text-left hidden sm:table-cell"
+                aria-sort={sortKey === 'location' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+              >
+                {headerBtn('Location', 'location')}
+              </th>
               <th scope="col" className="py-2 px-3 text-left hidden lg:table-cell w-[110px]">
                 <span className="text-xs2 uppercase tracking-label text-foreground/60">Region</span>
               </th>
