@@ -1,6 +1,7 @@
 import { useMemo, useRef, useEffect } from 'react';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 import { cn } from '@/lib/utils';
+import { codeToFlagEmoji } from '@/lib/countryFlag';
 
 interface PrideTimelineProps {
   events: PrideCalendarEvent[];
@@ -138,6 +139,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
               month: 'short',
               day: 'numeric',
             });
+            const flag = codeToFlagEmoji(p.event.country);
             return (
               <button
                 key={p.event.id}
@@ -165,12 +167,17 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
                 />
                 <span
                   className={cn(
-                    'text-[10px] leading-none whitespace-nowrap overflow-hidden text-ellipsis',
+                    'flex items-center gap-1 text-[10px] leading-none whitespace-nowrap overflow-hidden min-w-0',
                     isSelected || p.event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
                     'group-hover:text-foreground group-hover:font-medium',
                   )}
                 >
-                  {p.event.city ?? p.event.title}
+                  {flag && (
+                    <span aria-hidden="true" className="shrink-0 leading-none">
+                      {flag}
+                    </span>
+                  )}
+                  <span className="truncate">{p.event.city ?? p.event.title}</span>
                 </span>
               </button>
             );
