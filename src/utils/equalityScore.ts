@@ -2,6 +2,10 @@
  * Equality Score Calculator
  * Calculates a 0-100 score from ILGA LGBTI data stored on country rows.
  * Higher = more equal rights. Used for display and sorting.
+ *
+ * Tier cutoffs are the single source of truth — getScoreLabel,
+ * getScoreRingColor, and src/utils/citiesFilter.tierFor() all derive
+ * from EQUALITY_TIER_CUTOFFS so a change here flows everywhere.
  */
 
 export interface EqualityScoreBreakdown {
@@ -11,22 +15,83 @@ export interface EqualityScoreBreakdown {
   bgColor: string;
 }
 
+export type EqualityTier =
+  | 'very-high'
+  | 'high'
+  | 'moderate'
+  | 'low'
+  | 'very-low'
+  | 'unknown';
+
+export const EQUALITY_TIERS: readonly EqualityTier[] = [
+  'very-high',
+  'high',
+  'moderate',
+  'low',
+  'very-low',
+  'unknown',
+];
+
+/**
+ * Score thresholds in descending order. The tier at index i applies when
+ * `score >= EQUALITY_TIER_CUTOFFS[i]`. Null/undefined → "unknown".
+ */
+export const EQUALITY_TIER_CUTOFFS: ReadonlyArray<{ tier: EqualityTier; min: number }> = [
+  { tier: 'very-high', min: 80 },
+  { tier: 'high', min: 60 },
+  { tier: 'moderate', min: 40 },
+  { tier: 'low', min: 20 },
+  { tier: 'very-low', min: 0 },
+];
+
+export const EQUALITY_TIER_LABEL: Record<EqualityTier, string> = {
+  'very-high': 'Very High',
+  high: 'High',
+  moderate: 'Moderate',
+  low: 'Low',
+  'very-low': 'Very Low',
+  unknown: 'No Data',
+};
+
+export function tierForScore(score: number | null | undefined): EqualityTier {
+  if (score == null) return 'unknown';
+  for (const { tier, min } of EQUALITY_TIER_CUTOFFS) {
+    if (score >= min) return tier;
+  }
+  return 'very-low';
+}
+
+const TIER_LABEL_COLOR: Record<EqualityTier, { color: string; bgColor: string }> = {
+  'very-high': { color: '#15803d', bgColor: '#dcfce7' },
+  high: { color: '#65a30d', bgColor: '#ecfccb' },
+  moderate: { color: '#ca8a04', bgColor: '#fef9c3' },
+  low: { color: '#ea580c', bgColor: '#fff7ed' },
+  'very-low': { color: '#dc2626', bgColor: '#fef2f2' },
+  unknown: { color: '#6b7280', bgColor: '#f3f4f6' },
+};
+
+const TIER_RING_COLOR: Record<EqualityTier, string> = {
+  'very-high': '#22c55e',
+  high: '#84cc16',
+  moderate: '#eab308',
+  low: '#f97316',
+  'very-low': '#ef4444',
+  unknown: '#d1d5db',
+};
+
 export function getScoreLabel(score: number | null | undefined): EqualityScoreBreakdown {
-  if (score == null) return { score: 0, label: 'No Data', color: '#6b7280', bgColor: '#f3f4f6' };
-  if (score >= 80) return { score, label: 'Very High', color: '#15803d', bgColor: '#dcfce7' };
-  if (score >= 60) return { score, label: 'High', color: '#65a30d', bgColor: '#ecfccb' };
-  if (score >= 40) return { score, label: 'Moderate', color: '#ca8a04', bgColor: '#fef9c3' };
-  if (score >= 20) return { score, label: 'Low', color: '#ea580c', bgColor: '#fff7ed' };
-  return { score, label: 'Very Low', color: '#dc2626', bgColor: '#fef2f2' };
+  const tier = tierForScore(score);
+  const { color, bgColor } = TIER_LABEL_COLOR[tier];
+  return {
+    score: score ?? 0,
+    label: EQUALITY_TIER_LABEL[tier],
+    color,
+    bgColor,
+  };
 }
 
 export function getScoreRingColor(score: number | null | undefined): string {
-  if (score == null) return '#d1d5db';
-  if (score >= 80) return '#22c55e';
-  if (score >= 60) return '#84cc16';
-  if (score >= 40) return '#eab308';
-  if (score >= 20) return '#f97316';
-  return '#ef4444';
+  return TIER_RING_COLOR[tierForScore(score)];
 }
 
 /** Parse SSU JSON string to get summary */
