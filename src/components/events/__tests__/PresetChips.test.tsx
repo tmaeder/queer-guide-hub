@@ -11,9 +11,9 @@ vi.mock('react-i18next', () => ({
 import { PresetChips, getPresetDateRange } from '../PresetChips';
 
 describe('PresetChips', () => {
-  it('renders all six chips with role=tab', () => {
+  it('renders all eight chips with role=tab', () => {
     render(<PresetChips active={null} onSelect={vi.fn()} />);
-    expect(screen.getAllByRole('tab')).toHaveLength(6);
+    expect(screen.getAllByRole('tab')).toHaveLength(8);
   });
 
   it('marks the active chip aria-selected', () => {
@@ -54,10 +54,17 @@ describe('getPresetDateRange', () => {
     expect(r.end.getDay()).toBe(0);
   });
 
-  it('returns a range from today to month-end for this-month', () => {
-    const r = getPresetDateRange('this-month')!;
-    const lastOfMonth = new Date(r.start.getFullYear(), r.start.getMonth() + 1, 0).getDate();
-    expect(r.end.getDate()).toBe(lastOfMonth);
+  it('returns roughly a 7-day forward range for next-7-days', () => {
+    const r = getPresetDateRange('next-7-days')!;
+    const days = (r.end.getTime() - r.start.getTime()) / 86_400_000;
+    expect(days).toBeGreaterThanOrEqual(7);
+    expect(days).toBeLessThan(9);
+  });
+
+  it('returns evening-through-tomorrow-morning for tonight', () => {
+    const r = getPresetDateRange('tonight')!;
+    expect(r.end.getTime()).toBeGreaterThan(r.start.getTime());
+    expect(r.end.getHours()).toBe(6);
   });
 
   it('returns June-July (Pride season)', () => {
