@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import { useTranslation, type TFunction } from 'react-i18next';
 import { Calendar, MapPin, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
@@ -11,18 +12,38 @@ interface PrideUpNextProps {
   limit?: number;
 }
 
-export function relativeDateLabel(iso: string, now: number = Date.now()): string {
+/**
+ * relativeDateLabel — pure: takes the i18n t() so the component can pass its
+ * translation function in. Test code may pass a stub.
+ */
+export function relativeDateLabel(
+  iso: string,
+  now: number = Date.now(),
+  t?: TFunction | ((key: string, vars?: Record<string, unknown>) => string),
+): string {
   const days = Math.round((new Date(iso).getTime() - now) / 86_400_000);
-  if (days < 0) return 'Past';
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Tomorrow';
-  if (days < 7) return `In ${days} days`;
-  if (days < 30) return `In ${Math.round(days / 7)} weeks`;
-  if (days < 365) return `In ${Math.round(days / 30)} months`;
-  return `In ${Math.round(days / 365)}y`;
+  const tr = (key: string, vars?: Record<string, unknown>) => (t ? (t as (k: string, v?: Record<string, unknown>) => string)(`pride.upNext.${key}`, vars) : fallback(key, vars));
+  if (days < 0) return tr('past');
+  if (days === 0) return tr('today');
+  if (days === 1) return tr('tomorrow');
+  if (days < 7) return tr('inDays', { count: days });
+  if (days < 30) return tr('inWeeks', { count: Math.round(days / 7) });
+  if (days < 365) return tr('inMonths', { count: Math.round(days / 30) });
+  return tr('inYears', { count: Math.round(days / 365) });
+}
+
+function fallback(key: string, vars?: Record<string, unknown>): string {
+  if (key === 'past') return 'Past';
+  if (key === 'today') return 'Today';
+  if (key === 'tomorrow') return 'Tomorrow';
+  if (key === 'inDays') return `In ${vars?.count} days`;
+  if (key === 'inWeeks') return `In ${vars?.count} weeks`;
+  if (key === 'inMonths') return `In ${vars?.count} months`;
+  return `In ${vars?.count}y`;
 }
 
 export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUpNextProps) {
+  const { t } = useTranslation();
   // Pin "now" once per mount so the upcoming list is stable across renders.
   const [now] = useState(() => Date.now());
   const upcoming = useMemo(() => {
@@ -38,9 +59,9 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
     <section aria-labelledby="upnext-heading">
       <div className="flex items-baseline justify-between mb-3">
         <h2 id="upnext-heading" className="text-title font-medium">
-          Up next
+          {t('pride.upNext.title')}
         </h2>
-        <span className="text-xs2 text-foreground/50">Soonest first</span>
+        <span className="text-xs2 text-foreground/50">{t('pride.upNext.subtitle')}</span>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-thin -mx-2 px-2 snap-x">
         {upcoming.map((e) => {
@@ -60,8 +81,8 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
               )}
             >
               <div className="flex items-center justify-between text-xs2 uppercase tracking-label text-foreground/60 mb-3">
-                <span>{relativeDateLabel(e.start_date)}</span>
-                {e.is_featured && <Star className="size-3 fill-foreground text-foreground" aria-label="Featured" />}
+                <span>{relativeDateLabel(e.start_date, now, t)}</span>
+                {e.is_featured && <Star className="size-3 fill-foreground text-foreground" aria-label={t('pride.featured')} />}
               </div>
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-display leading-none font-medium tabular-nums">{day}</span>
@@ -82,7 +103,7 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
               </p>
               {e.verification_status !== 'verified' && (
                 <p className="mt-2 inline-flex items-center gap-1 text-2xs text-foreground/50">
-                  <Calendar className="size-3" /> Date estimated
+                  <Calendar className="size-3" /> {t('pride.estimated')}
                 </p>
               )}
             </button>
