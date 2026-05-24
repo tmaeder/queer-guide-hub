@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MapPin, Calendar, Store, Tag, Users, User, Newspaper, Globe } from 'lucide-react';
 import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
 import { toIndexKeys } from '@/lib/searchTaxonomy';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const MIN_QUERY_LEN = 2;
 const MAX_PER_TYPE_ALL = 4;
@@ -9,7 +10,7 @@ const MAX_PER_TYPE_SCOPED = 20;
 const MAX_SUGGESTIONS_ALL = 16;
 const MAX_SUGGESTIONS_SCOPED = 24;
 const FETCH_LIMIT = 32;
-const DEBOUNCE_MS = 150;
+const DEBOUNCE_MS = 160;
 
 export interface SearchSuggestion {
   id: string;
@@ -40,18 +41,20 @@ export const TYPE_ICONS: Record<string, React.ComponentType> = {
   group: Users,
 };
 
+const IMAGE_KEYS = [
+  'image_url',
+  'cover_image_url',
+  'hero_image_url',
+  'primary_image_url',
+  'photo_url',
+  'thumbnail_url',
+  'image',
+] as const;
+
 function pickImage(hit: SearchHit): string | undefined {
-  const candidates = [
-    hit.image_url,
-    hit.cover_image_url,
-    hit.hero_image_url,
-    hit.primary_image_url,
-    hit.photo_url,
-    hit.thumbnail_url,
-    hit.image,
-  ];
-  for (const c of candidates) {
-    if (typeof c === 'string' && c.length > 0) return c;
+  for (const k of IMAGE_KEYS) {
+    const v = hit[k];
+    if (typeof v === 'string' && v.length > 0) return v;
   }
   return undefined;
 }
@@ -85,6 +88,28 @@ function dedupeAndCap(hits: SearchHit[], scoped: boolean): DedupedResult {
   return { hits: out, countsByType };
 }
 
+function mapHit(hit: SearchHit): SearchSuggestion {
+  const name = (hit.title || hit.name || '') as string;
+  return {
+    id: hit.id || '',
+    name,
+    type: hit.type,
+    icon: TYPE_ICONS[hit.type] || Tag,
+    subtitle:
+      hit.type === 'country'
+        ? undefined
+        : hit.type === 'city'
+          ? (hit.country as string | undefined)
+          : (hit.city as string | undefined),
+    title: name,
+    nameHtml: (hit.title_formatted as string | null | undefined) ?? undefined,
+    slug: hit.slug as string | undefined,
+    city: hit.city,
+    country: hit.country as string | undefined,
+    image: pickImage(hit),
+  };
+}
+
 export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [countsByType, setCountsByType] = useState<Record<string, number>>({});
@@ -96,63 +121,50 @@ export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
     () => (scoped ? toIndexKeys(scopeTypes!) : undefined),
     [scoped, scopeTypes],
   );
-  const indexKeysKey = JSON.stringify(indexKeys ?? null);
+  // Stable dep for effect — array identity changes shouldn't refire.
+  const indexKeysKey = useMemo(() => JSON.stringify(indexKeys ?? null), [indexKeys]);
 
-  const fetchSuggestions = useCallback(
-    async (searchTerm: string) => {
-    if (!searchTerm || searchTerm.length < MIN_QUERY_LEN) {
+  const debounced = useDebounce(query, DEBOUNCE_MS);
+
+  useEffect(() => {
+    if (!debounced || debounced.length < MIN_QUERY_LEN) {
       setSuggestions([]);
       setCountsByType({});
       setError(null);
+      setLoading(false);
       return;
     }
 
+    let cancelled = false;
     setLoading(true);
     setError(null);
-    try {
-      const hits = await fetchAutocomplete(searchTerm, indexKeys, FETCH_LIMIT);
-      const { hits: capped, countsByType: counts } = dedupeAndCap(hits, scoped);
 
-      const mapped: SearchSuggestion[] = capped.map((hit) => ({
-        id: hit.id || '',
-        name: (hit.title || hit.name || '') as string,
-        type: hit.type,
-        icon: TYPE_ICONS[hit.type] || Tag,
-        subtitle: hit.type === 'country' ? undefined
-          : hit.type === 'city' ? (hit.country as string | undefined)
-          : (hit.city as string | undefined),
-        title: (hit.title || hit.name || '') as string,
-        nameHtml: (hit.title_formatted as string | null | undefined) ?? undefined,
-        slug: hit.slug as string | undefined,
-        city: hit.city,
-        country: hit.country as string | undefined,
-        image: pickImage(hit),
-      }));
+    fetchAutocomplete(debounced, indexKeys, FETCH_LIMIT)
+      .then((hits) => {
+        if (cancelled) return;
+        const { hits: capped, countsByType: counts } = dedupeAndCap(hits, scoped);
+        setSuggestions(capped.map(mapHit));
+        setCountsByType(counts);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        // Autocomplete is a non-critical enhancement layer — a transient blip
+        // (network glitch, brief 5xx) should not surface a big red banner.
+        console.error('Error fetching suggestions:', err);
+        setSuggestions([]);
+        setCountsByType({});
+        setError(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-      setSuggestions(mapped);
-      setCountsByType(counts);
-    } catch (err) {
-      // Autocomplete is a non-critical enhancement layer — a transient blip
-      // (network glitch, brief 5xx) should not surface a big red banner that
-      // makes search look broken. Drop suggestions silently; the user can
-      // still submit and /search has its own (more conservative) error UI.
-      console.error('Error fetching suggestions:', err);
-      setSuggestions([]);
-      setCountsByType({});
-      setError(null);
-    } finally {
-      setLoading(false);
-    }
+    return () => {
+      cancelled = true;
+    };
+    // indexKeysKey is the stable serialization of indexKeys; safe to depend on it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [indexKeysKey, scoped]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchSuggestions(query);
-    }, DEBOUNCE_MS);
-
-    return () => clearTimeout(timer);
-  }, [query, fetchSuggestions]);
+  }, [debounced, indexKeysKey, scoped]);
 
   return { suggestions, countsByType, loading, error };
 }
