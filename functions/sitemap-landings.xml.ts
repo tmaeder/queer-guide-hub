@@ -4,7 +4,7 @@
  * functions/_lib/landing.ts plus a dynamic city aggregation from Supabase.
  */
 import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry } from './_lib/sitemap';
-import { IDENTITY_SLUGS, PRIDE_YEARS } from './_lib/landing';
+import { IDENTITY_SLUGS, PRIDE_YEARS, PRIDE_REGION_SLUGS } from './_lib/landing';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -28,6 +28,14 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
       changefreq: 'weekly',
       priority: 0.6,
     });
+    for (const region of PRIDE_REGION_SLUGS) {
+      entries.push({
+        loc: `${ORIGIN}/pride/${year}/region/${region}`,
+        lastmod,
+        changefreq: 'weekly',
+        priority: 0.55,
+      });
+    }
   }
 
   // Pride per major city — fetch top cities by population so the sitemap

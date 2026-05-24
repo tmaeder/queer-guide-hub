@@ -63,6 +63,47 @@ const IDENTITY_TAGS: Record<
 const PRIDE_YEAR_MIN = 2024;
 const PRIDE_YEAR_MAX = 2030;
 
+/**
+ * Regional buckets for /pride/:year/region/:slug landing pages. Maps a slug
+ * (lowercase, kebab) to a human-readable continent name and the ISO2 country
+ * codes that roll up into it. Mirrors the CONTINENT_MAP in
+ * src/components/pride/PrideFilterRail.tsx — keep in sync when adding new
+ * countries to the seed.
+ */
+const PRIDE_REGIONS: Record<
+  string,
+  { name: string; countries: string[] }
+> = {
+  europe: {
+    name: 'Europe',
+    countries: [
+      'DE', 'GB', 'FR', 'ES', 'NL', 'SE', 'DK', 'NO', 'FI', 'IT', 'PT', 'AT',
+      'CH', 'BE', 'CZ', 'PL', 'HU', 'GR', 'IE', 'IS', 'EE', 'LV', 'LT', 'RO',
+      'BG', 'SI', 'HR', 'BA', 'RS', 'SK', 'GE', 'TR',
+    ],
+  },
+  americas: {
+    name: 'Americas',
+    countries: [
+      'US', 'CA', 'MX', 'BR', 'AR', 'CL', 'CO', 'PE', 'EC', 'UY',
+    ],
+  },
+  asia: {
+    name: 'Asia',
+    countries: [
+      'IL', 'JP', 'TW', 'TH', 'HK', 'KR', 'SG', 'PH', 'VN',
+    ],
+  },
+  oceania: {
+    name: 'Oceania',
+    countries: ['AU', 'NZ'],
+  },
+  africa: {
+    name: 'Africa',
+    countries: ['ZA'],
+  },
+};
+
 // P1.3 — content-quality gates. Below the threshold the landing still
 // renders (so the URL doesn't 404), but emits noindex so Google doesn't
 // surface thin pages and the sitemap (sitemap-landings.xml.ts) drops
@@ -530,6 +571,111 @@ ${eventListHtml}
   });
 }
 
+/**
+ * /pride/:year/region/:slug — continental hub. Bundles every pride that year
+ * whose country ISO2 sits in the region's bucket. Falls back to noindex
+ * (but still renders) when below MIN_LANDING_EVENTS.
+ */
+async function prideRegionLanding(
+  env: Env,
+  year: number,
+  regionSlug: string,
+): Promise<Response | null> {
+  const region = PRIDE_REGIONS[regionSlug];
+  if (!region) return null;
+
+  const start = `${year}-01-01`;
+  const end = `${year + 1}-01-01`;
+  const countryFilter = region.countries.map((c) => `"${c}"`).join(',');
+
+  const events = await fetchRows(
+    env,
+    'events',
+    'title,slug,city,country,start_date,end_date,is_featured',
+    `event_type=eq.pride&country=in.(${countryFilter})&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
+    300,
+  ).catch(() => []);
+
+  const basePath = `/pride/${year}/region/${regionSlug}`;
+  const canonical = `${SITE_ORIGIN}${basePath}`;
+  const title = `Pride ${year} in ${region.name} | Queer Guide`;
+  const description = `Every LGBTQ+ Pride event in ${region.name} for ${year} — dates, cities, and links to local listings, curated by Queer Guide.`;
+
+  const byCountry = new Map<string, Array<Record<string, unknown>>>();
+  for (const e of events) {
+    const c = typeof e.country === 'string' ? e.country : 'Other';
+    if (!byCountry.has(c)) byCountry.set(c, []);
+    byCountry.get(c)!.push(e);
+  }
+
+  const countryListHtml = byCountry.size
+    ? [...byCountry.entries()]
+        .sort((a, b) => b[1].length - a[1].length)
+        .map(
+          ([cc, evs]) =>
+            `<li><strong>${escape(cc)}</strong> — ${evs.length} event${evs.length === 1 ? '' : 's'}</li>`,
+        )
+        .join('\n')
+    : '<li class="muted">We have no Pride events on file for this region yet.</li>';
+
+  const featuredHtml = events
+    .filter((e) => e.is_featured && typeof e.slug === 'string')
+    .slice(0, 30)
+    .map((e) => {
+      const name = escape(String(e.title ?? ''));
+      const slug = escape(String(e.slug));
+      const date = typeof e.start_date === 'string' ? escape(e.start_date.slice(0, 10)) : '';
+      const city = e.city ? ` · ${escape(String(e.city))}` : '';
+      return `<div class="card"><h3><a href="/events/${slug}">${name}</a></h3><div class="meta">${date}${city}</div></div>`;
+    })
+    .join('\n');
+
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Queer Guide', item: SITE_ORIGIN },
+      { '@type': 'ListItem', position: 2, name: `Pride ${year}`, item: `${SITE_ORIGIN}/pride/${year}` },
+      { '@type': 'ListItem', position: 3, name: region.name },
+    ],
+  };
+
+  const noindex = events.length < MIN_LANDING_EVENTS;
+
+  const html = layoutHtml({
+    title,
+    description,
+    canonical,
+    ogImage: DEFAULT_OG_IMAGE,
+    hreflangs: buildHreflang(basePath),
+    jsonLd: renderLd(breadcrumb),
+    noindex,
+    bodyHtml: `<nav class="crumbs"><a href="/">Home</a> · <a href="/pride/${year}">Pride ${year}</a> · ${escape(region.name)}</nav>
+<h1>Pride ${year} in ${escape(region.name)}</h1>
+<p>${escape(description)}</p>
+<p><strong>${events.length}</strong> pride${events.length === 1 ? '' : 's'} across <strong>${byCountry.size}</strong> ${byCountry.size === 1 ? 'country' : 'countries'}.</p>
+<h2>By country</h2>
+<ul>
+  ${countryListHtml}
+</ul>
+${featuredHtml ? `<h2>Featured prides</h2>\n${featuredHtml}` : ''}
+<h2>Explore Queer Guide</h2>
+<ul>
+  <li><a href="/pride/${year}">All Pride events in ${year}</a></li>
+  <li><a href="/pride/${year}/world">WorldPride ${year}</a></li>
+  <li><a href="/travel">Country safety guide</a></li>
+</ul>`,
+  });
+
+  return new Response(html, {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, s-maxage=600, max-age=120',
+      Vary: 'User-Agent',
+    },
+  });
+}
+
 // Dispatch
 
 export async function resolveLandingRoute(
@@ -543,6 +689,16 @@ export async function resolveLandingRoute(
   const spacesMatch = pathname.match(/^\/spaces\/([^/?#]+)\/?$/);
   if (spacesMatch) {
     return identityLanding(env, decodeURIComponent(spacesMatch[1]));
+  }
+
+  // /pride/:year/region/:slug must match BEFORE /pride/:year/:city because
+  // "region" would otherwise look like a city slug.
+  const prideRegionMatch = pathname.match(/^\/pride\/(\d+)\/region\/([^/?#]+)\/?$/);
+  if (prideRegionMatch) {
+    const year = isValidPrideYear(prideRegionMatch[1]);
+    if (!year) return null;
+    const slug = decodeURIComponent(prideRegionMatch[2]).toLowerCase();
+    return prideRegionLanding(env, year, slug);
   }
 
   const prideCityMatch = pathname.match(/^\/pride\/(\d+)\/([^/?#]+)\/?$/);
@@ -567,3 +723,4 @@ export async function resolveLandingRoute(
 
 export const IDENTITY_SLUGS = Object.keys(IDENTITY_TAGS);
 export const PRIDE_YEARS = Array.from({ length: PRIDE_YEAR_MAX - PRIDE_YEAR_MIN + 1 }, (_, i) => PRIDE_YEAR_MIN + i);
+export const PRIDE_REGION_SLUGS = Object.keys(PRIDE_REGIONS);
