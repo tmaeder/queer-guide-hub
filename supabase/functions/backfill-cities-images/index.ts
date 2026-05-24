@@ -3,14 +3,17 @@ import {
   jsonResponse,
   errorResponse,
   corsResponse,
-  requireAdmin,
 } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Backfill Pexels images for cities missing image_url + curated_image_url.
 //
-// Idempotent. Cron-scheduled (daily 04:30 UTC) until the catalog is complete;
-// after that it returns "nothing to backfill" and is a no-op.
+// Idempotent. Cron-scheduled (daily 04:45 UTC) until the catalog is complete;
+// after that it returns "nothing to backfill" and is a no-op. Matches the
+// pipeline-geo-validate auth pattern (no requireAdmin) so pg_cron can call
+// with the project anon JWT. Protection against abuse is structural:
+// bounded batch (≤100), image_flagged auto-throttle on miss, Pexels' own
+// per-key rate limit, and the function failing fast without PEXELS_API_KEY.
 //
 // Per-call:
 //   - batch up to 50 cities, ordered by population DESC so the biggest /
@@ -66,8 +69,6 @@ Deno.serve(
     if (req.method === 'OPTIONS') return corsResponse(req)
 
     const supabase = getServiceClient()
-    const adminErr = await requireAdmin(req, supabase)
-    if (adminErr instanceof Response) return adminErr
 
     const apiKey = Deno.env.get('PEXELS_API_KEY')
     if (!apiKey) {
