@@ -86,7 +86,6 @@ describe('useUserDirectoryQuery', () => {
           filters: { ...defaultUserFilters, ...overrides },
           nearMe: opts?.nearMe ?? false,
           userLocation: opts?.userLocation ?? null,
-          enabled: true,
         }),
       { wrapper },
     );

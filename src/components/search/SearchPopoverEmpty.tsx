@@ -38,22 +38,19 @@ export function SearchPopoverEmpty({
   ];
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', maxHeight: 480 }}>
+    <div className="flex-1 overflow-y-auto" style={{ maxHeight: 480 }}>
       {tiles.length > 0 && (
-        <div style={{ padding: '12px 12px 8px' }}>
-          <div
-            className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 flex gap-1"
-            style={{ alignItems: 'center' }}
-          >
+        <div className="px-3 pb-2 pt-3">
+          <div className="mb-2 flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
             <TrendingUp size={11} />
             {t('search.trending', 'Trending')}
           </div>
-          <div style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }} className="grid gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {tiles.map((hit) => {
               const name = (hit.title || hit.name || '') as string;
               if (!name) return null;
               const Icon = (TYPE_ICONS[hit.type] || TrendingUp) as React.ComponentType<{
-                style?: React.CSSProperties;
+                className?: string;
               }>;
               const image = (hit.image_url || hit.cover_image_url || hit.hero_image_url) as
                 | string
@@ -63,54 +60,23 @@ export function SearchPopoverEmpty({
                   key={`trend-${hit.type}-${hit.id}`}
                   type="button"
                   onClick={() => onSelectTrending(hit)}
-                  style={{
-                    border: '1px solid hsl(var(--border))',
-                    background: 'transparent',
-                    padding: 0,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'hsl(var(--accent))';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                  }}
+                  className="flex cursor-pointer flex-col overflow-hidden border border-border bg-transparent p-0 text-left transition-colors hover:bg-accent"
                 >
-                  <div
-                    style={{
-                      height: 80,
-                      background: 'hsl(var(--muted))',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    className="flex overflow-hidden"
-                  >
+                  <div className="flex h-20 items-center justify-center overflow-hidden bg-muted">
                     {image ? (
                       <img
                         src={image}
                         alt=""
                         loading="lazy"
-                        style={{ height: '100%', width: '100%', objectFit: 'cover' }}
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      <Icon style={{ height: 18, width: 18 }} className="text-muted-foreground" />
+                      <Icon className="h-4.5 w-4.5 text-muted-foreground" />
                     )}
                   </div>
-                  <div style={{ padding: '6px 8px' }}>
-                    <div
-                      className="text-xs font-medium overflow-hidden whitespace-nowrap"
-                      style={{ textOverflow: 'ellipsis' }}
-                    >
-                      {name}
-                    </div>
-                    <div
-                      className="text-2xs text-muted-foreground overflow-hidden whitespace-nowrap"
-                      style={{ textOverflow: 'ellipsis' }}
-                    >
+                  <div className="px-2 py-1.5">
+                    <div className="truncate text-xs font-medium">{name}</div>
+                    <div className="truncate text-2xs text-muted-foreground">
                       {[hit.city, hit.country].filter(Boolean).join(' · ') || hit.type}
                     </div>
                   </div>
@@ -121,16 +87,8 @@ export function SearchPopoverEmpty({
         </div>
       )}
 
-      <div
-        style={{
-          padding: '12px 12px 16px',
-          borderTop: tiles.length > 0 ? '1px solid hsl(var(--border))' : 0,
-        }}
-      >
-        <div
-          className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold mb-1.5"
-          style={{ padding: '0 4px' }}
-        >
+      <div className={tiles.length > 0 ? 'border-t border-border px-3 pb-4 pt-3' : 'px-3 pb-4 pt-3'}>
+        <div className="mb-1.5 px-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t('search.browse', 'Browse')}
         </div>
         {browseLinks.map((link) => {
@@ -140,25 +98,9 @@ export function SearchPopoverEmpty({
               key={link.path}
               type="button"
               onClick={() => onBrowse(link.path)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                width: '100%',
-                padding: '8px 8px',
-                border: 0,
-                background: 'transparent',
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'hsl(var(--accent))';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-              }}
+              className="flex w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent p-2 text-left transition-colors hover:bg-accent"
             >
-              <Icon style={{ height: 14, width: 14 }} className="text-muted-foreground shrink-0" />
+              <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <span className="text-sm">{link.label}</span>
             </button>
           );
