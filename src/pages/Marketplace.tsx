@@ -11,6 +11,8 @@ import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
 import { MarketplaceSpotlight } from '@/components/marketplace/MarketplaceSpotlight';
 import { MarketplaceCategoryTiles } from '@/components/marketplace/MarketplaceCategoryTiles';
+import { OccasionChips } from '@/components/marketplace/OccasionChips';
+import { HeroCollection } from '@/components/marketplace/HeroCollection';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { isAdultListing } from '@/hooks/useAdultContent';
 import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityChips';
@@ -372,6 +374,8 @@ const Marketplace = () => {
         <div className="container mx-auto py-8 md:py-12 px-4 relative">
           {!hasActiveFilters && (
             <>
+              <OccasionChips />
+              <HeroCollection />
               <MarketplaceSpotlight />
               <MarketplaceCategoryTiles />
               <MarketplaceRow
