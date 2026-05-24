@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Rail, RailItem } from '@/components/ui/Rail';
+import { Button } from '@/components/ui/button';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { Database } from '@/integrations/supabase/types';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -145,12 +148,14 @@ export function VenuesRails({ userLocation, primaryCityId, primaryCityName }: Ve
           data={nearYou}
         />
       )}
-      {!!user && (
+      {user ? (
         <RailSection
           title={t('venues.rails.forYou.title', 'For your taste')}
           subtitle={t('venues.rails.forYou.subtitle', 'Picked from your interests and where you’ve been.')}
           data={forYou}
         />
+      ) : (
+        <AnonPersonalizationPromo />
       )}
       <RailSection
         title={t('venues.rails.new.title', 'New this month')}
@@ -189,5 +194,40 @@ function RailSection({ title, subtitle, data }: { title: string; subtitle: strin
             </RailItem>
           ))}
     </Rail>
+  );
+}
+
+function AnonPersonalizationPromo() {
+  const { t } = useTranslation();
+  return (
+    <section
+      aria-label={t('venues.rails.forYouPromo.label', 'Personalize your venues')}
+      className="rounded-container border bg-card p-8"
+    >
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="max-w-xl">
+          <div className="flex items-center gap-2 mb-2 text-xs uppercase tracking-wider text-muted-foreground">
+            <Sparkles size={14} />
+            {t('venues.rails.forYouPromo.kicker', 'For your taste')}
+          </div>
+          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">
+            {t('venues.rails.forYouPromo.title', 'Tell us what you love.')}
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            {t(
+              'venues.rails.forYouPromo.body',
+              'Sign in and answer four quick questions — we’ll rank venues by your interests and where you’ve been.',
+            )}
+          </p>
+        </div>
+        <div className="flex gap-2 shrink-0">
+          <Button asChild>
+            <LocalizedLink to="/auth?next=/onboarding/venues">
+              {t('venues.rails.forYouPromo.cta', 'Get started')}
+            </LocalizedLink>
+          </Button>
+        </div>
+      </div>
+    </section>
   );
 }

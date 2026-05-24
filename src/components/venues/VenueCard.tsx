@@ -8,6 +8,7 @@ import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -49,6 +50,7 @@ type Event = Database['public']['Tables']['events']['Row'];
 interface VenueCardProps {
   venue?: Venue & {
     venue_reviews?: Array<{ rating: number }>;
+    checkin_count?: number;
   };
   loading?: boolean;
   events?: Event[];
@@ -177,10 +179,40 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                     </p>
                   );
                 })()}
+                {(() => {
+                  const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
+                  if (!blurb || blurb.length < 12) return null;
+                  return (
+                    <p className="mt-2 text-13 text-muted-foreground line-clamp-2">
+                      {blurb}
+                    </p>
+                  );
+                })()}
                 {topTags.length > 0 && (
                   <p className="mt-2 text-2xs text-muted-foreground truncate">
                     {topTags.join(' · ')}
                   </p>
+                )}
+                {typeof venue.checkin_count === 'number' && venue.checkin_count > 0 && (
+                  <p className="mt-2 text-2xs text-muted-foreground">
+                    {venue.checkin_count.toLocaleString()} check-in{venue.checkin_count === 1 ? '' : 's'}
+                  </p>
+                )}
+                {!isClosed && (
+                  <div
+                    className="mt-3"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    role="presentation"
+                  >
+                    <VenueCheckInButton
+                      compact
+                      venueId={venue.id}
+                      venueName={venue.name}
+                      venueLatitude={venue.latitude ? Number(venue.latitude) : null}
+                      venueLongitude={venue.longitude ? Number(venue.longitude) : null}
+                    />
+                  </div>
                 )}
               </div>
             </Card>
