@@ -191,6 +191,7 @@ export function useEvents(autoFetch: boolean = true) {
 
         if (filters?.cities?.length) {
           // ilike on a list — use or() with multiple ilike clauses
+          // Multi-city: chained OR with sanitized ilike clauses
           const parts = filters.cities.map((c) => `city.ilike.${c.replace(/[,()*]/g, '')}`);
           query = query.or(parts.join(','));
         } else if (filters?.city) {

@@ -29,13 +29,7 @@ const EVENT_SPAN_CLASS: Record<string, string> = {
 };
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import {
@@ -44,8 +38,6 @@ import {
   Filter,
   X,
   CalendarIcon,
-  Check,
-  ChevronDown,
   Grid,
   GanttChart,
   MapPin,
@@ -55,18 +47,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { format } from 'date-fns';
 import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
 import { displayCityName } from '@/utils/cityDisplay';
-import { dedupeCitiesByNormalized, normalizeCityLabel } from '@/utils/dateRange';
+import { dedupeCitiesByNormalized } from '@/utils/dateRange';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -79,7 +63,7 @@ import {
 import { ShareFiltersButton } from '@/components/events/ShareFiltersButton';
 
 type Event = Database['public']['Tables']['events']['Row'];
-const eventTypes = [
+const EVENT_TYPES = [
   'party',
   'workshop',
   'meetup',
@@ -140,10 +124,9 @@ const Events = () => {
 
   // Filter states
   const [search, setSearch] = useState('');
-  const [city, setCity] = useState('');
-  const [eventType, setEventType] = useState('');
+  const [cities, setCities] = useState<string[]>([]);
+  const [eventTypes, setEventTypes] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [cityOpen, setCityOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [nearMe, setNearMe] = useState(false);
@@ -187,8 +170,8 @@ const Events = () => {
         : undefined;
     const filters = {
       search: search || undefined,
-      city: city || undefined,
-      eventType: eventType && eventType !== 'all' ? eventType : undefined,
+      cities: cities.length > 0 ? cities : undefined,
+      eventTypes: eventTypes.length > 0 ? eventTypes : undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       accessibilityAttributes: accessibilityAttrs.length > 0 ? accessibilityAttrs : undefined,
       targetGroups: targetGroupsFilter.length > 0 ? targetGroupsFilter : undefined,
@@ -224,7 +207,7 @@ const Events = () => {
     if (isToggleOff) {
       const wasActive = activePreset;
       setActivePreset(null);
-      if (wasActive === 'pride') setEventType('');
+      if (wasActive === 'pride') setEventTypes([]);
       if (wasActive === 'free') setIsFree(false);
       if (wasActive === 'featured') setFeaturedOnly(false);
       if (wasActive === 'this-weekend' || wasActive === 'this-month' || wasActive === 'pride') {
@@ -240,7 +223,7 @@ const Events = () => {
       await fetchEvents(
         {
           search: search || undefined,
-          city: city || undefined,
+          cities: cities.length > 0 ? cities : undefined,
           tags: selectedTags.length > 0 ? selectedTags : undefined,
           includePast: showPast || undefined,
           sort,
@@ -253,7 +236,7 @@ const Events = () => {
     // then apply this preset's state.
     setIsFree(false);
     setFeaturedOnly(false);
-    if (activePreset === 'pride' && preset !== 'pride') setEventType('');
+    if (activePreset === 'pride' && preset !== 'pride') setEventTypes([]);
     setActivePreset(preset);
     const range = getPresetDateRange(preset);
     if (range) {
@@ -263,7 +246,7 @@ const Events = () => {
       setStartDate(undefined);
       setEndDate(undefined);
     }
-    if (preset === 'pride') setEventType('pride');
+    if (preset === 'pride') setEventTypes(['pride']);
     if (preset === 'free') setIsFree(true);
     if (preset === 'featured') setFeaturedOnly(true);
     if (preset === 'near-me') {
@@ -275,9 +258,9 @@ const Events = () => {
     await fetchEvents(
       {
         search: search || undefined,
-        city: city || undefined,
-        eventType:
-          preset === 'pride' ? 'pride' : eventType && eventType !== 'all' ? eventType : undefined,
+        cities: cities.length > 0 ? cities : undefined,
+        eventTypes:
+          preset === 'pride' ? ['pride'] : eventTypes.length > 0 ? eventTypes : undefined,
         tags: selectedTags.length > 0 ? selectedTags : undefined,
         dateRange: range
           ? { start: range.start.toISOString(), end: range.end.toISOString() }
@@ -305,12 +288,12 @@ const Events = () => {
         setNearMe(true);
 
         // Clear city filter when using near me
-        setCity('');
+        setCities([]);
 
         // Fetch events near user
         fetchEvents({
           search: search || undefined,
-          eventType: eventType && eventType !== 'all' ? eventType : undefined,
+          eventTypes: eventTypes.length > 0 ? eventTypes : undefined,
           tags: selectedTags.length > 0 ? selectedTags : undefined,
           nearMe: location,
           includePast: showPast || undefined,
@@ -337,9 +320,9 @@ const Events = () => {
   };
   const clearFilters = async () => {
     setSearch('');
-    setCity('');
+    setCities([]);
     setAutoLocationLabel(null);
-    setEventType('all');
+    setEventTypes([]);
     setSelectedTags([]);
     setAccessibilityAttrs([]);
     setTargetGroupsFilter([]);
@@ -403,8 +386,8 @@ const Events = () => {
   };
   const hasActiveFilters =
     search ||
-    city ||
-    eventType ||
+    cities.length > 0 ||
+    eventTypes.length > 0 ||
     selectedTags.length > 0 ||
     accessibilityAttrs.length > 0 ||
     targetGroupsFilter.length > 0 ||
@@ -424,9 +407,9 @@ const Events = () => {
     setAutoLoadedCount(0);
     const cityName = visitorLocation?.city;
     if (cityName) {
-      setCity(cityName);
+      setCities([cityName]);
       setAutoLocationLabel(cityName);
-      fetchEvents({ city: cityName }, { page: 1, pageSize: PAGE_SIZE, append: false });
+      fetchEvents({ cities: [cityName] }, { page: 1, pageSize: PAGE_SIZE, append: false });
     } else {
       fetchEvents({}, { page: 1, pageSize: PAGE_SIZE, append: false });
     }
@@ -455,7 +438,7 @@ const Events = () => {
     }
     handleFiltersChange();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city]);
+  }, [cities]);
 
   // Re-fetch when sort changes
   const sortMounted = useRef(false);
@@ -486,6 +469,7 @@ const Events = () => {
     handleFiltersChange();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventType, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags, accessibilityAttrs, targetGroupsFilter, languages]);
+  }, [eventTypes, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags]);
 
   // Debounced search — apply ~300ms after the user stops typing so the
   // list filters live. Enter still flushes immediately via onKeyDown.
@@ -505,8 +489,8 @@ const Events = () => {
   useEffect(() => {
     const next = serializeFilterState({
       q: debouncedSearch,
-      cities: city ? [city] : [],
-      types: eventType && eventType !== 'all' ? [eventType] : [],
+      cities,
+      types: eventTypes,
       tags: selectedTags,
       accessibility: accessibilityAttrs,
       languages,
@@ -526,9 +510,9 @@ const Events = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    city,
+    cities,
     debouncedSearch,
-    eventType,
+    eventTypes,
     selectedTags,
     accessibilityAttrs,
     languages,
@@ -545,9 +529,9 @@ const Events = () => {
   // Hydrate filters from URL on first mount.
   useEffect(() => {
     const parsed = parseFilterState(searchParams);
-    if (parsed.cities[0]) setCity(parsed.cities[0]);
+    if (parsed.cities.length) setCities(parsed.cities);
     if (parsed.q) setSearch(parsed.q);
-    if (parsed.types[0]) setEventType(parsed.types[0]);
+    if (parsed.types.length) setEventTypes(parsed.types);
     if (parsed.tags.length) setSelectedTags(parsed.tags);
     if (parsed.accessibility.length) setAccessibilityAttrs(parsed.accessibility);
     if (parsed.languages.length) setLanguages(parsed.languages);
@@ -576,8 +560,8 @@ const Events = () => {
     fetchEvents(
       {
         search: search || undefined,
-        city: city || undefined,
-        eventType: eventType && eventType !== 'all' ? eventType : undefined,
+        cities: cities.length > 0 ? cities : undefined,
+        eventTypes: eventTypes.length > 0 ? eventTypes : undefined,
         tags: selectedTags.length > 0 ? selectedTags : undefined,
         dateRange: { start: startIso, end: endIso },
         nearMe: nearMe ? userLocation : undefined,
@@ -639,76 +623,30 @@ const Events = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="city">{t('pages.events.cities', 'Cities')}</Label>
-                  <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={cityOpen}
-                        style={{ width: '100%', justifyContent: 'space-between' }}
-                      >
-                        {city || t('pages.events.selectCities', 'Select city…')}
-                        <ChevronDown
-                          style={{ width: 16, height: 16 }}
-                          className="ml-2 shrink-0 text-muted-foreground"
-                        />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent style={{ width: '100%' }} className="p-0">
-                      <Command>
-                        <CommandInput
-                          placeholder="Search cities..."
-                          value={city}
-                          onValueChange={setCity}
-                        />
-                        <CommandList>
-                          <CommandEmpty>No cities found.</CommandEmpty>
-                          <CommandGroup>
-                            {availableCities
-                              .filter((c) =>
-                                normalizeCityLabel(c).includes(normalizeCityLabel(city)),
-                              )
-                              .map((cityName) => (
-                                <CommandItem
-                                  key={cityName}
-                                  value={cityName}
-                                  onSelect={(value) => {
-                                    setCity(value === city ? '' : value);
-                                    setCityOpen(false);
-                                  }}
-                                >
-                                  <Check
-                                    style={{
-                                      width: 16,
-                                      height: 16,
-                                      opacity: city === cityName ? 1 : 0,
-                                    }}
-                                    className="mr-2"
-                                  />
-                                  {cityName}
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <MultiCombobox
+                    ariaLabel={t('pages.events.cities', 'Cities')}
+                    placeholder={t('pages.events.selectCities', 'Select cities…')}
+                    searchPlaceholder={t('pages.events.searchCities', 'Search cities…')}
+                    emptyText={t('pages.events.noCities', 'No cities found.')}
+                    options={availableCities.map((c) => ({ value: c, label: c }))}
+                    selected={cities}
+                    onChange={setCities}
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="eventType">{t('pages.events.eventType', 'Event Type')}</Label>
-                  <Select value={eventType} onValueChange={setEventType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select event type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      {eventTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type.charAt(0).toUpperCase() + type.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <MultiCombobox
+                    ariaLabel={t('pages.events.eventType', 'Event Type')}
+                    placeholder={t('pages.events.selectEventTypes', 'All types')}
+                    searchPlaceholder={t('pages.events.searchEventTypes', 'Search types…')}
+                    emptyText={t('pages.events.noTypes', 'No types found.')}
+                    options={EVENT_TYPES.map((type) => ({
+                      value: type,
+                      label: type.charAt(0).toUpperCase() + type.slice(1),
+                    }))}
+                    selected={eventTypes}
+                    onChange={setEventTypes}
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label>{t('pages.events.startDate', 'Start Date')}</Label>
@@ -774,7 +712,7 @@ const Events = () => {
               </div>
 
               {/* Pride sub-kinds: Parade / Week / Festival / Party / Rally / Community */}
-              {eventType === 'pride' && (
+              {eventTypes.includes('pride') && (
                 <div className="flex flex-col gap-2">
                   <Label>{t('pages.events.prideSubtype', 'Pride type')}</Label>
                   <div className="flex flex-wrap gap-2">
@@ -907,21 +845,22 @@ const Events = () => {
                   />
                 </Badge>
               )}
-              {city && (
+              {cities.map((c) => (
                 <Badge
+                  key={c}
                   variant="secondary"
                   style={{ alignItems: 'center' }}
                   className="inline-flex gap-1"
                 >
-                  {autoLocationLabel === city && <MapPin size={10} />}
-                  {autoLocationLabel === city
+                  {autoLocationLabel === c && <MapPin size={10} />}
+                  {autoLocationLabel === c
                     ? t('pages.events.filterNearYou', {
-                        value: displayCityName(city, i18n.language),
-                        defaultValue: `Near you: ${displayCityName(city, i18n.language)}`,
+                        value: displayCityName(c, i18n.language),
+                        defaultValue: `Near you: ${displayCityName(c, i18n.language)}`,
                       })
                     : t('pages.events.filterCity', {
-                        value: displayCityName(city, i18n.language),
-                        defaultValue: `City: ${displayCityName(city, i18n.language)}`,
+                        value: displayCityName(c, i18n.language),
+                        defaultValue: `City: ${displayCityName(c, i18n.language)}`,
                       })}
                   <X
                     size={12}
@@ -930,25 +869,25 @@ const Events = () => {
                     role="button"
                     aria-label={t('pages.events.clearFilterCity', 'Clear city filter')}
                     onClick={() => {
-                      setCity('');
-                      setAutoLocationLabel(null);
+                      setCities((prev) => prev.filter((x) => x !== c));
+                      if (autoLocationLabel === c) setAutoLocationLabel(null);
                     }}
                   />
                 </Badge>
-              )}
-              {eventType && (
-                <Badge variant="secondary" className="inline-flex gap-1">
-                  {eventType}
+              ))}
+              {eventTypes.map((t2) => (
+                <Badge key={t2} variant="secondary" className="inline-flex gap-1">
+                  {t2}
                   <X
                     size={12}
                     style={{ margin: -8, boxSizing: 'content-box' }}
                     className="cursor-pointer p-2"
                     role="button"
                     aria-label={t('pages.events.clearFilterEventType', 'Clear event type filter')}
-                    onClick={() => setEventType('')}
+                    onClick={() => setEventTypes((prev) => prev.filter((x) => x !== t2))}
                   />
                 </Badge>
-              )}
+              ))}
               {startDate && (
                 <Badge variant="secondary" className="inline-flex gap-1">
                   {t('pages.events.filterFrom', {
@@ -1072,7 +1011,7 @@ const Events = () => {
               {/* D7: show "Showing N of M events" whenever the true total
                   exceeds what's currently rendered, so users aren't misled
                   that "24" means "24 in the world". */}
-              {autoLocationLabel && city === autoLocationLabel
+              {autoLocationLabel && cities.length === 1 && cities[0] === autoLocationLabel
                 ? totalCount && totalCount > events.length
                   ? t('pages.events.resultsNearOfTotal', {
                       count: events.length,
@@ -1095,11 +1034,11 @@ const Events = () => {
                       count: events.length,
                       defaultValue: `${events.length} ${events.length === 1 ? 'event' : 'events'}`,
                     })}
-              {autoLocationLabel && city === autoLocationLabel && (
+              {autoLocationLabel && cities.length === 1 && cities[0] === autoLocationLabel && (
                 <button
                   type="button"
                   onClick={() => {
-                    setCity('');
+                    setCities([]);
                     setAutoLocationLabel(null);
                   }}
                   className="ml-2 underline hover:text-foreground"
@@ -1246,7 +1185,7 @@ const Events = () => {
             />
           ) : (
             <SmartEmptyState
-              city={city || undefined}
+              city={cities[0] || undefined}
               dateRange={
                 startDate && endDate
                   ? { start: startDate.toISOString(), end: endDate.toISOString() }
@@ -1255,9 +1194,9 @@ const Events = () => {
               hasActiveFilters={!!hasActiveFilters}
               onClearFilters={clearFilters}
               onClearCity={
-                city
+                cities.length > 0
                   ? () => {
-                      setCity('');
+                      setCities([]);
                       setAutoLocationLabel(null);
                     }
                   : undefined
