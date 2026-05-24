@@ -1,7 +1,9 @@
 import { useMemo, useRef, useEffect } from 'react';
+import { Calendar, MapPin, Star } from 'lucide-react';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 import { cn } from '@/lib/utils';
 import { codeToFlagEmoji } from '@/lib/countryFlag';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface PrideTimelineProps {
   events: PrideCalendarEvent[];
@@ -21,6 +23,18 @@ interface PlacedEvent {
   monthIndex: number;
   dayInMonth: number;
   row: number;
+}
+
+function formatDateRange(start: string, end: string | null): string {
+  const s = new Date(start);
+  const e = end ? new Date(end) : null;
+  const opts: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+  if (!e || s.toDateString() === e.toDateString()) return s.toLocaleDateString(undefined, opts);
+  const sameYear = s.getUTCFullYear() === e.getUTCFullYear();
+  const startShort: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  return sameYear
+    ? `${s.toLocaleDateString(undefined, startShort)} – ${e.toLocaleDateString(undefined, opts)}`
+    : `${s.toLocaleDateString(undefined, opts)} – ${e.toLocaleDateString(undefined, opts)}`;
 }
 
 // Greedy row placement so labels (not just dots) don't overlap horizontally.
@@ -130,58 +144,96 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
             </div>
           )}
 
-          {/* Events: dot + label */}
-          {placed.map((p) => {
-            const xPct = ((p.monthIndex + (p.dayInMonth - 1) / 31) / 12) * 100;
-            const isSelected = selectedId === p.event.id;
-            const y = 36 + p.row * ROW_HEIGHT;
-            const dateLabel = new Date(p.event.start_date).toLocaleDateString(undefined, {
-              month: 'short',
-              day: 'numeric',
-            });
-            const flag = codeToFlagEmoji(p.event.country);
-            return (
-              <button
-                key={p.event.id}
-                type="button"
-                data-event-id={p.event.id}
-                onClick={() => onSelect?.(isSelected ? null : p.event.id)}
-                title={`${p.event.title} — ${dateLabel}`}
-                aria-label={`${p.event.title} on ${dateLabel}`}
-                aria-pressed={isSelected}
-                className={cn(
-                  'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 rounded-badge',
-                )}
-                style={{ left: `${xPct}%`, top: `${y}px`, height: '20px', maxWidth: `${LABEL_PX + 16}px` }}
-              >
-                <span
-                  className={cn(
-                    'shrink-0 rounded-full border border-foreground transition-all',
-                    isSelected
-                      ? 'bg-foreground w-3 h-3'
-                      : p.event.is_featured
-                        ? 'bg-foreground w-2.5 h-2.5 group-hover:scale-125'
-                        : 'bg-background w-2 h-2 group-hover:scale-125 group-hover:bg-foreground',
-                  )}
-                />
-                <span
-                  className={cn(
-                    'flex items-center gap-1 text-[10px] leading-none whitespace-nowrap overflow-hidden min-w-0',
-                    isSelected || p.event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
-                    'group-hover:text-foreground group-hover:font-medium',
-                  )}
-                >
-                  {flag && (
-                    <span aria-hidden="true" className="shrink-0 leading-none">
-                      {flag}
-                    </span>
-                  )}
-                  <span className="truncate">{p.event.city ?? p.event.title}</span>
-                </span>
-              </button>
-            );
-          })}
+          {/* Events: dot + label, each with a hover/focus preview card */}
+          <TooltipProvider delayDuration={200} skipDelayDuration={300}>
+            {placed.map((p) => {
+              const xPct = ((p.monthIndex + (p.dayInMonth - 1) / 31) / 12) * 100;
+              const isSelected = selectedId === p.event.id;
+              const y = 36 + p.row * ROW_HEIGHT;
+              const dateLabel = new Date(p.event.start_date).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+              });
+              const flag = codeToFlagEmoji(p.event.country);
+              const dateRange = formatDateRange(p.event.start_date, p.event.end_date);
+              const location = [p.event.city, p.event.country].filter(Boolean).join(', ');
+              return (
+                <Tooltip key={p.event.id}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      data-event-id={p.event.id}
+                      onClick={() => onSelect?.(isSelected ? null : p.event.id)}
+                      aria-label={`${p.event.title} on ${dateLabel}`}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 rounded-badge',
+                      )}
+                      style={{ left: `${xPct}%`, top: `${y}px`, height: '20px', maxWidth: `${LABEL_PX + 16}px` }}
+                    >
+                      <span
+                        className={cn(
+                          'shrink-0 rounded-full border border-foreground transition-all',
+                          isSelected
+                            ? 'bg-foreground w-3 h-3'
+                            : p.event.is_featured
+                              ? 'bg-foreground w-2.5 h-2.5 group-hover:scale-125'
+                              : 'bg-background w-2 h-2 group-hover:scale-125 group-hover:bg-foreground',
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          'flex items-center gap-1 text-[10px] leading-none whitespace-nowrap overflow-hidden min-w-0',
+                          isSelected || p.event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
+                          'group-hover:text-foreground group-hover:font-medium',
+                        )}
+                      >
+                        {flag && (
+                          <span aria-hidden="true" className="shrink-0 leading-none">
+                            {flag}
+                          </span>
+                        )}
+                        <span className="truncate">{p.event.city ?? p.event.title}</span>
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    sideOffset={8}
+                    collisionPadding={12}
+                    className="z-50 w-64 max-w-[calc(100vw-24px)] px-3 py-2.5 rounded-element border border-foreground/15 bg-background text-foreground font-normal text-left shadow-none"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium leading-tight">
+                        {flag && <span aria-hidden="true" className="mr-1">{flag}</span>}
+                        {p.event.title}
+                      </p>
+                      {p.event.is_featured && (
+                        <Star className="size-3 shrink-0 fill-foreground text-foreground mt-0.5" aria-label="Featured" />
+                      )}
+                    </div>
+                    <p className="mt-1.5 flex items-center gap-1 text-xs2 text-foreground/70">
+                      <Calendar className="size-3 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{dateRange}</span>
+                    </p>
+                    {location && (
+                      <p className="mt-1 flex items-center gap-1 text-xs2 text-foreground/70">
+                        <MapPin className="size-3 shrink-0" aria-hidden="true" />
+                        <span className="truncate">{location}</span>
+                      </p>
+                    )}
+                    {p.event.description && (
+                      <p className="mt-2 text-xs2 text-foreground/80 line-clamp-3">{p.event.description}</p>
+                    )}
+                    {p.event.verification_status !== 'verified' && (
+                      <p className="mt-2 text-2xs text-foreground/50">Date estimated</p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </TooltipProvider>
         </div>
       </div>
       <p className="text-xs2 text-foreground/50 mt-2">
