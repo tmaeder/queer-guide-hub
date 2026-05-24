@@ -993,7 +993,115 @@
     "review": "Scrivi una recensione",
     "photos": "Foto",
     "amenities": "Servizi",
-    "services": "Servizi offerti"
+    "services": "Servizi offerti",
+    "rails": {
+      "nearYou": {
+        "title": "Vicino a te",
+        "subtitle": "Luoghi entro 30 km, ordinati per distanza."
+      },
+      "forYou": {
+        "title": "Per i tuoi gusti",
+        "subtitle": "Scelti in base ai tuoi interessi e visite."
+      },
+      "forYouPromo": {
+        "label": "Personalizza i tuoi luoghi",
+        "kicker": "Per i tuoi gusti",
+        "title": "Dicci cosa ami.",
+        "body": "Accedi e rispondi a quattro brevi domande — ordineremo i luoghi in base ai tuoi interessi.",
+        "cta": "Inizia"
+      },
+      "new": {
+        "title": "Novità del mese",
+        "subtitle": "Aggiunte recenti alla guida."
+      },
+      "topInCity": {
+        "title": "Top a {{city}}",
+        "subtitle": "Popolari ora nella community."
+      },
+      "editors": {
+        "title": "Scelti dalla redazione",
+        "subtitle": "Selezione curata."
+      }
+    },
+    "hero": {
+      "kicker": "In evidenza questa settimana",
+      "cta": "Scopri di più",
+      "label": "Luogo in evidenza"
+    },
+    "personalStrip": {
+      "title": "{{name}} · Livello {{level}}",
+      "label": "Le tue statistiche",
+      "passport": "Vedi passaporto",
+      "points": "Punti",
+      "venues": "Luoghi",
+      "streak": "Giorni di fila",
+      "checkins": "Check-in",
+      "nextLevel": "Prossimo: {{name}}"
+    },
+    "results": {
+      "title": "Luoghi corrispondenti"
+    },
+    "quickFilters": {
+      "openNow": "Aperto ora",
+      "radius": "Distanza",
+      "radiusKm": "Entro {{km}} km",
+      "anyDistance": "Qualsiasi distanza",
+      "price": "Prezzo",
+      "anyPrice": "Qualsiasi prezzo",
+      "clear": "Cancella"
+    },
+    "leaderboard": {
+      "title": "Classifica",
+      "subtitle": "Top esploratori per luoghi visitati.",
+      "tabs": {
+        "global": "Globale",
+        "city": "A {{city}}"
+      },
+      "empty": "Ancora nessun dato.",
+      "venuesShort": "luoghi",
+      "widget": {
+        "label": "Top esploratori",
+        "titleCity": "Top a {{city}}",
+        "titleGlobal": "Top esploratori",
+        "viewAll": "Vedi tutti",
+        "anon": "Esploratore anonimo",
+        "you": "Tu"
+      }
+    },
+    "passport": {
+      "title": "Il tuo passaporto",
+      "subtitle": "Ogni luogo visitato e ogni badge guadagnato.",
+      "achievements": "Obiettivi",
+      "earned": "Ottenuto",
+      "locked": "+{{pts}} pt",
+      "visited": "{{count}} luoghi visitati",
+      "empty": "Nessun check-in.",
+      "signInPrompt": "Accedi per vedere il passaporto."
+    },
+    "onboarding": {
+      "progress": "Passo {{current}} di {{total}}",
+      "step1": {
+        "title": "Che tipo di luoghi ami?"
+      },
+      "step2": {
+        "title": "A quali community appartieni?"
+      },
+      "step3": {
+        "title": "Quali atmosfere cerchi?"
+      },
+      "step4": {
+        "title": "Dove passi più tempo?"
+      },
+      "cityPlaceholder": "Digita la tua città",
+      "citySelected": "Selezionata: {{city}}",
+      "finish": "Finisci",
+      "saveError": "Salvataggio fallito",
+      "saveSuccess": "Preferenze salvate"
+    },
+    "achievementToast": {
+      "unlocked": "Sbloccato: {{name}}",
+      "fallback": "Nuovo obiettivo raggiunto"
+    }
   },
   "marketplace": {
     "title": "Mercato",
@@ -1368,7 +1476,8 @@
       "filteredEmpty": {
         "title": "Nessun locale corrisponde ai tuoi filtri",
         "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
-      }
+      },
+      "sortRelevance": "Per te"
     },
     "venueDetail": {
       "loadFailed": "Impossibile caricare i dettagli del locale.",
