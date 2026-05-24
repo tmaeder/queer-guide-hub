@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { usePrideCalendar } from '@/hooks/usePrideCalendar';
 import { PrideTimeline } from '@/components/pride/PrideTimeline';
 import { PrideMap } from '@/components/pride/PrideMap';
-import { PrideEventCard } from '@/components/pride/PrideEventCard';
+import { PrideSpotlight } from '@/components/pride/PrideSpotlight';
+import { PrideUpNext } from '@/components/pride/PrideUpNext';
+import { PrideTrips } from '@/components/pride/PrideTrips';
+import { PrideTable } from '@/components/pride/PrideTable';
 import {
   PrideFilterRail,
   applyPrideFilters,
-  continentOf,
   type PrideFilters,
 } from '@/components/pride/PrideFilterRail';
 import { exportPrideIcs } from '@/utils/prideIcs';
@@ -84,17 +86,10 @@ export default function PridePage() {
     [filtered],
   );
 
-  const featured = useMemo(() => filtered.filter((e) => e.is_featured).slice(0, 12), [filtered]);
-  const byContinent = useMemo(() => {
-    const groups = new Map<string, typeof filtered>();
-    for (const e of filtered) {
-      const c = continentOf(e.country);
-      const list = groups.get(c) ?? [];
-      list.push(e);
-      groups.set(c, list);
-    }
-    return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
-  }, [filtered]);
+  const selectedEvent = useMemo(
+    () => (selectedId ? filtered.find((e) => e.id === selectedId) ?? null : null),
+    [selectedId, filtered],
+  );
 
   const changeYear = (delta: number) => {
     const next = year + delta;
@@ -174,6 +169,22 @@ export default function PridePage() {
             )}
           </section>
 
+          {/* Selected event spotlight */}
+          {selectedEvent && (
+            <section aria-labelledby="spotlight-title">
+              <PrideSpotlight
+                event={selectedEvent}
+                onDismiss={() => setSelectedId(null)}
+                onOpenMap={() => {
+                  document.getElementById('map-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+              />
+            </section>
+          )}
+
+          {/* Up next */}
+          {!isLoading && <PrideUpNext events={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
+
           {/* Map */}
           <section aria-labelledby="map-heading">
             <h2 id="map-heading" className="text-title font-medium mb-3">
@@ -182,68 +193,20 @@ export default function PridePage() {
             {isLoading ? (
               <Skeleton className="h-[480px] w-full rounded-container" />
             ) : (
-              <PrideMap
-                events={filtered}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-              />
+              <PrideMap events={filtered} selectedId={selectedId} onSelect={setSelectedId} />
             )}
           </section>
 
-          {/* Featured */}
-          {featured.length > 0 && (
-            <section aria-labelledby="featured-heading">
-              <h2 id="featured-heading" className="text-title font-medium mb-4">
-                Featured
-              </h2>
-              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {featured.map((e) => (
-                  <PrideEventCard
-                    key={e.id}
-                    event={e}
-                    highlighted={selectedId === e.id}
-                    onSelect={setSelectedId}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+          {/* Pride trip ideas */}
+          {!isLoading && <PrideTrips events={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
 
-          {/* By region */}
-          {byContinent.length > 0 && (
-            <section aria-labelledby="region-heading">
-              <h2 id="region-heading" className="text-title font-medium mb-4">
-                By region
-              </h2>
-              <div className="space-y-8">
-                {byContinent.map(([continent, list]) => (
-                  <div key={continent}>
-                    <h3 className="text-headline mb-3">{continent}</h3>
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                      {list.map((e) => (
-                        <PrideEventCard
-                          key={e.id}
-                          event={e}
-                          compact
-                          highlighted={selectedId === e.id}
-                          onSelect={setSelectedId}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+          {/* All prides — sortable table */}
+          {!isLoading && <PrideTable events={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
 
           {!isLoading && filtered.length === 0 && (
             <div className="border border-foreground/15 rounded-container p-12 text-center">
               <p className="text-foreground/70">No prides match your filters.</p>
-              <Button
-                variant="outline"
-                onClick={() => setFilters(EMPTY_FILTERS)}
-                className="mt-4"
-              >
+              <Button variant="outline" onClick={() => setFilters(EMPTY_FILTERS)} className="mt-4">
                 Clear filters
               </Button>
             </div>
