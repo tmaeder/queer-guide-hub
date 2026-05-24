@@ -1530,7 +1530,10 @@
         "pride": "[ES] Pride season",
         "thisMonth": "[ES] This month",
         "free": "[ES] Free",
-        "featured": "[ES] Featured"
+        "featured": "[ES] Featured",
+        "tonight": "[ES] Tonight",
+        "next7Days": "[ES] Next 7 days",
+        "newThisWeek": "[ES] New this week"
       },
       "rail": {
         "featured": "[ES] Featured this week",
@@ -1558,7 +1561,10 @@
       "sortLabel": "[ES] Sort events",
       "sort": {
         "dateAsc": "[ES] Soonest first",
-        "dateDesc": "[ES] Latest first"
+        "dateDesc": "[ES] Latest first",
+        "distance": "[ES] Closest to me",
+        "popularity": "[ES] Most popular",
+        "recent": "[ES] Recently added"
       },
       "searchLabel": "Buscar eventos",
       "searchPlaceholder": "Buscar eventos, ciudades, organizadores",
@@ -1569,7 +1575,17 @@
       "resultsNear_one": "{{count}} evento cerca de {{city}}",
       "resultsNear_other": "{{count}} eventos cerca de {{city}}",
       "showWorldwide": "Ver en todo el mundo",
-      "timelineView": "Vista de cronograma"
+      "timelineView": "Vista de cronograma",
+      "accessibility": "[ES] Accessibility",
+      "accessibilityPlaceholder": "[ES] Any",
+      "targetGroups": "[ES] Audience",
+      "targetGroupsPlaceholder": "[ES] Any",
+      "languages": "[ES] Language",
+      "languagesPlaceholder": "[ES] Any",
+      "share": "[ES] Share",
+      "shareCopied": "[ES] Copied",
+      "shareFilters": "[ES] Copy share link",
+      "shareFiltersHint": "[ES] Copy a link to these filters"
     },
     "eventDetail": {
       "loadFailed": "No se pudieron cargar los detalles del evento.",

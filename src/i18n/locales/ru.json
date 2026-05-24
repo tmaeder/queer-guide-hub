@@ -1558,7 +1558,10 @@
         "pride": "[RU] Pride season",
         "thisMonth": "[RU] This month",
         "free": "[RU] Free",
-        "featured": "[RU] Featured"
+        "featured": "[RU] Featured",
+        "tonight": "[RU] Tonight",
+        "next7Days": "[RU] Next 7 days",
+        "newThisWeek": "[RU] New this week"
       },
       "rail": {
         "featured": "[RU] Featured this week",
@@ -1586,7 +1589,10 @@
       "sortLabel": "[RU] Sort events",
       "sort": {
         "dateAsc": "[RU] Soonest first",
-        "dateDesc": "[RU] Latest first"
+        "dateDesc": "[RU] Latest first",
+        "distance": "[RU] Closest to me",
+        "popularity": "[RU] Most popular",
+        "recent": "[RU] Recently added"
       },
       "searchLabel": "Поиск мероприятий",
       "searchPlaceholder": "Поиск мероприятий, городов, организаторов",
@@ -1601,7 +1607,17 @@
       "resultsCount_many": "{{count}} мероприятий",
       "resultsNear_few": "{{count}} мероприятия рядом с {{city}}",
       "resultsNear_many": "{{count}} мероприятий рядом с {{city}}",
-      "timelineView": "Вид временной шкалы"
+      "timelineView": "Вид временной шкалы",
+      "accessibility": "[RU] Accessibility",
+      "accessibilityPlaceholder": "[RU] Any",
+      "targetGroups": "[RU] Audience",
+      "targetGroupsPlaceholder": "[RU] Any",
+      "languages": "[RU] Language",
+      "languagesPlaceholder": "[RU] Any",
+      "share": "[RU] Share",
+      "shareCopied": "[RU] Copied",
+      "shareFilters": "[RU] Copy share link",
+      "shareFiltersHint": "[RU] Copy a link to these filters"
     },
     "eventDetail": {
       "loadFailed": "Не удалось загрузить информацию о мероприятии.",

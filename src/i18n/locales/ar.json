@@ -1530,7 +1530,10 @@
         "pride": "[AR] Pride season",
         "thisMonth": "[AR] This month",
         "free": "[AR] Free",
-        "featured": "[AR] Featured"
+        "featured": "[AR] Featured",
+        "tonight": "[AR] Tonight",
+        "next7Days": "[AR] Next 7 days",
+        "newThisWeek": "[AR] New this week"
       },
       "rail": {
         "featured": "[AR] Featured this week",
@@ -1558,7 +1561,10 @@
       "sortLabel": "[AR] Sort events",
       "sort": {
         "dateAsc": "[AR] Soonest first",
-        "dateDesc": "[AR] Latest first"
+        "dateDesc": "[AR] Latest first",
+        "distance": "[AR] Closest to me",
+        "popularity": "[AR] Most popular",
+        "recent": "[AR] Recently added"
       },
       "searchLabel": "البحث عن الأحداث",
       "searchPlaceholder": "ابحث عن الأحداث والمدن والمنظمين",
@@ -1569,7 +1575,17 @@
       "resultsNear_one": "حدث {{count}} بالقرب من {{city}}",
       "resultsNear_other": "{{count}} حدث بالقرب من {{city}}",
       "showWorldwide": "عرض حول العالم",
-      "timelineView": "عرض الجدول الزمني"
+      "timelineView": "عرض الجدول الزمني",
+      "accessibility": "[AR] Accessibility",
+      "accessibilityPlaceholder": "[AR] Any",
+      "targetGroups": "[AR] Audience",
+      "targetGroupsPlaceholder": "[AR] Any",
+      "languages": "[AR] Language",
+      "languagesPlaceholder": "[AR] Any",
+      "share": "[AR] Share",
+      "shareCopied": "[AR] Copied",
+      "shareFilters": "[AR] Copy share link",
+      "shareFiltersHint": "[AR] Copy a link to these filters"
     },
     "eventDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل الفعالية.",

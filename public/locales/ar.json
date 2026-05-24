@@ -993,7 +993,115 @@
     "review": "اكتب مراجعة",
     "photos": "صور",
     "amenities": "المرافق",
-    "services": "الخدمات"
+    "services": "الخدمات",
+    "rails": {
+      "nearYou": {
+        "title": "بالقرب منك",
+        "subtitle": "أماكن في نطاق 30 كم، مرتبة حسب المسافة."
+      },
+      "forYou": {
+        "title": "لذوقك",
+        "subtitle": "مختارة بناءً على اهتماماتك وزياراتك."
+      },
+      "forYouPromo": {
+        "label": "خصص أماكنك",
+        "kicker": "لذوقك",
+        "title": "أخبرنا بما تحب.",
+        "body": "سجل الدخول وأجب على أربعة أسئلة قصيرة — سنرتب الأماكن حسب اهتماماتك.",
+        "cta": "ابدأ"
+      },
+      "new": {
+        "title": "جديد هذا الشهر",
+        "subtitle": "إضافات حديثة للدليل."
+      },
+      "topInCity": {
+        "title": "الأفضل في {{city}}",
+        "subtitle": "الأكثر شعبية الآن."
+      },
+      "editors": {
+        "title": "اختيارات المحرر",
+        "subtitle": "مختارات منتقاة بعناية."
+      }
+    },
+    "hero": {
+      "kicker": "مميز هذا الأسبوع",
+      "cta": "اقرأ المزيد",
+      "label": "مكان مميز"
+    },
+    "personalStrip": {
+      "title": "{{name}} · المستوى {{level}}",
+      "label": "إحصائياتك",
+      "passport": "عرض جواز السفر",
+      "points": "نقاط",
+      "venues": "أماكن",
+      "streak": "أيام متتالية",
+      "checkins": "تسجيلات وصول",
+      "nextLevel": "التالي: {{name}}"
+    },
+    "results": {
+      "title": "أماكن مطابقة"
+    },
+    "quickFilters": {
+      "openNow": "مفتوح الآن",
+      "radius": "المسافة",
+      "radiusKm": "في نطاق {{km}} كم",
+      "anyDistance": "أي مسافة",
+      "price": "السعر",
+      "anyPrice": "أي سعر",
+      "clear": "مسح"
+    },
+    "leaderboard": {
+      "title": "لوحة المتصدرين",
+      "subtitle": "أفضل المستكشفين حسب الأماكن المُزارة.",
+      "tabs": {
+        "global": "عالمي",
+        "city": "في {{city}}"
+      },
+      "empty": "لا توجد بيانات بعد.",
+      "venuesShort": "أماكن",
+      "widget": {
+        "label": "أفضل المستكشفين",
+        "titleCity": "الأفضل في {{city}}",
+        "titleGlobal": "أفضل المستكشفين",
+        "viewAll": "عرض الكل",
+        "anon": "مستكشف مجهول",
+        "you": "أنت"
+      }
+    },
+    "passport": {
+      "title": "جواز سفرك",
+      "subtitle": "كل مكان زرته وكل شارة كسبتها.",
+      "achievements": "الإنجازات",
+      "earned": "مكتسب",
+      "locked": "+{{pts}} نقطة",
+      "visited": "{{count}} مكان مزار",
+      "empty": "لا توجد تسجيلات وصول بعد.",
+      "signInPrompt": "سجل الدخول لعرض جواز سفرك."
+    },
+    "onboarding": {
+      "progress": "الخطوة {{current}} من {{total}}",
+      "step1": {
+        "title": "ما أنواع الأماكن التي تحبها؟"
+      },
+      "step2": {
+        "title": "إلى أي مجتمعات تنتمي؟"
+      },
+      "step3": {
+        "title": "ما الأجواء التي تبحث عنها؟"
+      },
+      "step4": {
+        "title": "أين تقضي معظم وقتك؟"
+      },
+      "cityPlaceholder": "اكتب مدينتك",
+      "citySelected": "محدد: {{city}}",
+      "finish": "إنهاء",
+      "saveError": "فشل الحفظ",
+      "saveSuccess": "تم حفظ التفضيلات"
+    },
+    "achievementToast": {
+      "unlocked": "تم فتح: {{name}}",
+      "fallback": "إنجاز جديد"
+    }
   },
   "marketplace": {
     "title": "السوق",
@@ -1368,7 +1476,8 @@
       "filteredEmpty": {
         "title": "لا توجد أماكن تطابق فلاترك",
         "body": "حاول تعديل الفلاتر أو البحث لرؤية نتائج أكثر."
-      }
+      },
+      "sortRelevance": "لك"
     },
     "venueDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل المكان.",

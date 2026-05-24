@@ -1530,7 +1530,10 @@
         "pride": "[DE] Pride season",
         "thisMonth": "[DE] This month",
         "free": "[DE] Free",
-        "featured": "[DE] Featured"
+        "featured": "[DE] Featured",
+        "tonight": "[DE] Tonight",
+        "next7Days": "[DE] Next 7 days",
+        "newThisWeek": "[DE] New this week"
       },
       "rail": {
         "featured": "[DE] Featured this week",
@@ -1558,7 +1561,10 @@
       "sortLabel": "[DE] Sort events",
       "sort": {
         "dateAsc": "[DE] Soonest first",
-        "dateDesc": "[DE] Latest first"
+        "dateDesc": "[DE] Latest first",
+        "distance": "[DE] Closest to me",
+        "popularity": "[DE] Most popular",
+        "recent": "[DE] Recently added"
       },
       "searchLabel": "Veranstaltungen suchen",
       "searchPlaceholder": "Veranstaltungen, Städte, Veranstalter suchen",
@@ -1569,7 +1575,17 @@
       "resultsNear_one": "{{count}} Veranstaltung in der Nähe von {{city}}",
       "resultsNear_other": "{{count}} Veranstaltungen in der Nähe von {{city}}",
       "showWorldwide": "Weltweit anzeigen",
-      "timelineView": "Zeitleistenansicht"
+      "timelineView": "Zeitleistenansicht",
+      "accessibility": "[DE] Accessibility",
+      "accessibilityPlaceholder": "[DE] Any",
+      "targetGroups": "[DE] Audience",
+      "targetGroupsPlaceholder": "[DE] Any",
+      "languages": "[DE] Language",
+      "languagesPlaceholder": "[DE] Any",
+      "share": "[DE] Share",
+      "shareCopied": "[DE] Copied",
+      "shareFilters": "[DE] Copy share link",
+      "shareFiltersHint": "[DE] Copy a link to these filters"
     },
     "eventDetail": {
       "loadFailed": "Details zur Veranstaltung konnten nicht geladen werden.",
