@@ -161,6 +161,14 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
               return (
                 <Tooltip key={p.event.id}>
                   <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      data-event-id={p.event.id}
+                      onClick={() => onSelect?.(isSelected ? null : p.event.id)}
+                      aria-label={`${p.event.title} on ${dateLabel}`}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group',
                     <Link
                       to={`/events/${p.event.slug}`}
                       data-event-id={p.event.id}
@@ -196,6 +204,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
                         )}
                         <span className="truncate">{p.event.city ?? p.event.title}</span>
                       </span>
+                    </button>
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent
