@@ -468,8 +468,7 @@ const Events = () => {
     }
     handleFiltersChange();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventType, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags, accessibilityAttrs, targetGroupsFilter, languages]);
-  }, [eventTypes, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags]);
+  }, [eventTypes, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags, accessibilityAttrs, targetGroupsFilter, languages]);
 
   // Debounced search — apply ~300ms after the user stops typing so the
   // list filters live. Enter still flushes immediately via onKeyDown.
