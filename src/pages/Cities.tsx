@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
 import { useCitiesDirectory } from '@/hooks/useCitiesDirectory';
@@ -13,7 +13,19 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ArrowRight } from 'lucide-react';
 import { CitiesFilterBar } from './cities/CitiesFilterBar';
 import { CityListPane } from './cities/CityListPane';
-import { CitiesMapPane } from './cities/CitiesMapPane';
+
+// Map pane is lazy-mounted: maplibre-gl is ~1.1 s of scripting on first
+// load (Lighthouse #1094). Importing it via React.lazy keeps the maplibre
+// chunk parsed off the critical path until after first paint; the
+// `mapReady` flag below additionally defers React mount until requestIdle
+// / 200 ms post-paint so TBT stays low for the list-first interaction.
+const CitiesMapPane = lazy(() =>
+  import('./cities/CitiesMapPane').then((m) => ({ default: m.CitiesMapPane })),
+);
+
+function MapPaneFallback() {
+  return <div className="h-full w-full bg-muted" aria-hidden="true" />;
+}
 
 export default function Cities() {
   const { t } = useTranslation();
@@ -72,6 +84,32 @@ export default function Cities() {
   const hasActiveFilters = url.q.length > 0 || url.continents.size > 0 || url.tiers.size > 0;
   const showList = url.view === 'list';
   const showMap = url.view === 'map';
+
+  // Defer the map mount until after first paint to keep maplibre-gl off
+  // the initial critical path. On mobile when the user switches to the
+  // Map tab, mount immediately since they're explicitly asking for it.
+  // Setting state inside the effect is the whole point — no defer, no win.
+  const [mapReady, setMapReady] = useState(false);
+  useEffect(() => {
+    if (mapReady) return;
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    const mount = () => setMapReady(true);
+    if (showMap) {
+      // User asked for the map — mount on the next tick so we don't block
+      // the current render.
+      const id = window.setTimeout(mount, 0);
+      return () => window.clearTimeout(id);
+    }
+    if (typeof w.requestIdleCallback === 'function') {
+      const id = w.requestIdleCallback(mount, { timeout: 1500 });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(mount, 200);
+    return () => window.clearTimeout(id);
+  }, [mapReady, showMap]);
 
   return (
     <div className="relative">
@@ -145,13 +183,19 @@ export default function Cities() {
                   showMap ? 'h-[60vh]' : 'hidden',
                 )}
               >
-                <CitiesMapPane
-                  cities={filtered}
-                  selectedCityId={url.city || null}
-                  hoveredCityId={hoveredCityId}
-                  onSelectCity={url.setCity}
-                  onHoverCity={setHoveredCityId}
-                />
+                {mapReady ? (
+                  <Suspense fallback={<MapPaneFallback />}>
+                    <CitiesMapPane
+                      cities={filtered}
+                      selectedCityId={url.city || null}
+                      hoveredCityId={hoveredCityId}
+                      onSelectCity={url.setCity}
+                      onHoverCity={setHoveredCityId}
+                    />
+                  </Suspense>
+                ) : (
+                  <MapPaneFallback />
+                )}
               </div>
             </div>
 
