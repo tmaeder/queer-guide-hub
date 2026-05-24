@@ -1467,6 +1467,19 @@
       "endDate": "End Date",
       "applyFilters": "Apply Filters",
       "clearAll": "Clear All",
+      "accessibility": "Accessibility",
+      "accessibilityPlaceholder": "Any",
+      "targetGroups": "Audience",
+      "targetGroupsPlaceholder": "Any",
+      "languages": "Language",
+      "languagesPlaceholder": "Any",
+      "ageRestriction": "Age restriction",
+      "ageAny": "Any",
+      "ageAllAges": "All ages",
+      "age18Plus": "18+",
+      "age21Plus": "21+",
+      "filterAge": "Age: {{value}}",
+      "clearFilterAge": "Clear age filter",
       "activeFilters": "Active filters:",
       "loadMore": "Load More Events",
       "submitAnEvent": "Submit an Event",
@@ -1507,12 +1520,14 @@
       },
       "preset": {
         "label": "Quick filters",
+        "tonight": "Tonight",
         "thisWeekend": "This weekend",
+        "next7Days": "Next 7 days",
         "nearMe": "Near me",
         "pride": "Pride season",
-        "thisMonth": "This month",
         "free": "Free",
-        "featured": "Featured"
+        "featured": "Featured",
+        "newThisWeek": "New this week"
       },
       "rail": {
         "featured": "Featured this week",
@@ -1540,8 +1555,15 @@
       "sortLabel": "Sort events",
       "sort": {
         "dateAsc": "Soonest first",
-        "dateDesc": "Latest first"
+        "dateDesc": "Latest first",
+        "distance": "Closest to me",
+        "popularity": "Most popular",
+        "recent": "Recently added"
       },
+      "share": "Share",
+      "shareCopied": "Copied",
+      "shareFilters": "Copy share link",
+      "shareFiltersHint": "Copy a link to these filters",
       "searchLabel": "Search events",
       "searchPlaceholder": "Search events, cities, organizers",
       "filters": "Filters",

@@ -26,6 +26,8 @@ interface VenueCheckInButtonProps {
   venueLatitude: number | null;
   venueLongitude: number | null;
   onCheckInSuccess?: () => void;
+  /** Compact variant for list cards */
+  compact?: boolean;
 }
 
 export function VenueCheckInButton({
@@ -33,6 +35,7 @@ export function VenueCheckInButton({
   venueLatitude,
   venueLongitude,
   onCheckInSuccess,
+  compact = false,
 }: VenueCheckInButtonProps) {
   const { checkInAtVenue, loading, _MAX_CHECKIN_DISTANCE_METERS } = useVenueCheckins();
   const { user } = useAuth();
@@ -64,10 +67,27 @@ export function VenueCheckInButton({
   return (
     <Dialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog}>
       <DialogTrigger asChild>
-        <Button onClick={() => setShowPrivacyDialog(true)} disabled={loading} variant="default">
-          <Shield size={16} />
-          Check In Securely
-        </Button>
+        {compact ? (
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowPrivacyDialog(true);
+            }}
+            disabled={loading}
+            variant="outline"
+            size="sm"
+            className="h-7 px-2 text-xs gap-1"
+          >
+            <Shield size={12} />
+            Check in
+          </Button>
+        ) : (
+          <Button onClick={() => setShowPrivacyDialog(true)} disabled={loading} variant="default">
+            <Shield size={16} />
+            Check In Securely
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

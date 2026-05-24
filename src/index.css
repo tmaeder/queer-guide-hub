@@ -856,3 +856,30 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* News editorial — live ticker marquee (CSS-only, pauses on hover, no JS rAF). */
+@keyframes news-ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.news-ticker-marquee {
+  animation: news-ticker-scroll 60s linear infinite;
+  will-change: transform;
+}
+.news-ticker-track:hover .news-ticker-marquee {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .news-ticker-marquee { animation: none; }
+}
+
+/* News editorial — magazine drop cap on the lead-story dek. */
+.news-lead-dek::first-letter {
+  font-size: 2.4em;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 0.9;
+  float: left;
+  padding-right: 0.12em;
+  margin-top: 0.05em;
+}
