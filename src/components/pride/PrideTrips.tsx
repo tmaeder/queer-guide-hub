@@ -1,0 +1,156 @@
+import { useMemo } from 'react';
+import { Link } from 'react-router';
+import { ArrowRight, Luggage } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { calculateDistanceKm } from '@/utils/calculateDistance';
+import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
+
+interface PrideTripsProps {
+  events: PrideCalendarEvent[];
+  selectedId?: string | null;
+  onSelect?: (id: string | null) => void;
+}
+
+interface TripCluster {
+  id: string;
+  events: PrideCalendarEvent[];
+  span: number;
+  totalKm: number;
+}
+
+const MAX_DAYS_APART = 14;
+const MAX_KM_BETWEEN = 1500;
+
+function buildClusters(events: PrideCalendarEvent[]): TripCluster[] {
+  const geo = events.filter((e) => e.latitude != null && e.longitude != null);
+  const sorted = [...geo].sort(
+    (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+  );
+  const seen = new Set<string>();
+  const clusters: TripCluster[] = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (seen.has(sorted[i].id)) continue;
+    const chain: PrideCalendarEvent[] = [sorted[i]];
+    let totalKm = 0;
+    for (let j = i + 1; j < sorted.length; j++) {
+      const prev = chain[chain.length - 1];
+      const cand = sorted[j];
+      if (seen.has(cand.id)) continue;
+      const days = Math.abs(
+        (new Date(cand.start_date).getTime() - new Date(prev.start_date).getTime()) / 86_400_000,
+      );
+      if (days > MAX_DAYS_APART) break;
+      const km = calculateDistanceKm(
+        prev.latitude as number,
+        prev.longitude as number,
+        cand.latitude as number,
+        cand.longitude as number,
+      );
+      if (km > MAX_KM_BETWEEN) continue;
+      chain.push(cand);
+      totalKm += km;
+    }
+    if (chain.length >= 2) {
+      chain.forEach((e) => seen.add(e.id));
+      const span = Math.round(
+        (new Date(chain[chain.length - 1].start_date).getTime() -
+          new Date(chain[0].start_date).getTime()) /
+          86_400_000,
+      );
+      clusters.push({ id: chain.map((e) => e.id).join('|'), events: chain, span, totalKm });
+    }
+  }
+
+  clusters.sort((a, b) => {
+    const af = a.events.filter((e) => e.is_featured).length;
+    const bf = b.events.filter((e) => e.is_featured).length;
+    if (af !== bf) return bf - af;
+    if (a.events.length !== b.events.length) return b.events.length - a.events.length;
+    return a.totalKm - b.totalKm;
+  });
+
+  return clusters.slice(0, 6);
+}
+
+function formatShort(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
+  const clusters = useMemo(() => buildClusters(events), [events]);
+  if (clusters.length === 0) return null;
+
+  return (
+    <section aria-labelledby="trips-heading">
+      <div className="flex items-baseline justify-between mb-3">
+        <h2 id="trips-heading" className="text-title font-medium">
+          Pride trip ideas
+        </h2>
+        <span className="text-xs2 text-foreground/50">Within 14 days · &lt;1500&nbsp;km apart</span>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        {clusters.map((c) => (
+          <article
+            key={c.id}
+            className="rounded-container border border-foreground/15 bg-background p-5 space-y-4"
+          >
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-xs2 uppercase tracking-label text-foreground/60">
+                {c.events.length} prides · {c.span} day{c.span === 1 ? '' : 's'}
+                {c.totalKm > 0 && ` · ${Math.round(c.totalKm)} km`}
+              </p>
+              {c.events.some((e) => e.is_featured) && (
+                <span className="text-2xs uppercase tracking-label text-foreground/60">Featured</span>
+              )}
+            </div>
+
+            <ol className="space-y-2">
+              {c.events.map((e, i) => {
+                const isSelected = selectedId === e.id;
+                return (
+                  <li key={e.id}>
+                    <button
+                      type="button"
+                      onClick={() => onSelect?.(isSelected ? null : e.id)}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        'group flex w-full items-center gap-3 text-left min-h-0 p-2 rounded-element transition-colors',
+                        isSelected ? 'bg-muted' : 'hover:bg-muted/60',
+                      )}
+                    >
+                      <span className="shrink-0 size-6 inline-flex items-center justify-center text-xs2 font-medium rounded-full border border-foreground/30 text-foreground/70 group-hover:border-foreground group-hover:text-foreground tabular-nums">
+                        {i + 1}
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium truncate">{e.title}</span>
+                        <span className="block text-xs2 text-foreground/60">
+                          {[e.city, e.country].filter(Boolean).join(', ')} · {formatShort(e.start_date)}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+
+            <div className="flex gap-2 pt-1">
+              <Button asChild size="sm" variant="outline" className="flex-1">
+                <Link
+                  to={`/trips?seed=${c.events.map((e) => e.id).join(',')}`}
+                  aria-label={`Build a trip from ${c.events.map((e) => e.city).filter(Boolean).join(' → ')}`}
+                >
+                  <Luggage className="size-3.5 mr-1.5" />
+                  Build this trip
+                  <ArrowRight className="size-3.5 ml-1.5" />
+                </Link>
+              </Button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
