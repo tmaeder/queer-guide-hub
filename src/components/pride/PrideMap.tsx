@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -19,6 +20,7 @@ const POINT_LAYER = 'prides-point';
 const POINT_SELECTED_LAYER = 'prides-point-selected';
 
 export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMapProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
@@ -192,7 +194,7 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
       className="w-full rounded-container border border-foreground/10 overflow-hidden"
       style={{ height }}
       role="region"
-      aria-label="Pride events world map"
+      aria-label={t('pride.map.aria')}
     />
   );
 }

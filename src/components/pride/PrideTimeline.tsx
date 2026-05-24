@@ -1,10 +1,12 @@
 import { useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Calendar, MapPin, Star } from 'lucide-react';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 import { cn } from '@/lib/utils';
 import { codeToFlagEmoji } from '@/lib/countryFlag';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { placeOnRows } from '@/utils/timelineLayout';
 
 interface PrideTimelineProps {
   events: PrideCalendarEvent[];
@@ -15,7 +17,6 @@ interface PrideTimelineProps {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const TRACK_WIDTH = 1800;
-const PX_PER_MONTH = TRACK_WIDTH / 12;
 const LABEL_PX = 96;
 const ROW_HEIGHT = 28;
 
@@ -38,30 +39,31 @@ function formatDateRange(start: string, end: string | null): string {
     : `${s.toLocaleDateString(undefined, opts)} – ${e.toLocaleDateString(undefined, opts)}`;
 }
 
-// Greedy row placement so labels (not just dots) don't overlap horizontally.
-function placeEvents(events: PrideCalendarEvent[]): PlacedEvent[] {
-  const dayPx = PX_PER_MONTH / 31;
-  const minDaySeparation = Math.max(2, Math.ceil(LABEL_PX / dayPx));
-  const sorted = [...events].sort(
-    (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
-  );
-  const rows: { lastDayOfYear: number }[] = [];
-  const placed: PlacedEvent[] = [];
-  for (const e of sorted) {
-    const d = new Date(e.start_date);
-    const monthIndex = d.getUTCMonth();
-    const dayInMonth = d.getUTCDate();
-    const dayOfYear = monthIndex * 31 + dayInMonth;
-    let row = 0;
-    while (rows[row] && dayOfYear - rows[row].lastDayOfYear < minDaySeparation) row++;
-    rows[row] = { lastDayOfYear: dayOfYear };
-    placed.push({ event: e, monthIndex, dayInMonth, row });
-  }
-  return placed;
+function placeEvents(events: PrideCalendarEvent[], year: number): PlacedEvent[] {
+  const yearStartMs = Date.UTC(year, 0, 1);
+  const yearEndMs = Date.UTC(year + 1, 0, 1);
+  const pxForMs = (ms: number) =>
+    ((ms - yearStartMs) / (yearEndMs - yearStartMs)) * TRACK_WIDTH;
+  const placeables = events.map((e) => {
+    const startMs = new Date(e.start_date).getTime();
+    const endMs = e.end_date ? new Date(e.end_date).getTime() : startMs;
+    return { id: e.id, startMs, endMs, _event: e };
+  });
+  const placed = placeOnRows(placeables, pxForMs, LABEL_PX);
+  return placed.map((p) => {
+    const d = new Date(p.item.startMs);
+    return {
+      event: p.item._event,
+      monthIndex: d.getUTCMonth(),
+      dayInMonth: d.getUTCDate(),
+      row: p.row,
+    };
+  });
 }
 
 export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }: PrideTimelineProps) {
-  const placed = useMemo(() => placeEvents(events), [events]);
+  const { t } = useTranslation();
+  const placed = useMemo(() => placeEvents(events, year), [events, year]);
   const maxRow = useMemo(() => placed.reduce((m, p) => (p.row > m ? p.row : m), 0), [placed]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const today = new Date();
@@ -111,7 +113,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
         ref={scrollRef}
         className="relative overflow-x-auto border border-foreground/10 rounded-container bg-background"
         role="region"
-        aria-label="Pride events timeline"
+        aria-label={t('pride.timeline.aria')}
       >
         <div className="relative" style={{ width: `${TRACK_WIDTH}px`, height: trackHeight, minWidth: '100%' }}>
           {/* Month columns */}
@@ -140,7 +142,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
               aria-hidden="true"
             >
               <div className="absolute -top-1 -translate-x-1/2 text-[9px] uppercase tracking-wider bg-foreground text-background px-1 rounded-badge">
-                Today
+                {t('pride.timeline.today')}
               </div>
             </div>
           )}
@@ -161,14 +163,6 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
               return (
                 <Tooltip key={p.event.id}>
                   <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      data-event-id={p.event.id}
-                      onClick={() => onSelect?.(isSelected ? null : p.event.id)}
-                      aria-label={`${p.event.title} on ${dateLabel}`}
-                      aria-pressed={isSelected}
-                      className={cn(
-                        'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group',
                     <Link
                       to={`/events/${p.event.slug}`}
                       data-event-id={p.event.id}
@@ -204,7 +198,6 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
                         )}
                         <span className="truncate">{p.event.city ?? p.event.title}</span>
                       </span>
-                    </button>
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent
@@ -246,7 +239,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
         </div>
       </div>
       <p className="text-xs2 text-foreground/50 mt-2">
-        {placed.length} prides in {year} · click a row to select · solid dots are featured
+        {t('pride.timeline.helper', { count: placed.length, year })}
       </p>
     </div>
   );

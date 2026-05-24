@@ -1505,7 +1505,6 @@
       "subtitle": "Находи и присоединяйся к мероприятиям сообщества рядом с тобой",
       "submitEvent": "Предложить мероприятие",
       "gridView": "Вид сеткой",
-      "calendarView": "Вид календарём",
       "city": "Город",
       "eventType": "Тип мероприятия",
       "startDate": "Дата начала",
@@ -1601,7 +1600,8 @@
       "resultsCount_few": "{{count}} мероприятия",
       "resultsCount_many": "{{count}} мероприятий",
       "resultsNear_few": "{{count}} мероприятия рядом с {{city}}",
-      "resultsNear_many": "{{count}} мероприятий рядом с {{city}}"
+      "resultsNear_many": "{{count}} мероприятий рядом с {{city}}",
+      "timelineView": "Вид временной шкалы"
     },
     "eventDetail": {
       "loadFailed": "Не удалось загрузить информацию о мероприятии.",
@@ -2103,5 +2103,97 @@
     "suggestTitle": "[RU] Missing a city?",
     "suggestLede": "[RU] Suggest one — adds to the directory after review.",
     "suggestCta": "[RU] Suggest a city"
+  },
+  "pride": {
+    "eyebrow": "[RU] Pride Calendar",
+    "export": "[RU] Export .ics",
+    "loading": "[RU] Loading…",
+    "previousYear": "[RU] Previous year",
+    "nextYear": "[RU] Next year",
+    "summary": "[RU] {{count}} pride · {{countries}} countries · {{cities}} cities",
+    "summary_other": "[RU] {{count}} prides · {{countries}} countries · {{cities}} cities",
+    "noMatches": "[RU] No prides match your filters.",
+    "clearFilters": "[RU] Clear filters",
+    "estimated": "[RU] Date estimated",
+    "inTripWindow": "[RU] In your trip window",
+    "featured": "[RU] Featured",
+    "filters": {
+      "aria": "[RU] Pride filters",
+      "searchPlaceholder": "[RU] Search prides, cities, countries…",
+      "searchAria": "[RU] Search prides",
+      "featured": "[RU] Featured",
+      "verified": "[RU] Confirmed dates",
+      "clearAll": "[RU] Clear all",
+      "month": "[RU] Month",
+      "region": "[RU] Region",
+      "country": "[RU] Country"
+    },
+    "continents": {
+      "Europe": "[RU] Europe",
+      "Americas": "[RU] Americas",
+      "Oceania": "[RU] Oceania",
+      "Asia": "[RU] Asia",
+      "Africa": "[RU] Africa",
+      "Other": "[RU] Other"
+    },
+    "timeline": {
+      "aria": "[RU] Pride events timeline",
+      "srTitle": "[RU] Pride timeline",
+      "today": "[RU] Today",
+      "helper": "[RU] {{count}} prides in {{year}} · click a row to select · solid dots are featured"
+    },
+    "upNext": {
+      "title": "[RU] Up next",
+      "subtitle": "[RU] Soonest first",
+      "past": "[RU] Past",
+      "today": "[RU] Today",
+      "tomorrow": "[RU] Tomorrow",
+      "inDays": "[RU] In {{count}} days",
+      "inWeeks": "[RU] In {{count}} weeks",
+      "inMonths": "[RU] In {{count}} months",
+      "inYears": "[RU] In {{count}}y"
+    },
+    "spotlight": {
+      "eyebrow": "[RU] Spotlight",
+      "dismiss": "[RU] Dismiss",
+      "startsIn": "[RU] Starts in {{count}} day",
+      "startsIn_other": "[RU] Starts in {{count}} days",
+      "today": "[RU] Happening today",
+      "endedDaysAgo": "[RU] Ended {{count}} day ago",
+      "endedDaysAgo_other": "[RU] Ended {{count}} days ago",
+      "viewPride": "[RU] View pride",
+      "addToTrip": "[RU] Add to trip",
+      "signInToAdd": "[RU] Sign in to add to trip",
+      "showOnMap": "[RU] Show on map",
+      "venuesInCity": "[RU] Queer venues in {{city}}"
+    },
+    "map": {
+      "title": "[RU] World map",
+      "aria": "[RU] Pride events world map",
+      "popupView": "[RU] View pride"
+    },
+    "trips": {
+      "title": "[RU] Pride trip ideas",
+      "subtitle": "[RU] Up to 4 prides · within 21 days · <4000 km",
+      "meta": "[RU] {{count}} prides · {{days}} days",
+      "metaWithKm": "[RU] {{count}} prides · {{days}} days · {{km}} km",
+      "buildTrip": "[RU] Build this trip",
+      "featured": "[RU] Featured"
+    },
+    "table": {
+      "title": "[RU] All prides",
+      "count": "[RU] {{count}} pride",
+      "count_other": "[RU] {{count}} prides",
+      "when": "[RU] When",
+      "pride": "[RU] Pride",
+      "location": "[RU] Location",
+      "region": "[RU] Region",
+      "estimated": "[RU] Estimated"
+    },
+    "card": {
+      "view": "[RU] View",
+      "addToTrip": "[RU] Add to trip",
+      "signIn": "[RU] Sign in"
+    }
   }
 }

@@ -11,7 +11,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { EventCard } from '@/components/events/EventCard';
-import { EventsCalendarView } from '@/components/events/EventsCalendarView';
+import { EventsTimelineView } from '@/components/events/EventsTimelineView';
 import { EventsMapView } from '@/components/events/EventsMapView';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,7 @@ import {
   Check,
   ChevronDown,
   Grid,
+  GanttChart,
   MapPin,
 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
@@ -126,7 +127,7 @@ const Events = () => {
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'calendar' | 'map'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'map'>('grid');
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -151,6 +152,9 @@ const Events = () => {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
+  // Timeline viewport drives a parallel date-range fetch when timeline view is active.
+  const [timelineViewport, setTimelineViewport] = useState<{ startMs: number; endMs: number } | null>(null);
+  const debouncedViewport = useDebounce(timelineViewport, 350);
 
   // Get unique cities from events for auto-suggest
   const availableCities = useMemo(
@@ -493,6 +497,35 @@ const Events = () => {
     if (urlQ) setSearch(urlQ);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Timeline viewport → date-range refetch (debounced). Only active when
+  // the timeline view is selected so we don't interfere with grid/map.
+  const lastFetchedViewportRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (viewMode !== 'timeline' || !debouncedViewport) return;
+    const key = `${debouncedViewport.startMs}-${debouncedViewport.endMs}`;
+    if (lastFetchedViewportRef.current === key) return;
+    lastFetchedViewportRef.current = key;
+    const startIso = new Date(debouncedViewport.startMs).toISOString();
+    const endIso = new Date(debouncedViewport.endMs).toISOString();
+    const includePast = debouncedViewport.startMs < Date.now();
+    fetchEvents(
+      {
+        search: search || undefined,
+        city: city || undefined,
+        eventType: eventType && eventType !== 'all' ? eventType : undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        dateRange: { start: startIso, end: endIso },
+        nearMe: nearMe ? userLocation : undefined,
+        includePast: includePast || showPast || undefined,
+        featured: featuredOnly || undefined,
+        isFree: isFree || undefined,
+        sort,
+      },
+      { page: 1, pageSize: PAGE_SIZE, append: false },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedViewport, viewMode]);
   return (
     <div className="min-h-screen">
       <PageHero
@@ -993,15 +1026,15 @@ const Events = () => {
                   <span className="hidden sm:inline">{t('pages.events.gridView', 'Grid')}</span>
                 </Button>
                 <Button
-                  variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                  variant={viewMode === 'timeline' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setViewMode('calendar')}
-                  aria-pressed={viewMode === 'calendar'}
+                  onClick={() => setViewMode('timeline')}
+                  aria-pressed={viewMode === 'timeline'}
                   style={{ display: 'inline-flex', gap: 6 }}
                 >
-                  <CalendarIcon size={16} />
+                  <GanttChart size={16} />
                   <span className="hidden sm:inline">
-                    {t('pages.events.calendarView', 'Calendar')}
+                    {t('pages.events.timelineView', 'Timeline')}
                   </span>
                 </Button>
                 <Button
@@ -1124,11 +1157,12 @@ const Events = () => {
             ))}
           </StaggerGrid>
         )}
-        {!loading && events.length > 0 && viewMode === 'calendar' && (
-          <EventsCalendarView
+        {viewMode === 'timeline' && (
+          <EventsTimelineView
             events={events}
             onEventSelect={handleViewDetails}
-            onAttendanceUpdate={handleAttendanceUpdate}
+            onViewportChange={setTimelineViewport}
+            loading={loading}
           />
         )}
         {!loading && events.length > 0 && viewMode === 'map' && (

@@ -1477,7 +1477,6 @@
       "subtitle": "あなたの地域のコミュニティイベントを見つけて参加しよう",
       "submitEvent": "イベントを登録",
       "gridView": "グリッド表示",
-      "calendarView": "カレンダー表示",
       "city": "都市",
       "eventType": "イベントタイプ",
       "startDate": "開始日",
@@ -1569,7 +1568,8 @@
       "resultsCount_other": "{{count}}件のイベント",
       "resultsNear_one": "{{city}}近郊の{{count}}件のイベント",
       "resultsNear_other": "{{city}}近郊の{{count}}件のイベント",
-      "showWorldwide": "世界中を表示"
+      "showWorldwide": "世界中を表示",
+      "timelineView": "タイムライン表示"
     },
     "eventDetail": {
       "loadFailed": "イベントの詳細を読み込めませんでした。",
@@ -2071,5 +2071,97 @@
     "suggestTitle": "[JA] Missing a city?",
     "suggestLede": "[JA] Suggest one — adds to the directory after review.",
     "suggestCta": "[JA] Suggest a city"
+  },
+  "pride": {
+    "eyebrow": "[JA] Pride Calendar",
+    "export": "[JA] Export .ics",
+    "loading": "[JA] Loading…",
+    "previousYear": "[JA] Previous year",
+    "nextYear": "[JA] Next year",
+    "summary": "[JA] {{count}} pride · {{countries}} countries · {{cities}} cities",
+    "summary_other": "[JA] {{count}} prides · {{countries}} countries · {{cities}} cities",
+    "noMatches": "[JA] No prides match your filters.",
+    "clearFilters": "[JA] Clear filters",
+    "estimated": "[JA] Date estimated",
+    "inTripWindow": "[JA] In your trip window",
+    "featured": "[JA] Featured",
+    "filters": {
+      "aria": "[JA] Pride filters",
+      "searchPlaceholder": "[JA] Search prides, cities, countries…",
+      "searchAria": "[JA] Search prides",
+      "featured": "[JA] Featured",
+      "verified": "[JA] Confirmed dates",
+      "clearAll": "[JA] Clear all",
+      "month": "[JA] Month",
+      "region": "[JA] Region",
+      "country": "[JA] Country"
+    },
+    "continents": {
+      "Europe": "[JA] Europe",
+      "Americas": "[JA] Americas",
+      "Oceania": "[JA] Oceania",
+      "Asia": "[JA] Asia",
+      "Africa": "[JA] Africa",
+      "Other": "[JA] Other"
+    },
+    "timeline": {
+      "aria": "[JA] Pride events timeline",
+      "srTitle": "[JA] Pride timeline",
+      "today": "[JA] Today",
+      "helper": "[JA] {{count}} prides in {{year}} · click a row to select · solid dots are featured"
+    },
+    "upNext": {
+      "title": "[JA] Up next",
+      "subtitle": "[JA] Soonest first",
+      "past": "[JA] Past",
+      "today": "[JA] Today",
+      "tomorrow": "[JA] Tomorrow",
+      "inDays": "[JA] In {{count}} days",
+      "inWeeks": "[JA] In {{count}} weeks",
+      "inMonths": "[JA] In {{count}} months",
+      "inYears": "[JA] In {{count}}y"
+    },
+    "spotlight": {
+      "eyebrow": "[JA] Spotlight",
+      "dismiss": "[JA] Dismiss",
+      "startsIn": "[JA] Starts in {{count}} day",
+      "startsIn_other": "[JA] Starts in {{count}} days",
+      "today": "[JA] Happening today",
+      "endedDaysAgo": "[JA] Ended {{count}} day ago",
+      "endedDaysAgo_other": "[JA] Ended {{count}} days ago",
+      "viewPride": "[JA] View pride",
+      "addToTrip": "[JA] Add to trip",
+      "signInToAdd": "[JA] Sign in to add to trip",
+      "showOnMap": "[JA] Show on map",
+      "venuesInCity": "[JA] Queer venues in {{city}}"
+    },
+    "map": {
+      "title": "[JA] World map",
+      "aria": "[JA] Pride events world map",
+      "popupView": "[JA] View pride"
+    },
+    "trips": {
+      "title": "[JA] Pride trip ideas",
+      "subtitle": "[JA] Up to 4 prides · within 21 days · <4000 km",
+      "meta": "[JA] {{count}} prides · {{days}} days",
+      "metaWithKm": "[JA] {{count}} prides · {{days}} days · {{km}} km",
+      "buildTrip": "[JA] Build this trip",
+      "featured": "[JA] Featured"
+    },
+    "table": {
+      "title": "[JA] All prides",
+      "count": "[JA] {{count}} pride",
+      "count_other": "[JA] {{count}} prides",
+      "when": "[JA] When",
+      "pride": "[JA] Pride",
+      "location": "[JA] Location",
+      "region": "[JA] Region",
+      "estimated": "[JA] Estimated"
+    },
+    "card": {
+      "view": "[JA] View",
+      "addToTrip": "[JA] Add to trip",
+      "signIn": "[JA] Sign in"
+    }
   }
 }

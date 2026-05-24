@@ -1477,7 +1477,6 @@
       "subtitle": "내 주변 커뮤니티 이벤트를 발견하고 참여하세요",
       "submitEvent": "이벤트 등록",
       "gridView": "그리드 보기",
-      "calendarView": "캘린더 보기",
       "city": "도시",
       "eventType": "이벤트 유형",
       "startDate": "시작일",
@@ -1569,7 +1568,8 @@
       "resultsCount_other": "이벤트 {{count}}개",
       "resultsNear_one": "{{city}} 근처 이벤트 {{count}}개",
       "resultsNear_other": "{{city}} 근처 이벤트 {{count}}개",
-      "showWorldwide": "전 세계 보기"
+      "showWorldwide": "전 세계 보기",
+      "timelineView": "타임라인 보기"
     },
     "eventDetail": {
       "loadFailed": "이벤트 상세 정보를 불러올 수 없습니다.",
@@ -2071,5 +2071,97 @@
     "suggestTitle": "[KO] Missing a city?",
     "suggestLede": "[KO] Suggest one — adds to the directory after review.",
     "suggestCta": "[KO] Suggest a city"
+  },
+  "pride": {
+    "eyebrow": "[KO] Pride Calendar",
+    "export": "[KO] Export .ics",
+    "loading": "[KO] Loading…",
+    "previousYear": "[KO] Previous year",
+    "nextYear": "[KO] Next year",
+    "summary": "[KO] {{count}} pride · {{countries}} countries · {{cities}} cities",
+    "summary_other": "[KO] {{count}} prides · {{countries}} countries · {{cities}} cities",
+    "noMatches": "[KO] No prides match your filters.",
+    "clearFilters": "[KO] Clear filters",
+    "estimated": "[KO] Date estimated",
+    "inTripWindow": "[KO] In your trip window",
+    "featured": "[KO] Featured",
+    "filters": {
+      "aria": "[KO] Pride filters",
+      "searchPlaceholder": "[KO] Search prides, cities, countries…",
+      "searchAria": "[KO] Search prides",
+      "featured": "[KO] Featured",
+      "verified": "[KO] Confirmed dates",
+      "clearAll": "[KO] Clear all",
+      "month": "[KO] Month",
+      "region": "[KO] Region",
+      "country": "[KO] Country"
+    },
+    "continents": {
+      "Europe": "[KO] Europe",
+      "Americas": "[KO] Americas",
+      "Oceania": "[KO] Oceania",
+      "Asia": "[KO] Asia",
+      "Africa": "[KO] Africa",
+      "Other": "[KO] Other"
+    },
+    "timeline": {
+      "aria": "[KO] Pride events timeline",
+      "srTitle": "[KO] Pride timeline",
+      "today": "[KO] Today",
+      "helper": "[KO] {{count}} prides in {{year}} · click a row to select · solid dots are featured"
+    },
+    "upNext": {
+      "title": "[KO] Up next",
+      "subtitle": "[KO] Soonest first",
+      "past": "[KO] Past",
+      "today": "[KO] Today",
+      "tomorrow": "[KO] Tomorrow",
+      "inDays": "[KO] In {{count}} days",
+      "inWeeks": "[KO] In {{count}} weeks",
+      "inMonths": "[KO] In {{count}} months",
+      "inYears": "[KO] In {{count}}y"
+    },
+    "spotlight": {
+      "eyebrow": "[KO] Spotlight",
+      "dismiss": "[KO] Dismiss",
+      "startsIn": "[KO] Starts in {{count}} day",
+      "startsIn_other": "[KO] Starts in {{count}} days",
+      "today": "[KO] Happening today",
+      "endedDaysAgo": "[KO] Ended {{count}} day ago",
+      "endedDaysAgo_other": "[KO] Ended {{count}} days ago",
+      "viewPride": "[KO] View pride",
+      "addToTrip": "[KO] Add to trip",
+      "signInToAdd": "[KO] Sign in to add to trip",
+      "showOnMap": "[KO] Show on map",
+      "venuesInCity": "[KO] Queer venues in {{city}}"
+    },
+    "map": {
+      "title": "[KO] World map",
+      "aria": "[KO] Pride events world map",
+      "popupView": "[KO] View pride"
+    },
+    "trips": {
+      "title": "[KO] Pride trip ideas",
+      "subtitle": "[KO] Up to 4 prides · within 21 days · <4000 km",
+      "meta": "[KO] {{count}} prides · {{days}} days",
+      "metaWithKm": "[KO] {{count}} prides · {{days}} days · {{km}} km",
+      "buildTrip": "[KO] Build this trip",
+      "featured": "[KO] Featured"
+    },
+    "table": {
+      "title": "[KO] All prides",
+      "count": "[KO] {{count}} pride",
+      "count_other": "[KO] {{count}} prides",
+      "when": "[KO] When",
+      "pride": "[KO] Pride",
+      "location": "[KO] Location",
+      "region": "[KO] Region",
+      "estimated": "[KO] Estimated"
+    },
+    "card": {
+      "view": "[KO] View",
+      "addToTrip": "[KO] Add to trip",
+      "signIn": "[KO] Sign in"
+    }
   }
 }
