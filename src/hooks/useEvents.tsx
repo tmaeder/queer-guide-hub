@@ -52,6 +52,9 @@ export function useEvents(autoFetch: boolean = true) {
       tags?: string[];
       accessibilityAttributes?: string[];
       targetGroups?: string[];
+      languages?: string[];
+      ageRestriction?: string;
+      organizerId?: string;
       search?: string;
       nearMe?: { lat: number; lng: number };
       bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
@@ -84,6 +87,9 @@ export function useEvents(autoFetch: boolean = true) {
         !filters?.sort &&
         !filters?.cities?.length &&
         !filters?.eventTypes?.length &&
+        !filters?.languages?.length &&
+        !filters?.ageRestriction &&
+        !filters?.organizerId &&
         (Boolean(filters?.city) || Boolean(filters?.dateRange));
 
       let data: Event[] | null = null;
@@ -184,11 +190,24 @@ export function useEvents(autoFetch: boolean = true) {
         }
 
         if (filters?.cities?.length) {
+          // ilike on a list — use or() with multiple ilike clauses
           // Multi-city: chained OR with sanitized ilike clauses
           const parts = filters.cities.map((c) => `city.ilike.${c.replace(/[,()*]/g, '')}`);
           query = query.or(parts.join(','));
         } else if (filters?.city) {
           query = query.ilike('city', filters.city);
+        }
+
+        if (filters?.languages?.length) {
+          query = query.in('content_language', filters.languages);
+        }
+
+        if (filters?.ageRestriction) {
+          query = query.eq('age_restriction', filters.ageRestriction);
+        }
+
+        if (filters?.organizerId) {
+          query = query.eq('group_id', filters.organizerId);
         }
 
         if (filters?.dateRange) {
