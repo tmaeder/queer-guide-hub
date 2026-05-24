@@ -128,7 +128,14 @@ export default defineConfig(({ mode }) => ({
     // Pre-bundle boneyard-js/react against the same React instance Vite
     // already has cached, so the Skeleton hooks resolve to the same
     // dispatcher as the rest of the app.
-    include: ['boneyard-js/react'],
+    //
+    // Pre-bundle clsx + tailwind-merge + cva (the trio used by
+    // `src/lib/utils.ts#cn()` on every page) so rolldown sees them as
+    // canonical shared modules. Without this, recharts pre-bundles clsx
+    // into its own chunk and every cn() consumer transitively static-
+    // imports the recharts chunk — dragging ~92 KB onto pages that don't
+    // use any chart.
+    include: ['boneyard-js/react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
   },
   esbuild: mode === 'production' ? {
     drop: ['console', 'debugger'],
