@@ -1,9 +1,7 @@
-import { memo, type CSSProperties } from 'react';
+import { memo } from 'react';
 import { MotionCard as Card, CardImage } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Star, MapPin, Phone, Mail, Store, AlertTriangle, ExternalLink, BadgeDollarSign } from 'lucide-react';
+import { Store, ExternalLink } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
@@ -14,24 +12,9 @@ import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
 import { isAdultListing } from '@/hooks/useAdultContent';
-import {
-  formatListingPrice,
-  getOutboundLink,
-  highlightMatches,
-  linkHealthState,
-  sourceProvenanceLine,
-  trustPillsFor,
-} from './marketplaceHelpers';
+import { formatListingPrice, getOutboundLink, highlightMatches } from './marketplaceHelpers';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
-
-const ICON_LINK_STYLE: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  minWidth: 44,
-  minHeight: 44,
-};
 
 interface MarketplaceCardProps {
   listing?: MarketplaceListing & {
@@ -85,11 +68,6 @@ function MarketplaceCardImpl({
     );
   }
 
-  const averageRating = listing.marketplace_reviews?.length
-    ? listing.marketplace_reviews.reduce((sum, review) => sum + review.rating, 0) /
-      listing.marketplace_reviews.length
-    : 0;
-
   const price = formatListingPrice(listing, { displayCurrency: currency, rates });
   const listingImage = resolveImageUrl({
     imageUrl: listing.images?.[0] ?? null,
@@ -97,12 +75,9 @@ function MarketplaceCardImpl({
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
   });
   const outbound = getOutboundLink(listing);
-  const pills = trustPillsFor(listing);
-  const provenance = sourceProvenanceLine(listing);
-  const linkState = linkHealthState(listing);
   const isAffiliate = outbound?.isAffiliate ?? false;
-  const showContactIcons = !isAffiliate && (listing.contact_phone || listing.contact_email);
-  const viewsCount = listing.views_count ?? 0;
+  const isAdult = isAdultListing(listing);
+  const outOfStock = listing.in_stock === false;
 
   return (
     <CardHoverEffect>
@@ -112,21 +87,9 @@ function MarketplaceCardImpl({
             src={listingImage}
             alt={listing.title}
             fallbackIcon={Store}
-            height={160}
+            height={192}
             priority={priority}
           />
-          {listing.featured && (
-            <div className="absolute top-2 left-2 z-10">
-              <Badge>Featured</Badge>
-            </div>
-          )}
-          {isAdultListing(listing) && (
-            <div className="absolute bottom-2 left-2 z-10">
-              <Badge variant="outline" aria-label="Adult content">
-                18+
-              </Badge>
-            </div>
-          )}
           {showFavoriteButton && (
             <div className="absolute top-2 right-2 z-10">
               <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="tap" />
@@ -134,90 +97,38 @@ function MarketplaceCardImpl({
           )}
         </div>
 
-        <div className="p-6 flex flex-col gap-4 relative">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <h2 className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap text-base">
+        <div className="p-6 flex flex-col gap-2">
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+            <span>{listing.category}</span>
+            {listing.business_name && (
+              <>
+                <span className="mx-1.5">·</span>
+                {listing.merchant_domain ? (
                   <LocalizedLink
-                    to={`/marketplace/${listing.slug}`}
+                    to={`/marketplace/merchants/${listing.merchant_domain}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="hover:underline underline-offset-2"
+                    className="hover:text-foreground"
                   >
-                    <HighlightedText text={listing.title} query={searchQuery} />
-                  </LocalizedLink>
-                </h2>
-                <p className="text-sm text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
-                  {listing.merchant_domain ? (
-                    <LocalizedLink
-                      to={`/marketplace/merchants/${listing.merchant_domain}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="hover:text-foreground"
-                    >
-                      <HighlightedText text={listing.business_name} query={searchQuery} />
-                    </LocalizedLink>
-                  ) : (
                     <HighlightedText text={listing.business_name} query={searchQuery} />
-                  )}
-                  {provenance && (
-                    <span className="ml-1.5 text-xs2 uppercase tracking-wider text-muted-foreground/70 inline-flex items-center gap-1">
-                      · {provenance}
-                      {isAffiliate && (
-                        <BadgeDollarSign size={11}
-                          aria-label="Sponsored affiliate listing"
-                        />
-                      )}
-                    </span>
-                  )}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Badge variant="secondary">{listing.category}</Badge>
-              </div>
-            </div>
-
-            {(listing.venues?.name || listing.location) && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MapPin size={12} className="shrink-0" aria-hidden="true" />
-                <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                  {listing.venues ? `${listing.venues.name}, ${listing.venues.city}` : listing.location}
-                </span>
-              </div>
+                  </LocalizedLink>
+                ) : (
+                  <HighlightedText text={listing.business_name} query={searchQuery} />
+                )}
+              </>
             )}
+            {isAffiliate && <span className="ml-1.5">· Sponsored</span>}
+          </p>
 
-            {pills.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-1">
-                <div className="md:hidden flex flex-wrap gap-1">
-                  {pills.slice(0, 2).map((p) => (
-                    <span
-                      key={p.key}
-                      title={p.title}
-                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-                    >
-                      {p.label}
-                    </span>
-                  ))}
-                  {pills.length > 2 && (
-                    <span className="text-2xs uppercase tracking-[0.14em] text-muted-foreground/70 self-center">
-                      +{pills.length - 2}
-                    </span>
-                  )}
-                </div>
-                <div className="hidden md:flex flex-wrap gap-1">
-                  {pills.map((p) => (
-                    <span
-                      key={p.key}
-                      title={p.title}
-                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-                    >
-                      {p.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <h2 className="text-base font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
+            {isAdult && <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">18+</span>}
+            <LocalizedLink
+              to={`/marketplace/${listing.slug}`}
+              onClick={(e) => e.stopPropagation()}
+              className="hover:underline underline-offset-2"
+            >
+              <HighlightedText text={listing.title} query={searchQuery} />
+            </LocalizedLink>
+          </h2>
 
           {listing.description && (
             <p
@@ -228,86 +139,55 @@ function MarketplaceCardImpl({
             </p>
           )}
 
-          <div className="flex items-end justify-between gap-2">
-            <div className="flex flex-col">
+          <div className="flex items-end justify-between gap-2 pt-4 border-t border-border">
+            <div className="flex flex-col min-w-0">
               <div className="flex items-baseline gap-1.5">
                 {price.modifier && (
                   <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
                 )}
-                <p className="text-base font-bold leading-none">{price.primary}</p>
+                <p
+                  className={`text-base font-bold leading-none ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
+                >
+                  {price.primary}
+                </p>
               </div>
               {price.secondary && (
                 <p className="text-xs text-muted-foreground mt-0.5">{price.secondary}</p>
               )}
-              {viewsCount > 50 && (
-                <p className="text-xs2 text-muted-foreground mt-0.5">{viewsCount.toLocaleString()} views</p>
+              {outOfStock && (
+                <p className="text-2xs uppercase tracking-wider text-muted-foreground mt-1">Out of stock</p>
               )}
-              <div className="flex items-center gap-1.5 mt-1.5">
-                {listing.shipping_available && <Badge variant="outline">Ships</Badge>}
-                {listing.in_stock === false && <Badge variant="outline">Out of stock</Badge>}
-              </div>
             </div>
 
-            {averageRating > 0 && (
-              <div className="flex items-center gap-1">
-                <Star size={14} fill="currentColor" aria-hidden="true" />
-                <p className="text-sm font-medium">{averageRating.toFixed(1)}</p>
-              </div>
+            {outbound ? (
+              <a
+                href={outbound.url}
+                target="_blank"
+                rel={outbound.rel}
+                onClick={(e) => e.stopPropagation()}
+                data-affiliate={outbound.isAffiliate ? 'true' : undefined}
+                className="inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity shrink-0"
+                style={{
+                  backgroundColor: 'hsl(var(--foreground))',
+                  color: 'hsl(var(--background))',
+                }}
+                aria-label={`${outbound.label} (opens in new tab)`}
+              >
+                {outbound.label}
+                <ExternalLink size={14} aria-hidden="true" />
+              </a>
+            ) : (
+              <LocalizedLink
+                to={`/marketplace/${listing.slug}`}
+                className="inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity shrink-0"
+                style={{
+                  backgroundColor: 'hsl(var(--foreground))',
+                  color: 'hsl(var(--background))',
+                }}
+              >
+                View
+              </LocalizedLink>
             )}
-          </div>
-
-          <div className="flex items-center justify-between gap-2 pt-2">
-            <div className="flex items-center gap-1">
-              {showContactIcons && listing.contact_phone && (
-                <Button size="default" variant="ghost" aria-label={`Call ${listing.contact_phone}`} asChild>
-                  <a href={`tel:${listing.contact_phone}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
-                    <Phone size={16} aria-hidden="true" />
-                  </a>
-                </Button>
-              )}
-              {showContactIcons && listing.contact_email && (
-                <Button size="default" variant="ghost" aria-label={`Email ${listing.contact_email}`} asChild>
-                  <a href={`mailto:${listing.contact_email}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
-                    <Mail size={16} aria-hidden="true" />
-                  </a>
-                </Button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {outbound ? (
-                // `style` is non-negotiable: a Tailwind preflight `a { color:
-                // inherit }` rule beats the layered `.text-background`
-                // utility, so without explicit inline color the label
-                // renders foreground-on-foreground (invisible). The inline
-                // CSS-variable refs follow the active light/dark theme.
-                <a
-                  href={outbound.url}
-                  target="_blank"
-                  rel={outbound.rel}
-                  onClick={(e) => e.stopPropagation()}
-                  data-affiliate={outbound.isAffiliate ? 'true' : undefined}
-                  className="inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
-                  style={{
-                    backgroundColor: 'hsl(var(--foreground))',
-                    color: 'hsl(var(--background))',
-                  }}
-                  aria-label={`${outbound.label} (opens in new tab)`}
-                >
-                  {outbound.label}
-                  <ExternalLink size={14} aria-hidden="true" />
-                </a>
-              ) : (
-                <LocalizedLink to={`/marketplace/${listing.slug}`}>
-                  <Button size="sm">View details</Button>
-                </LocalizedLink>
-              )}
-              {linkState === 'stale' && (
-                <span title="Link not recently verified" className="text-muted-foreground" aria-label="Link not recently verified">
-                  <AlertTriangle size={14} aria-hidden="true" />
-                </span>
-              )}
-            </div>
           </div>
         </div>
       </Card>
