@@ -35,9 +35,9 @@ function useAsync<T>(deps: React.DependencyList, run: () => Promise<T>, initial:
   return { data, loading };
 }
 
-export function useMarketplaceSubcategoryTiles() {
+export function useMarketplaceSubcategoryTiles(limit: number | null = 8) {
   return useAsync<SubcategoryTile[]>(
-    [],
+    [limit],
     async () => {
       // Server-side aggregation. The legacy client-side aggregator silently
       // truncated to the first ~1000 rows (Supabase db.max_rows default),
@@ -45,13 +45,13 @@ export function useMarketplaceSubcategoryTiles() {
       const { data, error } = await supabase.rpc('get_marketplace_subcategory_counts');
       if (error || !data) return [];
       type Row = { slug: string | null; count: number | string | null };
-      return (data as Row[])
+      const rows = (data as Row[])
         .filter((r): r is { slug: string; count: number | string } => !!r.slug && r.count != null)
-        .slice(0, 8)
         .map((r) => ({
           slug: r.slug,
           count: typeof r.count === 'string' ? parseInt(r.count, 10) : r.count,
         }));
+      return limit == null ? rows : rows.slice(0, limit);
     },
     [],
   );
