@@ -24,6 +24,9 @@ const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'
 const MarketplaceCategories = lazyRetry(() => import('./pages/MarketplaceCategories'));
 const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
+const MarketplaceCollection = lazyRetry(() => import('./pages/MarketplaceCollection'));
+const Wishlist = lazyRetry(() => import('./pages/Wishlist'));
+const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 
 const Places = lazyRetry(() => import('./pages/Places'));
 const Resources = lazyRetry(() => import('./pages/Resources'));
@@ -401,8 +404,11 @@ export const AppRoutes = () => {
                 <Route path="marketplace/share" element={<MarketplaceShare />} />
                 <Route path="marketplace/categories" element={<MarketplaceCategories />} />
                 <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
+                <Route path="marketplace/collection/:slug" element={<MarketplaceCollection />} />
                 <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
                 <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
+                <Route path="wishlists" element={<Wishlists />} />
+                <Route path="wishlists/:slug" element={<Wishlist />} />
                 <Route path="hotels" element={<Hotels />} />
                 <Route path="hotels/:slug" element={<HotelDetail />} />
                 <Route path="villages" element={<Navigate to="/places" replace />} />

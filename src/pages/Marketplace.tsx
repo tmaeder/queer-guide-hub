@@ -11,6 +11,9 @@ import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
 import { MarketplaceSpotlight } from '@/components/marketplace/MarketplaceSpotlight';
 import { MarketplaceCategoryTiles } from '@/components/marketplace/MarketplaceCategoryTiles';
+import { OccasionChips } from '@/components/marketplace/OccasionChips';
+import { HeroCollection } from '@/components/marketplace/HeroCollection';
+import { ForYouRail } from '@/components/marketplace/ForYouRail';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { isAdultListing } from '@/hooks/useAdultContent';
 import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityChips';
@@ -131,15 +134,30 @@ function MainGridSection({
 
 const VALID_TABS = ['all', 'products', 'services'] as const;
 const VALID_SORTS = [
-  'relevance',
+  'for_you',
+  'most_loved',
+  'best_value',
+  'editor_choice',
   'newest',
+  'price_asc',
+  'price_desc',
+  // Legacy values kept for URL back-compat; coerced below.
+  'relevance',
   'oldest',
   'az',
   'za',
-  'price_asc',
-  'price_desc',
   'most_viewed',
 ] as const;
+
+// Old sort tokens redirect to the closest new sort so existing
+// bookmarked URLs and saved searches keep working without 404-ing the UI.
+const LEGACY_SORT_MAP: Record<string, MarketplaceSort> = {
+  relevance: 'for_you',
+  most_viewed: 'most_loved',
+  oldest: 'newest',
+  az: 'newest',
+  za: 'newest',
+};
 const VIEW_MODE_KEY = 'qg.marketplace.viewMode';
 
 const Marketplace = () => {
@@ -177,10 +195,11 @@ const Marketplace = () => {
 
   const rawTab = searchParams.get('tab') || 'all';
   const activeTab = (VALID_TABS as readonly string[]).includes(rawTab) ? rawTab : 'all';
-  const rawSort = searchParams.get('sort') || 'relevance';
-  const sortBy = (VALID_SORTS as readonly string[]).includes(rawSort)
-    ? (rawSort as MarketplaceSort)
-    : 'relevance';
+  const rawSort = searchParams.get('sort') || 'for_you';
+  const coerced = LEGACY_SORT_MAP[rawSort] ?? rawSort;
+  const sortBy: MarketplaceSort = (VALID_SORTS as readonly string[]).includes(coerced)
+    ? (coerced as MarketplaceSort)
+    : 'for_you';
   const page = Math.max(0, parseInt(searchParams.get('page') || '0', 10) || 0);
   const qParam = searchParams.get('q') || '';
 
@@ -203,11 +222,13 @@ const Marketplace = () => {
   const [accumulated, setAccumulated] = useState<MarketplaceListing[]>([]);
 
   const sortOptions = [
-    { value: 'relevance', label: 'Most relevant' },
+    { value: 'for_you', label: 'For you' },
+    { value: 'most_loved', label: 'Most loved' },
+    { value: 'best_value', label: 'Best value' },
+    { value: 'editor_choice', label: "Editor's choice" },
     { value: 'newest', label: 'Newest first' },
     { value: 'price_asc', label: 'Price: low to high' },
     { value: 'price_desc', label: 'Price: high to low' },
-    { value: 'most_viewed', label: 'Most viewed' },
   ];
 
   const setUrlParams = (updates: Record<string, string | undefined>) => {
@@ -215,7 +236,7 @@ const Marketplace = () => {
       (prev) => {
         const next = new URLSearchParams(prev);
         for (const [k, v] of Object.entries(updates)) {
-          if (!v || v === 'all' || v === 'relevance' || v === '0') {
+          if (!v || v === 'all' || v === 'for_you' || v === '0') {
             next.delete(k);
           } else {
             next.set(k, v);
@@ -287,7 +308,7 @@ const Marketplace = () => {
   };
 
   const handleSortChange = (s: string) => {
-    setUrlParams({ sort: s === 'relevance' ? undefined : s, page: undefined });
+    setUrlParams({ sort: s === 'for_you' ? undefined : s, page: undefined });
   };
 
   const handleLoadMore = () => {
@@ -362,6 +383,9 @@ const Marketplace = () => {
         <div className="container mx-auto py-8 md:py-12 px-4 relative">
           {!hasActiveFilters && (
             <>
+              <OccasionChips />
+              <HeroCollection />
+              <ForYouRail />
               <MarketplaceSpotlight />
               <MarketplaceCategoryTiles />
               <MarketplaceRow
