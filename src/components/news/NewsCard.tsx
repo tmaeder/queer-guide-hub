@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Eye, Clock, MapPin, Tag, Lock, Share2, BookOpen } from 'lucide-react';
+import { Share2, BookOpen } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { shareOrCopy, articleShareUrl, estimateReadingTime } from '@/lib/share';
 import type { Tables } from '@/integrations/supabase/types';
@@ -24,25 +23,12 @@ type NewsArticle = Tables<'news_articles'> & {
 
 const NewsCardFixture = () => (
   <Card>
-    <CardHeader style={{ flexDirection: 'column' }} className="flex gap-4">
-      <h3 className="text-base font-semibold text-lg">Sample News Headline</h3>
-      <div className="flex items-center gap-2">
-        <Badge style={{ backgroundColor: 'hsl(var(--foreground))' }} className="text-background">
-          Politics
-        </Badge>
-        <Badge variant="outline" className="text-xs">
-          Source
-        </Badge>
-      </div>
+    <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2">
+      <p className="text-2xs uppercase tracking-wider text-muted-foreground">Politics · Source · 2h ago</p>
+      <h3 className="text-base font-semibold leading-tight">Sample News Headline</h3>
     </CardHeader>
-    <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
-      <p className="text-sm">A sample excerpt for the news article.</p>
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-1">
-          <Clock size={14} />
-          <span className="text-xs">2 hours ago</span>
-        </div>
-      </div>
+    <CardContent style={{ flexDirection: 'column' }} className="flex gap-2">
+      <p className="text-sm text-muted-foreground">A sample excerpt for the news article.</p>
     </CardContent>
   </Card>
 );
@@ -74,17 +60,21 @@ const buildShareHandler = (slug: string, title: string) => (e: React.MouseEvent)
   void shareOrCopy({ title, url: articleShareUrl(slug) });
 };
 
+const HIDDEN_CATEGORY_VALUES = new Set(['general', 'rss-news', 'rss_news']);
+const isHiddenCategory = (v?: string | null) =>
+  !v || HIDDEN_CATEGORY_VALUES.has(String(v).toLowerCase());
+
 export const NewsCard = ({
   article,
   loading = false,
-  onViewArticle,
-  onFilterByTag,
-  onFilterBySource,
-  onFilterByCategory,
-  onFilterByAuthor,
-  showFullContent = false,
-  cityNames = {},
-  countryNames = {},
+  onViewArticle: _onViewArticle,
+  onFilterByTag: _onFilterByTag,
+  onFilterBySource: _onFilterBySource,
+  onFilterByCategory: _onFilterByCategory,
+  onFilterByAuthor: _onFilterByAuthor,
+  showFullContent: _showFullContent = false,
+  cityNames: _cityNames = {},
+  countryNames: _countryNames = {},
   sourcesMap = {},
   tags = [],
   categoriesMap = {},
@@ -115,57 +105,6 @@ export const NewsCard = ({
   const sourceFallback = safeText(sourcesMap[article.source_id]?.name);
   const displaySource = publisherName || sourceFallback;
 
-  // Darken a hex color until it meets WCAG 1.4.3 (4.5:1) against white.
-  // Defensive shim — some news_categories rows hold Tailwind -500 hexes
-  // (#ef4444 etc.) that fail when rendered behind white badge text.
-  const ensureContrastOnWhite = (hex: string): string => {
-    const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
-    if (!m) return hex;
-    const channel = (c: number) => {
-      const s = c / 255;
-      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-    };
-    let r = parseInt(m[1].slice(0, 2), 16);
-    let g = parseInt(m[1].slice(2, 4), 16);
-    let b = parseInt(m[1].slice(4, 6), 16);
-    for (let i = 0; i < 20; i++) {
-      const L = 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
-      const ratio = 1.05 / (L + 0.05);
-      if (ratio >= 4.5) break;
-      r = Math.max(0, Math.round(r * 0.88));
-      g = Math.max(0, Math.round(g * 0.88));
-      b = Math.max(0, Math.round(b * 0.88));
-    }
-    return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
-  };
-
-  const getCategoryColor = (category: string) => {
-    const catEntry = Object.values(categoriesMap).find(
-      (c) => c.slug === category || c.name.toLowerCase() === category.toLowerCase(),
-    );
-    if (catEntry) return ensureContrastOnWhite(catEntry.color);
-    // Tailwind -700 shades: each ≥ 4.5:1 contrast on white text (WCAG 1.4.3).
-    const fallback: Record<string, string> = {
-      politics: '#1d4ed8',
-      'human-rights': '#b91c1c',
-      entertainment: '#6d28d9',
-      culture: '#6d28d9',
-      health: '#047857',
-      sports: '#c2410c',
-      business: '#b45309',
-      technology: '#4338ca',
-      lifestyle: '#be185d',
-      education: '#0e7490',
-      legislation: '#1d4ed8',
-      transgender: '#6d28d9',
-      rights: '#b91c1c',
-      advocacy: '#c2410c',
-      news: '#475569',
-      community: '#be185d',
-    };
-    return fallback[category?.toLowerCase()] || '#64748b';
-  };
-
   const getCategoryLabel = (category: string) => {
     const catEntry = Object.values(categoriesMap).find(
       (c) => c.slug === category || c.name.toLowerCase() === category.toLowerCase(),
@@ -177,11 +116,6 @@ export const NewsCard = ({
   const authorName = safeText(cleanAuthor(safeText(article.author)));
   const excerptText = safeText(cleanExcerpt(safeText(article.excerpt)));
   const safeTitle = safeText(decodeHtmlEntities(safeText(article.title)));
-  const HIDDEN_CATEGORY_VALUES = new Set(['general', 'rss-news', 'rss_news']);
-  const isHiddenCategory = (v?: string | null) =>
-    !v || HIDDEN_CATEGORY_VALUES.has(String(v).toLowerCase());
-  // Prefer canonical category from the news_qa_backfill_category_canonical
-  // migration; fall back to the legacy `category` text column.
   const articleAny = article as Record<string, unknown>;
   const canonical =
     typeof articleAny.category_canonical === 'string'
@@ -194,13 +128,17 @@ export const NewsCard = ({
       : null;
   const firstUsableTag = tags.find((t) => !isHiddenCategory(t));
   const fallbackCategoryFromTag = !displayCategory && firstUsableTag ? firstUsableTag : null;
+  const categoryDisplay = displayCategory
+    ? getCategoryLabel(displayCategory)
+    : fallbackCategoryFromTag;
+  const isPremium = (article as Record<string, unknown>).is_premium === true;
+
   const resolvedSrc = resolveImageUrl({
     imageUrl: article.image_url,
     optimizedUrl: imageAsset?.optimized_url ?? null,
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
   });
   const effectiveImage = resolvedSrc && !imgFailed ? resolvedSrc : fallbackSrc;
-  const hasImage = true;
 
   const readingTime = estimateReadingTime(
     article.content as string | null | undefined,
@@ -208,13 +146,18 @@ export const NewsCard = ({
   );
   const onShare = buildShareHandler(article.slug, safeTitle);
 
-  const linkedCities = (article.city_ids || [])
-    .map((id: string) => ({ id, name: cityNames[id] }))
-    .filter((c: { id: string; name: string | undefined }) => c.name);
-  const linkedCountries = (article.country_ids || [])
-    .map((id: string) => ({ id, name: countryNames[id] }))
-    .filter((c: { id: string; name: string | undefined }) => c.name);
-  const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
+  const relativeDate =
+    !hideDate && article.published_at
+      ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true })
+      : null;
+
+  const eyebrowParts = [
+    categoryDisplay,
+    displaySource,
+    relativeDate,
+    isPremium ? 'Premium' : null,
+    hideDate && article.is_featured ? 'Featured' : null,
+  ].filter(Boolean) as string[];
 
   // Headline variant: ultra-compact, no image
   if (variant === 'headline') {
@@ -227,32 +170,12 @@ export const NewsCard = ({
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-semibold truncate m-0">{safeTitle}</h3>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {displayCategory && (
-            <Badge
-              style={{
-                backgroundColor: getCategoryColor(displayCategory),
-                fontSize: '0.65rem',
-                padding: '1px 6px',
-              }}
-              className="text-background"
-            >
-              {getCategoryLabel(displayCategory)}
-            </Badge>
-          )}
-          {displaySource && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{displaySource}</span>
-          )}
-          {!hideDate && article.published_at && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
+        <div className="flex items-center gap-2 flex-shrink-0 text-2xs uppercase tracking-wider text-muted-foreground">
+          {eyebrowParts.map((part, i) => (
+            <span key={i} className="whitespace-nowrap">
+              {part}
             </span>
-          )}
-          {hideDate && article.is_featured && (
-            <span className="text-xs uppercase tracking-wide text-muted-foreground whitespace-nowrap">
-              Featured
-            </span>
-          )}
+          ))}
         </div>
       </LocalizedLink>
     );
@@ -267,39 +190,29 @@ export const NewsCard = ({
         className="flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90 no-underline"
         style={{ color: 'inherit' }}
       >
-        {hasImage && (
-          <div className="md:flex-[0_0_45%] rounded-element overflow-hidden">
-            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a non-interactive image lifecycle event */}
-            <img
-              loading={priority ? 'eager' : 'lazy'}
-              fetchPriority={priority ? 'high' : 'auto'}
-              decoding="async"
-              referrerPolicy="no-referrer"
-              src={effectiveImage}
-              alt={safeTitle}
-              width={800}
-              height={240}
-              style={{ width: '100%', height: 240, objectFit: 'cover' }}
-              className="block"
-              onError={() => setImgFailed(true)}
-            />
-          </div>
-        )}
-        <div className="flex-1 flex flex-col justify-center gap-4">
-          <div className="flex items-center gap-2">
-            {displayCategory && (
-              <Badge
-                style={{ backgroundColor: getCategoryColor(displayCategory) }}
-                className="text-background"
-              >
-                {getCategoryLabel(displayCategory)}
-              </Badge>
-            )}
-            {displaySource && (
-              <span className="text-xs text-muted-foreground">{displaySource}</span>
-            )}
-          </div>
-          <h3 className="text-xl font-bold leading-tight">{safeTitle}</h3>
+        <div className="md:flex-[0_0_45%] rounded-container overflow-hidden">
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a non-interactive image lifecycle event */}
+          <img
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
+            referrerPolicy="no-referrer"
+            src={effectiveImage}
+            alt={safeTitle}
+            width={800}
+            height={320}
+            style={{ width: '100%', height: 320, objectFit: 'cover' }}
+            className="block"
+            onError={() => setImgFailed(true)}
+          />
+        </div>
+        <div className="flex-1 flex flex-col justify-center gap-2">
+          {eyebrowParts.length > 0 && (
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground">
+              {eyebrowParts.join(' · ')}
+            </p>
+          )}
+          <h3 className="text-2xl font-bold leading-tight m-0">{safeTitle}</h3>
           {excerptText && (
             <p
               className="text-sm text-muted-foreground overflow-hidden"
@@ -308,20 +221,12 @@ export const NewsCard = ({
               {excerptText}
             </p>
           )}
-          <div className="flex items-center gap-4 text-muted-foreground">
-            {authorName && <span className="text-xs">By {authorName}</span>}
-            {!hideDate && article.published_at && (
-              <span className="text-xs">
-                {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
-              </span>
-            )}
+          <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground">
+            {authorName && <span>By {authorName}</span>}
             {readingTime !== null && (
-              <span className="text-xs inline-flex items-center gap-1">
-                <BookOpen size={12} aria-hidden="true" /> {readingTime} min read
+              <span className="inline-flex items-center gap-1">
+                <BookOpen size={12} aria-hidden="true" /> {readingTime} min
               </span>
-            )}
-            {hideDate && article.is_featured && (
-              <span className="text-xs uppercase tracking-wide">Featured</span>
             )}
             <button
               type="button"
@@ -338,13 +243,13 @@ export const NewsCard = ({
     );
   }
 
-  // Compact list variant: thumbnail left, text right (F5)
+  // Compact list variant: thumbnail left, text right
   if (variant === 'compact') {
     return (
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="flex gap-4 p-4 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex gap-4 p-4 rounded-container border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <img
           loading="lazy"
@@ -359,39 +264,12 @@ export const NewsCard = ({
           style={{ width: 160, height: 120, objectFit: 'cover' }}
           onError={() => setImgFailed(true)}
         />
-        <div className="flex flex-col gap-1 min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            {displayCategory && (
-              <Badge
-                style={{
-                  backgroundColor: getCategoryColor(displayCategory),
-                  fontSize: '0.65rem',
-                  padding: '1px 6px',
-                }}
-                className="text-background"
-              >
-                {getCategoryLabel(displayCategory)}
-              </Badge>
-            )}
-            {(article as Record<string, unknown>).is_premium === true && (
-              <Badge
-                style={{
-                  backgroundColor: 'hsl(var(--accent))',
-                  color: 'hsl(var(--accent-foreground))',
-                  alignItems: 'center',
-                  gap: 3,
-                  fontSize: '0.65rem',
-                  padding: '1px 6px',
-                }}
-                className="inline-flex"
-              >
-                <Lock size={9} aria-hidden="true" /> Premium
-              </Badge>
-            )}
-            {displaySource && (
-              <span className="text-xs text-muted-foreground truncate">{displaySource}</span>
-            )}
-          </div>
+        <div className="flex flex-col gap-2 min-w-0 flex-1">
+          {eyebrowParts.length > 0 && (
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground truncate">
+              {eyebrowParts.join(' · ')}
+            </p>
+          )}
           <h3
             className="text-base font-semibold leading-snug m-0 overflow-hidden"
             style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
@@ -406,14 +284,8 @@ export const NewsCard = ({
               {excerptText}
             </p>
           )}
-          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-auto">
-            {authorName && <span>By {authorName}</span>}
-            {!hideDate && article.published_at && (
-              <span>
-                {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
-              </span>
-            )}
-            {readingTime !== null && <span>· {readingTime} min</span>}
+          <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground mt-auto">
+            {readingTime !== null && <span>{readingTime} min</span>}
             <button
               type="button"
               onClick={onShare}
@@ -437,277 +309,81 @@ export const NewsCard = ({
         style={{ borderColor: 'hsl(var(--border))' }}
         onClick={() => navigate(`/news/${article.slug}`)}
       >
-        <CardHeader style={{ flexDirection: 'column' }} className="flex gap-4">
-          {hasImage && (
-            <div className="relative overflow-hidden rounded-element">
-              <img
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                role="presentation"
-                src={effectiveImage}
-                alt={safeTitle}
-                width={400}
-                height={192}
-                style={{
-                  width: '100%',
-                  height: density === 'compact' ? 140 : 192,
-                  objectFit: 'cover',
-                }}
-                className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
-                onError={() => setImgFailed(true)}
-              />
-              {(article as Record<string, unknown>).is_premium === true && (
-                <Badge
-                  style={{
-                    top: 8,
-                    right: 8,
-                    backgroundColor: 'hsl(var(--accent))',
-                    color: 'hsl(var(--accent-foreground))',
-                    alignItems: 'center',
-                  }}
-                  className="absolute inline-flex gap-1"
-                >
-                  <Lock size={10} aria-hidden="true" /> Premium
-                </Badge>
-              )}
-              {article.is_featured && (
-                <Badge
-                  style={{ top: 8, left: 8, backgroundColor: 'hsl(var(--muted))' }}
-                  className="absolute text-muted-foreground"
-                >
-                  Featured
-                </Badge>
-              )}
-            </div>
-          )}
-
-          <div className="flex items-start justify-between gap-4">
-            <h3
-              className="font-semibold m-0 text-lg overflow-hidden"
-              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-            >
-              {safeTitle}
-            </h3>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {displayCategory && (
-              <Badge
-                style={{
-                  backgroundColor: getCategoryColor(displayCategory),
-                  cursor: onFilterByCategory ? 'pointer' : 'default',
-                }}
-                className="text-background capitalize"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onFilterByCategory?.(displayCategory);
-                }}
-              >
-                {getCategoryLabel(displayCategory)}
-              </Badge>
-            )}
-            {!displayCategory && fallbackCategoryFromTag && (
-              <Badge
-                style={{
-                  backgroundColor: 'hsl(var(--muted))',
-                  cursor: onFilterByCategory ? 'pointer' : 'default',
-                }}
-                className="text-muted-foreground"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onFilterByCategory?.(fallbackCategoryFromTag);
-                }}
-              >
-                {fallbackCategoryFromTag}
-              </Badge>
-            )}
-            {displaySource && (
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 text-xs border border-border rounded-badge px-2 py-0.5 bg-transparent hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                style={{ cursor: onFilterBySource ? 'pointer' : 'default' }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const src = sourcesMap[article.source_id];
-                  if (onFilterBySource && src?.id) onFilterBySource(src.id, displaySource);
-                }}
-                aria-label={
-                  onFilterBySource
-                    ? `Filter by source ${displaySource}`
-                    : `Source: ${displaySource}`
-                }
-              >
-                {displaySource}
-              </button>
-            )}
-            <a
-              href={article.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                onViewArticle?.(article.id);
+        <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2 p-0">
+          <div className="relative overflow-hidden rounded-container rounded-b-none">
+            <img
+              loading={priority ? 'eager' : 'lazy'}
+              fetchPriority={priority ? 'high' : 'auto'}
+              decoding="async"
+              referrerPolicy="no-referrer"
+              role="presentation"
+              src={effectiveImage}
+              alt={safeTitle}
+              width={400}
+              height={density === 'compact' ? 140 : 192}
+              style={{
+                width: '100%',
+                height: density === 'compact' ? 140 : 192,
+                objectFit: 'cover',
+                display: 'block',
               }}
-              className="inline-flex items-center text-muted-foreground opacity-50 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-badge"
-              aria-label={
-                displaySource
-                  ? `Open original article on ${displaySource} (opens in new tab)`
-                  : 'Open original article (opens in new tab)'
-              }
-              title="Open original article"
-            >
-              <ExternalLink size={14} aria-hidden="true" />
-            </a>
+              onError={() => setImgFailed(true)}
+            />
           </div>
         </CardHeader>
 
-        <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
+        <CardContent style={{ flexDirection: 'column' }} className="flex gap-2 p-6">
+          {eyebrowParts.length > 0 && (
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+              {eyebrowParts.join(' · ')}
+            </p>
+          )}
+
+          <h3
+            className="font-semibold m-0 text-base leading-tight overflow-hidden"
+            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+          >
+            {safeTitle}
+          </h3>
+
           {excerptText && (
             <p
               className="text-sm text-muted-foreground overflow-hidden"
-              style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
+              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
             >
               {excerptText}
             </p>
           )}
 
-          {/* Meta row: date, views, author */}
-          <div className="flex flex-wrap items-center gap-4">
-            {article.published_at && (
-              <div className="flex items-center gap-1">
-                <Clock size={14} className="text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
+          <div className="flex items-center justify-between gap-2 pt-4 border-t border-border">
+            <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground min-w-0">
+              {readingTime !== null && (
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <BookOpen size={12} aria-hidden="true" /> {readingTime} min
                 </span>
-              </div>
-            )}
-            {readingTime !== null && (
-              <div className="flex items-center gap-1">
-                <BookOpen size={14} className="text-muted-foreground" aria-hidden="true" />
-                <span className="text-xs text-muted-foreground">{readingTime} min read</span>
-              </div>
-            )}
-            {typeof article.views_count === 'number' && article.views_count > 0 && (
-              <div className="flex items-center gap-1">
-                <Eye size={14} className="text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  {article.views_count} view{article.views_count !== 1 ? 's' : ''}
-                </span>
-              </div>
-            )}
-            {authorName &&
-              (onFilterByAuthor ? (
-                <button
-                  type="button"
-                  className="text-xs text-muted-foreground cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onFilterByAuthor(authorName);
-                  }}
-                >
-                  By {authorName}
-                </button>
-              ) : (
-                <span className="text-xs text-muted-foreground">By {authorName}</span>
-              ))}
-          </div>
+              )}
+              {authorName && (
+                <span className="truncate">By {authorName}</span>
+              )}
+            </div>
 
-          {showFullContent && article.content && (
-            <div style={{ maxWidth: 'none' }} className="text-foreground" />
-          )}
-
-          {/* Tags */}
-          {(() => {
-            const displayTags = tags
-              .map((t) => safeText(t))
-              .filter((t) => t && t !== fallbackCategoryFromTag && !isHiddenCategory(t));
-            if (displayTags.length === 0) return null;
-            return (
-              <div className="flex flex-wrap items-center gap-1.5">
-                <Tag size={14} className="text-muted-foreground shrink-0" />
-                {displayTags.slice(0, 4).map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="outline"
-                    style={{
-                      fontSize: '0.7rem',
-                      padding: '2px 8px',
-                      cursor: onFilterByTag ? 'pointer' : 'default',
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onFilterByTag?.(tag);
-                    }}
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-                {displayTags.length > 4 && (
-                  <Badge variant="outline" style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
-                    +{displayTags.length - 4} more
-                  </Badge>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* Location */}
-          {hasLocation && (
             <div
-              className="flex flex-wrap items-center gap-1.5 text-muted-foreground"
-              style={{ fontSize: '0.8rem' }}
+              className="flex items-center gap-1 shrink-0"
               onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => e.stopPropagation()}
               role="presentation"
             >
-              <MapPin size={14} className="shrink-0" />
-              {linkedCities.map(
-                (city: { id: string; name: string | undefined; slug?: string }, i: number) => (
-                  <span key={city.id}>
-                    <LocalizedLink
-                      to={`/city/${city.slug || city.id}`}
-                      className="text-primary no-underline"
-                    >
-                      {city.name}
-                    </LocalizedLink>
-                    {(i < linkedCities.length - 1 || linkedCountries.length > 0) && ', '}
-                  </span>
-                ),
-              )}
-              {linkedCountries.map(
-                (country: { id: string; name: string | undefined; slug?: string }, i: number) => (
-                  <span key={country.id}>
-                    <LocalizedLink
-                      to={`/country/${country.slug || country.id}`}
-                      className="text-primary no-underline"
-                    >
-                      {country.name}
-                    </LocalizedLink>
-                    {i < linkedCountries.length - 1 && ', '}
-                  </span>
-                ),
-              )}
+              <FavoriteButton itemId={article.id} type="news" />
+              <button
+                type="button"
+                onClick={onShare}
+                aria-label={`Share ${safeTitle}`}
+                className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                style={{ height: 28, width: 28 }}
+              >
+                <Share2 size={14} aria-hidden="true" />
+              </button>
             </div>
-          )}
-
-          {/* Favorite + share */}
-          <div
-            className="flex items-center gap-1 pt-1"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
-            role="presentation"
-          >
-            <FavoriteButton itemId={article.id} type="news" />
-            <button
-              type="button"
-              onClick={onShare}
-              aria-label={`Share ${safeTitle}`}
-              className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              style={{ height: 28, width: 28 }}
-            >
-              <Share2 size={14} aria-hidden="true" />
-            </button>
           </div>
         </CardContent>
       </Card>
