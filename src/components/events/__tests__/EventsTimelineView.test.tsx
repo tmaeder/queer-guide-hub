@@ -26,13 +26,29 @@ function ev(overrides: Partial<Event>): Event {
 }
 
 describe('EventsTimelineView', () => {
-  it('renders empty state when no events', () => {
+  it('renders toolbar + track even with no events', () => {
     render(
       <MemoryRouter>
         <EventsTimelineView events={[]} />
       </MemoryRouter>,
     );
-    expect(screen.getByText(/No events to display/i)).toBeTruthy();
+    expect(screen.getByRole('region', { name: /Events timeline/i })).toBeTruthy();
+    expect(screen.getByRole('toolbar', { name: /Timeline navigation/i })).toBeTruthy();
+  });
+
+  it('invokes onViewportChange when toolbar pan is used', () => {
+    let captured: { startMs: number; endMs: number } | null = null;
+    render(
+      <MemoryRouter>
+        <EventsTimelineView
+          events={[ev({ id: 'e1', slug: 's1' })]}
+          onViewportChange={(v) => (captured = v)}
+        />
+      </MemoryRouter>,
+    );
+    const todayBtn = screen.getByRole('button', { name: /Center on today/i });
+    todayBtn.click();
+    expect(captured).not.toBeNull();
   });
 
   it('renders a single event with a link to its slug', () => {
