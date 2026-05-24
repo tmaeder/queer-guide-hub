@@ -30,6 +30,12 @@ saved: ~457 KB raw (recharts 335 KB + pdf 122 KB).
 The historical investigation below is kept for reference.
 
 ---
+# Recharts cross-route chunk leak — open follow-up
+
+**Status:** unresolved as of 2026-05-24
+**First spotted:** Lighthouse run on /cities ([#1094](https://github.com/tmaeder/queer-guide-hub/pull/1094))
+**Attempted fix:** [#1098](https://github.com/tmaeder/queer-guide-hub/pull/1098) — did NOT solve the problem in production builds
+**Owner:** unassigned
 
 ## Symptom
 

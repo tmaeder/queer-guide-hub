@@ -997,7 +997,115 @@
     "review": "Écrire un avis",
     "photos": "Photos",
     "amenities": "Équipements",
-    "services": "Services"
+    "services": "Services",
+    "rails": {
+      "nearYou": {
+        "title": "Près de toi",
+        "subtitle": "Lieux dans un rayon de 30 km, classés par distance."
+      },
+      "forYou": {
+        "title": "Pour tes goûts",
+        "subtitle": "Sélectionnés selon tes centres d’intérêt et tes visites."
+      },
+      "forYouPromo": {
+        "label": "Personnalise tes lieux",
+        "kicker": "Pour tes goûts",
+        "title": "Dis-nous ce que tu aimes.",
+        "body": "Connecte-toi et réponds à quatre questions rapides — on classera les lieux selon tes goûts.",
+        "cta": "Commencer"
+      },
+      "new": {
+        "title": "Nouveau ce mois-ci",
+        "subtitle": "Ajouts récents au guide."
+      },
+      "topInCity": {
+        "title": "Top à {{city}}",
+        "subtitle": "Populaires en ce moment dans la communauté."
+      },
+      "editors": {
+        "title": "Coups de cœur de la rédaction",
+        "subtitle": "Sélection éditoriale."
+      }
+    },
+    "hero": {
+      "kicker": "À l’honneur cette semaine",
+      "cta": "En savoir plus",
+      "label": "Lieu mis en avant"
+    },
+    "personalStrip": {
+      "title": "{{name}} · Niveau {{level}}",
+      "label": "Tes statistiques de lieux",
+      "passport": "Voir le passeport",
+      "points": "Points",
+      "venues": "Lieux",
+      "streak": "Jours d’affilée",
+      "checkins": "Check-ins",
+      "nextLevel": "Prochain : {{name}}"
+    },
+    "results": {
+      "title": "Lieux correspondants"
+    },
+    "quickFilters": {
+      "openNow": "Ouvert maintenant",
+      "radius": "Distance",
+      "radiusKm": "Dans un rayon de {{km}} km",
+      "anyDistance": "Toute distance",
+      "price": "Prix",
+      "anyPrice": "Tout prix",
+      "clear": "Effacer"
+    },
+    "leaderboard": {
+      "title": "Classement",
+      "subtitle": "Top explorateurs par lieux visités.",
+      "tabs": {
+        "global": "Mondial",
+        "city": "À {{city}}"
+      },
+      "empty": "Pas encore de données — sois la première à t’enregistrer.",
+      "venuesShort": "lieux",
+      "widget": {
+        "label": "Top explorateurs",
+        "titleCity": "Top à {{city}}",
+        "titleGlobal": "Top explorateurs",
+        "viewAll": "Tout voir",
+        "anon": "Explorateur anonyme",
+        "you": "Toi"
+      }
+    },
+    "passport": {
+      "title": "Ton passeport",
+      "subtitle": "Chaque lieu visité et chaque badge gagné.",
+      "achievements": "Succès",
+      "earned": "Obtenu",
+      "locked": "+{{pts}} pts",
+      "visited": "{{count}} lieux visités",
+      "empty": "Aucun check-in pour l’instant.",
+      "signInPrompt": "Connecte-toi pour voir ton passeport."
+    },
+    "onboarding": {
+      "progress": "Étape {{current}} sur {{total}}",
+      "step1": {
+        "title": "Quels types de lieux aimes-tu ?"
+      },
+      "step2": {
+        "title": "Quelles communautés sont les tiennes ?"
+      },
+      "step3": {
+        "title": "Quelles ambiances cherches-tu ?"
+      },
+      "step4": {
+        "title": "Où passes-tu le plus de temps ?"
+      },
+      "cityPlaceholder": "Tape ta ville",
+      "citySelected": "Sélectionné : {{city}}",
+      "finish": "Terminer",
+      "saveError": "Échec de l’enregistrement",
+      "saveSuccess": "Préférences enregistrées"
+    },
+    "achievementToast": {
+      "unlocked": "Débloqué : {{name}}",
+      "fallback": "Nouveau succès obtenu"
+    }
   },
   "marketplace": {
     "title": "Marketplace",
@@ -1372,7 +1480,8 @@
       "filteredEmpty": {
         "title": "Aucun lieu ne correspond à tes filtres",
         "body": "Essaie d'ajuster tes filtres ou ta recherche pour voir plus de résultats."
-      }
+      },
+      "sortRelevance": "Pour toi"
     },
     "venueDetail": {
       "loadFailed": "Impossible de charger les détails du lieu.",
@@ -1956,5 +2065,40 @@
       "title": "Graphe des relations",
       "description": "Comment les tags se relient par similarité sémantique et co-occurrence"
     }
+  },
+  "cities": {
+    "metaTitle": "Villes",
+    "metaDescription": "Découvrez les villes LGBTQ+ friendly à travers le monde.",
+    "eyebrow": "Destinations",
+    "title": "Villes.",
+    "subtitle": "Les villes LGBTQ+ friendly à travers le monde.",
+    "planTrip": "Planifier un voyage",
+    "openDirectory": "Ouvrir l'annuaire",
+    "searchAriaLabel": "Rechercher des villes",
+    "searchPlaceholder": "Rechercher des villes…",
+    "resultCount": "{{shown}} sur {{total}} villes",
+    "filtersAriaLabel": "Filtrer les villes",
+    "continentsAriaLabel": "Filtrer par continent",
+    "equalityAriaLabel": "Filtrer par score d'égalité",
+    "sortLabel": "Trier",
+    "sortAriaLabel": "Trier les villes",
+    "sort": {
+      "population": "Population",
+      "name": "Nom (A–Z)",
+      "equality": "Égalité",
+      "venues": "Lieux"
+    },
+    "reset": "Réinitialiser",
+    "resetFilters": "Réinitialiser les filtres",
+    "viewToggleAriaLabel": "Basculer entre liste et carte",
+    "viewList": "Liste",
+    "viewMap": "Carte",
+    "listLabel": "Villes",
+    "emptyTitle": "Aucune ville trouvée",
+    "empty": "Aucune ville n'est actuellement listée.",
+    "emptyFiltered": "Essayez d'enlever un filtre ou d'effacer la recherche.",
+    "suggestTitle": "Une ville manque ?",
+    "suggestLede": "Suggérez-la — ajoutée à l'annuaire après vérification.",
+    "suggestCta": "Suggérer une ville"
   }
 }

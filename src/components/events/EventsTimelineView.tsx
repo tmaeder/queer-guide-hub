@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router';
-import { Calendar as CalendarIcon, MapPin, Star, Ticket } from 'lucide-react';
+import { Star } from 'lucide-react';
 import {
   format,
   startOfDay,
@@ -14,11 +14,9 @@ import {
 } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Badge } from '@/components/ui/badge';
 import { placeOnRows } from '@/utils/timelineLayout';
-import { formatEventTime } from '@/lib/event-time';
+import { EventHoverCard } from './EventHoverCard';
 import {
   type Viewport,
   panBy,
@@ -41,6 +39,10 @@ interface EventsTimelineViewProps {
   viewport?: Viewport;
   onViewportChange?: (v: Viewport) => void;
   loading?: boolean;
+  onRsvp?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void | Promise<void>;
+  onSaveToTrip?: (event: Event) => void | Promise<void>;
+  attendStatus?: (eventId: string) => 'going' | 'interested' | 'not_going' | null;
+  isInTrip?: (eventId: string) => boolean;
 }
 
 const TRACK_TARGET_WIDTH = 1800;
@@ -188,6 +190,10 @@ export function EventsTimelineView({
   viewport: controlledViewport,
   onViewportChange,
   loading,
+  onRsvp,
+  onSaveToTrip,
+  attendStatus,
+  isInTrip,
 }: EventsTimelineViewProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -431,8 +437,7 @@ export function EventsTimelineView({
             </div>
           )}
 
-          <TooltipProvider delayDuration={200} skipDelayDuration={300}>
-            {placed.map((p) => {
+          {placed.map((p) => {
               const item = (p.item as unknown as { _item: TrackItem })._item;
               const xStart = pxForMs(p.startMs);
               const xEnd = pxForMs(p.endMs);
@@ -511,118 +516,77 @@ export function EventsTimelineView({
               const widthPx = xEnd - xStart;
               const isBar = widthPx >= CLUSTER_PX;
               const dateLabel = format(new Date(event.start_date), 'MMM d');
-              const dateRange = formatEventTime(
-                event.start_date,
-                event.end_date,
-                (event as { timezone?: string | null }).timezone,
-              );
-              const location = [event.venue_name, event.city].filter(Boolean).join(', ');
 
               return (
-                <Tooltip key={event.id}>
-                  <TooltipTrigger asChild>
-                    <Link
-                      to={`/events/${event.slug}`}
-                      data-event-id={event.id}
-                      aria-label={`${event.title} on ${dateLabel}`}
-                      onClick={(e) => {
-                        if (panState.current?.moved) {
-                          e.preventDefault();
-                          return;
-                        }
-                        onEventSelect?.(event);
-                      }}
-                      draggable={false}
-                      className={cn(
-                        'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group no-underline',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 rounded-badge',
-                        isPast && 'opacity-50',
-                      )}
-                      style={{
-                        left: `${xStart}px`,
-                        top: `${y}px`,
-                        height: `${BAR_HEIGHT}px`,
-                        maxWidth: isBar ? undefined : `${LABEL_PX + 16}px`,
-                      }}
-                    >
-                      {isBar ? (
+                <EventHoverCard
+                  key={event.id}
+                  event={event}
+                  onRsvp={onRsvp}
+                  onSaveToTrip={onSaveToTrip}
+                  isInTrip={isInTrip?.(event.id) ?? false}
+                  attendStatus={attendStatus?.(event.id) ?? null}
+                >
+                  <Link
+                    to={`/events/${event.slug}`}
+                    data-event-id={event.id}
+                    aria-label={`${event.title} on ${dateLabel}`}
+                    onClick={(e) => {
+                      if (panState.current?.moved) {
+                        e.preventDefault();
+                        return;
+                      }
+                      onEventSelect?.(event);
+                    }}
+                    draggable={false}
+                    className={cn(
+                      'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group no-underline',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 rounded-badge',
+                      isPast && 'opacity-50',
+                    )}
+                    style={{
+                      left: `${xStart}px`,
+                      top: `${y}px`,
+                      height: `${BAR_HEIGHT}px`,
+                      maxWidth: isBar ? undefined : `${LABEL_PX + 16}px`,
+                    }}
+                  >
+                    {isBar ? (
+                      <span
+                        className={cn(
+                          'flex items-center px-2 rounded-element border border-foreground transition-colors',
+                          event.is_featured
+                            ? 'bg-foreground text-background'
+                            : 'bg-background text-foreground group-hover:bg-muted',
+                        )}
+                        style={{ width: `${widthPx}px`, height: `${BAR_HEIGHT}px` }}
+                      >
+                        <span className="truncate text-[10px] leading-none font-medium">{event.title}</span>
+                      </span>
+                    ) : (
+                      <>
                         <span
                           className={cn(
-                            'flex items-center px-2 rounded-element border border-foreground transition-colors',
+                            'shrink-0 rounded-full border border-foreground transition-all',
                             event.is_featured
-                              ? 'bg-foreground text-background'
-                              : 'bg-background text-foreground group-hover:bg-muted',
+                              ? 'bg-foreground w-2.5 h-2.5 group-hover:scale-125'
+                              : 'bg-background w-2 h-2 group-hover:scale-125 group-hover:bg-foreground',
                           )}
-                          style={{ width: `${widthPx}px`, height: `${BAR_HEIGHT}px` }}
-                        >
-                          <span className="truncate text-[10px] leading-none font-medium">{event.title}</span>
-                        </span>
-                      ) : (
-                        <>
-                          <span
-                            className={cn(
-                              'shrink-0 rounded-full border border-foreground transition-all',
-                              event.is_featured
-                                ? 'bg-foreground w-2.5 h-2.5 group-hover:scale-125'
-                                : 'bg-background w-2 h-2 group-hover:scale-125 group-hover:bg-foreground',
-                            )}
-                          />
-                          <span
-                            className={cn(
-                              'flex items-center gap-1 text-[10px] leading-none whitespace-nowrap overflow-hidden min-w-0',
-                              event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
-                              'group-hover:text-foreground group-hover:font-medium',
-                            )}
-                          >
-                            <span className="truncate">{event.title}</span>
-                          </span>
-                        </>
-                      )}
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    sideOffset={8}
-                    collisionPadding={12}
-                    className="z-50 w-64 max-w-[calc(100vw-24px)] px-3 py-2.5 rounded-element border border-foreground/15 bg-background text-foreground font-normal text-left shadow-none"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium leading-tight">{event.title}</p>
-                      {event.is_featured && (
-                        <Star
-                          className="size-3 shrink-0 fill-foreground text-foreground mt-0.5"
-                          aria-label="Featured"
                         />
-                      )}
-                    </div>
-                    <p className="mt-1.5 flex items-center gap-1 text-xs2 text-foreground/70">
-                      <CalendarIcon className="size-3 shrink-0" aria-hidden="true" />
-                      <span className="truncate">{dateRange}</span>
-                    </p>
-                    {location && (
-                      <p className="mt-1 flex items-center gap-1 text-xs2 text-foreground/70">
-                        <MapPin className="size-3 shrink-0" aria-hidden="true" />
-                        <span className="truncate">{location}</span>
-                      </p>
+                        <span
+                          className={cn(
+                            'flex items-center gap-1 text-[10px] leading-none whitespace-nowrap overflow-hidden min-w-0',
+                            event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
+                            'group-hover:text-foreground group-hover:font-medium',
+                          )}
+                        >
+                          <span className="truncate">{event.title}</span>
+                        </span>
+                      </>
                     )}
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {event.event_type && (
-                        <Badge variant="outline" className="text-xs2 px-1.5 py-0">
-                          {event.event_type}
-                        </Badge>
-                      )}
-                      {event.is_free && (
-                        <Badge variant="secondary" className="text-xs2 px-1.5 py-0">
-                          <Ticket className="size-2.5 mr-1" aria-hidden="true" />
-                          Free
-                        </Badge>
-                      )}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
+                  </Link>
+                </EventHoverCard>
               );
             })}
-          </TooltipProvider>
         </div>
       </div>
 
