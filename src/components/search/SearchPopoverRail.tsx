@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Clock, X, Navigation, LayoutGrid, Loader2, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
 import { TYPE_ICONS } from '@/hooks/useSearchSuggestions';
 
@@ -56,15 +57,9 @@ export function SearchPopoverRail({
     <div
       role="listbox"
       aria-label={t('search.rail.label', 'Search scopes')}
-      style={{
-        width: 180,
-        borderRight: '1px solid hsl(var(--border))',
-        flexDirection: 'column',
-        background: 'hsl(var(--background))',
-      }}
-      className="shrink-0 flex"
+      className="flex w-[180px] shrink-0 flex-col border-r border-border bg-background"
     >
-      <div style={{ overflowY: 'auto', flex: 1 }}>
+      <div className="flex-1 overflow-y-auto">
         {!hasQuery && recentItems.length > 0 && (
           <RailSection heading={t('search.recent', 'Recent')}>
             {recentItems.map((term, i) => (
@@ -80,39 +75,21 @@ export function SearchPopoverRail({
                       e.stopPropagation();
                       onRemoveRecent(i);
                     }}
-                    style={{
-                      border: 0,
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      color: 'hsl(var(--muted-foreground))',
-                      padding: 2,
-                      display: 'inline-flex',
-                    }}
+                    className="inline-flex cursor-pointer border-0 bg-transparent p-0.5 text-muted-foreground hover:text-foreground"
                   >
                     <X size={11} />
                   </button>
                 }
               >
-                <Clock size={13} className="text-muted-foreground shrink-0" />
-                <span
-                  className="text-xs overflow-hidden whitespace-nowrap"
-                  style={{ textOverflow: 'ellipsis', flex: 1 }}
-                >
-                  {term}
-                </span>
+                <Clock size={13} className="shrink-0 text-muted-foreground" />
+                <span className="flex-1 truncate text-xs">{term}</span>
               </RailRow>
             ))}
             {recentItems.length > 0 && (
               <button
                 type="button"
                 onClick={onClearRecents}
-                className="text-xs block text-left text-muted-foreground cursor-pointer"
-                style={{
-                  width: '100%',
-                  padding: '4px 12px 8px',
-                  border: 0,
-                  background: 'transparent',
-                }}
+                className="block w-full cursor-pointer border-0 bg-transparent px-3 pb-2 pt-1 text-left text-xs text-muted-foreground hover:text-foreground"
               >
                 {t('search.clearRecent', 'Clear')}
               </button>
@@ -134,7 +111,7 @@ export function SearchPopoverRail({
             const meta = CONTENT_TYPES.find((c) => c.id === id);
             if (!meta) return null;
             const Icon = (TYPE_ICONS[id] || Sparkles) as React.ComponentType<{
-              style?: React.CSSProperties;
+              className?: string;
             }>;
             const count = hasQuery ? (countsByType[id] ?? 0) : null;
             return (
@@ -153,24 +130,18 @@ export function SearchPopoverRail({
         </RailSection>
       </div>
 
-      <div style={{ borderTop: '1px solid hsl(var(--border))' }}>
+      <div className="border-t border-border">
         {!hasQuery && nearMeSupported && (
           <RailRow id="rail-nearme" onClick={onNearMe}>
-            <Navigation size={13} className="text-muted-foreground shrink-0" />
-            <span className="text-xs" style={{ flex: 1 }}>
-              {t('search.nearMe', 'Near me')}
-            </span>
+            <Navigation size={13} className="shrink-0 text-muted-foreground" />
+            <span className="flex-1 text-xs">{t('search.nearMe', 'Near me')}</span>
             {nearMeLoading && <Loader2 className="animate-spin" size={11} />}
           </RailRow>
         )}
         <RailRow id="rail-browse" onClick={onBrowseAll}>
-          <LayoutGrid size={13} className="text-muted-foreground shrink-0" />
-          <span className="text-xs" style={{ flex: 1 }}>
-            {t('search.browseAll', 'Browse all')}
-          </span>
-          <span style={{ fontSize: '0.7rem' }} className="text-muted-foreground">
-            →
-          </span>
+          <LayoutGrid size={13} className="shrink-0 text-muted-foreground" />
+          <span className="flex-1 text-xs">{t('search.browseAll', 'Browse all')}</span>
+          <span className="text-2xs text-muted-foreground">→</span>
         </RailRow>
       </div>
     </div>
@@ -179,11 +150,8 @@ export function SearchPopoverRail({
 
 function RailSection({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="pt-2 pb-1">
-      <div
-        className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold"
-        style={{ padding: '4px 12px 6px' }}
-      >
+    <div className="pb-1 pt-2">
+      <div className="px-3 pb-1.5 pt-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
         {heading}
       </div>
       {children}
@@ -212,20 +180,7 @@ function RailRow({
         if (e.key === 'Enter') onClick();
       }}
       tabIndex={-1}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '6px 12px',
-        cursor: 'pointer',
-        minHeight: 28,
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background = 'hsl(var(--accent))';
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background = 'transparent';
-      }}
+      className="flex min-h-7 cursor-pointer items-center gap-2 px-3 py-1.5 transition-colors hover:bg-accent"
     >
       {children}
       {trailing}
@@ -243,7 +198,7 @@ function ScopeRow({
   onClick,
 }: {
   id: string;
-  Icon: React.ComponentType<{ style?: React.CSSProperties }>;
+  Icon: React.ComponentType<{ className?: string }>;
   label: string;
   count: number | null;
   active: boolean;
@@ -261,41 +216,19 @@ function ScopeRow({
         if (e.key === 'Enter') onClick();
       }}
       tabIndex={-1}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '6px 12px',
-        cursor: 'pointer',
-        minHeight: 28,
-        background: active || focused ? 'hsl(var(--accent))' : 'transparent',
-        // opacity 0.5 dropped label contrast to 3.69:1 (axe-fail). 0.6 keeps the
-        // "this scope has 0 results" visual cue but preserves WCAG AA 4.5:1.
-        opacity: hasZero ? 0.6 : 1,
-        outline: focused ? '1px solid hsl(var(--ring))' : 'none',
-        outlineOffset: -1,
-      }}
-      onMouseEnter={(e) => {
-        if (active || focused) return;
-        (e.currentTarget as HTMLDivElement).style.background = 'hsl(var(--accent))';
-      }}
-      onMouseLeave={(e) => {
-        if (active || focused) return;
-        (e.currentTarget as HTMLDivElement).style.background = 'transparent';
-      }}
+      className={cn(
+        'flex min-h-7 cursor-pointer items-center gap-2 px-3 py-1.5 transition-colors',
+        active || focused ? 'bg-accent' : 'hover:bg-accent',
+        // opacity 0.5 dropped label contrast to 3.69:1 (axe-fail); 0.6 keeps
+        // the zero-count visual cue while staying above WCAG AA 4.5:1.
+        hasZero && 'opacity-60',
+        focused && 'outline outline-1 -outline-offset-1 outline-ring',
+      )}
     >
-      <Icon style={{ height: 13, width: 13 }} className="text-muted-foreground shrink-0" />
-      <span
-        className="text-xs overflow-hidden whitespace-nowrap"
-        style={{ flex: 1, textOverflow: 'ellipsis' }}
-      >
-        {label}
-      </span>
+      <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      <span className="flex-1 truncate text-xs">{label}</span>
       {count !== null && (
-        <span
-          className="text-xs2 text-muted-foreground"
-          style={{ fontVariantNumeric: 'tabular-nums' }}
-        >
+        <span className="text-2xs text-muted-foreground tabular-nums">
           {count === 0 ? '—' : count}
         </span>
       )}

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Sparkles } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -82,11 +82,10 @@ const UserDirectory = () => {
     }
   };
 
-  const { data: profiles, isLoading } = useUserDirectoryQuery({
+  const { data: profiles, isLoading, isError, refetch } = useUserDirectoryQuery({
     filters,
     nearMe,
     userLocation,
-    enabled: !!user,
   });
 
   const clearAllFilters = () => {
@@ -104,38 +103,36 @@ const UserDirectory = () => {
     }));
   };
 
+  const memberCount = profiles?.length ?? 0;
+
   return (
     <div className="container mx-auto py-8 px-4 flex flex-col gap-8">
-      <div className="border border-border p-6 md:p-8 text-center flex flex-col gap-4 bg-background">
-        <h3 className="text-3xl md:text-4xl font-bold text-foreground">Members</h3>
-        <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          People, connections, and networks within the
-          inclusive LGBTQ+ community.
+      <header className="border border-border rounded-container p-8 text-center flex flex-col gap-4 bg-background">
+        <h1 className="text-display font-bold text-foreground">Members</h1>
+        <p className="text-body-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          People, connections, and networks within the inclusive LGBTQ+ community.
         </p>
-        <div className="flex flex-wrap justify-center gap-4 text-sm">
-          <div className="flex items-center gap-1.5 px-4 py-1.5 bg-muted rounded-full">
-            <Users className="h-3.5 w-3.5" />
-            <span className="text-sm font-medium">
-              {profiles?.length || 0} Members
+        {!isLoading && !isError && (
+          <div className="flex flex-wrap justify-center gap-2 text-13">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-badge font-medium">
+              <Users className="h-4 w-4" />
+              {memberCount} {memberCount === 1 ? 'member' : 'members'}
+              {!user && ' visible'}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 px-4 py-1.5 bg-muted rounded-full">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span className="text-sm font-medium">Active Community</span>
-          </div>
-        </div>
-      </div>
+        )}
+      </header>
 
       {!user && (
         <Card>
-          <CardContent>
-            <p className="font-medium mb-2">Community Directory</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Member profiles are visible to signed-in members to protect privacy. Sign in to browse
-              the full directory, see detailed profiles, and connect.
+          <CardContent className="pt-6 flex flex-col gap-4 text-center items-center">
+            <p className="font-semibold text-foreground">See the full community</p>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Public profiles are listed here. Sign in to see bios, locations, interests, and to
+              start a conversation.
             </p>
-            <Button onClick={() => navigate('/auth')} className="px-6">
-              Sign In to Browse
+            <Button onClick={() => navigate('/auth')} className="self-center">
+              Sign in to browse
             </Button>
           </CardContent>
         </Card>
@@ -159,6 +156,18 @@ const UserDirectory = () => {
 
       {isLoading ? (
         <PageLoadingState count={6} />
+      ) : isError ? (
+        <Card>
+          <CardContent className="pt-6 flex flex-col items-center gap-4 text-center">
+            <p className="font-semibold text-foreground">Couldn't load members</p>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Something went wrong while fetching the directory. Try again in a moment.
+            </p>
+            <Button variant="outline" onClick={() => refetch()}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <UserDirectoryGrid
           profiles={profiles}

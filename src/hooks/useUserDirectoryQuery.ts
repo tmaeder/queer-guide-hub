@@ -95,25 +95,27 @@ interface UseUserDirectoryQueryArgs {
   filters: UserFilters;
   nearMe: boolean;
   userLocation: { latitude: number; longitude: number } | null;
-  enabled: boolean;
 }
+
+export const PROFILE_PAGE_SIZE = 60;
 
 export function useUserDirectoryQuery({
   filters,
   nearMe,
   userLocation,
-  enabled,
 }: UseUserDirectoryQueryArgs) {
   return useQuery({
     queryKey: ['user-directory', filters, nearMe, userLocation],
-    enabled,
     queryFn: async () => {
-      let query = supabase.from('profiles').select('*');
+      let query = supabase.from('profiles').select('*').limit(PROFILE_PAGE_SIZE);
 
       if (filters.searchQuery) {
-        query = query.or(
-          `display_name.ilike.%${filters.searchQuery}%,bio.ilike.%${filters.searchQuery}%,location.ilike.%${filters.searchQuery}%`,
-        );
+        const escaped = filters.searchQuery.replace(/[,()]/g, ' ').trim();
+        if (escaped) {
+          query = query.or(
+            `display_name.ilike.%${escaped}%,bio.ilike.%${escaped}%,location.ilike.%${escaped}%`,
+          );
+        }
       }
 
       if (filters.location) {
@@ -158,16 +160,16 @@ export function useUserDirectoryQuery({
 
       switch (filters.sortBy) {
         case 'oldest':
-          query = query.order('created_at', { ascending: true });
+          query = query.order('created_at', { ascending: true, nullsFirst: false });
           break;
         case 'alphabetical':
-          query = query.order('display_name', { ascending: true });
+          query = query.order('display_name', { ascending: true, nullsFirst: false });
           break;
         case 'last_active':
-          query = query.order('last_active_at', { ascending: false });
+          query = query.order('last_active_at', { ascending: false, nullsFirst: false });
           break;
         default:
-          query = query.order('created_at', { ascending: false });
+          query = query.order('created_at', { ascending: false, nullsFirst: false });
       }
 
       const { data, error } = await query;
@@ -190,31 +192,27 @@ export function useUserDirectoryQuery({
 
       if (nearMe && userLocation) {
         try {
-          const response = await fetch('/functions/v1/mapbox-geocoding', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
+          const { data: geo, error: geoError } = await supabase.functions.invoke(
+            'mapbox-geocoding',
+            {
+              body: {
+                query: `${userLocation.longitude},${userLocation.latitude}`,
+                isReverseGeocode: true,
+              },
             },
-            body: JSON.stringify({
-              query: `${userLocation.longitude},${userLocation.latitude}`,
-              isReverseGeocode: true,
-            }),
-          });
+          );
 
-          if (response.ok) {
-            const data = await response.json();
-            if (data.features && data.features.length > 0) {
-              const userCity = data.features[0].place_name;
-              const cityParts = userCity.split(',').map((part) => part.trim().toLowerCase());
+          if (!geoError && geo?.features?.[0]?.place_name) {
+            const cityParts = (geo.features[0].place_name as string)
+              .split(',')
+              .map((part) => part.trim().toLowerCase())
+              .filter((part) => part.length > 2);
 
-              filteredData = filteredData.filter((profile) => {
-                if (!profile.location) return false;
-                const profileLocation = profile.location.toLowerCase();
-                return cityParts.some(
-                  (cityPart) => profileLocation.includes(cityPart) && cityPart.length > 2,
-                );
-              });
-            }
+            filteredData = filteredData.filter((profile) => {
+              if (!profile.location) return false;
+              const profileLocation = profile.location.toLowerCase();
+              return cityParts.some((cityPart) => profileLocation.includes(cityPart));
+            });
           }
         } catch (error) {
           console.error('Error getting user city for near me filter:', error);
@@ -225,6 +223,6 @@ export function useUserDirectoryQuery({
     },
     retry: 2,
     retryDelay: 1000,
-    staleTime: 30000,
+    staleTime: 30_000,
   });
 }
