@@ -1214,6 +1214,7 @@ const Events = () => {
             onEventSelect={handleViewDetails}
             onViewportChange={setTimelineViewport}
             loading={loading}
+            onRsvp={user ? handleAttendanceUpdate : undefined}
           />
         )}
         {!loading && events.length > 0 && viewMode === 'map' && (
