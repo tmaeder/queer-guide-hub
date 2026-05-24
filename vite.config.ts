@@ -144,15 +144,6 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        advancedChunks: {
-          groups: [
-            {
-              name: 'styling-utils',
-              test: /[\\/]node_modules[\\/](clsx|tailwind-merge|class-variance-authority)[\\/]/,
-              priority: 100,
-            },
-          ],
-        },
         manualChunks(id) {
           // React core MUST be in its own chunk to avoid circular deps
           if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) {
