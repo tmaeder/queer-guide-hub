@@ -180,7 +180,7 @@ SELECT DISTINCT
   'saved-' || substr(replace(mf.user_id::text, '-', ''), 1, 12),
   'Saved',
   true,
-  'private'
+  'private'::wishlist_visibility
 FROM marketplace_favorites mf
 ON CONFLICT (slug) DO NOTHING;
 
