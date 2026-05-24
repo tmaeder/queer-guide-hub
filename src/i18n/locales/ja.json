@@ -1585,7 +1585,14 @@
       "share": "[JA] Share",
       "shareCopied": "[JA] Copied",
       "shareFilters": "[JA] Copy share link",
-      "shareFiltersHint": "[JA] Copy a link to these filters"
+      "shareFiltersHint": "[JA] Copy a link to these filters",
+      "ageRestriction": "[JA] Age restriction",
+      "ageAny": "[JA] Any",
+      "ageAllAges": "[JA] All ages",
+      "age18Plus": "[JA] 18+",
+      "age21Plus": "[JA] 21+",
+      "filterAge": "[JA] Age: {{value}}",
+      "clearFilterAge": "[JA] Clear age filter"
     },
     "eventDetail": {
       "loadFailed": "イベントの詳細を読み込めませんでした。",

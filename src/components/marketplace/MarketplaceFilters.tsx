@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Search, Filter, X, Sliders } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { useMarketplaceFacets, useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
@@ -31,8 +33,35 @@ interface MarketplaceFiltersProps {
     priceRange?: { min: number; max: number };
     businessType?: string;
     tags?: string[];
+    communityOwned?: string[];
+    currency?: string;
+    availability?: 'in_stock' | 'any';
+    relevanceMin?: number;
+    verifiedWithinDays?: number;
   }) => void;
 }
+
+const COMMUNITY_OWNED_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: 'queer_owned', label: 'Queer-owned' },
+  { value: 'trans_owned', label: 'Trans-owned' },
+  { value: 'bipoc_owned', label: 'BIPOC-owned' },
+  { value: 'women_owned', label: 'Women-owned' },
+  { value: 'disabled_owned', label: 'Disabled-owned' },
+  { value: 'nonprofit', label: 'Non-profit' },
+];
+
+// Subset of the 23 supported currencies — covers the long tail in
+// practice. If a listing uses something exotic, free-text search still
+// finds it; the filter just won't list it. Order: USD/EUR first, then
+// alpha.
+const CURRENCY_OPTIONS = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'CHF', 'JPY', 'BRL', 'MXN'];
+
+const VERIFIED_WINDOW_DAYS = [
+  { value: 0, label: 'Any age' },
+  { value: 30, label: 'Within 30 days' },
+  { value: 90, label: 'Within 90 days' },
+  { value: 180, label: 'Within 6 months' },
+];
 
 // "Type" was previously labelled "Category" but its options are the
 // products/services enum, duplicating the tabs. The real category
@@ -68,6 +97,18 @@ export function MarketplaceFilters({
   const [priceTouched, setPriceTouched] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
+  const [communityOwned, setCommunityOwned] = useState<string[]>([]);
+  const [currency, setCurrency] = useState('');
+  // Default 'in_stock' — hide sold-out listings unless the user opts in.
+  const [availability, setAvailability] = useState<'in_stock' | 'any'>('in_stock');
+  const [relevanceMin, setRelevanceMin] = useState<number>(0);
+  const [verifiedWithinDays, setVerifiedWithinDays] = useState<number>(0);
+
+  const toggleCommunityOwned = (value: string) => {
+    setCommunityOwned((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    );
+  };
 
   const buildFilters = () => {
     const priceRange = priceTouched
@@ -87,6 +128,11 @@ export function MarketplaceFilters({
       businessType: businessType === 'all' ? undefined : businessType || undefined,
       priceRange,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
+      communityOwned: communityOwned.length > 0 ? communityOwned : undefined,
+      currency: currency || undefined,
+      availability,
+      relevanceMin: relevanceMin > 0 ? relevanceMin : undefined,
+      verifiedWithinDays: verifiedWithinDays > 0 ? verifiedWithinDays : undefined,
     };
   };
 
@@ -124,6 +170,11 @@ export function MarketplaceFilters({
     priceMax,
     priceTouched,
     selectedTags,
+    communityOwned,
+    currency,
+    availability,
+    relevanceMin,
+    verifiedWithinDays,
   ]);
 
   const clearFilters = () => {
@@ -136,6 +187,11 @@ export function MarketplaceFilters({
     setPriceMax(PRICE_MAX);
     setPriceTouched(false);
     setSelectedTags([]);
+    setCommunityOwned([]);
+    setCurrency('');
+    setAvailability('in_stock');
+    setRelevanceMin(0);
+    setVerifiedWithinDays(0);
     onFiltersChange({});
   };
 
@@ -146,7 +202,12 @@ export function MarketplaceFilters({
     location ||
     (businessType && businessType !== 'all') ||
     priceTouched ||
-    selectedTags.length > 0;
+    selectedTags.length > 0 ||
+    communityOwned.length > 0 ||
+    currency ||
+    availability === 'any' ||
+    relevanceMin > 0 ||
+    verifiedWithinDays > 0;
 
   const handleTypeChange = (newType: string) => {
     setCategory(newType);
@@ -293,6 +354,99 @@ export function MarketplaceFilters({
             categories={['business', 'commerce', 'product', 'service', 'identity']}
           />
 
+          <div className="flex flex-col gap-4 border-t border-border pt-4">
+            <div className="flex flex-col gap-2">
+              <Label>Community-owned</Label>
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {COMMUNITY_OWNED_OPTIONS.map((opt) => (
+                  <label
+                    key={opt.value}
+                    className="flex items-center gap-2 text-sm cursor-pointer"
+                  >
+                    <Checkbox
+                      checked={communityOwned.includes(opt.value)}
+                      onCheckedChange={() => toggleCommunityOwned(opt.value)}
+                      aria-label={opt.label}
+                    />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="currency">Currency</Label>
+                <Select value={currency || 'all'} onValueChange={(v) => setCurrency(v === 'all' ? '' : v)}>
+                  <SelectTrigger id="currency">
+                    <SelectValue placeholder="Any currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any currency</SelectItem>
+                    {CURRENCY_OPTIONS.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="verified">Last verified</Label>
+                <Select
+                  value={String(verifiedWithinDays)}
+                  onValueChange={(v) => setVerifiedWithinDays(Number(v))}
+                >
+                  <SelectTrigger id="verified">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VERIFIED_WINDOW_DAYS.map((w) => (
+                      <SelectItem key={w.value} value={String(w.value)}>
+                        {w.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 self-end">
+                <Label htmlFor="in-stock" className="cursor-pointer">
+                  Hide sold-out
+                </Label>
+                <Switch
+                  id="in-stock"
+                  checked={availability === 'in_stock'}
+                  onCheckedChange={(checked) =>
+                    setAvailability(checked ? 'in_stock' : 'any')
+                  }
+                  aria-label="Hide sold-out listings"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="relevance">Minimum LGBTQ+ relevance</Label>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {relevanceMin === 0
+                    ? 'Any'
+                    : `${Math.round(relevanceMin * 100)}%+`}
+                </span>
+              </div>
+              <Slider
+                id="relevance"
+                min={0}
+                max={1}
+                step={0.05}
+                value={[relevanceMin]}
+                onValueChange={(v) => Array.isArray(v) && v[0] != null && setRelevanceMin(v[0])}
+                aria-label="Minimum LGBTQ+ relevance"
+              />
+            </div>
+          </div>
+
           <div className="flex gap-2 pt-2">
             <Button onClick={handleApply}>
               <Sliders size={16} />
@@ -365,6 +519,51 @@ export function MarketplaceFilters({
               />
             </Badge>
           ))}
+          {communityOwned.map((v) => {
+            const label = COMMUNITY_OWNED_OPTIONS.find((o) => o.value === v)?.label ?? v;
+            return (
+              <Badge key={v} variant="secondary">
+                {label}
+                <X
+                  size={12}
+                  className="cursor-pointer"
+                  onClick={() => toggleCommunityOwned(v)}
+                />
+              </Badge>
+            );
+          })}
+          {currency && (
+            <Badge variant="secondary">
+              {currency}
+              <X size={12} className="cursor-pointer" onClick={() => setCurrency('')} />
+            </Badge>
+          )}
+          {availability === 'any' && (
+            <Badge variant="secondary">
+              Including sold-out
+              <X
+                size={12}
+                className="cursor-pointer"
+                onClick={() => setAvailability('in_stock')}
+              />
+            </Badge>
+          )}
+          {relevanceMin > 0 && (
+            <Badge variant="secondary">
+              Relevance ≥ {Math.round(relevanceMin * 100)}%
+              <X size={12} className="cursor-pointer" onClick={() => setRelevanceMin(0)} />
+            </Badge>
+          )}
+          {verifiedWithinDays > 0 && (
+            <Badge variant="secondary">
+              Verified ≤ {verifiedWithinDays}d
+              <X
+                size={12}
+                className="cursor-pointer"
+                onClick={() => setVerifiedWithinDays(0)}
+              />
+            </Badge>
+          )}
         </div>
       )}
     </div>

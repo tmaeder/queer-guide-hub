@@ -1585,7 +1585,14 @@
       "share": "[DE] Share",
       "shareCopied": "[DE] Copied",
       "shareFilters": "[DE] Copy share link",
-      "shareFiltersHint": "[DE] Copy a link to these filters"
+      "shareFiltersHint": "[DE] Copy a link to these filters",
+      "ageRestriction": "[DE] Age restriction",
+      "ageAny": "[DE] Any",
+      "ageAllAges": "[DE] All ages",
+      "age18Plus": "[DE] 18+",
+      "age21Plus": "[DE] 21+",
+      "filterAge": "[DE] Age: {{value}}",
+      "clearFilterAge": "[DE] Clear age filter"
     },
     "eventDetail": {
       "loadFailed": "Details zur Veranstaltung konnten nicht geladen werden.",
