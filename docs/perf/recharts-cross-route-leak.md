@@ -102,3 +102,28 @@ combined lifts to ~70–80; fixing this would push closer to 90.
 If you pick this up, the highest-leverage next step is probably the recharts
 patch — it removes clsx duplication at the source and unblocks the rolldown
 chunking heuristic.
+
+## Measured impact of the wins that DID land
+
+Two Lighthouse runs against https://queer.guide/cities post-#1095/#1099,
+desktop preset:
+
+| Metric | Baseline (#1094) | Run 1 | Run 2 |
+|---|---|---|---|
+| Performance | 54 | 50 | 61 |
+| TBT | 850 ms | 1390 ms | 590 ms |
+| LCP | 2.5 s | 2.4 s | 2.3 s |
+| TTI | 2.7 s | 3.2 s | 2.4 s |
+| maplibre scripting | 1.1 s | — | 0.24 s ✓ |
+
+Big variance between runs (CF bot-challenge script dominates at ~1.4 s scripting
+regardless), so the score number is noisy. The unambiguous signal: **maplibre
+scripting dropped from 1100 ms to 240 ms** — the lazy-mount in #1095 is doing
+its job. That alone is the biggest individual win and it's real.
+
+The score isn't climbing as fast as the bytes-on-the-wire savings would predict
+because Cloudflare's challenge platform is doing 1.3-1.5 s of scripting on
+every cold load. That's outside the app's control.
+
+Take with several grains of salt: Lighthouse on this site fluctuates ±10 points
+run-to-run because of CF challenge timing.
