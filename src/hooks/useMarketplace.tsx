@@ -9,7 +9,14 @@ type MarketplaceListingInsert = Database['public']['Tables']['marketplace_listin
 
 export const PAGE_SIZE = 24;
 
-export type MarketplaceSort = 'relevance' | 'newest' | 'oldest' | 'az' | 'za' | 'price_asc' | 'price_desc' | 'most_viewed';
+export type MarketplaceSort =
+  | 'for_you'
+  | 'most_loved'
+  | 'best_value'
+  | 'editor_choice'
+  | 'newest'
+  | 'price_asc'
+  | 'price_desc';
 
 export interface MarketplaceFiltersInput {
   category?: string;
@@ -42,12 +49,32 @@ export function useMarketplace() {
   const fetchListings = async (
     filters?: MarketplaceFiltersInput,
     page = 0,
-    sort: MarketplaceSort = 'relevance',
+    sort: MarketplaceSort = 'for_you',
   ) => {
     try {
       setLoading(true);
       setLoadingTimedOut(false);
       setError(null);
+
+      // Resolve tag slugs → entity ids via unified_tag_assignments. The
+      // listings table has no `tags` column; tags live in the junction.
+      // Mirrors the pattern in useHotels.
+      let tagFilteredIds: string[] | null = null;
+      if (filters?.tags && filters.tags.length > 0) {
+        const { data: tagRows } = await supabase
+          .from('unified_tag_assignments')
+          .select('entity_id, unified_tags!inner(slug)')
+          .eq('entity_type', 'marketplace_listing')
+          .in('unified_tags.slug', filters.tags)
+          .limit(5000);
+        const ids = (tagRows ?? []).map((r) => r.entity_id as string);
+        tagFilteredIds = Array.from(new Set(ids));
+        if (tagFilteredIds.length === 0) {
+          setListings([]);
+          setTotal(0);
+          return;
+        }
+      }
 
       // ── Search branch ─────────────────────────────────────────────
       // When a query is set, route through the search-proxy worker /
@@ -84,13 +111,19 @@ export function useMarketplace() {
             setTotal(data?.totalHits ?? 0);
             return;
           }
+          const constrainedIds = tagFilteredIds ? ids.filter((id) => tagFilteredIds!.includes(id)) : ids;
+          if (constrainedIds.length === 0) {
+            setListings([]);
+            setTotal(0);
+            return;
+          }
           const { data: rows, error: rowsErr } = await supabase
             .from('marketplace_listings')
             .select(
               `*, marketplace_reviews(rating), marketplace_favorites(id), venues(name, address, city)`,
             )
             .eq('status', 'active')
-            .in('id', ids);
+            .in('id', constrainedIds);
           if (rowsErr) throw rowsErr;
           const byId = new Map((rows ?? []).map((r) => [r.id, r] as const));
           const ordered = ids.map((id) => byId.get(id)).filter(Boolean) as MarketplaceListing[];
@@ -115,37 +148,51 @@ export function useMarketplace() {
         `,
           { count: 'exact' },
         )
-        .eq('status', 'active')
-        .order('featured', { ascending: false });
+        .eq('status', 'active');
 
+      // 'for_you' falls back to 'most_loved' until the marketplace-rank
+      // edge function lands (Phase D). Both feature-pin first so editorially
+      // chosen items always lead.
       switch (sort) {
-        case 'oldest':
-          query = query.order('created_at', { ascending: true });
-          break;
-        case 'az':
-          query = query.order('title', { ascending: true });
-          break;
-        case 'za':
-          query = query.order('title', { ascending: false });
-          break;
         case 'price_asc':
-          query = query.order('price_usd', { ascending: true, nullsFirst: false });
+          query = query
+            .order('featured', { ascending: false })
+            .order('price_usd', { ascending: true, nullsFirst: false });
           break;
         case 'price_desc':
-          query = query.order('price_usd', { ascending: false, nullsFirst: false });
-          break;
-        case 'most_viewed':
-          query = query.order('views_count', { ascending: false, nullsFirst: false });
+          query = query
+            .order('featured', { ascending: false })
+            .order('price_usd', { ascending: false, nullsFirst: false });
           break;
         case 'newest':
-          query = query.order('created_at', { ascending: false });
+          query = query
+            .order('featured', { ascending: false })
+            .order('created_at', { ascending: false });
           break;
-        case 'relevance':
+        case 'editor_choice':
+          query = query
+            .order('featured', { ascending: false })
+            .order('quality_score', { ascending: false, nullsFirst: false })
+            .order('updated_at', { ascending: false });
+          break;
+        case 'best_value':
+          // Heuristic until a server-side computed score exists: rank by
+          // quality_score desc, tiebreak by ascending price so higher-quality
+          // cheaper items surface. Pure products only is enforced via the
+          // existing category filter when callers want that.
+          query = query
+            .order('featured', { ascending: false })
+            .order('quality_score', { ascending: false, nullsFirst: false })
+            .order('price_usd', { ascending: true, nullsFirst: false });
+          break;
+        case 'most_loved':
+        case 'for_you':
         default:
           query = query
+            .order('featured', { ascending: false })
+            .order('views_count', { ascending: false, nullsFirst: false })
             .order('quality_score', { ascending: false, nullsFirst: false })
-            .order('lgbti_relevance_score', { ascending: false, nullsFirst: false })
-            .order('updated_at', { ascending: false });
+            .order('lgbti_relevance_score', { ascending: false, nullsFirst: false });
           break;
       }
 
@@ -183,8 +230,8 @@ export function useMarketplace() {
         query = query.gte('price', filters.priceRange.min).lte('price', filters.priceRange.max);
       }
 
-      if (filters?.tags && filters.tags.length > 0) {
-        query = query.overlaps('tags', filters.tags);
+      if (tagFilteredIds) {
+        query = query.in('id', tagFilteredIds);
       }
 
       if (filters?.search) {
