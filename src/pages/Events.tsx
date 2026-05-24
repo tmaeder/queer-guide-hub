@@ -15,6 +15,9 @@ import { EventsTimelineView } from '@/components/events/EventsTimelineView';
 import { EventsMapView } from '@/components/events/EventsMapView';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
+import { MultiCombobox } from '@/components/events/MultiCombobox';
+import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
+import { useTargetGroups } from '@/hooks/useTargetGroups';
 import { PageHero, spansForPreset } from '@/components/discovery';
 
 const EVENT_SPAN_CLASS: Record<string, string> = {
@@ -158,6 +161,13 @@ const Events = () => {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
+  // New filter dimensions (Phase B.2)
+  const [accessibilityAttrs, setAccessibilityAttrs] = useState<string[]>([]);
+  const [targetGroupsFilter, setTargetGroupsFilter] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
+  const { accessibilityAttributes: accAttrOptions } = useAccessibilityAttributes();
+  const { targetGroups: tgOptions } = useTargetGroups();
+
   // Timeline viewport drives a parallel date-range fetch when timeline view is active.
   const [timelineViewport, setTimelineViewport] = useState<{ startMs: number; endMs: number } | null>(null);
   const debouncedViewport = useDebounce(timelineViewport, 350);
@@ -180,6 +190,9 @@ const Events = () => {
       city: city || undefined,
       eventType: eventType && eventType !== 'all' ? eventType : undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
+      accessibilityAttributes: accessibilityAttrs.length > 0 ? accessibilityAttrs : undefined,
+      targetGroups: targetGroupsFilter.length > 0 ? targetGroupsFilter : undefined,
+      languages: languages.length > 0 ? languages : undefined,
       dateRange,
       nearMe: nearMe ? userLocation : undefined,
       includePast: showPast || undefined,
@@ -328,6 +341,9 @@ const Events = () => {
     setAutoLocationLabel(null);
     setEventType('all');
     setSelectedTags([]);
+    setAccessibilityAttrs([]);
+    setTargetGroupsFilter([]);
+    setLanguages([]);
     setStartDate(undefined);
     setEndDate(undefined);
     setNearMe(false);
@@ -390,6 +406,9 @@ const Events = () => {
     city ||
     eventType ||
     selectedTags.length > 0 ||
+    accessibilityAttrs.length > 0 ||
+    targetGroupsFilter.length > 0 ||
+    languages.length > 0 ||
     startDate ||
     endDate ||
     nearMe ||
@@ -466,7 +485,7 @@ const Events = () => {
     }
     handleFiltersChange();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventType, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags]);
+  }, [eventType, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags, accessibilityAttrs, targetGroupsFilter, languages]);
 
   // Debounced search — apply ~300ms after the user stops typing so the
   // list filters live. Enter still flushes immediately via onKeyDown.
@@ -489,8 +508,8 @@ const Events = () => {
       cities: city ? [city] : [],
       types: eventType && eventType !== 'all' ? [eventType] : [],
       tags: selectedTags,
-      accessibility: [],
-      languages: [],
+      accessibility: accessibilityAttrs,
+      languages,
       ageRestriction: '',
       organizerId: '',
       from: startDate ? startDate.toISOString() : undefined,
@@ -511,6 +530,8 @@ const Events = () => {
     debouncedSearch,
     eventType,
     selectedTags,
+    accessibilityAttrs,
+    languages,
     startDate,
     endDate,
     nearMe,
@@ -528,6 +549,8 @@ const Events = () => {
     if (parsed.q) setSearch(parsed.q);
     if (parsed.types[0]) setEventType(parsed.types[0]);
     if (parsed.tags.length) setSelectedTags(parsed.tags);
+    if (parsed.accessibility.length) setAccessibilityAttrs(parsed.accessibility);
+    if (parsed.languages.length) setLanguages(parsed.languages);
     if (parsed.from) setStartDate(new Date(parsed.from));
     if (parsed.to) setEndDate(new Date(parsed.to));
     if (parsed.nearMe) setNearMe(true);
@@ -777,6 +800,65 @@ const Events = () => {
                   </div>
                 </div>
               )}
+
+              {/* Accessibility + Target groups + Language */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="accessibility">
+                    {t('pages.events.accessibility', 'Accessibility')}
+                  </Label>
+                  <MultiCombobox
+                    ariaLabel={t('pages.events.accessibility', 'Accessibility')}
+                    placeholder={t('pages.events.accessibilityPlaceholder', 'Any')}
+                    options={(accAttrOptions as Array<{ name: string; id: string }>).map((a) => ({
+                      value: a.name,
+                      label: a.name,
+                    }))}
+                    selected={accessibilityAttrs}
+                    onChange={setAccessibilityAttrs}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="target-groups">
+                    {t('pages.events.targetGroups', 'Audience')}
+                  </Label>
+                  <MultiCombobox
+                    ariaLabel={t('pages.events.targetGroups', 'Audience')}
+                    placeholder={t('pages.events.targetGroupsPlaceholder', 'Any')}
+                    options={(tgOptions as Array<{ name: string; id: string }>).map((g) => ({
+                      value: g.name,
+                      label: g.name,
+                    }))}
+                    selected={targetGroupsFilter}
+                    onChange={setTargetGroupsFilter}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="languages">
+                    {t('pages.events.languages', 'Language')}
+                  </Label>
+                  <MultiCombobox
+                    ariaLabel={t('pages.events.languages', 'Language')}
+                    placeholder={t('pages.events.languagesPlaceholder', 'Any')}
+                    options={[
+                      { value: 'en', label: 'English' },
+                      { value: 'de', label: 'Deutsch' },
+                      { value: 'fr', label: 'Français' },
+                      { value: 'es', label: 'Español' },
+                      { value: 'it', label: 'Italiano' },
+                      { value: 'pt', label: 'Português' },
+                      { value: 'nl', label: 'Nederlands' },
+                      { value: 'ja', label: '日本語' },
+                      { value: 'ko', label: '한국어' },
+                      { value: 'zh', label: '中文' },
+                      { value: 'ar', label: 'العربية' },
+                      { value: 'ru', label: 'Русский' },
+                    ]}
+                    selected={languages}
+                    onChange={setLanguages}
+                  />
+                </div>
+              </div>
 
               {/* Tags */}
               <TagSelector
