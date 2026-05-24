@@ -1459,7 +1459,6 @@
       "subtitle": "Community events in your area.",
       "submitEvent": "Submit Event",
       "gridView": "Grid view",
-      "calendarView": "Calendar view",
       "mapView": "Map view",
       "city": "City",
       "eventType": "Event Type",
@@ -1551,7 +1550,8 @@
       "resultsCount_other": "{{count}} events",
       "resultsNear_one": "{{count}} event near {{city}}",
       "resultsNear_other": "{{count}} events near {{city}}",
-      "showWorldwide": "Show worldwide"
+      "showWorldwide": "Show worldwide",
+      "timelineView": "Timeline view"
     },
     "eventDetail": {
       "loadFailed": "Failed to load event details.",

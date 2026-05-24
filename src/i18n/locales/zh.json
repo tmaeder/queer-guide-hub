@@ -1477,7 +1477,6 @@
       "subtitle": "发现并参加你所在地区的社区活动",
       "submitEvent": "提交活动",
       "gridView": "网格视图",
-      "calendarView": "日历视图",
       "city": "城市",
       "eventType": "活动类型",
       "startDate": "开始日期",
@@ -1569,7 +1568,8 @@
       "resultsCount_other": "{{count}} 个活动",
       "resultsNear_one": "{{city}} 附近的 {{count}} 个活动",
       "resultsNear_other": "{{city}} 附近的 {{count}} 个活动",
-      "showWorldwide": "查看全球"
+      "showWorldwide": "查看全球",
+      "timelineView": "时间线视图"
     },
     "eventDetail": {
       "loadFailed": "无法加载活动详情。",

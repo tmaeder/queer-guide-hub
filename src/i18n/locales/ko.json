@@ -1477,7 +1477,6 @@
       "subtitle": "내 주변 커뮤니티 이벤트를 발견하고 참여하세요",
       "submitEvent": "이벤트 등록",
       "gridView": "그리드 보기",
-      "calendarView": "캘린더 보기",
       "city": "도시",
       "eventType": "이벤트 유형",
       "startDate": "시작일",
@@ -1569,7 +1568,8 @@
       "resultsCount_other": "이벤트 {{count}}개",
       "resultsNear_one": "{{city}} 근처 이벤트 {{count}}개",
       "resultsNear_other": "{{city}} 근처 이벤트 {{count}}개",
-      "showWorldwide": "전 세계 보기"
+      "showWorldwide": "전 세계 보기",
+      "timelineView": "타임라인 보기"
     },
     "eventDetail": {
       "loadFailed": "이벤트 상세 정보를 불러올 수 없습니다.",

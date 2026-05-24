@@ -11,7 +11,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { EventCard } from '@/components/events/EventCard';
-import { EventsCalendarView } from '@/components/events/EventsCalendarView';
+import { EventsTimelineView } from '@/components/events/EventsTimelineView';
 import { EventsMapView } from '@/components/events/EventsMapView';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,7 @@ import {
   Check,
   ChevronDown,
   Grid,
+  GanttChart,
   MapPin,
 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
@@ -126,7 +127,7 @@ const Events = () => {
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'calendar' | 'map'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'map'>('grid');
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -993,15 +994,15 @@ const Events = () => {
                   <span className="hidden sm:inline">{t('pages.events.gridView', 'Grid')}</span>
                 </Button>
                 <Button
-                  variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                  variant={viewMode === 'timeline' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setViewMode('calendar')}
-                  aria-pressed={viewMode === 'calendar'}
+                  onClick={() => setViewMode('timeline')}
+                  aria-pressed={viewMode === 'timeline'}
                   style={{ display: 'inline-flex', gap: 6 }}
                 >
-                  <CalendarIcon size={16} />
+                  <GanttChart size={16} />
                   <span className="hidden sm:inline">
-                    {t('pages.events.calendarView', 'Calendar')}
+                    {t('pages.events.timelineView', 'Timeline')}
                   </span>
                 </Button>
                 <Button
@@ -1124,12 +1125,8 @@ const Events = () => {
             ))}
           </StaggerGrid>
         )}
-        {!loading && events.length > 0 && viewMode === 'calendar' && (
-          <EventsCalendarView
-            events={events}
-            onEventSelect={handleViewDetails}
-            onAttendanceUpdate={handleAttendanceUpdate}
-          />
+        {!loading && events.length > 0 && viewMode === 'timeline' && (
+          <EventsTimelineView events={events} onEventSelect={handleViewDetails} />
         )}
         {!loading && events.length > 0 && viewMode === 'map' && (
           <EventsMapView events={events} height={640} />

@@ -1477,7 +1477,6 @@
       "subtitle": "Scopri e partecipa agli eventi della community nella tua zona",
       "submitEvent": "Proponi evento",
       "gridView": "Vista a griglia",
-      "calendarView": "Vista calendario",
       "city": "Città",
       "eventType": "Tipo di evento",
       "startDate": "Data di inizio",
@@ -1569,7 +1568,8 @@
       "resultsCount_other": "{{count}} eventi",
       "resultsNear_one": "{{count}} evento vicino a {{city}}",
       "resultsNear_other": "{{count}} eventi vicino a {{city}}",
-      "showWorldwide": "Mostra in tutto il mondo"
+      "showWorldwide": "Mostra in tutto il mondo",
+      "timelineView": "Vista cronologica"
     },
     "eventDetail": {
       "loadFailed": "Impossibile caricare i dettagli dell'evento.",
