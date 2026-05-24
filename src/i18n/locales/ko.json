@@ -1585,7 +1585,14 @@
       "share": "[KO] Share",
       "shareCopied": "[KO] Copied",
       "shareFilters": "[KO] Copy share link",
-      "shareFiltersHint": "[KO] Copy a link to these filters"
+      "shareFiltersHint": "[KO] Copy a link to these filters",
+      "ageRestriction": "[KO] Age restriction",
+      "ageAny": "[KO] Any",
+      "ageAllAges": "[KO] All ages",
+      "age18Plus": "[KO] 18+",
+      "age21Plus": "[KO] 21+",
+      "filterAge": "[KO] Age: {{value}}",
+      "clearFilterAge": "[KO] Clear age filter"
     },
     "eventDetail": {
       "loadFailed": "이벤트 상세 정보를 불러올 수 없습니다.",

@@ -1589,7 +1589,14 @@
       "share": "[FR] Share",
       "shareCopied": "[FR] Copied",
       "shareFilters": "[FR] Copy share link",
-      "shareFiltersHint": "[FR] Copy a link to these filters"
+      "shareFiltersHint": "[FR] Copy a link to these filters",
+      "ageRestriction": "[FR] Age restriction",
+      "ageAny": "[FR] Any",
+      "ageAllAges": "[FR] All ages",
+      "age18Plus": "[FR] 18+",
+      "age21Plus": "[FR] 21+",
+      "filterAge": "[FR] Age: {{value}}",
+      "clearFilterAge": "[FR] Clear age filter"
     },
     "eventDetail": {
       "loadFailed": "Impossible de charger les détails de l'événement.",
