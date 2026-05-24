@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { ArrowUp, ArrowDown, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { continentOf } from '@/components/pride/PrideFilterRail';
@@ -22,6 +23,7 @@ function fmtDate(iso: string, end: string | null): string {
 }
 
 export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
+  const { t } = useTranslation();
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortAsc, setSortAsc] = useState(true);
 
@@ -67,10 +69,10 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
     <section aria-labelledby="alltable-heading">
       <div className="flex items-baseline justify-between mb-3">
         <h2 id="alltable-heading" className="text-title font-medium">
-          All prides
+          {t('pride.table.title')}
         </h2>
         <span className="text-xs2 text-foreground/50">
-          {events.length} pride{events.length === 1 ? '' : 's'}
+          {t('pride.table.count', { count: events.length })}
         </span>
       </div>
 
@@ -83,24 +85,24 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                 className="py-2 px-3 text-left w-[140px]"
                 aria-sort={sortKey === 'date' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
               >
-                {headerBtn('When', 'date')}
+                {headerBtn(t('pride.table.when'), 'date')}
               </th>
               <th
                 scope="col"
                 className="py-2 px-3 text-left"
                 aria-sort={sortKey === 'name' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
               >
-                {headerBtn('Pride', 'name')}
+                {headerBtn(t('pride.table.pride'), 'name')}
               </th>
               <th
                 scope="col"
                 className="py-2 px-3 text-left hidden sm:table-cell"
                 aria-sort={sortKey === 'location' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
               >
-                {headerBtn('Location', 'location')}
+                {headerBtn(t('pride.table.location'), 'location')}
               </th>
               <th scope="col" className="py-2 px-3 text-left hidden lg:table-cell w-[110px]">
-                <span className="text-xs2 uppercase tracking-label text-foreground/60">Region</span>
+                <span className="text-xs2 uppercase tracking-label text-foreground/60">{t('pride.table.region')}</span>
               </th>
               <th scope="col" className="py-2 px-2 w-[40px]" aria-label="Flags" />
             </tr>
@@ -123,7 +125,7 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                   <td className="py-2 px-3 align-top whitespace-nowrap tabular-nums">
                     <span className="text-sm">{fmtDate(e.start_date, e.end_date)}</span>
                     {e.verification_status !== 'verified' && (
-                      <span className="block text-2xs text-foreground/50">Estimated</span>
+                      <span className="block text-2xs text-foreground/50">{t('pride.table.estimated')}</span>
                     )}
                   </td>
                   <td className="py-2 px-3 align-top">
@@ -142,11 +144,11 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                     {[e.city, e.country].filter(Boolean).join(', ')}
                   </td>
                   <td className="py-2 px-3 align-top text-foreground/70 hidden lg:table-cell">
-                    {continent}
+                    {t(`pride.continents.${continent}` as 'pride.continents.Europe')}
                   </td>
                   <td className="py-2 px-2 align-top text-right">
                     {e.is_featured && (
-                      <Star className="inline size-3.5 fill-foreground text-foreground" aria-label="Featured" />
+                      <Star className="inline size-3.5 fill-foreground text-foreground" aria-label={t('pride.featured')} />
                     )}
                   </td>
                 </tr>
