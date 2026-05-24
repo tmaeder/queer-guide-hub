@@ -11,13 +11,8 @@ interface PrideUpNextProps {
   limit?: number;
 }
 
-function daysFromNow(iso: string): number {
-  const ms = new Date(iso).getTime() - Date.now();
-  return Math.round(ms / 86_400_000);
-}
-
-function relativeDateLabel(iso: string): string {
-  const days = daysFromNow(iso);
+export function relativeDateLabel(iso: string, now: number = Date.now()): string {
+  const days = Math.round((new Date(iso).getTime() - now) / 86_400_000);
   if (days < 0) return 'Past';
   if (days === 0) return 'Today';
   if (days === 1) return 'Tomorrow';
