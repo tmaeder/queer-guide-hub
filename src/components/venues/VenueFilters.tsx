@@ -13,6 +13,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'lucide-react';
 import { useUnifiedTags } from '@/hooks/useUnifiedTags';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
@@ -135,9 +136,6 @@ export function VenueFilters({
     initialTargetGroups ?? [],
   );
   const [tagsOpen, setTagsOpen] = useState(false);
-  const [amenitiesOpen, setAmenitiesOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const [accessibilityOpen, setAccessibilityOpen] = useState(false);
   const [targetGroupsOpen, setTargetGroupsOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -641,44 +639,18 @@ export function VenueFilters({
             emptyMessage="No tags found."
           />
 
-          {/* Amenities */}
-          <FilterDropdown
-            label="Amenities"
-            open={amenitiesOpen}
-            onOpenChange={setAmenitiesOpen}
-            selected={selectedAmenities}
-            items={commonAmenities.map((a) => ({ key: a, label: a }))}
-            onToggle={handleAmenityToggle}
-            placeholder="Select amenities..."
-            searchPlaceholder="Search amenities..."
-            emptyMessage="No amenities found."
-          />
-
-          {/* Services */}
-          <FilterDropdown
-            label="Services"
-            open={servicesOpen}
-            onOpenChange={setServicesOpen}
-            selected={selectedServices}
-            items={commonServices.map((s) => ({ key: s, label: s }))}
-            onToggle={handleServiceToggle}
-            placeholder="Select services..."
-            searchPlaceholder="Search services..."
-            emptyMessage="No services found."
-          />
-
-          {/* Accessibility */}
-          <FilterDropdown
-            label="Accessibility"
-            open={accessibilityOpen}
-            onOpenChange={setAccessibilityOpen}
-            selected={selectedAccessibilityAttributes}
-            loading={accessibilityLoading}
-            items={accessibilityAttributes.map((a) => ({ key: a.id, label: a.name }))}
-            onToggle={handleAccessibilityToggle}
-            placeholder="Select accessibility..."
-            searchPlaceholder="Search accessibility..."
-            emptyMessage="No accessibility features found."
+          {/* What you need — consolidated amenities + services + accessibility */}
+          <WhatYouNeedDropdown
+            amenitiesSelected={selectedAmenities}
+            servicesSelected={selectedServices}
+            accessibilitySelected={selectedAccessibilityAttributes}
+            amenities={commonAmenities.map((a) => ({ key: a, label: a }))}
+            services={commonServices.map((s) => ({ key: s, label: s }))}
+            accessibility={accessibilityAttributes.map((a) => ({ key: a.id, label: a.name }))}
+            accessibilityLoading={accessibilityLoading}
+            onToggleAmenity={handleAmenityToggle}
+            onToggleService={handleServiceToggle}
+            onToggleAccessibility={handleAccessibilityToggle}
           />
 
           {/* Target Groups */}
@@ -834,5 +806,187 @@ function FilterDropdown({
         </div>
       )}
     </div>
+  );
+}
+
+interface WhatYouNeedProps {
+  amenitiesSelected: string[];
+  servicesSelected: string[];
+  accessibilitySelected: string[];
+  amenities: { key: string; label: string }[];
+  services: { key: string; label: string }[];
+  accessibility: { key: string; label: string }[];
+  accessibilityLoading?: boolean;
+  onToggleAmenity: (v: string) => void;
+  onToggleService: (v: string) => void;
+  onToggleAccessibility: (v: string) => void;
+}
+
+// Combined "What you need" dropdown: tabs amenities / services / accessibility
+// under one trigger to reduce the filter row from 3 dropdowns down to 1.
+function WhatYouNeedDropdown({
+  amenitiesSelected,
+  servicesSelected,
+  accessibilitySelected,
+  amenities,
+  services,
+  accessibility,
+  accessibilityLoading,
+  onToggleAmenity,
+  onToggleService,
+  onToggleAccessibility,
+}: WhatYouNeedProps) {
+  const [open, setOpen] = useState(false);
+  const total =
+    amenitiesSelected.length + servicesSelected.length + accessibilitySelected.length;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Label className="text-xs2 uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+          What you need
+          {total > 0 && (
+            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-2xs font-semibold normal-case tracking-normal">
+              {total}
+            </span>
+          )}
+        </div>
+      </Label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="h-11 w-full justify-between rounded-element font-normal"
+          >
+            <span className="truncate text-sm">
+              {total > 0 ? `${total} selected` : 'Amenities · services · accessibility'}
+            </span>
+            <ChevronDown style={{ width: 14, height: 14, opacity: 0.5 }} className="ml-2 shrink-0" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="border-border p-0 w-[320px]">
+          <Tabs defaultValue="amenities">
+            <TabsList className="w-full grid grid-cols-3 rounded-none border-b">
+              <TabsTrigger value="amenities">
+                Amenities{amenitiesSelected.length > 0 ? ` · ${amenitiesSelected.length}` : ''}
+              </TabsTrigger>
+              <TabsTrigger value="services">
+                Services{servicesSelected.length > 0 ? ` · ${servicesSelected.length}` : ''}
+              </TabsTrigger>
+              <TabsTrigger value="accessibility">
+                A11y{accessibilitySelected.length > 0 ? ` · ${accessibilitySelected.length}` : ''}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="amenities">
+              <FilterList
+                items={amenities}
+                selected={amenitiesSelected}
+                onToggle={onToggleAmenity}
+                searchPlaceholder="Search amenities…"
+                emptyMessage="No amenities found."
+              />
+            </TabsContent>
+            <TabsContent value="services">
+              <FilterList
+                items={services}
+                selected={servicesSelected}
+                onToggle={onToggleService}
+                searchPlaceholder="Search services…"
+                emptyMessage="No services found."
+              />
+            </TabsContent>
+            <TabsContent value="accessibility">
+              <FilterList
+                items={accessibility}
+                selected={accessibilitySelected}
+                onToggle={onToggleAccessibility}
+                searchPlaceholder="Search accessibility…"
+                emptyMessage="No accessibility features found."
+                loading={accessibilityLoading}
+              />
+            </TabsContent>
+          </Tabs>
+        </PopoverContent>
+      </Popover>
+      {total > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {[
+            ...amenitiesSelected.map((v) => ({ v, toggle: onToggleAmenity })),
+            ...servicesSelected.map((v) => ({ v, toggle: onToggleService })),
+            ...accessibilitySelected.map((v) => ({ v, toggle: onToggleAccessibility })),
+          ].map(({ v, toggle }) => (
+            <Badge key={v} variant="secondary">
+              {v}
+              <X
+                style={{
+                  width: 12,
+                  height: 12,
+                  cursor: 'pointer',
+                  padding: 8,
+                  margin: -8,
+                  boxSizing: 'content-box' as const,
+                }}
+                role="button"
+                aria-label="Remove filter"
+                onClick={() => toggle(v)}
+              />
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilterList({
+  items,
+  selected,
+  onToggle,
+  searchPlaceholder,
+  emptyMessage,
+  loading,
+}: {
+  items: { key: string; label: string }[];
+  selected: string[];
+  onToggle: (v: string) => void;
+  searchPlaceholder: string;
+  emptyMessage: string;
+  loading?: boolean;
+}) {
+  return (
+    <Command>
+      <CommandInput placeholder={searchPlaceholder} />
+      <CommandList>
+        <CommandEmpty>{emptyMessage}</CommandEmpty>
+        <CommandGroup>
+          {loading ? (
+            <div className="flex items-center justify-center p-4">
+              <Loader2 size={16} />
+            </div>
+          ) : (
+            items.map((item) => (
+              <CommandItem
+                key={item.key}
+                value={item.label}
+                onSelect={() => onToggle(item.label)}
+              >
+                <Check
+                  style={{
+                    width: 16,
+                    height: 16,
+                    opacity: selected.includes(item.label) ? 1 : 0,
+                  }}
+                  className="mr-2"
+                />
+                {item.label}
+              </CommandItem>
+            ))
+          )}
+        </CommandGroup>
+      </CommandList>
+    </Command>
   );
 }
