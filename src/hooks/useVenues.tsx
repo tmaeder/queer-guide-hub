@@ -54,8 +54,18 @@ export function useVenues(autoFetch: boolean = true) {
       nearMe?: boolean;
       bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
       limit?: number;
+      radiusKm?: number;
+      openNow?: boolean;
+      priceLevel?: number;
     },
-    options?: { page?: number; pageSize?: number; append?: boolean; sort?: string },
+    options?: {
+      page?: number;
+      pageSize?: number;
+      append?: boolean;
+      sort?: string;
+      useRanking?: boolean;
+      userId?: string | null;
+    },
   ) => {
     let fetchedCount = 0;
     let totalCount: number | null = null;
@@ -64,6 +74,68 @@ export function useVenues(autoFetch: boolean = true) {
       setLoadingTimedOut(false);
       const page = options?.page;
       const pageSize = options?.pageSize ?? 24;
+
+      // New ranked path via rpc_venues_ranked. Used when caller opts in.
+      // Falls back to the legacy PostgREST query on RPC error.
+      if (options?.useRanking) {
+        try {
+          const rpcFilters: Record<string, unknown> = {};
+          if (filters?.search) rpcFilters.search = filters.search;
+          if (filters?.category) rpcFilters.category = filters.category;
+          if (filters?.city) rpcFilters.city = filters.city;
+          if (filters?.tags?.length) rpcFilters.tags = filters.tags;
+          if (filters?.amenities?.length) rpcFilters.amenities = filters.amenities;
+          if (filters?.services?.length) rpcFilters.services = filters.services;
+          if (filters?.accessibilityAttributes?.length)
+            rpcFilters.accessibility = filters.accessibilityAttributes;
+          if (filters?.targetGroups?.length) rpcFilters.groups = filters.targetGroups;
+          if (typeof filters?.radiusKm === 'number') rpcFilters.radiusKm = filters.radiusKm;
+          if (filters?.openNow) rpcFilters.openNow = true;
+          if (typeof filters?.priceLevel === 'number') rpcFilters.priceLevel = filters.priceLevel;
+
+          const offset =
+            typeof page === 'number' ? (page - 1) * pageSize : 0;
+
+          const { data, error: rpcErr } = (await queryWithRetry(() =>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (supabase as any).rpc('rpc_venues_ranked', {
+              p_user_id: options.userId ?? null,
+              p_lat: filters?.userLocation?.latitude ?? null,
+              p_lng: filters?.userLocation?.longitude ?? null,
+              p_filters: rpcFilters,
+              p_sort: options.sort ?? 'relevance',
+              p_limit: pageSize,
+              p_offset: offset,
+            }),
+          )) as { data: Array<{ venue: Venue; score: number; distance_m: number | null; total_count: number }> | null; error: Error | null };
+
+          if (rpcErr) throw rpcErr;
+          const rows = data ?? [];
+          const processed = rows.map((r) => ({
+            ...(r.venue as Venue),
+            distance: r.distance_m != null ? r.distance_m / 1000 : undefined,
+            relevance_score: r.score,
+          })) as Venue[];
+
+          if (options.append) {
+            setVenues((prev) => {
+              const merged = [...prev, ...processed];
+              return Array.from(new Map(merged.map((v) => [v.id, v])).values());
+            });
+          } else {
+            setVenues(processed);
+          }
+          fetchedCount = processed.length;
+          totalCount = rows[0]?.total_count ?? processed.length;
+          setFilteredTotal(totalCount);
+          setHasMore(offset + processed.length < (totalCount ?? 0));
+          return { fetched: fetchedCount, total: totalCount };
+        } catch (rpcErr) {
+          // Fall through to legacy path if RPC is unavailable.
+          // eslint-disable-next-line no-console
+          console.warn('[useVenues] rpc_venues_ranked failed, falling back', rpcErr);
+        }
+      }
 
       let query = supabase
         .from('venues')
