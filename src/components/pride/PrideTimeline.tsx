@@ -1,5 +1,6 @@
 import { useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Calendar, MapPin, Star } from 'lucide-react';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 import { cn } from '@/lib/utils';
@@ -61,6 +62,7 @@ function placeEvents(events: PrideCalendarEvent[], year: number): PlacedEvent[] 
 }
 
 export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }: PrideTimelineProps) {
+  const { t } = useTranslation();
   const placed = useMemo(() => placeEvents(events, year), [events, year]);
   const maxRow = useMemo(() => placed.reduce((m, p) => (p.row > m ? p.row : m), 0), [placed]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -111,7 +113,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
         ref={scrollRef}
         className="relative overflow-x-auto border border-foreground/10 rounded-container bg-background"
         role="region"
-        aria-label="Pride events timeline"
+        aria-label={t('pride.timeline.aria')}
       >
         <div className="relative" style={{ width: `${TRACK_WIDTH}px`, height: trackHeight, minWidth: '100%' }}>
           {/* Month columns */}
@@ -140,7 +142,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
               aria-hidden="true"
             >
               <div className="absolute -top-1 -translate-x-1/2 text-[9px] uppercase tracking-wider bg-foreground text-background px-1 rounded-badge">
-                Today
+                {t('pride.timeline.today')}
               </div>
             </div>
           )}
@@ -237,7 +239,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
         </div>
       </div>
       <p className="text-xs2 text-foreground/50 mt-2">
-        {placed.length} prides in {year} · click a row to select · solid dots are featured
+        {t('pride.timeline.helper', { count: placed.length, year })}
       </p>
     </div>
   );

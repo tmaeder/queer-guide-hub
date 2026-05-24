@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { MapPin, Calendar, Star, Luggage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
@@ -26,6 +27,7 @@ function formatDateRange(start: string, end: string | null) {
 }
 
 export function PrideEventCard({ event, highlighted, compact, onSelect }: PrideEventCardProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeTrip } = useActiveTrip();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -54,7 +56,7 @@ export function PrideEventCard({ event, highlighted, compact, onSelect }: PrideE
             </Link>
           </h3>
           {event.is_featured && (
-            <Star className="size-3.5 shrink-0 fill-foreground text-foreground" aria-label="Featured" />
+            <Star className="size-3.5 shrink-0 fill-foreground text-foreground" aria-label={t('pride.featured')} />
           )}
         </div>
         <div className="flex items-center gap-1.5 text-xs2 text-foreground/70">
@@ -68,12 +70,12 @@ export function PrideEventCard({ event, highlighted, compact, onSelect }: PrideE
         {inTripWindow && (
           <div className="inline-flex items-center gap-1 px-2 py-0.5 text-2xs rounded-badge bg-foreground text-background">
             <Luggage className="size-3" />
-            In your trip window
+            {t('pride.inTripWindow')}
           </div>
         )}
         {event.verification_status !== 'verified' && (
           <div className="inline-flex items-center px-2 py-0.5 text-2xs rounded-badge border border-foreground/30 text-foreground/60">
-            Date estimated
+            {t('pride.estimated')}
           </div>
         )}
       </div>
@@ -90,10 +92,10 @@ export function PrideEventCard({ event, highlighted, compact, onSelect }: PrideE
             className="flex-1"
           >
             <Luggage className="size-3.5 mr-1" />
-            {user ? 'Add to trip' : 'Sign in'}
+            {user ? t('pride.card.addToTrip') : t('pride.card.signIn')}
           </Button>
           <Button asChild size="sm" className="flex-1">
-            <Link to={`/events/${event.slug}`}>View</Link>
+            <Link to={`/events/${event.slug}`}>{t('pride.card.view')}</Link>
           </Button>
         </div>
       )}

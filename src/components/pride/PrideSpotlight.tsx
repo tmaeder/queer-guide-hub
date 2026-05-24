@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { X, MapPin, Calendar, Star, Luggage, Map as MapIcon, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -29,6 +30,7 @@ function daysFromNow(iso: string): number {
 }
 
 export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeTrip } = useActiveTrip();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -43,11 +45,11 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
   const days = daysFromNow(event.start_date);
   const countdown =
     days > 0
-      ? `Starts in ${days} day${days === 1 ? '' : 's'}`
+      ? t('pride.spotlight.startsIn', { count: days })
       : days === 0
-        ? 'Happening today'
+        ? t('pride.spotlight.today')
         : days > -7
-          ? `Ended ${-days} day${-days === 1 ? '' : 's'} ago`
+          ? t('pride.spotlight.endedDaysAgo', { count: -days })
           : null;
 
   const hostCity = event.city ?? '';
@@ -62,7 +64,7 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
         <button
           type="button"
           onClick={onDismiss}
-          aria-label="Dismiss"
+          aria-label={t('pride.spotlight.dismiss')}
           className="absolute right-3 top-3 z-10 inline-flex items-center justify-center size-8 min-h-0 min-w-0 rounded-element hover:bg-muted"
         >
           <X className="size-4" />
@@ -71,26 +73,26 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
 
       <div className="p-6 lg:p-8 space-y-5">
         <div className="flex flex-wrap items-center gap-2 text-xs2 uppercase tracking-label text-foreground/60">
-          <span>Spotlight</span>
+          <span>{t('pride.spotlight.eyebrow')}</span>
           {event.is_featured && (
             <>
               <span aria-hidden>·</span>
               <span className="inline-flex items-center gap-1">
-                <Star className="size-3 fill-foreground text-foreground" /> Featured
+                <Star className="size-3 fill-foreground text-foreground" /> {t('pride.featured')}
               </span>
             </>
           )}
           {event.verification_status !== 'verified' && (
             <>
               <span aria-hidden>·</span>
-              <span>Date estimated</span>
+              <span>{t('pride.estimated')}</span>
             </>
           )}
           {inTripWindow && (
             <>
               <span aria-hidden>·</span>
               <span className="inline-flex items-center gap-1">
-                <Luggage className="size-3" /> In your trip window
+                <Luggage className="size-3" /> {t('pride.inTripWindow')}
               </span>
             </>
           )}
@@ -124,24 +126,24 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
         <div className="flex flex-wrap gap-2 pt-2">
           <Button asChild>
             <Link to={`/events/${event.slug}`}>
-              View pride
+              {t('pride.spotlight.viewPride')}
               <ExternalLink className="size-3.5 ml-1.5" />
             </Link>
           </Button>
           <Button variant="outline" disabled={!user} onClick={() => setDialogOpen(true)}>
             <Luggage className="size-3.5 mr-1.5" />
-            {user ? 'Add to trip' : 'Sign in to add to trip'}
+            {user ? t('pride.spotlight.addToTrip') : t('pride.spotlight.signInToAdd')}
           </Button>
           {onOpenMap && (
             <Button variant="outline" onClick={onOpenMap}>
               <MapIcon className="size-3.5 mr-1.5" />
-              Show on map
+              {t('pride.spotlight.showOnMap')}
             </Button>
           )}
           {hostCity && (
             <Button variant="outline" asChild>
               <Link to={`/venues?city=${encodeURIComponent(hostCity)}`}>
-                Queer venues in {hostCity}
+                {t('pride.spotlight.venuesInCity', { city: hostCity })}
               </Link>
             </Button>
           )}

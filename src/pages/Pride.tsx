@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePrideCalendar } from '@/hooks/usePrideCalendar';
@@ -58,6 +59,7 @@ function filtersToParams(filters: PrideFilters): Record<string, string> {
 }
 
 export default function PridePage() {
+  const { t } = useTranslation();
   const { year: yearParam } = useParams<{ year?: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -98,15 +100,15 @@ export default function PridePage() {
   };
 
   useEffect(() => {
-    document.title = `Pride Calendar ${year} · Queer Guide`;
-  }, [year]);
+    document.title = `${t('pride.eyebrow')} ${year} · Queer Guide`;
+  }, [year, t]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
       {/* Hero */}
       <header className="mb-8 lg:mb-12 flex flex-col gap-4">
         <div className="flex items-center gap-2 text-xs2 uppercase tracking-wider text-foreground/60">
-          Pride Calendar
+          {t('pride.eyebrow')}
         </div>
         <div className="flex flex-wrap items-end gap-4 justify-between">
           <div className="flex items-center gap-3">
@@ -115,7 +117,7 @@ export default function PridePage() {
               size="icon"
               onClick={() => changeYear(-1)}
               disabled={year <= MIN_YEAR}
-              aria-label="Previous year"
+              aria-label={t('pride.previousYear')}
             >
               <ChevronLeft className="size-4" />
             </Button>
@@ -125,7 +127,7 @@ export default function PridePage() {
               size="icon"
               onClick={() => changeYear(1)}
               disabled={year >= MAX_YEAR}
-              aria-label="Next year"
+              aria-label={t('pride.nextYear')}
             >
               <ChevronRight className="size-4" />
             </Button>
@@ -136,13 +138,17 @@ export default function PridePage() {
             disabled={filtered.length === 0}
           >
             <Download className="size-4 mr-1.5" />
-            Export .ics
+            {t('pride.export')}
           </Button>
         </div>
         <p className="text-body-lg text-foreground/70">
           {isLoading
-            ? 'Loading…'
-            : `${summary.total} pride${summary.total === 1 ? '' : 's'} · ${summary.countries} countries · ${summary.cities} cities`}
+            ? t('pride.loading')
+            : t('pride.summary', {
+                count: summary.total,
+                countries: summary.countries,
+                cities: summary.cities,
+              })}
         </p>
       </header>
 
@@ -155,7 +161,7 @@ export default function PridePage() {
           {/* Timeline */}
           <section aria-labelledby="timeline-heading">
             <h2 id="timeline-heading" className="sr-only">
-              Pride timeline
+              {t('pride.timeline.srTitle')}
             </h2>
             {isLoading ? (
               <Skeleton className="h-40 w-full rounded-container" />
@@ -188,7 +194,7 @@ export default function PridePage() {
           {/* Map */}
           <section aria-labelledby="map-heading">
             <h2 id="map-heading" className="text-title font-medium mb-3">
-              World map
+              {t('pride.map.title')}
             </h2>
             {isLoading ? (
               <Skeleton className="h-[480px] w-full rounded-container" />
@@ -205,9 +211,9 @@ export default function PridePage() {
 
           {!isLoading && filtered.length === 0 && (
             <div className="border border-foreground/15 rounded-container p-12 text-center">
-              <p className="text-foreground/70">No prides match your filters.</p>
+              <p className="text-foreground/70">{t('pride.noMatches')}</p>
               <Button variant="outline" onClick={() => setFilters(EMPTY_FILTERS)} className="mt-4">
-                Clear filters
+                {t('pride.clearFilters')}
               </Button>
             </div>
           )}

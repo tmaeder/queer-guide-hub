@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { ArrowRight, Luggage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -90,6 +91,7 @@ function formatShort(iso: string): string {
 }
 
 export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
+  const { t } = useTranslation();
   const clusters = useMemo(() => buildClusters(events), [events]);
   if (clusters.length === 0) return null;
 
@@ -97,9 +99,10 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
     <section aria-labelledby="trips-heading">
       <div className="flex items-baseline justify-between gap-2 flex-wrap mb-3">
         <h2 id="trips-heading" className="text-title font-medium">
-          Pride trip ideas
+          {t('pride.trips.title')}
         </h2>
         <span className="text-xs2 text-foreground/50">Up to 4 prides · within 21 days · &lt;4000&nbsp;km</span>
+        <span className="text-xs2 text-foreground/50">{t('pride.trips.subtitle')}</span>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
@@ -112,9 +115,16 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
               <p className="text-xs2 uppercase tracking-label text-foreground/60">
                 {c.events.length} prides · {c.span} day{c.span === 1 ? '' : 's'}
                 {c.totalKm > 0 && ` · ${Math.round(c.totalKm).toLocaleString()} km`}
+                {c.totalKm > 0
+                  ? t('pride.trips.metaWithKm', {
+                      count: c.events.length,
+                      days: c.span,
+                      km: Math.round(c.totalKm).toLocaleString(),
+                    })
+                  : t('pride.trips.meta', { count: c.events.length, days: c.span })}
               </p>
               {c.events.some((e) => e.is_featured) && (
-                <span className="text-2xs uppercase tracking-label text-foreground/60">Featured</span>
+                <span className="text-2xs uppercase tracking-label text-foreground/60">{t('pride.trips.featured')}</span>
               )}
             </div>
 
@@ -151,10 +161,10 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
               <Button asChild size="sm" variant="outline" className="flex-1">
                 <Link
                   to={`/trips?seed=${c.events.map((e) => e.id).join(',')}`}
-                  aria-label={`Build a trip from ${c.events.map((e) => e.city).filter(Boolean).join(' → ')}`}
+                  aria-label={t('pride.trips.buildTrip') + ': ' + c.events.map((e) => e.city).filter(Boolean).join(' → ')}
                 >
                   <Luggage className="size-3.5 mr-1.5" />
-                  Build this trip
+                  {t('pride.trips.buildTrip')}
                   <ArrowRight className="size-3.5 ml-1.5" />
                 </Link>
               </Button>
