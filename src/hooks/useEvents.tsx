@@ -57,7 +57,7 @@ export function useEvents(autoFetch: boolean = true) {
       includePast?: boolean;
       featured?: boolean;
       isFree?: boolean;
-      sort?: 'date-asc' | 'date-desc' | 'popularity' | 'distance';
+      sort?: 'date-asc' | 'date-desc' | 'popularity' | 'distance' | 'recent';
     },
     options?: { page?: number; pageSize?: number; append?: boolean; signal?: AbortSignal },
   ) => {
@@ -144,8 +144,11 @@ export function useEvents(autoFetch: boolean = true) {
         const sort = filters?.sort ?? 'date-asc';
         if (sort === 'date-desc') {
           query = query.order('is_featured', { ascending: false }).order('start_date', { ascending: false });
+        } else if (sort === 'recent') {
+          query = query.order('created_at', { ascending: false });
         } else {
-          // date-asc (default) and distance (sorted client-side after fetch)
+          // date-asc (default), distance (client-side after fetch), popularity
+          // (no attendance_count column yet — fall back to featured + date)
           query = query.order('is_featured', { ascending: false })
             .order('start_date', { ascending: filters?.includePast ? false : true });
         }

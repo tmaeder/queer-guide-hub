@@ -35,7 +35,7 @@ interface GeoCardProps {
 const VARIANT_HREF: Record<GeoCardVariant, (slug: string) => string> = {
   country: (s) => `/country/${s}`,
   city: (s) => `/city/${s}`,
-  village: (s) => `/village/${s}`,
+  village: (s) => `/villages/${s}`,
 };
 
 const VARIANT_ICON: Record<GeoCardVariant, typeof Globe> = {
