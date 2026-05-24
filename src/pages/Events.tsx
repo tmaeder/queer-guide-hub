@@ -68,6 +68,12 @@ import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSearchParams } from 'react-router';
+import {
+  parseFilterState,
+  serializeFilterState,
+  type EventSort,
+} from '@/utils/eventsQueryString';
+import { ShareFiltersButton } from '@/components/events/ShareFiltersButton';
 
 type Event = Database['public']['Tables']['events']['Row'];
 const eventTypes = [
@@ -142,7 +148,7 @@ const Events = () => {
   const [isFree, setIsFree] = useState(false);
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const [activePreset, setActivePreset] = useState<EventPresetId | null>(null);
-  const [sort, setSort] = useState<'date-asc' | 'date-desc' | 'popularity'>('date-asc');
+  const [sort, setSort] = useState<EventSort>('date-asc');
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
@@ -475,26 +481,61 @@ const Events = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
-  // Sync city + search to URL params for shareable / refreshable state.
+  // Full filter-state URL sync (shareable, refreshable, bookmarkable).
   const [searchParams, setSearchParams] = useSearchParams();
   useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-    if (city) next.set('city', city);
-    else next.delete('city');
-    if (debouncedSearch) next.set('q', debouncedSearch);
-    else next.delete('q');
+    const next = serializeFilterState({
+      q: debouncedSearch,
+      cities: city ? [city] : [],
+      types: eventType && eventType !== 'all' ? [eventType] : [],
+      tags: selectedTags,
+      accessibility: [],
+      languages: [],
+      ageRestriction: '',
+      organizerId: '',
+      from: startDate ? startDate.toISOString() : undefined,
+      to: endDate ? endDate.toISOString() : undefined,
+      nearMe,
+      showPast,
+      isFree,
+      featured: featuredOnly,
+      sort,
+      view: viewMode,
+    });
     if (next.toString() !== searchParams.toString()) {
       setSearchParams(next, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city, debouncedSearch]);
+  }, [
+    city,
+    debouncedSearch,
+    eventType,
+    selectedTags,
+    startDate,
+    endDate,
+    nearMe,
+    showPast,
+    isFree,
+    featuredOnly,
+    sort,
+    viewMode,
+  ]);
 
   // Hydrate filters from URL on first mount.
   useEffect(() => {
-    const urlCity = searchParams.get('city');
-    const urlQ = searchParams.get('q');
-    if (urlCity) setCity(urlCity);
-    if (urlQ) setSearch(urlQ);
+    const parsed = parseFilterState(searchParams);
+    if (parsed.cities[0]) setCity(parsed.cities[0]);
+    if (parsed.q) setSearch(parsed.q);
+    if (parsed.types[0]) setEventType(parsed.types[0]);
+    if (parsed.tags.length) setSelectedTags(parsed.tags);
+    if (parsed.from) setStartDate(new Date(parsed.from));
+    if (parsed.to) setEndDate(new Date(parsed.to));
+    if (parsed.nearMe) setNearMe(true);
+    if (parsed.showPast) setShowPast(true);
+    if (parsed.isFree) setIsFree(true);
+    if (parsed.featured) setFeaturedOnly(true);
+    if (parsed.sort !== 'date-asc') setSort(parsed.sort);
+    if (parsed.view !== 'grid') setViewMode(parsed.view);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -996,7 +1037,7 @@ const Events = () => {
               </Button>
               <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
                 <SelectTrigger
-                  className="w-full sm:w-[140px]"
+                  className="w-full sm:w-[160px]"
                   aria-label={t('pages.events.sortLabel', 'Sort events')}
                 >
                   <SelectValue />
@@ -1008,8 +1049,18 @@ const Events = () => {
                   <SelectItem value="date-desc">
                     {t('pages.events.sort.dateDesc', 'Latest first')}
                   </SelectItem>
+                  <SelectItem value="distance" disabled={!userLocation && !nearMe}>
+                    {t('pages.events.sort.distance', 'Closest to me')}
+                  </SelectItem>
+                  <SelectItem value="popularity">
+                    {t('pages.events.sort.popularity', 'Most popular')}
+                  </SelectItem>
+                  <SelectItem value="recent">
+                    {t('pages.events.sort.recent', 'Recently added')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
+              <ShareFiltersButton />
               <div
                 className="flex items-center gap-1 p-1 bg-muted rounded-element"
                 role="group"
