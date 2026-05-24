@@ -13,6 +13,9 @@ const Index = lazyRetry(() => import('./pages/Index'));
 const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
 const VenueDetail = lazyRetry(() => import('./pages/VenueDetail'));
+const VenuesLeaderboard = lazyRetry(() => import('./pages/VenuesLeaderboard'));
+const VenuesPassport = lazyRetry(() => import('./pages/VenuesPassport'));
+const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
 const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
 const Marketplace = lazyRetry(() => import('./pages/Marketplace'));
@@ -138,6 +141,7 @@ const CloudflareDashboard = lazy(() =>
 );
 const ProfessionDetail = lazyRetry(() => import('./pages/ProfessionDetail'));
 const News = lazyRetry(() => import('./pages/News'));
+const NewsArchive = lazyRetry(() => import('./pages/NewsArchive'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
 const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
@@ -242,6 +246,7 @@ export const AppRoutes = () => {
               <Route path="/pattern-library" element={<PatternLibrary />} />
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
               <Route path="/onboarding/search" element={<SearchPersonalization />} />
+              <Route path="/onboarding/venues" element={<VenuePersonalization />} />
               <Route path="/contributors" element={<Contributors />} />
               <Route path="/contributors/:year" element={<Contributors />} />
               {/* ── Unified Admin Console ── */}
@@ -388,6 +393,8 @@ export const AppRoutes = () => {
                 <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
                 <Route path="venues/groups" element={<Navigate to="/groups" replace />} />
                 <Route path="venues/resources" element={<Navigate to="/resources" replace />} />
+                <Route path="venues/leaderboard" element={<VenuesLeaderboard />} />
+                <Route path="venues/passport" element={<VenuesPassport />} />
                 <Route path="venues/:slug" element={<VenueDetail />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/:slug" element={<EventDetail />} />
@@ -452,6 +459,7 @@ export const AppRoutes = () => {
                 <Route path="cookies" element={<CMSRoutePage slug="cookies" />} />
                 <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
                 <Route path="news" element={<News />} />
+                <Route path="news/all" element={<NewsArchive />} />
                 <Route path="news/story/:slug" element={<NewsStoryDetail />} />
                 <Route path="news/:slug" element={<NewsDetail />} />
                 <Route path="search" element={<SearchResults />} />

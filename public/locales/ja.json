@@ -993,7 +993,115 @@
     "review": "レビューを書く",
     "photos": "写真",
     "amenities": "設備",
-    "services": "サービス"
+    "services": "サービス",
+    "rails": {
+      "nearYou": {
+        "title": "近くのスポット",
+        "subtitle": "30km圏内のスポットを距離順に。"
+      },
+      "forYou": {
+        "title": "あなた向け",
+        "subtitle": "興味と訪問履歴から選びました。"
+      },
+      "forYouPromo": {
+        "label": "スポットをパーソナライズ",
+        "kicker": "あなた向け",
+        "title": "あなたの好みを教えてください。",
+        "body": "サインインして4つの質問に答えてください。興味に合わせて並べ替えます。",
+        "cta": "はじめる"
+      },
+      "new": {
+        "title": "今月の新着",
+        "subtitle": "ガイドへの最新追加。"
+      },
+      "topInCity": {
+        "title": "{{city}}のトップ",
+        "subtitle": "コミュニティで人気。"
+      },
+      "editors": {
+        "title": "編集部のおすすめ",
+        "subtitle": "厳選したスポット。"
+      }
+    },
+    "hero": {
+      "kicker": "今週の注目",
+      "cta": "もっと見る",
+      "label": "注目スポット"
+    },
+    "personalStrip": {
+      "title": "{{name}} · レベル{{level}}",
+      "label": "あなたの統計",
+      "passport": "パスポートを見る",
+      "points": "ポイント",
+      "venues": "スポット",
+      "streak": "連続日数",
+      "checkins": "チェックイン",
+      "nextLevel": "次: {{name}}"
+    },
+    "results": {
+      "title": "該当するスポット"
+    },
+    "quickFilters": {
+      "openNow": "今営業中",
+      "radius": "距離",
+      "radiusKm": "{{km}}km以内",
+      "anyDistance": "距離指定なし",
+      "price": "価格",
+      "anyPrice": "価格指定なし",
+      "clear": "クリア"
+    },
+    "leaderboard": {
+      "title": "ランキング",
+      "subtitle": "訪問スポット数のトップ。",
+      "tabs": {
+        "global": "グローバル",
+        "city": "{{city}}"
+      },
+      "empty": "まだデータがありません。",
+      "venuesShort": "スポット",
+      "widget": {
+        "label": "トップ探検家",
+        "titleCity": "{{city}}のトップ",
+        "titleGlobal": "トップ探検家",
+        "viewAll": "すべて見る",
+        "anon": "匿名の探検家",
+        "you": "あなた"
+      }
+    },
+    "passport": {
+      "title": "あなたのパスポート",
+      "subtitle": "訪れたすべてのスポットと獲得した実績。",
+      "achievements": "実績",
+      "earned": "獲得済み",
+      "locked": "+{{pts}} ポイント",
+      "visited": "{{count}}スポット訪問",
+      "empty": "まだチェックインがありません。",
+      "signInPrompt": "サインインしてパスポートを見る。"
+    },
+    "onboarding": {
+      "progress": "ステップ {{current}}/{{total}}",
+      "step1": {
+        "title": "どんなスポットが好き？"
+      },
+      "step2": {
+        "title": "どのコミュニティに属していますか？"
+      },
+      "step3": {
+        "title": "どんな雰囲気が好き？"
+      },
+      "step4": {
+        "title": "どの街で過ごすことが多い？"
+      },
+      "cityPlaceholder": "街を入力",
+      "citySelected": "選択: {{city}}",
+      "finish": "完了",
+      "saveError": "保存に失敗しました",
+      "saveSuccess": "好みを保存しました"
+    },
+    "achievementToast": {
+      "unlocked": "達成: {{name}}",
+      "fallback": "新しい実績を獲得"
+    }
   },
   "marketplace": {
     "title": "マーケットプレイス",
@@ -1368,7 +1476,8 @@
       "filteredEmpty": {
         "title": "フィルターに一致する会場がありません",
         "body": "フィルターや検索を調整して、より多くの結果を表示してください。"
-      }
+      },
+      "sortRelevance": "あなた向け"
     },
     "venueDetail": {
       "loadFailed": "スポットの詳細を読み込めませんでした。",
@@ -1950,5 +2059,40 @@
       "title": "タグ関係グラフ",
       "description": "意味的類似度と共起でタグの関係を探る"
     }
+  },
+  "cities": {
+    "metaTitle": "都市",
+    "metaDescription": "世界中のLGBTQ+フレンドリーな都市を探そう。",
+    "eyebrow": "目的地",
+    "title": "都市。",
+    "subtitle": "世界中のLGBTQ+フレンドリーな都市。",
+    "planTrip": "旅行を計画する",
+    "openDirectory": "ディレクトリを開く",
+    "searchAriaLabel": "都市を検索",
+    "searchPlaceholder": "都市を検索…",
+    "resultCount": "{{total}}都市中{{shown}}件",
+    "filtersAriaLabel": "都市を絞り込む",
+    "continentsAriaLabel": "大陸で絞り込む",
+    "equalityAriaLabel": "平等スコアで絞り込む",
+    "sortLabel": "並び順",
+    "sortAriaLabel": "都市を並び替え",
+    "sort": {
+      "population": "人口",
+      "name": "名前 (A–Z)",
+      "equality": "平等度",
+      "venues": "スポット数"
+    },
+    "reset": "リセット",
+    "resetFilters": "フィルターをリセット",
+    "viewToggleAriaLabel": "リストと地図を切り替え",
+    "viewList": "リスト",
+    "viewMap": "地図",
+    "listLabel": "都市",
+    "emptyTitle": "都市が見つかりません",
+    "empty": "現在、登録されている都市はありません。",
+    "emptyFiltered": "フィルターを外すか、検索をクリアしてみてください。",
+    "suggestTitle": "都市が見つかりませんか？",
+    "suggestLede": "提案してください — 確認後にディレクトリに追加されます。",
+    "suggestCta": "都市を提案する"
   }
 }

@@ -26,13 +26,14 @@ function ev(overrides: Partial<Event>): Event {
 }
 
 describe('EventsTimelineView', () => {
-  it('renders empty state when no events', () => {
+  it('renders toolbar + track even with no events', () => {
     render(
       <MemoryRouter>
         <EventsTimelineView events={[]} />
       </MemoryRouter>,
     );
-    expect(screen.getByText(/No events to display/i)).toBeTruthy();
+    expect(screen.getByRole('region', { name: /Events timeline/i })).toBeTruthy();
+    expect(screen.getByRole('toolbar', { name: /Timeline navigation/i })).toBeTruthy();
   });
 
   it('renders a single event with a link to its slug', () => {

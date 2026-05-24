@@ -48,6 +48,7 @@ const MARKETPLACE_SPAN_CLASS: Record<string, string> = {
 };
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
+import { buildEmptyTitle, buildLooseningSuggestion } from '@/components/marketplace/marketplaceEmptyState';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -262,7 +263,14 @@ const Marketplace = () => {
       f.location ||
       f.businessType ||
       f.priceRange ||
-      (f.tags && f.tags.length > 0),
+      (f.tags && f.tags.length > 0) ||
+      (f.communityOwned && f.communityOwned.length > 0) ||
+      f.currency ||
+      // `availability: 'in_stock'` is the default — don't count it as an
+      // active narrowing. Only the explicit opt-in to sold-out counts.
+      f.availability === 'any' ||
+      (f.relevanceMin && f.relevanceMin > 0) ||
+      (f.verifiedWithinDays && f.verifiedWithinDays > 0),
     );
   }, [combinedFilters]);
 
@@ -485,15 +493,12 @@ const Marketplace = () => {
                 icon={Store}
                 title={
                   hasActiveFilters
-                    ? t('pages.marketplace.emptyFiltersTitle', 'No listings match these filters.')
+                    ? buildEmptyTitle(combinedFilters)
                     : t('pages.marketplace.emptyTitle', 'No listings yet.')
                 }
                 description={
                   hasActiveFilters
-                    ? t(
-                        'pages.marketplace.emptyFiltersDescription',
-                        'Try clearing filters or broadening your search.',
-                      )
+                    ? buildLooseningSuggestion(combinedFilters)
                     : t(
                         'pages.marketplace.emptyDescription',
                         'Check back soon or list your business.',
