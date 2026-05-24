@@ -69,13 +69,17 @@ export function CityListPane({
       role="list"
       aria-label={t('cities.listLabel', 'Cities')}
     >
-      {cities.map((city) => (
+      {cities.map((city, index) => (
         <CityListRow
           key={city.id}
           city={city}
           venueCount={venueCounts.get(city.id)}
           nextPride={prideByCity?.get(city.id)}
           selected={!!selectedCityId && (selectedCityId === city.id || selectedCityId === city.slug)}
+          // First 3 rows are LCP candidates — fetch eagerly with high
+          // priority so the thumbnail is the LCP element instead of waiting
+          // on a lazy-load IntersectionObserver.
+          highPriorityImage={index < 3}
           onHover={onHoverCity}
         />
       ))}

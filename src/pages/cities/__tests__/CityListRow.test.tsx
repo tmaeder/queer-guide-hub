@@ -100,4 +100,18 @@ describe('CityListRow', () => {
     const link = screen.getByText('Berlin').closest('a');
     expect(link).toHaveAttribute('href', expect.stringContaining('/city/berlin'));
   });
+
+  it('thumbnail is lazy + auto-priority by default', () => {
+    const { container } = renderRow();
+    const img = container.querySelector('img');
+    expect(img).toHaveAttribute('loading', 'lazy');
+    expect(img).toHaveAttribute('fetchpriority', 'auto');
+  });
+
+  it('thumbnail is eager + high-priority when highPriorityImage=true', () => {
+    const { container } = renderRow({ highPriorityImage: true });
+    const img = container.querySelector('img');
+    expect(img).toHaveAttribute('loading', 'eager');
+    expect(img).toHaveAttribute('fetchpriority', 'high');
+  });
 });
