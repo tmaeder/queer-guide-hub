@@ -7,17 +7,34 @@ import { MemoryRouter } from 'react-router';
 
 vi.mock('@/components/posts/PostCard', () => ({ PostCard: () => null }));
 vi.mock('@/components/posts/CreatePostDialog', () => ({ CreatePostDialog: () => null }));
-vi.mock('@/hooks/useCommunityPosts', () => ({ useCommunityPosts: () => ({ posts: [], isLoading: false, fetchNextPage: vi.fn(), hasNextPage: false }) }));
-vi.mock('@/components/layout/AuthGate', () => ({ AuthGate: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
+vi.mock('@/hooks/useCommunityPosts', () => ({
+  useCommunityPosts: () => ({
+    posts: [],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+    fetchNextPage: vi.fn(),
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    likePost: vi.fn(),
+    unlikePost: vi.fn(),
+    deletePost: vi.fn(),
+    isLikingPost: false,
+    isDeletingPost: false,
+  }),
+}));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('@/components/layout/PageLoadingState', () => ({ PageLoadingState: () => null }));
-vi.mock('@/components/effects/ColourfulText', () => ({ ColourfulText: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
-vi.mock('@/components/effects/SpotlightV2', () => ({ SpotlightV2: () => null }));
 
 import Feed from '../Feed';
 
 describe('Feed', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<MemoryRouter><Feed /></MemoryRouter>);
+  it('renders without crashing for anonymous users', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <Feed />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });

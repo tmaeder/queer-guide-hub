@@ -7116,6 +7116,7 @@ export type Database = {
           category: string
           category_id: string | null
           classified_at: string | null
+          community_owned_tags: string[]
           contact_email: string | null
           contact_phone: string | null
           created_at: string
@@ -7167,6 +7168,7 @@ export type Database = {
           category: string
           category_id?: string | null
           classified_at?: string | null
+          community_owned_tags?: string[]
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
@@ -7218,6 +7220,7 @@ export type Database = {
           category?: string
           category_id?: string | null
           classified_at?: string | null
+          community_owned_tags?: string[]
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string

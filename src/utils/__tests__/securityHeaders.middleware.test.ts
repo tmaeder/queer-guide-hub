@@ -52,6 +52,12 @@ describe('buildContentSecurityPolicy', () => {
     expect(csp).toContain("frame-ancestors 'self'");
     expect(csp).toContain("object-src 'none'");
   });
+
+  it("allow-lists Cloudflare's bot-management inline-script hashes", () => {
+    const csp = buildContentSecurityPolicy('x');
+    expect(csp).toContain("'sha256-xN+1I4nJkqNT1TN3imzsKuRrdUJwqycndmk/7+tjN0w='");
+    expect(csp).toContain("'sha256-gpv3+1ui2RRNM14g5v6XIjymGrMZxrbVxUzdTeKXUlE='");
+  });
 });
 
 describe('applySecurityHeaders', () => {

@@ -1,5 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -27,50 +31,70 @@ export interface CreatePostData {
   tags?: string[];
 }
 
+const PAGE_SIZE = 20;
+
+type Page = { posts: CommunityPost[]; nextPage: number | null };
+
 export const useCommunityPosts = (userId?: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch posts for a specific user or all public posts
-  const { data: posts = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['community-posts', userId],
-    queryFn: async () => {
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery<Page>({
+    queryKey: ['community-posts', userId ?? null, user?.id ?? null],
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const page = (pageParam as number) ?? 0;
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
       let query = supabase
         .from('community_posts')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
-      // If userId is provided, filter by that user
       if (userId) {
         query = query.eq('user_id', userId);
       } else {
-        // Otherwise get public posts
         query = query.eq('visibility', 'public');
       }
 
-      const { data, error } = await query;
-
-      if (error) throw error;
-      if (!data?.length) return [] as CommunityPost[];
+      const { data: rows, error: queryError } = await query;
+      if (queryError) throw queryError;
+      if (!rows?.length) return { posts: [], nextPage: null };
 
       // Resolve profiles + likes in parallel. We avoid PostgREST embedding
       // (`profiles ( ... )`) because community_posts has no direct FK to
       // public.profiles — both reference auth.users — and an ambiguous embed
       // would surface as a render-time crash on the Feed page (D1).
-      const userIds = Array.from(new Set(data.map((p) => p.user_id).filter(Boolean)));
+      const userIds = Array.from(new Set(rows.map((p) => p.user_id).filter(Boolean)));
       const [profilesRes, likesRes] = await Promise.all([
         userIds.length
           ? supabase
               .from('profiles')
               .select('user_id, display_name, avatar_url')
               .in('user_id', userIds)
-          : Promise.resolve({ data: [] as Array<{ user_id: string; display_name: string | null; avatar_url: string | null }> }),
+          : Promise.resolve({
+              data: [] as Array<{
+                user_id: string;
+                display_name: string | null;
+                avatar_url: string | null;
+              }>,
+            }),
         user
           ? supabase
               .from('post_likes')
               .select('post_id')
-              .in('post_id', data.map((p) => p.id))
+              .in('post_id', rows.map((p) => p.id))
               .eq('user_id', user.id)
           : Promise.resolve({ data: [] as Array<{ post_id: string }> }),
       ]);
@@ -80,7 +104,7 @@ export const useCommunityPosts = (userId?: string) => {
       );
       const likedPostIds = new Set((likesRes.data ?? []).map((l) => l.post_id));
 
-      return data.map((post) => {
+      const posts = rows.map((post) => {
         const profile = profileMap.get(post.user_id);
         return {
           ...post,
@@ -94,9 +118,19 @@ export const useCommunityPosts = (userId?: string) => {
           user_liked: likedPostIds.has(post.id),
         };
       }) as CommunityPost[];
+
+      return {
+        posts,
+        nextPage: rows.length === PAGE_SIZE ? page + 1 : null,
+      };
     },
-    enabled: true,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
   });
+
+  const posts = useMemo(
+    () => data?.pages.flatMap((p) => p.posts) ?? ([] as CommunityPost[]),
+    [data],
+  );
 
   // Create post mutation
   const createPostMutation = useMutation({
@@ -261,6 +295,9 @@ export const useCommunityPosts = (userId?: string) => {
     isLoading,
     error,
     refetch,
+    fetchNextPage,
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
     createPost: createPostMutation.mutate,
     isCreatingPost: createPostMutation.isPending,
     likePost: likePostMutation.mutate,

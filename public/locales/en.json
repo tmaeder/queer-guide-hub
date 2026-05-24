@@ -61,6 +61,8 @@
     "contentInLanguage": "In {{lang}}",
     "loadMore": "Load More",
     "tryAgain": "Try Again",
+    "signIn": "Sign in",
+    "goHome": "Go Home",
     "error": "Error",
     "allEvents": "All events",
     "browseAll": "Browse all",
@@ -1811,16 +1813,24 @@
       "browseGroups": "Browse Groups"
     },
     "feed": {
+      "subtitle": "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
       "activePosts": "Active Posts",
       "totalLikes": "Total Likes",
       "comments": "Comments",
       "createPostPlaceholder": "What's on your mind? Share with the community...",
+      "signInToPost": "Sign in to share posts, like, and comment.",
       "searchPlaceholder": "Search posts or users...",
       "recent": "Recent",
       "popular": "Popular",
       "emptyTitle": "Your feed is fresh",
-      "emptyDescription": "Follow people and groups to see their posts here.",
-      "createFirstPost": "Create First Post"
+      "emptyDescription": "No posts yet. Be the first to share something with the community.",
+      "searchEmptyTitle": "No posts match your search",
+      "searchEmptyDescription": "Try a different keyword or clear the search to see everything.",
+      "clearSearch": "Clear search",
+      "createFirstPost": "Create First Post",
+      "loadMore": "Load more",
+      "errorTitle": "We couldn't load the feed",
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
     },
     "notFound": {
       "title": "Page not found",
