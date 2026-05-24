@@ -1,12 +1,10 @@
-// marketplace-recommend
+// marketplace-recommend (Phase 3)
 //
-// Returns a personalized stream of marketplace_guides ordered by the §3
-// scoring function in docs/plans/2026-05-24-marketplace-redesign.md.
+// Calls the public.recommend_guides(user_id, limit) SQL scorer and returns
+// ordered guide rows with boost_reason. Signed-in: passes auth.uid().
+// Anon: passes NULL so the scorer falls back to freshness + featured.
 //
-// Phase 0 stub: returns an empty array. Phase 3 wires the actual
-// `recommend_guides(user_id, limit)` SQL function and exposes the dominant
-// boost reason ('home_city' | 'interest' | 'category_affinity' | 'featured'
-// | 'continue_reading') for the "Why this guide?" chip.
+// See docs/plans/2026-05-24-marketplace-redesign.md §3.
 
 import {
   getServiceClient,
@@ -17,26 +15,6 @@ import {
 
 interface RecommendRequest {
   limit?: number
-  // Anonymous IP-geo overrides — passed by /marketplace when geo-resolve
-  // has already happened on this navigation. Server still validates.
-  city_id?: string | null
-  country_code?: string | null
-}
-
-interface RecommendedGuide {
-  id: string
-  slug: string
-  title: string
-  dek: string | null
-  hero_image_path: string | null
-  category_slug: string | null
-  city_id: string | null
-  audience_tags: string[]
-  reading_time_min: number | null
-  pick_count: number
-  published_at: string | null
-  // null until the scorer is wired in Phase 3
-  boost_reason: 'home_city' | 'interest' | 'category_affinity' | 'featured' | 'continue_reading' | null
 }
 
 Deno.serve(async (req) => {
@@ -53,27 +31,45 @@ Deno.serve(async (req) => {
 
     const supabase = getServiceClient()
 
-    // Phase 0: serve only the editorially-featured guides (no personalization).
-    // The Phase 3 SQL function `recommend_guides(user_id, limit)` will replace
-    // this branch and emit per-row boost_reason for the "Why this guide?" chip.
-    const { data, error } = await supabase
-      .from('marketplace_guides')
-      .select(
-        'id, slug, title, dek, hero_image_path, category_slug, city_id, audience_tags, reading_time_min, pick_count, published_at',
-      )
-      .eq('status', 'published')
-      .order('is_featured', { ascending: false })
-      .order('published_at', { ascending: false, nullsFirst: false })
-      .limit(limit)
+    // Resolve the caller. With verify_jwt=true, anon clients still pass the
+    // anon JWT (no user). Only resolve user_id for real user JWTs.
+    let userId: string | null = null
+    const authHeader = req.headers.get('Authorization')
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    if (authHeader) {
+      const token = authHeader.replace(/^Bearer\s+/i, '')
+      if (token && token !== anonKey && token !== serviceKey) {
+        const { data: userData } = await supabase.auth.getUser(token)
+        userId = userData?.user?.id ?? null
+      }
+    }
 
+    const { data, error } = await supabase.rpc('recommend_guides', {
+      p_user_id: userId,
+      p_limit: limit,
+    })
     if (error) return errorResponse(error.message, 500, req)
 
-    const guides: RecommendedGuide[] = (data ?? []).map((g) => ({
-      ...g,
-      boost_reason: null,
+    const guides = (data ?? []).map((g: Record<string, unknown>) => ({
+      id: g.id,
+      slug: g.slug,
+      title: g.title,
+      dek: g.dek,
+      hero_image_path: g.hero_image_path,
+      category_slug: g.category_slug,
+      city_id: g.city_id,
+      audience_tags: g.audience_tags,
+      reading_time_min: g.reading_time_min,
+      pick_count: g.pick_count,
+      published_at: g.published_at,
+      boost_reason: g.boost_reason ?? null,
     }))
-
-    return jsonResponse({ guides, count: guides.length, phase: 0 }, 200, req)
+    return jsonResponse(
+      { guides, count: guides.length, phase: 3, personalized: userId !== null },
+      200,
+      req,
+    )
   } catch (err) {
     return errorResponse((err as Error).message, 500, req)
   }
