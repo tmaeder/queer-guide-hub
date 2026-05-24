@@ -41,6 +41,8 @@ interface EventsTimelineViewProps {
   loading?: boolean;
   onRsvp?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void | Promise<void>;
   onSaveToTrip?: (event: Event) => void | Promise<void>;
+  /** Render a built-in Save-to-trip button (opens AddToTripDialog inside the hover card). */
+  enableSaveToTrip?: boolean;
   attendStatus?: (eventId: string) => 'going' | 'interested' | 'not_going' | null;
   isInTrip?: (eventId: string) => boolean;
 }
@@ -192,6 +194,7 @@ export function EventsTimelineView({
   loading,
   onRsvp,
   onSaveToTrip,
+  enableSaveToTrip,
   attendStatus,
   isInTrip,
 }: EventsTimelineViewProps) {
@@ -523,7 +526,8 @@ export function EventsTimelineView({
                   event={event}
                   onRsvp={onRsvp}
                   onSaveToTrip={onSaveToTrip}
-                  isInTrip={isInTrip?.(event.id) ?? false}
+                  enableSaveToTrip={enableSaveToTrip}
+                  isInTrip={isInTrip?.(event.id)}
                   attendStatus={attendStatus?.(event.id) ?? null}
                 >
                   <Link

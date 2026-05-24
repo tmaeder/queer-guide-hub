@@ -1274,6 +1274,7 @@ const Events = () => {
             onViewportChange={setTimelineViewport}
             loading={loading}
             onRsvp={user ? handleAttendanceUpdate : undefined}
+            enableSaveToTrip={!!user}
           />
         )}
         {!loading && events.length > 0 && viewMode === 'map' && (

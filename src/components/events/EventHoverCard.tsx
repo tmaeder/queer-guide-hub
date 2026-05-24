@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { formatEventTime } from '@/lib/event-time';
 import { useTranslation } from 'react-i18next';
+import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -15,14 +17,17 @@ interface EventHoverCardProps {
   event: Event;
   children: ReactNode;
   onRsvp?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void | Promise<void>;
+  /** When true, the Save button opens AddToTripDialog inline. */
+  enableSaveToTrip?: boolean;
+  /** Optional custom save handler — takes precedence over the built-in dialog. */
   onSaveToTrip?: (event: Event) => void | Promise<void>;
+  /** Override the read-only "in trip" badge (otherwise pulled from useEntityTripStatus). */
   isInTrip?: boolean;
   attendStatus?: 'going' | 'interested' | 'not_going' | null;
   openDelayMs?: number;
 }
 
-/** Relative date label, e.g. "in 3 days" or "tonight". Local copy so EventHoverCard
- * doesn't depend on the pride.* i18n namespace. */
+/** Relative date label, e.g. "in 3 days" or "tonight". */
 function relativeLabel(iso: string, t: (k: string, v?: Record<string, unknown>) => string): string {
   const now = Date.now();
   const ms = new Date(iso).getTime() - now;
@@ -42,14 +47,19 @@ export function EventHoverCard({
   event,
   children,
   onRsvp,
+  enableSaveToTrip,
   onSaveToTrip,
-  isInTrip,
+  isInTrip: isInTripProp,
   attendStatus,
   openDelayMs = 200,
 }: EventHoverCardProps) {
   const { t } = useTranslation();
   const [rsvpLoading, setRsvpLoading] = useState<string | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [addToTripOpen, setAddToTripOpen] = useState(false);
+  const tripStatus = useEntityTripStatus('event', enableSaveToTrip ? event.id : undefined);
+  const isInTrip = isInTripProp ?? tripStatus.data.isInTrip;
+  const showSaveBtn = !!onSaveToTrip || !!enableSaveToTrip;
 
   const img = (event.images ?? []).find((u) => !!u);
   const dateRange = formatEventTime(
@@ -72,12 +82,17 @@ export function EventHoverCard({
   };
 
   const handleSave = async () => {
-    if (!onSaveToTrip) return;
-    setSaveLoading(true);
-    try {
-      await onSaveToTrip(event);
-    } finally {
-      setSaveLoading(false);
+    if (onSaveToTrip) {
+      setSaveLoading(true);
+      try {
+        await onSaveToTrip(event);
+      } finally {
+        setSaveLoading(false);
+      }
+      return;
+    }
+    if (enableSaveToTrip) {
+      setAddToTripOpen(true);
     }
   };
 
@@ -155,7 +170,7 @@ export function EventHoverCard({
           )}
         </div>
 
-        {(onRsvp || onSaveToTrip) && (
+        {(onRsvp || showSaveBtn) && (
           <div className="border-t border-foreground/10 px-2 py-2 flex items-center gap-1">
             {onRsvp && (
               <>
@@ -185,7 +200,7 @@ export function EventHoverCard({
                 </Button>
               </>
             )}
-            {onSaveToTrip && (
+            {showSaveBtn && (
               <Button
                 type="button"
                 size="sm"
@@ -202,6 +217,22 @@ export function EventHoverCard({
           </div>
         )}
       </HoverCardContent>
+
+      {enableSaveToTrip && !onSaveToTrip && (
+        <AddToTripDialog
+          open={addToTripOpen}
+          onClose={() => setAddToTripOpen(false)}
+          entity={{
+            type: 'event',
+            id: event.id,
+            name: event.title,
+            city_id: event.city_id ?? null,
+            country_id: event.country_id ?? null,
+            address: event.address ?? null,
+            category: event.event_type ?? null,
+          }}
+        />
+      )}
     </HoverCard>
   );
 }
