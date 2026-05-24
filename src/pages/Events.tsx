@@ -152,6 +152,9 @@ const Events = () => {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
+  // Timeline viewport drives a parallel date-range fetch when timeline view is active.
+  const [timelineViewport, setTimelineViewport] = useState<{ startMs: number; endMs: number } | null>(null);
+  const debouncedViewport = useDebounce(timelineViewport, 350);
 
   // Get unique cities from events for auto-suggest
   const availableCities = useMemo(
@@ -494,6 +497,35 @@ const Events = () => {
     if (urlQ) setSearch(urlQ);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Timeline viewport → date-range refetch (debounced). Only active when
+  // the timeline view is selected so we don't interfere with grid/map.
+  const lastFetchedViewportRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (viewMode !== 'timeline' || !debouncedViewport) return;
+    const key = `${debouncedViewport.startMs}-${debouncedViewport.endMs}`;
+    if (lastFetchedViewportRef.current === key) return;
+    lastFetchedViewportRef.current = key;
+    const startIso = new Date(debouncedViewport.startMs).toISOString();
+    const endIso = new Date(debouncedViewport.endMs).toISOString();
+    const includePast = debouncedViewport.startMs < Date.now();
+    fetchEvents(
+      {
+        search: search || undefined,
+        city: city || undefined,
+        eventType: eventType && eventType !== 'all' ? eventType : undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        dateRange: { start: startIso, end: endIso },
+        nearMe: nearMe ? userLocation : undefined,
+        includePast: includePast || showPast || undefined,
+        featured: featuredOnly || undefined,
+        isFree: isFree || undefined,
+        sort,
+      },
+      { page: 1, pageSize: PAGE_SIZE, append: false },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedViewport, viewMode]);
   return (
     <div className="min-h-screen">
       <PageHero
@@ -1125,8 +1157,13 @@ const Events = () => {
             ))}
           </StaggerGrid>
         )}
-        {!loading && events.length > 0 && viewMode === 'timeline' && (
-          <EventsTimelineView events={events} onEventSelect={handleViewDetails} />
+        {viewMode === 'timeline' && (
+          <EventsTimelineView
+            events={events}
+            onEventSelect={handleViewDetails}
+            onViewportChange={setTimelineViewport}
+            loading={loading}
+          />
         )}
         {!loading && events.length > 0 && viewMode === 'map' && (
           <EventsMapView events={events} height={640} />
