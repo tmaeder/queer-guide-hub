@@ -24,3 +24,17 @@ export const LEGACY_NEWS_TRIGGER_ENABLED = truthy(
 // ships behind this flag so /map can A/B against the legacy ExploreMap
 // chrome. When stable, all callers migrate and the flag is deleted.
 export const MAP_SHELL_ENABLED = truthy(import.meta.env.VITE_MAP_SHELL);
+
+// VENUES_V2_ENABLED — gates the personalized + gamified /venues experience
+// (editorial rails, personal stats strip, leaderboard widget, ranked RPC).
+// When false, falls back to the legacy flat-grid /venues. Also honors
+// `?ff=venues_v2` query string for in-product preview without rebuild.
+// Defaults ON in dev for easier iteration.
+export const VENUES_V2_ENABLED = (() => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ff') === 'venues_v2') return true;
+  }
+  if (truthy(import.meta.env.VITE_VENUES_V2)) return true;
+  return import.meta.env.MODE !== 'production';
+})();
