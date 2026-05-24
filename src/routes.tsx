@@ -18,6 +18,7 @@ const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
 const Marketplace = lazyRetry(() => import('./pages/Marketplace'));
 const MarketplaceItemDetail = lazyRetry(() => import('./pages/MarketplaceItemDetail'));
 const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'));
+const MarketplaceCategories = lazyRetry(() => import('./pages/MarketplaceCategories'));
 const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 
@@ -389,6 +390,7 @@ export const AppRoutes = () => {
                 <Route path="pride/:year" element={<PridePage />} />
                 <Route path="marketplace" element={<Marketplace />} />
                 <Route path="marketplace/share" element={<MarketplaceShare />} />
+                <Route path="marketplace/categories" element={<MarketplaceCategories />} />
                 <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
                 <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
                 <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
