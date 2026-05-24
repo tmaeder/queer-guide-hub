@@ -30,7 +30,8 @@ const rule = {
   },
   create(ctx) {
     // ESLint 10 removed ctx.getFilename(); ctx.filename has been the
-    // canonical property since v8.40.
+    // canonical property since v8.40. physicalFilename fallback for
+    // virtual files processed through preprocessors.
     const file = (ctx.filename ?? ctx.physicalFilename ?? '').replace(/\\/g, '/');
     const isPage = file.includes('/src/pages/');
     const isComponent = file.includes('/src/components/');

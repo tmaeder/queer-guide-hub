@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 
@@ -21,24 +21,18 @@ interface PrideFilterRailProps {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// ISO2 → continent (covers the seed)
 const CONTINENT_MAP: Record<string, string> = {
-  // Europe
   DE: 'Europe', GB: 'Europe', FR: 'Europe', ES: 'Europe', NL: 'Europe', SE: 'Europe',
   DK: 'Europe', NO: 'Europe', FI: 'Europe', IT: 'Europe', PT: 'Europe', AT: 'Europe',
   CH: 'Europe', BE: 'Europe', CZ: 'Europe', PL: 'Europe', HU: 'Europe', GR: 'Europe',
   IE: 'Europe', IS: 'Europe', EE: 'Europe', LV: 'Europe', LT: 'Europe', RO: 'Europe',
   BG: 'Europe', SI: 'Europe', HR: 'Europe', BA: 'Europe', RS: 'Europe', SK: 'Europe',
   GE: 'Europe', TR: 'Europe',
-  // Americas
   US: 'Americas', CA: 'Americas', MX: 'Americas', BR: 'Americas', AR: 'Americas',
   CL: 'Americas', CO: 'Americas', PE: 'Americas', EC: 'Americas', UY: 'Americas',
-  // Oceania
   AU: 'Oceania', NZ: 'Oceania',
-  // Asia
   IL: 'Asia', JP: 'Asia', TW: 'Asia', TH: 'Asia', HK: 'Asia', KR: 'Asia',
   SG: 'Asia', PH: 'Asia', VN: 'Asia',
-  // Africa
   ZA: 'Africa',
 };
 
@@ -94,23 +88,17 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
   const toggleMonth = (m: number) =>
     setFilters({
       ...filters,
-      months: filters.months.includes(m)
-        ? filters.months.filter((x) => x !== m)
-        : [...filters.months, m],
+      months: filters.months.includes(m) ? filters.months.filter((x) => x !== m) : [...filters.months, m],
     });
   const toggleContinent = (c: string) =>
     setFilters({
       ...filters,
-      continents: filters.continents.includes(c)
-        ? filters.continents.filter((x) => x !== c)
-        : [...filters.continents, c],
+      continents: filters.continents.includes(c) ? filters.continents.filter((x) => x !== c) : [...filters.continents, c],
     });
   const toggleCountry = (c: string) =>
     setFilters({
       ...filters,
-      countries: filters.countries.includes(c)
-        ? filters.countries.filter((x) => x !== c)
-        : [...filters.countries, c],
+      countries: filters.countries.includes(c) ? filters.countries.filter((x) => x !== c) : [...filters.countries, c],
     });
 
   const hasActive =
@@ -121,131 +109,113 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
     filters.verifiedOnly ||
     filters.query.length > 0;
 
+  const chip = (active: boolean) =>
+    cn(
+      'px-2 py-1 text-xs rounded-badge border transition-colors min-h-0',
+      active ? 'bg-foreground text-background border-foreground' : 'border-foreground/20 hover:bg-muted',
+    );
+
   return (
-    <aside className="space-y-6 text-sm" aria-label="Pride filters">
-      <div>
-        <label htmlFor="pride-search" className="block mb-2 text-xs2 font-medium uppercase tracking-wide text-foreground/60">
-          Search
-        </label>
-        <input
-          id="pride-search"
-          type="search"
-          value={filters.query}
-          onChange={(e) => setFilters({ ...filters, query: e.target.value })}
-          placeholder="City, country, name…"
-          className="w-full rounded-element border border-foreground/20 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
-        />
-      </div>
-
-      <div>
-        <h3 className="mb-2 text-xs2 font-medium uppercase tracking-wide text-foreground/60">Month</h3>
-        <div className="grid grid-cols-4 gap-2">
-          {MONTHS.map((m, i) => {
-            const on = filters.months.includes(i);
-            return (
-              <button
-                key={m}
-                type="button"
-                onClick={() => toggleMonth(i)}
-                className={cn(
-                  'px-2 py-1 text-xs rounded-badge border transition-colors',
-                  on
-                    ? 'bg-foreground text-background border-foreground'
-                    : 'border-foreground/20 hover:bg-muted',
-                )}
-                aria-pressed={on}
-              >
-                {m}
-              </button>
-            );
-          })}
+    <div
+      className="rounded-container border border-foreground/15 bg-background p-4 lg:p-6 space-y-4"
+      aria-label="Pride filters"
+    >
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[220px] max-w-md">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-foreground/50 pointer-events-none" />
+          <input
+            id="pride-search"
+            type="search"
+            value={filters.query}
+            onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+            placeholder="Search prides, cities, countries…"
+            aria-label="Search prides"
+            className="w-full rounded-element border border-foreground/20 bg-background pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+          />
         </div>
-      </div>
 
-      <div>
-        <h3 className="mb-2 text-xs2 font-medium uppercase tracking-wide text-foreground/60">Region</h3>
-        <div className="flex flex-wrap gap-2">
-          {continents.map((c) => {
-            const on = filters.continents.includes(c);
-            return (
-              <button
-                key={c}
-                type="button"
-                onClick={() => toggleContinent(c)}
-                className={cn(
-                  'px-2 py-1 text-xs rounded-badge border transition-colors',
-                  on ? 'bg-foreground text-background border-foreground' : 'border-foreground/20 hover:bg-muted',
-                )}
-                aria-pressed={on}
-              >
-                {c}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {filters.continents.length > 0 && (
-        <div>
-          <h3 className="mb-2 text-xs2 font-medium uppercase tracking-wide text-foreground/60">Country</h3>
-          <div className="flex flex-wrap gap-1.5">
-            {filters.continents.flatMap((cont) =>
-              Array.from(countriesByContinent.get(cont) ?? []).sort().map((cc) => {
-                const on = filters.countries.includes(cc);
-                return (
-                  <button
-                    key={cc}
-                    type="button"
-                    onClick={() => toggleCountry(cc)}
-                    className={cn(
-                      'px-1.5 py-0.5 text-2xs rounded-badge border transition-colors',
-                      on ? 'bg-foreground text-background border-foreground' : 'border-foreground/20 hover:bg-muted',
-                    )}
-                    aria-pressed={on}
-                  >
-                    {cc}
-                  </button>
-                );
-              }),
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <label className="flex items-center gap-2 text-sm cursor-pointer">
+        <label className="flex items-center gap-1.5 text-sm cursor-pointer">
           <input
             type="checkbox"
             checked={filters.featuredOnly}
             onChange={(e) => setFilters({ ...filters, featuredOnly: e.target.checked })}
             className="accent-foreground"
           />
-          Featured only
+          Featured
         </label>
-        <label className="flex items-center gap-2 text-sm cursor-pointer">
+        <label className="flex items-center gap-1.5 text-sm cursor-pointer">
           <input
             type="checkbox"
             checked={filters.verifiedOnly}
             onChange={(e) => setFilters({ ...filters, verifiedOnly: e.target.checked })}
             className="accent-foreground"
           />
-          Confirmed dates only
+          Confirmed dates
         </label>
+
+        {hasActive && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setFilters({ months: [], continents: [], countries: [], featuredOnly: false, verifiedOnly: false, query: '' })
+            }
+            className="ml-auto min-h-0"
+          >
+            <X className="size-3.5 mr-1" />
+            Clear all
+          </Button>
+        )}
       </div>
 
-      {hasActive && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            setFilters({ months: [], continents: [], countries: [], featuredOnly: false, verifiedOnly: false, query: '' })
-          }
-          className="w-full"
-        >
-          <X className="size-3.5 mr-1" />
-          Clear all
-        </Button>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">Month</span>
+        {MONTHS.map((m, i) => {
+          const on = filters.months.includes(i);
+          return (
+            <button key={m} type="button" onClick={() => toggleMonth(i)} aria-pressed={on} className={chip(on)}>
+              {m}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">Region</span>
+        {continents.map((c) => {
+          const on = filters.continents.includes(c);
+          return (
+            <button key={c} type="button" onClick={() => toggleContinent(c)} aria-pressed={on} className={chip(on)}>
+              {c}
+            </button>
+          );
+        })}
+      </div>
+
+      {filters.continents.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">Country</span>
+          {filters.continents.flatMap((cont) =>
+            Array.from(countriesByContinent.get(cont) ?? []).sort().map((cc) => {
+              const on = filters.countries.includes(cc);
+              return (
+                <button
+                  key={cc}
+                  type="button"
+                  onClick={() => toggleCountry(cc)}
+                  aria-pressed={on}
+                  className={cn(
+                    'px-1.5 py-0.5 text-2xs rounded-badge border transition-colors min-h-0',
+                    on ? 'bg-foreground text-background border-foreground' : 'border-foreground/20 hover:bg-muted',
+                  )}
+                >
+                  {cc}
+                </button>
+              );
+            }),
+          )}
+        </div>
       )}
-    </aside>
+    </div>
   );
 }

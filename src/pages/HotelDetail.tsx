@@ -31,6 +31,7 @@ export default function HotelDetail() {
     data: primary,
     isLoading: primaryLoading,
     error: primaryError,
+    refetch,
   } = useEntityDetail<HotelWithRelations>({
     table: 'hotels',
     slug,
@@ -77,7 +78,7 @@ export default function HotelDetail() {
   const photosToShow = hotel ? getHotelPhotosToShow(hotel.images) : [];
   const tabs: EntityDetailTab[] = hotel
     ? [
-        { id: 'overview', label: t('pages.hotelDetail.overview', 'Overview'), content: <HotelOverview hotel={hotel} t={t} /> },
+        { id: 'overview', label: t('pages.hotelDetail.overview', 'Overview'), content: <HotelOverview hotel={hotel} t={t} onContentUpdated={refetch} /> },
         ...(photosToShow.length > 0
           ? [{ id: 'photos', label: `Photos (${photosToShow.length})`, content: <HotelPhotos hotel={hotel} /> }]
           : []),
@@ -107,6 +108,7 @@ export default function HotelDetail() {
               tripCount={tripStatus?.count}
               isInTrip={tripStatus?.isInTrip}
               onAddToTrip={() => setAddToTripOpen(true)}
+              onContentUpdated={refetch}
             />
           ) : null
         }

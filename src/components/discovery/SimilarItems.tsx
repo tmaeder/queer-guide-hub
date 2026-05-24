@@ -51,7 +51,7 @@ interface SimItem {
 	content_type: string;
 	content_id: string;
 	score: number;
-	metadata: { city?: string; country?: string; category?: string; slug?: string; image_url?: string; tags?: string[] };
+	metadata: { title?: string; city?: string; country?: string; category?: string; slug?: string; image_url?: string; tags?: string[] };
 }
 
 export function SimilarItems({ entity, limit = 6, title = "More like this", className, contentTypes }: Props) {
@@ -145,7 +145,7 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 													/>
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">
-														{it.metadata?.slug?.replace(/-/g, " ") || it.content_id.slice(0, 8)}
+														{it.metadata?.title || it.metadata?.slug?.replace(/-/g, " ")}
 													</div>
 													<div className="text-xs text-muted-foreground truncate">
 														{[it.metadata?.city, it.metadata?.country].filter(Boolean).join(", ") ||

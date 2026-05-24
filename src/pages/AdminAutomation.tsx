@@ -31,6 +31,7 @@ import {
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { adminAction } from '@/lib/adminAction';
+import { formatNextFire } from '@/lib/nextCronFire';
 import { toast } from 'sonner';
 
 interface Automation {
@@ -46,6 +47,8 @@ interface Automation {
   trigger: Record<string, unknown>;
   conditions: Array<Record<string, unknown>>;
   action: Record<string, unknown>;
+  consecutive_failures: number;
+  auto_pause_threshold: number;
   created_at: string;
   updated_at: string;
 }
@@ -196,6 +199,40 @@ export default function AdminAutomation() {
       : null,
   );
 
+  async function dryRunAll() {
+    setBusySlug('dry-all');
+    try {
+      const { data, error } = await supabase.rpc('admin_automation_dry_run_all');
+      if (error) throw error;
+      const d = data as {
+        automations_examined: number;
+        total_would_change: number;
+        per_slug: Record<string, number | { error: string }>;
+      };
+      const details = Object.entries(d.per_slug)
+        .map(([slug, val]) =>
+          typeof val === 'number' ? `${slug}: ${val}` : `${slug}: ${val.error}`,
+        )
+        .join('\n');
+      toast(
+        `Dry-run all: would change ${d.total_would_change} items across ${d.automations_examined} automation${d.automations_examined === 1 ? '' : 's'}`,
+        { description: details, duration: 8000 },
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Dry-run all failed');
+    } finally {
+      setBusySlug(null);
+      qc.invalidateQueries({ queryKey: ['admin-automation-runs'] });
+    }
+  }
+
+  useRegisterAdminCommandAction({
+    id: 'automation.dry-run-all',
+    label: 'Dry-run all automations',
+    keywords: 'preview simulate everything',
+    perform: () => dryRunAll(),
+  });
+
   async function dryRun(slug: string) {
     setBusySlug(`dry:${slug}`);
     try {
@@ -225,8 +262,23 @@ export default function AdminAutomation() {
             Things the system is doing on its own. Each row is a rule; runs are audited below.
           </p>
         </div>
+        <div className="flex gap-2 flex-shrink-0 flex-wrap">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={dryRunAll}
+            disabled={busySlug !== null}
+            title="Preview every enabled automation in one click"
+          >
+            {busySlug === 'dry-all' ? (
+              <Loader2 size={12} className="mr-1 animate-spin" />
+            ) : (
+              <FlaskConical size={12} className="mr-1" />
+            )}
+            Dry-run all
+          </Button>
         {isAdmin && (
-          <div className="flex gap-2 flex-shrink-0">
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -250,8 +302,9 @@ export default function AdminAutomation() {
               ) : null}
               Resume all
             </Button>
-          </div>
+          </>
         )}
+        </div>
       </header>
 
       {/* Registry */}
@@ -269,6 +322,7 @@ export default function AdminAutomation() {
                   <th className="px-4 py-2 font-semibold">Name</th>
                   <th className="px-4 py-2 font-semibold">Managed by</th>
                   <th className="px-4 py-2 font-semibold">Schedule</th>
+                  <th className="px-4 py-2 font-semibold">Next run</th>
                   <th className="px-4 py-2 font-semibold">Last run</th>
                   <th className="px-4 py-2 font-semibold">Status</th>
                   <th className="px-4 py-2 font-semibold text-right">Actions</th>
@@ -294,6 +348,9 @@ export default function AdminAutomation() {
                       </Badge>
                     </td>
                     <td className="px-4 py-2 font-mono text-2xs">{a.schedule ?? '—'}</td>
+                    <td className="px-4 py-2 text-2xs text-muted-foreground tabular-nums">
+                      {a.enabled ? formatNextFire(a.schedule) : '—'}
+                    </td>
                     <td className="px-4 py-2">
                       {a.last_run_at
                         ? formatDistanceToNow(new Date(a.last_run_at), { addSuffix: true })
@@ -314,11 +371,19 @@ export default function AdminAutomation() {
                           {busySlug === `toggle:${a.slug}` ? (
                             <Loader2 size={11} className="mr-1 animate-spin" />
                           ) : null}
-                          {a.enabled ? 'enabled · click to pause' : 'paused · click to enable'}
+                          {a.enabled
+                            ? 'enabled · click to pause'
+                            : a.last_run_status === 'auto_paused'
+                              ? `auto-paused after ${a.consecutive_failures} errors · click to resume`
+                              : 'paused · click to enable'}
                         </Button>
                       ) : a.enabled ? (
                         <Badge variant="outline" className="font-normal">
                           enabled
+                        </Badge>
+                      ) : a.last_run_status === 'auto_paused' ? (
+                        <Badge variant="destructive" className="font-normal">
+                          auto-paused
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="font-normal">
@@ -482,6 +547,8 @@ export default function AdminAutomation() {
                 <dd>{detailRow.enabled ? 'enabled' : 'paused'}</dd>
                 <dt className="text-muted-foreground">Schedule</dt>
                 <dd className="font-mono text-2xs">{detailRow.schedule ?? '—'}</dd>
+                <dt className="text-muted-foreground">Next run</dt>
+                <dd>{detailRow.enabled ? formatNextFire(detailRow.schedule) : 'paused'}</dd>
                 <dt className="text-muted-foreground">Last run</dt>
                 <dd>
                   {detailRow.last_run_at
@@ -490,6 +557,14 @@ export default function AdminAutomation() {
                 </dd>
                 <dt className="text-muted-foreground">Last status</dt>
                 <dd>{detailRow.last_run_status ?? '—'}</dd>
+                <dt className="text-muted-foreground">Consecutive failures</dt>
+                <dd
+                  className={
+                    detailRow.consecutive_failures > 0 ? 'text-destructive font-semibold' : ''
+                  }
+                >
+                  {detailRow.consecutive_failures} / {detailRow.auto_pause_threshold} before auto-pause
+                </dd>
                 <dt className="text-muted-foreground">Created</dt>
                 <dd>
                   {formatDistanceToNow(new Date(detailRow.created_at), { addSuffix: true })}

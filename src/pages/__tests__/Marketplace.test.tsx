@@ -20,6 +20,17 @@ vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
+// MarketplaceCard reads useCurrency; bare render has no CurrencyProvider.
+vi.mock('@/hooks/useCurrency', () => ({
+  useCurrency: () => ({
+    currency: 'USD',
+    setCurrency: vi.fn(),
+    rates: {},
+    formatPrice: (n: number) => `$${n}`,
+    convertPrice: (n: number) => n,
+    loading: false,
+  }),
+}));
 
 import Marketplace from '../Marketplace';
 

@@ -7,6 +7,10 @@ const useNewsState = {
   articles: [] as Array<Record<string, unknown>>,
   sources: [] as Array<{ id: string; name: string }>,
   categories: [] as Array<{ id: string; slug: string; name: string }>,
+  // News.tsx destructures these too — must be defined, else
+  // Object.keys(undefined) throws at News.tsx:483.
+  categoryCounts: {} as Record<string, number>,
+  totalArticles: 0,
   articleTags: {} as Record<string, unknown>,
   loading: false,
   error: null as string | null,
