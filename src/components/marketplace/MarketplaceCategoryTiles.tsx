@@ -49,11 +49,19 @@ export function MarketplaceCategoryTiles() {
 
   return (
     <section aria-labelledby="category-tiles" className="mb-12">
-      <div className="mb-4">
-        <h2 id="category-tiles" className="text-2xl font-bold tracking-tight">
-          Browse by category
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">Jump straight to what you're looking for.</p>
+      <div className="mb-4 flex items-end justify-between gap-4">
+        <div>
+          <h2 id="category-tiles" className="text-2xl font-bold tracking-tight">
+            Browse by category
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">Jump straight to what you're looking for.</p>
+        </div>
+        <LocalizedLink
+          to="/marketplace/categories"
+          className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 hidden md:inline"
+        >
+          See all categories
+        </LocalizedLink>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {loading
