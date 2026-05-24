@@ -1477,7 +1477,6 @@
       "subtitle": "あなたの地域のコミュニティイベントを見つけて参加しよう",
       "submitEvent": "イベントを登録",
       "gridView": "グリッド表示",
-      "calendarView": "カレンダー表示",
       "city": "都市",
       "eventType": "イベントタイプ",
       "startDate": "開始日",
@@ -1569,7 +1568,8 @@
       "resultsCount_other": "{{count}}件のイベント",
       "resultsNear_one": "{{city}}近郊の{{count}}件のイベント",
       "resultsNear_other": "{{city}}近郊の{{count}}件のイベント",
-      "showWorldwide": "世界中を表示"
+      "showWorldwide": "世界中を表示",
+      "timelineView": "タイムライン表示"
     },
     "eventDetail": {
       "loadFailed": "イベントの詳細を読み込めませんでした。",

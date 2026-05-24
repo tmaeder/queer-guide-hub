@@ -22,7 +22,7 @@ interface TripCluster {
 const MAX_DAYS_APART = 14;
 const MAX_KM_BETWEEN = 1500;
 
-function buildClusters(events: PrideCalendarEvent[]): TripCluster[] {
+export function buildClusters(events: PrideCalendarEvent[]): TripCluster[] {
   const geo = events.filter((e) => e.latitude != null && e.longitude != null);
   const sorted = [...geo].sort(
     (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),

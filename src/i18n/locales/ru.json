@@ -1505,7 +1505,6 @@
       "subtitle": "Находи и присоединяйся к мероприятиям сообщества рядом с тобой",
       "submitEvent": "Предложить мероприятие",
       "gridView": "Вид сеткой",
-      "calendarView": "Вид календарём",
       "city": "Город",
       "eventType": "Тип мероприятия",
       "startDate": "Дата начала",
@@ -1601,7 +1600,8 @@
       "resultsCount_few": "{{count}} мероприятия",
       "resultsCount_many": "{{count}} мероприятий",
       "resultsNear_few": "{{count}} мероприятия рядом с {{city}}",
-      "resultsNear_many": "{{count}} мероприятий рядом с {{city}}"
+      "resultsNear_many": "{{count}} мероприятий рядом с {{city}}",
+      "timelineView": "Вид временной шкалы"
     },
     "eventDetail": {
       "loadFailed": "Не удалось загрузить информацию о мероприятии.",
