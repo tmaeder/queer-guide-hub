@@ -1,4 +1,5 @@
 import { useMemo, useRef, useEffect } from 'react';
+import { Link } from 'react-router';
 import { Calendar, MapPin, Star } from 'lucide-react';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 import { cn } from '@/lib/utils';
@@ -59,7 +60,7 @@ function placeEvents(events: PrideCalendarEvent[]): PlacedEvent[] {
   return placed;
 }
 
-export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimelineProps) {
+export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }: PrideTimelineProps) {
   const placed = useMemo(() => placeEvents(events), [events]);
   const maxRow = useMemo(() => placed.reduce((m, p) => (p.row > m ? p.row : m), 0), [placed]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -168,6 +169,13 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
                       aria-pressed={isSelected}
                       className={cn(
                         'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group',
+                    <Link
+                      to={`/events/${p.event.slug}`}
+                      data-event-id={p.event.id}
+                      aria-label={`${p.event.title} on ${dateLabel}`}
+                      aria-current={isSelected ? 'true' : undefined}
+                      className={cn(
+                        'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group no-underline',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 rounded-badge',
                       )}
                       style={{ left: `${xPct}%`, top: `${y}px`, height: '20px', maxWidth: `${LABEL_PX + 16}px` }}
@@ -197,6 +205,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect }: PrideTimel
                         <span className="truncate">{p.event.city ?? p.event.title}</span>
                       </span>
                     </button>
+                    </Link>
                   </TooltipTrigger>
                   <TooltipContent
                     side="top"
