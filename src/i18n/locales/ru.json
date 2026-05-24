@@ -1617,7 +1617,14 @@
       "share": "[RU] Share",
       "shareCopied": "[RU] Copied",
       "shareFilters": "[RU] Copy share link",
-      "shareFiltersHint": "[RU] Copy a link to these filters"
+      "shareFiltersHint": "[RU] Copy a link to these filters",
+      "ageRestriction": "[RU] Age restriction",
+      "ageAny": "[RU] Any",
+      "ageAllAges": "[RU] All ages",
+      "age18Plus": "[RU] 18+",
+      "age21Plus": "[RU] 21+",
+      "filterAge": "[RU] Age: {{value}}",
+      "clearFilterAge": "[RU] Clear age filter"
     },
     "eventDetail": {
       "loadFailed": "Не удалось загрузить информацию о мероприятии.",

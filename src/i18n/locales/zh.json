@@ -1585,7 +1585,14 @@
       "share": "[ZH] Share",
       "shareCopied": "[ZH] Copied",
       "shareFilters": "[ZH] Copy share link",
-      "shareFiltersHint": "[ZH] Copy a link to these filters"
+      "shareFiltersHint": "[ZH] Copy a link to these filters",
+      "ageRestriction": "[ZH] Age restriction",
+      "ageAny": "[ZH] Any",
+      "ageAllAges": "[ZH] All ages",
+      "age18Plus": "[ZH] 18+",
+      "age21Plus": "[ZH] 21+",
+      "filterAge": "[ZH] Age: {{value}}",
+      "clearFilterAge": "[ZH] Clear age filter"
     },
     "eventDetail": {
       "loadFailed": "无法加载活动详情。",
