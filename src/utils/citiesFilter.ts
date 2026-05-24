@@ -2,35 +2,17 @@
  * Pure helpers for the /cities directory. Kept out of the data hook so the
  * filter / sort / tier logic is testable without supabase or React.
  *
- * Tier cutoffs mirror `getScoreLabel` in src/utils/equalityScore.ts so we
- * don't introduce a parallel taxonomy: ≥80 / ≥60 / ≥40 / ≥20 / <20 / null.
+ * Tier types + thresholds live in src/utils/equalityScore.ts as the single
+ * source of truth — re-exported here for ergonomic imports by the cities
+ * surface and to preserve the historical `tierFor` name.
  */
 
-export type EqualityTier =
-  | 'very-high'
-  | 'high'
-  | 'moderate'
-  | 'low'
-  | 'very-low'
-  | 'unknown';
+import { tierForScore, EQUALITY_TIERS, type EqualityTier } from '@/utils/equalityScore';
 
-export const EQUALITY_TIERS: EqualityTier[] = [
-  'very-high',
-  'high',
-  'moderate',
-  'low',
-  'very-low',
-  'unknown',
-];
+export { EQUALITY_TIERS, type EqualityTier };
 
-export function tierFor(score: number | null | undefined): EqualityTier {
-  if (score == null) return 'unknown';
-  if (score >= 80) return 'very-high';
-  if (score >= 60) return 'high';
-  if (score >= 40) return 'moderate';
-  if (score >= 20) return 'low';
-  return 'very-low';
-}
+/** Back-compat alias for the cities surface's pre-refactor name. */
+export const tierFor = tierForScore;
 
 export type CitiesSortKey = 'population' | 'name' | 'equality' | 'venues';
 
