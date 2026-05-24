@@ -10,6 +10,12 @@ interface CityListRowProps {
   venueCount: number | undefined;
   nextPride?: NextPride;
   selected?: boolean;
+  /**
+   * Hint the row that its thumbnail is one of the LCP candidates so the
+   * browser fetches it with high priority and skips lazy-load. CityListPane
+   * sets this true for the first 3 rows.
+   */
+  highPriorityImage?: boolean;
   onHover?: (cityId: string | null) => void;
 }
 
@@ -28,6 +34,7 @@ function CityListRowImpl({
   venueCount,
   nextPride,
   selected = false,
+  highPriorityImage = false,
   onHover,
 }: CityListRowProps) {
   const thumb = city.image_url ?? city.curated_image_url ?? null;
@@ -64,8 +71,9 @@ function CityListRowImpl({
             <img
               src={thumb}
               alt=""
-              loading="lazy"
+              loading={highPriorityImage ? 'eager' : 'lazy'}
               decoding="async"
+              fetchPriority={highPriorityImage ? 'high' : 'auto'}
               className="h-full w-full object-cover"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
