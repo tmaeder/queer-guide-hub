@@ -36,6 +36,7 @@ jobs:
             --url="$BASE/" \
             --url="$BASE/venues" \
             --url="$BASE/events" \
+            --url="$BASE/cities" \
             --url="$BASE/travel" \
             --url="$BASE/news" \
             --url="$BASE/about" \
