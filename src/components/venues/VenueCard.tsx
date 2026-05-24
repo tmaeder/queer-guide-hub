@@ -1,38 +1,15 @@
 import { memo } from 'react';
-import { Card, CardImage } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { MapPin, BadgeCheck, Share2 } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { MapPin, BadgeCheck } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { Luggage } from 'lucide-react';
-import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
-import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { useToast } from '@/hooks/use-toast';
-import { isSupportedLocale, DEFAULT_LOCALE } from '@/i18n/languages';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-
-// Compact relative-time formatter — uses Intl when available.
-function relativeUpdated(iso: string | null | undefined): string | null {
-  if (!iso) return null;
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return null;
-  const diffMs = Date.now() - then;
-  const day = 86_400_000;
-  const days = Math.round(diffMs / day);
-  if (days < 1) return 'today';
-  if (days < 7) return `${days}d ago`;
-  const weeks = Math.round(days / 7);
-  if (weeks < 5) return `${weeks}w ago`;
-  const months = Math.round(days / 30);
-  if (months < 12) return `${months}mo ago`;
-  const years = Math.round(days / 365);
-  return `${years}y ago`;
-}
 
 // Read venue.hours JSON and return whether the venue appears open right now.
 // Supported shapes: { mon: "09:00-17:00", ... } or { mon: [{open:"09:00",close:"17:00"}] }.
@@ -49,7 +26,6 @@ function isOpenNow(hours: unknown): boolean | null {
     if (Number.isNaN(oh) || Number.isNaN(om) || Number.isNaN(ch) || Number.isNaN(cm)) return false;
     const o = oh * 60 + om;
     const c = ch * 60 + cm;
-    // Same-day window. Cross-midnight intentionally ignored — needs more data.
     return minutes >= o && minutes <= c;
   };
   if (typeof today === 'string') {
@@ -70,14 +46,9 @@ function isOpenNow(hours: unknown): boolean | null {
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
 
-const categoryLabel = (cat: string) =>
-  cat.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-
 interface VenueCardProps {
   venue?: Venue & {
-    venue_reviews?: Array<{
-      rating: number;
-    }>;
+    venue_reviews?: Array<{ rating: number }>;
   };
   loading?: boolean;
   events?: Event[];
@@ -89,25 +60,15 @@ interface VenueCardProps {
 
 const VenueCardFixture = () => (
   <Card hoverable className="overflow-hidden">
-    <CardImage src="" alt="Venue" fallbackIcon={MapPin} />
+    <div className="aspect-[16/10] bg-muted" />
     <div className="p-4">
-      <div className="flex flex-col gap-1.5">
-        <p className="text-base font-semibold leading-tight">Sample Venue Name</p>
-        <div className="flex items-center gap-1.5 text-muted-foreground">
-          <MapPin size={14} className="shrink-0" />
-          <p className="text-sm">Berlin, Germany</p>
-        </div>
-      </div>
+      <p className="text-body-lg font-semibold leading-tight">Sample Venue Name</p>
+      <p className="mt-1 text-xs text-muted-foreground">Berlin, Germany</p>
     </div>
   </Card>
 );
 
 function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
-  const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
-  const visitedLookup = useVisitedPlaceLookup();
-  const isVisited = !!venue?.id && visitedLookup.has('venue', venue.id);
-  const { toast } = useToast();
-
   const venueImage = venue?.images?.[0] ?? venue?.logo_url ?? null;
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
@@ -115,30 +76,18 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
       ? '$'.repeat(Math.min(4, Math.max(1, venue.price_range)))
       : null;
   const isVerified = venue?.verified === true || venue?.verification_status === 'verified';
+  const isClosed = !!venue?.closed_at && new Date(venue.closed_at) <= new Date();
   const topTags = (venue?.tags ?? []).slice(0, 2);
-  const updatedLabel = relativeUpdated(venue?.updated_at);
+  const locationLabel = venue
+    ? [venue.city, venue.state].filter(Boolean).join(', ')
+    : '';
 
-  const handleShare = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!venue) return;
-    // Preserve the current locale prefix in the shared URL so the recipient
-    // lands on the same language. Default locale ('en') has no prefix.
-    const firstSeg = window.location.pathname.split('/')[1] ?? '';
-    const prefix =
-      firstSeg && isSupportedLocale(firstSeg) && firstSeg !== DEFAULT_LOCALE ? `/${firstSeg}` : '';
-    const url = `${window.location.origin}${prefix}/venues/${venue.slug}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: venue.name, url });
-        return;
-      }
-      await navigator.clipboard.writeText(url);
-      toast({ title: 'Link copied', description: url });
-    } catch {
-      // User cancelled or clipboard blocked — silent.
-    }
-  };
+  // Single overlay slot — priority order
+  const overlay: { label: string; variant: 'closed' | 'open' } | null = isClosed
+    ? { label: 'Closed', variant: 'closed' }
+    : openNow === true
+      ? { label: 'Open now', variant: 'open' }
+      : null;
 
   return (
     <Skeleton
@@ -155,35 +104,30 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
         >
           <CardHoverEffect>
             <Card hoverable className="group overflow-hidden">
-              <div className="relative overflow-hidden">
-                <CardImage
-                  src={venueImage}
+              <div className="relative aspect-[16/10] overflow-hidden bg-muted rounded-t-container">
+                <img
+                  src={venueImage ?? getRandomFallbackImage()}
                   alt={venue.name}
-                  fallbackIcon={MapPin}
-                  height={160}
-                  className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
+                  role="presentation"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
                 />
 
-                {/* Category label — top left. "Other" is hidden because it's noise:
-                  most "other" entries are uncategorized scraper imports and the
-                  badge adds nothing for the user. */}
-                {venue.category && venue.category !== 'other' && (
+                {overlay && (
                   <div
-                    className="absolute top-2 left-2 px-2 py-0.5 rounded font-bold uppercase text-background"
-                    style={{
-                      backgroundColor: 'hsl(var(--foreground) / 0.6)',
-                      fontSize: '0.65rem',
-                      letterSpacing: '0.05em',
-                    }}
+                    className={
+                      overlay.variant === 'closed'
+                        ? 'absolute top-2 left-2 px-2 py-0.5 rounded-badge text-2xs font-semibold uppercase tracking-wider bg-destructive text-destructive-foreground'
+                        : 'absolute top-2 left-2 px-2 py-0.5 rounded-badge text-2xs font-semibold uppercase tracking-wider bg-foreground/80 text-background'
+                    }
                   >
-                    {categoryLabel(venue.category)}
+                    {overlay.label}
                   </div>
                 )}
 
-                {/* Favorite + share — top right. Both buttons meet the
-                    44×44 tap-target guideline for mobile. */}
                 <div
-                  className="absolute top-1 right-1 flex items-center gap-1"
+                  className="absolute top-1 right-1"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -191,112 +135,43 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                   onKeyDown={(e) => e.stopPropagation()}
                   role="presentation"
                 >
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    aria-label={`Share ${venue.name}`}
-                    className="h-11 w-11 rounded-full inline-flex items-center justify-center bg-background/70 hover:bg-background"
-                  >
-                    <Share2 size={16} aria-hidden="true" />
-                  </button>
                   <FavoriteButton itemId={venue.id} type="venue" size="tap" />
                 </div>
-
-                {/* Open-now badge — bottom right */}
-                {openNow === true && (
-                  <div className="absolute bottom-2 right-2">
-                    <Badge className="font-bold text-2xs h-5 px-1.5">Open now</Badge>
-                  </div>
-                )}
-
-                {/* Closed badge */}
-                {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
-                  <div className="absolute top-2 right-11">
-                    <Badge variant="destructive" className="font-bold text-2xs h-5">
-                      Closed
-                    </Badge>
-                  </div>
-                )}
-
-                {/* Visited pill */}
-                {isVisited && (
-                  <div
-                    className="absolute bottom-2 left-2 inline-flex items-center px-1.5 py-0.5 font-semibold bg-foreground/80 text-background"
-                    style={{ fontSize: '0.65rem' }}
-                    title="Visited"
-                  >
-                    ✓ Visited
-                  </div>
-                )}
-
-                {/* Trip badge */}
-                {!isVisited && tripStatus?.isInTrip && (
-                  <div
-                    className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold bg-primary text-primary-foreground"
-                    style={{ fontSize: '0.7rem' }}
-                  >
-                    <Luggage size={12} />
-                    In trip
-                  </div>
-                )}
-
-                {/* Logo overlay */}
-                {venue.logo_url && (
-                  <img
-                    src={venue.logo_url}
-                    alt=""
-                    role="presentation"
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute bottom-2 right-2 w-7 h-7 rounded-element bg-background object-contain border border-border p-0.5"
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                )}
               </div>
 
               <div className="p-4">
-                <div className="flex items-center gap-1 min-w-0">
-                  <p className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0">
+                <div className="flex items-baseline gap-2 min-w-0">
+                  <p className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
                     {venue.name}
+                    {isVerified && (
+                      <BadgeCheck
+                        aria-label="Verified"
+                        size={14}
+                        className="inline ml-1 text-foreground/60 align-middle"
+                      />
+                    )}
                   </p>
-                  {isVerified && (
-                    <BadgeCheck
-                      aria-label="Verified"
-                      size={14}
-                      className="text-foreground/70 shrink-0"
-                    />
-                  )}
                   {priceTier && (
                     <span
                       aria-label={`Price tier ${priceTier}`}
-                      className="text-xs font-medium text-muted-foreground tabular-nums"
+                      className="text-xs font-medium text-muted-foreground tabular-nums shrink-0"
                     >
                       {priceTier}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
-                  <MapPin size={13} className="shrink-0" />
-                  <p className="text-xs overflow-hidden text-ellipsis whitespace-nowrap">
-                    {[venue.city, venue.state].filter(Boolean).join(', ')}
-                  </p>
-                </div>
+                <p className="mt-1 text-xs text-muted-foreground truncate">
+                  {locationLabel || (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin size={12} />
+                      Location unknown
+                    </span>
+                  )}
+                </p>
                 {topTags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {topTags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-2xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {updatedLabel && (
-                  <p className="mt-2 text-2xs text-muted-foreground">Updated {updatedLabel}</p>
+                  <p className="mt-2 text-2xs text-muted-foreground truncate">
+                    {topTags.join(' · ')}
+                  </p>
                 )}
               </div>
             </Card>
