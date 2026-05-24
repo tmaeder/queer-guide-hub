@@ -1530,7 +1530,10 @@
         "pride": "[ZH] Pride season",
         "thisMonth": "[ZH] This month",
         "free": "[ZH] Free",
-        "featured": "[ZH] Featured"
+        "featured": "[ZH] Featured",
+        "tonight": "[ZH] Tonight",
+        "next7Days": "[ZH] Next 7 days",
+        "newThisWeek": "[ZH] New this week"
       },
       "rail": {
         "featured": "[ZH] Featured this week",
@@ -1558,7 +1561,10 @@
       "sortLabel": "[ZH] Sort events",
       "sort": {
         "dateAsc": "[ZH] Soonest first",
-        "dateDesc": "[ZH] Latest first"
+        "dateDesc": "[ZH] Latest first",
+        "distance": "[ZH] Closest to me",
+        "popularity": "[ZH] Most popular",
+        "recent": "[ZH] Recently added"
       },
       "searchLabel": "搜索活动",
       "searchPlaceholder": "搜索活动、城市、主办方",
@@ -1569,7 +1575,17 @@
       "resultsNear_one": "{{city}} 附近的 {{count}} 个活动",
       "resultsNear_other": "{{city}} 附近的 {{count}} 个活动",
       "showWorldwide": "查看全球",
-      "timelineView": "时间线视图"
+      "timelineView": "时间线视图",
+      "accessibility": "[ZH] Accessibility",
+      "accessibilityPlaceholder": "[ZH] Any",
+      "targetGroups": "[ZH] Audience",
+      "targetGroupsPlaceholder": "[ZH] Any",
+      "languages": "[ZH] Language",
+      "languagesPlaceholder": "[ZH] Any",
+      "share": "[ZH] Share",
+      "shareCopied": "[ZH] Copied",
+      "shareFilters": "[ZH] Copy share link",
+      "shareFiltersHint": "[ZH] Copy a link to these filters"
     },
     "eventDetail": {
       "loadFailed": "无法加载活动详情。",
