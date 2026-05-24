@@ -168,7 +168,12 @@ const Venues = () => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
-  const hasAnyFilters = Object.keys(currentFilters).length > 0;
+  // `userLocation` / `nearMe` are passed through currentFilters for ranking
+  // but they don't count as user-applied filters — keep rails visible while
+  // we know where the user is.
+  const hasAnyFilters = Object.keys(currentFilters).some(
+    (k) => k !== 'userLocation' && k !== 'nearMe',
+  );
   const showRails = VENUES_V2_ENABLED && !hasAnyFilters && viewMode === 'grid';
   const { venues: recentVenues } = useRecentVenues(8, !hasAnyFilters && !VENUES_V2_ENABLED);
 
