@@ -50,7 +50,6 @@ type Event = Database['public']['Tables']['events']['Row'];
 interface VenueCardProps {
   venue?: Venue & {
     venue_reviews?: Array<{ rating: number }>;
-    checkin_count?: number;
   };
   loading?: boolean;
   events?: Event[];
@@ -191,11 +190,6 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                 {topTags.length > 0 && (
                   <p className="mt-2 text-2xs text-muted-foreground truncate">
                     {topTags.join(' · ')}
-                  </p>
-                )}
-                {typeof venue.checkin_count === 'number' && venue.checkin_count > 0 && (
-                  <p className="mt-2 text-2xs text-muted-foreground">
-                    {venue.checkin_count.toLocaleString()} check-in{venue.checkin_count === 1 ? '' : 's'}
                   </p>
                 )}
                 {!isClosed && (
