@@ -1,9 +1,35 @@
-# Recharts cross-route chunk leak — open follow-up
+# Recharts cross-route chunk leak — RESOLVED
 
-**Status:** unresolved as of 2026-05-24
+**Status:** resolved by [#1122](https://github.com/tmaeder/queer-guide-hub/pull/1122) on 2026-05-24
 **First spotted:** Lighthouse run on /cities ([#1094](https://github.com/tmaeder/queer-guide-hub/pull/1094))
-**Attempted fix:** [#1098](https://github.com/tmaeder/queer-guide-hub/pull/1098) — did NOT solve the problem in production builds
-**Owner:** unassigned
+**Failed attempt:** [#1098](https://github.com/tmaeder/queer-guide-hub/pull/1098) — `optimizeDeps.include` didn't apply to prod builds
+**Working fix:** [#1122](https://github.com/tmaeder/queer-guide-hub/pull/1122) — `output.advancedChunks.groups` with priority-based assignment
+
+## TL;DR of the fix
+
+```ts
+// vite.config.ts > build > rollupOptions > output
+advancedChunks: {
+  groups: [
+    {
+      name: 'styling-utils',
+      test: /[\\/]node_modules[\\/](clsx|tailwind-merge|class-variance-authority)[\\/]/,
+      priority: 100,
+    },
+  ],
+}
+```
+
+Priority 100 wins over rolldown's default chunking, so clsx is owned by its
+own `styling-utils` chunk and rolldown stops baking duplicate copies into
+recharts/pdf chunks that happen to use it. The same fix also broke the
+**pdfjs leak (~122 KB raw)** and split recharts into per-chart-type chunks
+that only load on chart-using routes. Total /cities entry-preload bytes
+saved: ~457 KB raw (recharts 335 KB + pdf 122 KB).
+
+The historical investigation below is kept for reference.
+
+---
 
 ## Symptom
 
