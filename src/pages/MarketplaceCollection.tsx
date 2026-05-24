@@ -1,68 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useParams } from 'react-router';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeta } from '@/hooks/useMeta';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { useMarketplaceCollectionBySlug } from '@/hooks/useMarketplaceCollections';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Store } from 'lucide-react';
-import type { Database } from '@/integrations/supabase/types';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-
-type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
-type CollectionRow = {
-  id: string;
-  slug: string;
-  title: string;
-  subtitle: string | null;
-  editor_blurb: string | null;
-  cover_image_url: string | null;
-};
 
 const MarketplaceCollection = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
-  const [collection, setCollection] = useState<CollectionRow | null>(null);
-  const [listings, setListings] = useState<MarketplaceListing[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-
-  useEffect(() => {
-    if (!slug) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      const { data: col } = await supabase
-        .from('marketplace_collections')
-        .select('id, slug, title, subtitle, editor_blurb, cover_image_url')
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .maybeSingle();
-      if (cancelled) return;
-      if (!col) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-      setCollection(col as CollectionRow);
-      const { data: items } = await supabase
-        .from('marketplace_collection_items')
-        .select('position, marketplace_listings(*)')
-        .eq('collection_id', (col as CollectionRow).id)
-        .order('position', { ascending: true });
-      if (cancelled) return;
-      const rows = (items ?? [])
-        .map((r) => (r as { marketplace_listings: MarketplaceListing | null }).marketplace_listings)
-        .filter((l): l is MarketplaceListing => !!l);
-      setListings(rows);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [slug]);
+  const { collection, listings, loading, notFound } = useMarketplaceCollectionBySlug(slug);
 
   useMeta({
     title: collection?.title ?? 'Collection',

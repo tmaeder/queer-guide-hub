@@ -1,74 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useParams } from 'react-router';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useMeta } from '@/hooks/useMeta';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { useWishlistBySlug } from '@/hooks/useWishlists';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Heart, Share2, Lock, Globe } from 'lucide-react';
-import type { Database } from '@/integrations/supabase/types';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-
-type Wishlist = {
-  id: string;
-  user_id: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  cover_listing_id: string | null;
-  visibility: 'private' | 'unlisted' | 'public';
-  is_default: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
-type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
 const Wishlist = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
-  const [wishlist, setWishlist] = useState<Wishlist | null>(null);
-  const [listings, setListings] = useState<MarketplaceListing[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-
-  useEffect(() => {
-    if (!slug) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      const { data, error } = await supabase.rpc('get_wishlist_by_slug', { p_slug: slug });
-      if (cancelled) return;
-      const row = Array.isArray(data) ? data[0] : data;
-      if (error || !row) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-      setWishlist(row as Wishlist);
-      // Items: pull via wishlist_items join, RLS will filter if needed.
-      const { data: items } = await supabase
-        .from('wishlist_items')
-        .select('listing_id, position, added_at, marketplace_listings(*)')
-        .eq('wishlist_id', (row as Wishlist).id)
-        .order('position', { ascending: true })
-        .order('added_at', { ascending: false });
-      if (cancelled) return;
-      const rows = (items ?? [])
-        .map((r) => (r as { marketplace_listings: MarketplaceListing | null }).marketplace_listings)
-        .filter((l): l is MarketplaceListing => !!l);
-      setListings(rows);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [slug]);
+  const { wishlist, listings, loading, notFound } = useWishlistBySlug(slug);
 
   useMeta({
     title: wishlist?.title ?? 'Wishlist',

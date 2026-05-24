@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useCuratedIds } from '@/components/marketplace/useCuratedIds';
+import { usePersonalizedMarketplaceListings } from '@/hooks/usePersonalizedMarketplace';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import {
   Popover,
@@ -10,9 +10,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Info } from 'lucide-react';
-import type { Database } from '@/integrations/supabase/types';
-
-type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
 /**
  * "Picked for you" rail. Surfaced only when the user has enough save
@@ -26,45 +23,7 @@ type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['
 export function ForYouRail() {
   const { user } = useAuth();
   const { register } = useCuratedIds();
-  const [listings, setListings] = useState<MarketplaceListing[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!user) {
-      setListings([]);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      const { data: ranks, error } = await supabase.rpc(
-        'get_personalized_marketplace_listings',
-        { p_user_id: user.id, p_limit: 12 },
-      );
-      if (cancelled || error || !ranks || ranks.length === 0) {
-        if (!cancelled) {
-          setListings([]);
-          setLoading(false);
-        }
-        return;
-      }
-      type Rank = { listing_id: string; score: number; reason: string };
-      const ids = (ranks as Rank[]).map((r) => r.listing_id);
-      const { data: rows } = await supabase
-        .from('marketplace_listings')
-        .select('*, marketplace_reviews(rating), marketplace_favorites(id), venues(name, address, city)')
-        .eq('status', 'active')
-        .in('id', ids);
-      if (cancelled) return;
-      const byId = new Map((rows ?? []).map((r) => [r.id, r] as const));
-      const ordered = ids.map((id) => byId.get(id)).filter(Boolean) as MarketplaceListing[];
-      setListings(ordered);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
+  const { listings, loading } = usePersonalizedMarketplaceListings(user?.id, 12);
 
   // Register these IDs so the main grid doesn't repeat them on page 1.
   useEffect(() => {
