@@ -20840,6 +20840,18 @@ export type Database = {
         Returns: boolean
       }
       jwt_claim: { Args: { claim: string }; Returns: string }
+      local_supporter_score: {
+        Args: { p_city_id: string; p_user_id: string }
+        Returns: {
+          favorites: number
+          guide_reads: number
+          last_active_at: string
+          reviews: number
+          score: number
+          tier: string
+          weeks_decay: number
+        }[]
+      }
       log_search: {
         Args: {
           p_filters: Json
@@ -21821,6 +21833,15 @@ export type Database = {
         Returns: string
       }
       user_id_for_email_token: { Args: { p_token: string }; Returns: string }
+      user_local_supporter_cities: {
+        Args: { p_user_id: string }
+        Returns: {
+          city_id: string
+          city_name: string
+          score: number
+          tier: string
+        }[]
+      }
       username_available: { Args: { candidate: string }; Returns: boolean }
       validate_content_security: {
         Args: { content_text: string; content_type?: string }

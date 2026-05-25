@@ -16,6 +16,7 @@ import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { PageLoading } from '@/components/ui/loading';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForCity } from '@/components/marketplace/MarketplaceForCity';
+import { CityLocalSupporterCaption } from '@/components/marketplace/CityLocalSupporterCaption';
 import { TracingBeam } from '@/components/effects/TracingBeam';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
@@ -230,6 +231,7 @@ export default function CityDetail() {
       <TracingBeam className="container mx-auto px-4 pb-8">
         <TrendingStrip city={city.name} className="mt-8" />
         <MarketplaceForCity cityName={city.name} />
+        <CityLocalSupporterCaption cityId={city.id} />
         <SimilarItems
           entity={{ type: 'city', id: city.id }}
           className="mt-6"
