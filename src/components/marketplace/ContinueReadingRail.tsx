@@ -25,7 +25,7 @@ export function ContinueReadingRail() {
       </header>
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {items.map((it) => {
-          const hero = resolveImageUrl(it.guide.hero_image_path);
+          const hero = resolveImageUrl({ imageUrl: it.guide.hero_image_path });
           return (
             <li key={it.guide_id}>
               <LocalizedLink

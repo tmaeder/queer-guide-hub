@@ -43,7 +43,7 @@ export const GuideCard = memo(function GuideCard({
   size = 'default',
   priority = false,
 }: GuideCardProps) {
-  const hero = resolveImageUrl(guide.hero_image_path);
+  const hero = resolveImageUrl({ imageUrl: guide.hero_image_path });
   const isHero = size === 'hero';
 
   return (
