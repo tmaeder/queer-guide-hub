@@ -23,6 +23,7 @@ import {
   Shield,
   Crown,
   User,
+  Folder,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGroups, Group } from '@/hooks/useGroups';
@@ -39,6 +40,7 @@ import { GroupEventCard } from '@/components/groups/GroupEventCard';
 import { useTranslation } from 'react-i18next';
 import { Editable } from '@/components/admin/inline/Editable';
 import { GroupChat } from '@/components/groups/GroupChat';
+import { GroupCollections } from '@/components/groups/GroupCollections';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -292,7 +294,7 @@ export default function GroupDetail() {
 
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList style={{ width: '100%', gridTemplateColumns: 'repeat(5, 1fr)' }} className="grid">
+        <TabsList style={{ width: '100%', gridTemplateColumns: 'repeat(6, 1fr)' }} className="grid">
           <TabsTrigger value="about" style={{ alignItems: 'center', gap: '8px' }} className="flex">
             <Users size={16} />
             About
@@ -316,6 +318,10 @@ export default function GroupDetail() {
           <TabsTrigger value="events" style={{ alignItems: 'center', gap: '8px' }} className="flex">
             <Calendar size={16} />
             Events
+          </TabsTrigger>
+          <TabsTrigger value="collections" style={{ alignItems: 'center', gap: '8px' }} className="flex">
+            <Folder size={16} />
+            Collections
           </TabsTrigger>
         </TabsList>
 
@@ -580,6 +586,14 @@ export default function GroupDetail() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent
+          value="collections"
+          style={{ flexDirection: 'column', gap: '24px' }}
+          className="flex"
+        >
+          <GroupCollections groupId={groupId!} isMember={Boolean(group.is_member)} />
         </TabsContent>
       </Tabs>
     </div>
