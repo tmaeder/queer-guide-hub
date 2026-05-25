@@ -10,6 +10,15 @@ import { useEvents } from '@/hooks/useEvents';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
 import { EntityDetailLayout } from '@/components/entity/EntityDetailLayout';
 import {
+  EditorialDetailLayout,
+  IntroEssay,
+  KeyFactsStrip,
+  type KeyFact,
+  type SectionDef,
+} from '@/components/entity/editorial';
+import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
+import { VILLAGE_SECTION_DEFS } from './queer-village-detail/VillageSectionDefs';
+import {
   type VillageWithRelations,
   buildVillageBreadcrumbs,
   VillageHero,
@@ -96,35 +105,106 @@ export default function QueerVillageDetail() {
     );
   }
 
+  const sectionContent: Record<string, React.ReactNode> = village
+    ? {
+        overview: <VillageOverviewTab village={village} onContentUpdated={refetch} />,
+        venues: <VillageVenuesTab village={village} venues={venues} loading={venuesLoading} />,
+        events: <VillageEventsTab village={village} events={events} loading={eventsLoading} />,
+        photos: <VillagePhotosTab village={village} />,
+        map: <VillageMapTab village={village} venues={venues} />,
+      }
+    : {};
+
   const tabs = village
     ? [
         {
           id: 'overview',
           label: <VillageTabLabel icon={villageTabIcons.Landmark} label="Overview" />,
-          content: <VillageOverviewTab village={village} onContentUpdated={refetch} />,
+          content: sectionContent.overview,
         },
         {
           id: 'venues',
           label: <VillageTabLabel icon={villageTabIcons.Building} label="Venues" />,
-          content: <VillageVenuesTab village={village} venues={venues} loading={venuesLoading} />,
+          content: sectionContent.venues,
         },
         {
           id: 'events',
           label: <VillageTabLabel icon={villageTabIcons.Calendar} label="Events" />,
-          content: <VillageEventsTab village={village} events={events} loading={eventsLoading} />,
+          content: sectionContent.events,
         },
         {
           id: 'photos',
           label: <VillageTabLabel icon={villageTabIcons.ImageIcon} label="Photos" />,
-          content: <VillagePhotosTab village={village} />,
+          content: sectionContent.photos,
         },
         {
           id: 'map',
           label: <VillageTabLabel icon={villageTabIcons.MapPin} label="Map" />,
-          content: <VillageMapTab village={village} venues={venues} />,
+          content: sectionContent.map,
         },
       ]
     : [];
+
+  if (village && EDITORIAL_DETAIL_LAYOUT_ENABLED) {
+    const sections: SectionDef[] = VILLAGE_SECTION_DEFS.map((def) => ({
+      id: def.id,
+      label: def.label,
+      content: sectionContent[def.id] ?? null,
+    }));
+
+    const tagsValue = Array.isArray(village.tags) && village.tags.length > 0
+      ? village.tags.slice(0, 3).join(', ')
+      : null;
+
+    const facts: KeyFact[] = [
+      { label: 'City', value: village.cities?.name || null },
+      {
+        label: 'Country',
+        value:
+          village.countries?.flag_emoji || village.countries?.name
+            ? `${village.countries.flag_emoji ?? ''} ${village.countries.name ?? ''}`.trim()
+            : null,
+      },
+      { label: 'Vibe', value: tagsValue },
+      { label: 'Venues nearby', value: venues.length || null },
+      { label: 'Events', value: events.length || null },
+      { label: 'Featured', value: village.is_featured ? 'Editor’s pick' : null },
+    ];
+
+    return (
+      <>
+        <EditorialDetailLayout
+          loading={isLoading}
+          error={error as Error | null}
+          breadcrumbs={buildVillageBreadcrumbs(village)}
+          header={
+            <div className="flex flex-col gap-8">
+              <VillageHero
+                village={village}
+                isFavorited={isFavorited(village.id)}
+                onFavoriteToggle={handleFavoriteToggle}
+                onContentUpdated={refetch}
+              />
+              <IntroEssay text={village.description} />
+              <KeyFactsStrip facts={facts} />
+            </div>
+          }
+          sections={sections}
+          footer={
+            <div className="px-0">
+              <div className="mb-6 flex flex-wrap gap-2">
+                <MarkVisitedButton entityType="village" entityId={village.id} kind="visited" />
+                <MarkVisitedButton entityType="village" entityId={village.id} kind="saved" />
+              </div>
+              <SimilarItems entity={{ type: 'queer_village', id: village.id }} />
+            </div>
+          }
+          entityType="queer_village"
+          entityId={village.id}
+        />
+      </>
+    );
+  }
 
   return (
     <>
