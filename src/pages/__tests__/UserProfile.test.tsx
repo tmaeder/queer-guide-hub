@@ -2,8 +2,8 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { renderWithProviders } from '@/test/test-utils';
+import { Route, Routes } from 'react-router';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useSecurePublicProfile', () => ({ useSecurePublicProfile: () => ({ data: null, isLoading: false }) }));
@@ -14,10 +14,9 @@ import UserProfile from '../UserProfile';
 
 describe('UserProfile', () => {
   it('renders without crashing', () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={['/users/u1']}>
-        <Routes><Route path="/users/:userId" element={<UserProfile />} /></Routes>
-      </MemoryRouter>,
+    const { container } = renderWithProviders(
+      <Routes><Route path="/users/:userId" element={<UserProfile />} /></Routes>,
+      { route: '/users/u1' },
     );
     expect(container).toBeTruthy();
   });

@@ -2,8 +2,8 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router';
+import { renderWithProviders, screen } from '@/test/test-utils';
+import { Routes, Route } from 'react-router';
 
 vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/components/layout/PageHeader', () => ({
@@ -21,10 +21,9 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
 import MarketplaceMerchant from '../MarketplaceMerchant';
 
 function renderAt(path: string) {
-  return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes><Route path="/marketplace/merchants/:domain?" element={<MarketplaceMerchant />} /></Routes>
-    </MemoryRouter>,
+  return renderWithProviders(
+    <Routes><Route path="/marketplace/merchants/:domain?" element={<MarketplaceMerchant />} /></Routes>,
+    { route: path },
   );
 }
 
