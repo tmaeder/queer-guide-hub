@@ -139,6 +139,8 @@ const RegionalEventsCalendar = () => {
               <img
                 src={hero.image_url || getRandomFallbackImage()}
                 alt=""
+                referrerPolicy="no-referrer"
+                onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
                 className="block h-full w-full object-cover"
               />
             </div>
