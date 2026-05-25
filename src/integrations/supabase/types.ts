@@ -20888,6 +20888,10 @@ export type Database = {
         Args: { p_reason: string; p_story_id: string }
         Returns: string
       }
+      marketplace_guide_reading_streak: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       marketplace_listing_localized_title: {
         Args: { p_id: string; p_locale?: string }
         Returns: string
@@ -21165,6 +21169,24 @@ export type Database = {
       }
       reap_stuck_pipeline_runs: { Args: never; Returns: number }
       reap_stuck_workflow_runs: { Args: never; Returns: number }
+      recommend_guides: {
+        Args: { p_limit?: number; p_user_id: string }
+        Returns: {
+          audience_tags: string[]
+          boost_reason: string
+          category_slug: string
+          city_id: string
+          dek: string
+          hero_image_path: string
+          id: string
+          pick_count: number
+          published_at: string
+          reading_time_min: number
+          score: number
+          slug: string
+          title: string
+        }[]
+      }
       recompute_marketplace_price_usd: { Args: never; Returns: number }
       recompute_user_tier: { Args: { p_user: string }; Returns: undefined }
       record_dedup_decision: {
