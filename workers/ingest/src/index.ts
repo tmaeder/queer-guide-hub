@@ -109,7 +109,7 @@ export default {
 			} catch {
 				/* best-effort */
 			}
-			return jres({ error: "internal", details: String((e as Error)?.message ?? e) }, 500);
+			return jres({ error: "internal" }, 500);
 		}
 	},
 	async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
