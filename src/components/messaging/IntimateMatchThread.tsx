@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { ShieldOff, Sparkles, X } from 'lucide-react';
+import { Image as ImageIcon, MapPin, ShieldOff, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +14,10 @@ import {
 import {
   useEndIntimateThread,
   useIntimateThreadConsent,
+  useMyConsentSide,
   useOpeningMoves,
+  useSetPhotoUnlock,
+  useShareLocation,
 } from '@/hooks/useIntimateThread';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +43,21 @@ function fmt(iso: string | null): string | null {
   }
 }
 
+function fmtTime(iso: string | null): string | null {
+  if (!iso) return null;
+  try {
+    return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  } catch {
+    return null;
+  }
+}
+
+const LOCATION_PRESETS = [
+  { label: '15 min', minutes: 15 },
+  { label: '1 hour', minutes: 60 },
+  { label: '4 hours', minutes: 240 },
+];
+
 /**
  * Header ribbon for conversation_type='match' threads. Shows the consent
  * timeline (matched on / photo unlock / location share / ended), surfaces
@@ -54,14 +74,24 @@ export function IntimateMatchThread({
   className,
 }: IntimateMatchThreadProps) {
   const { data: consent } = useIntimateThreadConsent(conversationId);
+  const { data: side } = useMyConsentSide(conversationId);
   const { data: moves = [] } = useOpeningMoves();
   const endMutation = useEndIntimateThread(conversationId);
+  const photoMutation = useSetPhotoUnlock(conversationId);
+  const locationMutation = useShareLocation(conversationId);
   const [confirmEnd, setConfirmEnd] = useState(false);
 
   if (!consent) return null;
 
   const matchedOn = fmt(consent.matched_at);
   const ended = consent.ended_at !== null;
+  const myUnlocked =
+    side === 'a' ? consent.photo_unlocked_a : side === 'b' ? consent.photo_unlocked_b : false;
+  const theirUnlocked =
+    side === 'a' ? consent.photo_unlocked_b : side === 'b' ? consent.photo_unlocked_a : false;
+  const photosUnlockedBoth = consent.photo_unlocked_a && consent.photo_unlocked_b;
+  const locationActive =
+    consent.location_expires_at !== null && new Date(consent.location_expires_at).getTime() > Date.now();
 
   if (ended) {
     return (
@@ -94,6 +124,82 @@ export function IntimateMatchThread({
           <ShieldOff className="h-4 w-4 mr-1" aria-hidden />
           End conversation
         </Button>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        {/* Photo unlock — mutual consent */}
+        <div className="flex flex-col gap-2 rounded-element border border-border p-3">
+          <div className="flex items-center justify-between gap-3">
+            <Label
+              htmlFor={`photo-unlock-${conversationId}`}
+              className="inline-flex items-center gap-2 text-sm font-medium"
+            >
+              <ImageIcon className="h-4 w-4" aria-hidden />
+              Unlock my photos
+            </Label>
+            <Switch
+              id={`photo-unlock-${conversationId}`}
+              checked={Boolean(myUnlocked)}
+              disabled={!side || photoMutation.isPending}
+              onCheckedChange={(checked) => photoMutation.mutate(checked)}
+            />
+          </div>
+          <p className="text-13 text-muted-foreground">
+            {photosUnlockedBoth
+              ? 'Photos are visible to both of you.'
+              : myUnlocked
+                ? 'Waiting for them to unlock too.'
+                : theirUnlocked
+                  ? "They've unlocked their photos — toggle yours to share."
+                  : 'Both of you have to unlock for photos to appear.'}
+          </p>
+        </div>
+
+        {/* Location share — single auto-expire timestamp */}
+        <div className="flex flex-col gap-2 rounded-element border border-border p-3">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <MapPin className="h-4 w-4" aria-hidden />
+            Share location
+          </div>
+          {locationActive ? (
+            <>
+              <p className="text-13 text-muted-foreground">
+                Shared until {fmtTime(consent.location_expires_at)}.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => locationMutation.mutate(null)}
+                disabled={locationMutation.isPending}
+                className="rounded-element"
+              >
+                Stop sharing
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-13 text-muted-foreground">
+                Auto-expires. Stop any time.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {LOCATION_PRESETS.map((p) => (
+                  <Button
+                    key={p.label}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => locationMutation.mutate(p.minutes)}
+                    disabled={!side || locationMutation.isPending}
+                    className="rounded-element"
+                  >
+                    {p.label}
+                  </Button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {!hasMessages && moves.length > 0 && (
