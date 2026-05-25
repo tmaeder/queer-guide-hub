@@ -181,6 +181,7 @@ const TextType = ({
     hideCursorWhileTyping && (currentCharIndex < currentTextLen || isDeleting);
 
   return createElement(
+    // eslint-disable-next-line react-hooks/refs -- passing a ref through createElement is the documented forwarding pattern, not a render-time write.
     Component,
     {
       ref: containerRef,

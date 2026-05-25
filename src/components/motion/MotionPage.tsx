@@ -17,7 +17,9 @@ export const MotionPage = ({ children }: MotionPageProps) => {
   const navType = useNavigationType();
   const segmentKey = location.pathname.split('/')[1] || 'root';
   const dirRef = useRef(1);
+  // eslint-disable-next-line react-hooks/refs -- read+write of nav direction during render; used immediately on next line to derive transition direction.
   dirRef.current = navType === 'POP' ? -1 : 1;
+  // eslint-disable-next-line react-hooks/refs -- see above.
   const xOffset = 40 * dirRef.current;
 
   return (

@@ -65,7 +65,9 @@ export default function CountryDetail() {
 
   const fetchCountryVenuesRef = useRef(fetchCountryVenues);
   const fetchCityVenuesRef = useRef(fetchCityVenues);
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effects below read .current.
   fetchCountryVenuesRef.current = fetchCountryVenues;
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effects below read .current.
   fetchCityVenuesRef.current = fetchCityVenues;
 
   useEffect(() => {

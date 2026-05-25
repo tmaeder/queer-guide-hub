@@ -102,6 +102,7 @@ export default function Personalities() {
   );
   const [view, setView] = useState<View>(() => parseFilters(searchParams).view);
   const initialPageRef = useRef<number>(pageFromParams(searchParams));
+  // eslint-disable-next-line react-hooks/refs -- one-shot read of the initial-page ref during render to seed useState; ref value is never mutated after this.
   const [page, setPage] = useState(initialPageRef.current);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);

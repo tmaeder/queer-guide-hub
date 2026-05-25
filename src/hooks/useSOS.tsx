@@ -27,6 +27,7 @@ export function useSOS(friendIds: string[]) {
   const [loading, setLoading] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const friendIdsRef = useRef(friendIds);
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern.
   friendIdsRef.current = friendIds;
 
   // Cooldown timer

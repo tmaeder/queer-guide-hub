@@ -5,6 +5,7 @@
  * no viewport-based fetching, no filters panel.
  */
 
+/* eslint-disable react-hooks/refs -- map components pass MapLibre ref.current (the imperative map handle) into custom hooks during render; this is the documented MapLibre integration pattern. */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';

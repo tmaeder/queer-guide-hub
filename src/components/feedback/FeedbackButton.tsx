@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- screenshotUrlRef is set inside the screenshot capture handler and read during render to show the preview; reading a ref during render is acceptable here because it's a one-way data flow gated by the includeScreenshot toggle. */
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { MessageSquarePlus, Check, Camera } from 'lucide-react';
