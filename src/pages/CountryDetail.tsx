@@ -24,6 +24,7 @@ import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { COUNTRY_SECTION_DEFS } from './country-detail/CountrySectionDefs';
+import { MarketplaceForCountry } from '@/components/marketplace/MarketplaceForCountry';
 import {
   CountryHero,
   CountryOverviewTab,
@@ -260,6 +261,7 @@ export default function CountryDetail() {
             </div>
           }
           sections={sections}
+          footer={<MarketplaceForCountry countryId={country.id} countryName={country.name} />}
           entityType="country"
           entityId={country.id}
         />
