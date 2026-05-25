@@ -32,6 +32,7 @@ export function HotelHero({ hotel }: HotelHeroProps) {
     >
       <div className="grid grid-cols-1 md:grid-cols-2">
         <div className="relative bg-muted aspect-[4/3] md:aspect-auto md:min-h-[360px] overflow-hidden">
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
           <img
             src={image}
             alt={name}

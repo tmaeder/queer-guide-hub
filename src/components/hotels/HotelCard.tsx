@@ -94,6 +94,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
           <div className="group overflow-hidden rounded-container border border-border bg-card transition-colors duration-300 hover:border-foreground/40 h-full flex flex-col">
             {/* Image */}
             <div className="relative overflow-hidden bg-accent" style={{ height: 180 }}>
+              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
               <img
                 src={imageUrl || getRandomFallbackImage()}
                 alt={hotelName}

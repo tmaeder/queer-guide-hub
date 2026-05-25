@@ -49,6 +49,7 @@ export function PrideEventCard({ event, highlighted, compact, onSelect }: PrideE
       onClick={() => onSelect?.(event.id)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect?.(event.id); }}
       tabIndex={onSelect ? 0 : undefined}
+      role={onSelect ? 'button' : undefined}
     >
       <div className="flex-1 p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">

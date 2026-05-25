@@ -21,6 +21,7 @@ export function DestinationTiles({ cities }: DestinationTilesProps) {
             style={{ color: 'inherit' }}
             aria-label={`${c.name}, ${c.hotel_count} hotels`}
           >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
             <img
               src={img}
               alt={c.name}

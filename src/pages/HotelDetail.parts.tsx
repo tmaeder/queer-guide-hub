@@ -57,6 +57,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
   return (
     <>
       <ParallaxHero className="w-full h-[300px] mb-6">
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
           <img
             loading="lazy"
             src={heroImage || getRandomFallbackImage()}

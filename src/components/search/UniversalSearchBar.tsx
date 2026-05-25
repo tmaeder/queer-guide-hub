@@ -368,6 +368,7 @@ export const UniversalSearchBar = () => {
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverAnchor asChild>
           <div className="relative">
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- search landmark also acts as a click target to focus the inner input; keyboard handling provided. */}
             <div
               role="search"
               aria-label="Site search"

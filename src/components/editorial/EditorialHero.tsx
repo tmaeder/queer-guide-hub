@@ -90,6 +90,7 @@ export function EditorialHero({
             {children && <div className="mt-2">{children}</div>}
           </div>
           <div className="relative bg-muted min-h-[240px] md:min-h-[400px] order-1 md:order-2">
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
             <img
               src={src}
               alt={image.alt}
@@ -115,6 +116,7 @@ export function EditorialHero({
         className,
       )}
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
       <img
         src={src}
         alt={image.alt}

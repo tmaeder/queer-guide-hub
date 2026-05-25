@@ -153,6 +153,7 @@ function ImpactImageTile({ image, Icon, title, description }: ImpactImageTilePro
   const [src, setSrc] = useState(image.src);
   return (
     <div className="relative h-full min-h-[260px] overflow-hidden">
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
       <img
         src={src}
         alt={image.alt}

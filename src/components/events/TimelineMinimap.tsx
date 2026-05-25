@@ -91,6 +91,7 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
 
   return (
     <div className="mt-2">
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- custom scrubber widget: region role exposes it as a labelled landmark, but it also accepts click + keyboard input. */}
       <div
         ref={ref}
         className="relative bg-muted/30 border border-foreground/10 rounded-element cursor-crosshair select-none"
