@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Personality } from '@/hooks/usePersonalities';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
 
 const HOVER_OPEN_MS = 350;
 const HOVER_CLOSE_MS = 120;
@@ -13,6 +14,8 @@ interface PersonalityCardProps {
   personality?: Personality;
   loading?: boolean;
   onClick?: () => void;
+  optimizedUrl?: string | null;
+  thumbnailUrl?: string | null;
 }
 
 function getInitials(name: string) {
@@ -50,7 +53,7 @@ export function PersonalityCardSkeleton() {
   );
 }
 
-export function PersonalityCard({ personality, loading, onClick }: PersonalityCardProps) {
+export function PersonalityCard({ personality, loading, onClick, optimizedUrl, thumbnailUrl }: PersonalityCardProps) {
   const [imgError, setImgError] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const openTimerRef = useRef<number | null>(null);
@@ -68,7 +71,12 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
   }
 
   const era = formatEra(personality);
-  const showImage = Boolean(personality.image_url) && !imgError;
+  const resolvedImageUrl = resolveImageUrl({
+    imageUrl: personality.image_url,
+    optimizedUrl,
+    thumbnailUrl,
+  });
+  const showImage = Boolean(resolvedImageUrl) && !imgError;
   const metaParts = [era, personality.nationality].filter(Boolean) as string[];
   const ariaLabel = personality.profession
     ? `${personality.name}, ${personality.profession}`
@@ -124,14 +132,15 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
         >
           {showImage ? (
             <img
-              src={personality.image_url}
+              src={resolvedImageUrl!}
               alt={personality.name}
               role="presentation"
               loading="lazy"
               decoding="async"
               draggable={false}
+              referrerPolicy="no-referrer"
               onError={() => setImgError(true)}
-              className="personality-card-image absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+              className="personality-card-image absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.04]"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -217,10 +226,11 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
       >
         {showImage ? (
           <img
-            src={personality.image_url}
+            src={resolvedImageUrl!}
             alt=""
             loading="lazy"
-            className="w-full h-40 object-cover bg-muted"
+            referrerPolicy="no-referrer"
+            className="w-full h-40 object-cover object-top bg-muted"
           />
         ) : (
           <div className="w-full h-24 bg-muted flex items-center justify-center text-3xl font-bold text-muted-foreground">
