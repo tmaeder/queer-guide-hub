@@ -148,7 +148,7 @@ async function main() {
     if (r.botStatus !== 200) failures += fail(`bot HTTP ${r.botStatus}`);
     else if (!r.botH1) failures += fail('bot UA: missing <h1> in initial HTML');
     else {
-      pass(`bot <h1>: "${r.botH1.replace(/<[^>]+>/g, '').slice(0, 60)}"`);
+      pass(`bot <h1>: "${htmlToText(r.botH1).slice(0, 60)}"`);
       if (r.botBodySize < 3000) {
         failures += fail(`bot HTML too small: ${r.botBodySize} bytes (expected >3000)`);
       }
@@ -167,6 +167,17 @@ async function main() {
   } else {
     console.error(`FAIL - ${failures} failure(s) across ${results.length} routes`);
     process.exit(1);
+  }
+}
+
+function htmlToText(input) {
+  const source = String(input ?? '');
+  try {
+    const doc = new DOMParser().parseFromString(source, 'text/html');
+    return doc.body?.textContent ?? '';
+  } catch {
+    // Fallback: remove angle brackets to avoid tag-like content in output.
+    return source.replace(/[<>]/g, '');
   }
 }
 
