@@ -48,3 +48,7 @@ worker-submit/
 
 # Playwright MCP session artifacts (console logs, page snapshots)
 .playwright-mcp/
+
+# Playwright test output (HTML reports, traces, last-run state)
+playwright-report/
+test-results/
