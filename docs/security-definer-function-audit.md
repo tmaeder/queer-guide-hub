@@ -128,5 +128,4 @@ Also fixed but not in the explicit-grant list (was default PUBLIC):
 ## Files & references
 
 - This doc: `docs/security-definer-function-audit.md`
-- Backlog source: [`docs/consolidation-2026-Q2-addendum-db-advisors.md`](consolidation-2026-Q2-addendum-db-advisors.md)
 - Live data: query `pg_proc` for `prosecdef = true` + `routine_privileges`.
