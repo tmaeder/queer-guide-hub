@@ -132,7 +132,7 @@ export default {
 			} catch {
 				/* sentry best-effort */
 			}
-			return json({ error: "internal", code: "internal", details: (e as Error)?.message ?? String(e) }, 500, cors);
+			return json({ error: "internal", code: "internal" }, 500, cors);
 		}
 	},
 };

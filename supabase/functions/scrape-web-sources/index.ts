@@ -334,11 +334,12 @@ async function parseSitemap(
       // Filter by include patterns
       if (includePatterns.length > 0) {
         const matches = includePatterns.some(pattern => {
-          // Convert glob-like pattern to regex
-          const regex = new RegExp(
-            pattern.replace(/\*/g, '.*').replace(/\//g, '\\/'),
-            'i'
-          )
+          // Convert glob-like pattern to regex safely:
+          // 1) escape all regex metacharacters (including backslashes)
+          // 2) convert escaped '*' wildcard back to '.*'
+          const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+          const regexPattern = `^${escaped.replace(/\\\*/g, '.*')}$`
+          const regex = new RegExp(regexPattern, 'i')
           return regex.test(new URL(url).pathname)
         })
         if (!matches) return
