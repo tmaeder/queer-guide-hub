@@ -12,11 +12,28 @@ export function decodeHtmlEntities(text: string): string {
 /**
  * Strip HTML tags from a string, returning plain text.
  * Avoids DOM parsing of untrusted input to prevent text being reinterpreted as HTML.
+ *
+ * The previous implementation reduced this to `.replace(/[<>]/g, '')`, which
+ * stripped only the angle-bracket characters and left the tag names behind \u2014
+ * `<p>hello</p>` became `phello/p`. We now match whole tags first (a `<`,
+ * any non-`<` characters, then a `>` \u2014 looping until none remain so nested
+ * malformed inputs can't survive a single pass), then sweep any stray
+ * unmatched angle brackets to defend against the original code-scanning
+ * concern about incomplete multi-character sanitization (CodeQL #105).
  */
 export function stripHtmlTags(html: string): string {
   if (!html) return '';
-  return html
-    .replace(/[<>]/g, '')
+  // Strip complete tags. The loop handles nested or interleaved cases where
+  // a single substitution pass could leave a partial tag exposed.
+  let out = html;
+  const TAG = /<[^<>]*>/g;
+  let next = out.replace(TAG, '');
+  while (next !== out) {
+    out = next;
+    next = out.replace(TAG, '');
+  }
+  return out
+    .replace(/[<>]/g, '') // sweep any stray angle brackets that never formed a tag
     .replace(/&nbsp;/gi, ' ')
     .replace(/\u00A0/g, ' ');
 }
