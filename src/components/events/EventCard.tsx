@@ -18,6 +18,7 @@ import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
+import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import type { EventSocialSignal } from '@/hooks/useEventSocialSignals';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
@@ -173,6 +174,20 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
                 >
                   <FavoriteButton itemId={event.id} type="event" size="tap" />
                 </div>
+                <QuietAddToTripButton
+                  className="top-2 right-14"
+                  entity={{
+                    type: 'event',
+                    id: event.id,
+                    name: event.title,
+                    latitude: event.latitude ? Number(event.latitude) : null,
+                    longitude: event.longitude ? Number(event.longitude) : null,
+                    city_id: event.city_id ?? null,
+                    country_id: event.country_id ?? null,
+                    address: event.address ?? null,
+                    category: event.event_type ?? null,
+                  }}
+                />
               </div>
 
               <div className="p-4">
