@@ -435,12 +435,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: errorMessage,
-        details: error instanceof Error ? {
-          message: error.message,
-          stack: error.stack,
-          name: error.name
-        } : String(error)
+        error: errorMessage
       }),
       {
         headers: { ...cors, 'Content-Type': 'application/json' },
