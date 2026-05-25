@@ -21,6 +21,7 @@ import { DomainBreakdown } from '@/components/score/DomainBreakdown';
 import { CompletionNudge } from '@/components/profile/CompletionNudge';
 import { ActivityStrip } from '@/components/profile/ActivityStrip';
 import { AchievementsRow } from '@/components/profile/AchievementsRow';
+import { MissionsRow } from '@/components/profile/MissionsRow';
 
 interface QuickLinkProps {
   to: string;
@@ -111,6 +112,8 @@ export default function Me() {
           <div className="h-20 rounded-element border border-border bg-card animate-pulse" />
         )}
       </section>
+
+      <MissionsRow />
 
       <AchievementsRow />
 
