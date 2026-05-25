@@ -14,6 +14,7 @@ import { VenuesHero } from '@/components/venues/VenuesHero';
 import { QuickFilters, type QuickFiltersValue } from '@/components/venues/QuickFilters';
 import { VenuesPersonalStrip } from '@/components/venues/VenuesPersonalStrip';
 import { VenuesRails } from '@/components/venues/VenuesRails';
+import { VenueGuidesStream } from '@/components/venues/VenueGuidesStream';
 import { LeaderboardWidget } from '@/components/venues/LeaderboardWidget';
 import { AchievementToast } from '@/components/venues/AchievementToast';
 import { ExploreMap } from '@/components/map/ExploreMap';
@@ -462,6 +463,8 @@ const Venues = () => {
               transition={{ duration: 0.2 }}
             >
               {error && !loading && <ErrorState message={error} onRetry={() => fetchVenues()} />}
+
+              {showRails && <VenueGuidesStream limit={6} />}
 
               {showRails && (
                 <VenuesRails

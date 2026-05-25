@@ -15,6 +15,8 @@ const Venues = lazyRetry(() => import('./pages/Venues'));
 const VenueDetail = lazyRetry(() => import('./pages/VenueDetail'));
 const VenuesLeaderboard = lazyRetry(() => import('./pages/VenuesLeaderboard'));
 const VenuesPassport = lazyRetry(() => import('./pages/VenuesPassport'));
+const VenueGuides = lazyRetry(() => import('./pages/VenueGuides'));
+const VenueGuide = lazyRetry(() => import('./pages/VenueGuide'));
 const Me = lazyRetry(() => import('./pages/Me'));
 const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
 const Events = lazyRetry(() => import('./pages/Events'));
@@ -404,6 +406,8 @@ export const AppRoutes = () => {
                 {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
                 <Route path="venues/leaderboard" element={<Navigate to="/me/leaderboard" replace />} />
                 <Route path="venues/passport" element={<Navigate to="/me/passport" replace />} />
+                <Route path="venues/guides" element={<VenueGuides />} />
+                <Route path="venues/guides/:slug" element={<VenueGuide />} />
                 <Route path="venues/:slug" element={<VenueDetail />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/:slug" element={<EventDetail />} />
