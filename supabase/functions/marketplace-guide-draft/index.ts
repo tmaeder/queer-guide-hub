@@ -6,8 +6,6 @@
 //
 // Requires admin auth. Uses the existing anthropicMessages shim
 // (routes to Workers AI or real Anthropic per USE_ANTHROPIC).
-//
-// Phase 2 follow-up. See docs/plans/2026-05-24-marketplace-redesign.md §2.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { anthropicMessages } from '../_shared/anthropic-shim.ts'

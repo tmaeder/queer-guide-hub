@@ -3,8 +3,6 @@
 // Calls the public.recommend_guides(user_id, limit) SQL scorer and returns
 // ordered guide rows with boost_reason. Signed-in: passes auth.uid().
 // Anon: passes NULL so the scorer falls back to freshness + featured.
-//
-// See docs/plans/2026-05-24-marketplace-redesign.md §3.
 
 import {
   getServiceClient,

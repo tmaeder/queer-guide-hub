@@ -19,8 +19,6 @@ All notable changes to this project will be documented in this file.
 - **Admin sidebar** — Marketplace Guides nav entry under Content with `marketplace_guides` count badge.
 - **Design** — strictly monochrome, no new tokens. Italic dek as the one editorial flourish; tier labels are typographic ("OUR PICK"); no badge icons; functional motion only; semantic radius trio throughout.
 
-See [`docs/plans/2026-05-24-marketplace-redesign.md`](docs/plans/2026-05-24-marketplace-redesign.md).
-
 ## [1.1.0] - 2026-05-21
 
 ### Added
