@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import {
   useMyIntimateProfile,
@@ -14,6 +14,7 @@ import {
 } from '@/hooks/useIntimateMatches';
 import { Button } from '@/components/ui/button';
 import { LikePassActions } from '@/components/intimate/LikePassActions';
+import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
 import { useToast } from '@/hooks/use-toast';
 import { AGE_BANDS, BODY_TYPES, INTO_TAGS, ROLES } from '@/assets/intimate/options';
 
@@ -25,6 +26,17 @@ export default function IntimateDiscovery() {
   const [into, setInto] = useState<string[]>([]);
   const [ages, setAges] = useState<string[]>([]);
   const [bodies, setBodies] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'deck'>(() => {
+    if (typeof window === 'undefined') return 'grid';
+    return (localStorage.getItem('discoverViewMode') as 'grid' | 'deck') || 'grid';
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('discoverViewMode', viewMode);
+    } catch {
+      /* storage disabled — ignore */
+    }
+  }, [viewMode]);
 
   const cityId = me?.discovery_city_id ?? null;
   const { data: cards, isLoading: loadingDisc } = useIntimateDiscovery({
@@ -86,6 +98,24 @@ export default function IntimateDiscovery() {
           <Link to="/profile/settings?tab=dating" className="text-sm underline">
             Edit my profile
           </Link>
+          <div className="inline-flex rounded-element border border-border overflow-hidden" role="tablist" aria-label="View mode">
+            {(['grid', 'deck'] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                role="tab"
+                aria-selected={viewMode === m}
+                onClick={() => setViewMode(m)}
+                className={
+                  viewMode === m
+                    ? 'bg-foreground text-background px-3 py-1 text-13 capitalize'
+                    : 'bg-card text-foreground px-3 py-1 text-13 capitalize hover:bg-muted/40'
+                }
+              >
+                {m}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -100,6 +130,22 @@ export default function IntimateDiscovery() {
         <p className="text-muted-foreground">Loading…</p>
       ) : !visibleCards.length ? (
         <p className="text-muted-foreground">No matches yet. Try widening filters.</p>
+      ) : viewMode === 'deck' ? (
+        <SwipeDeck
+          cards={visibleCards
+            .filter((c) => !likedSet.has(c.user_id))
+            .map<SwipeableCard>((c) => ({
+              id: c.user_id,
+              avatar_url: c.avatar_url,
+              display_name: c.display_name,
+              age_band: c.age_band,
+              body_type: c.body_type,
+              height_cm: c.height_cm,
+              role: c.role,
+            }))}
+          onLike={(id) => likeMutation.mutate(id)}
+          onPass={(id) => passMutation.mutate(id)}
+        />
       ) : (
         <ul className="border-t border-border">
           {visibleCards.map((c) => {

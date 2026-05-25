@@ -76,6 +76,7 @@ export function AtlasHero({ featuredCountryNames }: Props) {
             alt={view.name}
             loading="eager"
             fetchPriority="high"
+            referrerPolicy="no-referrer"
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
           />
         ) : (

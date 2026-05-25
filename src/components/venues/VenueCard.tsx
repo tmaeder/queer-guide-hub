@@ -11,6 +11,7 @@ import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
+import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -119,6 +120,8 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                   role="presentation"
                   loading="lazy"
                   decoding="async"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
                   className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
                 />
 
@@ -145,6 +148,20 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                 >
                   <FavoriteButton itemId={venue.id} type="venue" size="tap" />
                 </div>
+                <QuietAddToTripButton
+                  className="top-2 right-14"
+                  entity={{
+                    type: 'venue',
+                    id: venue.id,
+                    name: venue.name,
+                    latitude: venue.latitude ? Number(venue.latitude) : null,
+                    longitude: venue.longitude ? Number(venue.longitude) : null,
+                    city_id: venue.city_id ?? null,
+                    country_id: venue.country_id ?? null,
+                    address: venue.address ?? null,
+                    category: venue.category ?? null,
+                  }}
+                />
               </div>
 
               <div className="p-4">
