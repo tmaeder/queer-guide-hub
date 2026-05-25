@@ -21,6 +21,8 @@ const Me = lazyRetry(() => import('./pages/Me'));
 const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
 const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
+const EventGuides = lazyRetry(() => import('./pages/EventGuides'));
+const EventGuide = lazyRetry(() => import('./pages/EventGuide'));
 const Marketplace = lazyRetry(() => import('./pages/Marketplace'));
 const MarketplaceItemDetail = lazyRetry(() => import('./pages/MarketplaceItemDetail'));
 const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'));
@@ -413,6 +415,8 @@ export const AppRoutes = () => {
                 <Route path="venues/guides/:slug" element={<VenueGuide />} />
                 <Route path="venues/:slug" element={<VenueDetail />} />
                 <Route path="events" element={<Events />} />
+                <Route path="events/guides" element={<EventGuides />} />
+                <Route path="events/guides/:slug" element={<EventGuide />} />
                 <Route path="events/:slug" element={<EventDetail />} />
                 <Route path="pride" element={<PridePage />} />
                 <Route path="pride/:year" element={<PridePage />} />

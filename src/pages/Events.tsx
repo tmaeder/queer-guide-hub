@@ -19,6 +19,7 @@ import { MultiCombobox } from '@/components/events/MultiCombobox';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
 import { PageHero, spansForPreset } from '@/components/discovery';
+import { EventGuidesStream } from '@/components/events/EventGuidesStream';
 
 const EVENT_SPAN_CLASS: Record<string, string> = {
   sm: 'col-span-12 sm:col-span-6 md:col-span-4',
@@ -589,6 +590,7 @@ const Events = () => {
         size="md"
       />
       <div className="container mx-auto px-4 py-8 md:py-12">
+        <EventGuidesStream limit={6} />
         {/* Filters — first interactive surface after hero */}
         <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
           {/* Search Bar */}
