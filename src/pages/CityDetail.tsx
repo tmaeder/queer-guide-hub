@@ -17,6 +17,7 @@ import { PageLoading } from '@/components/ui/loading';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForCity } from '@/components/marketplace/MarketplaceForCity';
 import { CityLocalSupporterCaption } from '@/components/marketplace/CityLocalSupporterCaption';
+import { CityVenueGuidesRail } from '@/components/venues/VenueFeaturedInGuides';
 import { TracingBeam } from '@/components/effects/TracingBeam';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
@@ -32,6 +33,8 @@ import {
 } from '@/components/entity/editorial';
 import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
 import { CITY_SECTION_DEFS } from './city-detail/CitySectionDefs';
+import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
+import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
 import {
   CityHero,
   CityOverviewTab,
@@ -198,6 +201,23 @@ export default function CityDetail() {
     ),
     news: <CityNewsTab city={city} articles={articles} newsLoading={newsLoading} />,
     map: <CityMapTab city={city} ExploreMap={ExploreMap} Suspense={Suspense} />,
+    personalities: (
+      <PersonalitiesForEntity
+        cityId={city.id}
+        countryId={city.countries?.id ?? null}
+        cityName={city.name}
+      />
+    ),
+    nearby: (
+      <NearbyTriptych
+        cityId={city.id}
+        latitude={city.latitude != null ? Number(city.latitude) : null}
+        longitude={city.longitude != null ? Number(city.longitude) : null}
+        countryId={city.countries?.id ?? null}
+        countryName={city.countries?.name ?? null}
+        equalityScore={city.countries?.equality_score ?? null}
+      />
+    ),
   };
 
   const tabs: EntityDetailTab[] = CITY_TAB_DEFS.map((def) => ({
@@ -280,6 +300,7 @@ export default function CityDetail() {
           footer={
             <TracingBeam className="px-0 pb-8">
               <TrendingStrip city={city.name} className="mt-8" />
+              <CityVenueGuidesRail cityId={city.id} />
               <MarketplaceForCity cityName={city.name} />
               <CityLocalSupporterCaption cityId={city.id} />
               <SimilarItems
