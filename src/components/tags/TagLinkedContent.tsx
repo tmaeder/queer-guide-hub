@@ -182,7 +182,8 @@ function PersonalityCard({
     .join('')
     .toUpperCase();
 
-  const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl });
+  const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl, preferThumb: true });
+  const srcSet = thumbnailUrl && optimizedUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined;
 
   return (
     <Card hoverable className="overflow-hidden" onClick={onClick}>
@@ -190,6 +191,8 @@ function PersonalityCard({
         {resolvedSrc ? (
           <img
             src={resolvedSrc}
+            srcSet={srcSet}
+            sizes="(max-width: 640px) 45vw, 200px"
             alt={p.name}
             role="presentation"
             loading="lazy"

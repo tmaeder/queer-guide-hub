@@ -71,11 +71,19 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
   }
 
   const era = formatEra(personality);
+  // Grid cards are small — prefer the 400px thumbnail as src; only fall back
+  // to full optimized_url when no thumbnail exists.
   const resolvedImageUrl = resolveImageUrl({
     imageUrl: personality.image_url,
     optimizedUrl,
     thumbnailUrl,
+    preferThumb: true,
   });
+  // Two-stop srcset: thumb (400w) for small viewports, full image for large.
+  const srcSet =
+    thumbnailUrl && optimizedUrl
+      ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w`
+      : undefined;
   const showImage = Boolean(resolvedImageUrl) && !imgError;
   const metaParts = [era, personality.nationality].filter(Boolean) as string[];
   const ariaLabel = personality.profession
@@ -133,6 +141,8 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
           {showImage ? (
             <img
               src={resolvedImageUrl!}
+              srcSet={srcSet}
+              sizes="(max-width: 640px) 160px, (max-width: 1024px) 200px, 250px"
               alt={personality.name}
               role="presentation"
               loading="lazy"

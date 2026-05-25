@@ -32,7 +32,8 @@ function FeaturedItem({
   thumbnailUrl?: string | null;
 }) {
   const href = `/personalities/${p.slug ?? p.id}`;
-  const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl });
+  const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl, preferThumb: true });
+  const srcSet = thumbnailUrl && optimizedUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined;
   return (
     <LocalizedLink
       to={href}
@@ -53,6 +54,8 @@ function FeaturedItem({
         {resolvedSrc ? (
           <img
             src={resolvedSrc}
+            srcSet={srcSet}
+            sizes="160px"
             alt={p.name}
             loading={eager ? 'eager' : 'lazy'}
             // fetchpriority is widely supported but not in React's typings yet
