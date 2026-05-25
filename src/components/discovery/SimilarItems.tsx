@@ -140,6 +140,7 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 														alt=""
 														role="presentation"
 														loading="lazy"
+														referrerPolicy="no-referrer"
 														className="h-24 w-full object-cover"
 														onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
 													/>
