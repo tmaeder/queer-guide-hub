@@ -5,6 +5,7 @@ import { useNewsStories } from '@/hooks/useNewsStories';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMeta } from '@/hooks/useMeta';
 import { useEditorsPick } from '@/hooks/useEditorsPick';
+import { useRealtimeNewsInserts } from '@/hooks/useRealtimeNewsInserts';
 import type { Tables } from '@/integrations/supabase/types';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -19,6 +20,7 @@ import { SectionBand } from '@/components/news/editorial/SectionBand';
 import { StoryCollectionsBand } from '@/components/news/editorial/StoryCollectionsBand';
 import { WeekInReview } from '@/components/news/editorial/WeekInReview';
 import { ReaderRail } from '@/components/news/editorial/ReaderRail';
+import { NewStoriesPill } from '@/components/news/editorial/NewStoriesPill';
 
 type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 
@@ -40,7 +42,15 @@ export default function News() {
     totalArticles,
     loading,
     getFeaturedArticles,
+    fetchArticles,
   } = useNews();
+  const { count: newCount, reset: resetNewCount } = useRealtimeNewsInserts();
+
+  const handleRefreshNew = () => {
+    void fetchArticles();
+    resetNewCount();
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const [featured, setFeatured] = useState<Article[]>([]);
   const editorsPick = useEditorsPick();
@@ -154,6 +164,7 @@ export default function News() {
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-12 xl:gap-16">
           <main className="min-w-0">
+            <NewStoriesPill count={newCount} onRefresh={handleRefreshNew} />
             <LeadStory
               article={leadArticle}
               sourcesMap={sourcesMap}
