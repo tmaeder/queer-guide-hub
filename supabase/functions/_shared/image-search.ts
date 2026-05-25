@@ -83,8 +83,8 @@ export async function fetchFromWikimedia(query: string, minWidth = 800, minHeigh
       if (w < minWidth || h < minHeight || w < h) continue
 
       const meta = (info.extmetadata as Record<string, Record<string, string>>) || {}
-      const desc = meta.ImageDescription?.value?.replace(/<[^>]*>/g, '') || ''
-      const artist = meta.Artist?.value?.replace(/<[^>]*>/g, '') || 'Unknown'
+      const desc = meta.ImageDescription?.value?.replace(/[<>]/g, '') || ''
+      const artist = meta.Artist?.value?.replace(/[<>]/g, '') || 'Unknown'
       const license = meta.LicenseShortName?.value || 'CC'
 
       results.push({

@@ -151,20 +151,9 @@ export default {
 };
 
 function stripHtml(html: string): string {
-  let out = html;
-  let prev: string;
-  do {
-    prev = out;
-    out = out
-      .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .replace(/<script[\s\S]*?<\/script>/gi, '');
-  } while (out !== prev);
-
-  return out
-    .replace(/<[^>]+>/g, ' ')
+  return html
+    .replace(/<[^>]*>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
     .replace(/&amp;/gi, '&')
     .replace(/\s+/g, ' ')
     .trim();

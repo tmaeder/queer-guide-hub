@@ -158,7 +158,7 @@ export function buildFilters(filters: SearchFilters | null | undefined): string 
 }
 
 function esc(s: string): string {
-	return s.replace(/"/g, '\\"');
+	return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 export async function meiliMultiSearch(

@@ -94,14 +94,21 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
         const sourceId = (n.source_id as string) ?? (meta.source_id as string | null) ?? null
         // Strip HTML for content-length check
         const rawContent = String(n.content ?? n.description ?? '')
-        const stripped = rawContent
-          .replace(/<script[\s\S]*?<\/script>/gi, '')
-          .replace(/<style[\s\S]*?<\/style>/gi, '')
-          .replace(/<[^>]+>/g, ' ')
+        let stripped = rawContent
           .replace(/&nbsp;/gi, ' ')
-          .replace(/&amp;/gi, '&')
           .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '"')
-          .replace(/\s+/g, ' ').trim()
+          .replace(/&amp;/gi, '&')
+
+        let prev: string
+        do {
+          prev = stripped
+          stripped = stripped
+            .replace(/<script[\s\S]*?<\/script>/gi, '')
+            .replace(/<style[\s\S]*?<\/style>/gi, '')
+            .replace(/<[^>]+>/g, ' ')
+        } while (stripped !== prev)
+
+        stripped = stripped.replace(/\s+/g, ' ').trim()
         const dates = (n.dates ?? {}) as Record<string, unknown>
         const publishedAt = (n.published_at as string | undefined)
           ?? (dates.start as string | undefined)
