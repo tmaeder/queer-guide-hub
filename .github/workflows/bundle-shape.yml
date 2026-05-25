@@ -10,6 +10,8 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'scripts/check-bundle-shape.mjs'
+permissions:
+  contents: read
 jobs:
   check:
     runs-on: ubuntu-latest
