@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse(parsed, 200, req);
   } catch (e) {
-    return errorResponse(String(e), 500, req);
+    console.error('intimate-moderation failed', e);
+    return errorResponse('Internal server error', 500, req);
   }
 });
