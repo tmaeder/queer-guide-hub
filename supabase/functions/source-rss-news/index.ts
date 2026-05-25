@@ -163,22 +163,32 @@ const rssNewsAdapter: SourceAdapter = {
 
 // ─── API Fetchers ────────────────────────────────────────────
 
+function getApiNameFromUrl(url: string): string | null {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase()
+    if (hostname === 'newsapi.org') return 'newsapi'
+    if (hostname === 'newsdata.io') return 'newsdata'
+    if (hostname === 'gnews.io') return 'gnews'
+    if (hostname === 'thenewsapi.com') return 'thenewsapi'
+    return null
+  } catch {
+    return null
+  }
+}
+
 function detectApiName(url: string): string | null {
-  if (url.includes('newsapi.org')) return 'newsapi'
-  if (url.includes('newsdata.io')) return 'newsdata'
-  if (url.includes('gnews.io')) return 'gnews'
-  if (url.includes('thenewsapi.com')) return 'thenewsapi'
-  return null
+  return getApiNameFromUrl(url)
 }
 
 async function fetchFromApi(source: NewsSource, sinceHours: number): Promise<Record<string, unknown>[]> {
   const url = source.url
   const since = new Date(Date.now() - sinceHours * 3600000).toISOString()
+  const apiName = getApiNameFromUrl(url)
 
-  if (url.includes('newsapi.org')) return fetchNewsApi(url, since)
-  if (url.includes('newsdata.io')) return fetchNewsData(url)
-  if (url.includes('gnews.io')) return fetchGNews(url)
-  if (url.includes('thenewsapi.com')) return fetchTheNewsApi(url)
+  if (apiName === 'newsapi') return fetchNewsApi(url, since)
+  if (apiName === 'newsdata') return fetchNewsData(url)
+  if (apiName === 'gnews') return fetchGNews(url)
+  if (apiName === 'thenewsapi') return fetchTheNewsApi(url)
   return []
 }
 
