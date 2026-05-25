@@ -6,22 +6,12 @@ import {
 } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
-// Backfill Pexels images for cities missing image_url + curated_image_url.
+// Backfill images for cities missing image_url + curated_image_url.
+// Tries Pexels first, falls back to Unsplash. Only sets image_flagged=true
+// when both sources return nothing (genuinely unfindable city).
 //
-// Idempotent. Cron-scheduled (daily 04:45 UTC) until the catalog is complete;
-// after that it returns "nothing to backfill" and is a no-op. Matches the
-// pipeline-geo-validate auth pattern (no requireAdmin) so pg_cron can call
-// with the project anon JWT. Protection against abuse is structural:
-// bounded batch (≤100), image_flagged auto-throttle on miss, Pexels' own
-// per-key rate limit, and the function failing fast without PEXELS_API_KEY.
-//
-// Per-call:
-//   - batch up to 50 cities, ordered by population DESC so the biggest /
-//     most-visited cities get pictures first
-//   - one Pexels search per city ("{name} city skyline architecture")
-//   - take the first landscape result, store the *large* URL on
-//     cities.image_url. If Pexels has no result, we tag the row with
-//     image_flagged=true (existing column) so subsequent runs skip it.
+// Idempotent. Cron-scheduled (daily 04:45 UTC). Ordered by population DESC
+// so the most-visited cities get pictures first.
 //
 // Body params (all optional):
 //   - batch_size  : 1..100 (default 50)
@@ -29,15 +19,8 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 //   - country_id  : limit to one country (operator override)
 
 const PEXELS_SEARCH = 'https://api.pexels.com/v1/search'
+const UNSPLASH_SEARCH = 'https://api.unsplash.com/search/photos'
 const FETCH_TIMEOUT_MS = 8_000
-
-interface PexelsPhoto {
-  src?: { large?: string; large2x?: string; medium?: string }
-}
-
-interface PexelsResponse {
-  photos?: PexelsPhoto[]
-}
 
 async function fetchPexelsImage(query: string, apiKey: string): Promise<string | null> {
   const url =
@@ -53,9 +36,27 @@ async function fetchPexelsImage(query: string, apiKey: string): Promise<string |
     return null
   }
   if (!res.ok) return null
-  const data = (await res.json().catch(() => null)) as PexelsResponse | null
+  const data = (await res.json().catch(() => null)) as { photos?: { src?: { large?: string; large2x?: string; medium?: string } }[] } | null
   const photo = data?.photos?.[0]
-  return photo?.src?.large ?? photo?.src?.large2x ?? photo?.src?.medium ?? null
+  return photo?.src?.large2x ?? photo?.src?.large ?? photo?.src?.medium ?? null
+}
+
+async function fetchUnsplashImage(query: string, apiKey: string): Promise<string | null> {
+  const url =
+    `${UNSPLASH_SEARCH}?query=${encodeURIComponent(query)}` +
+    `&per_page=1&orientation=landscape`
+  let res: Response
+  try {
+    res = await fetch(url, {
+      headers: { Authorization: `Client-ID ${apiKey}` },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
+  } catch {
+    return null
+  }
+  if (!res.ok) return null
+  const data = (await res.json().catch(() => null)) as { results?: { urls?: { regular?: string } }[] } | null
+  return data?.results?.[0]?.urls?.regular ?? null
 }
 
 interface CityRow {
@@ -70,9 +71,10 @@ Deno.serve(
 
     const supabase = getServiceClient()
 
-    const apiKey = Deno.env.get('PEXELS_API_KEY')
-    if (!apiKey) {
-      return errorResponse('PEXELS_API_KEY not configured', 500, req)
+    const pexelsKey = Deno.env.get('PEXELS_API_KEY')
+    const unsplashKey = Deno.env.get('UNSPLASH_ACCESS_KEY')
+    if (!pexelsKey && !unsplashKey) {
+      return errorResponse('No image API key configured (PEXELS_API_KEY or UNSPLASH_ACCESS_KEY)', 500, req)
     }
 
     const body = (await req.json().catch(() => ({}))) as {
@@ -117,9 +119,12 @@ Deno.serve(
         ? `${city.name} ${country} city skyline architecture`
         : `${city.name} city skyline architecture`
       try {
-        const imageUrl = await fetchPexelsImage(query, apiKey)
+        let imageUrl: string | null = null
+        if (pexelsKey) imageUrl = await fetchPexelsImage(query, pexelsKey)
+        if (!imageUrl && unsplashKey) imageUrl = await fetchUnsplashImage(query, unsplashKey)
+
         if (!imageUrl) {
-          // Mark so subsequent runs skip cities Pexels can't satisfy.
+          // Only flag when both sources have nothing — genuinely unfindable.
           if (!dryRun) {
             await supabase
               .from('cities')
