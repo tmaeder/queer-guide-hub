@@ -83,6 +83,7 @@ export default function PersonalityDetail() {
   // DUP-4: useCountryIdByName replaces the inline supabase.from('countries').
   const { data: resolvedCountryId } = useCountryIdByName(personality?.nationality ?? null);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (resolvedCountryId) setCountryId(resolvedCountryId);
   }, [resolvedCountryId]);
 

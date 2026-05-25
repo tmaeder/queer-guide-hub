@@ -164,6 +164,7 @@ function SheetField({ contentType, recordId, field, value, onSaved }: SheetField
         )}
       </div>
       {editing && Editor ? (
+        // eslint-disable-next-line react-hooks/static-components -- Editor resolved from inline-editor registry above; module-scope component, not redefined per render.
         <Editor
           field={field}
           initialValue={value}

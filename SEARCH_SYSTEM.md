@@ -39,7 +39,6 @@ queer-guide-search-ingest (Cloudflare Worker)
 | `scripts/configure-meili.sh` | One-shot Meili settings (embedder, facets, synonyms) |
 | `scripts/setup-webhooks.sql` | Attach DB triggers that POST to ingest worker |
 | `scripts/backfill.sh` | Walk all rows of each table and re-index |
-| `docs/plans/2026-04-14-meili-cf-vectors-design.md` | Design doc |
 
 ## Resources provisioned
 

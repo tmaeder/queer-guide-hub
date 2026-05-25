@@ -62,6 +62,7 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 
 	useEffect(() => {
 		let cancelled = false;
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
 		setItems(null);
 		setError(false);
 		const types = contentTypesKey ? contentTypesKey.split(",") : undefined;

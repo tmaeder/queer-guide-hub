@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- screenshotUrlRef is set inside the screenshot capture handler and read during render to show the preview; reading a ref during render is acceptable here because it's a one-way data flow gated by the includeScreenshot toggle. */
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { MessageSquarePlus, Check, Camera } from 'lucide-react';
@@ -42,7 +43,9 @@ export function FeedbackButton() {
   const screenshotUrlRef = useRef<string | null>(null);
 
   // Capture current URL when dialog opens so user sees what will be sent
+   
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (open) setPageUrl(window.location.href);
   }, [open]);
 

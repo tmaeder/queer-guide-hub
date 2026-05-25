@@ -28,6 +28,7 @@ const MAX_CHAIN_EVENTS = 4; // total prides in one trip
 const MAX_TOTAL_SPAN_DAYS = 21; // start-to-end of trip
 const MAX_TOTAL_KM = 4000; // sum across all legs
 
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper colocated with consumer; tests import it directly.
 export function buildClusters(events: PrideCalendarEvent[]): TripCluster[] {
   const geo = events.filter((e) => e.latitude != null && e.longitude != null);
   const sorted = [...geo].sort(

@@ -4723,6 +4723,148 @@ export type Database = {
         }
         Relationships: []
       }
+      event_guide_picks: {
+        Row: {
+          cons: string[]
+          created_at: string
+          event_id: string
+          guide_id: string
+          id: string
+          position: number
+          pros: string[]
+          rationale_md: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          cons?: string[]
+          created_at?: string
+          event_id: string
+          guide_id: string
+          id?: string
+          position?: number
+          pros?: string[]
+          rationale_md?: string | null
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          cons?: string[]
+          created_at?: string
+          event_id?: string
+          guide_id?: string
+          id?: string
+          position?: number
+          pros?: string[]
+          rationale_md?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_guide_picks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_guide_picks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_guide_picks_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "event_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_guides: {
+        Row: {
+          audience_tags: string[]
+          author_id: string | null
+          city_id: string | null
+          created_at: string
+          dek: string | null
+          event_type: string | null
+          hero_image_path: string | null
+          id: string
+          intro_md: string | null
+          is_featured: boolean
+          meta: Json
+          pick_count: number
+          published_at: string | null
+          reading_time_min: number | null
+          review_due_at: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience_tags?: string[]
+          author_id?: string | null
+          city_id?: string | null
+          created_at?: string
+          dek?: string | null
+          event_type?: string | null
+          hero_image_path?: string | null
+          id?: string
+          intro_md?: string | null
+          is_featured?: boolean
+          meta?: Json
+          pick_count?: number
+          published_at?: string | null
+          reading_time_min?: number | null
+          review_due_at?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience_tags?: string[]
+          author_id?: string | null
+          city_id?: string | null
+          created_at?: string
+          dek?: string | null
+          event_type?: string | null
+          hero_image_path?: string | null
+          id?: string
+          intro_md?: string | null
+          is_featured?: boolean
+          meta?: Json
+          pick_count?: number
+          published_at?: string | null
+          reading_time_min?: number | null
+          review_due_at?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_guides_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_guides_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_occurrences: {
         Row: {
           created_at: string
@@ -22302,6 +22444,24 @@ export type Database = {
       }
       reap_stuck_pipeline_runs: { Args: never; Returns: number }
       reap_stuck_workflow_runs: { Args: never; Returns: number }
+      recommend_event_guides: {
+        Args: { p_limit?: number; p_user_id: string }
+        Returns: {
+          audience_tags: string[]
+          boost_reason: string
+          city_id: string
+          dek: string
+          event_type: string
+          hero_image_path: string
+          id: string
+          pick_count: number
+          published_at: string
+          reading_time_min: number
+          score: number
+          slug: string
+          title: string
+        }[]
+      }
       recommend_guides: {
         Args: { p_limit?: number; p_user_id: string }
         Returns: {

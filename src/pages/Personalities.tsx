@@ -102,6 +102,7 @@ export default function Personalities() {
   );
   const [view, setView] = useState<View>(() => parseFilters(searchParams).view);
   const initialPageRef = useRef<number>(pageFromParams(searchParams));
+  // eslint-disable-next-line react-hooks/refs -- one-shot read of the initial-page ref during render to seed useState; ref value is never mutated after this.
   const [page, setPage] = useState(initialPageRef.current);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -161,7 +162,9 @@ export default function Personalities() {
     );
     const a = JSON.stringify(fromUrl);
     const b = JSON.stringify(filters);
+     
     if (a !== b) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setFilters(fromUrl);
     }
     if (viewFromUrl !== view) {
@@ -175,7 +178,9 @@ export default function Personalities() {
   useEffect(() => {
     if (!validProfessions.length) return;
     const { filters: cleaned, changed } = parseFilters(searchParams, validProfessions);
+     
     if (changed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setFilters(cleaned);
       setSearchParams(serializeFilters(cleaned, { view }), { replace: true });
     }
@@ -193,6 +198,22 @@ export default function Personalities() {
   const clearAll = useCallback(() => {
     setFilters({ sortBy: 'featured' });
   }, []);
+
+   
+  const syncPageToUrl = useCallback(
+    (n: number) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (n <= 1) next.delete('page');
+          else next.set('page', String(n));
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
 
   // Infinite scroll sentinel
   useEffect(() => {
@@ -227,21 +248,6 @@ export default function Personalities() {
     return () => observer.unobserve(el);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, loading, hasMore, filters, autoLoadedCount, fetchPersonalities]);
-
-  const syncPageToUrl = useCallback(
-    (n: number) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (n <= 1) next.delete('page');
-          else next.set('page', String(n));
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
 
   const loadMoreManual = useCallback(async () => {
     const nextPage = page + 1;

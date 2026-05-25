@@ -55,6 +55,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
 
   React.useEffect(() => {
     if (!itemId || !config) return;
+    // eslint-disable-next-line react-hooks/immutability -- loadMetadata declared below; effect fires after render so binding is initialized.
     loadMetadata();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemId, config]);

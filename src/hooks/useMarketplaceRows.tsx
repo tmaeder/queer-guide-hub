@@ -88,6 +88,7 @@ export function useMarketplaceRow(key: CuratedRowKey, limit = 12): RowState {
   const [state, setState] = useState<RowState>(initial);
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setState({ data: [], loading: true, error: null });
     fetchRow(key, limit)
       .then((data) => {

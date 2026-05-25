@@ -33,6 +33,7 @@ export function useVenues(autoFetch: boolean = true) {
 
   useEffect(() => {
     if (!loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setLoadingTimedOut(false);
       return;
     }
@@ -132,7 +133,7 @@ export function useVenues(autoFetch: boolean = true) {
           return { fetched: fetchedCount, total: totalCount };
         } catch (rpcErr) {
           // Fall through to legacy path if RPC is unavailable.
-          // eslint-disable-next-line no-console
+           
           console.warn('[useVenues] rpc_venues_ranked failed, falling back', rpcErr);
         }
       }
@@ -323,6 +324,7 @@ export function useVenues(autoFetch: boolean = true) {
 
   useEffect(() => {
     if (autoFetch) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       fetchVenues();
     }
   }, [autoFetch]);

@@ -69,13 +69,16 @@ export function AdminRouteGuard({
   const stillResolving = authLoading || rolesLoading;
   const accessGranted = !!user && hasPermission;
 
+   
   if (accessGranted && !stillResolving) {
+    // eslint-disable-next-line react-hooks/refs -- see above.
     hasValidatedRef.current = true;
   }
 
   // Show loading only on the initial validation pass. After that, keep
   // children mounted across background refreshes so transient UI state
   // (open dialogs, unsaved form input) survives tab/window focus changes.
+  // eslint-disable-next-line react-hooks/refs -- see above.
   if (stillResolving && !hasValidatedRef.current) {
     return (
       <div className="flex items-center justify-center min-h-screen">

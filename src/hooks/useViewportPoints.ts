@@ -73,7 +73,7 @@ const mapDebug = (...args: unknown[]): void => {
       import.meta.env.DEV ||
       (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
     ) {
-      // eslint-disable-next-line no-console
+       
       console.debug('[venues-map]', ...args);
     }
   } catch {
@@ -292,8 +292,10 @@ export function useViewportPoints({
   const lastZoomRef = useRef<number>(2);
 
   const enabledRef = useRef(enabledLayers);
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; doFetch (defined below) reads .current.
   enabledRef.current = enabledLayers;
   const filtersRef = useRef(filters);
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; doFetch (defined below) reads .current.
   filtersRef.current = filters;
 
   const doFetch = useCallback(async (rawBbox: Bbox, zoom: number) => {

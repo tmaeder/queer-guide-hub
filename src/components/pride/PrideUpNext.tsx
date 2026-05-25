@@ -16,6 +16,7 @@ interface PrideUpNextProps {
  * relativeDateLabel — pure: takes the i18n t() so the component can pass its
  * translation function in. Test code may pass a stub.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper colocated with consumer; tests import it directly.
 export function relativeDateLabel(
   iso: string,
   now: number = Date.now(),

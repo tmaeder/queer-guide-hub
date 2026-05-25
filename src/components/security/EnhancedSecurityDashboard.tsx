@@ -43,6 +43,7 @@ export function EnhancedSecurityDashboard() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- fetchSecurityData declared below; effect fires after render so binding is initialized.
     fetchSecurityData();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);

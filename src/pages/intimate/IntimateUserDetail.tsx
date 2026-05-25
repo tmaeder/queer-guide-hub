@@ -8,6 +8,15 @@ import { useToast } from '@/hooks/use-toast';
 import { getGenitalPictogramSet, bodyPictograms, angleOptions } from '@/assets/intimate/pictograms';
 import { useState } from 'react';
 
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex justify-between gap-4 border-t border-border pt-4">
+      <dt className="text-muted-foreground shrink-0">{k}</dt>
+      <dd className="text-right">{v}</dd>
+    </div>
+  );
+}
+
 export default function IntimateUserDetail() {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
@@ -74,15 +83,6 @@ export default function IntimateUserDetail() {
   const Angle = profile.erection_angle_deg !== null
     ? angleOptions.find((a) => a.deg === profile.erection_angle_deg)?.Picto
     : null;
-
-  function Row({ k, v }: { k: string; v: string }) {
-    return (
-      <div className="flex justify-between gap-4 border-t border-border pt-4">
-        <dt className="text-muted-foreground shrink-0">{k}</dt>
-        <dd className="text-right">{v}</dd>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">

@@ -179,6 +179,7 @@ export default function Hotels() {
   }, [debouncedSearch, hotelType, effectivePriceRange, vibe, city]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setPage(1);
     fetchHotels(buildFilters(), { page: 1, mapMode: view === 'map' });
   }, [debouncedSearch, hotelType, effectivePriceRange, vibe, city, view, buildFilters, fetchHotels]);

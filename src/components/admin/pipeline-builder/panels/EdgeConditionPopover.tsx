@@ -29,6 +29,7 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
       const existing = (edge.data as { condition?: string })?.condition
         || (edge as unknown as { condition?: string }).condition
         || '';
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setCondition(existing);
     }
   }, [edge]);

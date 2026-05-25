@@ -340,10 +340,15 @@ export function CMSListView({
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
+                    {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
                     <SortableHeader column="title">Title</SortableHeader>
+                    {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
                     <SortableHeader column="content_type">Type</SortableHeader>
+                    {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
                     <SortableHeader column="status">Status</SortableHeader>
+                    {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
                     <SortableHeader column="updated_at">Updated</SortableHeader>
+                    {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
                     <SortableHeader column="created_at">Created</SortableHeader>
                     <TableHead style={{ width: 96 }}>Actions</TableHead>
                   </TableRow>

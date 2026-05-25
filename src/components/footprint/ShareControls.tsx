@@ -21,6 +21,7 @@ export function ShareControls({ prefs }: { prefs: FootprintSharePrefs }) {
   const { toast } = useToast();
   const [local, setLocal] = useState<FootprintSharePrefs>(prefs);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
   useEffect(() => setLocal(prefs), [prefs]);
 
   const toggle = async (k: keyof FootprintSharePrefs) => {

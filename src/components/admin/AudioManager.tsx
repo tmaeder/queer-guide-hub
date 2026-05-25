@@ -38,6 +38,7 @@ export function AudioManager() {
   const [_selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
     loadAudios();
   }, []);
 

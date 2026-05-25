@@ -102,8 +102,10 @@ Filter to `public` schema only when batching.
 
 ## 4. What's been done already
 
-See [consolidation-2026-Q2-addendum-db-advisors.md](consolidation-2026-Q2-addendum-db-advisors.md):
-- Batch 1 (drop scratch tables) — applied 2026-05-01
-- Batch 2 (search_path + RLS InitPlan + dedupe news_sources policy) — applied 2026-05-01
+Applied 2026-05-01 (see migrations `20260501020000`–`20260501020300`):
+- Batch 1 — drop scratch tables.
+- Batch 2 — `search_path` pinning + RLS InitPlan + dedupe `news_sources` insert policy.
+
+Outstanding:
 - 1 ERROR remaining (security_definer_view on `user_submission_reputation`) — needs view-level review.
 - 1 multiple_permissive remaining (`personality_internal_notes` SELECT) — recent migration, needs review.

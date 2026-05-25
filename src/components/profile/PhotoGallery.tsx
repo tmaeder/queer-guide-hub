@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,6 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
     useUserPhotos(userId);
   const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [editingCaption, setEditingCaption] = useState<string | null>(null);
@@ -33,10 +32,17 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
-  const getSafePreviewUrl = (url: string | null): string | null => {
-    if (!url) return null;
-    return url.startsWith('blob:') ? url : null;
-  };
+  // Derive preview URL directly from the File. This avoids storing
+  // user-controllable text in state (which CodeQL flagged as xss-through-dom
+  // #518) — createObjectURL on a File always returns a `blob:` URL.
+  const previewUrl = useMemo(
+    () => (selectedFile ? URL.createObjectURL(selectedFile) : null),
+    [selectedFile],
+  );
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   useEffect(() => {
     let isMounted = true;
@@ -57,23 +63,10 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
     };
     loadUrls();
     return () => {
+       
       isMounted = false;
     };
   }, [photos, getSignedPhotoUrl]);
-
-  useEffect(() => {
-    if (!selectedFile) {
-      setPreviewUrl(null);
-      return;
-    }
-
-    const url = URL.createObjectURL(selectedFile);
-    setPreviewUrl(url);
-
-    return () => {
-      URL.revokeObjectURL(url);
-    };
-  }, [selectedFile]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -163,9 +156,9 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                   {selectedFile && (
                     <div className="flex flex-col gap-4">
                       <div className="relative">
-                        {getSafePreviewUrl(previewUrl) && (
+                        {previewUrl && (
                           <img
-                            src={getSafePreviewUrl(previewUrl) ?? undefined}
+                            src={previewUrl}
                             alt="Preview"
                             className="w-full h-48 object-cover rounded"
                           />

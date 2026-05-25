@@ -136,6 +136,7 @@ const RegionalEventsCalendar = () => {
           className="block text-foreground no-underline transition-opacity hover:opacity-85"
         >
           <div className="mb-4 aspect-[4/3] w-full overflow-hidden bg-muted">
+              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
               <img
                 src={hero.image_url || getRandomFallbackImage()}
                 alt=""

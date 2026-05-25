@@ -79,6 +79,7 @@ export default function News() {
   const leadArticle: Article | undefined = featured[0];
 
   const topStory: Article | undefined = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity -- Date.now() used inside useMemo to compute a relative cutoff; recomputes when `articles` changes which is the intended cadence.
     const twentyFourHrs = Date.now() - 24 * 60 * 60 * 1000;
     return [...articles]
       .filter(

@@ -381,7 +381,7 @@ function GuideEditor({ id, onClose }: { id: string; onClose: () => void }) {
   const upsertPick = useUpsertPick();
 
   const guide = data?.guide ?? null;
-  const picks = data?.picks ?? [];
+  const picks = useMemo(() => data?.picks ?? [], [data?.picks]);
   const blockers = useMemo(() => publishBlockers(guide, picks), [guide, picks]);
   const canPublish = blockers.length === 0;
 

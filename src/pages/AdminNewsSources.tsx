@@ -256,6 +256,7 @@ export default function AdminNewsSources() {
           const val = info.getValue();
           if (!val) return 'Never';
           const d = new Date(val);
+          // eslint-disable-next-line react-hooks/purity -- relative-time label inside a TanStack Table cell renderer; impurity is acceptable here.
           const diff = Date.now() - d.getTime();
           const hours = Math.floor(diff / 3600000);
           if (hours < 1) return 'Just now';

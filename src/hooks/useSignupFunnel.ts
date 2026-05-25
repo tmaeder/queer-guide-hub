@@ -67,5 +67,6 @@ export function useSignupFunnel() {
     sessionIdRef.current = getOrCreateSessionId();
   }, []);
 
+  // eslint-disable-next-line react-hooks/refs -- session id is read during render to surface to consumers; the ref value only changes inside the reset() event handler.
   return { emit, sessionId: sessionIdRef.current, reset };
 }

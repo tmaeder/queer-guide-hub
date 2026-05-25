@@ -39,10 +39,11 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
         svgContent = decodeURIComponent(url.slice(prefix + 1));
       }
       return (
+        // eslint-disable-next-line react-hooks/error-boundaries -- inline SVG render guarded by try/catch with fallback below; deliberate.
         <div
           className="w-full h-full flex items-center justify-center bg-muted overflow-hidden"
           dangerouslySetInnerHTML={{ __html: svgContent }}
-         
+
         />
       );
     } catch {

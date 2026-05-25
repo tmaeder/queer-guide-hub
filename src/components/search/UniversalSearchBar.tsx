@@ -116,6 +116,7 @@ export const UniversalSearchBar = () => {
   const nearMe = useNearMe();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (voice.transcript) setQuery(voice.transcript);
   }, [voice.transcript]);
 
@@ -123,6 +124,7 @@ export const UniversalSearchBar = () => {
     const saved = localStorage.getItem('recent-searches');
     if (!saved) return;
     try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setRecentSearches(JSON.parse(saved));
     } catch {
       /* ignore */
@@ -131,6 +133,7 @@ export const UniversalSearchBar = () => {
 
   // Reset virtual focus when results change.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setResultsFocused(null);
   }, [suggestions.length, activeScope]);
 
@@ -215,7 +218,7 @@ export const UniversalSearchBar = () => {
       setFilters((f) => ({ ...f, types: scope ? [scope] : [] }));
       focusInput();
     },
-    [activeScope, focusInput],
+    [focusInput],
   );
 
   // Rail navigable list: [All, ...RAIL_SCOPE_IDS]
@@ -368,6 +371,7 @@ export const UniversalSearchBar = () => {
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverAnchor asChild>
           <div className="relative">
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- search landmark also acts as a click target to focus the inner input; keyboard handling provided. */}
             <div
               role="search"
               aria-label="Site search"

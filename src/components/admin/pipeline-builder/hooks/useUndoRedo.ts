@@ -84,7 +84,9 @@ export function useUndoRedo(
     markEdit,
     commitNow,
     reset,
+    // eslint-disable-next-line react-hooks/refs -- intentional ref-during-render: latest-value mirror or one-shot render-time latch documented in nearby comments / surrounding code.
     canUndo: pastRef.current.length > 0,
+    // eslint-disable-next-line react-hooks/refs -- intentional ref-during-render: latest-value mirror or one-shot render-time latch documented in nearby comments / surrounding code.
     canRedo: futureRef.current.length > 0,
   };
 }

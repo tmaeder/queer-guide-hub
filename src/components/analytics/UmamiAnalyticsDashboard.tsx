@@ -159,6 +159,7 @@ export const UmamiAnalyticsDashboard = () => {
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
     fetchUmamiStats();
 
     // Auto-refresh every 5 minutes if enabled

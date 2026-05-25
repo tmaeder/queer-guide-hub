@@ -105,6 +105,7 @@ export function TravelPreferencesEditor() {
   // Hydrate transport + home city from user_travel_preferences
   useEffect(() => {
     if (!travelPrefs) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setPreferredTransport(travelPrefs.preferred_transport ?? []);
     if (travelPrefs.home_city_id && !homeCity) {
       (async () => {

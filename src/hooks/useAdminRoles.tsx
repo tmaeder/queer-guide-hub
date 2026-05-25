@@ -16,10 +16,12 @@ export function useAdminRoles() {
   useEffect(() => {
     // Don't resolve roles until auth has finished loading
     if (authLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setLoading(true);
       return;
     }
     if (user) {
+      // eslint-disable-next-line react-hooks/immutability -- fetchUserRoles declared below; effect fires after render so binding is initialized.
       fetchUserRoles();
     } else {
       setUserRoles([]);

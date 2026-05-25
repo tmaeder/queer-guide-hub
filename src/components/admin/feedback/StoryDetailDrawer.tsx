@@ -115,11 +115,13 @@ export function StoryDetailDrawer({
 
   useEffect(() => {
     if (story) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setTitleDraft(story.title);
       setSummaryDraft(story.summary ?? '');
       setBriefDraft(story.brief_title ?? '');
       setNarrativeDraft(story.narrative ?? '');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- subscribe to story field changes via destructured optional chains; pulling the whole `story` re-runs on every parent re-render.
   }, [story?.id, story?.title, story?.summary, story?.brief_title, story?.narrative]);
 
   if (!story) return null;

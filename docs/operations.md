@@ -152,7 +152,7 @@ git checkout HEAD -- supabase/functions/<name>/
 
 ## 5. 410-stub deletion log (consolidation sprint)
 
-Edge functions removed in `claude/consolidation` branch (see [docs/consolidation-state-2026-05-01.md](consolidation-state-2026-05-01.md)):
+Edge functions removed in the May-2026 consolidation sprint:
 
 | Function | Removed | Why |
 |---|---|---|
@@ -160,7 +160,7 @@ Edge functions removed in `claude/consolidation` branch (see [docs/consolidation
 | `fetch-ilga-data` | 2026-05-01 | 410 stub since Apr 8; replaced by `source-ilga` |
 | `algolia-sync` | 2026-05-01 | Algolia replaced by Meilisearch |
 
-Future deletion candidates (deferred to Phase 2):
+Future deletion candidates (deferred):
 - `background-import-manager` — 410 stub but 7 active call sites in `useBackgroundImports.tsx`
 - `ingestion-pipeline` — 410 stub but 5+ active call sites in scrapers + `ingestion-review-api`
 
@@ -188,6 +188,5 @@ Future deletion candidates (deferred to Phase 2):
 - **Architecture overview:** [CLAUDE.md](../CLAUDE.md) at repo root
 - **News pipeline detail:** `CLAUDE.md` § News pipeline + `/admin/pipelines?pipeline=news-ingestion`
 - **Search detail:** `docs/architecture/` (if present), `docs/search-intelligence/`
-- **Consolidation state:** [docs/consolidation-state-2026-05-01.md](consolidation-state-2026-05-01.md)
 - **ADRs:** `docs/adrs/`
 - **Email ingestion:** [docs/architecture/email-ingestion.md](architecture/email-ingestion.md)

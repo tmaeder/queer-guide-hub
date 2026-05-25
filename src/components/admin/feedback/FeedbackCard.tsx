@@ -71,6 +71,7 @@ export function FeedbackCard({
   const handoff = latestHandoff(item);
   const handoffChip = handoff ? HANDOFF_CHIP[handoff.status] : null;
 
+  // eslint-disable-next-line react-hooks/purity -- time-relative value (Date.now / Math.random) used to compute a label or filter cutoff; sub-second precision irrelevant for this UI.
   const ageMs = Date.now() - new Date(item.submitted_at).getTime();
   const ageDays = ageMs / 86400_000;
   const slaOpen = item.feedback_status !== 'done' && !item.is_spam && !item.duplicate_of;

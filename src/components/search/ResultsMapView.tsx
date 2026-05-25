@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- this component threads map+entity refs through props/hooks during render; MapShell + EntityMap subscribe to .current themselves. */
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
