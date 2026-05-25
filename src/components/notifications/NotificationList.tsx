@@ -20,6 +20,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { fetchUserPostInteractions } from '@/hooks/usePageFetchers';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
+const Empty = ({ label }: { label: string }) => (
+  <div className="p-4 text-center text-muted-foreground">{label}</div>
+);
+
 const getNotificationIcon = (type: string) => {
   switch (type) {
     case 'message':
@@ -106,10 +110,6 @@ export const NotificationList = () => {
   const directMessages = useMemo(() => {
     return (conversations || []).slice(0, 10);
   }, [conversations]);
-
-  const Empty = ({ label }: { label: string }) => (
-    <div className="p-4 text-center text-muted-foreground">{label}</div>
-  );
 
   const isLoadingAll =
     loading || messagingLoading || groupsLoading || likesLoading || commentsLoading;
