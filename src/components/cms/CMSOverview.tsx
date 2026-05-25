@@ -178,7 +178,9 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
   const firstName = useMemo(() => getFirstName(user?.email), [user?.email]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
     loadCounts();
+    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
     loadRecentActivity();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);

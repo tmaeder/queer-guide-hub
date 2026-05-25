@@ -245,6 +245,7 @@ export function VenueHero({
     <>
       {/* Hero Image */}
       <ParallaxHero className="w-full h-40 md:h-48 rounded-container mb-6">
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
         <img
           src={heroImage || getRandomFallbackImage()}
           alt={venue.name}

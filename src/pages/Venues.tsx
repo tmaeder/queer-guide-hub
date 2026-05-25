@@ -250,6 +250,7 @@ const Venues = () => {
   useEffect(() => {
     const baseNext = { ...buildFiltersFromUrl() };
     if (userLocation) (baseNext as Record<string, unknown>).userLocation = userLocation;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setCurrentFilters(baseNext);
     setPage(1);
     setAutoLoadedCount(0);

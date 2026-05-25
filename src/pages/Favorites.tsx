@@ -76,6 +76,7 @@ export default function Favorites() {
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/immutability -- fetchAllFavorites is declared below; effect fires after render so binding is initialized.
       fetchAllFavorites();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchAllFavorites defined below, re-run on user change

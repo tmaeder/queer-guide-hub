@@ -30,6 +30,7 @@ export function EmptyTripsCleanupBanner({ trips, onCleanup }: Props) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(DISMISS_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setDismissedAt(raw ? parseInt(raw, 10) || null : null);
     } catch {
       /* ignore */

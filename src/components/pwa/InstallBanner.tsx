@@ -47,12 +47,14 @@ export function InstallBanner() {
   const [showIOSHint, setShowIOSHint] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setPageCount((c) => c + 1);
   }, [location.pathname]);
 
   useEffect(() => {
     if (isInstalled || isDismissed()) return;
     if (pageCount >= PAGES_BEFORE_PROMPT && (canInstall || isIOSSafari())) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setVisible(true);
     }
   }, [pageCount, canInstall, isInstalled]);

@@ -88,7 +88,9 @@ export default function AlertsTab() {
           {counts.info > 0 && <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40">{counts.info} info</Badge>}
         </div>
         <div className="flex-1" />
+        {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
         <FilterButton value="open" label={`Open (${counts.open})`} />
+        {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
         <FilterButton value="all" label="All" />
         <Button
           size="sm"

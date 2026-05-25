@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Check for existing passkey enrollment when user signs in
         if (session?.user) {
+          // eslint-disable-next-line react-hooks/immutability -- checkPasskeyEnrollment declared below; auth callback fires after mount, after the binding is initialized.
           checkPasskeyEnrollment();
         }
       }

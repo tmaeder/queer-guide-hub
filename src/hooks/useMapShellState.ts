@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- "latest value" ref idiom: state values are mirrored into refs so callbacks defined here read the freshest value without re-creating identity. */
 import { useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { LayerType } from '@/hooks/useExploreMapData';

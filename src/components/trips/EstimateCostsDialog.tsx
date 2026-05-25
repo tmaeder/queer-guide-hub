@@ -66,6 +66,7 @@ export function EstimateCostsDialog({ open, onClose, tripId, members, currentUse
   // Pre-select all when data arrives.
   useEffect(() => {
     if (estimate.data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setSelected(new Set(estimate.data.suggestions.map((_, i) => i)));
     }
   }, [estimate.data]);

@@ -129,7 +129,7 @@ export function useConsolidatedSecurity() {
         variant: "destructive"
       });
     }
-  }, [toast, fetchSecurityMetrics, user?.id]);
+  }, [toast, fetchSecurityMetrics, user]);
 
   const anonymizeLocationData = useCallback(async () => {
     return withLoading(async () => {

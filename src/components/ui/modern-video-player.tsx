@@ -66,6 +66,7 @@ export function ModernVideoPlayer({
     if (hlsRendition && Hls.isSupported()) {
       const hls = new Hls();
       hlsRef.current = hls;
+      // eslint-disable-next-line react-hooks/immutability -- getVideoUrl declared below; effect fires after render so binding is initialized.
       hls.loadSource(getVideoUrl(hlsRendition.file_path));
       hls.attachMedia(videoElement);
     } else {

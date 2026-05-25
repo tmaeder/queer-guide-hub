@@ -39,6 +39,7 @@ export function VideoManager() {
   const [_selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
     loadVideos();
   }, []);
 

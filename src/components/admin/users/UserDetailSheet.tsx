@@ -74,7 +74,9 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
 
   useEffect(() => {
     if (user && open) {
+      // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
       fetchUserRoles();
+      // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
       fetchFullProfile();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchUserRoles/fetchFullProfile/user are stable, re-run on user_id/open change

@@ -37,6 +37,7 @@ export default function CountryWeatherForecast({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- fetchWeather declared below; effect fires after render so binding is initialized.
     fetchWeather();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchWeather defined below, re-run on lat/lng change
   }, [latitude, longitude]);

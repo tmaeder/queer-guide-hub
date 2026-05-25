@@ -14,8 +14,6 @@ const UPDATE_THROTTLE_MS = 4000;
  * Anonymous users are a no-op. Server enforces auth.uid() = user_id via RLS.
  * The Phase 3 scorer reads marketplace_guide_reads for the
  * "continue_reading" and "already_completed" signals.
- *
- * See docs/plans/2026-05-24-marketplace-redesign.md §5.
  */
 export function useGuideReadTracker(guideId: string | undefined): void {
   const { user } = useAuth();

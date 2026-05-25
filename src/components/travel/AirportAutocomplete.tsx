@@ -36,6 +36,7 @@ export function AirportAutocomplete({
   // Sync display value when displayLabel or value changes from parent
   useEffect(() => {
     if (displayLabel) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setDisplayValue(displayLabel);
     } else if (value && !displayValue) {
       // Fallback: resolve IATA code to display label from DB

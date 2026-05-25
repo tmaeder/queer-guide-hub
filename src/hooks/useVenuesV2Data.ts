@@ -91,6 +91,7 @@ export function useCityLeaderboard(cityId: string | null, limit = 5) {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setLoading(true);
     (async () => {
       const base = cityId
@@ -143,6 +144,7 @@ export function useDiscoveryProfile() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setData(null);
       setLoading(false);
       return;
@@ -190,6 +192,7 @@ export function useVisitedVenues() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setVenues([]);
       setLoading(false);
       return;
@@ -235,6 +238,7 @@ export function useCityAutocomplete(query: string) {
   const [matches, setMatches] = useState<Array<{ id: string; name: string }>>([]);
   useEffect(() => {
     if (query.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setMatches([]);
       return;
     }

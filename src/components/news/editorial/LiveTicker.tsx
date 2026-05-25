@@ -13,6 +13,7 @@ interface LiveTickerProps {
 const DEFAULT_WINDOW = 90 * 60 * 1000;
 
 export function LiveTicker({ articles, windowMs = DEFAULT_WINDOW }: LiveTickerProps) {
+  // eslint-disable-next-line react-hooks/purity -- cutoff is "now minus window"; recomputed per render is intentional (component re-renders when `articles` updates).
   const cutoff = Date.now() - windowMs;
   const fresh = articles
     .filter((a) => a.published_at && new Date(a.published_at).getTime() >= cutoff)

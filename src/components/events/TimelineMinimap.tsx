@@ -18,6 +18,7 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
   const dragState = useRef<{ startX: number; origStartMs: number } | null>(null);
 
   const range = rangeMs ?? (() => {
+    // eslint-disable-next-line react-hooks/purity -- fallback default centered on now when no rangeMs prop is supplied; recomputed per render.
     const now = Date.now();
     return { startMs: now - MINIMAP_DEFAULT_SPAN_MS / 2, endMs: now + MINIMAP_DEFAULT_SPAN_MS / 2 };
   })();
@@ -86,11 +87,13 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
   }, [range.startMs, range.endMs, span]);
 
   // Today
+  // eslint-disable-next-line react-hooks/purity -- "today" marker percentage; recomputed per render is intentional.
   const todayPct = ((Date.now() - range.startMs) / span) * 100;
   const showToday = todayPct >= 0 && todayPct <= 100;
 
   return (
     <div className="mt-2">
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- custom scrubber widget: region role exposes it as a labelled landmark, but it also accepts click + keyboard input. */}
       <div
         ref={ref}
         className="relative bg-muted/30 border border-foreground/10 rounded-element cursor-crosshair select-none"

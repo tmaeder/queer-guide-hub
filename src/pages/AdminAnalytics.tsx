@@ -28,6 +28,7 @@ export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- fetchStats declared below; effect fires after render so binding is initialized.
     fetchStats();
   }, []);
 

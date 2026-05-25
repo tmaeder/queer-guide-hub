@@ -46,6 +46,7 @@ export function MarketplaceFilteredView({
 
   const filtersKey = JSON.stringify(filters);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setPage(0);
     setAccumulated([]);
   }, [filtersKey, sortBy]);
@@ -57,6 +58,7 @@ export function MarketplaceFilteredView({
 
   useEffect(() => {
     if (page === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setAccumulated(listings);
     } else if (listings.length > 0) {
       setAccumulated((prev) => {

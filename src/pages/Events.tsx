@@ -19,6 +19,7 @@ import { MultiCombobox } from '@/components/events/MultiCombobox';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
 import { PageHero, spansForPreset } from '@/components/discovery';
+import { EventGuidesStream } from '@/components/events/EventGuidesStream';
 
 const EVENT_SPAN_CLASS: Record<string, string> = {
   sm: 'col-span-12 sm:col-span-6 md:col-span-4',
@@ -411,6 +412,7 @@ const Events = () => {
     setAutoLoadedCount(0);
     const cityName = visitorLocation?.city;
     if (cityName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setCities([cityName]);
       setAutoLocationLabel(cityName);
       fetchEvents({ cities: [cityName] }, { page: 1, pageSize: PAGE_SIZE, append: false });
@@ -533,6 +535,7 @@ const Events = () => {
   // Hydrate filters from URL on first mount.
   useEffect(() => {
     const parsed = parseFilterState(searchParams);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (parsed.cities.length) setCities(parsed.cities);
     if (parsed.q) setSearch(parsed.q);
     if (parsed.types.length) setEventTypes(parsed.types);
@@ -589,6 +592,7 @@ const Events = () => {
         size="md"
       />
       <div className="container mx-auto px-4 py-8 md:py-12">
+        <EventGuidesStream limit={6} />
         {/* Filters — first interactive surface after hero */}
         <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
           {/* Search Bar */}

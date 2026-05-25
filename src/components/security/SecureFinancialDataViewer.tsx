@@ -41,7 +41,9 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
 
   useEffect(() => {
     if (isOwner) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setAccessGranted(true);
+      // eslint-disable-next-line react-hooks/immutability -- fetchFinancialData declared below; effect fires after render so binding is initialized.
       fetchFinancialData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchFinancialData defined below, re-run on isOwner/userId change

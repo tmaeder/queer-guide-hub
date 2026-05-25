@@ -48,11 +48,13 @@ export function AdminCommandActionsProvider({ children }: { children: React.Reac
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper colocated with consumer; tests import it directly.
 export function useAdminCommandActions(): Ctx {
   return useContext(AdminCommandActionsContext);
 }
 
 /** Register a page-local action while the component is mounted. */
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper colocated with consumer; tests import it directly.
 export function useRegisterAdminCommandAction(action: AdminCommandAction | null | undefined) {
   const { register } = useAdminCommandActions();
   useEffect(() => {

@@ -147,8 +147,10 @@ export function useContentListController({
     setLoading(true);
     try {
       if (contentTypeId && config) {
+        // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
         await loadSingleType(config);
       } else {
+        // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
         await loadAllTypes();
       }
     } catch (err) {
@@ -283,11 +285,13 @@ export function useContentListController({
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     loadItems();
   }, [loadItems]);
 
   // Reset page on search/filter change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setPage(0);
     setSelected(new Set());
   }, [debouncedSearch, filters]);
@@ -308,6 +312,7 @@ export function useContentListController({
 
   // Clear selection on page change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSelected(new Set());
   }, [page]);
 

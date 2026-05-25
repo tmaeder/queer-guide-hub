@@ -88,6 +88,7 @@ export function useSecurePublicProfile(targetUserId?: string) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     fetchSecureProfile(targetUserId);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchSecureProfile defined above, re-run on user/targetUserId change
   }, [user, targetUserId]);

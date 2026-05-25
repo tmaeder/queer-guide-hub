@@ -18,10 +18,12 @@ export function PasswordStrengthMeter({ password, email, onScoreChange }: Props)
   const [score, setScore] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [feedback, setFeedback] = useState<string>('');
   const onScoreChangeRef = useRef(onScoreChange);
+  // eslint-disable-next-line react-hooks/refs -- intentional ref-during-render: latest-value mirror or one-shot render-time latch documented in nearby comments / surrounding code.
   onScoreChangeRef.current = onScoreChange;
 
   useEffect(() => {
     if (!password) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setScore(0);
       setFeedback('');
       onScoreChangeRef.current?.(0);

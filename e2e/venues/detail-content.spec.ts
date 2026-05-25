@@ -66,6 +66,7 @@ test.describe('Venue detail — content blocks', () => {
       const link = sidebarLinks.nth(i);
       const href = await link.getAttribute('href');
       if (href) {
+        // eslint-disable-next-line no-useless-assignment -- initial null sentinel for type inference; overwritten before any read along all reachable paths.
         let isExcludedHost = false;
         try {
           const parsed = new URL(href, baseURL);

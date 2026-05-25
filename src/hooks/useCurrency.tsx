@@ -39,6 +39,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (geoResolved) return;
     if (localStorage.getItem(STORAGE_KEY)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setLoading(false);
       setGeoResolved(true);
       return;
@@ -82,6 +83,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     const saved = (profile.preferences as Record<string, unknown> | null)?.currency;
     if (typeof saved === 'string' && saved.length === 3) {
       const code = saved.toUpperCase();
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setCurrencyState(code);
       localStorage.setItem(STORAGE_KEY, code);
       userPickedRef.current = true;

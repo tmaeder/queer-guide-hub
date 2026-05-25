@@ -201,6 +201,7 @@ export default function HelpHotlines() {
 
   // Keep country state in sync with geo resolution.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setCountryFilter(geo.country);
   }, [geo.country]);
 
@@ -222,6 +223,7 @@ export default function HelpHotlines() {
 
   const { data: cmsResult, isLoading: cmsLoading } = useCMSPage('help');
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setLoading(cmsLoading);
     if (!cmsResult) return;
     if (cmsResult.notFound || !cmsResult.page) {

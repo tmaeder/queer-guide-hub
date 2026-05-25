@@ -9,6 +9,7 @@ import { findExisting, type ExistingMatch } from "../../shared/api";
 export function useExisting(sourceUrl: string | undefined): ExistingMatch | null {
   const [match, setMatch] = useState<ExistingMatch | null>(null);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (!sourceUrl) { setMatch(null); return; }
     let cancelled = false;
     void (async () => {

@@ -88,6 +88,7 @@ export default function CityDetail() {
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
   const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
   const fetchVenuesRef = useRef(fetchVenues);
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effect below reads .current.
   fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {

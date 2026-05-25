@@ -127,6 +127,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}, page = 1) 
 
   useEffect(() => {
     if (!loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setLoadingTimedOut(false);
       return;
     }
@@ -207,6 +208,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}, page = 1) 
 
   useEffect(() => {
     if (debouncedQuery) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       performSearch(debouncedQuery, page);
     } else {
       setResults([]);

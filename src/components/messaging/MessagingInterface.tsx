@@ -310,13 +310,14 @@ const MessageInput = ({
 
   // Allow parents (e.g. IntimateMatchThread opening-move chips) to seed the
   // composer. Setting from an external value via effect is intentional here.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (prefilledMessage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setMessage(prefilledMessage);
+       
       inputRef?.current?.focus();
     }
-  }, [prefilledMessage]);
+  }, [prefilledMessage, inputRef]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -528,6 +529,7 @@ export const MessagingInterface = ({ typeFilter }: MessagingInterfaceProps = {})
     if (conversationId && conversations.length > 0) {
       const conversation = conversations.find((c) => c.id === conversationId);
       if (conversation && selectedConversation !== conversationId) {
+        // eslint-disable-next-line react-hooks/immutability -- handleSelectConversation declared below; effect fires after render so binding is initialized.
         handleSelectConversation(conversationId);
       }
     }

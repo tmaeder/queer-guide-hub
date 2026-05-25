@@ -81,6 +81,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
 
   useEffect(() => {
     if (name) {
+      // eslint-disable-next-line react-hooks/immutability -- fetchLocationInfo declared below; effect fires after render so binding is initialized.
       fetchLocationInfo();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchLocationInfo defined below, re-run on name/type change

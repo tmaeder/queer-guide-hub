@@ -25,6 +25,7 @@ export default function AuthCallback() {
   const [manualPayload, setManualPayload] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- run() declared below; effect fires after render so binding is initialized.
     void run();
   }, []);
 

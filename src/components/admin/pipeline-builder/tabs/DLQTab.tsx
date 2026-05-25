@@ -112,8 +112,11 @@ export default function DLQTab() {
             <strong className="text-foreground">{totals.total}</strong> total · <strong className="text-foreground dark:text-foreground">{totals.pending}</strong> pending · <strong className="text-destructive">{totals.failed}</strong> permanent
           </span>
           <div className="flex-1" />
+          {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
           <FilterButton value="pending" label="Pending" />
+          {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
           <FilterButton value="permanent_failed" label="Permanent fail" />
+          {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
           <FilterButton value="all" label="All" />
           <Button
             size="sm"

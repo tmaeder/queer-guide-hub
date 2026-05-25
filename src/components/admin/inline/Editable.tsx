@@ -57,13 +57,12 @@ export function Editable({
     return fieldOverride ? ({ ...base, ...fieldOverride } as FieldConfig) : base;
   }, [contentType, field, fieldOverride]);
 
-  /* eslint-disable react-hooks/static-components --
-     Stable lookup from a static registry — component identity is preserved. */
+   
   const Editor = useMemo(
     () => (fieldConfig ? getEditorForFieldType(fieldConfig.type) : null),
     [fieldConfig],
   );
-  /* eslint-enable react-hooks/static-components */
+   
   const adminActive =
     isAdmin && !disabled && fieldConfig != null && Editor != null && !fieldConfig.readOnly;
 
@@ -99,6 +98,7 @@ export function Editable({
   if (editing && Editor && fieldConfig) {
     return (
       <Wrapper className={className} data-inline-editor>
+        {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
         <Editor
           field={fieldConfig}
           initialValue={value}

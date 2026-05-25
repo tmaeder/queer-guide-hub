@@ -47,6 +47,7 @@ export function SwipeDeck({ cards, onLike, onPass, className }: SwipeDeckProps) 
   const passOpacity = useTransform(x, [-SWIPE_THRESHOLD_PX, 0], [1, 0]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setTopId(cards[0]?.id ?? null);
     x.set(0);
   }, [cards, x]);

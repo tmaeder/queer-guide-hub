@@ -52,6 +52,7 @@ export function AdminCommandPalette({ open, onOpenChange }: Props) {
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setQuery('');
       setRecent(loadRecent());
     }
@@ -151,6 +152,7 @@ export function AdminCommandPalette({ open, onOpenChange }: Props) {
 export function AdminCommandPaletteHost() {
   const [open, setOpen] = useState(false);
   const openRef = useRef(open);
+  // eslint-disable-next-line react-hooks/refs -- intentional ref-during-render: latest-value mirror or one-shot render-time latch documented in nearby comments / surrounding code.
   openRef.current = open;
 
   useEffect(() => {

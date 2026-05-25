@@ -128,6 +128,7 @@ export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
 
   useEffect(() => {
     if (!debounced || debounced.length < MIN_QUERY_LEN) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setSuggestions([]);
       setCountsByType({});
       setError(null);

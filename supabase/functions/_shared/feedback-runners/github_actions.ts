@@ -6,8 +6,7 @@
 //   FEEDBACK_FIX_GH_REPO=tmaeder/queer-guide-hub
 //   FEEDBACK_FIX_GH_TOKEN=ghp_... (PAT or fine-grained token with workflow scope)
 //   FEEDBACK_FIX_GH_EVENT=claude-fix
-// The workflow YAML lives at .github/workflows/claude-fix.yml and is documented
-// in docs/plans/2026-04-30-feedback-claude-loop.md.
+// The workflow YAML lives at .github/workflows/claude-fix.yml.
 
 import type { FixRunner } from './types.ts';
 
