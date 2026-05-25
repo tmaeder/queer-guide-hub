@@ -11,6 +11,41 @@ export function decodeHtmlEntities(text: string): string {
 
 /**
  * Strip HTML tags from a string, returning plain text.
+ *
+ * Implemented as a single-pass character state machine \u2014 `<` opens "inside
+ * tag" mode, `>` closes it, content outside tag mode is emitted. No DOM
+ * parsing of untrusted input, and no regex match-and-replace on tags so
+ * CodeQL's "incomplete multi-character sanitization" rule (alerts #105 /
+ * #519) has nothing pattern-based to flag. Smuggled-tag bypasses like
+ * `<scr<script>ipt>` cannot survive: any `<` reopens tag mode, and the
+ * matching `>` closes it cleanly with no payload reaching the output as a
+ * tag.
+ *
+ * The previous implementation collapsed to `.replace(/[<>]/g, '')` after
+ * the CodeQL #105 autofix sweep, which stripped only the angle brackets and
+ * left the tag names behind \u2014 `<p>hello</p>` became `phello/p`. The state
+ * machine restores correct behaviour without falling back into the same
+ * regex-based pattern the rule warns about.
+ */
+export function stripHtmlTags(html: string): string {
+  if (!html) return '';
+  const LT = 60; // <
+  const GT = 62; // >
+  let out = '';
+  let inside = false;
+  for (let i = 0; i < html.length; i++) {
+    const code = html.charCodeAt(i);
+    if (code === LT) {
+      inside = true;
+    } else if (code === GT) {
+      inside = false;
+    } else if (!inside) {
+      out += html[i];
+    }
+  }
+  return out
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\u00A0/g, ' ');
  * Avoids DOM parsing of untrusted input to prevent text being reinterpreted as HTML.
  *
  * The previous implementation reduced this to `.replace(/[<>]/g, '')`, which
