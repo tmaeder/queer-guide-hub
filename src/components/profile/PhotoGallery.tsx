@@ -23,7 +23,9 @@ interface PhotoGalleryProps {
 export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
   const { photos, isLoading, uploadPhoto, deletePhoto, updateCaption, getSignedPhotoUrl } =
     useUserPhotos(userId);
+  const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [editingCaption, setEditingCaption] = useState<string | null>(null);
@@ -54,10 +56,26 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
     };
   }, [photos, getSignedPhotoUrl]);
 
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(selectedFile);
+    setPreviewUrl(url);
+
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [selectedFile]);
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
       setSelectedFile(file);
+    } else {
+      setSelectedFile(null);
     }
   };
 
@@ -140,11 +158,13 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                   {selectedFile && (
                     <div className="flex flex-col gap-4">
                       <div className="relative">
-                        <img
-                          src={URL.createObjectURL(selectedFile)}
-                          alt="Preview"
-                          className="w-full h-48 object-cover rounded"
-                        />
+                        {previewUrl && (
+                          <img
+                            src={previewUrl}
+                            alt="Preview"
+                            className="w-full h-48 object-cover rounded"
+                          />
+                        )}
                       </div>
 
                       <div>
