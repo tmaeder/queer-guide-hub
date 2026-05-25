@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { TripContextBar } from '@/components/trips/TripContextBar';
 import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
@@ -90,12 +91,15 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         </motion.div>
       </AnimatePresence>
       {!isFullBleedMap && (
-        <div className="relative z-10">
+        <div className="relative z-10 pb-14 md:pb-0">
           <ErrorBoundary section="footer" fallback={null}>
             <Footer />
           </ErrorBoundary>
         </div>
       )}
+      <ErrorBoundary section="mobile-bottom-nav" fallback={null}>
+        <MobileBottomNav />
+      </ErrorBoundary>
       {/* Belt-and-suspenders: lazyOptional already swallows permanent
         failures, but a dedicated boundary with fallback={null} ensures
         any unexpected throw inside these banners can never blank the

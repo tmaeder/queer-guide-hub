@@ -248,6 +248,7 @@ export function VenueHero({
         <img
           src={heroImage || getRandomFallbackImage()}
           alt={venue.name}
+          referrerPolicy="no-referrer"
           className="w-full h-full object-cover"
           onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
             (e.target as HTMLImageElement).style.display = 'none';
@@ -745,6 +746,7 @@ export function VenuePhotos({ venue, onContentUpdated, t }: VenuePhotosProps) {
             src={imageUrl}
             alt={`${venue.name} ${index + 1}`}
             role="presentation"
+            referrerPolicy="no-referrer"
             className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).src = '/placeholder.svg';

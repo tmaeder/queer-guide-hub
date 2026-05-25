@@ -1,9 +1,19 @@
 # Marketplace v2 — Editorial Atlas Redesign
 
 **Date:** 2026-05-24
-**Status:** Approved design, not yet implemented
+**Status:** Shipped (Phases 0–6 live on prod as of 2026-05-24)
 **Author:** tmaeder (with brainstorming via Claude)
 **Surface:** `/marketplace` and all sub-routes
+
+## Shipped delta from the original plan
+
+- **Phase 0** schema landed without the duplicated `marketplace_collections` table — the v2 collections schema (from a parallel PR) was already richer with a `marketplace_collection_items` junction; §5 Local Supporter was built without depending on it.
+- **Phase 2 admin** ships with a plain Textarea for intro markdown (Tiptap deferred) and no "Generate draft" AI assist (deferred; would need Claude API + budget gate). Drag-to-reorder picks is also deferred — the `position` int is editable inline.
+- **Phase 3 personalization** scorer is live; the only signals not yet wired are trip destinations and recent search queries (data exists, low marginal value vs. effort).
+- **Phase 5 privacy toggle** for Missions data is deferred (no `/settings/privacy` page to extend). Default-ON is fine since nothing here is publicly visible.
+- **Phase 6 cleanup** dropped `price-drops` and `most-relevant` rails on `/marketplace` (covered by GuidesStream); kept `new` + `featured` for chronology + manual curation. Legacy sort tokens removed from `VALID_SORTS` but `LEGACY_SORT_MAP` still coerces old URLs for back-compat.
+
+Hero images for the 3 seed guides (`pride-briefs-…`, `lgbtq-services-…`, `trans-affirming-…`) still need to be authored — they currently render the "Editorial" placeholder.
 
 ## Problem
 

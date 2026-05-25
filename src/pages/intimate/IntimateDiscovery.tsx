@@ -1,20 +1,74 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { useMyIntimateProfile, useIntimateDiscovery } from '@/hooks/useIntimateProfile';
+import {
+  useMyIntimateProfile,
+  useIntimateDiscovery,
+} from '@/hooks/useIntimateProfile';
+import {
+  useIntimateMatches,
+  useMyIntimateLikes,
+  useMyIntimatePasses,
+  useLikeTarget,
+  usePassTarget,
+  useIncomingLikeListener,
+} from '@/hooks/useIntimateMatches';
 import { Button } from '@/components/ui/button';
+import { LikePassActions } from '@/components/intimate/LikePassActions';
+import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
+import { useToast } from '@/hooks/use-toast';
 import { AGE_BANDS, BODY_TYPES, INTO_TAGS, ROLES } from '@/assets/intimate/options';
 
 export default function IntimateDiscovery() {
   const { data: me, isLoading } = useMyIntimateProfile();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [roles, setRoles] = useState<string[]>([]);
   const [into, setInto] = useState<string[]>([]);
   const [ages, setAges] = useState<string[]>([]);
   const [bodies, setBodies] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'deck'>(() => {
+    if (typeof window === 'undefined') return 'grid';
+    return (localStorage.getItem('discoverViewMode') as 'grid' | 'deck') || 'grid';
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('discoverViewMode', viewMode);
+    } catch {
+      /* storage disabled — ignore */
+    }
+  }, [viewMode]);
 
   const cityId = me?.discovery_city_id ?? null;
   const { data: cards, isLoading: loadingDisc } = useIntimateDiscovery({
     cityId, roles, intoTags: into, ageBands: ages, bodyTypes: bodies,
+  });
+
+  const { data: likedIds = [] } = useMyIntimateLikes();
+  const { data: passedIds = [] } = useMyIntimatePasses();
+  const { data: matches = [] } = useIntimateMatches();
+  const likeMutation = useLikeTarget();
+  const passMutation = usePassTarget();
+
+  const likedSet = useMemo(() => new Set(likedIds), [likedIds]);
+  const passedSet = useMemo(() => new Set(passedIds), [passedIds]);
+  const matchedSet = useMemo(() => new Set(matches.map((m) => m.other_id)), [matches]);
+
+  // Hide profiles the user has already passed on — keep liked ones visible
+  // (status shifts to "Liked" / "Matched") so feedback stays anchored.
+  const visibleCards = useMemo(
+    () => (cards ?? []).filter((c) => !passedSet.has(c.user_id)),
+    [cards, passedSet],
+  );
+
+  useIncomingLikeListener((row) => {
+    // If the receiver has already liked the sender, the trigger creates a
+    // conversation and this row indicates the moment of mutual match.
+    if (likedSet.has(row.actor_id)) {
+      toast({
+        title: "It's a match",
+        description: 'Open Messages to say hi.',
+      });
+    }
   });
 
   if (isLoading) return <div className="p-8">Loading…</div>;
@@ -35,9 +89,34 @@ export default function IntimateDiscovery() {
     <div className="mx-auto max-w-5xl p-6">
       <header className="mb-6 flex items-baseline justify-between">
         <h1 className="text-2xl">Intimate</h1>
-        <Link to="/settings/profile?tab=intimate" className="text-sm underline">
-          Edit my profile
-        </Link>
+        <div className="flex items-center gap-3">
+          {matches.length > 0 && (
+            <Link to="/messages" className="text-sm underline">
+              {matches.length} match{matches.length === 1 ? '' : 'es'}
+            </Link>
+          )}
+          <Link to="/profile/settings?tab=dating" className="text-sm underline">
+            Edit my profile
+          </Link>
+          <div className="inline-flex rounded-element border border-border overflow-hidden" role="tablist" aria-label="View mode">
+            {(['grid', 'deck'] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                role="tab"
+                aria-selected={viewMode === m}
+                onClick={() => setViewMode(m)}
+                className={
+                  viewMode === m
+                    ? 'bg-foreground text-background px-3 py-1 text-13 capitalize'
+                    : 'bg-card text-foreground px-3 py-1 text-13 capitalize hover:bg-muted/40'
+                }
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+        </div>
       </header>
 
       <section className="mb-6 space-y-4 border-b pb-4">
@@ -49,43 +128,72 @@ export default function IntimateDiscovery() {
 
       {loadingDisc ? (
         <p className="text-muted-foreground">Loading…</p>
-      ) : !cards?.length ? (
+      ) : !visibleCards.length ? (
         <p className="text-muted-foreground">No matches yet. Try widening filters.</p>
+      ) : viewMode === 'deck' ? (
+        <SwipeDeck
+          cards={visibleCards
+            .filter((c) => !likedSet.has(c.user_id))
+            .map<SwipeableCard>((c) => ({
+              id: c.user_id,
+              avatar_url: c.avatar_url,
+              display_name: c.display_name,
+              age_band: c.age_band,
+              body_type: c.body_type,
+              height_cm: c.height_cm,
+              role: c.role,
+            }))}
+          onLike={(id) => likeMutation.mutate(id)}
+          onPass={(id) => passMutation.mutate(id)}
+        />
       ) : (
         <ul className="border-t border-border">
-          {cards.map((c) => (
-            <li key={c.user_id} className="border-b border-border">
-              <Link
-                to={`/intimate/u/${c.user_id}`}
-                className="flex items-center gap-4 py-4 transition-colors hover:bg-muted/40"
-              >
-                {c.avatar_url ? (
-                  <img
-                    src={c.avatar_url}
-                    alt=""
-                    className="h-12 w-12 object-cover rounded-element"
-                  />
-                ) : (
-                  <div className="h-12 w-12 bg-muted rounded-element" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">
-                    {c.display_name ?? 'Anon'}
-                  </div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    {[c.age_band, c.body_type, c.height_cm ? `${c.height_cm}cm` : null]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </div>
-                  {c.role?.length ? (
-                    <div className="text-xs text-muted-foreground truncate mt-0.5">
-                      {c.role.join(', ')}
+          {visibleCards.map((c) => {
+            const liked = likedSet.has(c.user_id);
+            const matched = matchedSet.has(c.user_id);
+            return (
+              <li key={c.user_id} className="border-b border-border">
+                <div className="flex items-center gap-4 py-4">
+                  <Link
+                    to={`/intimate/u/${c.user_id}`}
+                    className="flex flex-1 min-w-0 items-center gap-4 transition-colors hover:bg-muted/40"
+                  >
+                    {c.avatar_url ? (
+                      <img
+                        src={c.avatar_url}
+                        alt=""
+                        className="h-12 w-12 object-cover rounded-element"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 bg-muted rounded-element" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">
+                        {c.display_name ?? 'Anon'}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {[c.age_band, c.body_type, c.height_cm ? `${c.height_cm}cm` : null]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </div>
+                      {c.role?.length ? (
+                        <div className="text-xs text-muted-foreground truncate mt-0.5">
+                          {c.role.join(', ')}
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
+                  </Link>
+                  <LikePassActions
+                    onLike={() => likeMutation.mutate(c.user_id)}
+                    onPass={() => passMutation.mutate(c.user_id)}
+                    liked={liked}
+                    matched={matched}
+                    disabled={likeMutation.isPending || passMutation.isPending}
+                  />
                 </div>
-              </Link>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

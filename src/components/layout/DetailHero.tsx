@@ -6,9 +6,11 @@ interface DetailHeroProps {
   alt: string;
   /** Height in px or a Tailwind class. Default 192px on mobile, 240px on md+. */
   heightClassName?: string;
+  /** CSS object-position for the hero image. Default 'center'. Use 'top' for person photos. */
+  objectPosition?: string;
 }
 
-export function DetailHero({ imageUrl, alt, heightClassName = 'h-64 md:h-80' }: DetailHeroProps) {
+export function DetailHero({ imageUrl, alt, heightClassName = 'h-64 md:h-80', objectPosition = 'center' }: DetailHeroProps) {
   return (
     <Lens
       zoom={1.6}
@@ -18,6 +20,8 @@ export function DetailHero({ imageUrl, alt, heightClassName = 'h-64 md:h-80' }: 
       <img
         src={imageUrl || getRandomFallbackImage()}
         alt={alt}
+        style={{ objectPosition }}
+        referrerPolicy="no-referrer"
         className="w-full h-full object-cover scale-110 transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.15]"
       />
       {/* Bottom scrim for any text that may overlay. */}

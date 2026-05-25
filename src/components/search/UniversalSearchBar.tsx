@@ -386,6 +386,12 @@ export const UniversalSearchBar = () => {
                 setIsOpen(true);
                 focusInput();
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setIsOpen(true);
+                  focusInput();
+                }
+              }}
             >
               <span
                 aria-hidden="true"

@@ -96,6 +96,19 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
         className="relative bg-muted/30 border border-foreground/10 rounded-element cursor-crosshair select-none"
         style={{ height: `${HEIGHT}px` }}
         onClick={onClick}
+        onKeyDown={(e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && ref.current) {
+            const ms = range.startMs + (0.5 * span);
+            const half = (viewport.endMs - viewport.startMs) / 2;
+            onViewportChange({ startMs: ms - half, endMs: ms + half });
+          } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            const step = (viewport.endMs - viewport.startMs) * 0.25;
+            const delta = e.key === 'ArrowLeft' ? -step : step;
+            onViewportChange({ startMs: viewport.startMs + delta, endMs: viewport.endMs + delta });
+          }
+        }}
+        tabIndex={0}
         role="region"
         aria-label="Timeline minimap"
       >
@@ -145,6 +158,16 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              e.preventDefault();
+              e.stopPropagation();
+              const step = (viewport.endMs - viewport.startMs) * 0.1;
+              const delta = e.key === 'ArrowLeft' ? -step : step;
+              onViewportChange({ startMs: viewport.startMs + delta, endMs: viewport.endMs + delta });
+            }
+          }}
+          tabIndex={0}
           role="slider"
           aria-label="Timeline viewport"
           aria-valuemin={range.startMs}

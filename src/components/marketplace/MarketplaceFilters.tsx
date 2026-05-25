@@ -13,6 +13,12 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Search, Filter, X, Sliders } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { useMarketplaceFacets, useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
@@ -95,7 +101,11 @@ export function MarketplaceFilters({
   const [priceMin, setPriceMin] = useState<number>(PRICE_MIN);
   const [priceMax, setPriceMax] = useState<number>(PRICE_MAX);
   const [priceTouched, setPriceTouched] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  // Two tag dimensions surfaced separately so users can filter on
+  // values (queer-owned, BIPOC-owned, …) without scrolling past
+  // product-type tags. Combined into a single `tags` payload on submit.
+  const [valueTags, setValueTags] = useState<string[]>([]);
+  const [productTags, setProductTags] = useState<string[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
   const [communityOwned, setCommunityOwned] = useState<string[]>([]);
   const [currency, setCurrency] = useState('');
@@ -109,6 +119,8 @@ export function MarketplaceFilters({
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
     );
   };
+
+  const allTags = [...valueTags, ...productTags];
 
   const buildFilters = () => {
     const priceRange = priceTouched
@@ -127,7 +139,7 @@ export function MarketplaceFilters({
       location: location || undefined,
       businessType: businessType === 'all' ? undefined : businessType || undefined,
       priceRange,
-      tags: selectedTags.length > 0 ? selectedTags : undefined,
+      tags: allTags.length > 0 ? allTags : undefined,
       communityOwned: communityOwned.length > 0 ? communityOwned : undefined,
       currency: currency || undefined,
       availability,
@@ -169,7 +181,8 @@ export function MarketplaceFilters({
     priceMin,
     priceMax,
     priceTouched,
-    selectedTags,
+    valueTags,
+    productTags,
     communityOwned,
     currency,
     availability,
@@ -186,7 +199,8 @@ export function MarketplaceFilters({
     setPriceMin(PRICE_MIN);
     setPriceMax(PRICE_MAX);
     setPriceTouched(false);
-    setSelectedTags([]);
+    setValueTags([]);
+    setProductTags([]);
     setCommunityOwned([]);
     setCurrency('');
     setAvailability('in_stock');
@@ -202,12 +216,26 @@ export function MarketplaceFilters({
     location ||
     (businessType && businessType !== 'all') ||
     priceTouched ||
-    selectedTags.length > 0 ||
+    allTags.length > 0 ||
     communityOwned.length > 0 ||
     currency ||
     availability === 'any' ||
     relevanceMin > 0 ||
     verifiedWithinDays > 0;
+
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (category && category !== 'all' ? 1 : 0) +
+    (subcategory && subcategory !== 'all' ? 1 : 0) +
+    (location ? 1 : 0) +
+    (businessType && businessType !== 'all' ? 1 : 0) +
+    (priceTouched ? 1 : 0) +
+    allTags.length +
+    communityOwned.length +
+    (currency ? 1 : 0) +
+    (availability === 'any' ? 1 : 0) +
+    (relevanceMin > 0 ? 1 : 0) +
+    (verifiedWithinDays > 0 ? 1 : 0);
 
   const handleTypeChange = (newType: string) => {
     setCategory(newType);
@@ -244,218 +272,278 @@ export function MarketplaceFilters({
         <Button
           variant="outline"
           onClick={() => setShowAllFilters(!showAllFilters)}
-          size="icon"
           aria-label="Toggle filters"
+          aria-expanded={showAllFilters}
         >
           <Filter size={16} />
+          {activeFilterCount > 0 && (
+            <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-badge bg-foreground px-1.5 text-2xs font-medium text-background">
+              {activeFilterCount}
+            </span>
+          )}
         </Button>
       </div>
 
       {showAllFilters && (
-        <div className="flex flex-col gap-4 pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="type">Type</Label>
-              <Select value={category} onValueChange={handleTypeChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types{fmtCount(facets.total)}</SelectItem>
-                  {types.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t.charAt(0).toUpperCase() + t.slice(1)}
-                      {fmtCount(facets.category.get(t))}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="flex flex-col gap-4 pt-2">
+          <Accordion
+            type="multiple"
+            defaultValue={['type-category', 'price']}
+            className="w-full"
+          >
+            <AccordionItem value="type-category">
+              <AccordionTrigger className="text-13 uppercase tracking-wide text-muted-foreground">
+                Type & category
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="type">Type</Label>
+                    <Select value={category} onValueChange={handleTypeChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All types{fmtCount(facets.total)}</SelectItem>
+                        {types.map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {t.charAt(0).toUpperCase() + t.slice(1)}
+                            {fmtCount(facets.category.get(t))}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="subcategory">Category</Label>
+                    <Select value={subcategory} onValueChange={setSubcategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All categories</SelectItem>
+                        {subcategoryOptions.map((opt) => (
+                          <SelectItem key={opt.slug} value={opt.slug}>
+                            {prettifySlug(opt.slug)}
+                            {fmtCount(facets.subcategory.get(opt.slug) ?? opt.count)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="subcategory">Category</Label>
-              <Select value={subcategory} onValueChange={setSubcategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {subcategoryOptions.map((opt) => (
-                    <SelectItem key={opt.slug} value={opt.slug}>
-                      {prettifySlug(opt.slug)}
-                      {fmtCount(facets.subcategory.get(opt.slug) ?? opt.count)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <AccordionItem value="price">
+              <AccordionTrigger className="text-13 uppercase tracking-wide text-muted-foreground">
+                Price
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-2 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="price-range">Price range (USD)</Label>
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      ${priceMin}
+                      {' – '}
+                      {priceMax >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${priceMax}`}
+                    </span>
+                  </div>
+                  <Slider
+                    id="price-range"
+                    min={PRICE_MIN}
+                    max={PRICE_MAX}
+                    step={PRICE_STEP}
+                    value={[priceMin, priceMax]}
+                    onValueChange={(v) => {
+                      if (!Array.isArray(v) || v.length !== 2) return;
+                      setPriceMin(v[0]);
+                      setPriceMax(v[1]);
+                      setPriceTouched(true);
+                    }}
+                    aria-label="Price range"
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="businessType">Business Type</Label>
-              <Select value={businessType} onValueChange={setBusinessType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  {businessTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                      {fmtCount(facets.business_type.get(type))}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+            <AccordionItem value="values">
+              <AccordionTrigger className="text-13 uppercase tracking-wide text-muted-foreground">
+                Identity & values
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-4 pt-2">
+                  <div className="flex flex-col gap-2">
+                    <Label>Community-owned</Label>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2">
+                      {COMMUNITY_OWNED_OPTIONS.map((opt) => (
+                        <label
+                          key={opt.value}
+                          className="flex items-center gap-2 text-sm cursor-pointer"
+                        >
+                          <Checkbox
+                            checked={communityOwned.includes(opt.value)}
+                            onCheckedChange={() => toggleCommunityOwned(opt.value)}
+                            aria-label={opt.label}
+                          />
+                          {opt.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <TagSelector
+                    selectedTags={valueTags}
+                    onTagsChange={setValueTags}
+                    placeholder="Identity tags…"
+                    maxTags={8}
+                    categories={['identity']}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                placeholder="Enter city, state..."
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </div>
+            <AccordionItem value="product-tags">
+              <AccordionTrigger className="text-13 uppercase tracking-wide text-muted-foreground">
+                Product tags
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="pt-2">
+                  <TagSelector
+                    selectedTags={productTags}
+                    onTagsChange={setProductTags}
+                    placeholder="Filter by product or service tags…"
+                    maxTags={10}
+                    categories={['business', 'commerce', 'product', 'service']}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="price-range">Price range (USD)</Label>
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  ${priceMin}
-                  {' – '}
-                  {priceMax >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${priceMax}`}
-                </span>
-              </div>
-              <Slider
-                id="price-range"
-                min={PRICE_MIN}
-                max={PRICE_MAX}
-                step={PRICE_STEP}
-                value={[priceMin, priceMax]}
-                onValueChange={(v) => {
-                  if (!Array.isArray(v) || v.length !== 2) return;
-                  setPriceMin(v[0]);
-                  setPriceMax(v[1]);
-                  setPriceTouched(true);
-                }}
-                aria-label="Price range"
-              />
-            </div>
-          </div>
-
-          <TagSelector
-            selectedTags={selectedTags}
-            onTagsChange={setSelectedTags}
-            placeholder="Select marketplace tags..."
-            maxTags={10}
-            categories={['business', 'commerce', 'product', 'service', 'identity']}
-          />
-
-          <div className="flex flex-col gap-4 border-t border-border pt-4">
-            <div className="flex flex-col gap-2">
-              <Label>Community-owned</Label>
-              <div className="flex flex-wrap gap-x-4 gap-y-2">
-                {COMMUNITY_OWNED_OPTIONS.map((opt) => (
-                  <label
-                    key={opt.value}
-                    className="flex items-center gap-2 text-sm cursor-pointer"
-                  >
-                    <Checkbox
-                      checked={communityOwned.includes(opt.value)}
-                      onCheckedChange={() => toggleCommunityOwned(opt.value)}
-                      aria-label={opt.label}
+            <AccordionItem value="business-location">
+              <AccordionTrigger className="text-13 uppercase tracking-wide text-muted-foreground">
+                Business & location
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="businessType">Business type</Label>
+                    <Select value={businessType} onValueChange={setBusinessType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All types</SelectItem>
+                        {businessTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                            {fmtCount(facets.business_type.get(type))}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      placeholder="Enter city, state…"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
                     />
-                    {opt.label}
-                  </label>
-                ))}
-              </div>
-            </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="currency">Currency</Label>
-                <Select value={currency || 'all'} onValueChange={(v) => setCurrency(v === 'all' ? '' : v)}>
-                  <SelectTrigger id="currency">
-                    <SelectValue placeholder="Any currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any currency</SelectItem>
-                    {CURRENCY_OPTIONS.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="verified">Last verified</Label>
-                <Select
-                  value={String(verifiedWithinDays)}
-                  onValueChange={(v) => setVerifiedWithinDays(Number(v))}
-                >
-                  <SelectTrigger id="verified">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VERIFIED_WINDOW_DAYS.map((w) => (
-                      <SelectItem key={w.value} value={String(w.value)}>
-                        {w.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center justify-between gap-2 self-end">
-                <Label htmlFor="in-stock" className="cursor-pointer">
-                  Hide sold-out
-                </Label>
-                <Switch
-                  id="in-stock"
-                  checked={availability === 'in_stock'}
-                  onCheckedChange={(checked) =>
-                    setAvailability(checked ? 'in_stock' : 'any')
-                  }
-                  aria-label="Hide sold-out listings"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="relevance">Minimum LGBTQ+ relevance</Label>
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  {relevanceMin === 0
-                    ? 'Any'
-                    : `${Math.round(relevanceMin * 100)}%+`}
-                </span>
-              </div>
-              <Slider
-                id="relevance"
-                min={0}
-                max={1}
-                step={0.05}
-                value={[relevanceMin]}
-                onValueChange={(v) => Array.isArray(v) && v[0] != null && setRelevanceMin(v[0])}
-                aria-label="Minimum LGBTQ+ relevance"
-              />
-            </div>
-          </div>
+            <AccordionItem value="quality">
+              <AccordionTrigger className="text-13 uppercase tracking-wide text-muted-foreground">
+                Quality & freshness
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-4 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="currency">Currency</Label>
+                      <Select
+                        value={currency || 'all'}
+                        onValueChange={(v) => setCurrency(v === 'all' ? '' : v)}
+                      >
+                        <SelectTrigger id="currency">
+                          <SelectValue placeholder="Any currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any currency</SelectItem>
+                          {CURRENCY_OPTIONS.map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {c}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="verified">Last verified</Label>
+                      <Select
+                        value={String(verifiedWithinDays)}
+                        onValueChange={(v) => setVerifiedWithinDays(Number(v))}
+                      >
+                        <SelectTrigger id="verified">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {VERIFIED_WINDOW_DAYS.map((w) => (
+                            <SelectItem key={w.value} value={String(w.value)}>
+                              {w.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 self-end">
+                      <Label htmlFor="in-stock" className="cursor-pointer">
+                        Hide sold-out
+                      </Label>
+                      <Switch
+                        id="in-stock"
+                        checked={availability === 'in_stock'}
+                        onCheckedChange={(checked) =>
+                          setAvailability(checked ? 'in_stock' : 'any')
+                        }
+                        aria-label="Hide sold-out listings"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="relevance">Minimum LGBTQ+ relevance</Label>
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {relevanceMin === 0 ? 'Any' : `${Math.round(relevanceMin * 100)}%+`}
+                      </span>
+                    </div>
+                    <Slider
+                      id="relevance"
+                      min={0}
+                      max={1}
+                      step={0.05}
+                      value={[relevanceMin]}
+                      onValueChange={(v) => Array.isArray(v) && v[0] != null && setRelevanceMin(v[0])}
+                      aria-label="Minimum LGBTQ+ relevance"
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           <div className="flex gap-2 pt-2">
             <Button onClick={handleApply}>
               <Sliders size={16} />
-              Apply Filters
+              Apply filters
             </Button>
             {hasActiveFilters && (
               <Button variant="outline" onClick={clearFilters}>
                 <X size={16} />
-                Clear All
+                Clear all
               </Button>
             )}
           </div>
@@ -509,13 +597,23 @@ export function MarketplaceFilters({
               />
             </Badge>
           )}
-          {selectedTags.map((tag) => (
+          {valueTags.map((tag) => (
             <Badge key={tag} variant="secondary">
               {tag}
               <X
                 size={12}
                 className="cursor-pointer"
-                onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))}
+                onClick={() => setValueTags((prev) => prev.filter((t) => t !== tag))}
+              />
+            </Badge>
+          ))}
+          {productTags.map((tag) => (
+            <Badge key={tag} variant="secondary">
+              {tag}
+              <X
+                size={12}
+                className="cursor-pointer"
+                onClick={() => setProductTags((prev) => prev.filter((t) => t !== tag))}
               />
             </Badge>
           ))}

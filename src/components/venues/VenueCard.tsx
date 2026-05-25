@@ -9,6 +9,9 @@ import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
+import { SocialSignalBar } from '@/components/social/SocialSignalBar';
+import { SignalIcons } from '@/components/social/signalIcons';
+import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -50,7 +53,6 @@ type Event = Database['public']['Tables']['events']['Row'];
 interface VenueCardProps {
   venue?: Venue & {
     venue_reviews?: Array<{ rating: number }>;
-    checkin_count?: number;
   };
   loading?: boolean;
   events?: Event[];
@@ -58,6 +60,11 @@ interface VenueCardProps {
   onAmenityClick?: (amenity: string) => void;
   onServiceClick?: (service: string) => void;
   onTagClick?: (tag: string) => void;
+  /**
+   * Optional pre-fetched social signal for this venue. Parents that batch
+   * useVenueSocialSignals can pass the matching row to avoid N+1 fetches.
+   */
+  socialSignal?: { friends_saved: number; trip_usage: number };
 }
 
 const VenueCardFixture = () => (
@@ -70,7 +77,7 @@ const VenueCardFixture = () => (
   </Card>
 );
 
-function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
+function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
   const venueImage = venue?.images?.[0] ?? venue?.logo_url ?? null;
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
@@ -113,6 +120,8 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                   role="presentation"
                   loading="lazy"
                   decoding="async"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
                   className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
                 />
 
@@ -139,6 +148,20 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                 >
                   <FavoriteButton itemId={venue.id} type="venue" size="tap" />
                 </div>
+                <QuietAddToTripButton
+                  className="top-2 right-14"
+                  entity={{
+                    type: 'venue',
+                    id: venue.id,
+                    name: venue.name,
+                    latitude: venue.latitude ? Number(venue.latitude) : null,
+                    longitude: venue.longitude ? Number(venue.longitude) : null,
+                    city_id: venue.city_id ?? null,
+                    country_id: venue.country_id ?? null,
+                    address: venue.address ?? null,
+                    category: venue.category ?? null,
+                  }}
+                />
               </div>
 
               <div className="p-4">
@@ -193,10 +216,22 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                     {topTags.join(' · ')}
                   </p>
                 )}
-                {typeof venue.checkin_count === 'number' && venue.checkin_count > 0 && (
-                  <p className="mt-2 text-2xs text-muted-foreground">
-                    {venue.checkin_count.toLocaleString()} check-in{venue.checkin_count === 1 ? '' : 's'}
-                  </p>
+                {socialSignal && (
+                  <SocialSignalBar
+                    className="mt-3"
+                    signals={[
+                      {
+                        icon: SignalIcons.friends,
+                        count: socialSignal.friends_saved,
+                        label: 'friends saved',
+                      },
+                      {
+                        icon: SignalIcons.trip,
+                        count: socialSignal.trip_usage,
+                        label: 'in trips',
+                      },
+                    ]}
+                  />
                 )}
                 {!isClosed && (
                   <div

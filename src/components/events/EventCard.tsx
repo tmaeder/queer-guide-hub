@@ -16,6 +16,10 @@ import { rangesOverlap } from '@/components/trips/tripOverlap';
 import { isMeaningfulTag } from '@/utils/eventText';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { SocialSignalBar } from '@/components/social/SocialSignalBar';
+import { SignalIcons } from '@/components/social/signalIcons';
+import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
+import type { EventSocialSignal } from '@/hooks/useEventSocialSignals';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -39,6 +43,13 @@ interface EventCardProps {
   loading?: boolean;
   onViewDetails?: (event: Event) => void;
   onUpdateAttendance?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void;
+  /**
+   * Optional pre-fetched social signal (friend counts) for this event.
+   * List parents that already call useEventSocialSignals can pass the
+   * matching row; cards left without this prop still surface the
+   * attending_count chip from the event payload alone.
+   */
+  socialSignal?: EventSocialSignal;
 }
 
 const EventCardFixture = () => (
@@ -63,7 +74,7 @@ function formatEventDate(startDate: string, endDate?: string | null) {
   return format(start, 'MMM d');
 }
 
-export const EventCard = memo(function EventCard({ event, loading = false }: EventCardProps) {
+export const EventCard = memo(function EventCard({ event, loading = false, socialSignal }: EventCardProps) {
   const { t } = useTranslation();
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   const { activeTrip } = useActiveTrip();
@@ -139,6 +150,7 @@ export const EventCard = memo(function EventCard({ event, loading = false }: Eve
                   role="presentation"
                   loading="lazy"
                   decoding="async"
+                  referrerPolicy="no-referrer"
                   onError={() => setImageError(true)}
                   className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
                 />
@@ -162,6 +174,20 @@ export const EventCard = memo(function EventCard({ event, loading = false }: Eve
                 >
                   <FavoriteButton itemId={event.id} type="event" size="tap" />
                 </div>
+                <QuietAddToTripButton
+                  className="top-2 right-14"
+                  entity={{
+                    type: 'event',
+                    id: event.id,
+                    name: event.title,
+                    latitude: event.latitude ? Number(event.latitude) : null,
+                    longitude: event.longitude ? Number(event.longitude) : null,
+                    city_id: event.city_id ?? null,
+                    country_id: event.country_id ?? null,
+                    address: event.address ?? null,
+                    category: event.event_type ?? null,
+                  }}
+                />
               </div>
 
               <div className="p-4">
@@ -187,6 +213,21 @@ export const EventCard = memo(function EventCard({ event, loading = false }: Eve
                     {eventTypeTag}
                   </p>
                 )}
+                <SocialSignalBar
+                  className="mt-3"
+                  signals={[
+                    {
+                      icon: SignalIcons.friends,
+                      count: socialSignal?.friends_going ?? 0,
+                      label: 'friends going',
+                    },
+                    {
+                      icon: SignalIcons.going,
+                      count: socialSignal?.attending_count ?? event.attendee_count ?? 0,
+                      label: 'going',
+                    },
+                  ]}
+                />
               </div>
             </Card>
           </CardHoverEffect>

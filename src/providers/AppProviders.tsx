@@ -12,6 +12,7 @@ import { CurrencyProvider } from '@/hooks/useCurrency';
 import { SafeModeProvider } from '@/providers/SafeModeProvider';
 import { AdminEditModeProvider } from '@/hooks/useAdminEditMode';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
+import { CommunityLevelUpToast } from '@/components/score/CommunityLevelUpToast';
 
 const queryClient = createOptimizedQueryClient();
 
@@ -35,6 +36,7 @@ export const AppProviders = ({ children }: { children: React.ReactNode }) => (
                     <TooltipProvider>
                       <Toaster />
                       <Sonner />
+                      <CommunityLevelUpToast />
                       {children}
                     </TooltipProvider>
                   </AdminEditModeProvider>

@@ -100,6 +100,8 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 loading="lazy"
                 decoding="async"
+                referrerPolicy="no-referrer"
+                onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
                 className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
               />
               {/*

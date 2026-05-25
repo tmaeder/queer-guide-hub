@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
@@ -21,7 +22,11 @@ import Messages from '../Messages';
 
 describe('Messages page', () => {
   it('renders heading and MessagingInterface', () => {
-    render(<Messages />);
+    render(
+      <MemoryRouter>
+        <Messages />
+      </MemoryRouter>,
+    );
     expect(screen.getByRole('heading', { name: 'Messages' })).toBeInTheDocument();
     expect(screen.getByTestId('msg-iface')).toBeInTheDocument();
   });

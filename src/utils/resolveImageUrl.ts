@@ -22,6 +22,25 @@ export interface ResolveImageUrlOpts {
 }
 
 export function resolveImageUrl(opts: ResolveImageUrlOpts): string | null {
+  // Runtime guard against the silent-bug class where a caller passes
+  // a raw string (or null) instead of an options object. TypeScript
+  // doesn't catch this: every field of ResolveImageUrlOpts is optional,
+  // so the interface is structurally compatible with `{}`, and `string`
+  // is assignable to `{}` in TS. Result: callers like
+  // `resolveImageUrl(hero_image_path)` compile fine but always return
+  // null at runtime. Shipped exactly this bug in #1169 across 5 guide
+  // callers. Catch it loudly in dev, silently in prod.
+  if (opts == null || typeof opts !== 'object') {
+    if (typeof console !== 'undefined' && import.meta.env?.DEV) {
+      console.error(
+        '[resolveImageUrl] expected an options object, got',
+        typeof opts,
+        opts,
+        '— wrap as { imageUrl: ... }',
+      );
+    }
+    return null;
+  }
   const { imageUrl, optimizedUrl, thumbnailUrl, preferThumb } = opts;
   if (preferThumb && thumbnailUrl) return thumbnailUrl;
   if (optimizedUrl) return optimizedUrl;

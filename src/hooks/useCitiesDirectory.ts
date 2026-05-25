@@ -104,7 +104,7 @@ async function fetchVenueCounts(cityIds: string[]): Promise<Map<string, number>>
       supabase
         .from('venues')
         .select('city_id')
-        .eq('status', 'approved')
+        .eq('review_status', 'approved')
         .not('city_id', 'is', null)
         .in('city_id', batch),
     ),

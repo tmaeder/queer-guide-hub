@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 
 import { PersonalityCard, PersonalityCardSkeleton } from '@/components/personalities/PersonalityCard';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { PersonalitiesFiltersBar } from '@/components/personalities/PersonalitiesFiltersBar';
 import { StickyLetterBar } from '@/components/personalities/StickyLetterBar';
 import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
@@ -113,6 +114,9 @@ export default function Personalities() {
     hasMore,
     fetchPersonalities,
   } = usePersonalities(false);
+
+  const personalityIds = personalities.map((p) => p.id);
+  const { assets: imageAssets } = useEntityImageAssets('personality', personalityIds);
 
   // Initial + filter-change fetch. Honors ?page=N on first mount by loading
   // N pages worth in a single Supabase range request, so deep links restore
@@ -560,9 +564,17 @@ export default function Personalities() {
               <PersonalitiesMap personalities={personalities} />
             ) : (
               <StaggerGrid className={GRID_CLASS}>
-                {personalities.map((p) => (
-                  <PersonalityCard key={p.id} personality={p} />
-                ))}
+                {personalities.map((p) => {
+                  const asset = imageAssets.get(p.id);
+                  return (
+                    <PersonalityCard
+                      key={p.id}
+                      personality={p}
+                      optimizedUrl={asset?.optimized_url}
+                      thumbnailUrl={asset?.thumbnail_url}
+                    />
+                  );
+                })}
               </StaggerGrid>
             )}
 

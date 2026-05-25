@@ -115,10 +115,8 @@ export default tseslint.config(
       "jsx-a11y/aria-proptypes": "error",
       "jsx-a11y/aria-role": "error",
       "jsx-a11y/aria-unsupported-elements": "error",
-      // Temporarily demoted to warn — the in-flight MUI migration (Box → div)
-      // legitimately surfaces these on every batch PR because clickable Boxes
-      // become clickable divs. Re-tighten once the migration settles.
-      "jsx-a11y/click-events-have-key-events": "warn",
+      // MUI migration complete (ADR 0001, 2026-05-25). No remaining violations.
+      "jsx-a11y/click-events-have-key-events": "error",
       "jsx-a11y/heading-has-content": "error",
       "jsx-a11y/img-redundant-alt": "warn",
       "jsx-a11y/label-has-associated-control": "error",
@@ -126,6 +124,20 @@ export default tseslint.config(
       "jsx-a11y/no-static-element-interactions": "warn",
       "jsx-a11y/role-has-required-aria-props": "error",
       "jsx-a11y/role-supports-aria-props": "error",
+      // MUI migration complete (ADR 0001). Block any re-introduction.
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "@mui/material", message: "MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind. See docs/mui-to-shadcn-migration-recipe.md." },
+            { name: "@mui/icons-material", message: "MUI migration complete (ADR 0001). Use lucide-react icons instead." },
+            { name: "@mui/lab", message: "MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind." },
+          ],
+          patterns: [
+            { group: ["@mui/*", "@mui/**"], message: "MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind. See docs/mui-to-shadcn-migration-recipe.md." },
+          ],
+        },
+      ],
     },
   },
   // P2-1 — block hardcoded color literals outside theme/config files.
@@ -165,7 +177,6 @@ export default tseslint.config(
       "src/components/profile/UserModeBadge.tsx",
       // OG/recap PNG generated via canvas — hex literals are required by the canvas API.
       "src/pages/profile/Footprint.tsx",
-      "src/components/user-directory/UserDirectoryGrid.tsx",
       // Map style + security dashboards = data-viz, hardcoded by design.
       "src/components/map/**",
       "src/components/hotels/HotelsMap.tsx",
@@ -183,7 +194,6 @@ export default tseslint.config(
       // Functional gradients / scales / state colors that are intentional.
       "src/components/auth/PasswordStrengthMeter.tsx",
       "src/components/country/WorldBankDataPanel.tsx",
-      "src/components/user-directory/UserDirectoryFilters.tsx",
       "src/components/personalities/AddPersonalityDialog.tsx",
       "src/hooks/useExploreMapData.ts",
       "src/hooks/useReviewBulkActions.ts",
@@ -357,8 +367,6 @@ export default tseslint.config(
       "src/components/profile/UserModeBadge.tsx",
       "src/components/profile/PhotoGallery.tsx",
       "src/pages/profile/Footprint.tsx",
-      "src/components/user-directory/UserDirectoryGrid.tsx",
-      "src/components/user-directory/UserDirectoryFilters.tsx",
       "src/components/map/**",
       "src/components/hotels/HotelsMap.tsx",
       "src/components/events/EventsMapView.tsx",
@@ -428,11 +436,15 @@ export default tseslint.config(
           paths: [
             { name: "framer-motion", message: "Admin tree is motion-free (Cluster 3). Remove decorative motion." },
             { name: "motion/react", message: "Admin tree is motion-free (Cluster 3). Remove decorative motion." },
+            { name: "@mui/material", message: "MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind." },
+            { name: "@mui/icons-material", message: "MUI migration complete (ADR 0001). Use lucide-react icons instead." },
+            { name: "@mui/lab", message: "MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind." },
           ],
           patterns: [
             { group: ["@/components/effects/*"], message: "Aceternity effect components are not allowed in the admin tree (Cluster 3)." },
             { group: ["@/components/animation/*"], message: "Decorative animation wrappers are not allowed in the admin tree (Cluster 3)." },
             { group: ["@/components/motion/*"], message: "Decorative motion wrappers are not allowed in the admin tree (Cluster 3)." },
+            { group: ["@mui/*", "@mui/**"], message: "MUI migration complete (ADR 0001). Use shadcn/ui components + Tailwind." },
           ],
         },
       ],

@@ -1,33 +1,71 @@
-# Recharts cross-route chunk leak — RESOLVED
+# Recharts cross-route chunk leak — still unresolved
 
-**Status:** resolved by [#1122](https://github.com/tmaeder/queer-guide-hub/pull/1122) on 2026-05-24
+**Status:** still open as of 2026-05-24, after a failed fix attempt that
+had to be reverted
 **First spotted:** Lighthouse run on /cities ([#1094](https://github.com/tmaeder/queer-guide-hub/pull/1094))
-**Failed attempt:** [#1098](https://github.com/tmaeder/queer-guide-hub/pull/1098) — `optimizeDeps.include` didn't apply to prod builds
-**Working fix:** [#1122](https://github.com/tmaeder/queer-guide-hub/pull/1122) — `output.advancedChunks.groups` with priority-based assignment
 
-## TL;DR of the fix
+## Failed attempts (timeline)
 
-```ts
-// vite.config.ts > build > rollupOptions > output
-advancedChunks: {
-  groups: [
-    {
-      name: 'styling-utils',
-      test: /[\\/]node_modules[\\/](clsx|tailwind-merge|class-variance-authority)[\\/]/,
-      priority: 100,
-    },
-  ],
-}
-```
+| PR | Approach | Result |
+|---|---|---|
+| [#1098](https://github.com/tmaeder/queer-guide-hub/pull/1098) | `optimizeDeps.include: ['clsx', 'tailwind-merge', 'cva']` | `optimizeDeps` only affects the dev-server pre-bundle. Production rolldown ignored it. No effect. |
+| [#1122](https://github.com/tmaeder/queer-guide-hub/pull/1122) | `output.advancedChunks.groups` for clsx + tw-merge + cva with priority 100 | **Made perf worse.** Reverted by [#1150](https://github.com/tmaeder/queer-guide-hub/pull/1150). See post-mortem below. |
 
-Priority 100 wins over rolldown's default chunking, so clsx is owned by its
-own `styling-utils` chunk and rolldown stops baking duplicate copies into
-recharts/pdf chunks that happen to use it. The same fix also broke the
-**pdfjs leak (~122 KB raw)** and split recharts into per-chart-type chunks
-that only load on chart-using routes. Total /cities entry-preload bytes
-saved: ~457 KB raw (recharts 335 KB + pdf 122 KB).
+## Post-mortem of the #1122 failure
 
-The historical investigation below is kept for reference.
+The fix successfully removed recharts from the entry preload chunks — verified
+with `grep -l '"./recharts-' dist/assets/js/{utils,dist,index}-*.js` returning
+nothing. The chunking *topology* looked clean. But Lighthouse on prod showed:
+
+| | Pre-#1122 | Post-#1122 |
+|---|---|---|
+| Perf score | 54-61 | **42-45** |
+| TBT | 590-850 ms | **2,260-2,270 ms** |
+| LCP | 2.3-2.5 s | **3.7-6.6 s** |
+| Entry chunk size (`index-*.js`) | 215 KB | **794 KB** |
+
+**Mechanism:** removing recharts as an exit door for shared deps caused
+rolldown to redistribute the displaced code into the synchronous entry chunk.
+The +580 KB inflation of `index-*.js` parse + execute overwhelmed the
+~92 KB recharts savings. Lighthouse perf score dropped 12 points.
+
+**Lesson:** "no recharts in entry chunks" ≠ "smaller entry chunks". The next
+attempt MUST measure:
+
+1. Total entry chunk size before/after, not just import topology
+2. Lighthouse perf score on production AFTER deploy, not just the build output
+3. TBT, LCP — these tell you the actual user impact
+
+## What's still worth trying
+
+Listed in order of likely success:
+
+1. **`patch-package` on recharts** — externalize clsx as a peer dep so it
+   never gets pre-bundled into the recharts chunk. Forces rolldown to share
+   the canonical clsx instance. Multi-file patch in `node_modules/recharts/es6/`.
+2. **Replace recharts** — the chart-using routes (\`AdminAnalytics\`,
+   \`AdminFeedback\`, \`BudgetTab\`, \`MarketplaceItemDetail\`, \`MonitorTab\`)
+   are all admin/internal. A leaner alternative (recharts ≈ 335 KB raw) would
+   eliminate the leak by removing the source.
+3. **rolldown chunk-strategy investigation** — `output.experimentalMinChunkSize`,
+   `output.maxParallelFileOps`, or upstream rolldown options not yet tried.
+4. **Wait for rolldown 2.x** — rolldown 1.0 is recent; chunking improvements
+   are on the roadmap.
+
+## What NOT to do
+
+- ❌ `optimizeDeps.include` — doesn't apply to prod builds (proven by #1098)
+- ❌ `manualChunks` rule for clsx → 'styling-utils' — rule fires (confirmed
+  with `console.log`) but rolldown keeps a duplicate copy in the recharts chunk
+- ❌ Inlining clsx in `src/lib/utils.ts` — `cva` (used by every shadcn UI
+  component) still depends on `clsx` from the package, so the leak persists
+  via that path
+- ❌ `output.advancedChunks.groups` with `priority` (proven by #1122) — breaks
+  the entry chunk into 794 KB and tanks perf
+
+---
+
+## Historical investigation (kept for context)
 
 ---
 # Recharts cross-route chunk leak — open follow-up
