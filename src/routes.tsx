@@ -15,6 +15,7 @@ const Venues = lazyRetry(() => import('./pages/Venues'));
 const VenueDetail = lazyRetry(() => import('./pages/VenueDetail'));
 const VenuesLeaderboard = lazyRetry(() => import('./pages/VenuesLeaderboard'));
 const VenuesPassport = lazyRetry(() => import('./pages/VenuesPassport'));
+const Me = lazyRetry(() => import('./pages/Me'));
 const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
 const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
@@ -398,8 +399,9 @@ export const AppRoutes = () => {
                 <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
                 <Route path="venues/groups" element={<Navigate to="/groups" replace />} />
                 <Route path="venues/resources" element={<Navigate to="/resources" replace />} />
-                <Route path="venues/leaderboard" element={<VenuesLeaderboard />} />
-                <Route path="venues/passport" element={<VenuesPassport />} />
+                {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
+                <Route path="venues/leaderboard" element={<Navigate to="/me/leaderboard" replace />} />
+                <Route path="venues/passport" element={<Navigate to="/me/passport" replace />} />
                 <Route path="venues/:slug" element={<VenueDetail />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/:slug" element={<EventDetail />} />
@@ -407,7 +409,7 @@ export const AppRoutes = () => {
                 <Route path="pride/:year" element={<PridePage />} />
                 <Route path="marketplace" element={<Marketplace />} />
                 <Route path="marketplace/share" element={<MarketplaceShare />} />
-                <Route path="marketplace/missions" element={<MarketplaceMissions />} />
+                <Route path="marketplace/missions" element={<Navigate to="/me/missions" replace />} />
                 <Route path="marketplace/categories" element={<MarketplaceCategories />} />
                 <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
                 <Route path="marketplace/collection/:slug" element={<MarketplaceCollection />} />
@@ -481,6 +483,12 @@ export const AppRoutes = () => {
                 <Route path="favorites" element={<Favorites />} />
                 <Route path="feed" element={<Feed />} />
                 <Route path="community" element={<Navigate to="/feed" replace />} />
+                <Route path="me" element={<Me />} />
+                <Route path="me/passport" element={<VenuesPassport />} />
+                <Route path="me/missions" element={<MarketplaceMissions />} />
+                <Route path="me/leaderboard" element={<VenuesLeaderboard />} />
+                <Route path="me/settings" element={<Navigate to="/profile/settings" replace />} />
+                <Route path="me/tiers" element={<Navigate to="/profile/tiers" replace />} />
                 <Route path="profile/settings" element={<ProfileSettings />} />
                 <Route path="intimate" element={<IntimateDiscovery />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
