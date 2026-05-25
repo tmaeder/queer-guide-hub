@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Marketplace Editorial Atlas — Wirecutter-style redesign (2026-05-24)
+- **Editorial guides as first-class content** — `marketplace_guides`, `_picks`, `_sections`, `_reads` schema with RLS; admin authoring at `/admin/marketplace/guides` (publish gate: ≥80-char intro + hero + ≥3 picks + ≥1 `top`).
+- **New routes** — `/marketplace/guides` index, `/marketplace/guides/:slug` Wirecutter-style detail page with hero, intro, tiered PickBlock (sticky image on desktop, pros/cons, shop-now CTA with `rel="sponsored nofollow"`), "At a glance" comparison table, `Article` JSON-LD.
+- **GuidesStream on `/marketplace`** — personalized guide cards (16:9 hero, eyebrow + dek italic, "Why this guide?" chip).
+- **Personalization scorer** — `public.recommend_guides(user_id, limit)` SQL: city match + interest overlap (jaccard) + category affinity + freshness decay + editorial boost + continue-reading; demotes already-completed + stale. `boost_reason` emits the dominant positive contributor.
+- **Filter polish (Phase 1)** — community-owned chips, currency, last-verified window, hide sold-out switch, minimum LGBTQ+ relevance slider. Empty state rewrites to "No {filter X} listings in {Y}." with concrete loosening suggestion.
+- **"Featured in" backlinks** — listing detail pages show tier chip + rationale pull-quote linking back to the guide; merchant pages get a 3-up rail of guides featuring any of their products. Pure-additive — renders nothing when there are no appearances.
+- **Reading tracking + streak** — `useGuideReadTracker` upserts `marketplace_guide_reads` on guide-detail mount, auto-completes at 90% scroll. `marketplace_guide_reading_streak()` SQL counts consecutive ISO weeks. ContinueReadingRail on `/marketplace`, plain-text streak caption only when ≥2 weeks (no shaming on loss).
+- **Local Supporter** — per (user, city) score: +5/saved queer-owned listing in city, +2/completed guide pick in city, +10/in-city review, −1/week decay, capped 0–100. Tiers: Visitor / Local / Local Supporter / Champion. `/marketplace/missions` page aggregates streak + in-progress guides + per-city scores; CityDetail surfaces a quiet caption when score > 0.
+- **Edge functions** — `marketplace-recommend` (wraps the scorer, resolves user from JWT, returns featured-first for anon), `geo-resolve` (CF-IPCountry/CF-IPCity → cities lookup for soft anon personalization, no IP storage).
+- **Soft anon personalization** — IP-geo through CF headers; `home_city` candidate via `cities` lookup. Falls back to country-only when CF-IPCity not available.
+- **Index cleanup (Phase 6)** — dropped `price-drops` and `most-relevant` rails on `/marketplace` (redundant with the guide stream); kept `new` + `featured` for chronology + manual editor curation. Dead legacy sort tokens removed from `VALID_SORTS` (`LEGACY_SORT_MAP` still coerces old URLs).
+- **Admin sidebar** — Marketplace Guides nav entry under Content with `marketplace_guides` count badge.
+- **Design** — strictly monochrome, no new tokens. Italic dek as the one editorial flourish; tier labels are typographic ("OUR PICK"); no badge icons; functional motion only; semantic radius trio throughout.
+
+See [`docs/plans/2026-05-24-marketplace-redesign.md`](docs/plans/2026-05-24-marketplace-redesign.md).
+
 ## [1.1.0] - 2026-05-21
 
 ### Added
