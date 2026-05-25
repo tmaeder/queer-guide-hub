@@ -52,6 +52,7 @@ export function TagListRenderer({
                   alt={tag.name}
                   role="presentation"
                   loading="lazy"
+                  referrerPolicy="no-referrer"
                   className="absolute inset-0 w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     (e.target as HTMLImageElement).style.display = 'none';
@@ -110,6 +111,7 @@ export function TagListRenderer({
                   alt={tag.name}
                   role="presentation"
                   loading="lazy"
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     (e.target as HTMLImageElement).style.display = 'none';

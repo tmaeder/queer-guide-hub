@@ -39,6 +39,8 @@ export function HotelHero({ hotel }: HotelHeroProps) {
             loading="eager"
             decoding="async"
             fetchPriority="high"
+            referrerPolicy="no-referrer"
+            onError={(e) => { const fb = getRandomFallbackImage(); if ((e.target as HTMLImageElement).src !== fb) (e.target as HTMLImageElement).src = fb; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         </div>
