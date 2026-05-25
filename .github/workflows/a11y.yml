@@ -33,6 +33,9 @@ concurrency:
   group: a11y-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # BASE_URL resolution:
 #   * workflow_dispatch with input → use the input (manual override)
 #   * schedule (cron)              → hit prod (https://queer.guide)
