@@ -1,9 +1,22 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: null, session: null, loading: false, hasPasskey: false,
+    signUp: vi.fn(), signIn: vi.fn(), signInWithOAuth: vi.fn(), resendVerification: vi.fn(),
+    resetPassword: vi.fn(), signOut: vi.fn(), enrollPasskey: vi.fn(), signInWithPasskey: vi.fn() }),
+}));
+vi.mock('@/hooks/useEntityTripStatus', () => ({
+  useEntityTripStatus: () => ({
+    data: { isInTrip: false, tripNames: [], tripIds: [], count: 0 },
+    isLoading: false,
+  }),
+}));
+
+import { screen } from '@testing-library/react';
+import { renderWithProviders } from '@/test/test-utils';
 import { EventsTimelineView } from '../EventsTimelineView';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -27,21 +40,13 @@ function ev(overrides: Partial<Event>): Event {
 
 describe('EventsTimelineView', () => {
   it('renders toolbar + track even with no events', () => {
-    render(
-      <MemoryRouter>
-        <EventsTimelineView events={[]} />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<EventsTimelineView events={[]} />);
     expect(screen.getByRole('region', { name: /Events timeline/i })).toBeTruthy();
     expect(screen.getByRole('toolbar', { name: /Timeline navigation/i })).toBeTruthy();
   });
 
   it('renders a single event with a link to its slug', () => {
-    render(
-      <MemoryRouter>
-        <EventsTimelineView events={[ev({ id: 'e1', slug: 'pride-berlin', title: 'Pride Berlin' })]} />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<EventsTimelineView events={[ev({ id: 'e1', slug: 'pride-berlin', title: 'Pride Berlin' })]} />);
     const link = screen.getByRole('link', { name: /Pride Berlin/i }) as HTMLAnchorElement;
     expect(link.getAttribute('href')).toContain('/events/pride-berlin');
   });
@@ -53,11 +58,7 @@ describe('EventsTimelineView', () => {
       ev({ id: '3', slug: 's3', title: 'C', start_date: '2026-06-01T12:10:00Z' }),
       ev({ id: '4', slug: 's4', title: 'D', start_date: '2026-06-01T12:15:00Z' }),
     ];
-    render(
-      <MemoryRouter>
-        <EventsTimelineView events={events} />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<EventsTimelineView events={events} />);
     expect(screen.getByRole('button', { name: /4 events around/i })).toBeTruthy();
   });
 });
