@@ -9,6 +9,8 @@ import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
+import { SocialSignalBar } from '@/components/social/SocialSignalBar';
+import { SignalIcons } from '@/components/social/signalIcons';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -57,6 +59,11 @@ interface VenueCardProps {
   onAmenityClick?: (amenity: string) => void;
   onServiceClick?: (service: string) => void;
   onTagClick?: (tag: string) => void;
+  /**
+   * Optional pre-fetched social signal for this venue. Parents that batch
+   * useVenueSocialSignals can pass the matching row to avoid N+1 fetches.
+   */
+  socialSignal?: { friends_saved: number; trip_usage: number };
 }
 
 const VenueCardFixture = () => (
@@ -69,7 +76,7 @@ const VenueCardFixture = () => (
   </Card>
 );
 
-function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
+function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
   const venueImage = venue?.images?.[0] ?? venue?.logo_url ?? null;
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
@@ -191,6 +198,23 @@ function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
                   <p className="mt-2 text-2xs text-muted-foreground truncate">
                     {topTags.join(' · ')}
                   </p>
+                )}
+                {socialSignal && (
+                  <SocialSignalBar
+                    className="mt-3"
+                    signals={[
+                      {
+                        icon: SignalIcons.friends,
+                        count: socialSignal.friends_saved,
+                        label: 'friends saved',
+                      },
+                      {
+                        icon: SignalIcons.trip,
+                        count: socialSignal.trip_usage,
+                        label: 'in trips',
+                      },
+                    ]}
+                  />
                 )}
                 {!isClosed && (
                   <div
