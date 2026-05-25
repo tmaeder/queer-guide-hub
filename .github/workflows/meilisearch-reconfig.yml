@@ -8,6 +8,9 @@ on:
         type: boolean
         default: true
 
+permissions:
+  contents: read
+
 concurrency:
   group: meili-reconfig
   cancel-in-progress: false
