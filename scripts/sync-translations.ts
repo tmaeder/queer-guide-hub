@@ -38,14 +38,23 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 
 function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
   const parts = path.split('.');
+  const blockedKeys = new Set(['__proto__', 'prototype', 'constructor']);
   let curr = obj;
   for (let i = 0; i < parts.length - 1; i++) {
-    if (!curr[parts[i]] || typeof curr[parts[i]] !== 'object') {
-      curr[parts[i]] = {};
+    const segment = parts[i];
+    if (blockedKeys.has(segment)) {
+      throw new Error(`Unsafe translation key path segment: ${segment}`);
     }
-    curr = curr[parts[i]] as Record<string, unknown>;
+    if (!curr[segment] || typeof curr[segment] !== 'object') {
+      curr[segment] = {};
+    }
+    curr = curr[segment] as Record<string, unknown>;
   }
-  curr[parts[parts.length - 1]] = value;
+  const lastSegment = parts[parts.length - 1];
+  if (blockedKeys.has(lastSegment)) {
+    throw new Error(`Unsafe translation key path segment: ${lastSegment}`);
+  }
+  curr[lastSegment] = value;
 }
 
 const fillMode = process.argv.includes('--fill');
