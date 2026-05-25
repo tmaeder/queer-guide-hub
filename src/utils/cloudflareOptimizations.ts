@@ -50,10 +50,22 @@ export const optimizeImageForCloudflare = (
   format: 'auto' | 'webp' | 'avif' | 'jpg' | 'png' = 'auto',
   quality = 85
 ) => {
-  if (src.includes(IMG_CDN_HOST)) {
+  let host: string | undefined;
+  try {
+    host = new URL(src).hostname.toLowerCase();
+  } catch {
+    return src;
+  }
+
+  if (host === IMG_CDN_HOST) {
     return buildCfImageUrl(src, { width, height, quality, format });
   }
-  if (src.includes('imagedelivery.net') || src.includes('cf-images.com')) {
+  if (
+    host === 'imagedelivery.net' ||
+    host.endsWith('.imagedelivery.net') ||
+    host === 'cf-images.com' ||
+    host.endsWith('.cf-images.com')
+  ) {
     const params = [];
     if (width) params.push(`w=${width}`);
     if (height) params.push(`h=${height}`);
