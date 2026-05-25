@@ -25,6 +25,9 @@ on:
         required: false
         default: 'https://queer.guide'
 
+permissions:
+  contents: read
+
 concurrency:
   group: e2e-i18n-${{ github.ref }}
   cancel-in-progress: true
