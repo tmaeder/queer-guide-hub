@@ -14,6 +14,9 @@ on:
     types: [completed]
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: seo-check
   cancel-in-progress: false

@@ -159,7 +159,8 @@ Deno.serve(async (req) => {
       newReply.email_id = result.id;
       newReply.email_error = result.error;
     } catch (e) {
-      newReply.email_error = e instanceof Error ? e.message : String(e);
+      console.error('reply-to-feedback: failed to send notification email', e);
+      newReply.email_error = 'Failed to send notification email.';
     }
   }
 
