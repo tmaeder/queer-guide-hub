@@ -396,8 +396,13 @@ async function crawlNative(
 
     // Check exclude patterns
     const pathname = new URL(normalizedUrl).pathname
+    const globToRegex = (pattern: string): RegExp => {
+      const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const wildcardPattern = escaped.replace(/\\\*/g, '.*')
+      return new RegExp(wildcardPattern, 'i')
+    }
     if (excludePatterns.some(p => {
-      const regex = new RegExp(p.replace(/\*/g, '.*').replace(/\//g, '\\/'), 'i')
+      const regex = globToRegex(p)
       return regex.test(pathname)
     })) continue
 
@@ -407,7 +412,7 @@ async function crawlNative(
 
       // Only keep pages matching include patterns (if set) for extraction
       const matchesInclude = includePatterns.length === 0 || includePatterns.some(p => {
-        const regex = new RegExp(p.replace(/\*/g, '.*').replace(/\//g, '\\/'), 'i')
+        const regex = globToRegex(p)
         return regex.test(pathname)
       })
 
