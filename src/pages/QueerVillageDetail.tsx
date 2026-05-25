@@ -59,6 +59,7 @@ export default function QueerVillageDetail() {
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
   const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
   const fetchVenuesRef = useRef(fetchVenues);
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern: keeps the freshest fetchVenues closure available to the city-change effect below without re-running on every fetchVenues identity change.
   fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {

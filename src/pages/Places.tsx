@@ -78,6 +78,7 @@ export default function Places() {
     if (loading) {
       loadingTimerRef.current = setTimeout(() => setLoadingTimedOut(true), 10000);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setLoadingTimedOut(false);
       if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
     }

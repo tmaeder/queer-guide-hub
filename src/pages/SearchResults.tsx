@@ -108,6 +108,7 @@ export default function SearchResults() {
   const initialClusterIds = searchParams.get('clusters')?.split(',') || [];
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSearchQuery(query);
   }, [query]);
 
@@ -188,6 +189,7 @@ export default function SearchResults() {
     }
     params.delete('page');
     setSearchParams(params);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- searchParams/setSearchParams are from useSearchParams, stable refs; only re-run on sortBy
   }, [sortBy]);
@@ -203,6 +205,7 @@ export default function SearchResults() {
 
   // Reset to page 1 whenever the query string itself changes.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setPage(1);
   }, [query]);
 

@@ -88,6 +88,7 @@ export default function IntimateOnboard() {
 
   useEffect(() => {
     if (existingText) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setAboutText(existingText.about_intimate ?? '');
       setLookingText(existingText.looking_for ?? '');
     }

@@ -264,6 +264,7 @@ export function useUserRelationships() {
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       fetchRelationships();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchRelationships defined above, re-run on user change

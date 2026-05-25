@@ -74,6 +74,7 @@ export function useFavorites(type: FavoriteType) {
   useEffect(() => {
     if (!user || !config) return;
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setLoading(true);
     fetchFavoritesOnce(type, user.id, config).then((set) => {
       if (cancelled) return;

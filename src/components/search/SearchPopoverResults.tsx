@@ -203,6 +203,7 @@ export function SearchPopoverResults({
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden border border-border bg-muted">
                 {suggestion.image ? (
+                  /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */
                   <img
                     src={suggestion.image}
                     alt=""

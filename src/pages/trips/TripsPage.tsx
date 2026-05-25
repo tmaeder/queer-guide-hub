@@ -63,6 +63,7 @@ export default function TripsPage() {
   // Auto-open the create dialog when arriving from /travel with a city seed.
   useEffect(() => {
     if (seedGeo && !createOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setCreateOpen(true);
     }
   }, [seedGeo, createOpen]);

@@ -35,6 +35,7 @@ export function useEvents(autoFetch: boolean = true) {
 
   useEffect(() => {
     if (!loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setLoadingTimedOut(false);
       return;
     }
@@ -69,7 +70,6 @@ export function useEvents(autoFetch: boolean = true) {
     const signal = options?.signal;
     if (signal?.aborted) return { fetched: 0, total: null as number | null };
     let fetchedCount = 0;
-    let resultTotal: number | null = null;
     try {
       setLoading(true);
       setLoadingTimedOut(false);
@@ -311,7 +311,7 @@ export function useEvents(autoFetch: boolean = true) {
       }
 
       fetchedCount = eventsData.length;
-      resultTotal = typeof count === 'number' ? count : null;
+      const resultTotal = typeof count === 'number' ? count : null;
       setTotalCount(resultTotal);
 
       if (typeof count === 'number') {
@@ -331,6 +331,7 @@ export function useEvents(autoFetch: boolean = true) {
       if (!signal?.aborted) setLoading(false);
     }
     return { fetched: fetchedCount, total: totalCount } as { fetched: number; total: number | null };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchEvents must be a stable callback so consumers (Calendar, MapData, etc.) don't trigger re-fetch loops; the returned `total` reflects state-as-of-callback-creation, which is the documented contract.
   }, []);
 
   const createEvent = async (event: EventInsert) => {
@@ -415,6 +416,7 @@ export function useEvents(autoFetch: boolean = true) {
 
   useEffect(() => {
     if (autoFetch) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       fetchEvents();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

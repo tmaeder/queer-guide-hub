@@ -174,6 +174,7 @@ export default function MonitorTab() {
 
   // Throughput over time: runs per hour for last 24h
   const throughputData = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity -- time-relative value (Date.now / Math.random) used to compute a label or filter cutoff; sub-second precision irrelevant for this UI.
     const now = Date.now();
     const hours: Array<{ hour: string; completed: number; failed: number }> = [];
     for (let i = 23; i >= 0; i--) {

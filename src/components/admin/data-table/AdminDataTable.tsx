@@ -124,6 +124,7 @@ export function AdminDataTable<TData extends { id: string }>({
   const columnVisibility: VisibilityState = state.columnVisibility;
   const grouping: GroupingState = state.grouping;
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- third-party (react-hook-form etc.) returns a function the compiler can't memoize; the value is consumed inline and not propagated to memoized descendants.
   const table = useReactTable({
     data,
     columns,

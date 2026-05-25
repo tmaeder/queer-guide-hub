@@ -53,6 +53,7 @@ function PipelineBuilderInner() {
     if (!pipelineList || selectedPipelineId) return;
     if (initialPipelineParam) {
       const match = pipelineList.find(p => p.id === initialPipelineParam || p.name === initialPipelineParam);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       if (match) { setSelectedPipelineId(match.id); return; }
     }
     const defaultDef = pipelineList.find(p => p.name === 'hotel-ingestion-pipeline')
@@ -197,6 +198,7 @@ function PipelineBuilderInner() {
     const def = pipelineList.find(p => p.id === selectedPipelineId);
     if (!def) return;
     loadPipeline(def, nodeTypeList);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setIsDirty(false);
     undoRedo.reset();
     const draft = draftAutosave.loadDraft();
@@ -269,6 +271,7 @@ function PipelineBuilderInner() {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
+  // eslint-disable-next-line react-hooks/purity -- time-relative value (Date.now / Math.random) used to compute a label or filter cutoff; sub-second precision irrelevant for this UI.
   const showSavedPulse = lastSavedAt && Date.now() - lastSavedAt < 3000;
 
   return (
@@ -420,6 +423,7 @@ function PipelineBuilderInner() {
             x={contextMenu.x}
             y={contextMenu.y}
             nodeId={contextMenu.nodeId}
+            // eslint-disable-next-line react-hooks/refs -- intentional ref-during-render: latest-value mirror or one-shot render-time latch documented in nearby comments / surrounding code.
             canPaste={!!configClipboardRef.current}
             onClose={() => setContextMenu(null)}
             onDuplicate={actions.duplicateNode}

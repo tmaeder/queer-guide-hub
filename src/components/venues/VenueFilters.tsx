@@ -161,21 +161,27 @@ export function VenueFilters({
   const initialAccessibilityKey = (initialAccessibilityAttributes ?? []).join(',');
   const initialTargetGroupsKey = (initialTargetGroups ?? []).join(',');
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSelectedTags(initialTags ?? []);
   }, [initialTagsKey]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSelectedAmenities(initialAmenities ?? []);
   }, [initialAmenitiesKey]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSelectedServices(initialServices ?? []);
   }, [initialServicesKey]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSelectedAccessibilityAttributes(initialAccessibilityAttributes ?? []);
   }, [initialAccessibilityKey]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSelectedTargetGroups(initialTargetGroups ?? []);
   }, [initialTargetGroupsKey]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setCity(initialCity);
   }, [initialCity]);
 

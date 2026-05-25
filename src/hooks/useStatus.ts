@@ -103,6 +103,7 @@ export function useStatus(): {
       expiresAt: (p.status_expires_at as string | null) ?? null,
       tags: ((p.availability_tags as string[]) ?? []) as string[],
       dndUntil: dndUntilRaw,
+      // eslint-disable-next-line react-hooks/purity -- dndActive is recomputed when the profile changes; second-of-resolution staleness is acceptable for this UI hint.
       dndActive: dndUntil ? dndUntil.getTime() > Date.now() : false,
       travel: parseTravel(p.travel_mode),
       visibility: parseVisibility(p.presence_visibility),

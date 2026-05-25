@@ -90,6 +90,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   const venuesEnabled = enabledLayers.includes('venues');
   const { venues: rawVenues = [], isFetching: venuesFetching, fetchVenues } = useVenues(false);
   const fetchVenuesRef = useRef(fetchVenues);
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effect below reads .current.
   fetchVenuesRef.current = fetchVenues;
   const tagsKey = filters?.tags?.length ? filters.tags.join(',') : '';
 

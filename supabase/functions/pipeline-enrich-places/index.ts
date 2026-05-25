@@ -1,3 +1,4 @@
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { llmChatCompletion } from '../_shared/llm-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
@@ -108,9 +109,6 @@ Deno.serve(withErrorReporting('pipeline-enrich-places', async (req) => {
 // Candidate loading: pull entities lacking editorial_hook AND lacking a
 // pending/approved draft (so we don't queue duplicates).
 // ---------------------------------------------------------------------------
-
-// deno-lint-ignore no-explicit-any
-type SupabaseClient = any
 
 async function loadCandidates(
   supabase: SupabaseClient,

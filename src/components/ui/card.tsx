@@ -90,6 +90,7 @@ const CardImage = ({
   // the browser never fires onLoad or onError, so the card sits empty.
   // After 8 s without a settled load, treat it as failed and fall back.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setError(false);
     setLoaded(false);
     if (!src) return;

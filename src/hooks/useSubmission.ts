@@ -8,7 +8,7 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { useForm, type FieldValues, type Path } from 'react-hook-form';
+import { useForm, useWatch, type FieldValues, type Path } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -41,9 +41,13 @@ export function useSubmission(config: SubmissionTypeConfig) {
   const [honeypot, setHoneypot] = useState('');
   const [stepAnnouncement, setStepAnnouncement] = useState('');
 
-  const data = form.watch();
+  // useWatch returns a memoizable subscription; form.watch() returns a
+  // function that the React Compiler can't memoize safely (CodeQL
+  // react-hooks/incompatible-library).
+  const data = useWatch({ control: form.control }) as FieldValues;
   const errors = form.formState.errors;
 
+  const errorKeysSig = Object.keys(errors).join(',');
   const flatErrors = useMemo(() => {
     const out: Record<string, string> = {};
     for (const [name, err] of Object.entries(errors)) {
@@ -52,7 +56,7 @@ export function useSubmission(config: SubmissionTypeConfig) {
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(Object.keys(errors))]);
+  }, [errorKeysSig]);
 
   const setField = useCallback(
     (name: string, value: unknown) => {

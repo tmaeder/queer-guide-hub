@@ -9,6 +9,7 @@ export function useSearchProfiles(search: string, excludeIds: string[]) {
   const [results, setResults] = useState<Profile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (search.length < 2) { setResults([]); return; }
     const timer = setTimeout(async () => {
       setIsSearching(true);

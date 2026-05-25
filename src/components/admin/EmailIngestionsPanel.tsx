@@ -68,6 +68,7 @@ export const EmailIngestionsPanel = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
     fetchIngestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);

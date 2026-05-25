@@ -23,19 +23,16 @@ export function decodeHtmlEntities(text: string): string {
  */
 export function stripHtmlTags(html: string): string {
   if (!html) return '';
-  // Strip complete tags. The loop handles nested or interleaved cases where
-  // a single substitution pass could leave a partial tag exposed.
   let out = html;
-  const TAG = /<[^<>]*>/g;
-  let next = out.replace(TAG, '');
-  while (next !== out) {
-    out = next;
-    next = out.replace(TAG, '');
-  }
-  return out
-    .replace(/[<>]/g, '') // sweep any stray angle brackets that never formed a tag
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/\u00A0/g, ' ');
+  let prev: string;
+  do {
+    prev = out;
+    out = out.replace(/<[^<>]*>/g, '');
+  } while (out !== prev);
+  // Final sanitization sink: any surviving `<` or `>` is stripped unconditionally.
+  // Placed last so CodeQL recognizes this as the terminal sanitizer (CodeQL #105 / #519).
+  out = out.replace(/[<>]/g, '');
+  return out.replace(/&nbsp;/gi, ' ').replace(/\u00A0/g, ' ');
 }
 
 /**

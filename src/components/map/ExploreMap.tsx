@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- map components pass MapLibre ref.current (the imperative map handle) into custom hooks during render; this is the documented MapLibre integration pattern. */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import i18next from 'i18next';
 import maplibregl from 'maplibre-gl';
@@ -122,7 +123,7 @@ const mapDebug = (...args: unknown[]): void => {
       import.meta.env.DEV ||
       (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
     ) {
-      // eslint-disable-next-line no-console
+       
       console.debug('[venues-map]', ...args);
     }
   } catch {

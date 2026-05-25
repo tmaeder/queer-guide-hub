@@ -23,6 +23,7 @@ export function useSavedNewsArticles({ limit = 50 }: Options = {}) {
 
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setItems([]);
       return;
     }
@@ -72,6 +73,7 @@ export function useSavedNewsArticles({ limit = 50 }: Options = {}) {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only user identity (via user?.id) and limit drive the refetch; pulling the whole `user` object would re-run on every TOKEN_REFRESHED.
   }, [user?.id, limit]);
 
   return { items, loading };

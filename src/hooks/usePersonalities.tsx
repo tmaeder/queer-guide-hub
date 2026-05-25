@@ -319,6 +319,7 @@ export function usePersonalities(autoFetch: boolean = true) {
 
   useEffect(() => {
     if (autoFetch) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       fetchPersonalities();
     }
      
@@ -402,6 +403,7 @@ export function useProfessionFacets(limit: number = 15) {
   useEffect(() => {
     mountedRef.current = true;
     if (facetCache && facetCache.limit >= limit) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setFacets(facetCache.data.slice(0, limit));
       setLoading(false);
       return () => {

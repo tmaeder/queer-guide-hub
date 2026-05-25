@@ -211,6 +211,7 @@ export function useFeedbackData(state: FeedbackUrlState) {
     filteredItems,
     grouped,
     totalVisibleCount,
+    // eslint-disable-next-line react-hooks/refs -- sessionStartRef is set once on mount and read for display; never changes after.
     sessionStartIso: sessionStartRef.current,
     seenIds,
     setSeenIds,

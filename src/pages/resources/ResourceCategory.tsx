@@ -53,6 +53,7 @@ export function ResourceCategory({
         </Button>
         {(() => {
           const Icon = getCategoryIcon(selectedCategory);
+          // eslint-disable-next-line react-hooks/static-components -- Icon resolves to a Lucide component imported at module scope; this IIFE only picks one of them.
           return <Icon style={{ width: 18, height: 18 }} />;
         })()}
         <h6 className="text-base font-semibold">{getCategoryShortName(selectedCategory)}</h6>
@@ -211,6 +212,7 @@ export function ResourceSubcategory({
           </button>
         )}
         <ChevronRight size={14} className="text-muted-foreground" />
+        {/* eslint-disable-next-line react-hooks/static-components -- Icon is a Lucide component resolved earlier in this render via getCategoryIcon. */}
         <Icon style={{ width: 18, height: 18 }} />
         <h6 className="text-base font-semibold">{getCategoryShortName(selectedSubcategory)}</h6>
         <Badge variant="secondary">{subTags.length}</Badge>

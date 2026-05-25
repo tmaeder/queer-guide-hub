@@ -43,6 +43,7 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
       // Let them type but default to 'You' so comment posts work even before
       // we load profile display_name. The UI below hides the name field for
       // auth users.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setName('You');
     }
   }, [user, name]);

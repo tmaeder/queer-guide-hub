@@ -57,6 +57,7 @@ export function EntityDetailLayout({
 
   // Sync state ← URL when the user navigates back/forward.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (urlTab && tabIds.includes(urlTab) && urlTab !== activeTab) setActiveTab(urlTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlTab]);
@@ -70,6 +71,7 @@ export function EntityDetailLayout({
   useEffect(() => {
     if (tabs.length === 0) return;
     if (!tabIds.includes(activeTab)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setActiveTab(urlTab && tabIds.includes(urlTab) ? urlTab : (tabs[0]?.id ?? ''));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
