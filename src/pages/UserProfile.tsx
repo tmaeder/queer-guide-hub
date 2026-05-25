@@ -15,6 +15,11 @@ import { UserPostsList } from '@/components/posts/UserPostsList';
 import { SecureProfileViewer } from '@/components/profile/SecureProfileViewer';
 import { useSecurePublicProfile } from '@/hooks/useSecurePublicProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { useStatus } from '@/hooks/useStatus';
+import { usePublicStatus } from '@/hooks/usePublicStatus';
+import { StatusBar } from '@/components/status/StatusBar';
+import { StatusPicker } from '@/components/status/StatusPicker';
+import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -26,6 +31,10 @@ export default function UserProfile() {
   const { toast } = useToast();
 
   const { profile, loading: isLoading, error, isOwnProfile } = useSecurePublicProfile(userId);
+  const { status: ownStatus } = useStatus();
+  const { status: othersStatus } = usePublicStatus(isOwnProfile ? null : userId ?? null);
+  const status = isOwnProfile ? ownStatus : othersStatus;
+  const [statusPickerOpen, setStatusPickerOpen] = useState(false);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -198,6 +207,24 @@ export default function UserProfile() {
                     <p className="text-muted-foreground mb-4 max-w-2xl">{profile.bio}</p>
                   )}
 
+                  {(status || isOwnProfile) && (
+                    <div className="mb-4 max-w-2xl">
+                      <StatusBar
+                        status={status}
+                        onClick={isOwnProfile ? () => setStatusPickerOpen(true) : undefined}
+                      />
+                      {isOwnProfile && !status?.emoji && !status?.text && !status?.dndActive && !status?.travel && (
+                        <button
+                          type="button"
+                          onClick={() => setStatusPickerOpen(true)}
+                          className="text-sm text-muted-foreground hover:underline"
+                        >
+                          Set a status…
+                        </button>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-2">
                     <Calendar size={16} />
                     <p className="text-sm text-muted-foreground">
@@ -300,6 +327,9 @@ export default function UserProfile() {
           </TabsContent>
         </Tabs>
       </div>
+      {isOwnProfile && (
+        <StatusPicker open={statusPickerOpen} onOpenChange={setStatusPickerOpen} />
+      )}
     </div>
   );
 }
