@@ -30,7 +30,23 @@ import {
   publishBlockers,
   type AdminPickWithListing,
 } from '@/hooks/useAdminMarketplaceGuides';
-import { Plus, Trash2, Search, AlertCircle, Check, ExternalLink } from 'lucide-react';
+import { MarkdownTextarea } from '@/components/admin/MarkdownTextarea';
+import { Plus, Trash2, Search, AlertCircle, Check, ExternalLink, GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { Database } from '@/integrations/supabase/types';
 
 type GuideRow = Database['public']['Tables']['marketplace_guides']['Row'];
@@ -119,6 +135,14 @@ function PickEditor({
   const [consText, setConsText] = useState(pick.cons.join('\n'));
   const [position, setPosition] = useState(pick.position);
 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: pick.id });
+  const dragStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   const save = () => {
     upsertPick.mutate({
       id: pick.id,
@@ -133,13 +157,28 @@ function PickEditor({
   };
 
   return (
-    <div className="rounded-container border border-border p-4 space-y-3 bg-card">
+    <div
+      ref={setNodeRef}
+      style={dragStyle}
+      className="rounded-container border border-border p-4 space-y-3 bg-card"
+    >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-15 font-medium">{pick.listing?.title ?? '(missing listing)'}</p>
-          <p className="text-13 text-muted-foreground">
-            {pick.listing?.business_name ?? ''}
-          </p>
+        <div className="flex items-start gap-2 min-w-0">
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1 -ml-1 mt-0.5"
+            aria-label="Drag to reorder"
+          >
+            <GripVertical size={16} />
+          </button>
+          <div className="min-w-0">
+            <p className="text-15 font-medium">{pick.listing?.title ?? '(missing listing)'}</p>
+            <p className="text-13 text-muted-foreground">
+              {pick.listing?.business_name ?? ''}
+            </p>
+          </div>
         </div>
         <Button variant="ghost" size="icon" onClick={onRemove} aria-label="Remove pick">
           <Trash2 size={16} />
@@ -172,10 +211,10 @@ function PickEditor({
       </div>
       <div>
         <Label className="text-13">Rationale (markdown)</Label>
-        <Textarea
+        <MarkdownTextarea
           rows={3}
           value={rationale}
-          onChange={(e) => setRationale(e.target.value)}
+          onChange={setRationale}
           placeholder="Why we picked it — one or two sentences."
         />
       </div>
@@ -258,6 +297,75 @@ function PickAdder({ guideId, existingIds }: { guideId: string; existingIds: Set
         </ul>
       )}
     </div>
+  );
+}
+
+function SortablePicksList({
+  guideId,
+  picks,
+  onRemove,
+}: {
+  guideId: string;
+  picks: AdminPickWithListing[];
+  onRemove: (id: string) => void;
+}) {
+  const upsertPick = useUpsertPick();
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = picks.findIndex((p) => p.id === active.id);
+    const newIndex = picks.findIndex((p) => p.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(picks, oldIndex, newIndex);
+    const movedPick = picks[oldIndex];
+    const targetTier = picks[newIndex].tier;
+    const tierChanged = movedPick.tier !== targetTier;
+
+    // Recompute position for everyone in the affected tier(s) so positions
+    // stay dense (0..N). Send one upsert per changed pick.
+    const tiersToFix = tierChanged
+      ? new Set([movedPick.tier, targetTier])
+      : new Set([targetTier]);
+
+    for (const tier of tiersToFix) {
+      const tierPicks = reordered.filter((p) =>
+        p.id === movedPick.id ? tier === targetTier : p.tier === tier,
+      );
+      tierPicks.forEach((p, idx) => {
+        const newTier = p.id === movedPick.id ? targetTier : p.tier;
+        if (p.position === idx && p.tier === newTier) return;
+        upsertPick.mutate({
+          id: p.id,
+          guide_id: guideId,
+          listing_id: p.listing_id,
+          tier: newTier,
+          rationale_md: p.rationale_md ?? null,
+          pros: p.pros,
+          cons: p.cons,
+          position: idx,
+        });
+      });
+    }
+  };
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={picks.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+        <div className="space-y-4">
+          {picks.map((p) => (
+            <PickEditor
+              key={p.id}
+              guideId={guideId}
+              pick={p}
+              onRemove={() => onRemove(p.id)}
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
   );
 }
 
@@ -349,10 +457,10 @@ function GuideEditor({ id, onClose }: { id: string; onClose: () => void }) {
               </div>
               <div className="sm:col-span-2">
                 <Label>Intro (markdown — min 80 chars)</Label>
-                <Textarea
+                <MarkdownTextarea
                   rows={5}
                   value={current.intro_md ?? ''}
-                  onChange={(e) => updateField('intro_md', e.target.value)}
+                  onChange={(v) => updateField('intro_md', v)}
                 />
                 <p className="text-2xs text-muted-foreground mt-1">
                   {(current.intro_md ?? '').trim().length} / 80
@@ -445,15 +553,11 @@ function GuideEditor({ id, onClose }: { id: string; onClose: () => void }) {
             <section className="space-y-4">
               <header className="flex items-center justify-between">
                 <h3 className="text-title">Picks ({picks.length})</h3>
+                <p className="text-2xs uppercase tracking-[0.15em] text-muted-foreground">
+                  Drag to reorder
+                </p>
               </header>
-              {picks.map((p) => (
-                <PickEditor
-                  key={p.id}
-                  guideId={id}
-                  pick={p}
-                  onRemove={() => removePick.mutate(p.id)}
-                />
-              ))}
+              <SortablePicksList guideId={id} picks={picks} onRemove={(pid) => removePick.mutate(pid)} />
               <PickAdder
                 guideId={id}
                 existingIds={new Set(picks.map((p) => p.listing_id))}
