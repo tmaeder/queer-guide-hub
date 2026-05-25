@@ -17,6 +17,7 @@ import { TracingBeam } from '@/components/effects/TracingBeam';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
+import { VenueFeaturedInGuides } from '@/components/venues/VenueFeaturedInGuides';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import { useMeta } from '@/hooks/useMeta';
 import { buildVenueJsonLd, buildVenueMeta } from './VenueDetail.meta';
@@ -197,13 +198,16 @@ export default function VenueDetail() {
           id: 'overview',
           label: t('pages.venueDetail.overview', 'Overview'),
           content: (
-            <VenueOverview
-              venue={venue}
-              checkinRefresh={checkinRefresh}
-              navigate={navigate}
-              onContentUpdated={refetch}
-              t={t}
-            />
+            <div className="flex flex-col gap-6">
+              <VenueFeaturedInGuides venueId={venue.id} />
+              <VenueOverview
+                venue={venue}
+                checkinRefresh={checkinRefresh}
+                navigate={navigate}
+                onContentUpdated={refetch}
+                t={t}
+              />
+            </div>
           ),
         },
         ...(remainingImages.length > 0 || heroImage
