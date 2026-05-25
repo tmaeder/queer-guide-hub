@@ -8,6 +8,9 @@ import { StartTripHero } from '@/components/travel/StartTripHero';
 import { PrideScroller } from '@/components/travel/PrideScroller';
 import { InspirationGrid } from '@/components/travel/InspirationGrid';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
+import { TripCockpit } from '@/components/travel/TripCockpit';
+import { BecauseYouRail } from '@/components/travel/BecauseYouRail';
+import { TRAVEL_HUB_V2_ENABLED } from '@/lib/featureFlags';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { BrowseVisitedToolbar } from '@/components/travel/BrowseVisitedToolbar';
@@ -43,6 +46,12 @@ export default function Travel() {
     );
   }, [searchParams, primaryTrip, navigate, setSearchParams]);
 
+  // v2: ?intent=book deep-links route to the dedicated /travel/book page.
+  useEffect(() => {
+    if (!TRAVEL_HUB_V2_ENABLED) return;
+    if (intentBook) navigate('/travel/book', { replace: true });
+  }, [intentBook, navigate]);
+
   const { track } = useTrackEvent();
   const { data: recs } = useRecommendations({ recType: 'destination', limit: 20 });
 
@@ -74,6 +83,33 @@ export default function Travel() {
     setVisitedFilter(next);
     writeVisitedFilter(next);
   };
+
+  if (TRAVEL_HUB_V2_ENABLED) {
+    return (
+      <div className="container mx-auto max-w-screen-xl px-4 py-8 md:py-12">
+        <h1 className="mb-8 text-display font-bold tracking-tight">
+          {t('pages.travel.title', 'Travel')}
+        </h1>
+
+        <TripCockpit />
+        <BecauseYouRail />
+        <PrideScroller />
+
+        <section aria-labelledby="travel-inspiration-heading" className="mt-12">
+          <header className="mb-4 flex flex-wrap items-center justify-between gap-4">
+            <h2
+              id="travel-inspiration-heading"
+              className="text-headline font-bold tracking-tight"
+            >
+              {t('pages.travel.inspiration.heading', 'Inspiration')}
+            </h2>
+            <BrowseVisitedToolbar value={visitedFilter} onChange={onVisitedChange} />
+          </header>
+          <InspirationGrid visitedFilter={visitedFilter} />
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-screen-xl">

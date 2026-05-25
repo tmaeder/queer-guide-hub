@@ -56,6 +56,14 @@ const SCRIPT_SRC_HOSTS = [
   'https://widget.getyourguide.com',
 ];
 
+// Cloudflare Pages injects two inline scripts (beacon + analytics loader)
+// that we cannot nonce because they are added after HTMLRewriter runs.
+// Whitelisting their stable SHA-256 hashes is the correct CSP fix.
+const CF_PAGES_INLINE_SCRIPT_HASHES = [
+  "'sha256-xN+1I4nJkqNT1TN3imzsKuRrdUJwqycndmk/7+tjN0w='",
+  "'sha256-gpv3+1ui2RRNM14g5v6XIjymGrMZxrbVxUzdTeKXUlE='",
+];
+
 const FRAME_SRC = [
   "'self'",
   'https://challenges.cloudflare.com',
@@ -70,7 +78,7 @@ const FONT_SRC = ["'self'", 'data:', 'https://protomaps.github.io'];
 export function buildContentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'self'",
-    `script-src ${SCRIPT_SRC_HOSTS.join(' ')} 'nonce-${nonce}'`,
+    `script-src ${SCRIPT_SRC_HOSTS.join(' ')} 'nonce-${nonce}' ${CF_PAGES_INLINE_SCRIPT_HASHES.join(' ')}`,
     // style-src keeps 'unsafe-inline' for Tailwind / a few inline
     // style= attributes — tightening this is tracked separately.
     "style-src 'self' 'unsafe-inline'",
