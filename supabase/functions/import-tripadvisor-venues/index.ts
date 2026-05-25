@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
               // Get detailed information for each location
               const detailsUrl = `https://api.content.tripadvisor.com/api/v1/location/${item.location_id}/details?key=${tripadvisorApiKey}&language=en&currency=USD`;
               
-              console.log('Details URL (without key):', detailsUrl.replace(/key=[^&]+/, 'key=***'));
+              console.log(`Fetching TripAdvisor details for location ${item.location_id}`);
               
               const detailsResponse = await fetch(detailsUrl, {
                 headers: {
