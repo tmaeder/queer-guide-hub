@@ -491,6 +491,7 @@ export const AppRoutes = () => {
                 <Route path="me/tiers" element={<Navigate to="/profile/tiers" replace />} />
                 <Route path="profile/settings" element={<ProfileSettings />} />
                 <Route path="intimate" element={<IntimateDiscovery />} />
+                <Route path="discover" element={<IntimateDiscovery />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
                 <Route path="profile/tiers" element={<ProfileTiers />} />
