@@ -31,7 +31,8 @@ import {
   type AdminPickWithListing,
 } from '@/hooks/useAdminMarketplaceGuides';
 import { MarkdownTextarea } from '@/components/admin/MarkdownTextarea';
-import { Plus, Trash2, Search, AlertCircle, Check, ExternalLink, GripVertical } from 'lucide-react';
+import { Plus, Trash2, Search, AlertCircle, Check, ExternalLink, GripVertical, Sparkles } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DndContext,
   PointerSensor,
@@ -356,8 +357,11 @@ function SortablePicksList({
       <SortableContext items={picks.map((p) => p.id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-4">
           {picks.map((p) => (
+            // key includes updated_at so PickEditor remounts (and re-initialises
+            // its local field state) when the underlying row changes — e.g. after
+            // "Generate draft" upserts new rationale/pros/cons server-side.
             <PickEditor
-              key={p.id}
+              key={`${p.id}:${p.updated_at}`}
               guideId={guideId}
               pick={p}
               onRemove={() => onRemove(p.id)}
@@ -374,6 +378,7 @@ function GuideEditor({ id, onClose }: { id: string; onClose: () => void }) {
   const { data, isLoading } = useAdminGuide(id);
   const upsert = useUpsertGuide();
   const removePick = useDeletePick();
+  const upsertPick = useUpsertPick();
 
   const guide = data?.guide ?? null;
   const picks = data?.picks ?? [];
@@ -382,9 +387,63 @@ function GuideEditor({ id, onClose }: { id: string; onClose: () => void }) {
 
   const [draft, setDraft] = useState<GuideInsert | null>(null);
   const current = draft ?? guide;
+  const [generating, setGenerating] = useState(false);
 
   const updateField = <K extends keyof GuideInsert>(k: K, v: GuideInsert[K]) =>
     setDraft({ ...(current ?? {}), [k]: v } as GuideInsert);
+
+  const generateDraft = async () => {
+    if (picks.length === 0) {
+      toast({ title: 'Add picks first', description: 'Need at least one pick to generate a draft.', variant: 'destructive' });
+      return;
+    }
+    setGenerating(true);
+    try {
+      const { data: resp, error } = await supabase.functions.invoke<{
+        draft: {
+          intro_md: string;
+          picks: Array<{ listing_id: string; rationale_md: string; pros: string[]; cons: string[] }>;
+        };
+        error?: string;
+      }>('marketplace-guide-draft', { body: { guide_id: id } });
+      if (error || !resp?.draft) throw new Error(error?.message ?? resp?.error ?? 'no draft returned');
+
+      if (resp.draft.intro_md) {
+        updateField('intro_md', resp.draft.intro_md);
+      }
+
+      const byListing = new Map(picks.map((p) => [p.listing_id, p]));
+      let pickUpdates = 0;
+      for (const suggestion of resp.draft.picks ?? []) {
+        const existing = byListing.get(suggestion.listing_id);
+        if (!existing) continue;
+        await new Promise<void>((resolve) => {
+          upsertPick.mutate(
+            {
+              id: existing.id,
+              guide_id: id,
+              listing_id: existing.listing_id,
+              tier: existing.tier,
+              rationale_md: suggestion.rationale_md || existing.rationale_md,
+              pros: suggestion.pros?.length ? suggestion.pros : existing.pros,
+              cons: suggestion.cons?.length ? suggestion.cons : existing.cons,
+              position: existing.position,
+            },
+            { onSuccess: () => resolve(), onError: () => resolve() },
+          );
+        });
+        pickUpdates++;
+      }
+      toast({
+        title: 'Draft generated',
+        description: `Intro updated · ${pickUpdates} pick${pickUpdates === 1 ? '' : 's'} suggested. Review + edit before publishing.`,
+      });
+    } catch (e) {
+      toast({ title: 'Generation failed', description: String((e as Error).message ?? e), variant: 'destructive' });
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const save = (nextStatus?: GuideRow['status']) => {
     if (!current) return;
@@ -579,6 +638,16 @@ function GuideEditor({ id, onClose }: { id: string; onClose: () => void }) {
               </a>
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={generateDraft}
+            disabled={generating || picks.length === 0}
+            title="Calls Claude to suggest intro + per-pick rationale/pros/cons. Review before publishing."
+          >
+            <Sparkles size={14} aria-hidden />
+            {generating ? 'Generating…' : 'Generate draft'}
+          </Button>
           <Button variant="outline" onClick={() => save()} disabled={upsert.isPending}>
             Save
           </Button>
