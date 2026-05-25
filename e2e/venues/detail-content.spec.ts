@@ -65,9 +65,23 @@ test.describe('Venue detail — content blocks', () => {
     for (let i = 0; i < count; i++) {
       const link = sidebarLinks.nth(i);
       const href = await link.getAttribute('href');
-      if (href && !href.includes('google.com/maps') && !href.includes('instagram.com')) {
-        const rel = await link.getAttribute('rel');
-        expect(rel).toContain('nofollow');
+      if (href) {
+        let isExcludedHost = false;
+        try {
+          const parsed = new URL(href, baseURL);
+          const host = parsed.hostname.toLowerCase();
+          const isGoogleHost = host === 'google.com' || host.endsWith('.google.com');
+          const isInstagramHost = host === 'instagram.com' || host.endsWith('.instagram.com');
+          isExcludedHost = isGoogleHost || isInstagramHost;
+        } catch {
+          // Keep strict behavior for malformed/unparseable href values.
+          isExcludedHost = false;
+        }
+
+        if (!isExcludedHost) {
+          const rel = await link.getAttribute('rel');
+          expect(rel).toContain('nofollow');
+        }
       }
     }
   });

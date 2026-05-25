@@ -223,6 +223,9 @@ verify_jwt = false
 [functions.pipeline-enrich-news]
 verify_jwt = false
 
+[functions.pipeline-enrich-places]
+verify_jwt = false
+
 [functions.pipeline-enrich-city]
 verify_jwt = false
 
