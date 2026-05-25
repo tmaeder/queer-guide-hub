@@ -48,11 +48,19 @@ function setNestedValue(obj: Record<string, unknown>, path: string, value: unkno
 
     const hasOwnSegment = Object.prototype.hasOwnProperty.call(curr, segment);
     const segmentValue = hasOwnSegment ? curr[segment] : undefined;
-    if (!hasOwnSegment || !segmentValue || typeof segmentValue !== 'object' || Array.isArray(segmentValue)) {
-      curr[segment] = Object.create(null) as Record<string, unknown>;
-    }
 
-    curr = curr[segment] as Record<string, unknown>;
+    if (
+      hasOwnSegment &&
+      segmentValue &&
+      typeof segmentValue === 'object' &&
+      !Array.isArray(segmentValue)
+    ) {
+      curr = segmentValue as Record<string, unknown>;
+    } else {
+      const next = Object.create(null) as Record<string, unknown>;
+      curr[segment] = next;
+      curr = next;
+    }
   }
   const lastSegment = parts[parts.length - 1];
   if (blockedKeys.has(lastSegment)) {
