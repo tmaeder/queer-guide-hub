@@ -19,6 +19,11 @@ import { useStatus } from '@/hooks/useStatus';
 import { usePublicStatus } from '@/hooks/usePublicStatus';
 import { StatusBar } from '@/components/status/StatusBar';
 import { StatusPicker } from '@/components/status/StatusPicker';
+import { ScoreLevelChip } from '@/components/score/ScoreLevelChip';
+import { CompletionRing } from '@/components/profile/CompletionRing';
+import { ActivityStrip } from '@/components/profile/ActivityStrip';
+import { useCommunityScore } from '@/hooks/useCommunityScore';
+import { usePublicCommunityScore } from '@/hooks/usePublicCommunityScore';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +39,13 @@ export default function UserProfile() {
   const { status: ownStatus } = useStatus();
   const { status: othersStatus } = usePublicStatus(isOwnProfile ? null : userId ?? null);
   const status = isOwnProfile ? ownStatus : othersStatus;
+  const { data: ownScore } = useCommunityScore();
+  const { score: othersScore } = usePublicCommunityScore(isOwnProfile ? null : userId ?? null);
+  const score = isOwnProfile ? ownScore : othersScore;
+  const completionPct =
+    (profile as unknown as Record<string, unknown>)?.profile_completion_percentage as
+      | number
+      | undefined;
   const [statusPickerOpen, setStatusPickerOpen] = useState(false);
 
   const handleShare = async () => {
@@ -165,6 +177,14 @@ export default function UserProfile() {
                     Verified
                   </Badge>
                 )}
+                {isOwnProfile && typeof completionPct === 'number' && completionPct < 100 && (
+                  <CompletionRing
+                    percent={completionPct}
+                    size={56}
+                    className="mt-4"
+                    label={<span>profile complete</span>}
+                  />
+                )}
               </div>
 
               <div className="flex-1 flex flex-col gap-4">
@@ -180,6 +200,14 @@ export default function UserProfile() {
                       />
                     )}
                     <TrustTierBadge userId={profile.user_id} showLabel />
+                    {score && (
+                      <ScoreLevelChip
+                        compact
+                        level={score.level}
+                        tier={score.tier}
+                        totalPoints={score.total_points}
+                      />
+                    )}
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-muted-foreground mb-4">
@@ -276,6 +304,7 @@ export default function UserProfile() {
 
           <TabsContent value="about">
             <div className="flex flex-col gap-6">
+              {isOwnProfile && <ActivityStrip />}
               <SecureProfileViewer profile={profile} isOwnProfile={isOwnProfile} />
             </div>
           </TabsContent>
