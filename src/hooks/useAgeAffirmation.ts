@@ -28,8 +28,6 @@ function isFresh(s: Stored | null): boolean {
  * subtrees (Sexuality & Kink, Fetishes, etc.). Persisted in localStorage
  * with a 30-day TTL; cleared automatically on sign-out so a shared device
  * doesn't leak the affirmation across accounts.
- *
- * P0-3 — bug report docs/bugreports/2026-05-04-queerguide-resources.md.
  */
 export function useAgeAffirmation() {
   const [affirmed, setAffirmed] = useState<boolean>(() => isFresh(readStored()));
