@@ -327,9 +327,10 @@ function cleanText(s: string): string {
   do {
     prev = out
     out = out
-      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8217;/g, "'")
       .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
+      .replace(/&amp;/g, '&')
       .replace(/<[^>]+>/g, '')
       .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
     iterations += 1
