@@ -10,7 +10,7 @@ SELECT cron.schedule(
   SELECT
     net.http_post(
         url:='https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/sync-all-to-algolia',
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjQzOTUwNCwiZXhwIjoyMDY4MDE1NTA0fQ.Mf3kP8hGv8WLZJ_w2pKBGo5WZqItFnYXMb39jdmZtSw"}'::jsonb,
+        headers:='{"Content-Type": "application/json", "Authorization": "Bearer <REDACTED_SUPABASE_SERVICE_ROLE_KEY>"}'::jsonb,
         body:='{"tables": "all", "scheduled": true}'::jsonb
     ) as request_id;
   $$
@@ -24,7 +24,7 @@ SELECT cron.schedule(
   SELECT
     net.http_post(
         url:='https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/sync-tags-to-algolia',
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjQzOTUwNCwiZXhwIjoyMDY4MDE1NTA0fQ.Mf3kP8hGv8WLZJ_w2pKBGo5WZqItFnYXMb39jdmZtSw"}'::jsonb,
+        headers:='{"Content-Type": "application/json", "Authorization": "Bearer <REDACTED_SUPABASE_SERVICE_ROLE_KEY>"}'::jsonb,
         body:='{"action": "sync_all", "scheduled": true}'::jsonb
     ) as request_id;
   $$

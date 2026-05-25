@@ -15,6 +15,8 @@ import { OccasionChips } from '@/components/marketplace/OccasionChips';
 import { HeroCollection } from '@/components/marketplace/HeroCollection';
 import { ForYouRail } from '@/components/marketplace/ForYouRail';
 import { GuidesStream } from '@/components/marketplace/GuidesStream';
+import { ContinueReadingRail } from '@/components/marketplace/ContinueReadingRail';
+import { ReadingStreakCaption } from '@/components/marketplace/ReadingStreakCaption';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { isAdultListing } from '@/hooks/useAdultContent';
 import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityChips';
@@ -385,8 +387,10 @@ const Marketplace = () => {
           {!hasActiveFilters && (
             <>
               <OccasionChips />
+              <ContinueReadingRail />
               <HeroCollection />
               <GuidesStream limit={6} />
+              <ReadingStreakCaption />
               <ForYouRail />
               <MarketplaceSpotlight />
               <MarketplaceCategoryTiles />
