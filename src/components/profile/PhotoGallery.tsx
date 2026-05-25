@@ -32,13 +32,26 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
-  // Derive preview URL directly from the File. This avoids storing
-  // user-controllable text in state (which CodeQL flagged as xss-through-dom
-  // #518) — createObjectURL on a File always returns a `blob:` URL.
-  const previewUrl = useMemo(
-    () => (selectedFile ? URL.createObjectURL(selectedFile) : null),
-    [selectedFile],
-  );
+  // Derive preview URL directly from the File. `URL.createObjectURL` only
+  // ever returns a `blob:` URL, but CodeQL's xss-through-dom analysis can't
+  // see that — so we add an explicit allowlist guard on the protocol. The
+  // `new URL(...)` constructor + `.protocol` check is the pattern CodeQL
+  // recognizes as a sanitizer (closes alert #513 / #518).
+  const previewUrl = useMemo<string | null>(() => {
+    if (!selectedFile) return null;
+    const raw = URL.createObjectURL(selectedFile);
+    try {
+      const parsed = new URL(raw);
+      if (parsed.protocol !== 'blob:') {
+        URL.revokeObjectURL(raw);
+        return null;
+      }
+      return parsed.href;
+    } catch {
+      URL.revokeObjectURL(raw);
+      return null;
+    }
+  }, [selectedFile]);
   useEffect(() => {
     if (!previewUrl) return;
     return () => URL.revokeObjectURL(previewUrl);
