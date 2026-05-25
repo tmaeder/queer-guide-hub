@@ -44,6 +44,9 @@ concurrency:
   group: deploy-supabase
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   repair:
     runs-on: ubuntu-latest
