@@ -46,28 +46,6 @@ export function stripHtmlTags(html: string): string {
   return out
     .replace(/&nbsp;/gi, ' ')
     .replace(/\u00A0/g, ' ');
- * Avoids DOM parsing of untrusted input to prevent text being reinterpreted as HTML.
- *
- * The previous implementation reduced this to `.replace(/[<>]/g, '')`, which
- * stripped only the angle-bracket characters and left the tag names behind \u2014
- * `<p>hello</p>` became `phello/p`. We now match whole tags first (a `<`,
- * any non-`<` characters, then a `>` \u2014 looping until none remain so nested
- * malformed inputs can't survive a single pass), then sweep any stray
- * unmatched angle brackets to defend against the original code-scanning
- * concern about incomplete multi-character sanitization (CodeQL #105).
- */
-export function stripHtmlTags(html: string): string {
-  if (!html) return '';
-  let out = html;
-  let prev: string;
-  do {
-    prev = out;
-    out = out.replace(/<[^<>]*>/g, '');
-  } while (out !== prev);
-  // Final sanitization sink: any surviving `<` or `>` is stripped unconditionally.
-  // Placed last so CodeQL recognizes this as the terminal sanitizer (CodeQL #105 / #519).
-  out = out.replace(/[<>]/g, '');
-  return out.replace(/&nbsp;/gi, ' ').replace(/\u00A0/g, ' ');
 }
 
 /**
