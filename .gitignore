@@ -52,3 +52,6 @@ worker-submit/
 # Playwright test output (HTML reports, traces, last-run state)
 playwright-report/
 test-results/
+
+# Bundle visualizer output (vite rollup-plugin-visualizer, enabled via BUNDLE_STATS=1)
+bundle-baselines/
