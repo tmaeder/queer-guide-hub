@@ -329,7 +329,9 @@ function cleanText(s: string): string {
     prev = out
     out = out
       .replace(/&amp;/g, AMP_SENTINEL)
-      .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      // Do not decode to raw angle brackets during intermediate passes.
+      // This avoids rebuilding HTML element starts before final sanitization.
+      .replace(/&lt;/g, '').replace(/&gt;/g, '')
       .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8217;/g, "'")
       .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
       .replace(new RegExp(AMP_SENTINEL, 'g'), '&')
