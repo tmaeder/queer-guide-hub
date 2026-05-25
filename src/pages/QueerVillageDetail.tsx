@@ -20,6 +20,7 @@ import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { VILLAGE_SECTION_DEFS } from './queer-village-detail/VillageSectionDefs';
+import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import {
   type VillageWithRelations,
   buildVillageBreadcrumbs,
@@ -112,6 +113,13 @@ export default function QueerVillageDetail() {
         overview: <VillageOverviewTab village={village} onContentUpdated={refetch} />,
         venues: <VillageVenuesTab village={village} venues={venues} loading={venuesLoading} />,
         events: <VillageEventsTab village={village} events={events} loading={eventsLoading} />,
+        personalities: (
+          <PersonalitiesForEntity
+            cityId={village.cities?.id ?? null}
+            countryId={village.countries?.id ?? null}
+            cityName={village.cities?.name ?? village.name}
+          />
+        ),
         photos: <VillagePhotosTab village={village} />,
         map: <VillageMapTab village={village} venues={venues} />,
       }
