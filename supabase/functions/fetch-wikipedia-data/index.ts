@@ -70,7 +70,7 @@ async function fetchWikipediaContent(query: string, language = 'en'): Promise<st
       return introSections
         .map((section: unknown) => section.text)
         .join(' ')
-        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/[<>]/g, '') // Remove angle brackets to prevent HTML/script tag injection
         .substring(0, 2000); // Limit length
     }
     
