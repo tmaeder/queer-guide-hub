@@ -33,6 +33,11 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
+  const getSafePreviewUrl = (url: string | null): string | null => {
+    if (!url) return null;
+    return url.startsWith('blob:') ? url : null;
+  };
+
   useEffect(() => {
     let isMounted = true;
     const loadUrls = async () => {
@@ -158,9 +163,9 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                   {selectedFile && (
                     <div className="flex flex-col gap-4">
                       <div className="relative">
-                        {previewUrl && (
+                        {getSafePreviewUrl(previewUrl) && (
                           <img
-                            src={previewUrl}
+                            src={getSafePreviewUrl(previewUrl) ?? undefined}
                             alt="Preview"
                             className="w-full h-48 object-cover rounded"
                           />

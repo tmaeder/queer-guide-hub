@@ -316,8 +316,9 @@ function extractMediaUrl(block: string): string | null {
 // ─── Utilities ────────────────────────────────────────────
 
 function cleanText(s: string): string {
+  const TAG_RE = /<[^>]+>/g
   let out = s
-    .replace(/<[^>]+>/g, '')
+    .replace(TAG_RE, '')
     .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
     .replace(/The post .* appeared first on .*\./g, '')
     .replace(/Continue reading.*/g, '')
@@ -333,10 +334,18 @@ function cleanText(s: string): string {
       .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8217;/g, "'")
       .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
       .replace(new RegExp(AMP_SENTINEL, 'g'), '&')
-      .replace(/<[^>]+>/g, '')
+      .replace(TAG_RE, '')
       .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
     iterations += 1
   } while (out !== prev && iterations < 10)
+
+  let strippedPrev: string
+  let stripIterations = 0
+  do {
+    strippedPrev = out
+    out = out.replace(TAG_RE, '')
+    stripIterations += 1
+  } while (out !== strippedPrev && stripIterations < 10)
 
   return out.replace(/[<>]/g, '').trim()
 }
