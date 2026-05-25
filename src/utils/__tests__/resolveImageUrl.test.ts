@@ -18,4 +18,12 @@ describe('resolveImageUrl', () => {
     expect(resolveImageUrl({ imageUrl: '  ' })).toBeNull();
     expect(resolveImageUrl({})).toBeNull();
   });
+  it('returns null when a raw string is passed instead of an options object', () => {
+    // Defensive: TS doesn't catch this (string is assignable to {} with all
+    // optional fields). Five marketplace-guide callers shipped exactly this
+    // bug in #1169. The runtime guard now returns null and logs in dev.
+    expect(resolveImageUrl('https://example.com/foo.jpg' as unknown as Parameters<typeof resolveImageUrl>[0])).toBeNull();
+    expect(resolveImageUrl(null as unknown as Parameters<typeof resolveImageUrl>[0])).toBeNull();
+    expect(resolveImageUrl(undefined as unknown as Parameters<typeof resolveImageUrl>[0])).toBeNull();
+  });
 });
