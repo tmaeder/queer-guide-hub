@@ -38,6 +38,7 @@ import { CreateGroupEventDialog } from '@/components/groups/CreateGroupEventDial
 import { GroupEventCard } from '@/components/groups/GroupEventCard';
 import { useTranslation } from 'react-i18next';
 import { Editable } from '@/components/admin/inline/Editable';
+import { GroupChat } from '@/components/groups/GroupChat';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -291,7 +292,7 @@ export default function GroupDetail() {
 
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList style={{ width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }} className="grid">
+        <TabsList style={{ width: '100%', gridTemplateColumns: 'repeat(5, 1fr)' }} className="grid">
           <TabsTrigger value="about" style={{ alignItems: 'center', gap: '8px' }} className="flex">
             <Users size={16} />
             About
@@ -303,6 +304,10 @@ export default function GroupDetail() {
           >
             <Users size={16} />
             Members
+          </TabsTrigger>
+          <TabsTrigger value="chat" style={{ alignItems: 'center', gap: '8px' }} className="flex">
+            <MessageSquare size={16} />
+            Chat
           </TabsTrigger>
           <TabsTrigger value="posts" style={{ alignItems: 'center', gap: '8px' }} className="flex">
             <MessageSquare size={16} />
@@ -438,6 +443,14 @@ export default function GroupDetail() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent
+          value="chat"
+          style={{ flexDirection: 'column', gap: '24px' }}
+          className="flex"
+        >
+          <GroupChat groupId={groupId!} canPost={Boolean(group.is_member)} />
         </TabsContent>
 
         <TabsContent

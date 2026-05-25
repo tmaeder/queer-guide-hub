@@ -29,6 +29,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useSearchParams } from 'react-router';
+import { IntimateMatchThread } from '@/components/messaging/IntimateMatchThread';
 
 interface MessageItemProps {
   message: Message;
@@ -293,6 +294,8 @@ interface MessageInputProps {
   onStopTyping: () => void;
   disabled?: boolean;
   inputRef?: React.RefObject<HTMLInputElement>;
+  /** Pre-populate the composer with this text. Latest non-empty value wins. */
+  prefilledMessage?: string | null;
 }
 
 const MessageInput = ({
@@ -301,8 +304,19 @@ const MessageInput = ({
   onStopTyping,
   disabled,
   inputRef,
+  prefilledMessage,
 }: MessageInputProps) => {
   const [message, setMessage] = useState('');
+
+  // Allow parents (e.g. IntimateMatchThread opening-move chips) to seed the
+  // composer. Setting from an external value via effect is intentional here.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (prefilledMessage) {
+      setMessage(prefilledMessage);
+      inputRef?.current?.focus();
+    }
+  }, [prefilledMessage]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -468,7 +482,16 @@ const MessageInput = ({
   );
 };
 
-export const MessagingInterface = () => {
+export interface MessagingInterfaceProps {
+  /**
+   * Restrict the conversation list to a subset of conversation_type values.
+   * Omit (or pass empty array) for the full unfiltered inbox.
+   * Recognised values today: 'direct' | 'group' | 'match' | 'system' | 'trip'.
+   */
+  typeFilter?: readonly string[];
+}
+
+export const MessagingInterface = ({ typeFilter }: MessagingInterfaceProps = {}) => {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
@@ -487,6 +510,7 @@ export const MessagingInterface = () => {
 
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [prefilledMessage, setPrefilledMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -553,6 +577,9 @@ export const MessagingInterface = () => {
   };
 
   const filteredConversations = conversations.filter((conv) => {
+    if (typeFilter && typeFilter.length > 0 && !typeFilter.includes(conv.conversation_type)) {
+      return false;
+    }
     if (!searchQuery) return true;
 
     const title =
@@ -719,6 +746,21 @@ export const MessagingInterface = () => {
               </div>
             </div>
 
+            {/* Match thread ribbon — only for conversation_type='match' */}
+            {(() => {
+              const conv = conversations.find((c) => c.id === selectedConversation);
+              if (conv?.conversation_type !== 'match') return null;
+              return (
+                <div className="px-4 pt-3 md:px-4 md:pt-3">
+                  <IntimateMatchThread
+                    conversationId={selectedConversation!}
+                    hasMessages={currentMessages.length > 0}
+                    onPickOpeningMove={(prompt) => setPrefilledMessage(prompt)}
+                  />
+                </div>
+              );
+            })()}
+
             {/* Messages */}
             <ScrollArea
               style={{
@@ -764,6 +806,7 @@ export const MessagingInterface = () => {
               onStopTyping={handleStopTyping}
               disabled={sendingMessage}
               inputRef={inputRef}
+              prefilledMessage={prefilledMessage}
             />
           </>
         ) : (
