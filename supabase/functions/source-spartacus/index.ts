@@ -86,7 +86,16 @@ function parseListings(html: string, _country: string): Record<string, unknown>[
 function getTagText(html: string, tag: string): string {
   const pattern = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i')
   const m = pattern.exec(html)
-  return m ? m[1].replace(/<[^>]+>/g, '').trim() : ''
+  if (!m) return ''
+
+  let sanitized = m[1]
+  let previous: string
+  do {
+    previous = sanitized
+    sanitized = sanitized.replace(/<[^>]+>/g, '')
+  } while (sanitized !== previous)
+
+  return sanitized.trim()
 }
 
 Deno.serve(withErrorReporting('source-spartacus', async (req) => {

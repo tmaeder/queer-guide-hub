@@ -36,6 +36,7 @@ const CONNECT_SRC = [
   'https://maps.googleapis.com',
   'https://maps.gstatic.com',
   'https://commons.wikimedia.org',
+  'https://en.wikipedia.org',
   'https://widget.getyourguide.com',
   'https://*.getyourguide.com',
   'https://api.travelpayouts.com',

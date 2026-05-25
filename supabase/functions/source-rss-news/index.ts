@@ -316,15 +316,26 @@ function extractMediaUrl(block: string): string | null {
 // ─── Utilities ────────────────────────────────────────────
 
 function cleanText(s: string): string {
-  return s
+  let out = s
     .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8217;/g, "'")
-    .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
     .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
     .replace(/The post .* appeared first on .*\./g, '')
     .replace(/Continue reading.*/g, '')
-    .trim()
+
+  let prev: string
+  let iterations = 0
+  do {
+    prev = out
+    out = out
+      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8217;/g, "'")
+      .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
+    iterations += 1
+  } while (out !== prev && iterations < 10)
+
+  return out.trim()
 }
 
 function normalizeDate(val: unknown): string | null {

@@ -176,6 +176,13 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'marketplace_guides',
       },
       {
+        id: 'venue-guides',
+        label: 'Venue Guides',
+        icon: BookOpen,
+        route: '/admin/venue-guides',
+        countTable: 'venue_guides',
+      },
+      {
         id: 'groups',
         label: 'Groups',
         icon: UsersRound,

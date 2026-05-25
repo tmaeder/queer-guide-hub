@@ -334,11 +334,12 @@ async function parseSitemap(
       // Filter by include patterns
       if (includePatterns.length > 0) {
         const matches = includePatterns.some(pattern => {
-          // Convert glob-like pattern to regex
-          const regex = new RegExp(
-            pattern.replace(/\*/g, '.*').replace(/\//g, '\\/'),
-            'i'
-          )
+          // Convert glob-like pattern to regex safely:
+          // 1) escape all regex metacharacters (including backslashes)
+          // 2) convert escaped '*' wildcard back to '.*'
+          const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+          const regexPattern = `^${escaped.replace(/\\\*/g, '.*')}$`
+          const regex = new RegExp(regexPattern, 'i')
           return regex.test(new URL(url).pathname)
         })
         if (!matches) return
@@ -395,8 +396,13 @@ async function crawlNative(
 
     // Check exclude patterns
     const pathname = new URL(normalizedUrl).pathname
+    const globToRegex = (pattern: string): RegExp => {
+      const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const wildcardPattern = escaped.replace(/\\\*/g, '.*')
+      return new RegExp(wildcardPattern, 'i')
+    }
     if (excludePatterns.some(p => {
-      const regex = new RegExp(p.replace(/\*/g, '.*').replace(/\//g, '\\/'), 'i')
+      const regex = globToRegex(p)
       return regex.test(pathname)
     })) continue
 
@@ -406,7 +412,7 @@ async function crawlNative(
 
       // Only keep pages matching include patterns (if set) for extraction
       const matchesInclude = includePatterns.length === 0 || includePatterns.some(p => {
-        const regex = new RegExp(p.replace(/\*/g, '.*').replace(/\//g, '\\/'), 'i')
+        const regex = globToRegex(p)
         return regex.test(pathname)
       })
 
