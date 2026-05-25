@@ -56,6 +56,7 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
   useEffect(() => {
     if (!isVisible) return;
     if (latitude && longitude) {
+      // eslint-disable-next-line react-hooks/immutability -- fetchWeatherForecast declared below; effect fires after render so binding is initialized.
       fetchWeatherForecast();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

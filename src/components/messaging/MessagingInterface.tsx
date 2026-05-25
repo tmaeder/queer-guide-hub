@@ -528,6 +528,7 @@ export const MessagingInterface = ({ typeFilter }: MessagingInterfaceProps = {})
     if (conversationId && conversations.length > 0) {
       const conversation = conversations.find((c) => c.id === conversationId);
       if (conversation && selectedConversation !== conversationId) {
+        // eslint-disable-next-line react-hooks/immutability -- handleSelectConversation declared below; effect fires after render so binding is initialized.
         handleSelectConversation(conversationId);
       }
     }

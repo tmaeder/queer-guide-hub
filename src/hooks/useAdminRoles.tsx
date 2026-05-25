@@ -20,6 +20,7 @@ export function useAdminRoles() {
       return;
     }
     if (user) {
+      // eslint-disable-next-line react-hooks/immutability -- fetchUserRoles declared below; effect fires after render so binding is initialized.
       fetchUserRoles();
     } else {
       setUserRoles([]);

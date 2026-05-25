@@ -36,6 +36,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
   // Auto-detect platform when URL changes
   useEffect(() => {
     if (quickAddUrl.trim()) {
+      // eslint-disable-next-line react-hooks/immutability -- detectPlatformFromUrl declared below; effect fires after render so binding is initialized.
       const detected = detectPlatformFromUrl(quickAddUrl);
       setDetectedPlatform(detected);
     } else {

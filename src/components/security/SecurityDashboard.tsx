@@ -37,6 +37,7 @@ export function SecurityDashboard() {
 
   useEffect(() => {
     if (isAdmin) {
+      // eslint-disable-next-line react-hooks/immutability -- loadSecurityData declared below; effect fires after render so binding is initialized.
       loadSecurityData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- loadSecurityData defined below, re-run on isAdmin change

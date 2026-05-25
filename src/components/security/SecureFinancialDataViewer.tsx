@@ -42,6 +42,7 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
   useEffect(() => {
     if (isOwner) {
       setAccessGranted(true);
+      // eslint-disable-next-line react-hooks/immutability -- fetchFinancialData declared below; effect fires after render so binding is initialized.
       fetchFinancialData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchFinancialData defined below, re-run on isOwner/userId change

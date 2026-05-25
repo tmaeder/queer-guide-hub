@@ -63,7 +63,9 @@ export function SendEventDialog({
     setNote('');
     setSearch('');
     setActiveTab('member');
+    // eslint-disable-next-line react-hooks/immutability -- fetchMembers/fetchGroups declared below; effect fires after render so bindings are initialized.
     fetchMembers('');
+    // eslint-disable-next-line react-hooks/immutability -- see above.
     fetchGroups();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user]);

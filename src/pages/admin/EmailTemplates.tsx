@@ -58,10 +58,6 @@ export default function EmailTemplates() {
   const [isSendingTest, setIsSendingTest] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchTemplates();
-  }, []);
-
   const fetchTemplates = async () => {
     try {
       const { data, error } = await fetchEmailTemplates();
@@ -78,6 +74,11 @@ export default function EmailTemplates() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTemplates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSaveTemplate = async () => {
     if (!editingTemplate) return;

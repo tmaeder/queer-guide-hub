@@ -33,6 +33,7 @@ export function useLocationPrivacy() {
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/immutability -- fetchLocationSettings declared below; effect fires after render so binding is initialized.
       fetchLocationSettings();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchLocationSettings defined below, re-run on user change

@@ -26,6 +26,7 @@ export function AutomatedSecurityScheduler() {
 
   useEffect(() => {
     if (isAdmin) {
+      // eslint-disable-next-line react-hooks/immutability -- loadScheduledTasks declared below; effect fires after render so binding is initialized.
       loadScheduledTasks();
     }
   }, [isAdmin]);

@@ -194,6 +194,22 @@ export default function Personalities() {
     setFilters({ sortBy: 'featured' });
   }, []);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- React Compiler can't preserve this callback's identity; setSearchParams is already stable from react-router so the manual useCallback is safe to keep.
+  const syncPageToUrl = useCallback(
+    (n: number) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (n <= 1) next.delete('page');
+          else next.set('page', String(n));
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   // Infinite scroll sentinel
   useEffect(() => {
     const el = sentinelRef.current;
@@ -227,22 +243,6 @@ export default function Personalities() {
     return () => observer.unobserve(el);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, loading, hasMore, filters, autoLoadedCount, fetchPersonalities]);
-
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- React Compiler can't preserve this callback's identity; setSearchParams is already stable from react-router so the manual useCallback is safe to keep.
-  const syncPageToUrl = useCallback(
-    (n: number) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (n <= 1) next.delete('page');
-          else next.set('page', String(n));
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
 
   const loadMoreManual = useCallback(async () => {
     const nextPage = page + 1;

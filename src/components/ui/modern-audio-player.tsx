@@ -80,6 +80,7 @@ export function ModernAudioPlayer({
 
     function addSource(rendition: AudioRendition, type: string) {
       const source = document.createElement('source');
+      // eslint-disable-next-line react-hooks/immutability -- getAudioUrl declared below; effect fires after render so binding is initialized.
       source.src = getAudioUrl(rendition.file_path);
       source.type = type;
       audioElement.appendChild(source);
