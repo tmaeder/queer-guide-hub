@@ -188,7 +188,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (err) {
     console.error("send-mailbox-email error:", err);
     return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : String(err) }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
   }
