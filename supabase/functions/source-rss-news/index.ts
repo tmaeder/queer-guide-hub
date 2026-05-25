@@ -336,7 +336,7 @@ function cleanText(s: string): string {
     iterations += 1
   } while (out !== prev && iterations < 10)
 
-  return out.trim()
+  return out.replace(/[<>]/g, '').trim()
 }
 
 function normalizeDate(val: unknown): string | null {
