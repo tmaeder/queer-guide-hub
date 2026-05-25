@@ -6,6 +6,11 @@ import { render } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: null, session: null, loading: false, hasPasskey: false,
+    signUp: vi.fn(), signIn: vi.fn(), signInWithOAuth: vi.fn(), resendVerification: vi.fn(),
+    resetPassword: vi.fn(), signOut: vi.fn(), enrollPasskey: vi.fn(), signInWithPasskey: vi.fn() }),
+}));
 vi.mock('@/hooks/usePageFetchers', () => ({
   fetchNewsArticleBySlugOrId: vi.fn().mockResolvedValue(null),
   fetchRelatedNews: vi.fn().mockResolvedValue([]),

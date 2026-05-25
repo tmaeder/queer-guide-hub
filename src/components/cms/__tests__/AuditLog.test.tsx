@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useCMSAudit', () => ({
   useCMSAudit: () => ({
@@ -15,7 +16,7 @@ import { AuditLog } from '../AuditLog';
 
 describe('AuditLog', () => {
   it('renders', () => {
-    const { container } = render(<AuditLog sourceTable="venues" sourceId="v1" />);
+    const { container } = render(<MemoryRouter><AuditLog sourceTable="venues" sourceId="v1" /></MemoryRouter>);
     expect(container).toBeTruthy();
   });
 });
