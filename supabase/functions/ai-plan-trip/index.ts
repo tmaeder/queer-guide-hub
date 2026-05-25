@@ -258,8 +258,9 @@ Deno.serve(async (req) => {
       { headers: { ...cors, 'content-type': 'application/json' } },
     );
   } catch (err) {
+    console.error('ai-plan-trip generation failed', err);
     return new Response(
-      JSON.stringify({ error: 'generation failed', detail: String(err) }),
+      JSON.stringify({ error: 'generation failed' }),
       { status: 500, headers: { ...cors, 'content-type': 'application/json' } },
     );
   }
