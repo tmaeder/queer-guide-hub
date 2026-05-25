@@ -146,6 +146,7 @@ export function TrendingStrip({
 												alt=""
 												role="presentation"
 												loading="lazy"
+												referrerPolicy="no-referrer"
 												className="h-24 w-full object-cover"
 												onError={(e) => {
 													const fb = getRandomFallbackImage();
