@@ -2,6 +2,9 @@
 
 const IMG_CDN_HOST = 'img.queer.guide';
 
+const isHostOrSubdomain = (hostname: string, baseDomain: string): boolean =>
+  hostname === baseDomain || hostname.endsWith(`.${baseDomain}`);
+
 /**
  * Build a Cloudflare Image Resizing URL for img.queer.guide assets.
  * Uses the /cdn-cgi/image/ zone-level endpoint (requires paid Images plan).
@@ -11,7 +14,15 @@ export function buildCfImageUrl(
   url: string,
   opts: { width?: number; height?: number; quality?: number; format?: string } = {},
 ): string {
-  if (!url.includes(IMG_CDN_HOST) || url.includes('/cdn-cgi/image/')) return url;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  if (!isHostOrSubdomain(hostname, IMG_CDN_HOST) || parsed.pathname.includes('/cdn-cgi/image/')) return url;
   const { width, height, quality = 80, format = 'webp' } = opts;
   const params = [
     width ? `width=${width}` : null,
@@ -33,7 +44,15 @@ export function buildCfSrcSet(
   widths: number[] = [400, 800, 1200],
   quality = 80,
 ): string | undefined {
-  if (!url.includes(IMG_CDN_HOST) || url.includes('/cdn-cgi/image/')) return undefined;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return undefined;
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  if (!isHostOrSubdomain(hostname, IMG_CDN_HOST) || parsed.pathname.includes('/cdn-cgi/image/')) return undefined;
   return widths
     .map((w) => `${buildCfImageUrl(url, { width: w, quality })} ${w}w`)
     .join(', ');
@@ -50,10 +69,18 @@ export const optimizeImageForCloudflare = (
   format: 'auto' | 'webp' | 'avif' | 'jpg' | 'png' = 'auto',
   quality = 85
 ) => {
-  if (src.includes(IMG_CDN_HOST)) {
+  let parsed: URL;
+  try {
+    parsed = new URL(src);
+  } catch {
+    return src;
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  if (isHostOrSubdomain(hostname, IMG_CDN_HOST)) {
     return buildCfImageUrl(src, { width, height, quality, format });
   }
-  if (src.includes('imagedelivery.net') || src.includes('cf-images.com')) {
+  if (isHostOrSubdomain(hostname, 'imagedelivery.net') || isHostOrSubdomain(hostname, 'cf-images.com')) {
     const params = [];
     if (width) params.push(`w=${width}`);
     if (height) params.push(`h=${height}`);
