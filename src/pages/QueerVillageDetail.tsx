@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MarketplaceForVillage } from '@/components/marketplace/MarketplaceForVillage';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -221,7 +222,8 @@ export default function QueerVillageDetail() {
           sections={sections}
           footer={
             <div className="px-0">
-              <div className="mb-6 flex flex-wrap gap-2">
+              <MarketplaceForVillage parentCityName={village.cities?.name ?? null} />
+              <div className="mb-6 mt-8 flex flex-wrap gap-2">
                 <MarkVisitedButton entityType="village" entityId={village.id} kind="visited" />
                 <MarkVisitedButton entityType="village" entityId={village.id} kind="saved" />
               </div>

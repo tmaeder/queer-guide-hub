@@ -65,8 +65,8 @@ export async function fetchCountryWeather(country: CountryRelation): Promise<Wea
   try {
     const { data, error } = await supabase.functions.invoke('get-weather-forecast', {
       body: {
-        latitude: country.latitude,
-        longitude: country.longitude,
+        lat: country.latitude,
+        lon: country.longitude,
         cityName: country.capital || country.name,
       },
     });
