@@ -173,7 +173,16 @@ export class PatrocConnector extends BaseConnector {
       const address = addressMatch ? cleanText(addressMatch[1]) : null;
 
       const link = $parent.find('a[href^="http"]').first().attr('href');
-      const website = link && !link.includes('patroc.com') ? link : null;
+      let website: string | null = null;
+      if (link) {
+        try {
+          const hostname = new URL(link).hostname.toLowerCase();
+          const isPatrocHost = hostname === 'patroc.com' || hostname.endsWith('.patroc.com');
+          website = isPatrocHost ? null : link;
+        } catch {
+          website = null;
+        }
+      }
 
       if (/^(Gay|Hotels|Bars|Clubs|Restaurants|Cafes|Saunas|Events|Cruising|Map)/i.test(name)) return;
 
