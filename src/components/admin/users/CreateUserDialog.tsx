@@ -26,17 +26,27 @@ function generatePassword(): string {
   const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const digits = '23456789';
   const all = lower + upper + digits;
+
+  const secureRandomIndex = (max: number): number => {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] % max;
+  };
+
   let pw = '';
-  pw += upper[Math.floor(Math.random() * upper.length)];
-  pw += lower[Math.floor(Math.random() * lower.length)];
-  pw += digits[Math.floor(Math.random() * digits.length)];
+  pw += upper[secureRandomIndex(upper.length)];
+  pw += lower[secureRandomIndex(lower.length)];
+  pw += digits[secureRandomIndex(digits.length)];
   for (let i = 0; i < 9; i++) {
-    pw += all[Math.floor(Math.random() * all.length)];
+    pw += all[secureRandomIndex(all.length)];
   }
-  return pw
-    .split('')
-    .sort(() => Math.random() - 0.5)
-    .join('');
+
+  const chars = pw.split('');
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = secureRandomIndex(i + 1);
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  return chars.join('');
 }
 
 export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) {
