@@ -69,7 +69,6 @@ export function useEvents(autoFetch: boolean = true) {
     const signal = options?.signal;
     if (signal?.aborted) return { fetched: 0, total: null as number | null };
     let fetchedCount = 0;
-    let resultTotal: number | null = null;
     try {
       setLoading(true);
       setLoadingTimedOut(false);
@@ -311,7 +310,7 @@ export function useEvents(autoFetch: boolean = true) {
       }
 
       fetchedCount = eventsData.length;
-      resultTotal = typeof count === 'number' ? count : null;
+      const resultTotal = typeof count === 'number' ? count : null;
       setTotalCount(resultTotal);
 
       if (typeof count === 'number') {

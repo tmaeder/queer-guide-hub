@@ -228,6 +228,7 @@ export default function Personalities() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, loading, hasMore, filters, autoLoadedCount, fetchPersonalities]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- React Compiler can't preserve this callback's identity; setSearchParams is already stable from react-router so the manual useCallback is safe to keep.
   const syncPageToUrl = useCallback(
     (n: number) => {
       setSearchParams(

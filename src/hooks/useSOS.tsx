@@ -95,7 +95,7 @@ export function useSOS(friendIds: string[]) {
     } finally {
       setLoading(false);
     }
-  }, [user, profile?.display_name, t, toast]);
+  }, [user, profile, t, toast]);
 
   return {
     sendSOS,

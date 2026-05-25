@@ -37,11 +37,13 @@ const CONTINENT_MAP: Record<string, string> = {
   ZA: 'Africa',
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper colocated with consumer; tests import it directly.
 export function continentOf(countryCode: string | null | undefined): string {
   if (!countryCode) return 'Other';
   return CONTINENT_MAP[countryCode.toUpperCase()] ?? 'Other';
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper colocated with consumer; tests import it directly.
 export function applyPrideFilters(
   events: PrideCalendarEvent[],
   filters: PrideFilters,
