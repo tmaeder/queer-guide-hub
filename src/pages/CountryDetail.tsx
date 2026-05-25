@@ -26,6 +26,7 @@ import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButto
 import { COUNTRY_SECTION_DEFS } from './country-detail/CountrySectionDefs';
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
+import { MarketplaceForCountry } from '@/components/marketplace/MarketplaceForCountry';
 import {
   CountryHero,
   CountryOverviewTab,
@@ -272,6 +273,7 @@ export default function CountryDetail() {
             </div>
           }
           sections={sections}
+          footer={<MarketplaceForCountry countryId={country.id} countryName={country.name} />}
           entityType="country"
           entityId={country.id}
         />

@@ -454,7 +454,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 // stored metadata that admin tooling later renders unescaped).
 const METADATA_KEYS_BY_EVENT: Record<string, readonly string[]> = {
 	click: ["source", "position", "query"],
-	view: ["source", "duration_ms"],
+	view: ["source", "duration_ms", "slug", "path"],
 	save: ["source"],
 	favorite: ["source"],
 	book: ["source", "amount", "currency"],

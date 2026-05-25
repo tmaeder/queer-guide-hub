@@ -14,6 +14,9 @@ concurrency:
   group: e2e-nightly
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   full-suite:
     name: Full Playwright suite

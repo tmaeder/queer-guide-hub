@@ -99,16 +99,10 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
           .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '"')
           .replace(/&amp;/gi, '&')
 
-        let prev: string
-        do {
-          prev = stripped
-          stripped = stripped
-            .replace(/<script[\s\S]*?<\/script>/gi, '')
-            .replace(/<style[\s\S]*?<\/style>/gi, '')
-            .replace(/<[^>]+>/g, ' ')
-        } while (stripped !== prev)
-
-        stripped = stripped.replace(/\s+/g, ' ').trim()
+        stripped = stripped
+          .replace(/<|>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
         const dates = (n.dates ?? {}) as Record<string, unknown>
         const publishedAt = (n.published_at as string | undefined)
           ?? (dates.start as string | undefined)

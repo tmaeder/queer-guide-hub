@@ -2,6 +2,9 @@
 # Runs after the primary Cloudflare Pages deploy succeeds, or manually
 name: Deploy Mirrors
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:

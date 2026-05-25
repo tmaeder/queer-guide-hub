@@ -1,5 +1,8 @@
 name: Sync extension zip to queer-guide-hub
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
