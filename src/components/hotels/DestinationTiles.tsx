@@ -27,6 +27,8 @@ export function DestinationTiles({ cities }: DestinationTilesProps) {
               className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-[1.02]"
               loading="lazy"
               decoding="async"
+              referrerPolicy="no-referrer"
+              onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
