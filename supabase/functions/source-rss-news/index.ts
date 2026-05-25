@@ -316,38 +316,29 @@ function extractMediaUrl(block: string): string | null {
 // ─── Utilities ────────────────────────────────────────────
 
 function cleanText(s: string): string {
-  const TAG_RE = /<[^>]+>/g
-  let out = s
+  // Phase 1: strip HTML entity references for angle brackets BEFORE any
+  // other decoding. `&lt;` / `&gt;` are stripped (not decoded) so they can
+  // never reintroduce raw `<` or `>` characters. Single-character regex,
+  // no multi-char sanitization concern.
+  let out = s.replace(/&lt;/g, '').replace(/&gt;/g, '')
 
-  // Phase 1: iteratively decode entities and strip tags until stable.
-  // Decoding can reintroduce `<` (e.g. `&lt;script&gt;`), so the loop runs
-  // until no further substitutions occur.
-  let prev: string
-  let iterations = 0
+  // Phase 2: strip angle brackets. This is the terminal sanitizer for
+  // HTML-injection risk \u2014 every subsequent transformation in this function
+  // is text-only (entity decoding for non-bracket entities + cosmetic
+  // regexes) and cannot reintroduce `<` or `>`.
+  out = out.replace(/</g, '').replace(/>/g, '')
+
+  // Phase 3: decode the remaining entities. None of these can produce an
+  // angle bracket, so the sanitization above remains valid.
   const AMP_SENTINEL = '__AMP_SENTINEL__'
-  do {
-    prev = out
-    out = out
-      .replace(/&amp;/g, AMP_SENTINEL)
-      // Do not decode to raw angle brackets during intermediate passes.
-      // This avoids rebuilding HTML element starts before final sanitization.
-      .replace(/&lt;/g, '').replace(/&gt;/g, '')
-      .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8217;/g, "'")
-      .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
-      .replace(new RegExp(AMP_SENTINEL, 'g'), '&')
-      .replace(TAG_RE, '')
-      .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
-    iterations += 1
-  } while (out !== prev && iterations < 10)
+  out = out
+    .replace(/&amp;/g, AMP_SENTINEL)
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8217;/g, "'")
+    .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
+    .replace(new RegExp(AMP_SENTINEL, 'g'), '&')
+    .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
 
-  // Phase 2: terminal sanitization sink. Any `<` or `>` that survived the
-  // loop is stripped unconditionally. Nothing after this writes those
-  // characters back, so CodeQL recognizes this as the final sanitizer
-  // (CodeQL #516/#517).
-  out = out.replace(/[<>]/g, '')
-
-  // Phase 3: cosmetic RSS junk removal \u2014 runs *after* sanitization so it
-  // can't reintroduce angle brackets.
+  // Phase 4: cosmetic RSS-junk removal.
   return out
     .replace(/The post .* appeared first on .*\./g, '')
     .replace(/Continue reading.*/g, '')
