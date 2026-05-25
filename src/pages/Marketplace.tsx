@@ -144,13 +144,9 @@ const VALID_SORTS = [
   'newest',
   'price_asc',
   'price_desc',
-  // Legacy values kept for URL back-compat; coerced below.
-  'relevance',
-  'oldest',
-  'az',
-  'za',
-  'most_viewed',
 ] as const;
+// Legacy sort tokens are no longer in VALID_SORTS — they get coerced to a
+// current token by LEGACY_SORT_MAP before the validity check below.
 
 // Old sort tokens redirect to the closest new sort so existing
 // bookmarked URLs and saved searches keep working without 404-ing the UI.
@@ -394,20 +390,17 @@ const Marketplace = () => {
               <ForYouRail />
               <MarketplaceSpotlight />
               <MarketplaceCategoryTiles />
+              {/*
+                Phase 6 cleanup: the price-drops and most-relevant rails
+                were redundant with the GuidesStream (which already
+                surfaces editorial recommendation). Kept "new" + "featured"
+                because they cover orthogonal axes (chronology + manual
+                editor curation) that the guide stream doesn't.
+              */}
               <MarketplaceRow
                 rowKey="new"
                 title="New this week"
                 subtitle="Fresh arrivals from the past 14 days"
-              />
-              <MarketplaceRow
-                rowKey="price-drops"
-                title="Price drops"
-                subtitle="Recently discounted listings"
-              />
-              <MarketplaceRow
-                rowKey="most-relevant"
-                title="Most LGBTQ+ relevant"
-                subtitle="Highest relevance score from our review"
               />
               <MarketplaceRow
                 rowKey="featured"

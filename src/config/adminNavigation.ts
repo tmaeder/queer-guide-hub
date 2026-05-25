@@ -20,6 +20,7 @@ import {
   Globe,
   Tag,
   ShoppingBag,
+  BookOpen,
   UsersRound,
   FileText,
   Image,
@@ -166,6 +167,13 @@ export const adminNavSections: AdminNavSection[] = [
         icon: ShoppingBag,
         route: '/admin/content/marketplace_listings',
         countTable: 'marketplace_listings',
+      },
+      {
+        id: 'marketplace-guides',
+        label: 'Marketplace Guides',
+        icon: BookOpen,
+        route: '/admin/marketplace/guides',
+        countTable: 'marketplace_guides',
       },
       {
         id: 'groups',
