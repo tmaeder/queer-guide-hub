@@ -21,6 +21,7 @@ import {
   MarketplaceOverview,
   MarketplaceSidebar,
 } from './MarketplaceItemDetail.parts';
+import { ListingFeaturedInGuides } from '@/components/marketplace/FeaturedInGuides';
 
 interface ListingBundle {
   listing: MarketplaceListing;
@@ -199,7 +200,17 @@ export default function MarketplaceItemDetail() {
         {
           id: 'overview',
           label: 'Overview',
-          content: <MarketplaceOverview listing={listing} reviews={reviews} t={t} onContentUpdated={refetch} />,
+          content: (
+            <div className="flex flex-col gap-6">
+              <ListingFeaturedInGuides listingId={listing.id} />
+              <MarketplaceOverview
+                listing={listing}
+                reviews={reviews}
+                t={t}
+                onContentUpdated={refetch}
+              />
+            </div>
+          ),
         },
       ]
     : [];
