@@ -329,7 +329,12 @@ function cleanText(s: string): string {
   out = out.replace(/</g, '').replace(/>/g, '')
 
   // Phase 3: decode the remaining entities. None of these can produce an
-  // angle bracket, so the sanitization above remains valid.
+  // angle bracket directly, but a doubly-encoded payload like
+  // `&amp;lt;script&amp;gt;` is unchanged by Phases 1+2 (no literal `&lt;`,
+  // no literal `<`) and gets decoded here to `&lt;script&gt;`. That output is
+  // XSS-safe in any React text context, but Phase 3b below re-strips brackets
+  // and bracket entities after decode to close the loop and silence CodeQL
+  // `js/incomplete-multi-character-sanitization`.
   const AMP_SENTINEL = '__AMP_SENTINEL__'
   out = out
     .replace(/&amp;/g, AMP_SENTINEL)
@@ -337,6 +342,9 @@ function cleanText(s: string): string {
     .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
     .replace(new RegExp(AMP_SENTINEL, 'g'), '&')
     .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
+
+  // Phase 3b: defensive re-strip after entity decode.
+  out = out.replace(/&lt;/g, '').replace(/&gt;/g, '').replace(/</g, '').replace(/>/g, '')
 
   // Phase 4: cosmetic RSS-junk removal.
   return out
