@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.user_news_reads (
   PRIMARY KEY (user_id, article_id)
 );
 CREATE INDEX IF NOT EXISTS idx_user_news_reads_user_day
-  ON public.user_news_reads (user_id, (read_at::date));
+  ON public.user_news_reads (user_id, ((read_at AT TIME ZONE 'UTC')::date));
 CREATE INDEX IF NOT EXISTS idx_user_news_reads_user_read_at
   ON public.user_news_reads (user_id, read_at DESC);
 
