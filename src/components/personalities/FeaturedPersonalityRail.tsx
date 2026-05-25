@@ -1,6 +1,8 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Star } from 'lucide-react';
 import { useFeaturedPersonalities, type Personality } from '@/hooks/usePersonalities';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
 
 function getInitials(name: string) {
   return name
@@ -18,8 +20,19 @@ function getInitials(name: string) {
 // never see.
 const ABOVE_FOLD_COUNT = 5;
 
-function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
+function FeaturedItem({
+  p,
+  eager,
+  optimizedUrl,
+  thumbnailUrl,
+}: {
+  p: Personality;
+  eager: boolean;
+  optimizedUrl?: string | null;
+  thumbnailUrl?: string | null;
+}) {
   const href = `/personalities/${p.slug ?? p.id}`;
+  const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl });
   return (
     <LocalizedLink
       to={href}
@@ -37,16 +50,17 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
           border: '2px solid hsl(var(--foreground))',
         }}
       >
-        {p.image_url ? (
+        {resolvedSrc ? (
           <img
-            src={p.image_url}
+            src={resolvedSrc}
             alt={p.name}
             loading={eager ? 'eager' : 'lazy'}
             // fetchpriority is widely supported but not in React's typings yet
             // — pass via a typed cast inline.
             {...(eager ? ({ fetchpriority: 'high' } as { fetchpriority: 'high' }) : {})}
             decoding="async"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            referrerPolicy="no-referrer"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
           />
         ) : (
           <span style={{ fontSize: '2rem' }} className="font-bold">
@@ -66,6 +80,8 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
 
 export function FeaturedPersonalityRail() {
   const { featured, loading, error } = useFeaturedPersonalities(10);
+  const featuredIds = featured.map((p) => p.id);
+  const { assets: imageAssets } = useEntityImageAssets('personality', featuredIds);
 
   if (error) return null;
   if (!loading && featured.length === 0) return null;
@@ -90,7 +106,18 @@ export function FeaturedPersonalityRail() {
                 <div className="h-3 bg-muted w-3/4 mx-auto" />
               </div>
             ))
-          : featured.map((p, i) => <FeaturedItem key={p.id} p={p} eager={i < ABOVE_FOLD_COUNT} />)}
+          : featured.map((p, i) => {
+              const asset = imageAssets.get(p.id);
+              return (
+                <FeaturedItem
+                  key={p.id}
+                  p={p}
+                  eager={i < ABOVE_FOLD_COUNT}
+                  optimizedUrl={asset?.optimized_url}
+                  thumbnailUrl={asset?.thumbnail_url}
+                />
+              );
+            })}
       </div>
     </div>
   );

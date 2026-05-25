@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Newspaper, Calendar, Users as UsersIcon, Star, ExternalLink } from 'lucide-react';
 import { useTagContent, TagContentResult } from '@/hooks/useTagContent';
 import { formatDistanceToNow } from 'date-fns';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
 
 interface TagLinkedContentProps {
   tagId: string;
@@ -164,9 +166,13 @@ function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick
 
 function PersonalityCard({
   p,
+  optimizedUrl,
+  thumbnailUrl,
   onClick,
 }: {
   p: TagContentResult['personalities'][number];
+  optimizedUrl?: string | null;
+  thumbnailUrl?: string | null;
   onClick: () => void;
 }) {
   const initials = p.name
@@ -176,20 +182,24 @@ function PersonalityCard({
     .join('')
     .toUpperCase();
 
+  const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl });
+
   return (
     <Card hoverable className="overflow-hidden" onClick={onClick}>
       <div className="relative bg-muted overflow-hidden" style={{ paddingTop: '133.33%' }}>
-        {p.image_url ? (
+        {resolvedSrc ? (
           <img
-            src={p.image_url}
+            src={resolvedSrc}
             alt={p.name}
             role="presentation"
             loading="lazy"
+            referrerPolicy="no-referrer"
             style={{
               inset: 0,
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              objectPosition: 'top',
               transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
             className="absolute"
@@ -339,6 +349,8 @@ function rankNewsByRelevance(
 export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
   const navigate = useLocalizedNavigate();
   const { data, isLoading } = useTagContent(tagId, tagName);
+  const personalityIds = data?.personalities.map((p) => p.id) ?? [];
+  const { assets: personalityImageAssets } = useEntityImageAssets('personality', personalityIds);
 
   if (isLoading) {
     return (
@@ -389,13 +401,18 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
       {personalities.length > 0 && (
         <Section title="Personalities" count={personalities.length}>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {personalities.map((p) => (
-              <PersonalityCard
-                key={p.id}
-                p={p}
-                onClick={() => navigate(`/personalities/${p.slug || p.id}`)}
-              />
-            ))}
+            {personalities.map((p) => {
+              const asset = personalityImageAssets.get(p.id);
+              return (
+                <PersonalityCard
+                  key={p.id}
+                  p={p}
+                  optimizedUrl={asset?.optimized_url}
+                  thumbnailUrl={asset?.thumbnail_url}
+                  onClick={() => navigate(`/personalities/${p.slug || p.id}`)}
+                />
+              );
+            })}
           </div>
         </Section>
       )}
