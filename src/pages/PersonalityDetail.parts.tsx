@@ -156,7 +156,8 @@ export function PersonalityHero({
           <AvatarImage
             src={personality.image_url || ''}
             alt={personality.name}
-            style={{ objectFit: 'cover' }}
+            referrerPolicy="no-referrer"
+            style={{ objectFit: 'cover', objectPosition: 'top' }}
           />
           <AvatarFallback className="text-xl font-semibold">
             {getInitials(personality.name)}

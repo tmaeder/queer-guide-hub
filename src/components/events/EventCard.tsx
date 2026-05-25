@@ -139,6 +139,7 @@ export const EventCard = memo(function EventCard({ event, loading = false }: Eve
                   role="presentation"
                   loading="lazy"
                   decoding="async"
+                  referrerPolicy="no-referrer"
                   onError={() => setImageError(true)}
                   className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
                 />

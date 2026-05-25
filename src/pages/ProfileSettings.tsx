@@ -12,10 +12,11 @@ import {
   ArrowLeft,
   Loader2,
   Heart,
-  Users,
   Lock,
   Plane,
   Check,
+  IdCard,
+  Bell,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -115,7 +116,16 @@ interface ContentProps {
 
 function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPasskey, user }: ContentProps) {
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'basic');
+  // Tab slugs reorganized 2026-05-25 (milestone "merry-plotting-beacon" Phase 3c):
+  //   account / identity / dating / privacy / notifications / travel
+  // Legacy slugs (basic, relationships, intimate) remap below.
+  const rawTab = searchParams.get('tab') || 'account';
+  const LEGACY_TAB_MAP: Record<string, string> = {
+    basic: 'identity',
+    relationships: 'dating',
+    intimate: 'dating',
+  };
+  const [activeTab, setActiveTab] = useState(LEGACY_TAB_MAP[rawTab] ?? rawTab);
   const [formData, setFormData] = useState<ProfileFormData>(() => initFormData(profile));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error'>('saved');
@@ -250,27 +260,27 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
           <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
-            <TabsTrigger value="basic" className={lineTab}>
-              <span className="flex items-center gap-2"><User size={16} /> Basic</span>
+            <TabsTrigger value="account" className={lineTab}>
+              <span className="flex items-center gap-2"><User size={16} /> Account</span>
             </TabsTrigger>
             <TabsTrigger value="identity" className={lineTab}>
-              <span className="flex items-center gap-2"><Heart size={16} /> Identity</span>
+              <span className="flex items-center gap-2"><IdCard size={16} /> Identity</span>
             </TabsTrigger>
-            <TabsTrigger value="travel" className={lineTab}>
-              <span className="flex items-center gap-2"><Plane size={16} /> Travel</span>
-            </TabsTrigger>
-            <TabsTrigger value="relationships" className={lineTab}>
-              <span className="flex items-center gap-2"><Users size={16} /> Relationships</span>
+            <TabsTrigger value="dating" className={lineTab}>
+              <span className="flex items-center gap-2"><Heart size={16} /> Dating</span>
             </TabsTrigger>
             <TabsTrigger value="privacy" className={lineTab}>
               <span className="flex items-center gap-2"><Lock size={16} /> Privacy</span>
             </TabsTrigger>
-            <TabsTrigger value="intimate" className={lineTab}>
-              <span className="flex items-center gap-2">Intimate</span>
+            <TabsTrigger value="notifications" className={lineTab}>
+              <span className="flex items-center gap-2"><Bell size={16} /> Notifications</span>
+            </TabsTrigger>
+            <TabsTrigger value="travel" className={lineTab}>
+              <span className="flex items-center gap-2"><Plane size={16} /> Travel</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="basic">
+          <TabsContent value="account">
             <Card className="mb-6">
               <CardContent className="pt-6 flex flex-col gap-4">
                 <div>
@@ -285,32 +295,38 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
                 />
               </CardContent>
             </Card>
-            <BasicInfoTab formData={formData} profile={profile} user={user} onChange={handleInputChange} onAvatarSave={handleAvatarSave} />
           </TabsContent>
 
           <TabsContent value="identity">
-            <IdentityTab formData={formData} onChange={handleInputChange} onComingOutChange={handleComingOutChange} />
-          </TabsContent>
-
-          <TabsContent value="travel">
-            <TravelPreferencesEditor />
-            <EmailForwardingSettings />
-            <PushNotificationSettings />
-            <div className="mt-8">
-              <DocumentsList tripId={null} />
+            <div className="flex flex-col gap-6">
+              <BasicInfoTab formData={formData} profile={profile} user={user} onChange={handleInputChange} onAvatarSave={handleAvatarSave} />
+              <IdentityTab formData={formData} onChange={handleInputChange} onComingOutChange={handleComingOutChange} />
             </div>
           </TabsContent>
 
-          <TabsContent value="relationships">
-            <RelationshipsTab formData={formData} onChange={handleInputChange} />
+          <TabsContent value="dating">
+            <div className="flex flex-col gap-6">
+              <RelationshipsTab formData={formData} onChange={handleInputChange} />
+              <IntimateTab />
+            </div>
           </TabsContent>
 
           <TabsContent value="privacy">
             <PrivacyTab formData={formData} hasPasskey={hasPasskey} onPrivacyChange={handlePrivacyChange} />
           </TabsContent>
 
-          <TabsContent value="intimate">
-            <IntimateTab />
+          <TabsContent value="notifications">
+            <div className="flex flex-col gap-6">
+              <EmailForwardingSettings />
+              <PushNotificationSettings />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="travel">
+            <div className="flex flex-col gap-6">
+              <TravelPreferencesEditor />
+              <DocumentsList tripId={null} />
+            </div>
           </TabsContent>
         </Tabs>
 
