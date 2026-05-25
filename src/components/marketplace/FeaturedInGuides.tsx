@@ -105,7 +105,7 @@ export function MerchantFeaturedInGuides({ merchantDomain }: { merchantDomain: s
       </header>
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {guides.map((g) => {
-          const hero = resolveImageUrl(g.hero_image_path);
+          const hero = resolveImageUrl({ imageUrl: g.hero_image_path });
           return (
             <li
               key={g.id}

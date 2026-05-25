@@ -41,7 +41,7 @@ function getOutboundUrl(listing: GuidePickWithListing['listing']): string | null
 function PickBlock({ pick, index }: { pick: GuidePickWithListing; index: number }) {
   const listing = pick.listing;
   const heroImage = listing?.images?.[0] ?? null;
-  const heroUrl = resolveImageUrl(heroImage);
+  const heroUrl = resolveImageUrl({ imageUrl: heroImage });
   const price = formatPickPrice(listing);
   const outbound = getOutboundUrl(listing);
   const unavailable = listing?.availability === 'out_of_stock';
@@ -269,7 +269,7 @@ const MarketplaceGuide = () => {
   }
 
   const { guide, picks } = data;
-  const hero = resolveImageUrl(guide.hero_image_path);
+  const hero = resolveImageUrl({ imageUrl: guide.hero_image_path });
 
   return (
     <article className="min-h-screen">
