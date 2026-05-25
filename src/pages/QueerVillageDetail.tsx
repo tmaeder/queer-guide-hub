@@ -17,6 +17,8 @@ import {
   type SectionDef,
 } from '@/components/entity/editorial';
 import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
+import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
+import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { VILLAGE_SECTION_DEFS } from './queer-village-detail/VillageSectionDefs';
 import {
   type VillageWithRelations,
@@ -171,12 +173,33 @@ export default function QueerVillageDetail() {
       { label: 'Featured', value: village.is_featured ? 'Editor’s pick' : null },
     ];
 
+    const planGeo = village.cities?.id && village.countries?.id
+      ? {
+          cityId: village.cities.id,
+          cityName: village.cities.name ?? '',
+          countryId: village.countries.id,
+          countryName: village.countries.name ?? '',
+          countryCode: village.countries.code ?? null,
+          timezone: null,
+        }
+      : null;
+
     return (
       <>
         <EditorialDetailLayout
           loading={isLoading}
           error={error as Error | null}
           breadcrumbs={buildVillageBreadcrumbs(village)}
+          banner={
+            <TripCoveringBanner
+              target={{
+                type: 'village',
+                villageId: village.id,
+                parentCityId: village.cities?.id ?? null,
+                countryId: village.countries?.id ?? null,
+              }}
+            />
+          }
           header={
             <div className="flex flex-col gap-8">
               <VillageHero
@@ -185,6 +208,12 @@ export default function QueerVillageDetail() {
                 onFavoriteToggle={handleFavoriteToggle}
                 onContentUpdated={refetch}
               />
+              <div className="flex flex-wrap gap-2">
+                <PlanTripFromHereButton
+                  initialGeo={planGeo}
+                  label={`Plan a trip to ${village.name}`}
+                />
+              </div>
               <IntroEssay text={village.description} />
               <KeyFactsStrip facts={facts} />
             </div>

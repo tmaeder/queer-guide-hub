@@ -21,6 +21,8 @@ import {
   type SectionDef,
 } from '@/components/entity/editorial';
 import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
+import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
+import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { COUNTRY_SECTION_DEFS } from './country-detail/CountrySectionDefs';
 import {
   CountryHero,
@@ -241,6 +243,7 @@ export default function CountryDetail() {
           loading={false}
           error={null}
           breadcrumbs={breadcrumbs}
+          banner={<TripCoveringBanner target={{ type: 'country', countryId: country.id }} />}
           header={
             <div className="flex flex-col gap-8">
               <CountryHero
@@ -249,6 +252,9 @@ export default function CountryDetail() {
                 weatherData={weatherData}
                 onContentUpdated={refetchCountry}
               />
+              <div className="flex flex-wrap gap-2">
+                <PlanTripFromHereButton label={`Plan a trip to ${country.name}`} />
+              </div>
               <IntroEssay text={country.description} />
               <KeyFactsStrip facts={facts} />
             </div>

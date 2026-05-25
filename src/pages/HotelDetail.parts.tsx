@@ -61,6 +61,8 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
             loading="lazy"
             src={heroImage || getRandomFallbackImage()}
             alt={hotel.name}
+            referrerPolicy="no-referrer"
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => { const fb = getRandomFallbackImage(); if ((e.target as HTMLImageElement).src !== fb) (e.target as HTMLImageElement).src = fb; }}
             className="w-full h-full object-cover"
           />
       </ParallaxHero>
@@ -276,6 +278,7 @@ export function HotelPhotos({ hotel }: { hotel: HotelWithRelations }) {
             alt={`${hotel.name} ${i + 1}`}
             className="w-full h-full object-cover"
             loading="lazy"
+            referrerPolicy="no-referrer"
           />
         </div>
       ))}
