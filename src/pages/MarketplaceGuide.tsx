@@ -1,6 +1,7 @@
 import { useParams } from 'react-router';
 import { useMeta } from '@/hooks/useMeta';
 import { useMarketplaceGuide, type GuidePickWithListing } from '@/hooks/useMarketplaceGuide';
+import { useGuideReadTracker } from '@/hooks/useGuideReadTracker';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -221,6 +222,7 @@ const MarketplaceGuide = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const { data, isLoading, error } = useMarketplaceGuide(slug);
+  useGuideReadTracker(data?.guide?.id);
 
   useMeta({
     title: data?.guide?.title ?? 'Guide',
