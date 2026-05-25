@@ -16,6 +16,9 @@ concurrency:
   group: i18n-check-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   check-keys:
     name: Verify locales have all en.json keys
