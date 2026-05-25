@@ -26,6 +26,7 @@ export function LocationPrivacyGuard({
   allowPreciseLocation = false,
 }: LocationPrivacyGuardProps) {
   // Check if location data is older than 30 days (anonymization threshold)
+  // eslint-disable-next-line react-hooks/purity -- 30-day window; sub-second precision of "now" is irrelevant.
   const isLocationAnonymized =
     locationData?.created_at &&
     new Date(locationData.created_at) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);

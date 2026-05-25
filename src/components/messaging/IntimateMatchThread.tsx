@@ -90,6 +90,7 @@ export function IntimateMatchThread({
   const theirUnlocked =
     side === 'a' ? consent.photo_unlocked_b : side === 'b' ? consent.photo_unlocked_a : false;
   const photosUnlockedBoth = consent.photo_unlocked_a && consent.photo_unlocked_b;
+  // eslint-disable-next-line react-hooks/purity -- expiry check against current time; second-of-resolution staleness is acceptable.
   const locationActive =
     consent.location_expires_at !== null && new Date(consent.location_expires_at).getTime() > Date.now();
 

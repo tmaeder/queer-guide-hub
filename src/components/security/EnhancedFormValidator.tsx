@@ -36,6 +36,7 @@ export function EnhancedFormValidator({
       const rateLimitKey = `form_validation_${user?.id || 'anonymous'}`;
       const attempts = parseInt(sessionStorage.getItem(rateLimitKey) || '0');
       const lastAttempt = parseInt(sessionStorage.getItem(`${rateLimitKey}_time`) || '0');
+      // eslint-disable-next-line react-hooks/purity -- validateForm runs in event handlers, not during render; Date.now() here is correct.
       const now = Date.now();
 
       if (now - lastAttempt < timeWindow * 1000 && attempts >= maxAttempts) {

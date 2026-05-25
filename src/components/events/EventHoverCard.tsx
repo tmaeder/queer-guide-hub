@@ -69,6 +69,7 @@ export function EventHoverCard({
   );
   const location = [event.venue_name, event.city].filter(Boolean).join(', ');
   const tu = relativeLabel(event.start_date, t);
+  // eslint-disable-next-line react-hooks/purity -- past/future check against current time; minute-level staleness is acceptable for a hover card label.
   const isPast = new Date(event.end_date ?? event.start_date).getTime() < Date.now();
 
   const handleRsvp = async (status: 'going' | 'interested') => {

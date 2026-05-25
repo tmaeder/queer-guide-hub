@@ -18,6 +18,7 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
   const dragState = useRef<{ startX: number; origStartMs: number } | null>(null);
 
   const range = rangeMs ?? (() => {
+    // eslint-disable-next-line react-hooks/purity -- fallback default centered on now when no rangeMs prop is supplied; recomputed per render.
     const now = Date.now();
     return { startMs: now - MINIMAP_DEFAULT_SPAN_MS / 2, endMs: now + MINIMAP_DEFAULT_SPAN_MS / 2 };
   })();
@@ -86,6 +87,7 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
   }, [range.startMs, range.endMs, span]);
 
   // Today
+  // eslint-disable-next-line react-hooks/purity -- "today" marker percentage; recomputed per render is intentional.
   const todayPct = ((Date.now() - range.startMs) / span) * 100;
   const showToday = todayPct >= 0 && todayPct <= 100;
 

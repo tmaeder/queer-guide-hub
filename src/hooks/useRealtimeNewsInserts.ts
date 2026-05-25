@@ -18,6 +18,9 @@ interface Options {
 // scroll position.
 export function useRealtimeNewsInserts({ sincePageLoad = true, cap = 25 }: Options = {}) {
   const [count, setCount] = useState(0);
+  // useRef initializer runs once at mount; capturing Date.now() here is the
+  // canonical "mount timestamp" pattern.
+  // eslint-disable-next-line react-hooks/purity -- initializer runs once at first render.
   const mountedAt = useRef<number>(Date.now());
 
   useEffect(() => {
