@@ -12,6 +12,7 @@ import { TripCockpit } from '@/components/travel/TripCockpit';
 import { BecauseYouRail } from '@/components/travel/BecauseYouRail';
 import { VillagesRail } from '@/components/travel/VillagesRail';
 import { DiscoverableTripsRail } from '@/components/travel/DiscoverableTripsRail';
+import { TravelToolsRail } from '@/components/travel/TravelToolsRail';
 import { TRAVEL_HUB_V2_ENABLED } from '@/lib/featureFlags';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useRecommendations } from '@/hooks/useRecommendations';
@@ -95,6 +96,7 @@ export default function Travel() {
 
         <TripCockpit />
         <BecauseYouRail />
+        <TravelToolsRail />
         <PrideScroller />
 
         <div className="mt-12 mb-6 flex flex-wrap items-center justify-end">

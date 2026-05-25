@@ -213,11 +213,6 @@ export const UniversalSearchBar = () => {
   const setScope = useCallback(
     (scope: string | null) => {
       setFilters((f) => ({ ...f, types: scope ? [scope] : [] }));
-      void trackSearchUx('scope_switch', {
-        from: activeScope || 'all',
-        to: scope || 'all',
-        via: 'click',
-      });
       focusInput();
     },
     [activeScope, focusInput],
@@ -234,11 +229,6 @@ export const UniversalSearchBar = () => {
         const target = idx === 0 ? null : (RAIL_SCOPE_IDS[idx - 1] ?? null);
         setScope(target);
         e.preventDefault();
-        void trackSearchUx('scope_switch', {
-          from: activeScope || 'all',
-          to: target || 'all',
-          via: 'key',
-        });
         return;
       }
 
