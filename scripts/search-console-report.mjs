@@ -119,18 +119,22 @@ async function main() {
 
   const fmtPct = (n) => `${(n * 100).toFixed(2)}%`;
   const fmtPos = (n) => n.toFixed(1);
+  const escapeMarkdownTableCell = (value) =>
+    String(value ?? '')
+      .replace(/\\/g, '\\\\')
+      .replace(/\|/g, '\\|');
 
   const queryTable = (byQuery.rows ?? [])
     .map(
       (r) =>
-        `| ${(r.keys[0] ?? '').replace(/\|/g, '\\|')} | ${r.clicks} | ${r.impressions} | ${fmtPct(r.ctr)} | ${fmtPos(r.position)} |`,
+        `| ${escapeMarkdownTableCell(r.keys[0])} | ${r.clicks} | ${r.impressions} | ${fmtPct(r.ctr)} | ${fmtPos(r.position)} |`,
     )
     .join('\n');
 
   const pageTable = (byPage.rows ?? [])
     .map(
       (r) =>
-        `| ${(r.keys[0] ?? '').replace(/\|/g, '\\|')} | ${r.clicks} | ${r.impressions} | ${fmtPct(r.ctr)} | ${fmtPos(r.position)} |`,
+        `| ${escapeMarkdownTableCell(r.keys[0])} | ${r.clicks} | ${r.impressions} | ${fmtPct(r.ctr)} | ${fmtPos(r.position)} |`,
     )
     .join('\n');
 
