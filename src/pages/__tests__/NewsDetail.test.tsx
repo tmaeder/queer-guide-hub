@@ -13,6 +13,11 @@ vi.mock('@/hooks/usePageFetchers', () => ({
   fetchNewsArticleById: vi.fn().mockResolvedValue(null),
 }));
 vi.mock('@/hooks/useEntityImageAssets', () => ({ useEntityImageAssets: () => ({ data: {} }) }));
+// useUserNewsReads (added in the editorial rebuild) calls useAuth; the test
+// renders bare without an AuthProvider, so mock the hook to a no-op.
+vi.mock('@/hooks/useUserNewsReads', () => ({
+  useUserNewsReads: () => ({ markRead: vi.fn() }),
+}));
 
 import NewsDetail from '../NewsDetail';
 

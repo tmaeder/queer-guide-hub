@@ -44,6 +44,8 @@ import { TracingBeam } from '@/components/effects/TracingBeam';
 import { Editable } from '@/components/admin/inline/Editable';
 import { useUserNewsReads } from '@/hooks/useUserNewsReads';
 import { ReadingProgressBar } from '@/components/news/editorial/ReadingProgressBar';
+import { useAdminEditMode } from '@/hooks/useAdminEditMode';
+import { EditorsPickToggle } from '@/components/admin/news/EditorsPickToggle';
 
 interface NewsArticle {
   id: string;
@@ -64,6 +66,7 @@ interface NewsArticle {
   publisher_name: string | null;
   created_at: string;
   editorial_note?: string | null;
+  is_editors_pick?: boolean | null;
 }
 
 interface DbCategory {
@@ -99,6 +102,7 @@ export default function NewsDetail() {
   );
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
+  const { isAdmin } = useAdminEditMode();
 
   // Mark the article as read once we have its id (drives streak + challenge progress).
   useEffect(() => {
@@ -420,6 +424,15 @@ export default function NewsDetail() {
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+          {isAdmin && (
+            <EditorsPickToggle
+              articleId={article.id}
+              initialValue={!!article.is_editors_pick}
+              onChange={(next) =>
+                setArticle((prev) => (prev ? { ...prev, is_editors_pick: next } : prev))
+              }
+            />
+          )}
           <FavoriteButton itemId={article.id} type="news" />
           <ReportButton contentType="news_article" contentId={article.id} />
           <Button variant="outline" size="sm" onClick={handleShare}>
@@ -447,8 +460,10 @@ export default function NewsDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
         {/* Main Content */}
         <div className="flex flex-col gap-6">
-          {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote. */}
-          {article.editorial_note && (
+          {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote.
+              Shown to everyone when populated. Admins see a placeholder slot when empty so
+              they can alt-click to author one. */}
+          {(article.editorial_note || isAdmin) && (
             <aside
               aria-label="Why this matters"
               className="border-l-2 border-foreground pl-6 py-2"
@@ -456,9 +471,29 @@ export default function NewsDetail() {
               <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground m-0">
                 Why this matters
               </p>
-              <p className="mt-3 m-0 text-base italic leading-relaxed">
-                {article.editorial_note}
-              </p>
+              <Editable
+                contentType="news_articles"
+                recordId={article.id}
+                field="editorial_note"
+                value={article.editorial_note ?? ''}
+                onSaved={(next) =>
+                  setArticle((prev) =>
+                    prev ? { ...prev, editorial_note: (next as string) || null } : prev,
+                  )
+                }
+                as="div"
+                className="mt-3"
+              >
+                {article.editorial_note ? (
+                  <p className="m-0 text-base italic leading-relaxed">
+                    {article.editorial_note}
+                  </p>
+                ) : (
+                  <p className="m-0 text-base italic leading-relaxed text-muted-foreground">
+                    Alt-click to add the stakes — 1–3 sentences on why this story matters.
+                  </p>
+                )}
+              </Editable>
             </aside>
           )}
 
