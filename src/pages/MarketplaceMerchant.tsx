@@ -3,6 +3,7 @@ import { ArrowLeft, Globe } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
+import { MerchantFeaturedInGuides } from '@/components/marketplace/FeaturedInGuides';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 
@@ -54,6 +55,7 @@ export default function MarketplaceMerchant() {
             </Button>
           }
         />
+        <MerchantFeaturedInGuides merchantDomain={cleanDomain} />
         <MarketplaceFilteredView
           filters={{ merchantDomain: cleanDomain }}
           emptyTitle="No listings from this merchant yet."
