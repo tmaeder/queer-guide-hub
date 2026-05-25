@@ -39,3 +39,16 @@ export const VENUES_V2_ENABLED = (() => {
   if (v === 'false' || v === '0' || v === 'no') return false;
   return true;
 })();
+
+// EDITORIAL_DETAIL_LAYOUT_ENABLED — hybrid editorial layout for city / country /
+// queer-village detail pages: editorial header + sticky section nav + long-scroll
+// anchored sections, replacing the dense tab pattern. Off by default. Enable per
+// session with ?ff=editorial_detail or globally via VITE_EDITORIAL_DETAIL=true.
+export const EDITORIAL_DETAIL_LAYOUT_ENABLED = (() => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ff') === 'editorial_detail') return true;
+    if (params.get('ff') === 'editorial_detail_off') return false;
+  }
+  return truthy(import.meta.env.VITE_EDITORIAL_DETAIL);
+})();

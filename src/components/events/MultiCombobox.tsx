@@ -93,11 +93,19 @@ export function MultiCombobox({
                   {opt.label}
                   <span
                     role="button"
+                    tabIndex={0}
                     aria-label={`Remove ${opt.label}`}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       clearOne(opt.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        clearOne(opt.value);
+                      }
                     }}
                     className="cursor-pointer hover:opacity-70"
                   >

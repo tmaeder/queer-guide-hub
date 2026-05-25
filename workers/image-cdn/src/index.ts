@@ -128,9 +128,36 @@ async function serveThumb(req: Request, env: Env, ctx: ExecutionContext, key: st
     });
   }
 
-  // On-the-fly resizing is not implemented here — CF Image Resizing requires
-  // either a public URL of the source or the paid Images product. Serve the
-  // original; switch to Images / a dedicated transform Worker when needed.
+  // Use CF Image Resizing (paid plan) — fetch the public R2 URL with cf.image options.
+  // The Worker can fetch its own zone without recursion because the original path
+  // (/{key}) does not match the thumb prefix, so it won't re-enter this branch.
+  const width = parseInt(env.THUMB_WIDTH) || 400;
+  const quality = parseInt(env.THUMB_QUALITY) || 80;
+  const publicUrl = `https://img.queer.guide/${key}`;
+
+  try {
+    const resized = await fetch(publicUrl, {
+      cf: { image: { width, quality, format: 'webp' } },
+    } as RequestInit & { cf: { image: { width: number; quality: number; format: string } } });
+
+    if (resized.ok) {
+      const body = await resized.arrayBuffer();
+      ctx.waitUntil(
+        env.IMAGES.put(thumbKey, body, { httpMetadata: { contentType: 'image/webp' } }),
+      );
+      return new Response(body, {
+        headers: {
+          ...corsHeaders(req, env),
+          'Content-Type': 'image/webp',
+          'Cache-Control': `public, max-age=${CACHE_TTL}, immutable`,
+          'X-Thumb': 'generated',
+        },
+      });
+    }
+  } catch {
+    // fall through to original
+  }
+
   return new Response(original.body, {
     headers: {
       ...corsHeaders(req, env),

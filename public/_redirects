@@ -16,6 +16,12 @@
 # style links pointed at city slugs.
 /places/*  /city/:splat  301
 
+# Plural detail URLs sometimes leak in from external links / hand-typed
+# URLs. React Router only has singular detail routes (/city/:slug,
+# /country/:slug) — redirect plurals so they don't render the SPA 404.
+/cities/:slug    /city/:slug    301
+/countries/:slug /country/:slug 301
+
 # Asset paths get a real 404 when missing. Without these rules the SPA
 # catch-all below returns index.html (200 text/html) for any unmatched
 # /assets/* path — and stale browser sessions whose cached bundle still
