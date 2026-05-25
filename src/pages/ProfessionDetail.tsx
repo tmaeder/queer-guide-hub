@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Users, MapPin, Calendar, User } from 'lucide-react';
 import { PersonalityCard } from '@/components/personalities/PersonalityCard';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 
 interface ProfessionData {
   name: string;
@@ -25,6 +26,11 @@ export default function ProfessionDetail() {
     isLoading: loading,
     error: queryError,
   } = usePersonalitiesByProfession();
+
+  const professionPersonalityIds = (professionData?.personalities ?? []).map(
+    (p) => (p as { id: string }).id,
+  );
+  const { assets: imageAssets } = useEntityImageAssets('personality', professionPersonalityIds);
 
   useEffect(() => {
     if (!professionName) return;
@@ -168,9 +174,18 @@ export default function ProfessionDetail() {
           <h6 className="text-base font-semibold mb-4">People in {professionData.name}</h6>
           {professionData.personalities.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {professionData.personalities.map((personality) => (
-                <PersonalityCard key={personality.id} personality={personality} />
-              ))}
+              {professionData.personalities.map((personality) => {
+                const id = (personality as { id: string }).id;
+                const asset = imageAssets.get(id);
+                return (
+                  <PersonalityCard
+                    key={id}
+                    personality={personality as never}
+                    optimizedUrl={asset?.optimized_url}
+                    thumbnailUrl={asset?.thumbnail_url}
+                  />
+                );
+              })}
             </div>
           ) : (
             <Card>
