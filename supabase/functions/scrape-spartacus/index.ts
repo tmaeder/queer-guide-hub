@@ -97,8 +97,12 @@ function fixMarkerName(name: string): string {
       if (decoded.length < fixed.length) fixed = decoded
     }
   } catch { /* not double-encoded, keep as-is */ }
-  // Decode HTML entities
-  fixed = fixed.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+  // Decode HTML entities (decode ampersand last to avoid double-unescaping)
+  fixed = fixed
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+    .replace(/&amp;/g, '&')
   return fixed
 }
 
