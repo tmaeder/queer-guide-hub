@@ -45,9 +45,13 @@ function setNestedValue(obj: Record<string, unknown>, path: string, value: unkno
     if (blockedKeys.has(segment)) {
       throw new Error(`Unsafe translation key path segment: ${segment}`);
     }
-    if (!curr[segment] || typeof curr[segment] !== 'object') {
+
+    const hasOwnSegment = Object.prototype.hasOwnProperty.call(curr, segment);
+    const segmentValue = hasOwnSegment ? curr[segment] : undefined;
+    if (!hasOwnSegment || !segmentValue || typeof segmentValue !== 'object' || Array.isArray(segmentValue)) {
       curr[segment] = {};
     }
+
     curr = curr[segment] as Record<string, unknown>;
   }
   const lastSegment = parts[parts.length - 1];
