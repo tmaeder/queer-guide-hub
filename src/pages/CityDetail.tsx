@@ -20,6 +20,8 @@ import { CityLocalSupporterCaption } from '@/components/marketplace/CityLocalSup
 import { TracingBeam } from '@/components/effects/TracingBeam';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
+import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
+import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import {
   EditorialDetailLayout,
@@ -227,12 +229,32 @@ export default function CityDetail() {
       },
     ];
 
+    const planGeo = city.countries?.id
+      ? {
+          cityId: city.id,
+          cityName: city.name,
+          countryId: city.countries.id,
+          countryName: city.countries.name ?? '',
+          countryCode: city.countries.code ?? null,
+          timezone: city.timezone ?? null,
+        }
+      : null;
+
     return (
       <>
         <EditorialDetailLayout
           loading={false}
           error={null}
           breadcrumbs={breadcrumbs}
+          banner={
+            <TripCoveringBanner
+              target={{
+                type: 'city',
+                cityId: city.id,
+                countryId: city.countries?.id ?? null,
+              }}
+            />
+          }
           header={
             <div className="flex flex-col gap-8">
               <CityHero
@@ -244,6 +266,12 @@ export default function CityDetail() {
                 onFavoriteToggle={handleFavoriteToggle}
                 refetchCity={refetchCity}
               />
+              <div className="flex flex-wrap gap-2">
+                <PlanTripFromHereButton
+                  initialGeo={planGeo}
+                  label={`Plan a trip to ${city.name}`}
+                />
+              </div>
               <IntroEssay text={city.description} />
               <KeyFactsStrip facts={facts} />
             </div>

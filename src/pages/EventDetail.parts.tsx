@@ -207,6 +207,7 @@ export function EventHero({
           src={heroImage || getRandomFallbackImage()}
           alt={event.title}
           role="presentation"
+          referrerPolicy="no-referrer"
           className="w-full h-full object-cover"
           onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
             (e.target as HTMLImageElement).style.display = 'none';
