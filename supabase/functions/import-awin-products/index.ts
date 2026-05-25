@@ -240,7 +240,9 @@ Deno.serve(async (req) => {
       feedUrl = `https://productdata.awin.com/datafeed/download/apikey/${awinApiToken}/language/en/cid/${awinAdvertiserId}/hasEnhancedFeeds/0/columns/${columns}/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/`
     }
 
-    console.log('Downloading CSV feed from:', feedUrl)
+    console.log('Downloading CSV feed from configured source', {
+      source: csvUrl ? 'custom-url' : 'awin-default-feed'
+    })
 
     // Download the gzipped CSV file
     const response = await fetch(feedUrl)

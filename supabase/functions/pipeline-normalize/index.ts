@@ -387,12 +387,19 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
 
 function cleanText(v: unknown): string {
   if (!v) return ''
-  return String(v)
+
+  let s = String(v)
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&')
-    .replace(/<[^>]+>/g, '')
-    .trim()
+
+  let prev: string
+  do {
+    prev = s
+    s = s.replace(/<[^>]+>/g, '')
+  } while (s !== prev)
+
+  return s.trim()
 }
 
 function normalizeDate(v: unknown): string | null {

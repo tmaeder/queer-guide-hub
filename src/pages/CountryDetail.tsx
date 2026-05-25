@@ -24,6 +24,9 @@ import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { COUNTRY_SECTION_DEFS } from './country-detail/CountrySectionDefs';
+import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
+import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
+import { MarketplaceForCountry } from '@/components/marketplace/MarketplaceForCountry';
 import {
   CountryHero,
   CountryOverviewTab,
@@ -199,6 +202,16 @@ export default function CountryDetail() {
       />
     ),
     map: <CountryMapTab country={country} ExploreMap={ExploreMap} Suspense={Suspense} />,
+    personalities: (
+      <PersonalitiesForEntity countryId={country.id} cityName={country.name} />
+    ),
+    nearby: (
+      <NearbyTriptych
+        countryId={country.id}
+        countryName={country.name}
+        equalityScore={country.equality_score ?? null}
+      />
+    ),
   };
 
   const tabs: EntityDetailTab[] = COUNTRY_TAB_DEFS.map((def) => ({
@@ -260,6 +273,7 @@ export default function CountryDetail() {
             </div>
           }
           sections={sections}
+          footer={<MarketplaceForCountry countryId={country.id} countryName={country.name} />}
           entityType="country"
           entityId={country.id}
         />

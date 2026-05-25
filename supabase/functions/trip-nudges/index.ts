@@ -235,8 +235,9 @@ Deno.serve(async (req) => {
       { headers: { ...cors, 'content-type': 'application/json' } },
     );
   } catch (err) {
+    console.error('trip-nudges failed', err);
     return new Response(
-      JSON.stringify({ error: String((err as Error).message ?? err) }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...cors, 'content-type': 'application/json' } },
     );
   }

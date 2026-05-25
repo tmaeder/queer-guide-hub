@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
           // Updated API endpoint with query parameter authentication
           const searchUrl = `https://api.content.tripadvisor.com/api/v1/location/search?key=${tripadvisorApiKey}&searchQuery=${encodeURIComponent(keyword + ' ' + location)}&language=en`;
           
-          console.log('Search URL (without key):', searchUrl.replace(/key=[^&]+/, 'key=***'));
+          console.log('TripAdvisor search request prepared', { keyword, location, language: 'en' });
           
           const searchResponse = await fetch(searchUrl, {
             headers: {
@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
               // Get detailed information for each location
               const detailsUrl = `https://api.content.tripadvisor.com/api/v1/location/${item.location_id}/details?key=${tripadvisorApiKey}&language=en&currency=USD`;
               
-              console.log('Details URL (without key):', detailsUrl.replace(/key=[^&]+/, 'key=***'));
+              console.log(`Fetching TripAdvisor details for location ${item.location_id}`);
               
               const detailsResponse = await fetch(detailsUrl, {
                 headers: {

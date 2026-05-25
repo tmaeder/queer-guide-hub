@@ -139,6 +139,28 @@ export function useMarketplaceListingsForCity(cityName: string | undefined, limi
   );
 }
 
+export function useMarketplaceListingsForCountry(countryId: string | undefined, limit = 4) {
+  return useAsync<MarketplaceListing[]>(
+    [countryId, limit],
+    async () => {
+      if (!countryId) return [];
+      // Inner join to venues filtered by country_id — surfaces marketplace items
+      // hosted by any venue in that country.
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('*, venues!inner(name, address, city)')
+        .eq('status', 'active')
+        .eq('venues.country_id', countryId)
+        .order('featured', { ascending: false })
+        .order('updated_at', { ascending: false })
+        .limit(limit);
+      if (error || !data) return [];
+      return data as MarketplaceListing[];
+    },
+    [],
+  );
+}
+
 export function useMarketplaceListingsForVenue(venueId: string | undefined, limit = 4) {
   return useAsync<MarketplaceListing[]>(
     [venueId, limit],

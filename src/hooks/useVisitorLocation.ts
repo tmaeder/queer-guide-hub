@@ -8,14 +8,12 @@ export interface VisitorLocation {
   region?: string;
 }
 
-const SESSION_KEY = 'ip_geo';
-
 /**
  * Returns the visitor's approximate location from Cloudflare geo headers
  * via our own /api/geo CF Pages Function. Data never leaves the trust boundary.
  *
  * Falls back gracefully — returns null if geo data is unavailable.
- * Results are cached in sessionStorage for the duration of the session.
+ * Sensitive geo coordinates are kept in memory only (not persisted in web storage).
  */
 export function useVisitorLocation() {
   const [location, setLocation] = useState<VisitorLocation | null>(null);
@@ -26,20 +24,7 @@ export function useVisitorLocation() {
 
     (async () => {
       try {
-        // 1. Check sessionStorage cache
-        const cached = sessionStorage.getItem(SESSION_KEY);
-        if (cached) {
-          const data = JSON.parse(cached) as VisitorLocation;
-          if (data.latitude && data.longitude) {
-            if (!cancelled) {
-              setLocation(data);
-              setLoading(false);
-            }
-            return;
-          }
-        }
-
-        // 2. Fetch from our CF Pages Function (same-origin, no external vendor)
+        // Fetch from our CF Pages Function (same-origin, no external vendor)
         const res = await fetch('/api/geo');
         if (!res.ok) throw new Error(`geo ${res.status}`);
         const data = await res.json();
@@ -54,7 +39,6 @@ export function useVisitorLocation() {
             country: data.country ?? undefined,
             region: data.region ?? undefined,
           };
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify(loc));
           setLocation(loc);
         }
       } catch {

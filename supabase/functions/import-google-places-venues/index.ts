@@ -137,7 +137,6 @@ Deno.serve(async (req) => {
     const googleApiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')!;
     
     console.log('Google Places API Key configured:', googleApiKey ? 'Yes' : 'No');
-    console.log('API Key length:', googleApiKey?.length || 0);
     
     if (!googleApiKey) {
       throw new Error('Google Places API key not configured');
