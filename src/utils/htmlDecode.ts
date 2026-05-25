@@ -11,13 +11,14 @@ export function decodeHtmlEntities(text: string): string {
 
 /**
  * Strip HTML tags from a string, returning plain text.
- * Also decodes HTML entities in the result.
+ * Avoids DOM parsing of untrusted input to prevent text being reinterpreted as HTML.
  */
 export function stripHtmlTags(html: string): string {
   if (!html) return '';
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent || div.innerText || '';
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\u00A0/g, ' ');
 }
 
 /**
