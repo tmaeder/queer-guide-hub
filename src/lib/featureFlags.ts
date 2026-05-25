@@ -52,3 +52,16 @@ export const EDITORIAL_DETAIL_LAYOUT_ENABLED = (() => {
   }
   return truthy(import.meta.env.VITE_EDITORIAL_DETAIL);
 })();
+
+// TRAVEL_HUB_V2_ENABLED — redesigned /travel hub: TripCockpit + named editorial
+// rails ("Because you favorited X", "Travelers like you"), booking accordion
+// moved to /travel/book. Off by default. Enable per session with
+// ?ff=travel_hub_v2 or globally via VITE_TRAVEL_HUB_V2=true.
+export const TRAVEL_HUB_V2_ENABLED = (() => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ff') === 'travel_hub_v2') return true;
+    if (params.get('ff') === 'travel_hub_v2_off') return false;
+  }
+  return truthy(import.meta.env.VITE_TRAVEL_HUB_V2);
+})();

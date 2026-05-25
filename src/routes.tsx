@@ -67,6 +67,7 @@ const Cities = lazyRetry(() => import('./pages/Cities'));
 const CityDetail = lazyRetry(() => import('./pages/CityDetail'));
 const CountryDetail = lazyRetry(() => import('./pages/CountryDetail'));
 const Travel = lazyRetry(() => import('./pages/Travel'));
+const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
 const AdminVenues = lazy(() => import('./pages/AdminVenues'));
 const AdminVenueCategories = lazy(() => import('./pages/AdminVenueCategories'));
@@ -428,6 +429,7 @@ export const AppRoutes = () => {
                 <Route path="festivals/:id" element={<Navigate to="/events" replace />} />
                 <Route path="places" element={<Places />} />
                 <Route path="travel" element={<Travel />} />
+                <Route path="travel/book" element={<TravelBook />} />
                 <Route path="trips" element={<TripsPage />} />
                 <Route path="trips/inbox" element={<Navigate to="/trips" replace />} />
                 <Route path="trips/discover" element={<TripsDiscoverPage />} />
