@@ -2,8 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { renderWithProviders } from '@/test/test-utils';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useAuth', () => ({
@@ -20,7 +19,7 @@ import Venues from '../Venues';
 
 describe('Venues', () => {
   it('renders without crashing', () => {
-    const { container } = render(<MemoryRouter><Venues /></MemoryRouter>);
+    const { container } = renderWithProviders(<Venues />);
     expect(container).toBeTruthy();
   });
 });
