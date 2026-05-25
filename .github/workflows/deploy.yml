@@ -9,6 +9,9 @@ on:
       - ".github/workflows/deploy.yml"
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+
 jobs:
   deploy-search:
     runs-on: ubuntu-latest
