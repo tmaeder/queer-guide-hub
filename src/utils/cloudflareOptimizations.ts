@@ -72,6 +72,9 @@ export const optimizeImageForCloudflare = (
   let parsed: URL;
   try {
     parsed = new URL(src);
+  let host: string | undefined;
+  try {
+    host = new URL(src).hostname.toLowerCase();
   } catch {
     return src;
   }
@@ -81,6 +84,15 @@ export const optimizeImageForCloudflare = (
     return buildCfImageUrl(src, { width, height, quality, format });
   }
   if (isHostOrSubdomain(hostname, 'imagedelivery.net') || isHostOrSubdomain(hostname, 'cf-images.com')) {
+  if (host === IMG_CDN_HOST) {
+    return buildCfImageUrl(src, { width, height, quality, format });
+  }
+  if (
+    host === 'imagedelivery.net' ||
+    host.endsWith('.imagedelivery.net') ||
+    host === 'cf-images.com' ||
+    host.endsWith('.cf-images.com')
+  ) {
     const params = [];
     if (width) params.push(`w=${width}`);
     if (height) params.push(`h=${height}`);
