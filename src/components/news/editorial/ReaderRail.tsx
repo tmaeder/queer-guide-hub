@@ -32,6 +32,12 @@ export function ReaderRail() {
     <aside aria-label="Reader rail" className="flex flex-col gap-4">
       <ReadingStreak />
       <SavedCount />
+      <LocalizedLink
+        to="/news/me"
+        className="text-13 uppercase tracking-wider no-underline text-foreground hover:underline self-start"
+      >
+        Your full shelf →
+      </LocalizedLink>
     </aside>
   );
 }

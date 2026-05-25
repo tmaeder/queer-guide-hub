@@ -125,6 +125,23 @@ export const newsArticleFields: FieldConfig[] = [
     listColumn: true,
   },
   {
+    name: 'is_editors_pick',
+    label: "Editor's pick",
+    type: 'boolean',
+    group: 'settings',
+    filterable: true,
+    listColumn: true,
+    helpText: "Surfaces as the right-hand column of the Above-the-fold band on /news.",
+  },
+  {
+    name: 'editorial_note',
+    label: 'Why this matters',
+    type: 'textarea',
+    group: 'basic',
+    helpText: "Shown as a monochrome blockquote above the article body. Keep it to 1–3 sentences explaining the stakes.",
+    maxLength: 600,
+  },
+  {
     name: 'needs_attention',
     label: 'Needs attention',
     type: 'boolean',
