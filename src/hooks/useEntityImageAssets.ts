@@ -64,10 +64,13 @@ export function useEntityImageAssets(
         const existing = map.get(row.entity_id);
         const next = row.image_assets;
         if (!next) continue;
-        // Only use R2 URLs that are confirmed uploaded. 'pending' / 'failed'
-        // rows have the URL pre-written in the DB but the file doesn't exist
-        // in R2 yet — serving those causes a flash from image_url → 404.
-        if (next.optimization_status !== 'completed') continue;
+        // Only use R2 URLs that are confirmed uploaded. DB has 'optimized' and
+        // 'cdn_optimized' for files that exist in R2. 'pending' (6.5k rows)
+        // and 'failed' (5.9k rows) have the URL pre-written but the file
+        // doesn't exist yet — serving those causes a flash: image_url loads
+        // fine, hook resolves, src switches to non-existent R2 URL → 404.
+        const status = next.optimization_status;
+        if (status !== 'optimized' && status !== 'cdn_optimized') continue;
         // Prefer cover role; otherwise first wins.
         if (existing && row.role !== 'cover') continue;
         map.set(row.entity_id, {
