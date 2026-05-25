@@ -3,6 +3,7 @@ import { Star } from 'lucide-react';
 import { useFeaturedPersonalities, type Personality } from '@/hooks/usePersonalities';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
 
 function getInitials(name: string) {
   return name
@@ -33,7 +34,10 @@ function FeaturedItem({
 }) {
   const href = `/personalities/${p.slug ?? p.id}`;
   const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl, preferThumb: true });
-  const srcSet = thumbnailUrl && optimizedUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined;
+  const srcSet = optimizedUrl
+    ? (buildCfSrcSet(optimizedUrl, [160, 320]) ??
+        (thumbnailUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined))
+    : undefined;
   return (
     <LocalizedLink
       to={href}

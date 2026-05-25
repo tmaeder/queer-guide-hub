@@ -7,6 +7,7 @@ import { useTagContent, TagContentResult } from '@/hooks/useTagContent';
 import { formatDistanceToNow } from 'date-fns';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
 
 interface TagLinkedContentProps {
   tagId: string;
@@ -183,7 +184,10 @@ function PersonalityCard({
     .toUpperCase();
 
   const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl, preferThumb: true });
-  const srcSet = thumbnailUrl && optimizedUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined;
+  const srcSet = optimizedUrl
+    ? (buildCfSrcSet(optimizedUrl, [400, 800]) ??
+        (thumbnailUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined))
+    : undefined;
 
   return (
     <Card hoverable className="overflow-hidden" onClick={onClick}>

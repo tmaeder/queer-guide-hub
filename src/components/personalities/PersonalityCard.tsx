@@ -6,6 +6,7 @@ import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Personality } from '@/hooks/usePersonalities';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
 
 const HOVER_OPEN_MS = 350;
 const HOVER_CLOSE_MS = 120;
@@ -79,10 +80,12 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
     thumbnailUrl,
     preferThumb: true,
   });
-  // Two-stop srcset: thumb (400w) for small viewports, full image for large.
+  // Multi-stop srcset via CF Image Resizing when the asset is on img.queer.guide;
+  // fall back to two-stop thumb/original pair for external images.
   const srcSet =
-    thumbnailUrl && optimizedUrl
-      ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w`
+    optimizedUrl
+      ? (buildCfSrcSet(optimizedUrl, [400, 800, 1200]) ??
+          (thumbnailUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined))
       : undefined;
   const showImage = Boolean(resolvedImageUrl) && !imgError;
   const metaParts = [era, personality.nationality].filter(Boolean) as string[];
@@ -237,6 +240,8 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
         {showImage ? (
           <img
             src={resolvedImageUrl!}
+            srcSet={srcSet}
+            sizes="288px"
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"

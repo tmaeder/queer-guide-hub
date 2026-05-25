@@ -1,7 +1,47 @@
 // Cloudflare-specific optimizations and utilities
 
+const IMG_CDN_HOST = 'img.queer.guide';
+
 /**
- * Optimize image URLs for Cloudflare Images
+ * Build a Cloudflare Image Resizing URL for img.queer.guide assets.
+ * Uses the /cdn-cgi/image/ zone-level endpoint (requires paid Images plan).
+ * Falls back to the original URL for external images.
+ */
+export function buildCfImageUrl(
+  url: string,
+  opts: { width?: number; height?: number; quality?: number; format?: string } = {},
+): string {
+  if (!url.includes(IMG_CDN_HOST) || url.includes('/cdn-cgi/image/')) return url;
+  const { width, height, quality = 80, format = 'webp' } = opts;
+  const params = [
+    width ? `width=${width}` : null,
+    height ? `height=${height}` : null,
+    `quality=${quality}`,
+    `format=${format}`,
+  ]
+    .filter(Boolean)
+    .join(',');
+  return `https://${IMG_CDN_HOST}/cdn-cgi/image/${params}/${url}`;
+}
+
+/**
+ * Build a srcset string using CF Image Resizing at multiple widths.
+ * Returns undefined if the URL is not on img.queer.guide.
+ */
+export function buildCfSrcSet(
+  url: string,
+  widths: number[] = [400, 800, 1200],
+  quality = 80,
+): string | undefined {
+  if (!url.includes(IMG_CDN_HOST) || url.includes('/cdn-cgi/image/')) return undefined;
+  return widths
+    .map((w) => `${buildCfImageUrl(url, { width: w, quality })} ${w}w`)
+    .join(', ');
+}
+
+/**
+ * Optimize image URLs for Cloudflare Images (imagedelivery.net / cf-images.com).
+ * For img.queer.guide URLs, use buildCfImageUrl instead.
  */
 export const optimizeImageForCloudflare = (
   src: string,
@@ -10,7 +50,9 @@ export const optimizeImageForCloudflare = (
   format: 'auto' | 'webp' | 'avif' | 'jpg' | 'png' = 'auto',
   quality = 85
 ) => {
-  // If using Cloudflare Images, add transformation parameters
+  if (src.includes(IMG_CDN_HOST)) {
+    return buildCfImageUrl(src, { width, height, quality, format });
+  }
   if (src.includes('imagedelivery.net') || src.includes('cf-images.com')) {
     const params = [];
     if (width) params.push(`w=${width}`);
