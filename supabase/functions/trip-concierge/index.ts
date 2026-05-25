@@ -327,8 +327,9 @@ Deno.serve(async (req) => {
   try {
     result = await callClaude(ctx, history, message, candidates);
   } catch (err) {
+    console.error('trip-concierge: generation failed', err);
     return new Response(
-      JSON.stringify({ error: 'generation failed', detail: String(err) }),
+      JSON.stringify({ error: 'generation failed' }),
       { status: 500, headers: { ...cors, 'content-type': 'application/json' } },
     );
   }
