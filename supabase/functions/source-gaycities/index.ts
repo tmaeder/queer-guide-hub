@@ -126,7 +126,7 @@ function parseEventsFromHtml(html: string, _city: string): Record<string, unknow
 function extractTagContent(html: string, tag: string): string {
   const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i')
   const m = re.exec(html)
-  return m ? m[1].replace(/<[^>]+>/g, '').trim() : ''
+  return m ? m[1].replace(/[<>]/g, '').trim() : ''
 }
 
 function extractAttrValue(html: string, tag: string, attr: string): string {
