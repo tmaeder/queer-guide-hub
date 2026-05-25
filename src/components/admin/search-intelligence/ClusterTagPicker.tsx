@@ -58,6 +58,7 @@ export function ClusterTagPicker({ clusterId, onChange }: Props) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clusterId]);
@@ -66,6 +67,7 @@ export function ClusterTagPicker({ clusterId, onChange }: Props) {
   useEffect(() => {
     const q = query.trim();
     if (q.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setResults([]);
       return;
     }

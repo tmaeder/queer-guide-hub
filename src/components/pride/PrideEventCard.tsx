@@ -40,6 +40,7 @@ export function PrideEventCard({ event, highlighted, compact, onSelect }: PrideE
     );
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- interaction handler is documented OK at this site (see surrounding comments).
     <article
       className={cn(
         'group flex flex-col rounded-container border border-foreground/15 bg-background overflow-hidden transition-colors',

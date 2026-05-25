@@ -46,6 +46,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
     }));
 
     setVideos((prev) => [...prev, ...newVideos]);
+    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
     newVideos.forEach((video) => uploadVideo(video));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- uploadVideo defined below, stable in practice
   }, []);

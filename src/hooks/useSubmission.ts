@@ -47,6 +47,7 @@ export function useSubmission(config: SubmissionTypeConfig) {
   const data = useWatch({ control: form.control }) as FieldValues;
   const errors = form.formState.errors;
 
+  const errorKeysSig = Object.keys(errors).join(',');
   const flatErrors = useMemo(() => {
     const out: Record<string, string> = {};
     for (const [name, err] of Object.entries(errors)) {
@@ -55,7 +56,7 @@ export function useSubmission(config: SubmissionTypeConfig) {
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(Object.keys(errors))]);
+  }, [errorKeysSig]);
 
   const setField = useCallback(
     (name: string, value: unknown) => {

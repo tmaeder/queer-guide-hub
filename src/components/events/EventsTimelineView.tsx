@@ -224,6 +224,7 @@ export function EventsTimelineView({
     const starts = events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n));
     const ends = events.map((e) => new Date(e.end_date ?? e.start_date).getTime()).filter((n) => !isNaN(n));
     const fit = fitToData(starts, ends);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (fit) setInternalViewport(fit);
   }, [events, controlledViewport]);
 

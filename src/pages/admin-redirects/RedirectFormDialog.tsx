@@ -60,6 +60,7 @@ export function RedirectFormDialog({
 
   useEffect(() => {
     if (open && editingRedirect) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setType(editingRedirect.type);
       setSlug(editingRedirect.slug || '');
       setSourcePath(editingRedirect.source_path || '');

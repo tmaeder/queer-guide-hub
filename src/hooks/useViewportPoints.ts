@@ -73,7 +73,7 @@ const mapDebug = (...args: unknown[]): void => {
       import.meta.env.DEV ||
       (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
     ) {
-      // eslint-disable-next-line no-console
+       
       console.debug('[venues-map]', ...args);
     }
   } catch {

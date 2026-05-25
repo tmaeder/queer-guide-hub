@@ -162,7 +162,9 @@ export default function Personalities() {
     );
     const a = JSON.stringify(fromUrl);
     const b = JSON.stringify(filters);
+     
     if (a !== b) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setFilters(fromUrl);
     }
     if (viewFromUrl !== view) {
@@ -176,7 +178,9 @@ export default function Personalities() {
   useEffect(() => {
     if (!validProfessions.length) return;
     const { filters: cleaned, changed } = parseFilters(searchParams, validProfessions);
+     
     if (changed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setFilters(cleaned);
       setSearchParams(serializeFilters(cleaned, { view }), { replace: true });
     }
@@ -195,7 +199,7 @@ export default function Personalities() {
     setFilters({ sortBy: 'featured' });
   }, []);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- React Compiler can't preserve this callback's identity; setSearchParams is already stable from react-router so the manual useCallback is safe to keep.
+   
   const syncPageToUrl = useCallback(
     (n: number) => {
       setSearchParams(

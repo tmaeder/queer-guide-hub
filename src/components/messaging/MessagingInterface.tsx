@@ -312,7 +312,9 @@ const MessageInput = ({
   // composer. Setting from an external value via effect is intentional here.
   useEffect(() => {
     if (prefilledMessage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setMessage(prefilledMessage);
+       
       inputRef?.current?.focus();
     }
   }, [prefilledMessage, inputRef]);

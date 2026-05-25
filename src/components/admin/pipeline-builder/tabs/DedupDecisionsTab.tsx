@@ -90,10 +90,15 @@ export default function DedupDecisionsTab() {
 
       {/* Entity filter chips */}
       <div className="flex gap-1 flex-wrap">
+        {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
         <FilterButton value="all" label="all" />
+        {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
         <FilterButton value="venue" label="venue" />
+        {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
         <FilterButton value="event" label="event" />
+        {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
         <FilterButton value="place" label="place" />
+        {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
         <FilterButton value="stay" label="stay" />
       </div>
 

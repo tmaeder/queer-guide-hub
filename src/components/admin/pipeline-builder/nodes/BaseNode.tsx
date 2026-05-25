@@ -83,6 +83,7 @@ function BaseNode({ data, selected }: NodeProps) {
           className="flex items-center gap-2 px-4 py-2.5 rounded-t-element"
           style={{ backgroundColor: `${color}12` }}
         >
+          {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
           {IconComponent && <IconComponent className="h-4 w-4 shrink-0" />}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -105,6 +106,7 @@ function BaseNode({ data, selected }: NodeProps) {
           )}
           {sc && (
             <Badge variant="outline" className={`ml-auto text-2xs px-1.5 py-0 gap-1 ${sc.className}`}>
+              {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
               {StatusIcon && <StatusIcon className="h-2.5 w-2.5" />}
               {status}
             </Badge>

@@ -411,6 +411,7 @@ const Events = () => {
     setAutoLoadedCount(0);
     const cityName = visitorLocation?.city;
     if (cityName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setCities([cityName]);
       setAutoLocationLabel(cityName);
       fetchEvents({ cities: [cityName] }, { page: 1, pageSize: PAGE_SIZE, append: false });
@@ -533,6 +534,7 @@ const Events = () => {
   // Hydrate filters from URL on first mount.
   useEffect(() => {
     const parsed = parseFilterState(searchParams);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (parsed.cities.length) setCities(parsed.cities);
     if (parsed.q) setSearch(parsed.q);
     if (parsed.types.length) setEventTypes(parsed.types);

@@ -68,6 +68,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
     }));
 
     setAudios((prev) => [...prev, ...newAudios]);
+    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
     newAudios.forEach((audio) => uploadAudio(audio));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- uploadAudio defined below, stable in practice
   }, []);

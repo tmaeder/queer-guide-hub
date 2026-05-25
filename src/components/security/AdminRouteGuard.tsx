@@ -69,7 +69,7 @@ export function AdminRouteGuard({
   const stillResolving = authLoading || rolesLoading;
   const accessGranted = !!user && hasPermission;
 
-  // eslint-disable-next-line react-hooks/refs -- hasValidatedRef gates the loading screen; deliberately set during render so the next render sees the latched value without an effect roundtrip.
+   
   if (accessGranted && !stillResolving) {
     // eslint-disable-next-line react-hooks/refs -- see above.
     hasValidatedRef.current = true;

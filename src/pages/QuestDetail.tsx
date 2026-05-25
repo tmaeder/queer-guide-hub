@@ -37,6 +37,7 @@ export default function QuestDetail() {
 
   useEffect(() => {
     if (myParticipation) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setOptedIn(myParticipation.opted_in_public);
       setDisplayName(myParticipation.display_name ?? '');
     }

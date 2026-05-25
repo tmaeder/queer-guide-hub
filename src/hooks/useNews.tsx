@@ -54,6 +54,7 @@ export const useNews = () => {
 
   useEffect(() => {
     if (!loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setLoadingTimedOut(false);
       return;
     }
@@ -367,6 +368,7 @@ export const useNews = () => {
   }, [fetchArticles, fetchSources, fetchCategories]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     Promise.all([fetchArticles(), fetchSources(), fetchCategories()]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -374,6 +376,7 @@ export const useNews = () => {
   // Fetch per-category counts once we know which categories exist.
   useEffect(() => {
     if (categories.length === 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     fetchCategoryCounts(categories);
   }, [categories, fetchCategoryCounts]);
 

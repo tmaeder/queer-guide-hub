@@ -32,6 +32,7 @@ export function useSavedSearches() {
   const [searches, setSearches] = useState<SavedSearch[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSearches(load());
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) setSearches(load());

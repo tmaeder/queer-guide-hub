@@ -103,8 +103,8 @@ export function EnhancedFormValidator({
       return true;
 
     } catch (error) {
-      // eslint-disable-next-line react-hooks/immutability -- validateForm runs in event handlers; mutating the local `errors` array is correct.
       console.error('Form validation error:', error);
+      // eslint-disable-next-line react-hooks/immutability -- validateForm runs in event handlers; mutating the local `errors` array is correct.
       errors.push('Validation failed. Please try again.');
       setValidationErrors(errors);
       onValidationError?.(errors);

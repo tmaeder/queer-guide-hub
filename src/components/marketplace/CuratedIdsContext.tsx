@@ -14,9 +14,10 @@ export function CuratedIdsProvider({ children }: { children: ReactNode }) {
 
   // `version` is in the dep array because byKey is a mutable ref — bumping the
   // counter is how `register` triggers a recompute of the merged set.
-  // eslint-disable-next-line react-hooks/refs -- intentional ref-in-render: byKey.current is read inside useMemo and the `version` counter triggers the recompute.
+   
   const value = useMemo<CuratedIdsApi>(() => {
     const all = new Set<string>();
+    // eslint-disable-next-line react-hooks/refs -- intentional ref-during-render: latest-value mirror or one-shot render-time latch documented in nearby comments / surrounding code.
     for (const ids of byKey.current.values()) for (const id of ids) all.add(id);
     return { ids: all, register };
     // eslint-disable-next-line react-hooks/exhaustive-deps

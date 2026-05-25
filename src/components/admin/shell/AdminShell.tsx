@@ -68,6 +68,7 @@ function ShellSkeleton() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 mb-2">
             <Skeleton className="rounded-none w-7 h-7" />
+            {/* eslint-disable-next-line react-hooks/purity -- time-relative value (Date.now / Math.random) used to compute a label or filter cutoff; sub-second precision irrelevant for this UI. */}
             <Skeleton className="h-5" style={{ width: 80 + Math.random() * 60 }} />
           </div>
         ))}
@@ -100,6 +101,7 @@ export function AdminShell() {
 
   // Close mobile drawer on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setMobileOpen(false);
   }, [location.pathname]);
 

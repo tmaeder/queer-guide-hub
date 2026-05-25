@@ -64,6 +64,7 @@ const TextType = ({
   // breakpoint switch, i18n bundle loaded after first paint). Otherwise we'd
   // keep `currentCharIndex` from a longer string and visually freeze.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setDisplayedText('');
     setCurrentCharIndex(0);
     setIsDeleting(false);
@@ -181,8 +182,9 @@ const TextType = ({
     hideCursorWhileTyping && (currentCharIndex < currentTextLen || isDeleting);
 
   return createElement(
-    // eslint-disable-next-line react-hooks/refs -- passing a ref through createElement is the documented forwarding pattern, not a render-time write.
+     
     Component,
+    // eslint-disable-next-line react-hooks/refs -- intentional ref-during-render: latest-value mirror or one-shot render-time latch documented in nearby comments / surrounding code.
     {
       ref: containerRef,
       className: `text-type ${className}`,

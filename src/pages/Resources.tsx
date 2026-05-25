@@ -97,6 +97,7 @@ export default function Resources() {
   const professionParam = searchParams.get('profession');
   useEffect(() => {
     if (professionParam) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setViewMode('search');
       updateParam('q', professionParam);
     }
@@ -155,6 +156,7 @@ export default function Resources() {
         t.name.toLowerCase().includes(lower) ||
         (t.description && t.description.toLowerCase().includes(lower)),
     );
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSearchResults(local);
     setViewMode('search');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -163,6 +165,7 @@ export default function Resources() {
   // Load individual tag from route param
   useEffect(() => {
     if (!tagName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setTagNotFound(false);
       return;
     }

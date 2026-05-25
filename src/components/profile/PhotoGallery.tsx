@@ -63,6 +63,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
     };
     loadUrls();
     return () => {
+       
       isMounted = false;
     };
   }, [photos, getSignedPhotoUrl]);

@@ -35,6 +35,7 @@ export function useEvents(autoFetch: boolean = true) {
 
   useEffect(() => {
     if (!loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setLoadingTimedOut(false);
       return;
     }
@@ -415,6 +416,7 @@ export function useEvents(autoFetch: boolean = true) {
 
   useEffect(() => {
     if (autoFetch) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       fetchEvents();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

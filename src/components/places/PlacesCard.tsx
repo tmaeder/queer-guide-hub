@@ -45,6 +45,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
     if (type !== 'country' || !name || !data?.id) return;
     // Already have image from DB
     if (data?.image_url) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setCountryImage(data.image_url);
       return;
     }

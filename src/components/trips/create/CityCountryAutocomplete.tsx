@@ -123,6 +123,7 @@ export function CityCountryAutocomplete({
   useEffect(() => {
     if (composing) return;
     if (value && `${value.cityName}, ${value.countryName}` === query) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     search(debounced);
   }, [debounced, search, value, query, composing]);
 

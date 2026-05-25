@@ -65,6 +65,7 @@ export function ActiveTripProvider({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setPinnedId(null);
       setDismissedId(null);
       writeStorage(STORAGE_KEY, null);
@@ -75,6 +76,7 @@ export function ActiveTripProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!dismissedId || !trips) return;
     if (!trips.some((t) => t.id === dismissedId)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setDismissedId(null);
       writeStorage(DISMISS_KEY, null);
     }
