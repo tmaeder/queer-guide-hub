@@ -12,6 +12,9 @@ on:
       - 'playwright.config.ts'
       - '.github/workflows/e2e-pr-smoke.yml'
 
+permissions:
+  contents: read
+
 concurrency:
   group: e2e-pr-smoke-${{ github.ref }}
   cancel-in-progress: true
