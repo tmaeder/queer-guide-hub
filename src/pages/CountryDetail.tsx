@@ -14,6 +14,15 @@ import { useEvents } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import {
+  EditorialDetailLayout,
+  IntroEssay,
+  KeyFactsStrip,
+  type KeyFact,
+  type SectionDef,
+} from '@/components/entity/editorial';
+import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
+import { COUNTRY_SECTION_DEFS } from './country-detail/CountrySectionDefs';
+import {
   CountryHero,
   CountryOverviewTab,
   CountryRightsTab,
@@ -160,55 +169,97 @@ export default function CountryDetail() {
 
   const breadcrumbs = [{ label: 'Directory', href: '/users' }, { label: country.name }];
 
-  const tabs: EntityDetailTab[] = COUNTRY_TAB_DEFS.map((def) => {
-    let content: React.ReactNode = null;
-    switch (def.id) {
-      case 'overview':
-        content = (
-          <CountryOverviewTab country={country} worldBankData={worldBankData} sdgData={sdgData} />
-        );
-        break;
-      case 'rights':
-        content = <CountryRightsTab country={country} />;
-        break;
-      case 'cities':
-        content = (
-          <CountryCitiesTab country={country} cities={cities} citiesLoading={citiesLoading} />
-        );
-        break;
-      case 'venues':
-        content = (
-          <CountryVenuesTab
-            country={country}
-            venues={countryVenues}
-            loading={venuesLoading || cityVenuesLoading}
-          />
-        );
-        break;
-      case 'events':
-        content = (
-          <CountryEventsTab country={country} events={events} eventsLoading={eventsLoading} />
-        );
-        break;
-      case 'travel':
-        content = <CountryTravelTab country={country} />;
-        break;
-      case 'news':
-        content = (
-          <CountryNewsTab
-            country={country}
-            articles={countryNews}
-            newsLoading={newsLoading}
-            onViewArticle={incrementViews}
-          />
-        );
-        break;
-      case 'map':
-        content = <CountryMapTab country={country} ExploreMap={ExploreMap} Suspense={Suspense} />;
-        break;
-    }
-    return { id: def.id, label: def.label, content };
-  });
+  const sectionContent: Record<string, React.ReactNode> = {
+    overview: (
+      <CountryOverviewTab country={country} worldBankData={worldBankData} sdgData={sdgData} />
+    ),
+    rights: <CountryRightsTab country={country} />,
+    cities: (
+      <CountryCitiesTab country={country} cities={cities} citiesLoading={citiesLoading} />
+    ),
+    venues: (
+      <CountryVenuesTab
+        country={country}
+        venues={countryVenues}
+        loading={venuesLoading || cityVenuesLoading}
+      />
+    ),
+    events: (
+      <CountryEventsTab country={country} events={events} eventsLoading={eventsLoading} />
+    ),
+    travel: <CountryTravelTab country={country} />,
+    news: (
+      <CountryNewsTab
+        country={country}
+        articles={countryNews}
+        newsLoading={newsLoading}
+        onViewArticle={incrementViews}
+      />
+    ),
+    map: <CountryMapTab country={country} ExploreMap={ExploreMap} Suspense={Suspense} />,
+  };
+
+  const tabs: EntityDetailTab[] = COUNTRY_TAB_DEFS.map((def) => ({
+    id: def.id,
+    label: def.label,
+    content: sectionContent[def.id] ?? null,
+  }));
+
+  if (EDITORIAL_DETAIL_LAYOUT_ENABLED) {
+    const sections: SectionDef[] = COUNTRY_SECTION_DEFS.map((def) => ({
+      id: def.id,
+      label: def.label,
+      content: sectionContent[def.id] ?? null,
+    }));
+
+    const languages = Array.isArray(country.languages)
+      ? country.languages.slice(0, 3).join(', ')
+      : country.languages || null;
+
+    const facts: KeyFact[] = [
+      { label: 'Capital', value: country.capital || null },
+      {
+        label: 'Population',
+        value: country.population ? `${(country.population / 1e6).toFixed(1)}M` : null,
+      },
+      {
+        label: 'Equality',
+        value: country.equality_score != null ? `${country.equality_score}/10` : null,
+      },
+      { label: 'Languages', value: languages },
+      { label: 'Currency', value: country.currency || null },
+      { label: 'Cities', value: cities.length || null },
+    ];
+
+    return (
+      <>
+        <SafetyAlertBanner
+          criminalization={country.lgbti_criminalization as Record<string, unknown> | null}
+          countryName={country.name}
+        />
+        <EditorialDetailLayout
+          loading={false}
+          error={null}
+          breadcrumbs={breadcrumbs}
+          header={
+            <div className="flex flex-col gap-8">
+              <CountryHero
+                country={country}
+                cities={cities}
+                weatherData={weatherData}
+                onContentUpdated={refetchCountry}
+              />
+              <IntroEssay text={country.description} />
+              <KeyFactsStrip facts={facts} />
+            </div>
+          }
+          sections={sections}
+          entityType="country"
+          entityId={country.id}
+        />
+      </>
+    );
+  }
 
   return (
     <>
