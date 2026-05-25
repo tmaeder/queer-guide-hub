@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
-import type { ReactNode } from 'react';
+import { renderWithProviders, screen, fireEvent, within } from '@/test/test-utils';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
@@ -63,8 +61,6 @@ vi.mock('@/components/hotels/HotelFilters', () => ({
 
 import Hotels from '../Hotels';
 
-const wrap = (children: ReactNode) => <MemoryRouter>{children}</MemoryRouter>;
-
 describe('Hotels page empty states', () => {
   beforeEach(() => {
     fetchHotelsMock.mockReset();
@@ -75,7 +71,7 @@ describe('Hotels page empty states', () => {
   });
 
   it('renders module-empty copy when datasetTotal is 0', () => {
-    render(wrap(<Hotels />));
+    renderWithProviders(<Hotels />);
     expect(screen.getByText('No hotels yet')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Submit Hotel/i }).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole('button', { name: /Reset filters/i })).not.toBeInTheDocument();
@@ -83,7 +79,7 @@ describe('Hotels page empty states', () => {
 
   it('renders filtered-empty copy with reset button when filters active', () => {
     hookState.datasetTotal = 42;
-    render(wrap(<Hotels />));
+    renderWithProviders(<Hotels />);
     fireEvent.click(screen.getByTestId('apply-search'));
     expect(screen.getByTestId('search-value').textContent).toBe('zzzz');
     expect(screen.getByText('No hotels match your filters')).toBeInTheDocument();
@@ -94,7 +90,7 @@ describe('Hotels page empty states', () => {
 
   it('reset filters clears the search state', () => {
     hookState.datasetTotal = 42;
-    render(wrap(<Hotels />));
+    renderWithProviders(<Hotels />);
     fireEvent.click(screen.getByTestId('apply-search'));
     expect(screen.getByTestId('search-value').textContent).toBe('zzzz');
     fireEvent.click(screen.getByRole('button', { name: /Reset filters/i }));
@@ -105,7 +101,7 @@ describe('Hotels page empty states', () => {
   it('renders hotels when data is present', () => {
     hookState.datasetTotal = 42;
     hookState.hotels = [{ id: '1', name: 'Stonewall Inn' }];
-    render(wrap(<Hotels />));
+    renderWithProviders(<Hotels />);
     expect(screen.getByTestId('hotel-card')).toHaveTextContent('Stonewall Inn');
     expect(screen.queryByText('No hotels yet')).not.toBeInTheDocument();
     expect(screen.queryByText('No hotels match your filters')).not.toBeInTheDocument();
