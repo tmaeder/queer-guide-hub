@@ -272,7 +272,8 @@ Deno.serve(async (req) => {
       systemReply.email_id = result.data?.id ?? null;
       systemReply.email_error = result.error?.message ?? null;
     } catch (e) {
-      systemReply.email_error = e instanceof Error ? e.message : String(e);
+      console.error('notify-feedback-status: resend send failed', e);
+      systemReply.email_error = 'email_send_failed';
     }
   } else if (!contactEmail) {
     systemReply.email_error = 'no_contact_email';
