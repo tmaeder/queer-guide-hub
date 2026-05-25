@@ -16,7 +16,7 @@ export function decodeHtmlEntities(text: string): string {
 export function stripHtmlTags(html: string): string {
   if (!html) return '';
   return html
-    .replace(/<[^>]*>/g, '')
+    .replace(/[<>]/g, '')
     .replace(/&nbsp;/gi, ' ')
     .replace(/\u00A0/g, ' ');
 }
