@@ -72,6 +72,7 @@ export function useSavedNewsArticles({ limit = 50 }: Options = {}) {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only user identity (via user?.id) and limit drive the refetch; pulling the whole `user` object would re-run on every TOKEN_REFRESHED.
   }, [user?.id, limit]);
 
   return { items, loading };

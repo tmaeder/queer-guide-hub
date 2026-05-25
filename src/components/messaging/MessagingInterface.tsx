@@ -310,13 +310,12 @@ const MessageInput = ({
 
   // Allow parents (e.g. IntimateMatchThread opening-move chips) to seed the
   // composer. Setting from an external value via effect is intentional here.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (prefilledMessage) {
       setMessage(prefilledMessage);
       inputRef?.current?.focus();
     }
-  }, [prefilledMessage]);
+  }, [prefilledMessage, inputRef]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 

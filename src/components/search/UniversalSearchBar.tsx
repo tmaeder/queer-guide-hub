@@ -215,7 +215,7 @@ export const UniversalSearchBar = () => {
       setFilters((f) => ({ ...f, types: scope ? [scope] : [] }));
       focusInput();
     },
-    [activeScope, focusInput],
+    [focusInput],
   );
 
   // Rail navigable list: [All, ...RAIL_SCOPE_IDS]

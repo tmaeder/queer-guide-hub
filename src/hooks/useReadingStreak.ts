@@ -38,6 +38,7 @@ export function useReadingStreak() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only user identity (via user?.id) drives the refetch; pulling the whole `user` object would re-run on every TOKEN_REFRESHED.
   }, [user?.id]);
 
   return { streak, loading };

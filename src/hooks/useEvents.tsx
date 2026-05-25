@@ -330,6 +330,7 @@ export function useEvents(autoFetch: boolean = true) {
       if (!signal?.aborted) setLoading(false);
     }
     return { fetched: fetchedCount, total: totalCount } as { fetched: number; total: number | null };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchEvents must be a stable callback so consumers (Calendar, MapData, etc.) don't trigger re-fetch loops; the returned `total` reflects state-as-of-callback-creation, which is the documented contract.
   }, []);
 
   const createEvent = async (event: EventInsert) => {
