@@ -318,11 +318,10 @@ function extractMediaUrl(block: string): string | null {
 function cleanText(s: string): string {
   const TAG_RE = /<[^>]+>/g
   let out = s
-    .replace(TAG_RE, '')
-    .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
-    .replace(/The post .* appeared first on .*\./g, '')
-    .replace(/Continue reading.*/g, '')
 
+  // Phase 1: iteratively decode entities and strip tags until stable.
+  // Decoding can reintroduce `<` (e.g. `&lt;script&gt;`), so the loop runs
+  // until no further substitutions occur.
   let prev: string
   let iterations = 0
   const AMP_SENTINEL = '__AMP_SENTINEL__'
@@ -339,15 +338,18 @@ function cleanText(s: string): string {
     iterations += 1
   } while (out !== prev && iterations < 10)
 
-  let strippedPrev: string
-  let stripIterations = 0
-  do {
-    strippedPrev = out
-    out = out.replace(TAG_RE, '')
-    stripIterations += 1
-  } while (out !== strippedPrev && stripIterations < 10)
+  // Phase 2: terminal sanitization sink. Any `<` or `>` that survived the
+  // loop is stripped unconditionally. Nothing after this writes those
+  // characters back, so CodeQL recognizes this as the final sanitizer
+  // (CodeQL #516/#517).
+  out = out.replace(/[<>]/g, '')
 
-  return out.replace(/[<>]/g, '').trim()
+  // Phase 3: cosmetic RSS junk removal \u2014 runs *after* sanitization so it
+  // can't reintroduce angle brackets.
+  return out
+    .replace(/The post .* appeared first on .*\./g, '')
+    .replace(/Continue reading.*/g, '')
+    .trim()
 }
 
 function normalizeDate(val: unknown): string | null {
