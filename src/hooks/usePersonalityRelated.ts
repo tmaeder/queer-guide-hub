@@ -15,7 +15,7 @@ export interface RelatedEvent {
   id: string;
   slug: string | null;
   title: string;
-  start_at: string | null;
+  start_date: string | null;
   image_url: string | null;
 }
 
@@ -43,33 +43,50 @@ export function usePersonalityRelated(name: string, slug?: string) {
     let cancelled = false;
 
     (async () => {
-      // Match either name in title (ilike) or slug in tags array.
+      // Match name in title (ilike). News also matches slug in its `tags` array.
+      // The `events` table has no `tags` column, so events match by title only.
       // PostgREST `or` syntax: `or=(title.ilike.*name*,tags.cs.{slug})`
       const nameLike = `*${name.replace(/[%,]/g, ' ')}*`;
-      const orClause = slug
+      const newsOr = slug
         ? `title.ilike.${nameLike},tags.cs.{${slug}}`
         : `title.ilike.${nameLike}`;
+      const eventsOr = `title.ilike.${nameLike}`;
 
       const [newsRes, eventsRes] = await Promise.all([
         supabase
           .from('news_articles')
           .select('id,slug,title,excerpt,image_url,published_at,publisher_name')
-          .or(orClause)
+          .or(newsOr)
           .is('duplicate_of_id', null)
           .order('published_at', { ascending: false })
           .limit(6),
         supabase
           .from('events')
-          .select('id,slug,title,start_at,image_url')
-          .or(orClause.replace('published_at', 'start_at'))
-          .order('start_at', { ascending: false })
+          .select('id,slug,title,start_date,images,logo_url')
+          .or(eventsOr)
+          .order('start_date', { ascending: false })
           .limit(6),
       ]);
 
       if (cancelled) return;
+      type EventRow = {
+        id: string;
+        slug: string | null;
+        title: string;
+        start_date: string | null;
+        images: string[] | null;
+        logo_url: string | null;
+      };
+      const events: RelatedEvent[] = ((eventsRes.data as EventRow[] | null) ?? []).map((e) => ({
+        id: e.id,
+        slug: e.slug,
+        title: e.title,
+        start_date: e.start_date,
+        image_url: e.images?.[0] ?? e.logo_url ?? null,
+      }));
       setState({
         news: (newsRes.data as RelatedNews[] | null) ?? [],
-        events: (eventsRes.data as RelatedEvent[] | null) ?? [],
+        events,
         loading: false,
       });
     })().catch(() => {
