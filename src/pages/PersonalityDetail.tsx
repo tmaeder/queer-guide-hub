@@ -38,6 +38,7 @@ export default function PersonalityDetail() {
     enabled: Boolean(slug),
     staleTime: 60_000,
     queryFn: () => fetchPersonalityBySlug(slug!),
+    retry: false,
   });
 
   useEffect(() => {
