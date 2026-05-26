@@ -9,6 +9,13 @@ import { supabase } from '@/integrations/supabase/client';
 const STALE = 5 * 60_000;
 const STALE_LONG = 30 * 60_000;
 
+/** Strict UUID v1–v5 shape. Used to gate slug→id fallbacks for `maybeSingle()`
+ * callers — without this, a slug that doesn't resolve becomes a non-UUID
+ * `id=eq.<slug>` query against a uuid column, which PostgREST 400s and
+ * React Query then retries in a tight loop. */
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** HotelDetail.tsx fallback when slug is a uuid. */
 export function useHotelByIdFallback<T = unknown>(
   joinSpec: string,
@@ -199,7 +206,7 @@ export async function fetchPublicPersonalityBySlugOrId<T = unknown>(
     .eq('slug', slugOrId)
     .eq('visibility', 'public')
     .maybeSingle();
-  if (!data && !error) {
+  if (!data && !error && UUID_RE.test(slugOrId)) {
     const fb = await supabase
       .from('personalities')
       .select(PERSONALITY_DETAIL_SELECT)
@@ -413,7 +420,7 @@ export async function fetchNewsArticleBySlugOrId<T = unknown>(slug: string): Pro
     .or('quality_score.is.null,quality_score.gte.50')
     .or('quality_status.is.null,quality_status.eq.passed')
     .maybeSingle();
-  if (!data && !error) {
+  if (!data && !error && UUID_RE.test(slug)) {
     const fb = await supabase
       .from('news_articles')
       .select('*')

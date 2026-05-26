@@ -361,10 +361,10 @@ function RelatedContent({ personality }: { personality: Personality }) {
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium line-clamp-2">{e.title}</p>
-                      {e.start_at && (
+                      {e.start_date && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          <time dateTime={e.start_at}>
-                            {new Date(e.start_at).toLocaleDateString(undefined, {
+                          <time dateTime={e.start_date}>
+                            {new Date(e.start_date).toLocaleDateString(undefined, {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
