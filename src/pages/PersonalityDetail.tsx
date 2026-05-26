@@ -98,7 +98,10 @@ export default function PersonalityDetail() {
         min_similarity: 0.3,
       });
       if (!cancelled && similarData) setSimilarPersonalities(similarData as SimilarPersonality[]);
-    })();
+    })().catch(() => {
+      // get_similar_personalities failure is non-critical; SimilarItems below
+      // provides the same discovery surface via a separate mechanism.
+    });
     return () => {
       cancelled = true;
     };
