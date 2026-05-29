@@ -91,11 +91,17 @@ const eventTypes = [
   'meetup',
   'party',
   'pride',
-  'exhibition',
+  'drag',
+  'film',
+  'art',
   'sports',
   'theater',
-  'comedy',
-  'cruise',
+  'fundraiser',
+  'protest',
+  'social',
+  'fair',
+  'community',
+  'fetish',
   'other',
 ];
 
@@ -247,6 +253,10 @@ export default function AdminEvents() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.event_type) {
+      toast.error('Error: Please select an event type');
+      return;
+    }
     if (!startDate) {
       toast.error('Error: Please select a start date');
       return;
