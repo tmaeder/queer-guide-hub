@@ -129,7 +129,7 @@ Deno.serve(async (req: Request) => {
     let status = 'skipped'
     try {
       const pageText = target ? await fetchText(target) : null
-      if (!pageText) { skipped++; results.push({ id: ev.id, status: 'no_page' }); await logStep(supabase, ev.id, 'skipped', started, dryRun); continue }
+      if (!pageText) { skipped++; results.push({ id: ev.id, status: 'no_page' }); await logStep(supabase, ev.id, status, started, dryRun); continue }
 
       // Destination safety context.
       let safetyContext: string | undefined
@@ -151,7 +151,7 @@ Deno.serve(async (req: Request) => {
         }
         throw e
       }
-      if (!ai) { skipped++; results.push({ id: ev.id, status: 'no_ai' }); await logStep(supabase, ev.id, 'skipped', started, dryRun); continue }
+      if (!ai) { skipped++; results.push({ id: ev.id, status: 'no_ai' }); await logStep(supabase, ev.id, status, started, dryRun); continue }
 
       const confidence = typeof ai.confidence === 'number' ? ai.confidence : 0.5
       const highConf = confidence >= AUTO_APPLY_CONFIDENCE
