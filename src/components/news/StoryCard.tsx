@@ -36,7 +36,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
           width={400}
           height={200}
           style={{ width: '100%', height: 200, objectFit: 'cover' }}
-          className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04] block"
+          className="transition-transform duration-500 ease-out group-hover:scale-[1.04] block"
           onError={() => setImgFailed(true)}
         />
         <Badge

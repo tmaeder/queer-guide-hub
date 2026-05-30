@@ -65,7 +65,7 @@ export function EntityCard({
             alt={imageAlt}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
+            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
           />
         ) : (
           <div className="h-full w-full bg-muted" />
