@@ -1,4 +1,25 @@
 {
+  "eventTypes": {
+    "party": "حفلة",
+    "festival": "مهرجان",
+    "pride": "برايد",
+    "meetup": "لقاء",
+    "workshop": "ورشة",
+    "concert": "حفل موسيقي",
+    "conference": "مؤتمر",
+    "film": "فيلم",
+    "drag": "دراغ",
+    "sports": "رياضة",
+    "art": "فن",
+    "theater": "مسرح",
+    "fundraiser": "جمع تبرعات",
+    "protest": "احتجاج",
+    "social": "اجتماعي",
+    "community": "مجتمع",
+    "fair": "معرض",
+    "fetish": "فيتيش",
+    "other": "آخر"
+  },
   "submission": {
     "errors": {
       "title": "Scan failed",
