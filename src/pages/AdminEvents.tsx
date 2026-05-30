@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { formatCurrency } from '@/lib/currency';
+import { EVENT_TYPES } from '@/lib/eventTypes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -83,21 +84,7 @@ const eventStatuses = ['active', 'cancelled', 'postponed', 'completed'];
 
 const columnHelper = createColumnHelper<EventRow>();
 
-const eventTypes = [
-  'concert',
-  'festival',
-  'conference',
-  'workshop',
-  'meetup',
-  'party',
-  'pride',
-  'exhibition',
-  'sports',
-  'theater',
-  'comedy',
-  'cruise',
-  'other',
-];
+const eventTypes = EVENT_TYPES as readonly string[];
 
 const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
   { tag: 'pride:parade', label: 'Parade' },

@@ -1,4 +1,25 @@
 {
+  "eventTypes": {
+    "party": "Вечеринка",
+    "festival": "Фестиваль",
+    "pride": "Прайд",
+    "meetup": "Встреча",
+    "workshop": "Воркшоп",
+    "concert": "Концерт",
+    "conference": "Конференция",
+    "film": "Кино",
+    "drag": "Драг",
+    "sports": "Спорт",
+    "art": "Искусство",
+    "theater": "Театр",
+    "fundraiser": "Сбор средств",
+    "protest": "Протест",
+    "social": "Социальное",
+    "community": "Сообщество",
+    "fair": "Ярмарка",
+    "fetish": "Фетиш",
+    "other": "Другое"
+  },
   "submission": {
     "errors": {
       "title": "Scan failed",
