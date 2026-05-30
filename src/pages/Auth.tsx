@@ -239,7 +239,7 @@ export default function Auth() {
                   </form>
                 )}
 
-                {mode === 'signin' && <PasskeyButton mode="signin" style={{ width: '100%' }} />}
+                {mode === 'signin' && <PasskeyButton mode="signin" />}
 
                 <div className="text-center pt-4">
                   {mode === 'forgot' ? (

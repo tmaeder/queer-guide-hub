@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 /**
  * Magic-link / OAuth redirect target. Supports both Supabase auth flows:
  *
- *   - Implicit (default for /auth/v1/otp without PKCE): tokens land in the
- *     URL hash fragment as `#access_token=…&refresh_token=…`.
- *   - PKCE: code lands as `?code=…` and we exchange it via
- *     `supabase.auth.exchangeCodeForSession`.
+ *   - PKCE (the client's configured flow, supabase-js v2 default): code lands
+ *     as `?code=…` and we exchange it via `supabase.auth.exchangeCodeForSession`.
+ *     Web OAuth (Google/Apple) and email links arrive this way.
+ *   - Implicit: tokens land in the URL hash fragment as
+ *     `#access_token=…&refresh_token=…`. Still handled for robustness and for
+ *     providers/links that return tokens directly.
  *
  * For Chrome extension sign-in (`?ext=<extension-id>`) we forward the
  * tokens (implicit) or code (PKCE) to the extension via
