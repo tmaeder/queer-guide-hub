@@ -48,6 +48,8 @@ queer-guide-hub/
 
 **Marketplace pipeline (hardened, 2026-04-15):** Cron `0 4 * * *` → `marketplace-ingestion` DAG (13 nodes, multi-source fan-in): `source-awin` + `source-shopify` + `source-etsy` → `fan-in` → `pipeline-normalize` → `pipeline-validate` (marketplace branch: title/price/URL/image/currency/availability) → `marketplace-relevance` (Claude Haiku LGBTQ+ gate, rejects < 0.5 confidence) → `pipeline-deduplicate` (marketplace branch: source_entity_id → external_url → domain+title → brand+title → title trigram) → `pipeline-quality-score` → `pipeline-review-gate` → `pipeline-commit` (marketplace branch) → parallel `marketplace-image-mirror` (→ `marketplace-images` R2/Storage bucket, SHA-256 dedup) + `embedding-generator`. Atomic commit via `commit_marketplace_staging_batch` RPC with advisory lock + price-history delta + source-junction upsert. UNIQUE on `(source_type, source_entity_id)`. `price_usd` auto-computed from `fx_rates` (23 currencies, refreshed daily via `marketplace-fx-sync`). Affiliate links resolved to `affiliate_partners` via `merchant_domain`. Link-rot sweeper `marketplace-link-checker` (weekly) updates `link_health`, demotes broken listings to `status='inactive'`. Multi-merchant registry `marketplace_merchants` (provider, shop_domain/shop_id, api_key_env, last_sync_*). Visible at `/admin/pipelines?pipeline=marketplace-ingestion` (Builder).
 
+**Event Truth Loop (continuous quality, 2026-05-30):** Layered on top of the events ingest DAG — turns each event into a living record that re-verifies itself. `events` gains `trust_score` (composite 0-100, distinct from `quality_score`=completeness), `last_verified_at`, `liveness_status` (live/sold_out/cancelled/postponed/moved_online/dead_link/unknown), `field_provenance` jsonb. Append-only `event_quality_signals` ledger (corroboration/liveness/freshness/engagement/admin_feedback/enrichment/relevance/safety) feeds a nightly **pure-SQL** `run_event_trust_recompute()` (decaying composite: completeness·0.25 + corroboration·0.20 + freshness·0.15 + engagement·0.15 + relevance·0.15 + admin_feedback·0.10, hard-cap 10 on dead/cancelled). Weekly pure-SQL `run_event_coverage_radar()` flags thin major cities → `event_coverage_gaps` with suggested source queries. Three edge functions (gated by `EVENT_QUALITY_WEBHOOK_SECRET` / `app.event_quality_webhook_secret` GUC, hybrid-by-confidence: certain→auto-apply, ambiguous→`needs_attention`): `event-liveness-checker` (daily; HEAD/GET ticket_url+website, JSON-LD `eventStatus`/`availability`), `event-corroboration` (daily; multi-source field fusion across `event_sources.payload.normalized` → `field_provenance`), `event-agentic-enrich` (hourly, circuit-broken `llm.openai.agentic-enrich` + daily cap; grounds Claude/OpenAI extraction in the event's own source page → accessibility/target_groups/age/safety moat fields via `researchEnrichEventFromPage`). Both SQL jobs registered in `admin_automations` (paused via `enabled=false`); all five crons live but no-op until enabled/secret set. Admin surface: trust + liveness columns and an `EventQualityPanel` (coverage gaps + counts) on `/admin/events`.
+
 **Payments:** Stripe via `create-checkout-session` + `stripe-webhook` edge functions.
 
 **User submissions (Chrome extension):** `extension/` (MV3, React 19) extracts venues/events/hotels/marketplace/news from any webpage via JSON-LD/microdata/OpenGraph/DOM heuristics. `workers/submit/` (CF Worker) verifies user Supabase JWTs and stages into the same `ingestion_staging` table the scraper uses, with `source_type='user_submission'` — submissions flow through the existing normalize → dedupe → quality-score → review-gate → commit pipeline. Submitter columns + RLS added via migration `002_user_submissions`.
@@ -56,9 +58,9 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 190
+- **Edge functions:** 193
 - **Edge functions:** 189
-- **Migrations:** 408
+- **Migrations:** 409
 - **Edge functions:** 189
 - **Migrations:** 401
 - **Edge functions:** 185

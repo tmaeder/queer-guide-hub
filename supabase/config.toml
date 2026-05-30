@@ -443,3 +443,12 @@ verify_jwt = false
 
 [functions.personality-pipeline]
 verify_jwt = false
+
+[functions.event-liveness-checker]
+verify_jwt = false
+
+[functions.event-corroboration]
+verify_jwt = false
+
+[functions.event-agentic-enrich]
+verify_jwt = false
