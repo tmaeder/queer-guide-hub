@@ -22,6 +22,7 @@ import { FlyerScanUpload } from '@/components/submission/FlyerScanUpload';
 import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
 import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useEventTypeOptions } from '@/lib/eventTypes';
 
 const SubmitForm = () => {
   const { _t } = useTranslation();
@@ -152,6 +153,8 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
   const currentStepConfig = config.steps[currentStep];
   const isLastStep = currentStep === totalSteps - 1;
 
+  const eventTypeOptions = useEventTypeOptions();
+
   // Resolve FieldConfig objects for the current step's fields
   const stepFields = useMemo(() => {
     if (!currentStepConfig || !contentConfig) return [];
@@ -163,8 +166,10 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         // Override CMS-specific flags — submission fields are always editable & visible
         readOnly: false,
         hidden: false,
+        // Inject translated labels for event_type (canonical 19-value list)
+        ...(f.name === 'event_type' ? { options: eventTypeOptions } : {}),
       }));
-  }, [currentStepConfig, contentConfig]);
+  }, [currentStepConfig, contentConfig, eventTypeOptions]);
 
   // ── Success screen ─────────────────────────────────────────────
 

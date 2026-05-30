@@ -211,6 +211,9 @@ verify_jwt = false
 [functions.pipeline-commit]
 verify_jwt = false
 
+[functions.pipeline-extract-fulltext]
+verify_jwt = false
+
 [functions.pipeline-sanitize-news]
 verify_jwt = false
 
@@ -442,4 +445,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.personality-pipeline]
+verify_jwt = false
+
+[functions.event-liveness-checker]
+verify_jwt = false
+
+[functions.event-corroboration]
+verify_jwt = false
+
+[functions.event-agentic-enrich]
 verify_jwt = false
