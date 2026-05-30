@@ -85,6 +85,27 @@ const eventStatuses = ['active', 'cancelled', 'postponed', 'completed'];
 const columnHelper = createColumnHelper<EventRow>();
 
 const eventTypes = EVENT_TYPES as readonly string[];
+const eventTypes = [
+  'concert',
+  'festival',
+  'conference',
+  'workshop',
+  'meetup',
+  'party',
+  'pride',
+  'drag',
+  'film',
+  'art',
+  'sports',
+  'theater',
+  'fundraiser',
+  'protest',
+  'social',
+  'fair',
+  'community',
+  'fetish',
+  'other',
+];
 
 const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
   { tag: 'pride:parade', label: 'Parade' },
@@ -234,6 +255,10 @@ export default function AdminEvents() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.event_type) {
+      toast.error('Error: Please select an event type');
+      return;
+    }
     if (!startDate) {
       toast.error('Error: Please select a start date');
       return;

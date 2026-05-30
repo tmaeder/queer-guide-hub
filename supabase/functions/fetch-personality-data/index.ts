@@ -155,9 +155,24 @@ Deno.serve(async (req) => {
       )
     }
 
-      // Get the single result
+      // Single result — surface to admin instead of auto-picking. Auto-pick
+      // is what produced 614 polluted rows when same-named-but-unrelated people
+      // exist on Wikidata. Admin should review and select explicitly.
       const firstResult = wikidataData.search[0] as WikidataSearchResult
-      entityId = firstResult.id;
+      return new Response(
+        JSON.stringify({
+          success: true,
+          multiple_results: true,
+          candidates: [{
+            id: firstResult.id,
+            title: firstResult.title,
+            description: firstResult.description || 'No description available',
+            details: {},
+          }],
+          source: 'wikidata_search',
+        }),
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      )
     }
     
     console.log('Processing Wikidata entity:', entityId)

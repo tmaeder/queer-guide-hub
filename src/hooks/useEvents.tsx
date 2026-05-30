@@ -343,7 +343,10 @@ export function useEvents(autoFetch: boolean = true) {
     } catch (err) {
       return {
         data: null,
-        error: err instanceof Error ? err.message : 'Failed to create event',
+        error:
+          err instanceof Error
+            ? err.message
+            : (err as { message?: string })?.message ?? 'Failed to create event',
       };
     }
   };
@@ -362,7 +365,10 @@ export function useEvents(autoFetch: boolean = true) {
     } catch (err) {
       return {
         data: null,
-        error: err instanceof Error ? err.message : 'Failed to update event',
+        error:
+          err instanceof Error
+            ? err.message
+            : (err as { message?: string })?.message ?? 'Failed to update event',
       };
     }
   };
