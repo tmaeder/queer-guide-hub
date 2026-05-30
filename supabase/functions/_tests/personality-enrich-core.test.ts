@@ -21,6 +21,8 @@ Deno.test('refreshTtlDays: living=90, recently deceased=7, default=365', () => {
   assertEquals(refreshTtlDays({ is_living: true }), 90)
   assertEquals(refreshTtlDays({ is_living: false, death_date: '2026-05-01' }, '2026-05-30'), 7)
   assertEquals(refreshTtlDays({ is_living: false, death_date: '1992-07-06' }, '2026-05-30'), 365)
+  // future death_date must not be treated as recently deceased
+  assertEquals(refreshTtlDays({ is_living: false, death_date: '2027-01-01' }, '2026-05-30'), 365)
 })
 
 Deno.test('isStale compares last_refreshed_at against ttl', () => {

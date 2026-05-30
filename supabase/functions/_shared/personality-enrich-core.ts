@@ -25,7 +25,10 @@ function daysBetween(aIso: string, bIso: string): number {
 export function refreshTtlDays(r: Rec, nowIso = new Date().toISOString()): number {
   if (r.is_living === true) return 90
   const dd = typeof r.death_date === 'string' ? r.death_date : null
-  if (dd && daysBetween(dd, nowIso) <= 90) return 7
+  if (dd) {
+    const age = daysBetween(dd, nowIso)
+    if (age >= 0 && age <= 90) return 7
+  }
   return 365
 }
 
