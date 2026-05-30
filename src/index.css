@@ -640,6 +640,20 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(to top, hsl(0 0% 0% / 0.70) 0%, hsl(0 0% 0% / 0.30) 50%, transparent 100%);
 }
 
+/* ── 3-tier image scrim system ───────────────────────────────────────
+ * The only sanctioned gradients over imagery (black readability scrims).
+ * Replaces ad-hoc per-component from-black/15..75 gradients with exactly
+ * two densities; `none` renders no scrim element at all.
+ *   readable — text sits over the lower third (cards, standard heroes)
+ *   strong   — full-bleed heroes with large overlaid headlines
+ * `.scrim-bottom` is kept as an alias of readable for existing callers. */
+.img-scrim-readable {
+  background: linear-gradient(to top, hsl(0 0% 0% / 0.55) 0%, hsl(0 0% 0% / 0.15) 45%, transparent 70%);
+}
+.img-scrim-strong {
+  background: linear-gradient(to top, hsl(0 0% 0% / 0.80) 0%, hsl(0 0% 0% / 0.40) 40%, transparent 75%);
+}
+
 
 /* Animated border-conic for "moving border" cards (monochrome). */
 @keyframes border-rotate {

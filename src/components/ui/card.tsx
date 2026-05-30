@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { Image } from './Image';
 
 // MotionCard lives in a sibling file so importing Card doesn't drag
 // framer-motion into the consumer's bundle. Re-exported below for the
@@ -48,29 +48,12 @@ interface CardImageProps {
 }
 
 /**
- * Strip the Referer header for cross-origin hotlinks. Some publisher CDNs
- * (Guardian, etc.) return 401 when Referer is set to a non-allowed origin.
- * Internal hosts get the default policy so analytics still works.
+ * Thin compatibility wrapper over the unified {@link Image} component. Existing
+ * consumers keep their `src`/`height`/`fallbackIcon` API unchanged but now gain
+ * responsive Cloudflare srcset and the deterministic on-brand fallback for free.
+ * `fallbackIcon` remains accepted for API compatibility but, as before, a missing
+ * image falls back to the curated photo pool rather than an icon tile.
  */
-const TRUSTED_HOSTS = new Set([
-  'queer.guide',
-  'www.queer.guide',
-  'img.queer.guide',
-]);
-
-function isTrustedSrc(src: string): boolean {
-  try {
-    const host = new URL(src, 'https://queer.guide').hostname;
-    return (
-      TRUSTED_HOSTS.has(host) ||
-      host.endsWith('.supabase.co') ||
-      host.endsWith('.supabase.in')
-    );
-  } catch {
-    return true;
-  }
-}
-
 const CardImage = ({
   src,
   alt,
@@ -79,52 +62,19 @@ const CardImage = ({
   children,
   className,
   priority = false,
-}: CardImageProps) => {
-  const [error, setError] = React.useState(false);
-  const [loaded, setLoaded] = React.useState(false);
-  const fallbackSrc = React.useMemo(() => getRandomFallbackImage(), []);
-
-  // Reset state when src changes — without this, an earlier error on one
-  // src would permanently route a new src to the fallback. Also schedules
-  // a timeout: some Pexels URLs return 200 OK and then stall mid-stream;
-  // the browser never fires onLoad or onError, so the card sits empty.
-  // After 8 s without a settled load, treat it as failed and fall back.
-  React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setError(false);
-    setLoaded(false);
-    if (!src) return;
-    const timer = setTimeout(() => {
-      setError((prev) => prev || !loaded);
-    }, 8000);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src]);
-
-  const effectiveSrc = (!src || error) ? fallbackSrc : src;
-  const referrerPolicy = isTrustedSrc(effectiveSrc) ? undefined : 'no-referrer';
-
-  return (
-    <div className="relative overflow-hidden rounded-t-container bg-muted" style={{ height }}>
-      <img
-        src={effectiveSrc}
-        alt={alt}
-        role="presentation"
-        loading={priority ? 'eager' : 'lazy'}
-        decoding={priority ? 'sync' : 'async'}
-        fetchPriority={priority ? 'high' : 'auto'}
-        referrerPolicy={referrerPolicy}
-        onLoad={() => setLoaded(true)}
-        onError={() => {
-          // Avoid the fallback-loops-to-itself case: only flip once.
-          if (!error) setError(true);
-        }}
-        className={`img-lazy-fade${loaded ? ' loaded' : ''} w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] ${className ?? ''}`}
-      />
-      {children}
-    </div>
-  );
-};
+}: CardImageProps) => (
+  <Image
+    src={src ?? undefined}
+    alt={alt}
+    heightPx={height}
+    imageRole="cover"
+    rounded="top"
+    priority={priority}
+    className={className}
+  >
+    {children}
+  </Image>
+);
 CardImage.displayName = 'CardImage';
 
 const CardHeaderCompat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
