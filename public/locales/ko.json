@@ -1,4 +1,25 @@
 {
+  "eventTypes": {
+    "party": "파티",
+    "festival": "축제",
+    "pride": "프라이드",
+    "meetup": "모임",
+    "workshop": "워크숍",
+    "concert": "콘서트",
+    "conference": "컨퍼런스",
+    "film": "영화",
+    "drag": "드래그",
+    "sports": "스포츠",
+    "art": "예술",
+    "theater": "연극",
+    "fundraiser": "모금",
+    "protest": "시위",
+    "social": "소셜",
+    "community": "커뮤니티",
+    "fair": "박람회",
+    "fetish": "페티시",
+    "other": "기타"
+  },
   "submission": {
     "errors": {
       "title": "Scan failed",

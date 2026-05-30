@@ -1,4 +1,25 @@
 {
+  "eventTypes": {
+    "party": "Party",
+    "festival": "Festival",
+    "pride": "Pride",
+    "meetup": "Meetup",
+    "workshop": "Workshop",
+    "concert": "Concert",
+    "conference": "Conference",
+    "film": "Film",
+    "drag": "Drag",
+    "sports": "Sports",
+    "art": "Art",
+    "theater": "Theater",
+    "fundraiser": "Fundraiser",
+    "protest": "Protest",
+    "social": "Social",
+    "community": "Community",
+    "fair": "Fair",
+    "fetish": "Fetish",
+    "other": "Other"
+  },
   "submission": {
     "errors": {
       "title": "Scan failed",
@@ -284,11 +305,26 @@
     "amenities": "Amenities",
     "services": "Services",
     "rails": {
-      "nearYou": { "title": "Near you", "subtitle": "Venues within 30 km, ranked by distance." },
-      "forYou": { "title": "For your taste", "subtitle": "Picked from your interests and where you’ve been." },
-      "new": { "title": "New this month", "subtitle": "Fresh additions to the guide." },
-      "topInCity": { "title": "Top in {{city}}", "subtitle": "Popular with the community right now." },
-      "editors": { "title": "Editor’s picks", "subtitle": "Hand-curated highlights worth the trip." }
+      "nearYou": {
+        "title": "Near you",
+        "subtitle": "Venues within 30 km, ranked by distance."
+      },
+      "forYou": {
+        "title": "For your taste",
+        "subtitle": "Picked from your interests and where you’ve been."
+      },
+      "new": {
+        "title": "New this month",
+        "subtitle": "Fresh additions to the guide."
+      },
+      "topInCity": {
+        "title": "Top in {{city}}",
+        "subtitle": "Popular with the community right now."
+      },
+      "editors": {
+        "title": "Editor’s picks",
+        "subtitle": "Hand-curated highlights worth the trip."
+      }
     },
     "hero": {
       "kicker": "Featured this week",
@@ -305,7 +341,9 @@
       "checkins": "Check-ins",
       "nextLevel": "Next: {{name}}"
     },
-    "results": { "title": "Matching venues" },
+    "results": {
+      "title": "Matching venues"
+    },
     "quickFilters": {
       "openNow": "Open now",
       "radius": "Distance",
@@ -318,7 +356,10 @@
     "leaderboard": {
       "title": "Leaderboard",
       "subtitle": "Top explorers ranked by venues visited.",
-      "tabs": { "global": "Global", "city": "In {{city}}" },
+      "tabs": {
+        "global": "Global",
+        "city": "In {{city}}"
+      },
       "empty": "No data yet — be the first to check in.",
       "venuesShort": "venues",
       "widget": {
@@ -342,10 +383,18 @@
     },
     "onboarding": {
       "progress": "Step {{current}} of {{total}}",
-      "step1": { "title": "What kinds of venues do you love?" },
-      "step2": { "title": "Which communities do you call home?" },
-      "step3": { "title": "What vibes are you here for?" },
-      "step4": { "title": "Where do you spend most of your time?" },
+      "step1": {
+        "title": "What kinds of venues do you love?"
+      },
+      "step2": {
+        "title": "Which communities do you call home?"
+      },
+      "step3": {
+        "title": "What vibes are you here for?"
+      },
+      "step4": {
+        "title": "Where do you spend most of your time?"
+      },
       "cityPlaceholder": "Type your city",
       "citySelected": "Selected: {{city}}",
       "finish": "Finish",

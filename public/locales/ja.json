@@ -1,4 +1,25 @@
 {
+  "eventTypes": {
+    "party": "パーティー",
+    "festival": "フェスティバル",
+    "pride": "プライド",
+    "meetup": "ミートアップ",
+    "workshop": "ワークショップ",
+    "concert": "コンサート",
+    "conference": "カンファレンス",
+    "film": "映画",
+    "drag": "ドラァグ",
+    "sports": "スポーツ",
+    "art": "アート",
+    "theater": "演劇",
+    "fundraiser": "資金集め",
+    "protest": "抗議",
+    "social": "ソーシャル",
+    "community": "コミュニティ",
+    "fair": "フェア",
+    "fetish": "フェティッシュ",
+    "other": "その他"
+  },
   "submission": {
     "errors": {
       "title": "Scan failed",

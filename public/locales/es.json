@@ -1,4 +1,25 @@
 {
+  "eventTypes": {
+    "party": "Fiesta",
+    "festival": "Festival",
+    "pride": "Pride",
+    "meetup": "Encuentro",
+    "workshop": "Taller",
+    "concert": "Concierto",
+    "conference": "Conferencia",
+    "film": "Cine",
+    "drag": "Drag",
+    "sports": "Deportes",
+    "art": "Arte",
+    "theater": "Teatro",
+    "fundraiser": "Recaudación",
+    "protest": "Protesta",
+    "social": "Social",
+    "community": "Comunidad",
+    "fair": "Feria",
+    "fetish": "Fetiche",
+    "other": "Otro"
+  },
   "submission": {
     "errors": {
       "title": "Scan failed",
