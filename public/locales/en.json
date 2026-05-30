@@ -68,6 +68,65 @@
     "name": "Name",
     "ascending": "A to Z",
     "descending": "Z to A",
+    "trending": "Trending",
+    "browse": "Browse",
+    "recentSearches": "Recent searches",
+    "clearRecent": "Clear recent searches",
+    "savedLabel": "Saved",
+    "savedSearches": "Saved searches",
+    "saveThisSearch": "Save this search",
+    "namePlaceholder": "Name…",
+    "noSavedYet": "No saved searches yet.",
+    "loadMore": "Load more",
+    "loading": "Loading…",
+    "searchForQ": "Search for \"{{q}}\"",
+    "backToTop": "Back to top",
+    "openFilters": "Open filters",
+    "activeFilters": "Active filters",
+    "clearAll": "Clear all",
+    "noMappable": "No mappable results in this view.",
+    "voice": "Voice search",
+    "stopVoice": "Stop voice search",
+    "nearMeWithRadius": "Near me ({{km}}km)",
+    "searchThisArea": "Search this area",
+    "didYouMean": "Did you mean \"{{q}}\"?",
+    "boost": {
+      "interest": "Matches your interests",
+      "recent_tag": "Recently viewed topic",
+      "home_city": "In your home city",
+      "recent_city": "In a city you've explored",
+      "featured": "Featured"
+    },
+    "mapView": "Map view",
+    "seeAllN": "See all {{n}} →",
+    "removeFilter": "Remove filter {{label}}",
+    "deleteSavedSearch": "Delete saved search {{name}}",
+    "tryDifferent": "Try different keywords or adjust your filters",
+    "unavailable": "Search is temporarily unavailable",
+    "noResultsFor": "No results found for \"{{q}}\"",
+    "scope": {
+      "all": "All",
+      "venues": "Venues",
+      "events": "Events",
+      "marketplace": "Marketplace",
+      "news": "News",
+      "people": "People",
+      "cities": "Cities",
+      "places": "Places"
+    },
+    "quickLinks": {
+      "places": "Places",
+      "cities": "Cities",
+      "eventsWeekend": "Events this weekend",
+      "personalities": "Personalities",
+      "marketplace": "Marketplace"
+    },
+    "kbd": {
+      "navigate": "Navigate",
+      "select": "Select",
+      "complete": "Complete",
+      "close": "Close"
+    },
     "placeholders": {
       "venues": "Search venues…",
       "events": "Find events…",
@@ -82,8 +141,6 @@
     "contentInLanguage": "In {{lang}}",
     "loadMore": "Load More",
     "tryAgain": "Try Again",
-    "signIn": "Sign in",
-    "goHome": "Go Home",
     "error": "Error",
     "allEvents": "All events",
     "browseAll": "Browse all",
@@ -98,7 +155,9 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "save": "Save",
-    "delete": "Delete"
+    "delete": "Delete",
+    "signIn": "Sign in",
+    "goHome": "Go Home"
   },
   "navigation": {
     "home": "Home",
@@ -1386,6 +1445,25 @@
     },
     "news": {
       "title": "Latest News"
+    },
+    "discover": "Discover",
+    "destinationsTitle": "Where the scene lives.",
+    "destinationsSubtitle": "Six cities our community keeps coming back to.",
+    "allCities": "All cities",
+    "exploreCity": "Explore",
+    "browseEyebrow": "The index",
+    "browseTitle": "Browse everything.",
+    "browseSections": "sections",
+    "browse": {
+      "count": {
+        "venues": "venues",
+        "events": "events",
+        "cities": "cities",
+        "hotels": "hotels",
+        "marketplace": "products",
+        "groups": "groups",
+        "resources": "resources"
+      }
     }
   },
   "header": {
@@ -1455,7 +1533,6 @@
   },
   "pages": {
     "venues": {
-      "sortRelevance": "For you",
       "sortFeatured": "Featured",
       "sortName": "Name",
       "sortCategory": "Category",
@@ -1475,7 +1552,8 @@
       "filteredEmpty": {
         "title": "No venues match your filters",
         "body": "Try adjusting your filters or search to see more results."
-      }
+      },
+      "sortRelevance": "For you"
     },
     "venueDetail": {
       "loadFailed": "Failed to load venue details.",
@@ -1506,7 +1584,6 @@
       "subtitle": "Community events in your area.",
       "submitEvent": "Submit Event",
       "gridView": "Grid view",
-      "calendarView": "Calendar view",
       "mapView": "Map view",
       "city": "City",
       "eventType": "Event Type",
@@ -1515,6 +1592,19 @@
       "endDate": "End Date",
       "applyFilters": "Apply Filters",
       "clearAll": "Clear All",
+      "accessibility": "Accessibility",
+      "accessibilityPlaceholder": "Any",
+      "targetGroups": "Audience",
+      "targetGroupsPlaceholder": "Any",
+      "languages": "Language",
+      "languagesPlaceholder": "Any",
+      "ageRestriction": "Age restriction",
+      "ageAny": "Any",
+      "ageAllAges": "All ages",
+      "age18Plus": "18+",
+      "age21Plus": "21+",
+      "filterAge": "Age: {{value}}",
+      "clearFilterAge": "Clear age filter",
       "activeFilters": "Active filters:",
       "loadMore": "Load More Events",
       "submitAnEvent": "Submit an Event",
@@ -1555,12 +1645,15 @@
       },
       "preset": {
         "label": "Quick filters",
+        "tonight": "Tonight",
         "thisWeekend": "This weekend",
+        "next7Days": "Next 7 days",
         "nearMe": "Near me",
         "pride": "Pride season",
-        "thisMonth": "This month",
         "free": "Free",
-        "featured": "Featured"
+        "featured": "Featured",
+        "newThisWeek": "New this week",
+        "thisMonth": "This month"
       },
       "rail": {
         "featured": "Featured this week",
@@ -1588,8 +1681,15 @@
       "sortLabel": "Sort events",
       "sort": {
         "dateAsc": "Soonest first",
-        "dateDesc": "Latest first"
+        "dateDesc": "Latest first",
+        "distance": "Closest to me",
+        "popularity": "Most popular",
+        "recent": "Recently added"
       },
+      "share": "Share",
+      "shareCopied": "Copied",
+      "shareFilters": "Copy share link",
+      "shareFiltersHint": "Copy a link to these filters",
       "searchLabel": "Search events",
       "searchPlaceholder": "Search events, cities, organizers",
       "filters": "Filters",
@@ -1598,7 +1698,9 @@
       "resultsCount_other": "{{count}} events",
       "resultsNear_one": "{{count}} event near {{city}}",
       "resultsNear_other": "{{count}} events near {{city}}",
-      "showWorldwide": "Show worldwide"
+      "showWorldwide": "Show worldwide",
+      "timelineView": "Timeline view",
+      "calendarView": "Calendar view"
     },
     "eventDetail": {
       "loadFailed": "Failed to load event details.",
@@ -1623,6 +1725,8 @@
     "hotels": {
       "title": "Hotels & BnBs",
       "subtitle": "LGBTQ+ friendly accommodations worldwide",
+      "eyebrow": "Where to sleep",
+      "planTrip": "Plan a trip",
       "submitHotel": "Submit Hotel",
       "noResults": "No hotels found",
       "noResultsHint": "Try adjusting your filters or check back later.",
@@ -1862,21 +1966,21 @@
       "browseGroups": "Browse Groups"
     },
     "feed": {
-      "subtitle": "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
       "activePosts": "Active Posts",
       "totalLikes": "Total Likes",
       "comments": "Comments",
       "createPostPlaceholder": "What's on your mind? Share with the community...",
-      "signInToPost": "Sign in to share posts, like, and comment.",
       "searchPlaceholder": "Search posts or users...",
       "recent": "Recent",
       "popular": "Popular",
       "emptyTitle": "Your feed is fresh",
       "emptyDescription": "No posts yet. Be the first to share something with the community.",
+      "createFirstPost": "Create First Post",
+      "subtitle": "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
+      "signInToPost": "Sign in to share posts, like, and comment.",
       "searchEmptyTitle": "No posts match your search",
       "searchEmptyDescription": "Try a different keyword or clear the search to see everything.",
       "clearSearch": "Clear search",
-      "createFirstPost": "Create First Post",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
       "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
@@ -1937,6 +2041,12 @@
       "linkCopied": "Link copied",
       "linkCopiedDescription": "You can paste it now",
       "shareFailed": "Share failed"
+    },
+    "geolocate": {
+      "unsupported": "Geolocation unavailable",
+      "denied": "Location access is off — showing the default area",
+      "unavailable": "Couldn't get your location — showing the default area",
+      "timeout": "Location lookup timed out — showing the default area"
     }
   },
   "resources": {
@@ -2064,6 +2174,133 @@
     "graph": {
       "title": "Tag Relationship Graph",
       "description": "See how tags relate by semantic similarity and co-occurrence"
+    }
+  },
+  "cities": {
+    "metaTitle": "Cities",
+    "metaDescription": "Browse LGBTQ+ friendly cities around the world.",
+    "eyebrow": "Destinations",
+    "title": "Cities.",
+    "subtitle": "LGBTQ+ friendly cities around the world.",
+    "planTrip": "Plan a trip",
+    "openDirectory": "Open the directory",
+    "searchAriaLabel": "Search cities",
+    "searchPlaceholder": "Search cities…",
+    "resultCount": "{{shown}} of {{total}} cities",
+    "filtersAriaLabel": "Filter cities",
+    "continentsAriaLabel": "Filter by continent",
+    "equalityAriaLabel": "Filter by equality score",
+    "sortLabel": "Sort",
+    "sortAriaLabel": "Sort cities",
+    "sort": {
+      "population": "Population",
+      "name": "Name (A–Z)",
+      "equality": "Equality",
+      "venues": "Venues"
+    },
+    "reset": "Reset",
+    "resetFilters": "Reset filters",
+    "viewToggleAriaLabel": "Toggle list and map",
+    "viewList": "List",
+    "viewMap": "Map",
+    "listLabel": "Cities",
+    "emptyTitle": "No cities found",
+    "empty": "No cities are currently listed.",
+    "emptyFiltered": "Try removing a filter or clearing the search.",
+    "suggestTitle": "Missing a city?",
+    "suggestLede": "Suggest one — adds to the directory after review.",
+    "suggestCta": "Suggest a city"
+  },
+  "pride": {
+    "eyebrow": "Pride Calendar",
+    "export": "Export .ics",
+    "loading": "Loading…",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
+    "summary": "{{count}} pride · {{countries}} countries · {{cities}} cities",
+    "summary_other": "{{count}} prides · {{countries}} countries · {{cities}} cities",
+    "noMatches": "No prides match your filters.",
+    "clearFilters": "Clear filters",
+    "estimated": "Date estimated",
+    "inTripWindow": "In your trip window",
+    "featured": "Featured",
+    "filters": {
+      "aria": "Pride filters",
+      "searchPlaceholder": "Search prides, cities, countries…",
+      "searchAria": "Search prides",
+      "featured": "Featured",
+      "verified": "Confirmed dates",
+      "clearAll": "Clear all",
+      "month": "Month",
+      "region": "Region",
+      "country": "Country"
+    },
+    "continents": {
+      "Europe": "Europe",
+      "Americas": "Americas",
+      "Oceania": "Oceania",
+      "Asia": "Asia",
+      "Africa": "Africa",
+      "Other": "Other"
+    },
+    "timeline": {
+      "aria": "Pride events timeline",
+      "srTitle": "Pride timeline",
+      "today": "Today",
+      "helper": "{{count}} prides in {{year}} · click a row to select · solid dots are featured"
+    },
+    "upNext": {
+      "title": "Up next",
+      "subtitle": "Soonest first",
+      "past": "Past",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "inDays": "In {{count}} days",
+      "inWeeks": "In {{count}} weeks",
+      "inMonths": "In {{count}} months",
+      "inYears": "In {{count}}y"
+    },
+    "spotlight": {
+      "eyebrow": "Spotlight",
+      "dismiss": "Dismiss",
+      "startsIn": "Starts in {{count}} day",
+      "startsIn_other": "Starts in {{count}} days",
+      "today": "Happening today",
+      "endedDaysAgo": "Ended {{count}} day ago",
+      "endedDaysAgo_other": "Ended {{count}} days ago",
+      "viewPride": "View pride",
+      "addToTrip": "Add to trip",
+      "signInToAdd": "Sign in to add to trip",
+      "showOnMap": "Show on map",
+      "venuesInCity": "Queer venues in {{city}}"
+    },
+    "map": {
+      "title": "World map",
+      "aria": "Pride events world map",
+      "popupView": "View pride"
+    },
+    "trips": {
+      "title": "Pride trip ideas",
+      "subtitle": "Up to 4 prides · within 21 days · <4000 km",
+      "meta": "{{count}} prides · {{days}} days",
+      "metaWithKm": "{{count}} prides · {{days}} days · {{km}} km",
+      "buildTrip": "Build this trip",
+      "featured": "Featured"
+    },
+    "table": {
+      "title": "All prides",
+      "count": "{{count}} pride",
+      "count_other": "{{count}} prides",
+      "when": "When",
+      "pride": "Pride",
+      "location": "Location",
+      "region": "Region",
+      "estimated": "Estimated"
+    },
+    "card": {
+      "view": "View",
+      "addToTrip": "Add to trip",
+      "signIn": "Sign in"
     }
   }
 }

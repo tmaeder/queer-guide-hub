@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useId } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -70,6 +70,14 @@ export interface TypingIndicator {
 export const useMessaging = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  // Stable per-hook-instance id. Multiple components (SendEventDialog,
+  // NotificationList, MessagingInterface, …) can mount useMessaging at the
+  // same time; a shared channel topic returns the SAME channel from the
+  // realtime client, and the second `.on('postgres_changes', …)` after
+  // `.subscribe()` throws "cannot add postgres_changes callbacks … after
+  // subscribe()", crashing the consumer. Scope each topic per instance. See
+  // the matching fix in useNotifications (D2).
+  const instanceId = useId();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Record<string, Message[]>>({});
@@ -383,7 +391,7 @@ export const useMessaging = () => {
 
     // Subscribe to new messages
     const messagesChannel = supabase
-      .channel('messages-changes')
+      .channel(`messages-changes:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -423,7 +431,7 @@ export const useMessaging = () => {
 
     // Subscribe to conversation updates
     const conversationsChannel = supabase
-      .channel('conversations-changes')
+      .channel(`conversations-changes:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -441,7 +449,7 @@ export const useMessaging = () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(conversationsChannel);
     };
-  }, [user, fetchConversations]);
+  }, [user, fetchConversations, instanceId]);
 
   // Set up typing indicators for active conversations
   useEffect(() => {

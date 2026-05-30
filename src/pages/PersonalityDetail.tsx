@@ -38,6 +38,7 @@ export default function PersonalityDetail() {
     enabled: Boolean(slug),
     staleTime: 60_000,
     queryFn: () => fetchPersonalityBySlug(slug!),
+    retry: false,
   });
 
   useEffect(() => {
@@ -97,7 +98,10 @@ export default function PersonalityDetail() {
         min_similarity: 0.3,
       });
       if (!cancelled && similarData) setSimilarPersonalities(similarData as SimilarPersonality[]);
-    })();
+    })().catch(() => {
+      // get_similar_personalities failure is non-critical; SimilarItems below
+      // provides the same discovery surface via a separate mechanism.
+    });
     return () => {
       cancelled = true;
     };
@@ -189,7 +193,6 @@ export default function PersonalityDetail() {
           personality ? (
             <PersonalitySidebar
               personality={personality}
-              countryId={countryId}
               onTagClick={(tag) => navigate(`/personalities?tag=${encodeURIComponent(tag)}`)}
             />
           ) : null

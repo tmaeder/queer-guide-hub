@@ -48,6 +48,8 @@ queer-guide-hub/
 
 **Marketplace pipeline (hardened, 2026-04-15):** Cron `0 4 * * *` → `marketplace-ingestion` DAG (13 nodes, multi-source fan-in): `source-awin` + `source-shopify` + `source-etsy` → `fan-in` → `pipeline-normalize` → `pipeline-validate` (marketplace branch: title/price/URL/image/currency/availability) → `marketplace-relevance` (Claude Haiku LGBTQ+ gate, rejects < 0.5 confidence) → `pipeline-deduplicate` (marketplace branch: source_entity_id → external_url → domain+title → brand+title → title trigram) → `pipeline-quality-score` → `pipeline-review-gate` → `pipeline-commit` (marketplace branch) → parallel `marketplace-image-mirror` (→ `marketplace-images` R2/Storage bucket, SHA-256 dedup) + `embedding-generator`. Atomic commit via `commit_marketplace_staging_batch` RPC with advisory lock + price-history delta + source-junction upsert. UNIQUE on `(source_type, source_entity_id)`. `price_usd` auto-computed from `fx_rates` (23 currencies, refreshed daily via `marketplace-fx-sync`). Affiliate links resolved to `affiliate_partners` via `merchant_domain`. Link-rot sweeper `marketplace-link-checker` (weekly) updates `link_health`, demotes broken listings to `status='inactive'`. Multi-merchant registry `marketplace_merchants` (provider, shop_domain/shop_id, api_key_env, last_sync_*). Visible at `/admin/pipelines?pipeline=marketplace-ingestion` (Builder).
 
+**Venue Truth Engine (consensus enrichment, 2026-05-30):** The `venue-ingestion-unified` DAG (daily cron `pipeline-venue-ingestion`, `0 3 * * *`, 7 sources) gained a `pipeline-consensus-merge` node between `dedupe` and `quality`. It groups staging rows that dedup linked to the same existing venue (`dedup_match_id`), votes each field across sources + the venue's current value (`source='existing'`), and writes per-field provenance + confidence. Logic is pure + unit-tested in `_shared/venue-consensus.ts` (source trust weights, noisy-OR confidence, comparator per field kind: identity/url/phone/email/coords/text/number/array). Agreement ≥2 sources → high confidence → auto-commit; conflict on a HIGH-RISK field (name/lat/lng/category) → `review_status='pending_review'` → existing triage. Per-(venue,field,source) candidates in `venue_field_provenance` (`is_winning` flag); merge decisions audited in `venue_consensus_audit`. Closure is a voted signal (Google `business_status`, `url_status` 404/410, `permanently_closed`): ≥2 signals auto-set `venues.closed_at`, 1 signal sets `needs_attention`. Every consensus pass stamps `venues.last_refreshed_at`; selector RPC `venues_due_for_refresh(limit)` ranks never-refreshed > broken-url > low-quality > stale. Admin sees sources + per-field confidence + closure flags in the triage detail panel (`src/components/admin/triage/TriageDetailPanel.tsx`). Follow-ups (deferred): free `source-wikidata-venue` to add a cheap voter; per-venue targeted detail re-fetch driven by `venues_due_for_refresh`.
+
 **Payments:** Stripe via `create-checkout-session` + `stripe-webhook` edge functions.
 
 **User submissions (Chrome extension):** `extension/` (MV3, React 19) extracts venues/events/hotels/marketplace/news from any webpage via JSON-LD/microdata/OpenGraph/DOM heuristics. `workers/submit/` (CF Worker) verifies user Supabase JWTs and stages into the same `ingestion_staging` table the scraper uses, with `source_type='user_submission'` — submissions flow through the existing normalize → dedupe → quality-score → review-gate → commit pipeline. Submitter columns + RLS added via migration `002_user_submissions`.
@@ -56,9 +58,9 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 190
+- **Edge functions:** 191
 - **Edge functions:** 189
-- **Migrations:** 404
+- **Migrations:** 410
 - **Edge functions:** 189
 - **Migrations:** 401
 - **Edge functions:** 185

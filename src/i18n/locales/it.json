@@ -77,64 +77,64 @@
       "resources": "Esplora risorse…",
       "personalities": "Incontra personalità…"
     },
-    "trending": "[IT] Trending",
-    "browse": "[IT] Browse",
-    "recentSearches": "[IT] Recent searches",
-    "clearRecent": "[IT] Clear recent searches",
-    "savedLabel": "[IT] Saved",
-    "savedSearches": "[IT] Saved searches",
-    "saveThisSearch": "[IT] Save this search",
-    "namePlaceholder": "[IT] Name…",
-    "noSavedYet": "[IT] No saved searches yet.",
-    "loadMore": "[IT] Load more",
-    "loading": "[IT] Loading…",
-    "searchForQ": "[IT] Search for \"{{q}}\"",
-    "backToTop": "[IT] Back to top",
-    "openFilters": "[IT] Open filters",
-    "activeFilters": "[IT] Active filters",
-    "clearAll": "[IT] Clear all",
-    "noMappable": "[IT] No mappable results in this view.",
-    "voice": "[IT] Voice search",
-    "stopVoice": "[IT] Stop voice search",
-    "mapView": "[IT] Map view",
-    "seeAllN": "[IT] See all {{n}} →",
-    "removeFilter": "[IT] Remove filter {{label}}",
-    "deleteSavedSearch": "[IT] Delete saved search {{name}}",
-    "tryDifferent": "[IT] Try different keywords or adjust your filters",
-    "unavailable": "[IT] Search is temporarily unavailable",
-    "noResultsFor": "[IT] No results found for \"{{q}}\"",
+    "trending": "Trending",
+    "browse": "Browse",
+    "recentSearches": "Recent searches",
+    "clearRecent": "Clear recent searches",
+    "savedLabel": "Saved",
+    "savedSearches": "Saved searches",
+    "saveThisSearch": "Save this search",
+    "namePlaceholder": "Name…",
+    "noSavedYet": "No saved searches yet.",
+    "loadMore": "Load more",
+    "loading": "Loading…",
+    "searchForQ": "Search for \"{{q}}\"",
+    "backToTop": "Back to top",
+    "openFilters": "Open filters",
+    "activeFilters": "Active filters",
+    "clearAll": "Clear all",
+    "noMappable": "No mappable results in this view.",
+    "voice": "Voice search",
+    "stopVoice": "Stop voice search",
+    "mapView": "Map view",
+    "seeAllN": "See all {{n}} →",
+    "removeFilter": "Remove filter {{label}}",
+    "deleteSavedSearch": "Delete saved search {{name}}",
+    "tryDifferent": "Try different keywords or adjust your filters",
+    "unavailable": "Search is temporarily unavailable",
+    "noResultsFor": "No results found for \"{{q}}\"",
     "scope": {
-      "all": "[IT] All",
-      "venues": "[IT] Venues",
-      "events": "[IT] Events",
-      "marketplace": "[IT] Marketplace",
-      "news": "[IT] News",
-      "people": "[IT] People",
-      "cities": "[IT] Cities",
-      "places": "[IT] Places"
+      "all": "All",
+      "venues": "Venues",
+      "events": "Events",
+      "marketplace": "Marketplace",
+      "news": "News",
+      "people": "People",
+      "cities": "Cities",
+      "places": "Places"
     },
     "quickLinks": {
-      "places": "[IT] Places",
-      "cities": "[IT] Cities",
-      "eventsWeekend": "[IT] Events this weekend",
-      "personalities": "[IT] Personalities",
-      "marketplace": "[IT] Marketplace"
+      "places": "Places",
+      "cities": "Cities",
+      "eventsWeekend": "Events this weekend",
+      "personalities": "Personalities",
+      "marketplace": "Marketplace"
     },
     "kbd": {
-      "navigate": "[IT] Navigate",
-      "select": "[IT] Select",
-      "complete": "[IT] Complete",
-      "close": "[IT] Close"
+      "navigate": "Navigate",
+      "select": "Select",
+      "complete": "Complete",
+      "close": "Close"
     },
-    "nearMeWithRadius": "[IT] Near me ({{km}}km)",
-    "searchThisArea": "[IT] Search this area",
-    "didYouMean": "[IT] Did you mean \"{{q}}\"?",
+    "nearMeWithRadius": "Near me ({{km}}km)",
+    "searchThisArea": "Search this area",
+    "didYouMean": "Did you mean \"{{q}}\"?",
     "boost": {
-      "interest": "[IT] Matches your interests",
-      "recent_tag": "[IT] Recently viewed topic",
-      "home_city": "[IT] In your home city",
-      "recent_city": "[IT] In a city you've explored",
-      "featured": "[IT] Featured"
+      "interest": "Matches your interests",
+      "recent_tag": "Recently viewed topic",
+      "home_city": "In your home city",
+      "recent_city": "In a city you've explored",
+      "featured": "Featured"
     }
   },
   "common": {
@@ -163,7 +163,9 @@
     "done": "Done",
     "unknown": "Unknown",
     "somethingWentWrong": "Something went wrong.",
-    "clear": "Clear"
+    "clear": "Clear",
+    "signIn": "Sign in",
+    "goHome": "Go Home"
   },
   "navigation": {
     "home": "Home",
@@ -222,29 +224,29 @@
       "description": "Crea un itinerario, consulta le informazioni LGBTQ+ per ogni destinazione e tieni tutto in un unico posto.",
       "cta": "Crea il primo viaggio",
       "hero": {
-        "title": "[IT] Plan a trip you'll feel safe on.",
-        "subtitle": "[IT] Three ways to start — pick whichever fits."
+        "title": "Plan a trip you'll feel safe on.",
+        "subtitle": "Three ways to start — pick whichever fits."
       },
       "paths": {
         "scratch": {
-          "title": "[IT] Start from scratch",
-          "description": "[IT] Empty itinerary, your destinations, your pace.",
-          "cta": "[IT] Create trip"
+          "title": "Start from scratch",
+          "description": "Empty itinerary, your destinations, your pace.",
+          "cta": "Create trip"
         },
         "template": {
-          "title": "[IT] Use a template",
-          "description": "[IT] Pre-built itineraries you can fork and edit.",
-          "cta": "[IT] Browse templates"
+          "title": "Use a template",
+          "description": "Pre-built itineraries you can fork and edit.",
+          "cta": "Browse templates"
         },
         "discover": {
-          "title": "[IT] Fork a public trip",
-          "description": "[IT] Real itineraries from other QG travelers.",
-          "cta": "[IT] Open Discover"
+          "title": "Fork a public trip",
+          "description": "Real itineraries from other QG travelers.",
+          "cta": "Open Discover"
         }
       },
-      "discoverEyebrow": "[IT] From real travelers",
-      "discoverTitle": "[IT] Recent public trips",
-      "discoverCta": "[IT] Open Discover"
+      "discoverEyebrow": "From real travelers",
+      "discoverTitle": "Recent public trips",
+      "discoverCta": "Open Discover"
     },
     "filteredEmpty": {
       "title": "Nessun viaggio corrisponde",
@@ -268,7 +270,7 @@
         "active": "Attivi",
         "completed": "Completati",
         "archived": "Archiviati",
-        "saved": "[IT] Saved"
+        "saved": "Saved"
       },
       "sort": {
         "recent": "Aggiornati di recente",
@@ -419,10 +421,10 @@
       "fitAllAria": "Inquadra tutti i luoghi",
       "filterAll": "Tutti i giorni",
       "dayLabel": "Giorno {{number}}",
-      "showAttractions": "[IT] Attractions",
-      "showEvents": "[IT] Events",
-      "suggestedVenue": "[IT] Suggested venue",
-      "eventOn": "[IT] Event · {{date}}"
+      "showAttractions": "Attractions",
+      "showEvents": "Events",
+      "suggestedVenue": "Suggested venue",
+      "eventOn": "Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "Nessuna informazione di sicurezza",
@@ -662,90 +664,90 @@
     "discover": {
       "title": "Scopri luoghi",
       "button": "Esplora mercato",
-      "eyebrow": "[IT] Real travelers",
-      "subtitle": "[IT] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
-      "searchPlaceholder": "[IT] Filter by city…",
-      "aria": "[IT] Discover public trips",
-      "sortAria": "[IT] Sort trips",
-      "viewAria": "[IT] View mode",
-      "filterAria": "[IT] Filter trips",
-      "filtersAria": "[IT] Open filters",
+      "eyebrow": "Real travelers",
+      "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "Filter by city…",
+      "aria": "Discover public trips",
+      "sortAria": "Sort trips",
+      "viewAria": "View mode",
+      "filterAria": "Filter trips",
+      "filtersAria": "Open filters",
       "filters": {
-        "title": "[IT] undefined",
-        "travelerType": "[IT] undefined",
-        "duration": "[IT] undefined",
-        "minEquality": "[IT] undefined",
-        "minEqualityAria": "[IT] undefined",
-        "minEqualityHint": "[IT] undefined",
-        "noMin": "[IT] undefined",
-        "quality": "[IT] undefined",
-        "hasCover": "[IT] undefined",
-        "hasOwnerProfile": "[IT] undefined",
-        "clear": "[IT] undefined"
+        "title": "undefined",
+        "travelerType": "undefined",
+        "duration": "undefined",
+        "minEquality": "undefined",
+        "minEqualityAria": "undefined",
+        "minEqualityHint": "undefined",
+        "noMin": "undefined",
+        "quality": "undefined",
+        "hasCover": "undefined",
+        "hasOwnerProfile": "undefined",
+        "clear": "undefined"
       },
-      "activeCountAria": "[IT] {{count}} active",
+      "activeCountAria": "{{count}} active",
       "view": {
-        "list": "[IT] List view",
-        "map": "[IT] Map view"
+        "list": "List view",
+        "map": "Map view"
       },
       "sort": {
-        "recent": "[IT] Most recent",
-        "trending": "[IT] Trending",
-        "most_places": "[IT] Most places",
-        "longest": "[IT] Longest",
-        "safest": "[IT] Safest"
+        "recent": "Most recent",
+        "trending": "Trending",
+        "most_places": "Most places",
+        "longest": "Longest",
+        "safest": "Safest"
       },
       "filter": {
-        "dated": "[IT] Has dates",
-        "multiday": "[IT] Multi-day",
-        "safe": "[IT] Safe destinations"
+        "dated": "Has dates",
+        "multiday": "Multi-day",
+        "safe": "Safe destinations"
       },
       "travelerType": {
-        "any": "[IT] Any",
-        "solo": "[IT] Solo",
-        "couple": "[IT] Couple",
-        "group": "[IT] Group",
-        "family": "[IT] Family"
+        "any": "Any",
+        "solo": "Solo",
+        "couple": "Couple",
+        "group": "Group",
+        "family": "Family"
       },
       "duration": {
-        "any": "[IT] Any length",
-        "weekend": "[IT] Weekend (1–3 days)",
-        "week": "[IT] Week (4–9 days)",
-        "long": "[IT] Long (10+ days)"
+        "any": "Any length",
+        "weekend": "Weekend (1–3 days)",
+        "week": "Week (4–9 days)",
+        "long": "Long (10+ days)"
       },
       "region": {
-        "europe": "[IT] Europe",
-        "north_america": "[IT] North America",
-        "latin_america": "[IT] Latin America",
-        "asia": "[IT] Asia",
-        "oceania": "[IT] Oceania",
-        "africa": "[IT] Africa",
-        "middle_east": "[IT] Middle East",
-        "other": "[IT] Other"
+        "europe": "Europe",
+        "north_america": "North America",
+        "latin_america": "Latin America",
+        "asia": "Asia",
+        "oceania": "Oceania",
+        "africa": "Africa",
+        "middle_east": "Middle East",
+        "other": "Other"
       },
       "staffPicks": {
-        "eyebrow": "[IT] Staff picks",
-        "title": "[IT] Trips worth copying"
+        "eyebrow": "Staff picks",
+        "title": "Trips worth copying"
       },
-      "all": "[IT] All public trips",
-      "moreInspiration": "[IT] More inspiration",
-      "moreInspirationDescription": "[IT] Few public trips match. Start from a template instead.",
-      "emptyTitle": "[IT] No public trips yet",
-      "emptyFiltered": "[IT] No public trips match that city. Try a different one.",
-      "emptyDescription": "[IT] Be the first — make any of your trips public from the Share dialog.",
-      "anonymous": "[IT] A QG traveler",
-      "placeCount": "[IT] {{count}} places",
-      "fork": "[IT] Fork into my trips",
-      "forkAria": "[IT] Fork this trip",
-      "forking": "[IT] Forking…",
-      "forked": "[IT] Trip forked",
-      "forkedDescription": "[IT] Your copy is ready — edit days and places freely.",
-      "forkError": "[IT] Could not create trip",
-      "inspiredTitle": "[IT] Inspired by: {{title}}",
-      "signalsAria": "[IT] Trip activity",
-      "forkCount": "[IT] {{count}} forks",
-      "saveCount": "[IT] {{count}} saves",
-      "filtersButton": "[IT] Filters"
+      "all": "All public trips",
+      "moreInspiration": "More inspiration",
+      "moreInspirationDescription": "Few public trips match. Start from a template instead.",
+      "emptyTitle": "No public trips yet",
+      "emptyFiltered": "No public trips match that city. Try a different one.",
+      "emptyDescription": "Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "A QG traveler",
+      "placeCount": "{{count}} places",
+      "fork": "Fork into my trips",
+      "forkAria": "Fork this trip",
+      "forking": "Forking…",
+      "forked": "Trip forked",
+      "forkedDescription": "Your copy is ready — edit days and places freely.",
+      "forkError": "Could not create trip",
+      "inspiredTitle": "Inspired by: {{title}}",
+      "signalsAria": "Trip activity",
+      "forkCount": "{{count}} forks",
+      "saveCount": "{{count}} saves",
+      "filtersButton": "Filters"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -870,24 +872,24 @@
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
     },
     "next": {
-      "live": "[IT] Active now",
-      "countdown": "[IT] Coming up",
-      "upcoming": "[IT] Upcoming",
-      "open": "[IT] Open trip",
-      "openLive": "[IT] Open today's plan",
-      "today": "[IT] Today's view"
+      "live": "Active now",
+      "countdown": "Coming up",
+      "upcoming": "Upcoming",
+      "open": "Open trip",
+      "openLive": "Open today's plan",
+      "today": "Today's view"
     },
     "inspired": {
-      "eyebrow": "[IT] Inspired by your trips",
-      "title": "[IT] Public trips you might like",
-      "cta": "[IT] See all"
+      "eyebrow": "Inspired by your trips",
+      "title": "Public trips you might like",
+      "cta": "See all"
     },
     "save": {
-      "save": "[IT] Save",
-      "saved": "[IT] Saved",
-      "saveAria": "[IT] Save trip",
-      "unsaveAria": "[IT] Unsave trip",
-      "error": "[IT] Could not update save"
+      "save": "Save",
+      "saved": "Saved",
+      "saveAria": "Save trip",
+      "unsaveAria": "Unsave trip",
+      "error": "Could not update save"
     }
   },
   "auth": {
@@ -922,7 +924,7 @@
       "pronouns": "Scegli i tuoi pronomi",
       "country": "Opzionale",
       "language": "Scegli la lingua",
-      "passwordMin8": "[IT] At least 8 characters"
+      "passwordMin8": "At least 8 characters"
     },
     "errors": {
       "emailRequired": "L'email è obbligatoria",
@@ -953,8 +955,8 @@
       "termsAria": "Accetta i termini di servizio",
       "privacyAria": "Accetta la privacy policy",
       "ageAria": "Conferma di avere almeno 18 anni",
-      "combined": "[IT] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
-      "combinedAria": "[IT] Accept terms, privacy and confirm 18 or older"
+      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continua con Google",
@@ -975,8 +977,8 @@
         "profile": "Profilo",
         "interests": "Interessi"
       },
-      "blurb": "[IT] Free, takes a minute.",
-      "haveAccountQ": "[IT] Already have an account? Sign in"
+      "blurb": "Free, takes a minute.",
+      "haveAccountQ": "Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "lei",
@@ -1019,16 +1021,16 @@
       "resendIn": "Reinvia tra {{seconds}}s",
       "resent": "Email di verifica inviata. Controlla la posta in arrivo.",
       "backToLogin": "Torna all'accesso",
-      "continue": "[IT] Continue to The Queer Guide",
-      "banner": "[IT] Verify your email to unlock contributions and messaging.",
-      "bannerSent": "[IT] Verification email sent. Check your inbox.",
-      "resendShort": "[IT] Resend",
-      "gateTitle": "[IT] Verify your email first",
-      "gateDescription": "[IT] Confirm your email to contribute or message other members."
+      "continue": "Continue to The Queer Guide",
+      "banner": "Verify your email to unlock contributions and messaging.",
+      "bannerSent": "Verification email sent. Check your inbox.",
+      "resendShort": "Resend",
+      "gateTitle": "Verify your email first",
+      "gateDescription": "Confirm your email to contribute or message other members."
     },
     "required": {
-      "title": "[IT] Sign in required",
-      "description": "[IT] Please sign in to continue."
+      "title": "Sign in required",
+      "description": "Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1073,7 +1075,115 @@
     "review": "Scrivi una recensione",
     "photos": "Foto",
     "amenities": "Servizi",
-    "services": "Servizi offerti"
+    "services": "Servizi offerti",
+    "rails": {
+      "nearYou": {
+        "title": "Vicino a te",
+        "subtitle": "Luoghi entro 30 km, ordinati per distanza."
+      },
+      "forYou": {
+        "title": "Per i tuoi gusti",
+        "subtitle": "Scelti in base ai tuoi interessi e visite."
+      },
+      "forYouPromo": {
+        "label": "Personalizza i tuoi luoghi",
+        "kicker": "Per i tuoi gusti",
+        "title": "Dicci cosa ami.",
+        "body": "Accedi e rispondi a quattro brevi domande — ordineremo i luoghi in base ai tuoi interessi.",
+        "cta": "Inizia"
+      },
+      "new": {
+        "title": "Novità del mese",
+        "subtitle": "Aggiunte recenti alla guida."
+      },
+      "topInCity": {
+        "title": "Top a {{city}}",
+        "subtitle": "Popolari ora nella community."
+      },
+      "editors": {
+        "title": "Scelti dalla redazione",
+        "subtitle": "Selezione curata."
+      }
+    },
+    "hero": {
+      "kicker": "In evidenza questa settimana",
+      "cta": "Scopri di più",
+      "label": "Luogo in evidenza"
+    },
+    "personalStrip": {
+      "title": "{{name}} · Livello {{level}}",
+      "label": "Le tue statistiche",
+      "passport": "Vedi passaporto",
+      "points": "Punti",
+      "venues": "Luoghi",
+      "streak": "Giorni di fila",
+      "checkins": "Check-in",
+      "nextLevel": "Prossimo: {{name}}"
+    },
+    "results": {
+      "title": "Luoghi corrispondenti"
+    },
+    "quickFilters": {
+      "openNow": "Aperto ora",
+      "radius": "Distanza",
+      "radiusKm": "Entro {{km}} km",
+      "anyDistance": "Qualsiasi distanza",
+      "price": "Prezzo",
+      "anyPrice": "Qualsiasi prezzo",
+      "clear": "Cancella"
+    },
+    "leaderboard": {
+      "title": "Classifica",
+      "subtitle": "Top esploratori per luoghi visitati.",
+      "tabs": {
+        "global": "Globale",
+        "city": "A {{city}}"
+      },
+      "empty": "Ancora nessun dato.",
+      "venuesShort": "luoghi",
+      "widget": {
+        "label": "Top esploratori",
+        "titleCity": "Top a {{city}}",
+        "titleGlobal": "Top esploratori",
+        "viewAll": "Vedi tutti",
+        "anon": "Esploratore anonimo",
+        "you": "Tu"
+      }
+    },
+    "passport": {
+      "title": "Il tuo passaporto",
+      "subtitle": "Ogni luogo visitato e ogni badge guadagnato.",
+      "achievements": "Obiettivi",
+      "earned": "Ottenuto",
+      "locked": "+{{pts}} pt",
+      "visited": "{{count}} luoghi visitati",
+      "empty": "Nessun check-in.",
+      "signInPrompt": "Accedi per vedere il passaporto."
+    },
+    "onboarding": {
+      "progress": "Passo {{current}} di {{total}}",
+      "step1": {
+        "title": "Che tipo di luoghi ami?"
+      },
+      "step2": {
+        "title": "A quali community appartieni?"
+      },
+      "step3": {
+        "title": "Quali atmosfere cerchi?"
+      },
+      "step4": {
+        "title": "Dove passi più tempo?"
+      },
+      "cityPlaceholder": "Digita la tua città",
+      "citySelected": "Selezionata: {{city}}",
+      "finish": "Finisci",
+      "saveError": "Salvataggio fallito",
+      "saveSuccess": "Preferenze salvate"
+    },
+    "achievementToast": {
+      "unlocked": "Sbloccato: {{name}}",
+      "fallback": "Nuovo obiettivo raggiunto"
+    }
   },
   "marketplace": {
     "title": "Mercato",
@@ -1233,76 +1343,76 @@
       "relationships": "Relazioni",
       "women": "Donne"
     },
-    "quick_exit": "[IT] Quick exit",
-    "quick_exit_aria": "[IT] Leave this page immediately (ESC)",
-    "hide_screen": "[IT] Hide screen",
-    "reveal_aria": "[IT] Click anywhere to show the page again",
-    "hidden_hint": "[IT] Page hidden. Click anywhere to show again.",
-    "hero_label": "[IT] Recommended right now",
-    "expect_title": "[IT] What happens when you call",
-    "expect_short": "[IT] What to expect",
-    "expect_1": "[IT] You'll hear a short greeting. You don't have to give your name.",
-    "expect_2": "[IT] You can hang up at any time. You can call back as often as you need.",
-    "expect_3": "[IT] Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
-    "expect_4": "[IT] If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "[IT] While you wait",
-    "self_help_title": "[IT] Steady yourself",
-    "self_help_desc": "[IT] Short techniques you can use while you wait, or instead of a call if you're not ready.",
-    "breathing_title": "[IT] 4-7-8 breathing",
-    "breathing_1": "[IT] Breathe in through your nose for 4 seconds.",
-    "breathing_2": "[IT] Hold your breath for 7 seconds.",
-    "breathing_3": "[IT] Breathe out through your mouth for 8 seconds.",
-    "breathing_4": "[IT] Repeat 4 times.",
-    "grounding_title": "[IT] 5-4-3-2-1 grounding",
-    "grounding_intro": "[IT] Name, out loud or in your head:",
-    "grounding_5": "[IT] 5 things you can see",
-    "grounding_4": "[IT] 4 things you can touch",
-    "grounding_3": "[IT] 3 things you can hear",
-    "grounding_2": "[IT] 2 things you can smell",
-    "grounding_1": "[IT] 1 thing you can taste",
-    "safety_plan_title": "[IT] Safety plan",
-    "safety_plan_desc": "[IT] A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
-    "safety_plan_link": "[IT] Open template (Stanley-Brown)",
-    "report": "[IT] Report",
-    "report_aria": "[IT] Report a problem with this hotline",
-    "report_title": "[IT] Report this hotline",
-    "report_desc": "[IT] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
-    "report_reason": "[IT] Reason",
-    "report_detail": "[IT] Details (optional)",
-    "report_submit": "[IT] Submit report",
-    "report_thanks": "[IT] Thank you. We'll review it.",
-    "filter_intersection": "[IT] Population",
-    "filter_intersection_all": "[IT] All",
-    "badge_reports_police": "[IT] May report to police",
-    "operator": "[IT] Operated by",
-    "verified_on": "[IT] Verified",
+    "quick_exit": "Quick exit",
+    "quick_exit_aria": "Leave this page immediately (ESC)",
+    "hide_screen": "Hide screen",
+    "reveal_aria": "Click anywhere to show the page again",
+    "hidden_hint": "Page hidden. Click anywhere to show again.",
+    "hero_label": "Recommended right now",
+    "expect_title": "What happens when you call",
+    "expect_short": "What to expect",
+    "expect_1": "You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
+    "self_help_trigger": "While you wait",
+    "self_help_title": "Steady yourself",
+    "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "breathing_title": "4-7-8 breathing",
+    "breathing_1": "Breathe in through your nose for 4 seconds.",
+    "breathing_2": "Hold your breath for 7 seconds.",
+    "breathing_3": "Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "Repeat 4 times.",
+    "grounding_title": "5-4-3-2-1 grounding",
+    "grounding_intro": "Name, out loud or in your head:",
+    "grounding_5": "5 things you can see",
+    "grounding_4": "4 things you can touch",
+    "grounding_3": "3 things you can hear",
+    "grounding_2": "2 things you can smell",
+    "grounding_1": "1 thing you can taste",
+    "safety_plan_title": "Safety plan",
+    "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "Open template (Stanley-Brown)",
+    "report": "Report",
+    "report_aria": "Report a problem with this hotline",
+    "report_title": "Report this hotline",
+    "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_reason": "Reason",
+    "report_detail": "Details (optional)",
+    "report_submit": "Submit report",
+    "report_thanks": "Thank you. We'll review it.",
+    "filter_intersection": "Population",
+    "filter_intersection_all": "All",
+    "badge_reports_police": "May report to police",
+    "operator": "Operated by",
+    "verified_on": "Verified",
     "affiliation": {
-      "religious": "[IT] religious",
-      "state": "[IT] state",
-      "ngo": "[IT] NGO",
-      "secular": "[IT] secular"
+      "religious": "religious",
+      "state": "state",
+      "ngo": "NGO",
+      "secular": "secular"
     },
     "channel": {
-      "phone": "[IT] Call",
-      "sms": "[IT] Text",
-      "whatsapp": "[IT] WhatsApp",
-      "chat": "[IT] Chat",
-      "email": "[IT] Email"
+      "phone": "Call",
+      "sms": "Text",
+      "whatsapp": "WhatsApp",
+      "chat": "Chat",
+      "email": "Email"
     },
     "intersection": {
-      "trans-youth": "[IT] Trans youth",
-      "asylum": "[IT] Asylum seekers",
-      "sex-work": "[IT] Sex workers",
-      "hiv": "[IT] HIV+",
-      "elders": "[IT] Elders",
-      "deaf": "[IT] Deaf / HoH"
+      "trans-youth": "Trans youth",
+      "asylum": "Asylum seekers",
+      "sex-work": "Sex workers",
+      "hiv": "HIV+",
+      "elders": "Elders",
+      "deaf": "Deaf / HoH"
     },
     "report_options": {
-      "disconnected": "[IT] Number disconnected / no answer",
-      "wrong_number": "[IT] Wrong number",
-      "closed": "[IT] Service has shut down",
-      "unsafe": "[IT] Unsafe / harmful experience",
-      "other": "[IT] Other"
+      "disconnected": "Number disconnected / no answer",
+      "wrong_number": "Wrong number",
+      "closed": "Service has shut down",
+      "unsafe": "Unsafe / harmful experience",
+      "other": "Other"
     }
   },
   "sos": {
@@ -1361,23 +1471,23 @@
     "news": {
       "title": "Ultime notizie"
     },
-    "discover": "[IT] Discover",
-    "destinationsTitle": "[IT] Where the scene lives.",
-    "destinationsSubtitle": "[IT] Six cities our community keeps coming back to.",
-    "allCities": "[IT] All cities",
-    "exploreCity": "[IT] Explore",
-    "browseEyebrow": "[IT] The index",
-    "browseTitle": "[IT] Browse everything.",
-    "browseSections": "[IT] sections",
+    "discover": "Discover",
+    "destinationsTitle": "Where the scene lives.",
+    "destinationsSubtitle": "Six cities our community keeps coming back to.",
+    "allCities": "All cities",
+    "exploreCity": "Explore",
+    "browseEyebrow": "The index",
+    "browseTitle": "Browse everything.",
+    "browseSections": "sections",
     "browse": {
       "count": {
-        "venues": "[IT] venues",
-        "events": "[IT] events",
-        "cities": "[IT] cities",
-        "hotels": "[IT] hotels",
-        "marketplace": "[IT] products",
-        "groups": "[IT] groups",
-        "resources": "[IT] resources"
+        "venues": "venues",
+        "events": "events",
+        "cities": "cities",
+        "hotels": "hotels",
+        "marketplace": "products",
+        "groups": "groups",
+        "resources": "resources"
       }
     }
   },
@@ -1425,7 +1535,7 @@
       "bookings": "Prenotazioni",
       "tripInbox": "Posta viaggi",
       "extension": "Estensione Browser",
-      "footprint": "[IT] Footprint"
+      "footprint": "Footprint"
     },
     "modes": {
       "dating": "In cerca d'amore",
@@ -1442,9 +1552,9 @@
       "legal": "Note legali",
       "contact": "Contatti"
     },
-    "signUp": "[IT] Sign up",
-    "navigation": "[IT] Navigation",
-    "signIn": "[IT] Sign in"
+    "signUp": "Sign up",
+    "navigation": "Navigation",
+    "signIn": "Sign in"
   },
   "pages": {
     "venues": {
@@ -1467,7 +1577,8 @@
       "filteredEmpty": {
         "title": "Nessun locale corrisponde ai tuoi filtri",
         "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
-      }
+      },
+      "sortRelevance": "Per te"
     },
     "venueDetail": {
       "loadFailed": "Impossibile caricare i dettagli del locale.",
@@ -1542,50 +1653,50 @@
         "title": "Nessun evento corrisponde ai tuoi filtri",
         "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
       },
-      "prideSubtype": "[IT] Pride type",
-      "mapView": "[IT] Map view",
+      "prideSubtype": "Pride type",
+      "mapView": "Map view",
       "preset": {
-        "label": "[IT] Quick filters",
-        "thisWeekend": "[IT] This weekend",
-        "nearMe": "[IT] Near me",
-        "pride": "[IT] Pride season",
-        "thisMonth": "[IT] This month",
-        "free": "[IT] Free",
-        "featured": "[IT] Featured",
-        "tonight": "[IT] Tonight",
-        "next7Days": "[IT] Next 7 days",
-        "newThisWeek": "[IT] New this week"
+        "label": "Quick filters",
+        "thisWeekend": "This weekend",
+        "nearMe": "Near me",
+        "pride": "Pride season",
+        "thisMonth": "This month",
+        "free": "Free",
+        "featured": "Featured",
+        "tonight": "Tonight",
+        "next7Days": "Next 7 days",
+        "newThisWeek": "New this week"
       },
       "rail": {
-        "featured": "[IT] Featured this week",
-        "featuredSubtitle": "[IT] Editor picks"
+        "featured": "Featured this week",
+        "featuredSubtitle": "Editor picks"
       },
       "smartEmpty": {
-        "title": "[IT] No events match your filters",
-        "body": "[IT] Try one of the suggestions below, or clear filters to browse everything.",
-        "clearCity": "[IT] Drop \"{{city}}\" filter",
-        "clearDate": "[IT] Drop date filter",
-        "viewAll": "[IT] View all upcoming events",
-        "sameCityHeader": "[IT] Try in {{city}} on other dates",
-        "otherCitiesHeader": "[IT] Try other cities in your date range",
-        "fallbackHeader": "[IT] Other upcoming events"
+        "title": "No events match your filters",
+        "body": "Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "Drop \"{{city}}\" filter",
+        "clearDate": "Drop date filter",
+        "viewAll": "View all upcoming events",
+        "sameCityHeader": "Try in {{city}} on other dates",
+        "otherCitiesHeader": "Try other cities in your date range",
+        "fallbackHeader": "Other upcoming events"
       },
       "spotlight": {
-        "eyebrow": "[IT] Spotlight",
-        "happeningNow": "[IT] Happening now",
-        "tomorrow": "[IT] Starts tomorrow",
-        "inDays_one": "[IT] Starts in {{count}} day",
-        "inDays_other": "[IT] Starts in {{count}} days",
-        "nearbyCount_one": "[IT] {{count}} event in {{city}}",
-        "nearbyCount_other": "[IT] {{count}} events in {{city}}"
+        "eyebrow": "Spotlight",
+        "happeningNow": "Happening now",
+        "tomorrow": "Starts tomorrow",
+        "inDays_one": "Starts in {{count}} day",
+        "inDays_other": "Starts in {{count}} days",
+        "nearbyCount_one": "{{count}} event in {{city}}",
+        "nearbyCount_other": "{{count}} events in {{city}}"
       },
-      "sortLabel": "[IT] Sort events",
+      "sortLabel": "Sort events",
       "sort": {
-        "dateAsc": "[IT] Soonest first",
-        "dateDesc": "[IT] Latest first",
-        "distance": "[IT] Closest to me",
-        "popularity": "[IT] Most popular",
-        "recent": "[IT] Recently added"
+        "dateAsc": "Soonest first",
+        "dateDesc": "Latest first",
+        "distance": "Closest to me",
+        "popularity": "Most popular",
+        "recent": "Recently added"
       },
       "searchLabel": "Cerca eventi",
       "searchPlaceholder": "Cerca eventi, città, organizzatori",
@@ -1597,23 +1708,24 @@
       "resultsNear_other": "{{count}} eventi vicino a {{city}}",
       "showWorldwide": "Mostra in tutto il mondo",
       "timelineView": "Vista cronologica",
-      "accessibility": "[IT] Accessibility",
-      "accessibilityPlaceholder": "[IT] Any",
-      "targetGroups": "[IT] Audience",
-      "targetGroupsPlaceholder": "[IT] Any",
-      "languages": "[IT] Language",
-      "languagesPlaceholder": "[IT] Any",
-      "share": "[IT] Share",
-      "shareCopied": "[IT] Copied",
-      "shareFilters": "[IT] Copy share link",
-      "shareFiltersHint": "[IT] Copy a link to these filters",
-      "ageRestriction": "[IT] Age restriction",
-      "ageAny": "[IT] Any",
-      "ageAllAges": "[IT] All ages",
-      "age18Plus": "[IT] 18+",
-      "age21Plus": "[IT] 21+",
-      "filterAge": "[IT] Age: {{value}}",
-      "clearFilterAge": "[IT] Clear age filter"
+      "accessibility": "Accessibility",
+      "accessibilityPlaceholder": "Any",
+      "targetGroups": "Audience",
+      "targetGroupsPlaceholder": "Any",
+      "languages": "Language",
+      "languagesPlaceholder": "Any",
+      "share": "Share",
+      "shareCopied": "Copied",
+      "shareFilters": "Copy share link",
+      "shareFiltersHint": "Copy a link to these filters",
+      "ageRestriction": "Age restriction",
+      "ageAny": "Any",
+      "ageAllAges": "All ages",
+      "age18Plus": "18+",
+      "age21Plus": "21+",
+      "filterAge": "Age: {{value}}",
+      "clearFilterAge": "Clear age filter",
+      "calendarView": "Vista calendario"
     },
     "eventDetail": {
       "loadFailed": "Impossibile caricare i dettagli dell'evento.",
@@ -1676,21 +1788,21 @@
       "exploreCta": "Destinazioni LGBTQ+ friendly",
       "exploreDescription": "Città e paesi con info di sicurezza e guide.",
       "hotels": {
-        "typeLabel": "[IT] Type",
-        "priceMin": "[IT] Min €",
-        "priceMax": "[IT] Max €",
-        "priceUnavailable": "[IT] Price on request",
-        "clearFilters": "[IT] Clear filters",
-        "noResultsWithFilters": "[IT] No hotels match your filters in {{city}}.",
+        "typeLabel": "Type",
+        "priceMin": "Min €",
+        "priceMax": "Max €",
+        "priceUnavailable": "Price on request",
+        "clearFilters": "Clear filters",
+        "noResultsWithFilters": "No hotels match your filters in {{city}}.",
         "type": {
-          "all": "[IT] Any type",
-          "hotel": "[IT] Hotel",
-          "boutique": "[IT] Boutique Hotel",
-          "bnb": "[IT] B&B",
-          "hostel": "[IT] Hostel",
-          "guesthouse": "[IT] Guesthouse",
-          "apartment": "[IT] Apartment",
-          "resort": "[IT] Resort"
+          "all": "Any type",
+          "hotel": "Hotel",
+          "boutique": "Boutique Hotel",
+          "bnb": "B&B",
+          "hostel": "Hostel",
+          "guesthouse": "Guesthouse",
+          "apartment": "Apartment",
+          "resort": "Resort"
         }
       },
       "hero": {
@@ -1751,8 +1863,8 @@
       "signInList": "Crea un account gratuito per registrare la tua attività.",
       "signInFavorites": "Accedi per salvare i preferiti.",
       "loadError": "Qualcosa è andato storto durante il caricamento del mercato. Riprova.",
-      "emptyFiltersTitle": "[IT] No listings match these filters.",
-      "emptyFiltersDescription": "[IT] Try clearing filters or broadening your search."
+      "emptyFiltersTitle": "No listings match these filters.",
+      "emptyFiltersDescription": "Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Articolo non trovato",
@@ -1792,20 +1904,20 @@
       "emptyDescription": "Torna più tardi.",
       "previous": "Precedente",
       "next": "Successivo",
-      "filteredEmptyTitle": "[IT] No news matches your filters.",
-      "filteredEmptyDescription": "[IT] Reset filters or try another topic.",
-      "resetFilters": "[IT] Reset filters",
-      "filterSearch": "[IT] Search",
-      "filterCategory": "[IT] Category",
-      "filterSource": "[IT] Source",
-      "filterFeatured": "[IT] Featured only",
-      "trendingTags": "[IT] Trending",
-      "minRead": "[IT] min read",
-      "share": "[IT] Share",
-      "linkCopied": "[IT] Link copied",
-      "density": "[IT] Density",
-      "comfortable": "[IT] Comfortable",
-      "compact": "[IT] Compact"
+      "filteredEmptyTitle": "No news matches your filters.",
+      "filteredEmptyDescription": "Reset filters or try another topic.",
+      "resetFilters": "Reset filters",
+      "filterSearch": "Search",
+      "filterCategory": "Category",
+      "filterSource": "Source",
+      "filterFeatured": "Featured only",
+      "trendingTags": "Trending",
+      "minRead": "min read",
+      "share": "Share",
+      "linkCopied": "Link copied",
+      "density": "Density",
+      "comfortable": "Comfortable",
+      "compact": "Compact"
     },
     "newsDetail": {
       "notFound": "Articolo non trovato",
@@ -1834,19 +1946,19 @@
       "emptyDescription": "Prova a rimuovere un filtro o a cercare un altro nome.",
       "loadingMore": "Caricamento in corso…",
       "view": {
-        "grid": "[IT] Grid",
-        "timeline": "[IT] Timeline",
-        "map": "[IT] Map"
+        "grid": "Grid",
+        "timeline": "Timeline",
+        "map": "Map"
       },
       "editorial": {
-        "bornThisWeek": "[IT] Born this week",
-        "diedThisWeek": "[IT] Remembered this week",
-        "browseByEra": "[IT] Browse by era",
-        "browseByField": "[IT] Browse by field"
+        "bornThisWeek": "Born this week",
+        "diedThisWeek": "Remembered this week",
+        "browseByEra": "Browse by era",
+        "browseByField": "Browse by field"
       },
       "detail": {
-        "inTheNews": "[IT] In the news",
-        "relatedEvents": "[IT] Related events"
+        "inTheNews": "In the news",
+        "relatedEvents": "Related events"
       }
     },
     "groups": {
@@ -1890,7 +2002,15 @@
       "popular": "Popolare",
       "emptyTitle": "Il tuo feed è vuoto",
       "emptyDescription": "Segui persone e gruppi per vedere i loro post qui.",
-      "createFirstPost": "Crea il primo post"
+      "createFirstPost": "Crea il primo post",
+      "subtitle": "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
+      "signInToPost": "Sign in to share posts, like, and comment.",
+      "searchEmptyTitle": "No posts match your search",
+      "searchEmptyDescription": "Try a different keyword or clear the search to see everything.",
+      "clearSearch": "Clear search",
+      "loadMore": "Load more",
+      "errorTitle": "We couldn't load the feed",
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
     },
     "notFound": {
       "title": "Pagina non trovata",
@@ -2119,95 +2239,95 @@
     "suggestCta": "Suggerisci una città"
   },
   "pride": {
-    "eyebrow": "[IT] Pride Calendar",
-    "export": "[IT] Export .ics",
-    "loading": "[IT] Loading…",
-    "previousYear": "[IT] Previous year",
-    "nextYear": "[IT] Next year",
-    "summary": "[IT] {{count}} pride · {{countries}} countries · {{cities}} cities",
-    "summary_other": "[IT] {{count}} prides · {{countries}} countries · {{cities}} cities",
-    "noMatches": "[IT] No prides match your filters.",
-    "clearFilters": "[IT] Clear filters",
-    "estimated": "[IT] Date estimated",
-    "inTripWindow": "[IT] In your trip window",
-    "featured": "[IT] Featured",
+    "eyebrow": "Pride Calendar",
+    "export": "Export .ics",
+    "loading": "Loading…",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
+    "summary": "{{count}} pride · {{countries}} countries · {{cities}} cities",
+    "summary_other": "{{count}} prides · {{countries}} countries · {{cities}} cities",
+    "noMatches": "No prides match your filters.",
+    "clearFilters": "Clear filters",
+    "estimated": "Date estimated",
+    "inTripWindow": "In your trip window",
+    "featured": "Featured",
     "filters": {
-      "aria": "[IT] Pride filters",
-      "searchPlaceholder": "[IT] Search prides, cities, countries…",
-      "searchAria": "[IT] Search prides",
-      "featured": "[IT] Featured",
-      "verified": "[IT] Confirmed dates",
-      "clearAll": "[IT] Clear all",
-      "month": "[IT] Month",
-      "region": "[IT] Region",
-      "country": "[IT] Country"
+      "aria": "Pride filters",
+      "searchPlaceholder": "Search prides, cities, countries…",
+      "searchAria": "Search prides",
+      "featured": "Featured",
+      "verified": "Confirmed dates",
+      "clearAll": "Clear all",
+      "month": "Month",
+      "region": "Region",
+      "country": "Country"
     },
     "continents": {
-      "Europe": "[IT] Europe",
-      "Americas": "[IT] Americas",
-      "Oceania": "[IT] Oceania",
-      "Asia": "[IT] Asia",
-      "Africa": "[IT] Africa",
-      "Other": "[IT] Other"
+      "Europe": "Europe",
+      "Americas": "Americas",
+      "Oceania": "Oceania",
+      "Asia": "Asia",
+      "Africa": "Africa",
+      "Other": "Other"
     },
     "timeline": {
-      "aria": "[IT] Pride events timeline",
-      "srTitle": "[IT] Pride timeline",
-      "today": "[IT] Today",
-      "helper": "[IT] {{count}} prides in {{year}} · click a row to select · solid dots are featured"
+      "aria": "Pride events timeline",
+      "srTitle": "Pride timeline",
+      "today": "Today",
+      "helper": "{{count}} prides in {{year}} · click a row to select · solid dots are featured"
     },
     "upNext": {
-      "title": "[IT] Up next",
-      "subtitle": "[IT] Soonest first",
-      "past": "[IT] Past",
-      "today": "[IT] Today",
-      "tomorrow": "[IT] Tomorrow",
-      "inDays": "[IT] In {{count}} days",
-      "inWeeks": "[IT] In {{count}} weeks",
-      "inMonths": "[IT] In {{count}} months",
-      "inYears": "[IT] In {{count}}y"
+      "title": "Up next",
+      "subtitle": "Soonest first",
+      "past": "Past",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "inDays": "In {{count}} days",
+      "inWeeks": "In {{count}} weeks",
+      "inMonths": "In {{count}} months",
+      "inYears": "In {{count}}y"
     },
     "spotlight": {
-      "eyebrow": "[IT] Spotlight",
-      "dismiss": "[IT] Dismiss",
-      "startsIn": "[IT] Starts in {{count}} day",
-      "startsIn_other": "[IT] Starts in {{count}} days",
-      "today": "[IT] Happening today",
-      "endedDaysAgo": "[IT] Ended {{count}} day ago",
-      "endedDaysAgo_other": "[IT] Ended {{count}} days ago",
-      "viewPride": "[IT] View pride",
-      "addToTrip": "[IT] Add to trip",
-      "signInToAdd": "[IT] Sign in to add to trip",
-      "showOnMap": "[IT] Show on map",
-      "venuesInCity": "[IT] Queer venues in {{city}}"
+      "eyebrow": "Spotlight",
+      "dismiss": "Dismiss",
+      "startsIn": "Starts in {{count}} day",
+      "startsIn_other": "Starts in {{count}} days",
+      "today": "Happening today",
+      "endedDaysAgo": "Ended {{count}} day ago",
+      "endedDaysAgo_other": "Ended {{count}} days ago",
+      "viewPride": "View pride",
+      "addToTrip": "Add to trip",
+      "signInToAdd": "Sign in to add to trip",
+      "showOnMap": "Show on map",
+      "venuesInCity": "Queer venues in {{city}}"
     },
     "map": {
-      "title": "[IT] World map",
-      "aria": "[IT] Pride events world map",
-      "popupView": "[IT] View pride"
+      "title": "World map",
+      "aria": "Pride events world map",
+      "popupView": "View pride"
     },
     "trips": {
-      "title": "[IT] Pride trip ideas",
-      "subtitle": "[IT] Up to 4 prides · within 21 days · <4000 km",
-      "meta": "[IT] {{count}} prides · {{days}} days",
-      "metaWithKm": "[IT] {{count}} prides · {{days}} days · {{km}} km",
-      "buildTrip": "[IT] Build this trip",
-      "featured": "[IT] Featured"
+      "title": "Pride trip ideas",
+      "subtitle": "Up to 4 prides · within 21 days · <4000 km",
+      "meta": "{{count}} prides · {{days}} days",
+      "metaWithKm": "{{count}} prides · {{days}} days · {{km}} km",
+      "buildTrip": "Build this trip",
+      "featured": "Featured"
     },
     "table": {
-      "title": "[IT] All prides",
-      "count": "[IT] {{count}} pride",
-      "count_other": "[IT] {{count}} prides",
-      "when": "[IT] When",
-      "pride": "[IT] Pride",
-      "location": "[IT] Location",
-      "region": "[IT] Region",
-      "estimated": "[IT] Estimated"
+      "title": "All prides",
+      "count": "{{count}} pride",
+      "count_other": "{{count}} prides",
+      "when": "When",
+      "pride": "Pride",
+      "location": "Location",
+      "region": "Region",
+      "estimated": "Estimated"
     },
     "card": {
-      "view": "[IT] View",
-      "addToTrip": "[IT] Add to trip",
-      "signIn": "[IT] Sign in"
+      "view": "View",
+      "addToTrip": "Add to trip",
+      "signIn": "Sign in"
     }
   }
 }

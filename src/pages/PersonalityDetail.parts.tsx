@@ -361,10 +361,10 @@ function RelatedContent({ personality }: { personality: Personality }) {
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium line-clamp-2">{e.title}</p>
-                      {e.start_at && (
+                      {e.start_date && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          <time dateTime={e.start_at}>
-                            {new Date(e.start_at).toLocaleDateString(undefined, {
+                          <time dateTime={e.start_date}>
+                            {new Date(e.start_date).toLocaleDateString(undefined, {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
@@ -396,7 +396,11 @@ export function PersonalityOverview({
   return (
     <ScrollReveal direction="up">
       <div className="flex flex-col gap-6 mt-4">
-        {personality.description && (
+        {/* The short `description` is a Wikidata-style one-liner (e.g. "Canadian actor
+            (born 1987)") that duplicates the profession, nationality and birth year already
+            shown in the hero and sidebar. Only surface it as a standalone card when there is
+            no richer `bio` to supersede it. */}
+        {personality.description && !personality.bio && (
           <Card>
             <CardHeader>
               <CardTitle>About</CardTitle>
@@ -512,11 +516,9 @@ export function PersonalityOverview({
 
 export function PersonalitySidebar({
   personality,
-  countryId,
   onTagClick,
 }: {
   personality: Personality;
-  countryId: string | null;
   onTagClick: (tag: string) => void;
 }) {
   return (
@@ -563,38 +565,10 @@ export function PersonalitySidebar({
                 </>
               );
             })()}
-            {personality.nationality && (
-              <div className="flex items-center gap-4">
-                <MapPin size={16} className="text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Nationality</p>
-                  {countryId ? (
-                    <LocalizedLink
-                      to={`/country/${countryId}`}
-                      className="font-medium text-primary no-underline hover:underline"
-                    >
-                      {personality.nationality}
-                    </LocalizedLink>
-                  ) : (
-                    <p className="font-medium">{personality.nationality}</p>
-                  )}
-                </div>
-              </div>
-            )}
-            {personality.profession && (
-              <div className="flex items-center gap-4">
-                <Briefcase size={16} className="text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Profession</p>
-                  <LocalizedLink
-                    to={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
-                    className="font-medium text-primary no-underline hover:underline"
-                  >
-                    {personality.profession}
-                  </LocalizedLink>
-                </div>
-              </div>
-            )}
+            {/* Nationality and Profession are intentionally omitted here — both are shown
+                prominently in the hero. Repeating them in this fact box was the source of the
+                "actor three times / Canada twice" redundancy. The sidebar keeps only the
+                date/place facts the hero doesn't carry. */}
             {personality.birth_place && (() => {
               const p = personality as PersonalityWithBirthCity;
               const city = p.birth_city ?? null;
@@ -609,9 +583,17 @@ export function PersonalitySidebar({
                 currentCountry: city?.country?.name ?? null,
                 locale: 'de',
               });
-              const display = resolved.country
-                ? `${resolved.name ?? p.birth_place}, ${resolved.country}`
-                : (resolved.name ?? p.birth_place);
+              // Drop the country suffix when it just repeats the nationality already shown in
+              // the hero (e.g. nationality "Canada" + birth place "Halifax, Canada").
+              const countryMatchesNationality =
+                resolved.country &&
+                personality.nationality &&
+                resolved.country.trim().toLowerCase() ===
+                  personality.nationality.trim().toLowerCase();
+              const display =
+                resolved.country && !countryMatchesNationality
+                  ? `${resolved.name ?? p.birth_place}, ${resolved.country}`
+                  : (resolved.name ?? p.birth_place);
               const today =
                 resolved.historical && city?.name
                   ? `heute ${city.name}${city.country?.name ? ', ' + city.country.name : ''}`
