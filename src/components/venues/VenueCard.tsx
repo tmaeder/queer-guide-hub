@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { Card } from '@/components/ui/card';
+import { Image } from '@/components/ui/Image';
 import { MapPin, BadgeCheck } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -7,7 +8,6 @@ import { FavoriteButton } from '@/components/ui/favorite-button';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
@@ -113,18 +113,14 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
         >
           <CardHoverEffect>
             <Card hoverable className="group overflow-hidden">
-              <div className="relative aspect-[16/10] overflow-hidden bg-muted rounded-t-container">
-                <img
-                  src={venueImage ?? getRandomFallbackImage()}
-                  alt={venue.name}
-                  role="presentation"
-                  loading="lazy"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
-                  className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
-                />
-
+              <Image
+                src={venueImage}
+                alt={venue.name}
+                aspect="card"
+                imageRole="cover"
+                fallbackEntityType="venue"
+                fallbackKey={venue.id}
+              >
                 {overlay && (
                   <div
                     className={
@@ -162,7 +158,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                     category: venue.category ?? null,
                   }}
                 />
-              </div>
+              </Image>
 
               <div className="p-4">
                 <div className="flex items-baseline gap-2 min-w-0">

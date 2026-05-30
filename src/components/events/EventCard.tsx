@@ -15,7 +15,7 @@ import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { rangesOverlap } from '@/components/trips/tripOverlap';
 import { isMeaningfulTag } from '@/utils/eventText';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { Image } from '@/components/ui/Image';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
@@ -87,7 +87,6 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
     );
   const isPast = !!event && new Date(event.end_date ?? event.start_date) < new Date();
   const resolvedImage = resolveEntityImage('event', event ?? null).url;
-  const [imageError, setImageError] = React.useState(false);
 
   const priceDisplay = (() => {
     if (!event) return null;
@@ -143,18 +142,14 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
         >
           <CardHoverEffect>
             <Card hoverable className="group overflow-hidden">
-              <div className="relative aspect-[16/10] overflow-hidden bg-muted rounded-t-container">
-                <img
-                  src={imageError || !resolvedImage ? getRandomFallbackImage() : resolvedImage}
-                  alt={event.title}
-                  role="presentation"
-                  loading="lazy"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  onError={() => setImageError(true)}
-                  className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
-                />
-
+              <Image
+                src={resolvedImage}
+                alt={event.title}
+                aspect="card"
+                imageRole="cover"
+                fallbackEntityType="event"
+                fallbackKey={event.id}
+              >
                 {overlay && (
                   <div
                     className={`absolute top-2 left-2 px-2 py-0.5 rounded-badge text-2xs font-semibold uppercase tracking-wider ${overlayClass}`}
@@ -188,7 +183,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
                     category: event.event_type ?? null,
                   }}
                 />
-              </div>
+              </Image>
 
               <div className="p-4">
                 <div className="flex items-baseline gap-2 min-w-0">

@@ -32,7 +32,7 @@ export interface UpsertImageAssetInput {
   format?: 'jpeg' | 'png' | 'webp' | 'avif' | 'gif' | 'svg' | 'heic' | 'other' | null
   entity_type: string
   entity_id: string
-  role?: 'cover' | 'gallery' | 'thumbnail' | 'social' | 'og' | 'square' | 'hero'
+  role?: 'cover' | 'gallery' | 'thumbnail' | 'social' | 'og' | 'square' | 'hero' | 'logo'
   sort_order?: number
 }
 

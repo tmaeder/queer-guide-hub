@@ -75,7 +75,7 @@ function PersonalityRailCard({ personality }: { personality: Personality }) {
             src={src}
             alt=""
             loading="lazy"
-            className="h-full w-full object-cover grayscale-[0.15] transition-all duration-500 group-hover:grayscale-0 group-hover:scale-[1.04]"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-headline font-bold text-muted-foreground">

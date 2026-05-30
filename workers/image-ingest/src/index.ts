@@ -348,6 +348,11 @@ async function ingestImage(env: Env, row: ImageAssetRow): Promise<boolean> {
       return false;
     }
 
+    // Byte-exact content hash for duplicate collapse. The bytes are already in
+    // memory, so this is essentially free. (Perceptual near-dup hashing needs a
+    // pixel decode the Worker doesn't have — see dedup SQL / follow-up.)
+    const contentHash = await sha256Hex(body);
+
     const ext = extFromContentType(ct);
     const key = `${id}.${ext}`;
 
@@ -389,6 +394,7 @@ async function ingestImage(env: Env, row: ImageAssetRow): Promise<boolean> {
       thumbnail_url: thumbnailUrl,
       optimized_at: new Date().toISOString(),
       bytes: body.byteLength,
+      content_hash: contentHash,
       ...(format ? { format } : {}),
       ...(width ? { width } : {}),
       ...(height ? { height } : {}),
@@ -401,6 +407,13 @@ async function ingestImage(env: Env, row: ImageAssetRow): Promise<boolean> {
     await updateAsset(env, id, { optimization_status: 'failed' });
     return false;
   }
+}
+
+async function sha256Hex(buf: ArrayBuffer): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 async function updateAsset(env: Env, id: string, data: Record<string, unknown>): Promise<void> {

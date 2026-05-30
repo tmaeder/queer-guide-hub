@@ -103,7 +103,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
                 decoding="async"
                 referrerPolicy="no-referrer"
                 onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
-                className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
+                className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
               />
               {/*
             Featured badge is now driven by the curated `featured_priority`

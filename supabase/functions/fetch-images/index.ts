@@ -10,14 +10,14 @@ import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5
 import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { scoreImage as sharedScoreImage, pickBest, isAcceptable, MIN_ACCEPTANCE_SCORE } from '../_shared/scoreImage.ts'
 import { upsertImageAsset, deriveImageFormat } from '../_shared/image-assets.ts'
+import type { ImageSource } from '../_shared/scoreImage.ts'
+import { evaluateCover } from '../_shared/image-probe.ts'
 import {
   type ImageResult,
   fetchFromPexels,
   fetchFromUnsplash,
   fetchFromWikimedia,
   fetchWikipediaImage,
-  fetchFirstPexelsUrl,
-  fetchFirstUnsplashUrl,
   storeImageToStorage,
 } from '../_shared/image-search.ts'
 
@@ -396,7 +396,55 @@ async function processVillage(supabase: SupabaseClient, id: string, name: string
 }
 
 // ---------------------------------------------------------------------------
-// Simple enrichers (venue, event, personality)
+// Scored stock search (venue, event) — quality-gated, no longer "first result"
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch stock candidates across queries, score each with the shared scorer, and
+ * return the best that clears the cover bar. Replaces the old "take the first
+ * Pexels/Unsplash URL with no scoring" path that committed birds, logos, and
+ * generic stock to venue/event covers.
+ */
+async function findBestStockImage(
+  queries: string[],
+  subject: { name: string; place?: string | null },
+  subjectType: 'venue' | 'event',
+  pK?: string,
+  uK?: string,
+): Promise<ImageResult | null> {
+  let best: ImageResult | null = null
+  for (const query of queries) {
+    if (!query) continue
+    const fetches: Promise<ImageResult[]>[] = []
+    if (pK) fetches.push(fetchFromPexels(pK, query))
+    if (uK) fetches.push(fetchFromUnsplash(uK, query))
+    if (!fetches.length) break
+
+    const results = (await Promise.all(fetches)).flat()
+    if (!results.length) continue
+
+    for (const img of results) {
+      img.score = sharedScoreImage({
+        alt: img.alt,
+        width: img.width,
+        height: img.height,
+        source: img.source as ImageSource,
+        subject: { name: subject.name, country: subject.place ?? undefined },
+        subjectType,
+      })
+    }
+    const top = pickBest(results, 'cover')
+    // Enforce cover dimensions from the stock API's own width/height — a free
+    // gate (no extra fetch) that rejects tiny / portrait images for a cover.
+    if (top && !evaluateCover({ width: top.width, height: top.height }, 'cover')) {
+      if (!best || top.score > best.score) best = top
+    }
+  }
+  return best
+}
+
+// ---------------------------------------------------------------------------
+// Enrichers (venue, event, personality)
 // ---------------------------------------------------------------------------
 
 
@@ -407,24 +455,21 @@ async function processVenueBatch(supabase: SupabaseClient, pK: string, uK: strin
   if (error) throw new Error(error.message)
   if (!rows?.length) return { success: true, updated: 0, message: 'nothing to do' }
 
-  let updated = 0, skipped = 0
+  let updated = 0, skipped = 0, rejected = 0
   for (const v of rows) {
     const lgbtqQ = `${v.name} LGBTQ ${v.city ?? ''}`.trim()
     const searchQ = [v.name, v.city, v.category].filter(Boolean).join(' ')
 
-    let imageUrl: string | null = null
-    if (pK) imageUrl = await fetchFirstPexelsUrl(pK, lgbtqQ) ?? await fetchFirstPexelsUrl(pK, searchQ)
-    if (!imageUrl && uK) imageUrl = await fetchFirstUnsplashUrl(uK, lgbtqQ) ?? await fetchFirstUnsplashUrl(uK, searchQ)
-
-    if (!imageUrl) { skipped++; continue }
+    const best = await findBestStockImage([lgbtqQ, searchQ], { name: v.name, place: v.city }, 'venue', pK || undefined, uK || undefined)
+    if (!best) { rejected++; continue }
     if (dryRun) { updated++; continue }
 
-    const { error: upErr } = await supabase.from('venues').update({ images: [imageUrl], updated_at: new Date().toISOString() }).eq('id', v.id)
+    const { error: upErr } = await supabase.from('venues').update({ images: [best.url], updated_at: new Date().toISOString() }).eq('id', v.id)
     if (upErr) { console.error(`venue ${v.id}:`, upErr.message); skipped++ }
-    else { updated++; await upsertImageAsset(supabase, { url: imageUrl, source: 'scraper', entity_type: 'venue', entity_id: v.id, role: 'cover' }) }
+    else { updated++; await upsertImageAsset(supabase, { url: best.url, source: 'scraper', source_ref: `${best.source}:${best.source_id}`, attribution: best.photographer ?? null, alt_text: best.alt ?? null, alt_provenance: 'imported', width: best.width ?? null, height: best.height ?? null, format: deriveImageFormat(best.url), entity_type: 'venue', entity_id: v.id, role: 'cover' }) }
     await new Promise(r => setTimeout(r, 200))
   }
-  return { success: true, updated, skipped, total: rows.length, dry_run: dryRun }
+  return { success: true, updated, skipped, rejected, total: rows.length, dry_run: dryRun }
 }
 
 
@@ -436,28 +481,25 @@ async function processEventBatch(supabase: SupabaseClient, pK: string, uK: strin
   if (error) throw new Error(error.message)
   if (!rows?.length) return { success: true, updated: 0, message: 'nothing to do' }
 
-  let updated = 0, skipped = 0
+  let updated = 0, skipped = 0, rejected = 0
   for (const e of rows) {
     const lgbtqQ = `${e.event_type ?? 'pride'} LGBT event ${e.city ?? ''}`.trim()
     const titleQ = `${e.title} ${e.city ?? ''}`.trim()
 
-    let imageUrl: string | null = null
-    if (pK) imageUrl = await fetchFirstPexelsUrl(pK, lgbtqQ) ?? await fetchFirstPexelsUrl(pK, titleQ)
-    if (!imageUrl && uK) imageUrl = await fetchFirstUnsplashUrl(uK, lgbtqQ) ?? await fetchFirstUnsplashUrl(uK, titleQ)
-
-    if (!imageUrl) { skipped++; continue }
+    const best = await findBestStockImage([lgbtqQ, titleQ], { name: e.title, place: e.city }, 'event', pK || undefined, uK || undefined)
+    if (!best) { rejected++; continue }
     if (dryRun) { updated++; continue }
 
-    const { error: upErr } = await supabase.from('events').update({ images: [imageUrl], updated_at: new Date().toISOString() }).eq('id', e.id)
+    const { error: upErr } = await supabase.from('events').update({ images: [best.url], updated_at: new Date().toISOString() }).eq('id', e.id)
     if (upErr) { console.error(`event ${e.id}:`, upErr.message); skipped++ }
-    else { updated++; await upsertImageAsset(supabase, { url: imageUrl, source: 'scraper', entity_type: 'event', entity_id: e.id, role: 'cover' }) }
+    else { updated++; await upsertImageAsset(supabase, { url: best.url, source: 'scraper', source_ref: `${best.source}:${best.source_id}`, attribution: best.photographer ?? null, alt_text: best.alt ?? null, alt_provenance: 'imported', width: best.width ?? null, height: best.height ?? null, format: deriveImageFormat(best.url), entity_type: 'event', entity_id: e.id, role: 'cover' }) }
     await new Promise(r => setTimeout(r, 200))
   }
-  return { success: true, updated, skipped, total: rows.length, dry_run: dryRun }
+  return { success: true, updated, skipped, rejected, total: rows.length, dry_run: dryRun }
 }
 
 
-async function processPersonalityBatch(supabase: SupabaseClient, pK: string, limit: number, force: boolean, dryRun: boolean) {
+async function processPersonalityBatch(supabase: SupabaseClient, _pK: string, limit: number, force: boolean, dryRun: boolean) {
   let q = supabase.from('personalities').select('id, name, profession, nationality').order('updated_at', { ascending: true }).limit(limit)
   if (!force) q = q.or('image_url.is.null,image_url.eq.')
   const { data: rows, error } = await q
@@ -466,15 +508,18 @@ async function processPersonalityBatch(supabase: SupabaseClient, pK: string, lim
 
   let updated = 0, skipped = 0
   for (const p of rows) {
-    let imageUrl: string | null = await fetchWikipediaImage(p.name)
-    if (!imageUrl && pK) imageUrl = await fetchFirstPexelsUrl(pK, `${p.name} ${p.profession ?? 'portrait'}`)
+    // Wikipedia only: it resolves by the person's name, so the portrait is the
+    // actual person. The old Pexels fallback attached a random stock face to a
+    // named real individual — actively misleading — so it has been removed; no
+    // match now falls through to the initials avatar on the frontend.
+    const imageUrl: string | null = await fetchWikipediaImage(p.name)
 
     if (!imageUrl) { skipped++; continue }
     if (dryRun) { updated++; continue }
 
     const { error: upErr } = await supabase.from('personalities').update({ image_url: imageUrl, updated_at: new Date().toISOString() }).eq('id', p.id)
     if (upErr) { console.error(`personality ${p.id}:`, upErr.message); skipped++ }
-    else { updated++; await upsertImageAsset(supabase, { url: imageUrl, source: 'scraper', entity_type: 'personality', entity_id: p.id, role: 'cover' }) }
+    else { updated++; await upsertImageAsset(supabase, { url: imageUrl, source: 'scraper', source_ref: 'wikipedia', alt_provenance: 'imported', entity_type: 'personality', entity_id: p.id, role: 'cover' }) }
     await new Promise(r => setTimeout(r, 300))
   }
   return { success: true, updated, skipped, total: rows.length, dry_run: dryRun }
