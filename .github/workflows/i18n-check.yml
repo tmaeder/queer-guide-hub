@@ -10,7 +10,9 @@ on:
     branches: [main]
     paths:
       - 'src/i18n/**'
+      - 'public/locales/**'
       - 'scripts/sync-translations.ts'
+      - 'scripts/sync-public-locales.ts'
 
 concurrency:
   group: i18n-check-${{ github.ref }}
@@ -34,5 +36,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Compare locales against en.json
+      - name: Compare locales against en.json + verify src/public parity
         run: npm run i18n:check
