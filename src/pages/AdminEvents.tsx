@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { formatCurrency } from '@/lib/currency';
+import { EVENT_TYPES } from '@/lib/eventTypes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,6 +41,7 @@ import {
   type ExportColumnDef,
 } from '@/utils/excelExport';
 import { AdminEntityTable } from '@/components/admin/data-table';
+import { EventQualityPanel } from '@/components/admin/EventQualityPanel';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -77,33 +79,15 @@ interface EventRow {
   tags: string[] | null;
   images: string[] | null;
   created_at: string;
+  trust_score: number | null;
+  liveness_status: string | null;
 }
 
 const eventStatuses = ['active', 'cancelled', 'postponed', 'completed'];
 
 const columnHelper = createColumnHelper<EventRow>();
 
-const eventTypes = [
-  'concert',
-  'festival',
-  'conference',
-  'workshop',
-  'meetup',
-  'party',
-  'pride',
-  'drag',
-  'film',
-  'art',
-  'sports',
-  'theater',
-  'fundraiser',
-  'protest',
-  'social',
-  'fair',
-  'community',
-  'fetish',
-  'other',
-];
+const eventTypes = EVENT_TYPES as readonly string[];
 
 const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
   { tag: 'pride:parade', label: 'Parade' },
@@ -439,6 +423,39 @@ export default function AdminEvents() {
         },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
+      columnHelper.accessor('trust_score', {
+        header: 'Trust',
+        cell: (info) => {
+          const v = info.getValue();
+          if (v == null) return <span className="text-muted-foreground">-</span>;
+          return (
+            <div className="flex items-center gap-2" title={`Trust score ${v}/100`}>
+              <div className="h-1.5 w-10 rounded-badge bg-muted overflow-hidden">
+                <div className="h-full bg-foreground" style={{ width: `${Math.max(0, Math.min(100, v))}%` }} />
+              </div>
+              <span className="text-13 tabular-nums text-muted-foreground">{v}</span>
+            </div>
+          );
+        },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('liveness_status', {
+        header: 'Liveness',
+        cell: (info) => {
+          const s = info.getValue();
+          if (!s || s === 'unknown') return <span className="text-muted-foreground">-</span>;
+          const isHardFail = s === 'cancelled' || s === 'dead_link';
+          return (
+            <Badge
+              variant="outline"
+              style={isHardFail ? { color: 'hsl(var(--destructive))', borderColor: 'hsl(var(--destructive) / 0.4)' } : undefined}
+            >
+              {s.replace(/_/g, ' ')}
+            </Badge>
+          );
+        },
+        meta: { serverSortable: true, serverFilterable: true, defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('is_free', {
         header: 'Free',
         cell: (info) =>
@@ -494,7 +511,7 @@ export default function AdminEvents() {
     () => ({
       tableName: 'events',
       select:
-        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_id,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
+        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_id,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at,trust_score,liveness_status',
       columns,
       defaultSort: { column: 'start_date', direction: 'desc' },
       defaultPageSize: 50,
@@ -597,6 +614,7 @@ export default function AdminEvents() {
       subtitle="Create and manage events"
       backHref={null}
       config={tableConfig}
+      beforeTable={<EventQualityPanel />}
       afterTable={
         <>
           {/* Create/Edit Dialog */}

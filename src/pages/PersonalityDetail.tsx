@@ -193,7 +193,6 @@ export default function PersonalityDetail() {
           personality ? (
             <PersonalitySidebar
               personality={personality}
-              countryId={countryId}
               onTagClick={(tag) => navigate(`/personalities?tag=${encodeURIComponent(tag)}`)}
             />
           ) : null
