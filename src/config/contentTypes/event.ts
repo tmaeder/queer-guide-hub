@@ -1,6 +1,7 @@
 import { Calendar } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { validateEvent } from '@/utils/contentValidation';
+import { EVENT_TYPE_OPTIONS } from '@/lib/eventTypes';
 
 export const eventFields: FieldConfig[] = [
   {
@@ -31,20 +32,7 @@ export const eventFields: FieldConfig[] = [
     group: 'basic',
     filterable: true,
     listColumn: true,
-    options: [
-      { value: 'party', label: 'Party' },
-      { value: 'festival', label: 'Festival' },
-      { value: 'pride', label: 'Pride' },
-      { value: 'meetup', label: 'Meetup' },
-      { value: 'workshop', label: 'Workshop' },
-      { value: 'concert', label: 'Concert' },
-      { value: 'exhibition', label: 'Exhibition' },
-      { value: 'fundraiser', label: 'Fundraiser' },
-      { value: 'sports', label: 'Sports' },
-      { value: 'community', label: 'Community' },
-      { value: 'cruise', label: 'Cruise' },
-      { value: 'other', label: 'Other' },
-    ],
+    options: EVENT_TYPE_OPTIONS,
   },
   {
     name: 'start_date',

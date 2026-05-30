@@ -1,4 +1,25 @@
 {
+  "eventTypes": {
+    "party": "パーティー",
+    "festival": "フェスティバル",
+    "pride": "プライド",
+    "meetup": "ミートアップ",
+    "workshop": "ワークショップ",
+    "concert": "コンサート",
+    "conference": "カンファレンス",
+    "film": "映画",
+    "drag": "ドラァグ",
+    "sports": "スポーツ",
+    "art": "アート",
+    "theater": "演劇",
+    "fundraiser": "資金集め",
+    "protest": "抗議",
+    "social": "ソーシャル",
+    "community": "コミュニティ",
+    "fair": "フェア",
+    "fetish": "フェティッシュ",
+    "other": "その他"
+  },
   "submission": {
     "errors": {
       "title": "Scan failed",
@@ -56,64 +77,64 @@
       "resources": "リソース…",
       "personalities": "人物を探す…"
     },
-    "trending": "[JA] Trending",
-    "browse": "[JA] Browse",
-    "recentSearches": "[JA] Recent searches",
-    "clearRecent": "[JA] Clear recent searches",
-    "savedLabel": "[JA] Saved",
-    "savedSearches": "[JA] Saved searches",
-    "saveThisSearch": "[JA] Save this search",
-    "namePlaceholder": "[JA] Name…",
-    "noSavedYet": "[JA] No saved searches yet.",
-    "loadMore": "[JA] Load more",
-    "loading": "[JA] Loading…",
-    "searchForQ": "[JA] Search for \"{{q}}\"",
-    "backToTop": "[JA] Back to top",
-    "openFilters": "[JA] Open filters",
-    "activeFilters": "[JA] Active filters",
-    "clearAll": "[JA] Clear all",
-    "noMappable": "[JA] No mappable results in this view.",
-    "voice": "[JA] Voice search",
-    "stopVoice": "[JA] Stop voice search",
-    "mapView": "[JA] Map view",
-    "seeAllN": "[JA] See all {{n}} →",
-    "removeFilter": "[JA] Remove filter {{label}}",
-    "deleteSavedSearch": "[JA] Delete saved search {{name}}",
-    "tryDifferent": "[JA] Try different keywords or adjust your filters",
-    "unavailable": "[JA] Search is temporarily unavailable",
-    "noResultsFor": "[JA] No results found for \"{{q}}\"",
+    "trending": "Trending",
+    "browse": "Browse",
+    "recentSearches": "Recent searches",
+    "clearRecent": "Clear recent searches",
+    "savedLabel": "Saved",
+    "savedSearches": "Saved searches",
+    "saveThisSearch": "Save this search",
+    "namePlaceholder": "Name…",
+    "noSavedYet": "No saved searches yet.",
+    "loadMore": "Load more",
+    "loading": "Loading…",
+    "searchForQ": "Search for \"{{q}}\"",
+    "backToTop": "Back to top",
+    "openFilters": "Open filters",
+    "activeFilters": "Active filters",
+    "clearAll": "Clear all",
+    "noMappable": "No mappable results in this view.",
+    "voice": "Voice search",
+    "stopVoice": "Stop voice search",
+    "mapView": "Map view",
+    "seeAllN": "See all {{n}} →",
+    "removeFilter": "Remove filter {{label}}",
+    "deleteSavedSearch": "Delete saved search {{name}}",
+    "tryDifferent": "Try different keywords or adjust your filters",
+    "unavailable": "Search is temporarily unavailable",
+    "noResultsFor": "No results found for \"{{q}}\"",
     "scope": {
-      "all": "[JA] All",
-      "venues": "[JA] Venues",
-      "events": "[JA] Events",
-      "marketplace": "[JA] Marketplace",
-      "news": "[JA] News",
-      "people": "[JA] People",
-      "cities": "[JA] Cities",
-      "places": "[JA] Places"
+      "all": "All",
+      "venues": "Venues",
+      "events": "Events",
+      "marketplace": "Marketplace",
+      "news": "News",
+      "people": "People",
+      "cities": "Cities",
+      "places": "Places"
     },
     "quickLinks": {
-      "places": "[JA] Places",
-      "cities": "[JA] Cities",
-      "eventsWeekend": "[JA] Events this weekend",
-      "personalities": "[JA] Personalities",
-      "marketplace": "[JA] Marketplace"
+      "places": "Places",
+      "cities": "Cities",
+      "eventsWeekend": "Events this weekend",
+      "personalities": "Personalities",
+      "marketplace": "Marketplace"
     },
     "kbd": {
-      "navigate": "[JA] Navigate",
-      "select": "[JA] Select",
-      "complete": "[JA] Complete",
-      "close": "[JA] Close"
+      "navigate": "Navigate",
+      "select": "Select",
+      "complete": "Complete",
+      "close": "Close"
     },
-    "nearMeWithRadius": "[JA] Near me ({{km}}km)",
-    "searchThisArea": "[JA] Search this area",
-    "didYouMean": "[JA] Did you mean \"{{q}}\"?",
+    "nearMeWithRadius": "Near me ({{km}}km)",
+    "searchThisArea": "Search this area",
+    "didYouMean": "Did you mean \"{{q}}\"?",
     "boost": {
-      "interest": "[JA] Matches your interests",
-      "recent_tag": "[JA] Recently viewed topic",
-      "home_city": "[JA] In your home city",
-      "recent_city": "[JA] In a city you've explored",
-      "featured": "[JA] Featured"
+      "interest": "Matches your interests",
+      "recent_tag": "Recently viewed topic",
+      "home_city": "In your home city",
+      "recent_city": "In a city you've explored",
+      "featured": "Featured"
     }
   },
   "common": {
@@ -142,7 +163,9 @@
     "done": "Done",
     "unknown": "Unknown",
     "somethingWentWrong": "Something went wrong.",
-    "clear": "Clear"
+    "clear": "Clear",
+    "signIn": "Sign in",
+    "goHome": "Go Home"
   },
   "navigation": {
     "home": "ホーム",
@@ -201,29 +224,29 @@
       "description": "旅程を作り、各目的地の LGBTQ+ 安全情報を確認し、すべてを一つの場所にまとめよう。",
       "cta": "最初の旅を作成",
       "hero": {
-        "title": "[JA] Plan a trip you'll feel safe on.",
-        "subtitle": "[JA] Three ways to start — pick whichever fits."
+        "title": "Plan a trip you'll feel safe on.",
+        "subtitle": "Three ways to start — pick whichever fits."
       },
       "paths": {
         "scratch": {
-          "title": "[JA] Start from scratch",
-          "description": "[JA] Empty itinerary, your destinations, your pace.",
-          "cta": "[JA] Create trip"
+          "title": "Start from scratch",
+          "description": "Empty itinerary, your destinations, your pace.",
+          "cta": "Create trip"
         },
         "template": {
-          "title": "[JA] Use a template",
-          "description": "[JA] Pre-built itineraries you can fork and edit.",
-          "cta": "[JA] Browse templates"
+          "title": "Use a template",
+          "description": "Pre-built itineraries you can fork and edit.",
+          "cta": "Browse templates"
         },
         "discover": {
-          "title": "[JA] Fork a public trip",
-          "description": "[JA] Real itineraries from other QG travelers.",
-          "cta": "[JA] Open Discover"
+          "title": "Fork a public trip",
+          "description": "Real itineraries from other QG travelers.",
+          "cta": "Open Discover"
         }
       },
-      "discoverEyebrow": "[JA] From real travelers",
-      "discoverTitle": "[JA] Recent public trips",
-      "discoverCta": "[JA] Open Discover"
+      "discoverEyebrow": "From real travelers",
+      "discoverTitle": "Recent public trips",
+      "discoverCta": "Open Discover"
     },
     "filteredEmpty": {
       "title": "該当する旅がありません",
@@ -247,7 +270,7 @@
         "active": "進行中",
         "completed": "完了",
         "archived": "アーカイブ済み",
-        "saved": "[JA] Saved"
+        "saved": "Saved"
       },
       "sort": {
         "recent": "最近更新",
@@ -398,10 +421,10 @@
       "fitAllAria": "すべてのスポットを画面に収める",
       "filterAll": "すべての日",
       "dayLabel": "{{number}}日目",
-      "showAttractions": "[JA] Attractions",
-      "showEvents": "[JA] Events",
-      "suggestedVenue": "[JA] Suggested venue",
-      "eventOn": "[JA] Event · {{date}}"
+      "showAttractions": "Attractions",
+      "showEvents": "Events",
+      "suggestedVenue": "Suggested venue",
+      "eventOn": "Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "まだ安全情報がありません",
@@ -641,90 +664,90 @@
     "discover": {
       "title": "場所を探す",
       "button": "マーケットを見る",
-      "eyebrow": "[JA] Real travelers",
-      "subtitle": "[JA] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
-      "searchPlaceholder": "[JA] Filter by city…",
-      "aria": "[JA] Discover public trips",
-      "sortAria": "[JA] Sort trips",
-      "viewAria": "[JA] View mode",
-      "filterAria": "[JA] Filter trips",
-      "filtersAria": "[JA] Open filters",
+      "eyebrow": "Real travelers",
+      "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "Filter by city…",
+      "aria": "Discover public trips",
+      "sortAria": "Sort trips",
+      "viewAria": "View mode",
+      "filterAria": "Filter trips",
+      "filtersAria": "Open filters",
       "filters": {
-        "title": "[JA] undefined",
-        "travelerType": "[JA] undefined",
-        "duration": "[JA] undefined",
-        "minEquality": "[JA] undefined",
-        "minEqualityAria": "[JA] undefined",
-        "minEqualityHint": "[JA] undefined",
-        "noMin": "[JA] undefined",
-        "quality": "[JA] undefined",
-        "hasCover": "[JA] undefined",
-        "hasOwnerProfile": "[JA] undefined",
-        "clear": "[JA] undefined"
+        "title": "undefined",
+        "travelerType": "undefined",
+        "duration": "undefined",
+        "minEquality": "undefined",
+        "minEqualityAria": "undefined",
+        "minEqualityHint": "undefined",
+        "noMin": "undefined",
+        "quality": "undefined",
+        "hasCover": "undefined",
+        "hasOwnerProfile": "undefined",
+        "clear": "undefined"
       },
-      "activeCountAria": "[JA] {{count}} active",
+      "activeCountAria": "{{count}} active",
       "view": {
-        "list": "[JA] List view",
-        "map": "[JA] Map view"
+        "list": "List view",
+        "map": "Map view"
       },
       "sort": {
-        "recent": "[JA] Most recent",
-        "trending": "[JA] Trending",
-        "most_places": "[JA] Most places",
-        "longest": "[JA] Longest",
-        "safest": "[JA] Safest"
+        "recent": "Most recent",
+        "trending": "Trending",
+        "most_places": "Most places",
+        "longest": "Longest",
+        "safest": "Safest"
       },
       "filter": {
-        "dated": "[JA] Has dates",
-        "multiday": "[JA] Multi-day",
-        "safe": "[JA] Safe destinations"
+        "dated": "Has dates",
+        "multiday": "Multi-day",
+        "safe": "Safe destinations"
       },
       "travelerType": {
-        "any": "[JA] Any",
-        "solo": "[JA] Solo",
-        "couple": "[JA] Couple",
-        "group": "[JA] Group",
-        "family": "[JA] Family"
+        "any": "Any",
+        "solo": "Solo",
+        "couple": "Couple",
+        "group": "Group",
+        "family": "Family"
       },
       "duration": {
-        "any": "[JA] Any length",
-        "weekend": "[JA] Weekend (1–3 days)",
-        "week": "[JA] Week (4–9 days)",
-        "long": "[JA] Long (10+ days)"
+        "any": "Any length",
+        "weekend": "Weekend (1–3 days)",
+        "week": "Week (4–9 days)",
+        "long": "Long (10+ days)"
       },
       "region": {
-        "europe": "[JA] Europe",
-        "north_america": "[JA] North America",
-        "latin_america": "[JA] Latin America",
-        "asia": "[JA] Asia",
-        "oceania": "[JA] Oceania",
-        "africa": "[JA] Africa",
-        "middle_east": "[JA] Middle East",
-        "other": "[JA] Other"
+        "europe": "Europe",
+        "north_america": "North America",
+        "latin_america": "Latin America",
+        "asia": "Asia",
+        "oceania": "Oceania",
+        "africa": "Africa",
+        "middle_east": "Middle East",
+        "other": "Other"
       },
       "staffPicks": {
-        "eyebrow": "[JA] Staff picks",
-        "title": "[JA] Trips worth copying"
+        "eyebrow": "Staff picks",
+        "title": "Trips worth copying"
       },
-      "all": "[JA] All public trips",
-      "moreInspiration": "[JA] More inspiration",
-      "moreInspirationDescription": "[JA] Few public trips match. Start from a template instead.",
-      "emptyTitle": "[JA] No public trips yet",
-      "emptyFiltered": "[JA] No public trips match that city. Try a different one.",
-      "emptyDescription": "[JA] Be the first — make any of your trips public from the Share dialog.",
-      "anonymous": "[JA] A QG traveler",
-      "placeCount": "[JA] {{count}} places",
-      "fork": "[JA] Fork into my trips",
-      "forkAria": "[JA] Fork this trip",
-      "forking": "[JA] Forking…",
-      "forked": "[JA] Trip forked",
-      "forkedDescription": "[JA] Your copy is ready — edit days and places freely.",
-      "forkError": "[JA] Could not create trip",
-      "inspiredTitle": "[JA] Inspired by: {{title}}",
-      "signalsAria": "[JA] Trip activity",
-      "forkCount": "[JA] {{count}} forks",
-      "saveCount": "[JA] {{count}} saves",
-      "filtersButton": "[JA] Filters"
+      "all": "All public trips",
+      "moreInspiration": "More inspiration",
+      "moreInspirationDescription": "Few public trips match. Start from a template instead.",
+      "emptyTitle": "No public trips yet",
+      "emptyFiltered": "No public trips match that city. Try a different one.",
+      "emptyDescription": "Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "A QG traveler",
+      "placeCount": "{{count}} places",
+      "fork": "Fork into my trips",
+      "forkAria": "Fork this trip",
+      "forking": "Forking…",
+      "forked": "Trip forked",
+      "forkedDescription": "Your copy is ready — edit days and places freely.",
+      "forkError": "Could not create trip",
+      "inspiredTitle": "Inspired by: {{title}}",
+      "signalsAria": "Trip activity",
+      "forkCount": "{{count}} forks",
+      "saveCount": "{{count}} saves",
+      "filtersButton": "Filters"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -849,24 +872,24 @@
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
     },
     "next": {
-      "live": "[JA] Active now",
-      "countdown": "[JA] Coming up",
-      "upcoming": "[JA] Upcoming",
-      "open": "[JA] Open trip",
-      "openLive": "[JA] Open today's plan",
-      "today": "[JA] Today's view"
+      "live": "Active now",
+      "countdown": "Coming up",
+      "upcoming": "Upcoming",
+      "open": "Open trip",
+      "openLive": "Open today's plan",
+      "today": "Today's view"
     },
     "inspired": {
-      "eyebrow": "[JA] Inspired by your trips",
-      "title": "[JA] Public trips you might like",
-      "cta": "[JA] See all"
+      "eyebrow": "Inspired by your trips",
+      "title": "Public trips you might like",
+      "cta": "See all"
     },
     "save": {
-      "save": "[JA] Save",
-      "saved": "[JA] Saved",
-      "saveAria": "[JA] Save trip",
-      "unsaveAria": "[JA] Unsave trip",
-      "error": "[JA] Could not update save"
+      "save": "Save",
+      "saved": "Saved",
+      "saveAria": "Save trip",
+      "unsaveAria": "Unsave trip",
+      "error": "Could not update save"
     }
   },
   "auth": {
@@ -901,7 +924,7 @@
       "pronouns": "Select your pronouns",
       "country": "Optional",
       "language": "Select language",
-      "passwordMin8": "[JA] At least 8 characters"
+      "passwordMin8": "At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -932,8 +955,8 @@
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
       "ageAria": "Confirm age 18 or older",
-      "combined": "[JA] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
-      "combinedAria": "[JA] Accept terms, privacy and confirm 18 or older"
+      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -954,8 +977,8 @@
         "profile": "Profile",
         "interests": "Interests"
       },
-      "blurb": "[JA] Free, takes a minute.",
-      "haveAccountQ": "[JA] Already have an account? Sign in"
+      "blurb": "Free, takes a minute.",
+      "haveAccountQ": "Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -998,16 +1021,16 @@
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
       "backToLogin": "Back to sign in",
-      "continue": "[JA] Continue to The Queer Guide",
-      "banner": "[JA] Verify your email to unlock contributions and messaging.",
-      "bannerSent": "[JA] Verification email sent. Check your inbox.",
-      "resendShort": "[JA] Resend",
-      "gateTitle": "[JA] Verify your email first",
-      "gateDescription": "[JA] Confirm your email to contribute or message other members."
+      "continue": "Continue to The Queer Guide",
+      "banner": "Verify your email to unlock contributions and messaging.",
+      "bannerSent": "Verification email sent. Check your inbox.",
+      "resendShort": "Resend",
+      "gateTitle": "Verify your email first",
+      "gateDescription": "Confirm your email to contribute or message other members."
     },
     "required": {
-      "title": "[JA] Sign in required",
-      "description": "[JA] Please sign in to continue."
+      "title": "Sign in required",
+      "description": "Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1052,7 +1075,115 @@
     "review": "レビューを書く",
     "photos": "写真",
     "amenities": "設備",
-    "services": "サービス"
+    "services": "サービス",
+    "rails": {
+      "nearYou": {
+        "title": "近くのスポット",
+        "subtitle": "30km圏内のスポットを距離順に。"
+      },
+      "forYou": {
+        "title": "あなた向け",
+        "subtitle": "興味と訪問履歴から選びました。"
+      },
+      "forYouPromo": {
+        "label": "スポットをパーソナライズ",
+        "kicker": "あなた向け",
+        "title": "あなたの好みを教えてください。",
+        "body": "サインインして4つの質問に答えてください。興味に合わせて並べ替えます。",
+        "cta": "はじめる"
+      },
+      "new": {
+        "title": "今月の新着",
+        "subtitle": "ガイドへの最新追加。"
+      },
+      "topInCity": {
+        "title": "{{city}}のトップ",
+        "subtitle": "コミュニティで人気。"
+      },
+      "editors": {
+        "title": "編集部のおすすめ",
+        "subtitle": "厳選したスポット。"
+      }
+    },
+    "hero": {
+      "kicker": "今週の注目",
+      "cta": "もっと見る",
+      "label": "注目スポット"
+    },
+    "personalStrip": {
+      "title": "{{name}} · レベル{{level}}",
+      "label": "あなたの統計",
+      "passport": "パスポートを見る",
+      "points": "ポイント",
+      "venues": "スポット",
+      "streak": "連続日数",
+      "checkins": "チェックイン",
+      "nextLevel": "次: {{name}}"
+    },
+    "results": {
+      "title": "該当するスポット"
+    },
+    "quickFilters": {
+      "openNow": "今営業中",
+      "radius": "距離",
+      "radiusKm": "{{km}}km以内",
+      "anyDistance": "距離指定なし",
+      "price": "価格",
+      "anyPrice": "価格指定なし",
+      "clear": "クリア"
+    },
+    "leaderboard": {
+      "title": "ランキング",
+      "subtitle": "訪問スポット数のトップ。",
+      "tabs": {
+        "global": "グローバル",
+        "city": "{{city}}"
+      },
+      "empty": "まだデータがありません。",
+      "venuesShort": "スポット",
+      "widget": {
+        "label": "トップ探検家",
+        "titleCity": "{{city}}のトップ",
+        "titleGlobal": "トップ探検家",
+        "viewAll": "すべて見る",
+        "anon": "匿名の探検家",
+        "you": "あなた"
+      }
+    },
+    "passport": {
+      "title": "あなたのパスポート",
+      "subtitle": "訪れたすべてのスポットと獲得した実績。",
+      "achievements": "実績",
+      "earned": "獲得済み",
+      "locked": "+{{pts}} ポイント",
+      "visited": "{{count}}スポット訪問",
+      "empty": "まだチェックインがありません。",
+      "signInPrompt": "サインインしてパスポートを見る。"
+    },
+    "onboarding": {
+      "progress": "ステップ {{current}}/{{total}}",
+      "step1": {
+        "title": "どんなスポットが好き？"
+      },
+      "step2": {
+        "title": "どのコミュニティに属していますか？"
+      },
+      "step3": {
+        "title": "どんな雰囲気が好き？"
+      },
+      "step4": {
+        "title": "どの街で過ごすことが多い？"
+      },
+      "cityPlaceholder": "街を入力",
+      "citySelected": "選択: {{city}}",
+      "finish": "完了",
+      "saveError": "保存に失敗しました",
+      "saveSuccess": "好みを保存しました"
+    },
+    "achievementToast": {
+      "unlocked": "達成: {{name}}",
+      "fallback": "新しい実績を獲得"
+    }
   },
   "marketplace": {
     "title": "マーケットプレイス",
@@ -1212,76 +1343,76 @@
       "relationships": "人間関係",
       "women": "女性"
     },
-    "quick_exit": "[JA] Quick exit",
-    "quick_exit_aria": "[JA] Leave this page immediately (ESC)",
-    "hide_screen": "[JA] Hide screen",
-    "reveal_aria": "[JA] Click anywhere to show the page again",
-    "hidden_hint": "[JA] Page hidden. Click anywhere to show again.",
-    "hero_label": "[JA] Recommended right now",
-    "expect_title": "[JA] What happens when you call",
-    "expect_short": "[JA] What to expect",
-    "expect_1": "[JA] You'll hear a short greeting. You don't have to give your name.",
-    "expect_2": "[JA] You can hang up at any time. You can call back as often as you need.",
-    "expect_3": "[JA] Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
-    "expect_4": "[JA] If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "[JA] While you wait",
-    "self_help_title": "[JA] Steady yourself",
-    "self_help_desc": "[JA] Short techniques you can use while you wait, or instead of a call if you're not ready.",
-    "breathing_title": "[JA] 4-7-8 breathing",
-    "breathing_1": "[JA] Breathe in through your nose for 4 seconds.",
-    "breathing_2": "[JA] Hold your breath for 7 seconds.",
-    "breathing_3": "[JA] Breathe out through your mouth for 8 seconds.",
-    "breathing_4": "[JA] Repeat 4 times.",
-    "grounding_title": "[JA] 5-4-3-2-1 grounding",
-    "grounding_intro": "[JA] Name, out loud or in your head:",
-    "grounding_5": "[JA] 5 things you can see",
-    "grounding_4": "[JA] 4 things you can touch",
-    "grounding_3": "[JA] 3 things you can hear",
-    "grounding_2": "[JA] 2 things you can smell",
-    "grounding_1": "[JA] 1 thing you can taste",
-    "safety_plan_title": "[JA] Safety plan",
-    "safety_plan_desc": "[JA] A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
-    "safety_plan_link": "[JA] Open template (Stanley-Brown)",
-    "report": "[JA] Report",
-    "report_aria": "[JA] Report a problem with this hotline",
-    "report_title": "[JA] Report this hotline",
-    "report_desc": "[JA] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
-    "report_reason": "[JA] Reason",
-    "report_detail": "[JA] Details (optional)",
-    "report_submit": "[JA] Submit report",
-    "report_thanks": "[JA] Thank you. We'll review it.",
-    "filter_intersection": "[JA] Population",
-    "filter_intersection_all": "[JA] All",
-    "badge_reports_police": "[JA] May report to police",
-    "operator": "[JA] Operated by",
-    "verified_on": "[JA] Verified",
+    "quick_exit": "Quick exit",
+    "quick_exit_aria": "Leave this page immediately (ESC)",
+    "hide_screen": "Hide screen",
+    "reveal_aria": "Click anywhere to show the page again",
+    "hidden_hint": "Page hidden. Click anywhere to show again.",
+    "hero_label": "Recommended right now",
+    "expect_title": "What happens when you call",
+    "expect_short": "What to expect",
+    "expect_1": "You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
+    "self_help_trigger": "While you wait",
+    "self_help_title": "Steady yourself",
+    "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "breathing_title": "4-7-8 breathing",
+    "breathing_1": "Breathe in through your nose for 4 seconds.",
+    "breathing_2": "Hold your breath for 7 seconds.",
+    "breathing_3": "Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "Repeat 4 times.",
+    "grounding_title": "5-4-3-2-1 grounding",
+    "grounding_intro": "Name, out loud or in your head:",
+    "grounding_5": "5 things you can see",
+    "grounding_4": "4 things you can touch",
+    "grounding_3": "3 things you can hear",
+    "grounding_2": "2 things you can smell",
+    "grounding_1": "1 thing you can taste",
+    "safety_plan_title": "Safety plan",
+    "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "Open template (Stanley-Brown)",
+    "report": "Report",
+    "report_aria": "Report a problem with this hotline",
+    "report_title": "Report this hotline",
+    "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_reason": "Reason",
+    "report_detail": "Details (optional)",
+    "report_submit": "Submit report",
+    "report_thanks": "Thank you. We'll review it.",
+    "filter_intersection": "Population",
+    "filter_intersection_all": "All",
+    "badge_reports_police": "May report to police",
+    "operator": "Operated by",
+    "verified_on": "Verified",
     "affiliation": {
-      "religious": "[JA] religious",
-      "state": "[JA] state",
-      "ngo": "[JA] NGO",
-      "secular": "[JA] secular"
+      "religious": "religious",
+      "state": "state",
+      "ngo": "NGO",
+      "secular": "secular"
     },
     "channel": {
-      "phone": "[JA] Call",
-      "sms": "[JA] Text",
-      "whatsapp": "[JA] WhatsApp",
-      "chat": "[JA] Chat",
-      "email": "[JA] Email"
+      "phone": "Call",
+      "sms": "Text",
+      "whatsapp": "WhatsApp",
+      "chat": "Chat",
+      "email": "Email"
     },
     "intersection": {
-      "trans-youth": "[JA] Trans youth",
-      "asylum": "[JA] Asylum seekers",
-      "sex-work": "[JA] Sex workers",
-      "hiv": "[JA] HIV+",
-      "elders": "[JA] Elders",
-      "deaf": "[JA] Deaf / HoH"
+      "trans-youth": "Trans youth",
+      "asylum": "Asylum seekers",
+      "sex-work": "Sex workers",
+      "hiv": "HIV+",
+      "elders": "Elders",
+      "deaf": "Deaf / HoH"
     },
     "report_options": {
-      "disconnected": "[JA] Number disconnected / no answer",
-      "wrong_number": "[JA] Wrong number",
-      "closed": "[JA] Service has shut down",
-      "unsafe": "[JA] Unsafe / harmful experience",
-      "other": "[JA] Other"
+      "disconnected": "Number disconnected / no answer",
+      "wrong_number": "Wrong number",
+      "closed": "Service has shut down",
+      "unsafe": "Unsafe / harmful experience",
+      "other": "Other"
     }
   },
   "sos": {
@@ -1340,23 +1471,23 @@
     "news": {
       "title": "最新ニュース"
     },
-    "discover": "[JA] Discover",
-    "destinationsTitle": "[JA] Where the scene lives.",
-    "destinationsSubtitle": "[JA] Six cities our community keeps coming back to.",
-    "allCities": "[JA] All cities",
-    "exploreCity": "[JA] Explore",
-    "browseEyebrow": "[JA] The index",
-    "browseTitle": "[JA] Browse everything.",
-    "browseSections": "[JA] sections",
+    "discover": "Discover",
+    "destinationsTitle": "Where the scene lives.",
+    "destinationsSubtitle": "Six cities our community keeps coming back to.",
+    "allCities": "All cities",
+    "exploreCity": "Explore",
+    "browseEyebrow": "The index",
+    "browseTitle": "Browse everything.",
+    "browseSections": "sections",
     "browse": {
       "count": {
-        "venues": "[JA] venues",
-        "events": "[JA] events",
-        "cities": "[JA] cities",
-        "hotels": "[JA] hotels",
-        "marketplace": "[JA] products",
-        "groups": "[JA] groups",
-        "resources": "[JA] resources"
+        "venues": "venues",
+        "events": "events",
+        "cities": "cities",
+        "hotels": "hotels",
+        "marketplace": "products",
+        "groups": "groups",
+        "resources": "resources"
       }
     }
   },
@@ -1404,7 +1535,7 @@
       "bookings": "予約",
       "tripInbox": "旅行の受信箱",
       "extension": "ブラウザ拡張機能",
-      "footprint": "[JA] Footprint"
+      "footprint": "Footprint"
     },
     "modes": {
       "dating": "恋人を探す",
@@ -1421,9 +1552,9 @@
       "legal": "法律",
       "contact": "お問い合わせ"
     },
-    "signUp": "[JA] Sign up",
-    "navigation": "[JA] Navigation",
-    "signIn": "[JA] Sign in"
+    "signUp": "Sign up",
+    "navigation": "Navigation",
+    "signIn": "Sign in"
   },
   "pages": {
     "venues": {
@@ -1446,7 +1577,8 @@
       "filteredEmpty": {
         "title": "フィルターに一致する会場がありません",
         "body": "フィルターや検索を調整して、より多くの結果を表示してください。"
-      }
+      },
+      "sortRelevance": "あなた向け"
     },
     "venueDetail": {
       "loadFailed": "スポットの詳細を読み込めませんでした。",
@@ -1521,50 +1653,50 @@
         "title": "フィルターに一致するイベントがありません",
         "body": "フィルターや検索を調整して、より多くの結果を表示してください。"
       },
-      "prideSubtype": "[JA] Pride type",
-      "mapView": "[JA] Map view",
+      "prideSubtype": "Pride type",
+      "mapView": "Map view",
       "preset": {
-        "label": "[JA] Quick filters",
-        "thisWeekend": "[JA] This weekend",
-        "nearMe": "[JA] Near me",
-        "pride": "[JA] Pride season",
-        "thisMonth": "[JA] This month",
-        "free": "[JA] Free",
-        "featured": "[JA] Featured",
-        "tonight": "[JA] Tonight",
-        "next7Days": "[JA] Next 7 days",
-        "newThisWeek": "[JA] New this week"
+        "label": "Quick filters",
+        "thisWeekend": "This weekend",
+        "nearMe": "Near me",
+        "pride": "Pride season",
+        "thisMonth": "This month",
+        "free": "Free",
+        "featured": "Featured",
+        "tonight": "Tonight",
+        "next7Days": "Next 7 days",
+        "newThisWeek": "New this week"
       },
       "rail": {
-        "featured": "[JA] Featured this week",
-        "featuredSubtitle": "[JA] Editor picks"
+        "featured": "Featured this week",
+        "featuredSubtitle": "Editor picks"
       },
       "smartEmpty": {
-        "title": "[JA] No events match your filters",
-        "body": "[JA] Try one of the suggestions below, or clear filters to browse everything.",
-        "clearCity": "[JA] Drop \"{{city}}\" filter",
-        "clearDate": "[JA] Drop date filter",
-        "viewAll": "[JA] View all upcoming events",
-        "sameCityHeader": "[JA] Try in {{city}} on other dates",
-        "otherCitiesHeader": "[JA] Try other cities in your date range",
-        "fallbackHeader": "[JA] Other upcoming events"
+        "title": "No events match your filters",
+        "body": "Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "Drop \"{{city}}\" filter",
+        "clearDate": "Drop date filter",
+        "viewAll": "View all upcoming events",
+        "sameCityHeader": "Try in {{city}} on other dates",
+        "otherCitiesHeader": "Try other cities in your date range",
+        "fallbackHeader": "Other upcoming events"
       },
       "spotlight": {
-        "eyebrow": "[JA] Spotlight",
-        "happeningNow": "[JA] Happening now",
-        "tomorrow": "[JA] Starts tomorrow",
-        "inDays_one": "[JA] Starts in {{count}} day",
-        "inDays_other": "[JA] Starts in {{count}} days",
-        "nearbyCount_one": "[JA] {{count}} event in {{city}}",
-        "nearbyCount_other": "[JA] {{count}} events in {{city}}"
+        "eyebrow": "Spotlight",
+        "happeningNow": "Happening now",
+        "tomorrow": "Starts tomorrow",
+        "inDays_one": "Starts in {{count}} day",
+        "inDays_other": "Starts in {{count}} days",
+        "nearbyCount_one": "{{count}} event in {{city}}",
+        "nearbyCount_other": "{{count}} events in {{city}}"
       },
-      "sortLabel": "[JA] Sort events",
+      "sortLabel": "Sort events",
       "sort": {
-        "dateAsc": "[JA] Soonest first",
-        "dateDesc": "[JA] Latest first",
-        "distance": "[JA] Closest to me",
-        "popularity": "[JA] Most popular",
-        "recent": "[JA] Recently added"
+        "dateAsc": "Soonest first",
+        "dateDesc": "Latest first",
+        "distance": "Closest to me",
+        "popularity": "Most popular",
+        "recent": "Recently added"
       },
       "searchLabel": "イベントを検索",
       "searchPlaceholder": "イベント、都市、主催者を検索",
@@ -1576,23 +1708,24 @@
       "resultsNear_other": "{{city}}近郊の{{count}}件のイベント",
       "showWorldwide": "世界中を表示",
       "timelineView": "タイムライン表示",
-      "accessibility": "[JA] Accessibility",
-      "accessibilityPlaceholder": "[JA] Any",
-      "targetGroups": "[JA] Audience",
-      "targetGroupsPlaceholder": "[JA] Any",
-      "languages": "[JA] Language",
-      "languagesPlaceholder": "[JA] Any",
-      "share": "[JA] Share",
-      "shareCopied": "[JA] Copied",
-      "shareFilters": "[JA] Copy share link",
-      "shareFiltersHint": "[JA] Copy a link to these filters",
-      "ageRestriction": "[JA] Age restriction",
-      "ageAny": "[JA] Any",
-      "ageAllAges": "[JA] All ages",
-      "age18Plus": "[JA] 18+",
-      "age21Plus": "[JA] 21+",
-      "filterAge": "[JA] Age: {{value}}",
-      "clearFilterAge": "[JA] Clear age filter"
+      "accessibility": "Accessibility",
+      "accessibilityPlaceholder": "Any",
+      "targetGroups": "Audience",
+      "targetGroupsPlaceholder": "Any",
+      "languages": "Language",
+      "languagesPlaceholder": "Any",
+      "share": "Share",
+      "shareCopied": "Copied",
+      "shareFilters": "Copy share link",
+      "shareFiltersHint": "Copy a link to these filters",
+      "ageRestriction": "Age restriction",
+      "ageAny": "Any",
+      "ageAllAges": "All ages",
+      "age18Plus": "18+",
+      "age21Plus": "21+",
+      "filterAge": "Age: {{value}}",
+      "clearFilterAge": "Clear age filter",
+      "calendarView": "カレンダー表示"
     },
     "eventDetail": {
       "loadFailed": "イベントの詳細を読み込めませんでした。",
@@ -1655,21 +1788,21 @@
       "exploreCta": "LGBTQ+フレンドリーな目的地",
       "exploreDescription": "安全情報と旅行ガイドのある都市と国を閲覧。",
       "hotels": {
-        "typeLabel": "[JA] Type",
-        "priceMin": "[JA] Min €",
-        "priceMax": "[JA] Max €",
-        "priceUnavailable": "[JA] Price on request",
-        "clearFilters": "[JA] Clear filters",
-        "noResultsWithFilters": "[JA] No hotels match your filters in {{city}}.",
+        "typeLabel": "Type",
+        "priceMin": "Min €",
+        "priceMax": "Max €",
+        "priceUnavailable": "Price on request",
+        "clearFilters": "Clear filters",
+        "noResultsWithFilters": "No hotels match your filters in {{city}}.",
         "type": {
-          "all": "[JA] Any type",
-          "hotel": "[JA] Hotel",
-          "boutique": "[JA] Boutique Hotel",
-          "bnb": "[JA] B&B",
-          "hostel": "[JA] Hostel",
-          "guesthouse": "[JA] Guesthouse",
-          "apartment": "[JA] Apartment",
-          "resort": "[JA] Resort"
+          "all": "Any type",
+          "hotel": "Hotel",
+          "boutique": "Boutique Hotel",
+          "bnb": "B&B",
+          "hostel": "Hostel",
+          "guesthouse": "Guesthouse",
+          "apartment": "Apartment",
+          "resort": "Resort"
         }
       },
       "hero": {
@@ -1728,8 +1861,8 @@
       "signInList": "無料アカウントを作成してビジネスを掲載しましょう。",
       "signInFavorites": "お気に入りを保存するにはログインしてください。",
       "loadError": "マーケットプレイスの読み込み中にエラーが発生しました。もう一度お試しください。",
-      "emptyFiltersTitle": "[JA] No listings match these filters.",
-      "emptyFiltersDescription": "[JA] Try clearing filters or broadening your search."
+      "emptyFiltersTitle": "No listings match these filters.",
+      "emptyFiltersDescription": "Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "アイテムが見つかりません",
@@ -1769,20 +1902,20 @@
       "emptyDescription": "後で確認してください。",
       "previous": "前へ",
       "next": "次へ",
-      "filteredEmptyTitle": "[JA] No news matches your filters.",
-      "filteredEmptyDescription": "[JA] Reset filters or try another topic.",
-      "resetFilters": "[JA] Reset filters",
-      "filterSearch": "[JA] Search",
-      "filterCategory": "[JA] Category",
-      "filterSource": "[JA] Source",
-      "filterFeatured": "[JA] Featured only",
-      "trendingTags": "[JA] Trending",
-      "minRead": "[JA] min read",
-      "share": "[JA] Share",
-      "linkCopied": "[JA] Link copied",
-      "density": "[JA] Density",
-      "comfortable": "[JA] Comfortable",
-      "compact": "[JA] Compact"
+      "filteredEmptyTitle": "No news matches your filters.",
+      "filteredEmptyDescription": "Reset filters or try another topic.",
+      "resetFilters": "Reset filters",
+      "filterSearch": "Search",
+      "filterCategory": "Category",
+      "filterSource": "Source",
+      "filterFeatured": "Featured only",
+      "trendingTags": "Trending",
+      "minRead": "min read",
+      "share": "Share",
+      "linkCopied": "Link copied",
+      "density": "Density",
+      "comfortable": "Comfortable",
+      "compact": "Compact"
     },
     "newsDetail": {
       "notFound": "記事が見つかりません",
@@ -1811,19 +1944,19 @@
       "emptyDescription": "フィルターを解除するか、別の名前で検索してみてください。",
       "loadingMore": "読み込み中…",
       "view": {
-        "grid": "[JA] Grid",
-        "timeline": "[JA] Timeline",
-        "map": "[JA] Map"
+        "grid": "Grid",
+        "timeline": "Timeline",
+        "map": "Map"
       },
       "editorial": {
-        "bornThisWeek": "[JA] Born this week",
-        "diedThisWeek": "[JA] Remembered this week",
-        "browseByEra": "[JA] Browse by era",
-        "browseByField": "[JA] Browse by field"
+        "bornThisWeek": "Born this week",
+        "diedThisWeek": "Remembered this week",
+        "browseByEra": "Browse by era",
+        "browseByField": "Browse by field"
       },
       "detail": {
-        "inTheNews": "[JA] In the news",
-        "relatedEvents": "[JA] Related events"
+        "inTheNews": "In the news",
+        "relatedEvents": "Related events"
       }
     },
     "groups": {
@@ -1867,7 +2000,15 @@
       "popular": "人気",
       "emptyTitle": "フィードはまだ空です",
       "emptyDescription": "人やグループをフォローして、ここで投稿を見ましょう。",
-      "createFirstPost": "最初の投稿を作成"
+      "createFirstPost": "最初の投稿を作成",
+      "subtitle": "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
+      "signInToPost": "Sign in to share posts, like, and comment.",
+      "searchEmptyTitle": "No posts match your search",
+      "searchEmptyDescription": "Try a different keyword or clear the search to see everything.",
+      "clearSearch": "Clear search",
+      "loadMore": "Load more",
+      "errorTitle": "We couldn't load the feed",
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
     },
     "notFound": {
       "title": "ページが見つかりません",
@@ -2096,95 +2237,95 @@
     "suggestCta": "都市を提案する"
   },
   "pride": {
-    "eyebrow": "[JA] Pride Calendar",
-    "export": "[JA] Export .ics",
-    "loading": "[JA] Loading…",
-    "previousYear": "[JA] Previous year",
-    "nextYear": "[JA] Next year",
-    "summary": "[JA] {{count}} pride · {{countries}} countries · {{cities}} cities",
-    "summary_other": "[JA] {{count}} prides · {{countries}} countries · {{cities}} cities",
-    "noMatches": "[JA] No prides match your filters.",
-    "clearFilters": "[JA] Clear filters",
-    "estimated": "[JA] Date estimated",
-    "inTripWindow": "[JA] In your trip window",
-    "featured": "[JA] Featured",
+    "eyebrow": "Pride Calendar",
+    "export": "Export .ics",
+    "loading": "Loading…",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
+    "summary": "{{count}} pride · {{countries}} countries · {{cities}} cities",
+    "summary_other": "{{count}} prides · {{countries}} countries · {{cities}} cities",
+    "noMatches": "No prides match your filters.",
+    "clearFilters": "Clear filters",
+    "estimated": "Date estimated",
+    "inTripWindow": "In your trip window",
+    "featured": "Featured",
     "filters": {
-      "aria": "[JA] Pride filters",
-      "searchPlaceholder": "[JA] Search prides, cities, countries…",
-      "searchAria": "[JA] Search prides",
-      "featured": "[JA] Featured",
-      "verified": "[JA] Confirmed dates",
-      "clearAll": "[JA] Clear all",
-      "month": "[JA] Month",
-      "region": "[JA] Region",
-      "country": "[JA] Country"
+      "aria": "Pride filters",
+      "searchPlaceholder": "Search prides, cities, countries…",
+      "searchAria": "Search prides",
+      "featured": "Featured",
+      "verified": "Confirmed dates",
+      "clearAll": "Clear all",
+      "month": "Month",
+      "region": "Region",
+      "country": "Country"
     },
     "continents": {
-      "Europe": "[JA] Europe",
-      "Americas": "[JA] Americas",
-      "Oceania": "[JA] Oceania",
-      "Asia": "[JA] Asia",
-      "Africa": "[JA] Africa",
-      "Other": "[JA] Other"
+      "Europe": "Europe",
+      "Americas": "Americas",
+      "Oceania": "Oceania",
+      "Asia": "Asia",
+      "Africa": "Africa",
+      "Other": "Other"
     },
     "timeline": {
-      "aria": "[JA] Pride events timeline",
-      "srTitle": "[JA] Pride timeline",
-      "today": "[JA] Today",
-      "helper": "[JA] {{count}} prides in {{year}} · click a row to select · solid dots are featured"
+      "aria": "Pride events timeline",
+      "srTitle": "Pride timeline",
+      "today": "Today",
+      "helper": "{{count}} prides in {{year}} · click a row to select · solid dots are featured"
     },
     "upNext": {
-      "title": "[JA] Up next",
-      "subtitle": "[JA] Soonest first",
-      "past": "[JA] Past",
-      "today": "[JA] Today",
-      "tomorrow": "[JA] Tomorrow",
-      "inDays": "[JA] In {{count}} days",
-      "inWeeks": "[JA] In {{count}} weeks",
-      "inMonths": "[JA] In {{count}} months",
-      "inYears": "[JA] In {{count}}y"
+      "title": "Up next",
+      "subtitle": "Soonest first",
+      "past": "Past",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "inDays": "In {{count}} days",
+      "inWeeks": "In {{count}} weeks",
+      "inMonths": "In {{count}} months",
+      "inYears": "In {{count}}y"
     },
     "spotlight": {
-      "eyebrow": "[JA] Spotlight",
-      "dismiss": "[JA] Dismiss",
-      "startsIn": "[JA] Starts in {{count}} day",
-      "startsIn_other": "[JA] Starts in {{count}} days",
-      "today": "[JA] Happening today",
-      "endedDaysAgo": "[JA] Ended {{count}} day ago",
-      "endedDaysAgo_other": "[JA] Ended {{count}} days ago",
-      "viewPride": "[JA] View pride",
-      "addToTrip": "[JA] Add to trip",
-      "signInToAdd": "[JA] Sign in to add to trip",
-      "showOnMap": "[JA] Show on map",
-      "venuesInCity": "[JA] Queer venues in {{city}}"
+      "eyebrow": "Spotlight",
+      "dismiss": "Dismiss",
+      "startsIn": "Starts in {{count}} day",
+      "startsIn_other": "Starts in {{count}} days",
+      "today": "Happening today",
+      "endedDaysAgo": "Ended {{count}} day ago",
+      "endedDaysAgo_other": "Ended {{count}} days ago",
+      "viewPride": "View pride",
+      "addToTrip": "Add to trip",
+      "signInToAdd": "Sign in to add to trip",
+      "showOnMap": "Show on map",
+      "venuesInCity": "Queer venues in {{city}}"
     },
     "map": {
-      "title": "[JA] World map",
-      "aria": "[JA] Pride events world map",
-      "popupView": "[JA] View pride"
+      "title": "World map",
+      "aria": "Pride events world map",
+      "popupView": "View pride"
     },
     "trips": {
-      "title": "[JA] Pride trip ideas",
-      "subtitle": "[JA] Up to 4 prides · within 21 days · <4000 km",
-      "meta": "[JA] {{count}} prides · {{days}} days",
-      "metaWithKm": "[JA] {{count}} prides · {{days}} days · {{km}} km",
-      "buildTrip": "[JA] Build this trip",
-      "featured": "[JA] Featured"
+      "title": "Pride trip ideas",
+      "subtitle": "Up to 4 prides · within 21 days · <4000 km",
+      "meta": "{{count}} prides · {{days}} days",
+      "metaWithKm": "{{count}} prides · {{days}} days · {{km}} km",
+      "buildTrip": "Build this trip",
+      "featured": "Featured"
     },
     "table": {
-      "title": "[JA] All prides",
-      "count": "[JA] {{count}} pride",
-      "count_other": "[JA] {{count}} prides",
-      "when": "[JA] When",
-      "pride": "[JA] Pride",
-      "location": "[JA] Location",
-      "region": "[JA] Region",
-      "estimated": "[JA] Estimated"
+      "title": "All prides",
+      "count": "{{count}} pride",
+      "count_other": "{{count}} prides",
+      "when": "When",
+      "pride": "Pride",
+      "location": "Location",
+      "region": "Region",
+      "estimated": "Estimated"
     },
     "card": {
-      "view": "[JA] View",
-      "addToTrip": "[JA] Add to trip",
-      "signIn": "[JA] Sign in"
+      "view": "View",
+      "addToTrip": "Add to trip",
+      "signIn": "Sign in"
     }
   }
 }

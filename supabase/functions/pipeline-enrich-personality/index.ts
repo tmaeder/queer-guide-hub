@@ -10,14 +10,8 @@
 
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { resolveByNameAndProfession, readClaim as claimValue } from '../_shared/wikidata-resolve.ts'
 
-interface WikidataHit {
-  id: string
-  label?: string
-  description?: string
-}
-
-const UA = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
 const WD_EXT: Record<string, string> = {
   P345: 'imdb_id',
   P214: 'viaf',
@@ -29,43 +23,11 @@ const WD_EXT: Record<string, string> = {
   P2013: 'facebook',
 }
 
-async function wdSearch(name: string): Promise<WikidataHit | null> {
-  try {
-    const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=en&format=json&limit=1`
-    const res = await fetch(url, { headers: { 'User-Agent': UA } })
-    const data = await res.json()
-    return (data.search?.[0] as WikidataHit) ?? null
-  } catch { return null }
-}
-
-async function wdEntity(qid: string): Promise<Record<string, unknown> | null> {
-  try {
-    const url = `https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`
-    const res = await fetch(url, { headers: { 'User-Agent': UA } })
-    const data = await res.json()
-    return data.entities?.[qid] ?? null
-  } catch { return null }
-}
-
-function claimValue(entity: Record<string, unknown>, prop: string): string | null {
-  const claims = (entity.claims as Record<string, unknown>)?.[prop] as Array<Record<string, unknown>> | undefined
-  if (!claims || !claims.length) return null
-  const main = (claims[0].mainsnak as Record<string, unknown>)?.datavalue as Record<string, unknown> | undefined
-  if (!main) return null
-  const v = main.value
-  if (typeof v === 'string') return v
-  if (typeof v === 'object' && v !== null) {
-    const vv = v as Record<string, unknown>
-    return (vv.id as string) ?? (vv.time as string) ?? (vv.text as string) ?? null
-  }
-  return null
-}
-
 async function imageOk(url: string | null): Promise<boolean> {
   if (!url) return false
   if (!/^https?:\/\//i.test(url)) return false
   try {
-    const res = await fetch(url, { method: 'HEAD', redirect: 'follow' })
+    const res = await fetch(url, { method: 'HEAD', redirect: 'follow', headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)' } })
     if (!res.ok) return false
     const ct = res.headers.get('content-type') ?? ''
     return ct.startsWith('image/')
@@ -105,23 +67,24 @@ Deno.serve(withErrorReporting('pipeline-enrich-personality', async (req) => {
       const ext: Record<string, string> = { ...((n.external_ids as Record<string, string>) ?? {}) }
 
       if (fetchWikidata && !n.wikidata_qid && n.name) {
-        const hit = await wdSearch(String(n.name))
-        if (hit?.id) {
-          patch.wikidata_qid = hit.id
-          if (!n.description && hit.description) patch.description = hit.description
-          const ent = await wdEntity(hit.id)
-          if (ent) {
-            const birth = claimValue(ent, 'P569')
-            const death = claimValue(ent, 'P570')
-            const image = claimValue(ent, 'P18')
-            if (!n.birth_date && birth) patch.birth_date = formatDate(birth)
-            if (!n.death_date && death) patch.death_date = formatDate(death)
-            if (!n.image_url && image) patch.image_url = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(image)}`
-            // External IDs
-            for (const [prop, key] of Object.entries(WD_EXT)) {
-              const v = claimValue(ent, prop)
-              if (v && !ext[key]) ext[key] = v
-            }
+        // Require profession for disambiguation. Refuses name-only matches —
+        // see wikidata-resolve.ts. Prevents the "Adult Performer with
+        // basketball-player description" class of bug (614 polluted rows).
+        const profession = (n.profession as string | undefined) ?? null
+        const match = await resolveByNameAndProfession(String(n.name), profession)
+        if (match) {
+          const ent = match.entity
+          patch.wikidata_qid = match.qid
+          if (!n.description && match.description) patch.description = match.description
+          const birth = claimValue(ent, 'P569')
+          const death = claimValue(ent, 'P570')
+          const image = claimValue(ent, 'P18')
+          if (!n.birth_date && birth) patch.birth_date = formatDate(birth)
+          if (!n.death_date && death) patch.death_date = formatDate(death)
+          if (!n.image_url && image) patch.image_url = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(image)}`
+          for (const [prop, key] of Object.entries(WD_EXT)) {
+            const v = claimValue(ent, prop)
+            if (v && !ext[key]) ext[key] = v
           }
         }
       }

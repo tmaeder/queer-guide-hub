@@ -23,6 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { CreateGroupEventData } from '@/hooks/useGroupEvents';
+import { useEventTypeOptions } from '@/lib/eventTypes';
 
 interface CreateGroupEventDialogProps {
   onCreateEvent: (eventData: CreateGroupEventData) => void;
@@ -30,6 +31,7 @@ interface CreateGroupEventDialogProps {
 }
 
 export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGroupEventDialogProps) {
+  const eventTypeOptions = useEventTypeOptions();
   const [open, setOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
@@ -195,16 +197,11 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="social">Social</SelectItem>
-                  <SelectItem value="meetup">Meetup</SelectItem>
-                  <SelectItem value="workshop">Workshop</SelectItem>
-                  <SelectItem value="conference">Conference</SelectItem>
-                  <SelectItem value="party">Party</SelectItem>
-                  <SelectItem value="sports">Sports</SelectItem>
-                  <SelectItem value="cultural">Cultural</SelectItem>
-                  <SelectItem value="educational">Educational</SelectItem>
-                  <SelectItem value="cruise">Cruise</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  {eventTypeOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

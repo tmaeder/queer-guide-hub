@@ -1,4 +1,25 @@
 {
+  "eventTypes": {
+    "party": "Party",
+    "festival": "Festival",
+    "pride": "Pride",
+    "meetup": "Meetup",
+    "workshop": "Workshop",
+    "concert": "Concert",
+    "conference": "Conference",
+    "film": "Film",
+    "drag": "Drag",
+    "sports": "Sports",
+    "art": "Art",
+    "theater": "Theater",
+    "fundraiser": "Fundraiser",
+    "protest": "Protest",
+    "social": "Social",
+    "community": "Community",
+    "fair": "Fair",
+    "fetish": "Fetish",
+    "other": "Other"
+  },
   "submission": {
     "errors": {
       "title": "Scan failed",
@@ -134,7 +155,9 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "save": "Save",
-    "delete": "Delete"
+    "delete": "Delete",
+    "signIn": "Sign in",
+    "goHome": "Go Home"
   },
   "navigation": {
     "home": "Home",
@@ -290,7 +313,7 @@
       "resent": "Verification email sent. Please check your inbox.",
       "backToLogin": "Back to sign in",
       "continue": "Continue to The Queer Guide",
-      "banner": "Verify your email to unlock contributions and messaging.",
+      "banner": "Verify your email to enable contributions and messaging.",
       "bannerSent": "Verification email sent. Check your inbox.",
       "resendShort": "Resend",
       "gateTitle": "Verify your email first",
@@ -339,7 +362,108 @@
     "review": "Write a Review",
     "photos": "Photos",
     "amenities": "Amenities",
-    "services": "Services"
+    "services": "Services",
+    "rails": {
+      "nearYou": {
+        "title": "Near you",
+        "subtitle": "Venues within 30 km, ranked by distance."
+      },
+      "forYou": {
+        "title": "For your taste",
+        "subtitle": "Picked from your interests and where you’ve been."
+      },
+      "new": {
+        "title": "New this month",
+        "subtitle": "Fresh additions to the guide."
+      },
+      "topInCity": {
+        "title": "Top in {{city}}",
+        "subtitle": "Popular with the community right now."
+      },
+      "editors": {
+        "title": "Editor’s picks",
+        "subtitle": "Hand-curated highlights worth the trip."
+      }
+    },
+    "hero": {
+      "kicker": "Featured this week",
+      "cta": "Read more",
+      "label": "Featured venue"
+    },
+    "personalStrip": {
+      "title": "{{name}} · Level {{level}}",
+      "label": "Your venue stats",
+      "passport": "View passport",
+      "points": "Points",
+      "venues": "Venues",
+      "streak": "Day streak",
+      "checkins": "Check-ins",
+      "nextLevel": "Next: {{name}}"
+    },
+    "results": {
+      "title": "Matching venues"
+    },
+    "quickFilters": {
+      "openNow": "Open now",
+      "radius": "Distance",
+      "radiusKm": "Within {{km}} km",
+      "anyDistance": "Any distance",
+      "price": "Price",
+      "anyPrice": "Any price",
+      "clear": "Clear"
+    },
+    "leaderboard": {
+      "title": "Leaderboard",
+      "subtitle": "Top explorers ranked by venues visited.",
+      "tabs": {
+        "global": "Global",
+        "city": "In {{city}}"
+      },
+      "empty": "No data yet — be the first to check in.",
+      "venuesShort": "venues",
+      "widget": {
+        "label": "Top explorers",
+        "titleCity": "Top in {{city}}",
+        "titleGlobal": "Top explorers",
+        "viewAll": "View all",
+        "anon": "Anonymous explorer",
+        "you": "You"
+      }
+    },
+    "passport": {
+      "title": "Your passport",
+      "subtitle": "Every venue you’ve checked into and every badge you’ve earned.",
+      "achievements": "Achievements",
+      "earned": "Earned",
+      "locked": "+{{pts}} pts",
+      "visited": "{{count}} venues visited",
+      "empty": "No check-ins yet. Visit a venue to start your passport.",
+      "signInPrompt": "Sign in to see your passport."
+    },
+    "onboarding": {
+      "progress": "Step {{current}} of {{total}}",
+      "step1": {
+        "title": "What kinds of venues do you love?"
+      },
+      "step2": {
+        "title": "Which communities do you call home?"
+      },
+      "step3": {
+        "title": "What vibes are you here for?"
+      },
+      "step4": {
+        "title": "Where do you spend most of your time?"
+      },
+      "cityPlaceholder": "Type your city",
+      "citySelected": "Selected: {{city}}",
+      "finish": "Finish",
+      "saveError": "Could not save",
+      "saveSuccess": "Tastes saved"
+    },
+    "achievementToast": {
+      "unlocked": "Unlocked: {{name}}",
+      "fallback": "New achievement earned"
+    }
   },
   "marketplace": {
     "title": "Marketplace",
@@ -1428,7 +1552,8 @@
       "filteredEmpty": {
         "title": "No venues match your filters",
         "body": "Try adjusting your filters or search to see more results."
-      }
+      },
+      "sortRelevance": "For you"
     },
     "venueDetail": {
       "loadFailed": "Failed to load venue details.",
@@ -1527,7 +1652,8 @@
         "pride": "Pride season",
         "free": "Free",
         "featured": "Featured",
-        "newThisWeek": "New this week"
+        "newThisWeek": "New this week",
+        "thisMonth": "This month"
       },
       "rail": {
         "featured": "Featured this week",
@@ -1573,7 +1699,8 @@
       "resultsNear_one": "{{count}} event near {{city}}",
       "resultsNear_other": "{{count}} events near {{city}}",
       "showWorldwide": "Show worldwide",
-      "timelineView": "Timeline view"
+      "timelineView": "Timeline view",
+      "calendarView": "Calendar view"
     },
     "eventDetail": {
       "loadFailed": "Failed to load event details.",
@@ -1633,7 +1760,7 @@
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
       "activitiesComingSoon": "Activities coming soon.",
       "browseDestinations": "Browse destinations",
-      "exploreCta": "Explore LGBTQ+ friendly destinations",
+      "exploreCta": "LGBTQ+ friendly destinations",
       "exploreDescription": "Browse cities and countries with detailed safety information and travel guides.",
       "hero": {
         "title": "Plan a trip",
@@ -1674,7 +1801,8 @@
       },
       "bookNow": {
         "title": "Book now",
-        "subtitle": "Search flights, hotels, and activities directly — no trip required."
+        "subtitle": "Search flights, hotels, and activities directly — no trip required.",
+        "headline": "Book without a trip"
       },
       "hotels": {
         "typeLabel": "Type",
@@ -1693,6 +1821,9 @@
           "apartment": "Apartment",
           "resort": "Resort"
         }
+      },
+      "plan": {
+        "switchTrip": "Switch active trip"
       }
     },
     "marketplace": {
@@ -1843,8 +1974,16 @@
       "recent": "Recent",
       "popular": "Popular",
       "emptyTitle": "Your feed is fresh",
-      "emptyDescription": "Follow people and groups to see their posts here.",
-      "createFirstPost": "Create First Post"
+      "emptyDescription": "No posts yet. Be the first to share something with the community.",
+      "createFirstPost": "Create First Post",
+      "subtitle": "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
+      "signInToPost": "Sign in to share posts, like, and comment.",
+      "searchEmptyTitle": "No posts match your search",
+      "searchEmptyDescription": "Try a different keyword or clear the search to see everything.",
+      "clearSearch": "Clear search",
+      "loadMore": "Load more",
+      "errorTitle": "We couldn't load the feed",
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
     },
     "notFound": {
       "title": "Page not found",
@@ -1933,7 +2072,7 @@
       "tagCountTotal": "{{count}} tags total (across all subcategories)",
       "tagCountTotalAria": "{{count}} tags total across all subcategories",
       "totalChildHint": "Each subcategory's count is the number of tags directly assigned to it",
-      "supportNewsAlert": "Need immediate help? Browse our curated crisis hotlines directory.",
+      "supportNewsAlert": "Need immediate help? Browse our crisis hotlines directory.",
       "crisisHotlines": "Crisis Hotlines",
       "emptyTitle": "No tags in this category yet",
       "emptyDescription": "Check back soon — this bucket is being filled.",
@@ -2034,7 +2173,7 @@
     },
     "graph": {
       "title": "Tag Relationship Graph",
-      "description": "Explore how tags relate by semantic similarity and co-occurrence"
+      "description": "See how tags relate by semantic similarity and co-occurrence"
     }
   },
   "cities": {
