@@ -79,6 +79,14 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
       )
     : [];
 
+  // Venue Truth Engine: per-field consensus confidence + contributing sources.
+  const enriched = (stagingData as Record<string, unknown>)?.enriched_data as Record<string, unknown> | undefined;
+  const consensus = enriched?.consensus as
+    | { sources?: string[]; gated?: boolean; closure?: string | null }
+    | undefined;
+  const fieldConfidence = (enriched?.field_confidence as Record<string, number> | undefined) ?? {};
+  const confidenceRows = Object.entries(fieldConfidence).sort((a, b) => a[1] - b[1]);
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -136,6 +144,48 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
                   Changes
                 </p>
                 <FieldDiffView diffs={diffs} />
+              </div>
+            )}
+
+            {/* Venue consensus: sources + per-field confidence */}
+            {consensus && (
+              <div className="border-t">
+                <p className="px-4 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
+                  Consensus
+                </p>
+                <div className="px-4 py-2 space-y-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {(consensus.sources ?? []).map((s) => (
+                      <Badge key={s} variant="outline" className="text-2xs normal-case">
+                        {humanize(s)}
+                      </Badge>
+                    ))}
+                    {consensus.gated && (
+                      <Badge variant="secondary" className="text-2xs normal-case ml-auto">
+                        Needs review
+                      </Badge>
+                    )}
+                    {consensus.closure && (
+                      <Badge variant="destructive" className="text-2xs normal-case">
+                        {consensus.closure === 'auto_close' ? 'Closed' : 'Closure flag'}
+                      </Badge>
+                    )}
+                  </div>
+                  {confidenceRows.length > 0 && (
+                    <div className="divide-y">
+                      {confidenceRows.map(([field, conf]) => (
+                        <div key={field} className="flex items-baseline justify-between gap-4 py-1 text-xs">
+                          <span className="text-muted-foreground text-2xs uppercase tracking-wider">
+                            {formatMetaKey(field)}
+                          </span>
+                          <span className={`tabular-nums ${conf < 0.7 ? 'text-muted-foreground' : 'font-medium'}`}>
+                            {Math.round(conf * 100)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
