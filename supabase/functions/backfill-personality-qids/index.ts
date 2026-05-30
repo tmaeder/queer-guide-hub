@@ -7,6 +7,7 @@
 // ============================================================
 
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, getCorsHeaders, requireAdmin } from '../_shared/supabase-client.ts'
+import { resolveByNameAndProfession, readClaim as claim, readEntityLabel as wdLabel, readEntityDescription } from '../_shared/wikidata-resolve.ts'
 
 const UA = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
 const WD_EXT: Record<string, string> = {
@@ -15,40 +16,11 @@ const WD_EXT: Record<string, string> = {
   P2002: 'twitter', P2003: 'instagram', P2013: 'facebook',
 }
 
-async function wdSearch(name: string) {
-  const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=en&format=json&limit=3`
-  const res = await fetch(url, { headers: { 'User-Agent': UA } })
-  if (!res.ok) return null
-  const data = await res.json()
-  return data.search?.[0] ?? null
-}
-
 async function wdEntity(qid: string) {
   const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`, { headers: { 'User-Agent': UA } })
   if (!res.ok) return null
   const data = await res.json()
   return data.entities?.[qid] ?? null
-}
-
-async function wdLabel(qid: string): Promise<string | null> {
-  const ent = await wdEntity(qid)
-  if (!ent) return null
-  const labels = ent.labels as Record<string, { value: string }> | undefined
-  return labels?.en?.value ?? Object.values(labels ?? {})[0]?.value ?? null
-}
-
-function claim(entity: Record<string, unknown>, prop: string): string | null {
-  const c = (entity.claims as Record<string, unknown>)?.[prop] as Array<Record<string, unknown>> | undefined
-  if (!c?.length) return null
-  const m = (c[0].mainsnak as Record<string, unknown>)?.datavalue as Record<string, unknown> | undefined
-  if (!m) return null
-  const v = m.value
-  if (typeof v === 'string') return v
-  if (typeof v === 'object' && v !== null) {
-    const vv = v as Record<string, unknown>
-    return (vv.id as string) ?? (vv.time as string) ?? (vv.text as string) ?? null
-  }
-  return null
 }
 
 function fmtDate(v: string | null): string | null {
@@ -72,7 +44,9 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     const limit = Math.min((body.limit as number) || 50, 200)
     const dryRun = body.dry_run as boolean || false
-    const minScore = (body.min_match_score as number) || 0.7
+    // `minScore` retained for API compatibility; disambiguation now happens
+    // inside resolveByNameAndProfession (occupation overlap, not name-similarity).
+    const _minScore = (body.min_match_score as number) || 0.7
 
     const mode = (body.mode as string) || 'qid' // 'qid' = find QIDs, 'enrich' = fill birth_place for those with QIDs
 
@@ -112,30 +86,33 @@ Deno.serve(async (req) => {
 
       let qid: string | null = null
       let sim = 1.0
+      let resolvedEntity: Record<string, unknown> | null = null
+      let resolvedDescription: string | null = null
 
       if (mode === 'enrich') {
         // Already have QID
         qid = row.wikidata_qid as string
       } else {
-        const hit = await wdSearch(row.name as string)
-        if (!hit?.id) { skipped++; continue }
-
-        const label = String(hit.label ?? '').toLowerCase()
-        const nameL = String(row.name).toLowerCase()
-        sim = label === nameL ? 1.0 : (label.includes(nameL) || nameL.includes(label) ? 0.85 : 0.6)
-        if (sim < minScore) { skipped++; continue }
-        qid = hit.id
+        // Refuse to backfill rows without a profession — name-only matching
+        // is what produced 614 polluted rows. Operator should set profession
+        // before requesting a QID backfill.
+        const profession = row.profession as string | null
+        if (!profession || !profession.trim()) { skipped++; continue }
+        const match = await resolveByNameAndProfession(String(row.name), profession)
+        if (!match) { skipped++; continue }
+        qid = match.qid
+        sim = match.score
+        resolvedEntity = match.entity
+        resolvedDescription = match.description ?? readEntityDescription(match.entity)
       }
 
       matched++
       const patch: Record<string, unknown> = mode === 'enrich' ? {} : { wikidata_qid: qid }
-      const ent = await wdEntity(qid!)
+      const ent = resolvedEntity ?? await wdEntity(qid!)
       if (ent) {
         if (!row.description && mode !== 'enrich') {
-          const labels = ent.labels as Record<string, { value: string }> | undefined
-          const desc = (ent.descriptions as Record<string, { value: string }>)?.en?.value
+          const desc = resolvedDescription ?? readEntityDescription(ent)
           if (desc) patch.description = desc
-          void labels // used above in wdLabel
         }
         if (!row.birth_date) { const b = fmtDate(claim(ent, 'P569')); if (b) patch.birth_date = b }
         if (!row.death_date) { const d = fmtDate(claim(ent, 'P570')); if (d) patch.death_date = d }
