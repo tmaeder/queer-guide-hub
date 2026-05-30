@@ -56,64 +56,64 @@
       "resources": "리소스 탐색…",
       "personalities": "인물 찾기…"
     },
-    "trending": "[KO] Trending",
-    "browse": "[KO] Browse",
-    "recentSearches": "[KO] Recent searches",
-    "clearRecent": "[KO] Clear recent searches",
-    "savedLabel": "[KO] Saved",
-    "savedSearches": "[KO] Saved searches",
-    "saveThisSearch": "[KO] Save this search",
-    "namePlaceholder": "[KO] Name…",
-    "noSavedYet": "[KO] No saved searches yet.",
-    "loadMore": "[KO] Load more",
-    "loading": "[KO] Loading…",
-    "searchForQ": "[KO] Search for \"{{q}}\"",
-    "backToTop": "[KO] Back to top",
-    "openFilters": "[KO] Open filters",
-    "activeFilters": "[KO] Active filters",
-    "clearAll": "[KO] Clear all",
-    "noMappable": "[KO] No mappable results in this view.",
-    "voice": "[KO] Voice search",
-    "stopVoice": "[KO] Stop voice search",
-    "mapView": "[KO] Map view",
-    "seeAllN": "[KO] See all {{n}} →",
-    "removeFilter": "[KO] Remove filter {{label}}",
-    "deleteSavedSearch": "[KO] Delete saved search {{name}}",
-    "tryDifferent": "[KO] Try different keywords or adjust your filters",
-    "unavailable": "[KO] Search is temporarily unavailable",
-    "noResultsFor": "[KO] No results found for \"{{q}}\"",
+    "trending": "Trending",
+    "browse": "Browse",
+    "recentSearches": "Recent searches",
+    "clearRecent": "Clear recent searches",
+    "savedLabel": "Saved",
+    "savedSearches": "Saved searches",
+    "saveThisSearch": "Save this search",
+    "namePlaceholder": "Name…",
+    "noSavedYet": "No saved searches yet.",
+    "loadMore": "Load more",
+    "loading": "Loading…",
+    "searchForQ": "Search for \"{{q}}\"",
+    "backToTop": "Back to top",
+    "openFilters": "Open filters",
+    "activeFilters": "Active filters",
+    "clearAll": "Clear all",
+    "noMappable": "No mappable results in this view.",
+    "voice": "Voice search",
+    "stopVoice": "Stop voice search",
+    "mapView": "Map view",
+    "seeAllN": "See all {{n}} →",
+    "removeFilter": "Remove filter {{label}}",
+    "deleteSavedSearch": "Delete saved search {{name}}",
+    "tryDifferent": "Try different keywords or adjust your filters",
+    "unavailable": "Search is temporarily unavailable",
+    "noResultsFor": "No results found for \"{{q}}\"",
     "scope": {
-      "all": "[KO] All",
-      "venues": "[KO] Venues",
-      "events": "[KO] Events",
-      "marketplace": "[KO] Marketplace",
-      "news": "[KO] News",
-      "people": "[KO] People",
-      "cities": "[KO] Cities",
-      "places": "[KO] Places"
+      "all": "All",
+      "venues": "Venues",
+      "events": "Events",
+      "marketplace": "Marketplace",
+      "news": "News",
+      "people": "People",
+      "cities": "Cities",
+      "places": "Places"
     },
     "quickLinks": {
-      "places": "[KO] Places",
-      "cities": "[KO] Cities",
-      "eventsWeekend": "[KO] Events this weekend",
-      "personalities": "[KO] Personalities",
-      "marketplace": "[KO] Marketplace"
+      "places": "Places",
+      "cities": "Cities",
+      "eventsWeekend": "Events this weekend",
+      "personalities": "Personalities",
+      "marketplace": "Marketplace"
     },
     "kbd": {
-      "navigate": "[KO] Navigate",
-      "select": "[KO] Select",
-      "complete": "[KO] Complete",
-      "close": "[KO] Close"
+      "navigate": "Navigate",
+      "select": "Select",
+      "complete": "Complete",
+      "close": "Close"
     },
-    "nearMeWithRadius": "[KO] Near me ({{km}}km)",
-    "searchThisArea": "[KO] Search this area",
-    "didYouMean": "[KO] Did you mean \"{{q}}\"?",
+    "nearMeWithRadius": "Near me ({{km}}km)",
+    "searchThisArea": "Search this area",
+    "didYouMean": "Did you mean \"{{q}}\"?",
     "boost": {
-      "interest": "[KO] Matches your interests",
-      "recent_tag": "[KO] Recently viewed topic",
-      "home_city": "[KO] In your home city",
-      "recent_city": "[KO] In a city you've explored",
-      "featured": "[KO] Featured"
+      "interest": "Matches your interests",
+      "recent_tag": "Recently viewed topic",
+      "home_city": "In your home city",
+      "recent_city": "In a city you've explored",
+      "featured": "Featured"
     }
   },
   "common": {
@@ -142,7 +142,9 @@
     "done": "Done",
     "unknown": "Unknown",
     "somethingWentWrong": "Something went wrong.",
-    "clear": "Clear"
+    "clear": "Clear",
+    "signIn": "Sign in",
+    "goHome": "Go Home"
   },
   "navigation": {
     "home": "홈",
@@ -201,29 +203,29 @@
       "description": "일정을 만들고, 각 목적지의 LGBTQ+ 안전 정보를 확인하고, 모든 것을 한곳에 모으세요.",
       "cta": "첫 여행 만들기",
       "hero": {
-        "title": "[KO] Plan a trip you'll feel safe on.",
-        "subtitle": "[KO] Three ways to start — pick whichever fits."
+        "title": "Plan a trip you'll feel safe on.",
+        "subtitle": "Three ways to start — pick whichever fits."
       },
       "paths": {
         "scratch": {
-          "title": "[KO] Start from scratch",
-          "description": "[KO] Empty itinerary, your destinations, your pace.",
-          "cta": "[KO] Create trip"
+          "title": "Start from scratch",
+          "description": "Empty itinerary, your destinations, your pace.",
+          "cta": "Create trip"
         },
         "template": {
-          "title": "[KO] Use a template",
-          "description": "[KO] Pre-built itineraries you can fork and edit.",
-          "cta": "[KO] Browse templates"
+          "title": "Use a template",
+          "description": "Pre-built itineraries you can fork and edit.",
+          "cta": "Browse templates"
         },
         "discover": {
-          "title": "[KO] Fork a public trip",
-          "description": "[KO] Real itineraries from other QG travelers.",
-          "cta": "[KO] Open Discover"
+          "title": "Fork a public trip",
+          "description": "Real itineraries from other QG travelers.",
+          "cta": "Open Discover"
         }
       },
-      "discoverEyebrow": "[KO] From real travelers",
-      "discoverTitle": "[KO] Recent public trips",
-      "discoverCta": "[KO] Open Discover"
+      "discoverEyebrow": "From real travelers",
+      "discoverTitle": "Recent public trips",
+      "discoverCta": "Open Discover"
     },
     "filteredEmpty": {
       "title": "일치하는 여행이 없습니다",
@@ -247,7 +249,7 @@
         "active": "진행 중",
         "completed": "완료",
         "archived": "보관됨",
-        "saved": "[KO] Saved"
+        "saved": "Saved"
       },
       "sort": {
         "recent": "최근 업데이트",
@@ -398,10 +400,10 @@
       "fitAllAria": "모든 장소를 화면에 맞추기",
       "filterAll": "모든 날짜",
       "dayLabel": "{{number}}일차",
-      "showAttractions": "[KO] Attractions",
-      "showEvents": "[KO] Events",
-      "suggestedVenue": "[KO] Suggested venue",
-      "eventOn": "[KO] Event · {{date}}"
+      "showAttractions": "Attractions",
+      "showEvents": "Events",
+      "suggestedVenue": "Suggested venue",
+      "eventOn": "Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "아직 안전 정보가 없어요",
@@ -641,90 +643,90 @@
     "discover": {
       "title": "장소 탐색",
       "button": "마켓 둘러보기",
-      "eyebrow": "[KO] Real travelers",
-      "subtitle": "[KO] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
-      "searchPlaceholder": "[KO] Filter by city…",
-      "aria": "[KO] Discover public trips",
-      "sortAria": "[KO] Sort trips",
-      "viewAria": "[KO] View mode",
-      "filterAria": "[KO] Filter trips",
-      "filtersAria": "[KO] Open filters",
+      "eyebrow": "Real travelers",
+      "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "Filter by city…",
+      "aria": "Discover public trips",
+      "sortAria": "Sort trips",
+      "viewAria": "View mode",
+      "filterAria": "Filter trips",
+      "filtersAria": "Open filters",
       "filters": {
-        "title": "[KO] undefined",
-        "travelerType": "[KO] undefined",
-        "duration": "[KO] undefined",
-        "minEquality": "[KO] undefined",
-        "minEqualityAria": "[KO] undefined",
-        "minEqualityHint": "[KO] undefined",
-        "noMin": "[KO] undefined",
-        "quality": "[KO] undefined",
-        "hasCover": "[KO] undefined",
-        "hasOwnerProfile": "[KO] undefined",
-        "clear": "[KO] undefined"
+        "title": "undefined",
+        "travelerType": "undefined",
+        "duration": "undefined",
+        "minEquality": "undefined",
+        "minEqualityAria": "undefined",
+        "minEqualityHint": "undefined",
+        "noMin": "undefined",
+        "quality": "undefined",
+        "hasCover": "undefined",
+        "hasOwnerProfile": "undefined",
+        "clear": "undefined"
       },
-      "activeCountAria": "[KO] {{count}} active",
+      "activeCountAria": "{{count}} active",
       "view": {
-        "list": "[KO] List view",
-        "map": "[KO] Map view"
+        "list": "List view",
+        "map": "Map view"
       },
       "sort": {
-        "recent": "[KO] Most recent",
-        "trending": "[KO] Trending",
-        "most_places": "[KO] Most places",
-        "longest": "[KO] Longest",
-        "safest": "[KO] Safest"
+        "recent": "Most recent",
+        "trending": "Trending",
+        "most_places": "Most places",
+        "longest": "Longest",
+        "safest": "Safest"
       },
       "filter": {
-        "dated": "[KO] Has dates",
-        "multiday": "[KO] Multi-day",
-        "safe": "[KO] Safe destinations"
+        "dated": "Has dates",
+        "multiday": "Multi-day",
+        "safe": "Safe destinations"
       },
       "travelerType": {
-        "any": "[KO] Any",
-        "solo": "[KO] Solo",
-        "couple": "[KO] Couple",
-        "group": "[KO] Group",
-        "family": "[KO] Family"
+        "any": "Any",
+        "solo": "Solo",
+        "couple": "Couple",
+        "group": "Group",
+        "family": "Family"
       },
       "duration": {
-        "any": "[KO] Any length",
-        "weekend": "[KO] Weekend (1–3 days)",
-        "week": "[KO] Week (4–9 days)",
-        "long": "[KO] Long (10+ days)"
+        "any": "Any length",
+        "weekend": "Weekend (1–3 days)",
+        "week": "Week (4–9 days)",
+        "long": "Long (10+ days)"
       },
       "region": {
-        "europe": "[KO] Europe",
-        "north_america": "[KO] North America",
-        "latin_america": "[KO] Latin America",
-        "asia": "[KO] Asia",
-        "oceania": "[KO] Oceania",
-        "africa": "[KO] Africa",
-        "middle_east": "[KO] Middle East",
-        "other": "[KO] Other"
+        "europe": "Europe",
+        "north_america": "North America",
+        "latin_america": "Latin America",
+        "asia": "Asia",
+        "oceania": "Oceania",
+        "africa": "Africa",
+        "middle_east": "Middle East",
+        "other": "Other"
       },
       "staffPicks": {
-        "eyebrow": "[KO] Staff picks",
-        "title": "[KO] Trips worth copying"
+        "eyebrow": "Staff picks",
+        "title": "Trips worth copying"
       },
-      "all": "[KO] All public trips",
-      "moreInspiration": "[KO] More inspiration",
-      "moreInspirationDescription": "[KO] Few public trips match. Start from a template instead.",
-      "emptyTitle": "[KO] No public trips yet",
-      "emptyFiltered": "[KO] No public trips match that city. Try a different one.",
-      "emptyDescription": "[KO] Be the first — make any of your trips public from the Share dialog.",
-      "anonymous": "[KO] A QG traveler",
-      "placeCount": "[KO] {{count}} places",
-      "fork": "[KO] Fork into my trips",
-      "forkAria": "[KO] Fork this trip",
-      "forking": "[KO] Forking…",
-      "forked": "[KO] Trip forked",
-      "forkedDescription": "[KO] Your copy is ready — edit days and places freely.",
-      "forkError": "[KO] Could not create trip",
-      "inspiredTitle": "[KO] Inspired by: {{title}}",
-      "signalsAria": "[KO] Trip activity",
-      "forkCount": "[KO] {{count}} forks",
-      "saveCount": "[KO] {{count}} saves",
-      "filtersButton": "[KO] Filters"
+      "all": "All public trips",
+      "moreInspiration": "More inspiration",
+      "moreInspirationDescription": "Few public trips match. Start from a template instead.",
+      "emptyTitle": "No public trips yet",
+      "emptyFiltered": "No public trips match that city. Try a different one.",
+      "emptyDescription": "Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "A QG traveler",
+      "placeCount": "{{count}} places",
+      "fork": "Fork into my trips",
+      "forkAria": "Fork this trip",
+      "forking": "Forking…",
+      "forked": "Trip forked",
+      "forkedDescription": "Your copy is ready — edit days and places freely.",
+      "forkError": "Could not create trip",
+      "inspiredTitle": "Inspired by: {{title}}",
+      "signalsAria": "Trip activity",
+      "forkCount": "{{count}} forks",
+      "saveCount": "{{count}} saves",
+      "filtersButton": "Filters"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -849,24 +851,24 @@
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
     },
     "next": {
-      "live": "[KO] Active now",
-      "countdown": "[KO] Coming up",
-      "upcoming": "[KO] Upcoming",
-      "open": "[KO] Open trip",
-      "openLive": "[KO] Open today's plan",
-      "today": "[KO] Today's view"
+      "live": "Active now",
+      "countdown": "Coming up",
+      "upcoming": "Upcoming",
+      "open": "Open trip",
+      "openLive": "Open today's plan",
+      "today": "Today's view"
     },
     "inspired": {
-      "eyebrow": "[KO] Inspired by your trips",
-      "title": "[KO] Public trips you might like",
-      "cta": "[KO] See all"
+      "eyebrow": "Inspired by your trips",
+      "title": "Public trips you might like",
+      "cta": "See all"
     },
     "save": {
-      "save": "[KO] Save",
-      "saved": "[KO] Saved",
-      "saveAria": "[KO] Save trip",
-      "unsaveAria": "[KO] Unsave trip",
-      "error": "[KO] Could not update save"
+      "save": "Save",
+      "saved": "Saved",
+      "saveAria": "Save trip",
+      "unsaveAria": "Unsave trip",
+      "error": "Could not update save"
     }
   },
   "auth": {
@@ -901,7 +903,7 @@
       "pronouns": "Select your pronouns",
       "country": "Optional",
       "language": "Select language",
-      "passwordMin8": "[KO] At least 8 characters"
+      "passwordMin8": "At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -932,8 +934,8 @@
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
       "ageAria": "Confirm age 18 or older",
-      "combined": "[KO] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
-      "combinedAria": "[KO] Accept terms, privacy and confirm 18 or older"
+      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -954,8 +956,8 @@
         "profile": "Profile",
         "interests": "Interests"
       },
-      "blurb": "[KO] Free, takes a minute.",
-      "haveAccountQ": "[KO] Already have an account? Sign in"
+      "blurb": "Free, takes a minute.",
+      "haveAccountQ": "Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -998,16 +1000,16 @@
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
       "backToLogin": "Back to sign in",
-      "continue": "[KO] Continue to The Queer Guide",
-      "banner": "[KO] Verify your email to unlock contributions and messaging.",
-      "bannerSent": "[KO] Verification email sent. Check your inbox.",
-      "resendShort": "[KO] Resend",
-      "gateTitle": "[KO] Verify your email first",
-      "gateDescription": "[KO] Confirm your email to contribute or message other members."
+      "continue": "Continue to The Queer Guide",
+      "banner": "Verify your email to unlock contributions and messaging.",
+      "bannerSent": "Verification email sent. Check your inbox.",
+      "resendShort": "Resend",
+      "gateTitle": "Verify your email first",
+      "gateDescription": "Confirm your email to contribute or message other members."
     },
     "required": {
-      "title": "[KO] Sign in required",
-      "description": "[KO] Please sign in to continue."
+      "title": "Sign in required",
+      "description": "Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1052,7 +1054,115 @@
     "review": "리뷰 작성",
     "photos": "사진",
     "amenities": "편의시설",
-    "services": "서비스"
+    "services": "서비스",
+    "rails": {
+      "nearYou": {
+        "title": "내 근처",
+        "subtitle": "30km 이내, 거리순."
+      },
+      "forYou": {
+        "title": "나의 취향",
+        "subtitle": "관심사와 방문 기록 기반."
+      },
+      "forYouPromo": {
+        "label": "장소 맞춤 설정",
+        "kicker": "나의 취향",
+        "title": "무엇을 좋아하는지 알려주세요.",
+        "body": "로그인하고 4가지 짧은 질문에 답해주세요. 관심사에 따라 정렬해드립니다.",
+        "cta": "시작하기"
+      },
+      "new": {
+        "title": "이달의 새 장소",
+        "subtitle": "가이드에 새로 추가됨."
+      },
+      "topInCity": {
+        "title": "{{city}} 인기",
+        "subtitle": "커뮤니티에서 인기."
+      },
+      "editors": {
+        "title": "에디터 추천",
+        "subtitle": "엄선한 하이라이트."
+      }
+    },
+    "hero": {
+      "kicker": "이번 주 추천",
+      "cta": "더 보기",
+      "label": "추천 장소"
+    },
+    "personalStrip": {
+      "title": "{{name}} · 레벨 {{level}}",
+      "label": "나의 통계",
+      "passport": "여권 보기",
+      "points": "포인트",
+      "venues": "장소",
+      "streak": "연속 일수",
+      "checkins": "체크인",
+      "nextLevel": "다음: {{name}}"
+    },
+    "results": {
+      "title": "일치하는 장소"
+    },
+    "quickFilters": {
+      "openNow": "지금 영업",
+      "radius": "거리",
+      "radiusKm": "{{km}}km 이내",
+      "anyDistance": "거리 무관",
+      "price": "가격",
+      "anyPrice": "가격 무관",
+      "clear": "지우기"
+    },
+    "leaderboard": {
+      "title": "리더보드",
+      "subtitle": "방문 장소 수 기준 상위 탐험가.",
+      "tabs": {
+        "global": "전 세계",
+        "city": "{{city}}"
+      },
+      "empty": "아직 데이터 없음.",
+      "venuesShort": "장소",
+      "widget": {
+        "label": "상위 탐험가",
+        "titleCity": "{{city}} 상위",
+        "titleGlobal": "상위 탐험가",
+        "viewAll": "전체 보기",
+        "anon": "익명 탐험가",
+        "you": "당신"
+      }
+    },
+    "passport": {
+      "title": "나의 여권",
+      "subtitle": "방문한 모든 장소와 획득한 배지.",
+      "achievements": "업적",
+      "earned": "획득",
+      "locked": "+{{pts}} pt",
+      "visited": "{{count}}개 장소 방문",
+      "empty": "체크인 없음.",
+      "signInPrompt": "로그인하여 여권을 확인하세요."
+    },
+    "onboarding": {
+      "progress": "단계 {{current}}/{{total}}",
+      "step1": {
+        "title": "어떤 장소를 좋아하나요?"
+      },
+      "step2": {
+        "title": "어떤 커뮤니티에 속해 있나요?"
+      },
+      "step3": {
+        "title": "어떤 분위기를 찾나요?"
+      },
+      "step4": {
+        "title": "주로 어디서 시간을 보내나요?"
+      },
+      "cityPlaceholder": "도시 입력",
+      "citySelected": "선택됨: {{city}}",
+      "finish": "완료",
+      "saveError": "저장 실패",
+      "saveSuccess": "취향 저장됨"
+    },
+    "achievementToast": {
+      "unlocked": "잠금 해제: {{name}}",
+      "fallback": "새 업적 획득"
+    }
   },
   "marketplace": {
     "title": "마켓플레이스",
@@ -1212,76 +1322,76 @@
       "relationships": "관계",
       "women": "여성"
     },
-    "quick_exit": "[KO] Quick exit",
-    "quick_exit_aria": "[KO] Leave this page immediately (ESC)",
-    "hide_screen": "[KO] Hide screen",
-    "reveal_aria": "[KO] Click anywhere to show the page again",
-    "hidden_hint": "[KO] Page hidden. Click anywhere to show again.",
-    "hero_label": "[KO] Recommended right now",
-    "expect_title": "[KO] What happens when you call",
-    "expect_short": "[KO] What to expect",
-    "expect_1": "[KO] You'll hear a short greeting. You don't have to give your name.",
-    "expect_2": "[KO] You can hang up at any time. You can call back as often as you need.",
-    "expect_3": "[KO] Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
-    "expect_4": "[KO] If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "[KO] While you wait",
-    "self_help_title": "[KO] Steady yourself",
-    "self_help_desc": "[KO] Short techniques you can use while you wait, or instead of a call if you're not ready.",
-    "breathing_title": "[KO] 4-7-8 breathing",
-    "breathing_1": "[KO] Breathe in through your nose for 4 seconds.",
-    "breathing_2": "[KO] Hold your breath for 7 seconds.",
-    "breathing_3": "[KO] Breathe out through your mouth for 8 seconds.",
-    "breathing_4": "[KO] Repeat 4 times.",
-    "grounding_title": "[KO] 5-4-3-2-1 grounding",
-    "grounding_intro": "[KO] Name, out loud or in your head:",
-    "grounding_5": "[KO] 5 things you can see",
-    "grounding_4": "[KO] 4 things you can touch",
-    "grounding_3": "[KO] 3 things you can hear",
-    "grounding_2": "[KO] 2 things you can smell",
-    "grounding_1": "[KO] 1 thing you can taste",
-    "safety_plan_title": "[KO] Safety plan",
-    "safety_plan_desc": "[KO] A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
-    "safety_plan_link": "[KO] Open template (Stanley-Brown)",
-    "report": "[KO] Report",
-    "report_aria": "[KO] Report a problem with this hotline",
-    "report_title": "[KO] Report this hotline",
-    "report_desc": "[KO] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
-    "report_reason": "[KO] Reason",
-    "report_detail": "[KO] Details (optional)",
-    "report_submit": "[KO] Submit report",
-    "report_thanks": "[KO] Thank you. We'll review it.",
-    "filter_intersection": "[KO] Population",
-    "filter_intersection_all": "[KO] All",
-    "badge_reports_police": "[KO] May report to police",
-    "operator": "[KO] Operated by",
-    "verified_on": "[KO] Verified",
+    "quick_exit": "Quick exit",
+    "quick_exit_aria": "Leave this page immediately (ESC)",
+    "hide_screen": "Hide screen",
+    "reveal_aria": "Click anywhere to show the page again",
+    "hidden_hint": "Page hidden. Click anywhere to show again.",
+    "hero_label": "Recommended right now",
+    "expect_title": "What happens when you call",
+    "expect_short": "What to expect",
+    "expect_1": "You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
+    "self_help_trigger": "While you wait",
+    "self_help_title": "Steady yourself",
+    "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "breathing_title": "4-7-8 breathing",
+    "breathing_1": "Breathe in through your nose for 4 seconds.",
+    "breathing_2": "Hold your breath for 7 seconds.",
+    "breathing_3": "Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "Repeat 4 times.",
+    "grounding_title": "5-4-3-2-1 grounding",
+    "grounding_intro": "Name, out loud or in your head:",
+    "grounding_5": "5 things you can see",
+    "grounding_4": "4 things you can touch",
+    "grounding_3": "3 things you can hear",
+    "grounding_2": "2 things you can smell",
+    "grounding_1": "1 thing you can taste",
+    "safety_plan_title": "Safety plan",
+    "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "Open template (Stanley-Brown)",
+    "report": "Report",
+    "report_aria": "Report a problem with this hotline",
+    "report_title": "Report this hotline",
+    "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_reason": "Reason",
+    "report_detail": "Details (optional)",
+    "report_submit": "Submit report",
+    "report_thanks": "Thank you. We'll review it.",
+    "filter_intersection": "Population",
+    "filter_intersection_all": "All",
+    "badge_reports_police": "May report to police",
+    "operator": "Operated by",
+    "verified_on": "Verified",
     "affiliation": {
-      "religious": "[KO] religious",
-      "state": "[KO] state",
-      "ngo": "[KO] NGO",
-      "secular": "[KO] secular"
+      "religious": "religious",
+      "state": "state",
+      "ngo": "NGO",
+      "secular": "secular"
     },
     "channel": {
-      "phone": "[KO] Call",
-      "sms": "[KO] Text",
-      "whatsapp": "[KO] WhatsApp",
-      "chat": "[KO] Chat",
-      "email": "[KO] Email"
+      "phone": "Call",
+      "sms": "Text",
+      "whatsapp": "WhatsApp",
+      "chat": "Chat",
+      "email": "Email"
     },
     "intersection": {
-      "trans-youth": "[KO] Trans youth",
-      "asylum": "[KO] Asylum seekers",
-      "sex-work": "[KO] Sex workers",
-      "hiv": "[KO] HIV+",
-      "elders": "[KO] Elders",
-      "deaf": "[KO] Deaf / HoH"
+      "trans-youth": "Trans youth",
+      "asylum": "Asylum seekers",
+      "sex-work": "Sex workers",
+      "hiv": "HIV+",
+      "elders": "Elders",
+      "deaf": "Deaf / HoH"
     },
     "report_options": {
-      "disconnected": "[KO] Number disconnected / no answer",
-      "wrong_number": "[KO] Wrong number",
-      "closed": "[KO] Service has shut down",
-      "unsafe": "[KO] Unsafe / harmful experience",
-      "other": "[KO] Other"
+      "disconnected": "Number disconnected / no answer",
+      "wrong_number": "Wrong number",
+      "closed": "Service has shut down",
+      "unsafe": "Unsafe / harmful experience",
+      "other": "Other"
     }
   },
   "sos": {
@@ -1340,23 +1450,23 @@
     "news": {
       "title": "최신 뉴스"
     },
-    "discover": "[KO] Discover",
-    "destinationsTitle": "[KO] Where the scene lives.",
-    "destinationsSubtitle": "[KO] Six cities our community keeps coming back to.",
-    "allCities": "[KO] All cities",
-    "exploreCity": "[KO] Explore",
-    "browseEyebrow": "[KO] The index",
-    "browseTitle": "[KO] Browse everything.",
-    "browseSections": "[KO] sections",
+    "discover": "Discover",
+    "destinationsTitle": "Where the scene lives.",
+    "destinationsSubtitle": "Six cities our community keeps coming back to.",
+    "allCities": "All cities",
+    "exploreCity": "Explore",
+    "browseEyebrow": "The index",
+    "browseTitle": "Browse everything.",
+    "browseSections": "sections",
     "browse": {
       "count": {
-        "venues": "[KO] venues",
-        "events": "[KO] events",
-        "cities": "[KO] cities",
-        "hotels": "[KO] hotels",
-        "marketplace": "[KO] products",
-        "groups": "[KO] groups",
-        "resources": "[KO] resources"
+        "venues": "venues",
+        "events": "events",
+        "cities": "cities",
+        "hotels": "hotels",
+        "marketplace": "products",
+        "groups": "groups",
+        "resources": "resources"
       }
     }
   },
@@ -1404,7 +1514,7 @@
       "bookings": "예약",
       "tripInbox": "여행 수신함",
       "extension": "브라우저 확장 프로그램",
-      "footprint": "[KO] Footprint"
+      "footprint": "Footprint"
     },
     "modes": {
       "dating": "사랑을 찾아서",
@@ -1421,9 +1531,9 @@
       "legal": "법률",
       "contact": "문의"
     },
-    "signUp": "[KO] Sign up",
-    "navigation": "[KO] Navigation",
-    "signIn": "[KO] Sign in"
+    "signUp": "Sign up",
+    "navigation": "Navigation",
+    "signIn": "Sign in"
   },
   "pages": {
     "venues": {
@@ -1446,7 +1556,8 @@
       "filteredEmpty": {
         "title": "필터와 일치하는 장소가 없습니다",
         "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
-      }
+      },
+      "sortRelevance": "맞춤"
     },
     "venueDetail": {
       "loadFailed": "장소 상세 정보를 불러올 수 없습니다.",
@@ -1521,50 +1632,50 @@
         "title": "필터와 일치하는 이벤트가 없습니다",
         "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
       },
-      "prideSubtype": "[KO] Pride type",
-      "mapView": "[KO] Map view",
+      "prideSubtype": "Pride type",
+      "mapView": "Map view",
       "preset": {
-        "label": "[KO] Quick filters",
-        "thisWeekend": "[KO] This weekend",
-        "nearMe": "[KO] Near me",
-        "pride": "[KO] Pride season",
-        "thisMonth": "[KO] This month",
-        "free": "[KO] Free",
-        "featured": "[KO] Featured",
-        "tonight": "[KO] Tonight",
-        "next7Days": "[KO] Next 7 days",
-        "newThisWeek": "[KO] New this week"
+        "label": "Quick filters",
+        "thisWeekend": "This weekend",
+        "nearMe": "Near me",
+        "pride": "Pride season",
+        "thisMonth": "This month",
+        "free": "Free",
+        "featured": "Featured",
+        "tonight": "Tonight",
+        "next7Days": "Next 7 days",
+        "newThisWeek": "New this week"
       },
       "rail": {
-        "featured": "[KO] Featured this week",
-        "featuredSubtitle": "[KO] Editor picks"
+        "featured": "Featured this week",
+        "featuredSubtitle": "Editor picks"
       },
       "smartEmpty": {
-        "title": "[KO] No events match your filters",
-        "body": "[KO] Try one of the suggestions below, or clear filters to browse everything.",
-        "clearCity": "[KO] Drop \"{{city}}\" filter",
-        "clearDate": "[KO] Drop date filter",
-        "viewAll": "[KO] View all upcoming events",
-        "sameCityHeader": "[KO] Try in {{city}} on other dates",
-        "otherCitiesHeader": "[KO] Try other cities in your date range",
-        "fallbackHeader": "[KO] Other upcoming events"
+        "title": "No events match your filters",
+        "body": "Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "Drop \"{{city}}\" filter",
+        "clearDate": "Drop date filter",
+        "viewAll": "View all upcoming events",
+        "sameCityHeader": "Try in {{city}} on other dates",
+        "otherCitiesHeader": "Try other cities in your date range",
+        "fallbackHeader": "Other upcoming events"
       },
       "spotlight": {
-        "eyebrow": "[KO] Spotlight",
-        "happeningNow": "[KO] Happening now",
-        "tomorrow": "[KO] Starts tomorrow",
-        "inDays_one": "[KO] Starts in {{count}} day",
-        "inDays_other": "[KO] Starts in {{count}} days",
-        "nearbyCount_one": "[KO] {{count}} event in {{city}}",
-        "nearbyCount_other": "[KO] {{count}} events in {{city}}"
+        "eyebrow": "Spotlight",
+        "happeningNow": "Happening now",
+        "tomorrow": "Starts tomorrow",
+        "inDays_one": "Starts in {{count}} day",
+        "inDays_other": "Starts in {{count}} days",
+        "nearbyCount_one": "{{count}} event in {{city}}",
+        "nearbyCount_other": "{{count}} events in {{city}}"
       },
-      "sortLabel": "[KO] Sort events",
+      "sortLabel": "Sort events",
       "sort": {
-        "dateAsc": "[KO] Soonest first",
-        "dateDesc": "[KO] Latest first",
-        "distance": "[KO] Closest to me",
-        "popularity": "[KO] Most popular",
-        "recent": "[KO] Recently added"
+        "dateAsc": "Soonest first",
+        "dateDesc": "Latest first",
+        "distance": "Closest to me",
+        "popularity": "Most popular",
+        "recent": "Recently added"
       },
       "searchLabel": "이벤트 검색",
       "searchPlaceholder": "이벤트, 도시, 주최자 검색",
@@ -1576,23 +1687,24 @@
       "resultsNear_other": "{{city}} 근처 이벤트 {{count}}개",
       "showWorldwide": "전 세계 보기",
       "timelineView": "타임라인 보기",
-      "accessibility": "[KO] Accessibility",
-      "accessibilityPlaceholder": "[KO] Any",
-      "targetGroups": "[KO] Audience",
-      "targetGroupsPlaceholder": "[KO] Any",
-      "languages": "[KO] Language",
-      "languagesPlaceholder": "[KO] Any",
-      "share": "[KO] Share",
-      "shareCopied": "[KO] Copied",
-      "shareFilters": "[KO] Copy share link",
-      "shareFiltersHint": "[KO] Copy a link to these filters",
-      "ageRestriction": "[KO] Age restriction",
-      "ageAny": "[KO] Any",
-      "ageAllAges": "[KO] All ages",
-      "age18Plus": "[KO] 18+",
-      "age21Plus": "[KO] 21+",
-      "filterAge": "[KO] Age: {{value}}",
-      "clearFilterAge": "[KO] Clear age filter"
+      "accessibility": "Accessibility",
+      "accessibilityPlaceholder": "Any",
+      "targetGroups": "Audience",
+      "targetGroupsPlaceholder": "Any",
+      "languages": "Language",
+      "languagesPlaceholder": "Any",
+      "share": "Share",
+      "shareCopied": "Copied",
+      "shareFilters": "Copy share link",
+      "shareFiltersHint": "Copy a link to these filters",
+      "ageRestriction": "Age restriction",
+      "ageAny": "Any",
+      "ageAllAges": "All ages",
+      "age18Plus": "18+",
+      "age21Plus": "21+",
+      "filterAge": "Age: {{value}}",
+      "clearFilterAge": "Clear age filter",
+      "calendarView": "캘린더 보기"
     },
     "eventDetail": {
       "loadFailed": "이벤트 상세 정보를 불러올 수 없습니다.",
@@ -1655,21 +1767,21 @@
       "exploreCta": "LGBTQ+ 친화 여행지",
       "exploreDescription": "안전 정보와 가이드가 있는 도시와 국가 보기.",
       "hotels": {
-        "typeLabel": "[KO] Type",
-        "priceMin": "[KO] Min €",
-        "priceMax": "[KO] Max €",
-        "priceUnavailable": "[KO] Price on request",
-        "clearFilters": "[KO] Clear filters",
-        "noResultsWithFilters": "[KO] No hotels match your filters in {{city}}.",
+        "typeLabel": "Type",
+        "priceMin": "Min €",
+        "priceMax": "Max €",
+        "priceUnavailable": "Price on request",
+        "clearFilters": "Clear filters",
+        "noResultsWithFilters": "No hotels match your filters in {{city}}.",
         "type": {
-          "all": "[KO] Any type",
-          "hotel": "[KO] Hotel",
-          "boutique": "[KO] Boutique Hotel",
-          "bnb": "[KO] B&B",
-          "hostel": "[KO] Hostel",
-          "guesthouse": "[KO] Guesthouse",
-          "apartment": "[KO] Apartment",
-          "resort": "[KO] Resort"
+          "all": "Any type",
+          "hotel": "Hotel",
+          "boutique": "Boutique Hotel",
+          "bnb": "B&B",
+          "hostel": "Hostel",
+          "guesthouse": "Guesthouse",
+          "apartment": "Apartment",
+          "resort": "Resort"
         }
       },
       "hero": {
@@ -1728,8 +1840,8 @@
       "signInList": "무료 계정을 만들어 비즈니스를 등록하세요.",
       "signInFavorites": "즐겨찾기를 저장하려면 로그인하세요.",
       "loadError": "마켓플레이스를 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요.",
-      "emptyFiltersTitle": "[KO] No listings match these filters.",
-      "emptyFiltersDescription": "[KO] Try clearing filters or broadening your search."
+      "emptyFiltersTitle": "No listings match these filters.",
+      "emptyFiltersDescription": "Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "항목을 찾을 수 없음",
@@ -1769,20 +1881,20 @@
       "emptyDescription": "나중에 다시 확인하세요.",
       "previous": "이전",
       "next": "다음",
-      "filteredEmptyTitle": "[KO] No news matches your filters.",
-      "filteredEmptyDescription": "[KO] Reset filters or try another topic.",
-      "resetFilters": "[KO] Reset filters",
-      "filterSearch": "[KO] Search",
-      "filterCategory": "[KO] Category",
-      "filterSource": "[KO] Source",
-      "filterFeatured": "[KO] Featured only",
-      "trendingTags": "[KO] Trending",
-      "minRead": "[KO] min read",
-      "share": "[KO] Share",
-      "linkCopied": "[KO] Link copied",
-      "density": "[KO] Density",
-      "comfortable": "[KO] Comfortable",
-      "compact": "[KO] Compact"
+      "filteredEmptyTitle": "No news matches your filters.",
+      "filteredEmptyDescription": "Reset filters or try another topic.",
+      "resetFilters": "Reset filters",
+      "filterSearch": "Search",
+      "filterCategory": "Category",
+      "filterSource": "Source",
+      "filterFeatured": "Featured only",
+      "trendingTags": "Trending",
+      "minRead": "min read",
+      "share": "Share",
+      "linkCopied": "Link copied",
+      "density": "Density",
+      "comfortable": "Comfortable",
+      "compact": "Compact"
     },
     "newsDetail": {
       "notFound": "기사를 찾을 수 없음",
@@ -1811,19 +1923,19 @@
       "emptyDescription": "필터를 해제하거나 다른 이름으로 검색해 보세요.",
       "loadingMore": "더 불러오는 중…",
       "view": {
-        "grid": "[KO] Grid",
-        "timeline": "[KO] Timeline",
-        "map": "[KO] Map"
+        "grid": "Grid",
+        "timeline": "Timeline",
+        "map": "Map"
       },
       "editorial": {
-        "bornThisWeek": "[KO] Born this week",
-        "diedThisWeek": "[KO] Remembered this week",
-        "browseByEra": "[KO] Browse by era",
-        "browseByField": "[KO] Browse by field"
+        "bornThisWeek": "Born this week",
+        "diedThisWeek": "Remembered this week",
+        "browseByEra": "Browse by era",
+        "browseByField": "Browse by field"
       },
       "detail": {
-        "inTheNews": "[KO] In the news",
-        "relatedEvents": "[KO] Related events"
+        "inTheNews": "In the news",
+        "relatedEvents": "Related events"
       }
     },
     "groups": {
@@ -1867,7 +1979,15 @@
       "popular": "인기",
       "emptyTitle": "피드가 아직 비어 있어요",
       "emptyDescription": "사람과 그룹을 팔로우하면 여기에서 게시물을 볼 수 있어요.",
-      "createFirstPost": "첫 번째 게시물 작성"
+      "createFirstPost": "첫 번째 게시물 작성",
+      "subtitle": "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
+      "signInToPost": "Sign in to share posts, like, and comment.",
+      "searchEmptyTitle": "No posts match your search",
+      "searchEmptyDescription": "Try a different keyword or clear the search to see everything.",
+      "clearSearch": "Clear search",
+      "loadMore": "Load more",
+      "errorTitle": "We couldn't load the feed",
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
     },
     "notFound": {
       "title": "페이지를 찾을 수 없음",
@@ -2096,95 +2216,95 @@
     "suggestCta": "도시 제안하기"
   },
   "pride": {
-    "eyebrow": "[KO] Pride Calendar",
-    "export": "[KO] Export .ics",
-    "loading": "[KO] Loading…",
-    "previousYear": "[KO] Previous year",
-    "nextYear": "[KO] Next year",
-    "summary": "[KO] {{count}} pride · {{countries}} countries · {{cities}} cities",
-    "summary_other": "[KO] {{count}} prides · {{countries}} countries · {{cities}} cities",
-    "noMatches": "[KO] No prides match your filters.",
-    "clearFilters": "[KO] Clear filters",
-    "estimated": "[KO] Date estimated",
-    "inTripWindow": "[KO] In your trip window",
-    "featured": "[KO] Featured",
+    "eyebrow": "Pride Calendar",
+    "export": "Export .ics",
+    "loading": "Loading…",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
+    "summary": "{{count}} pride · {{countries}} countries · {{cities}} cities",
+    "summary_other": "{{count}} prides · {{countries}} countries · {{cities}} cities",
+    "noMatches": "No prides match your filters.",
+    "clearFilters": "Clear filters",
+    "estimated": "Date estimated",
+    "inTripWindow": "In your trip window",
+    "featured": "Featured",
     "filters": {
-      "aria": "[KO] Pride filters",
-      "searchPlaceholder": "[KO] Search prides, cities, countries…",
-      "searchAria": "[KO] Search prides",
-      "featured": "[KO] Featured",
-      "verified": "[KO] Confirmed dates",
-      "clearAll": "[KO] Clear all",
-      "month": "[KO] Month",
-      "region": "[KO] Region",
-      "country": "[KO] Country"
+      "aria": "Pride filters",
+      "searchPlaceholder": "Search prides, cities, countries…",
+      "searchAria": "Search prides",
+      "featured": "Featured",
+      "verified": "Confirmed dates",
+      "clearAll": "Clear all",
+      "month": "Month",
+      "region": "Region",
+      "country": "Country"
     },
     "continents": {
-      "Europe": "[KO] Europe",
-      "Americas": "[KO] Americas",
-      "Oceania": "[KO] Oceania",
-      "Asia": "[KO] Asia",
-      "Africa": "[KO] Africa",
-      "Other": "[KO] Other"
+      "Europe": "Europe",
+      "Americas": "Americas",
+      "Oceania": "Oceania",
+      "Asia": "Asia",
+      "Africa": "Africa",
+      "Other": "Other"
     },
     "timeline": {
-      "aria": "[KO] Pride events timeline",
-      "srTitle": "[KO] Pride timeline",
-      "today": "[KO] Today",
-      "helper": "[KO] {{count}} prides in {{year}} · click a row to select · solid dots are featured"
+      "aria": "Pride events timeline",
+      "srTitle": "Pride timeline",
+      "today": "Today",
+      "helper": "{{count}} prides in {{year}} · click a row to select · solid dots are featured"
     },
     "upNext": {
-      "title": "[KO] Up next",
-      "subtitle": "[KO] Soonest first",
-      "past": "[KO] Past",
-      "today": "[KO] Today",
-      "tomorrow": "[KO] Tomorrow",
-      "inDays": "[KO] In {{count}} days",
-      "inWeeks": "[KO] In {{count}} weeks",
-      "inMonths": "[KO] In {{count}} months",
-      "inYears": "[KO] In {{count}}y"
+      "title": "Up next",
+      "subtitle": "Soonest first",
+      "past": "Past",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "inDays": "In {{count}} days",
+      "inWeeks": "In {{count}} weeks",
+      "inMonths": "In {{count}} months",
+      "inYears": "In {{count}}y"
     },
     "spotlight": {
-      "eyebrow": "[KO] Spotlight",
-      "dismiss": "[KO] Dismiss",
-      "startsIn": "[KO] Starts in {{count}} day",
-      "startsIn_other": "[KO] Starts in {{count}} days",
-      "today": "[KO] Happening today",
-      "endedDaysAgo": "[KO] Ended {{count}} day ago",
-      "endedDaysAgo_other": "[KO] Ended {{count}} days ago",
-      "viewPride": "[KO] View pride",
-      "addToTrip": "[KO] Add to trip",
-      "signInToAdd": "[KO] Sign in to add to trip",
-      "showOnMap": "[KO] Show on map",
-      "venuesInCity": "[KO] Queer venues in {{city}}"
+      "eyebrow": "Spotlight",
+      "dismiss": "Dismiss",
+      "startsIn": "Starts in {{count}} day",
+      "startsIn_other": "Starts in {{count}} days",
+      "today": "Happening today",
+      "endedDaysAgo": "Ended {{count}} day ago",
+      "endedDaysAgo_other": "Ended {{count}} days ago",
+      "viewPride": "View pride",
+      "addToTrip": "Add to trip",
+      "signInToAdd": "Sign in to add to trip",
+      "showOnMap": "Show on map",
+      "venuesInCity": "Queer venues in {{city}}"
     },
     "map": {
-      "title": "[KO] World map",
-      "aria": "[KO] Pride events world map",
-      "popupView": "[KO] View pride"
+      "title": "World map",
+      "aria": "Pride events world map",
+      "popupView": "View pride"
     },
     "trips": {
-      "title": "[KO] Pride trip ideas",
-      "subtitle": "[KO] Up to 4 prides · within 21 days · <4000 km",
-      "meta": "[KO] {{count}} prides · {{days}} days",
-      "metaWithKm": "[KO] {{count}} prides · {{days}} days · {{km}} km",
-      "buildTrip": "[KO] Build this trip",
-      "featured": "[KO] Featured"
+      "title": "Pride trip ideas",
+      "subtitle": "Up to 4 prides · within 21 days · <4000 km",
+      "meta": "{{count}} prides · {{days}} days",
+      "metaWithKm": "{{count}} prides · {{days}} days · {{km}} km",
+      "buildTrip": "Build this trip",
+      "featured": "Featured"
     },
     "table": {
-      "title": "[KO] All prides",
-      "count": "[KO] {{count}} pride",
-      "count_other": "[KO] {{count}} prides",
-      "when": "[KO] When",
-      "pride": "[KO] Pride",
-      "location": "[KO] Location",
-      "region": "[KO] Region",
-      "estimated": "[KO] Estimated"
+      "title": "All prides",
+      "count": "{{count}} pride",
+      "count_other": "{{count}} prides",
+      "when": "When",
+      "pride": "Pride",
+      "location": "Location",
+      "region": "Region",
+      "estimated": "Estimated"
     },
     "card": {
-      "view": "[KO] View",
-      "addToTrip": "[KO] Add to trip",
-      "signIn": "[KO] Sign in"
+      "view": "View",
+      "addToTrip": "Add to trip",
+      "signIn": "Sign in"
     }
   }
 }
