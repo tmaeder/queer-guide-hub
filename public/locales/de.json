@@ -1059,6 +1059,7 @@
       "consentRequired": "Bitte akzeptiere die Nutzungsbedingungen, die Datenschutzrichtlinie und bestätige, dass du mindestens 18 Jahre alt bist",
       "displayNameRequired": "Anzeigename ist erforderlich",
       "fillAllFields": "Bitte fülle alle Felder aus",
+      "captchaRequired": "Bitte schließe das Captcha ab.",
       "invalidCredentials": "Ungültige E-Mail oder ungültiges Passwort.",
       "emailNotConfirmed": "Bitte bestätige deine E-Mail-Adresse, bevor du dich anmeldest.",
       "alreadyRegistered": "Ein Konto mit dieser E-Mail existiert bereits. Versuche dich anzumelden.",
