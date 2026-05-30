@@ -81,6 +81,7 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
     const batchSize = Math.min((body.batch_size as number) || 25, 100)
     const dryRun = body.dry_run === true
 
+    // Highest-priority stale/incomplete records first.
     const { data: targets, error: tErr } = await supabase
       .from('personality_data_health')
       .select('id, name')
@@ -89,7 +90,7 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       .order('priority', { ascending: false })
       .limit(batchSize)
     if (tErr) return errorResponse(`scan: ${tErr.message}`, 500, req)
-    if (!targets?.length) return jsonResponse({ success: true, items: 0, message: 'nothing stale' }, 200, req)
+    if (!targets?.length) return jsonResponse({ success: true, items: 0, candidates: 0, dry_run: dryRun, results: [] }, 200, req)
 
     let updated = 0
     const results: Row[] = []
@@ -137,14 +138,16 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
         wikiUrl = wiki.source_url
         if (wiki.extract) {
           incoming.description = incoming.description ?? wiki.extract.slice(0, 280)
-          incoming.bio = wiki.extract
+          incoming.bio = wiki.extract.slice(0, 4000)
         }
         if (wiki.image_url && !incoming.image_url) incoming.image_url = wiki.image_url
       }
 
+      // Validate any candidate image before it lands.
       const candidateImg = (incoming.image_url as string) ?? null
       if (candidateImg && !(await imageOk(candidateImg))) delete incoming.image_url
 
+      // Fill ONLY blank columns on the live record; external_ids is an additive merge.
       const patch = fillBlanks(p as Row, incoming)
       if (incoming.external_ids) patch.external_ids = incoming.external_ids
 
@@ -165,6 +168,12 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       }).eq('id', id)
       if (uErr) { results[results.length - 1].error = uErr.message; continue }
 
+      // Provenance. personality_sources is UNIQUE on (source_slug, source_entity_id).
+      // wikidata path is collision-safe: personalities.wikidata_qid is itself UNIQUE, so a
+      // colliding QID fails the UPDATE above and we skip before writing provenance. wikipedia
+      // path keys on the article URL; cross-personality collisions only occur for two records
+      // sharing one enwiki article (i.e. likely duplicates) — accepted Phase-1 limitation for
+      // an audit row; hardened in a later phase.
       if (qid) {
         await supabase.from('personality_sources').upsert({
           personality_id: id, source_slug: 'wikidata', source_entity_id: qid,
@@ -182,7 +191,7 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       updated++
     }
 
-    return jsonResponse({ success: true, items: updated, dry_run: dryRun, results }, 200, req)
+    return jsonResponse({ success: true, items: updated, candidates: results.length, dry_run: dryRun, results }, 200, req)
   } catch (error) {
     console.error('personality-refresh:', error)
     return errorResponse((error as Error).message, 500, req)
