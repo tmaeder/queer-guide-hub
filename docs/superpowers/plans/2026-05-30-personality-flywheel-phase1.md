@@ -655,19 +655,33 @@ git commit -m "feat(personalities): personality-refresh edge function (Loop A mu
 ```sql
 -- supabase/migrations/<ts>_personality_refresh_cron.sql
 -- Continuous refresh: invoke personality-refresh every 30 min.
--- Reuses public.invoke_edge_function (pg_net → edge fn with service-role auth).
+-- Uses pg_net net.http_post — same pattern as 20260414290000_pipeline_cron_schedules.sql.
 -- Batch of 25/run × 48 runs/day ≈ 1,200 records/day → full 12.6k corpus
 -- cycled ~every 10 days, then re-prioritised by staleness.
+--
+-- NOTE: v_auth uses the project anon bearer (same token the existing pipeline
+-- crons use). personality-refresh runs getServiceClient() internally, so the
+-- bearer only needs to satisfy the gateway. If the function is deployed with
+-- verify_jwt enabled and rejects anon, deploy it with --no-verify-jwt
+-- (`supabase functions deploy personality-refresh --no-verify-jwt`) — match
+-- whatever the other pipeline-* cron-invoked functions use.
 
-DO $$ BEGIN
+DO $$
+DECLARE
+  v_url     TEXT := 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1';
+  v_auth    TEXT := 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
+  v_headers TEXT;
+BEGIN
+  v_headers := jsonb_build_object('Content-Type','application/json','Authorization',v_auth)::text;
   PERFORM cron.unschedule(jobid) FROM cron.job WHERE jobname = 'personality-refresh';
-  PERFORM cron.schedule(
-    'personality-refresh',
-    '*/30 * * * *',
-    $f$ SELECT public.invoke_edge_function('personality-refresh', '{"batch_size":25}'::jsonb); $f$
-  );
+  PERFORM cron.schedule('personality-refresh', '*/30 * * * *', format($f$
+    SELECT net.http_post(url:=%L, headers:=%L::jsonb, body:='{"batch_size":25}'::jsonb);
+  $f$, v_url || '/personality-refresh', v_headers));
 END $$;
 ```
+
+> Before writing this migration, confirm the exact anon bearer is still current:
+> `grep -m1 "Bearer eyJ" supabase/migrations/20260414290000_pipeline_cron_schedules.sql` and reuse that literal.
 
 - [ ] **Step 2: Apply migration**
 
@@ -681,9 +695,9 @@ Expected: one row, `schedule = */30 * * * *`, `active = t`.
 
 - [ ] **Step 4: Verify an invocation fires (wait for next tick or trigger manually)**
 
-Run: `psql "$DATABASE_URL" -c "SELECT public.invoke_edge_function('personality-refresh', '{\"batch_size\":5}'::jsonb);"`
-Then check refreshed rows climbed:
+Trigger the same HTTP call the cron makes (reuse the smoke-test curl from Task 4 Step 4, or run the `net.http_post(...)` body from the migration via psql). Then check refreshed rows climbed:
 `psql "$DATABASE_URL" -c "SELECT count(*) FROM personalities WHERE last_refreshed_at > now() - interval '5 minutes';"` → expect > 0.
+Also confirm pg_net delivery: `psql "$DATABASE_URL" -c "SELECT status_code FROM net._http_response ORDER BY created DESC LIMIT 3;"` → expect 200.
 
 - [ ] **Step 5: Commit**
 
