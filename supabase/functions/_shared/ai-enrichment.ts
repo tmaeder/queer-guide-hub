@@ -392,3 +392,82 @@ Respond with JSON:
     return null
   }
 }
+
+// ---------------------------------------------------------------------------
+// Agentic moat enrichment — extract high-value LGBTQ+ travel fields from an
+// event's own source page (grounded extraction, NOT free generation).
+// ---------------------------------------------------------------------------
+
+export interface EventMoatEnrichment {
+  description?: string
+  accessibility_attributes?: string[]   // e.g. wheelchair-accessible, asl-interpreted, gender-neutral-restrooms
+  accessibility_notes?: string
+  target_groups?: string[]              // e.g. trans, women, bears, all-ages
+  age_restriction?: string              // e.g. "18+", "21+", "all ages"
+  dress_code?: string
+  safety_notes?: string                 // LGBTQ+ safety context for attendees
+  lineup?: string[]
+  lgbtq_relevance_score?: number
+  confidence?: number                   // 0.0-1.0 — how well the page supported the extraction
+}
+
+const MOAT_KEYS = ['description', 'accessibility_attributes', 'accessibility_notes', 'target_groups',
+  'age_restriction', 'dress_code', 'safety_notes', 'lineup', 'lgbtq_relevance_score', 'confidence']
+
+const MOAT_SYSTEM_PROMPT = `${BASE_CONTEXT}
+
+You extract structured, high-value fields for an LGBTQ+ events platform from an event's OWN web page text. This is GROUNDED EXTRACTION, not creative writing.
+
+Hard rules:
+- Use ONLY facts present in the provided page text. If a field is not stated, set it to null or omit it. NEVER invent details, performers, prices, or policies.
+- description: a factual 2-3 sentence summary built only from page facts.
+- accessibility_attributes: lowercase-hyphenated flags actually mentioned (wheelchair-accessible, step-free, asl-interpreted, gender-neutral-restrooms, quiet-space, etc.).
+- accessibility_notes: short free text if the page gives accessibility detail.
+- target_groups: who the event is for, if stated (trans, women, bears, qtbipoc, youth, all-ages, ...).
+- age_restriction, dress_code: only if stated.
+- safety_notes: concise, factual LGBTQ+ safety context for an attendee. You MAY combine page facts with the provided DESTINATION CONTEXT block for legal/safety framing. Be calm and factual, never alarmist.
+- lineup: named performers/acts if listed.
+- lgbtq_relevance_score: 0.0-1.0 how clearly LGBTQ+ this event is.
+- confidence: 0.0-1.0 how well the page text supported this extraction (low if the page was thin/irrelevant).
+
+Respond ONLY with valid JSON. No markdown code blocks.`
+
+/**
+ * Extract moat fields from an event's source page. Grounded in pageText; the
+ * caller is responsible for circuit-breaking and applying hybrid-by-confidence.
+ */
+export async function researchEnrichEventFromPage(
+  supabase: SupabaseClient,
+  input: { title: string; city?: string; country?: string; venue_name?: string; existingDescription?: string; pageText: string; safetyContext?: string },
+): Promise<EventMoatEnrichment | null> {
+  if (!(await isOpenAIAvailable(supabase))) return null
+  const page = (input.pageText || '').slice(0, 6000)
+  if (page.trim().length < 80) return null   // nothing to ground on — skip the LLM call
+
+  const userPrompt = `Event: ${ud(input.title)}
+City: ${ud(input.city || 'N/A')} | Country: ${ud(input.country || 'N/A')} | Venue: ${ud(input.venue_name || 'N/A')}
+${input.existingDescription ? `Existing description: ${ud(input.existingDescription.slice(0, 300))}` : ''}
+${input.safetyContext ? `DESTINATION CONTEXT (for safety_notes only): ${ud(input.safetyContext)}` : ''}
+
+PAGE TEXT:
+${ud(page)}
+
+Respond with JSON using these keys (null where unknown):
+{"description":"...","accessibility_attributes":[...],"accessibility_notes":"...","target_groups":[...],"age_restriction":"...","dress_code":"...","safety_notes":"...","lineup":[...],"lgbtq_relevance_score":0.0,"confidence":0.0}`
+
+  try {
+    const result = await chatCompletion(supabase, {
+      messages: [
+        { role: 'system', content: MOAT_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.2,
+      max_tokens: 700,
+      response_format: { type: 'json_object' },
+    })
+    return parseAIResponse<EventMoatEnrichment>(result.content, MOAT_KEYS)
+  } catch (err) {
+    console.error('Event moat enrichment failed:', (err as Error).message)
+    return null
+  }
+}
