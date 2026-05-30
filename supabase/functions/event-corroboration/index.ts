@@ -12,7 +12,10 @@ import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse 
 const DEFAULT_BATCH_LIMIT = 100
 const GEO_AGREE_M = 500           // lat/lng within 500m counts as agreement
 const PRICE_TOL = 0.10            // 10% price tolerance
-const IMPORTANT = new Set(['title', 'start_day', 'city', 'geo'])
+// Only a title disagreement means the sources fundamentally describe different
+// events — that warrants human review. Date/city/geo differences are usually
+// formatting/timezone noise; they're still recorded in field_provenance.
+const IMPORTANT = new Set(['title'])
 
 interface Norm { name?: string; dates?: { start?: string; end?: string }; location?: { lat?: number; lng?: number; city?: string; address?: string }; metadata?: { venue_name?: string; price_min?: number; price_max?: number; event_type?: string }; description?: string; urls?: string[] }
 

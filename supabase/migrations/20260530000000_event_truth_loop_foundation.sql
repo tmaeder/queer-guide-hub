@@ -364,10 +364,13 @@ SELECT cron.schedule('event_coverage_radar',  '20 4 * * 1',  'SELECT public.run_
 
 -- ===== 9. cron: edge-function jobs =====
 -- liveness daily 02:10, corroboration daily 02:40, agentic-enrich hourly :50.
--- Each POSTs /functions/v1/<fn> with the shared internal webhook secret GUC.
--- Until app.event_quality_webhook_secret is set (ALTER DATABASE ...) and the
--- matching EVENT_QUALITY_WEBHOOK_SECRET env var is set on the functions, these
--- POSTs return 401 and rotate harmlessly — i.e. effectively paused.
+-- Each POSTs /functions/v1/<fn> with the shared webhook secret read from Vault
+-- (vault.decrypted_secrets name='event_quality_webhook_secret'), which must match
+-- the EVENT_QUALITY_WEBHOOK_SECRET env var on the deployed functions. Until both
+-- exist the POSTs return 401 and rotate harmlessly — i.e. effectively paused.
+-- One-time setup (operator, outside this migration):
+--   select vault.create_secret('<secret>', 'event_quality_webhook_secret', 'Event Truth Loop cron auth');
+--   supabase secrets set EVENT_QUALITY_WEBHOOK_SECRET=<secret>
 DO $$
 DECLARE
   v jsonb := '[
@@ -389,7 +392,7 @@ BEGIN
           url := 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/%s',
           headers := jsonb_build_object(
             'Content-Type','application/json',
-            'X-Webhook-Secret', current_setting('app.event_quality_webhook_secret', true)
+            'X-Webhook-Secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='event_quality_webhook_secret')
           ),
           body := %L::jsonb
         ) as request_id;
@@ -400,4 +403,4 @@ BEGIN
 END $$;
 
 COMMENT ON SCHEMA cron IS
-  'pg_cron: includes event truth-loop jobs (event_trust_recompute, event_coverage_radar [SQL]; event_liveness_checker, event_corroboration, event_agentic_enrich [edge, gated by app.event_quality_webhook_secret]).';
+  'pg_cron: includes event truth-loop jobs (event_trust_recompute, event_coverage_radar [SQL]; event_liveness_checker, event_corroboration, event_agentic_enrich [edge, gated by Vault secret event_quality_webhook_secret]).';
