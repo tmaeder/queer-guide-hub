@@ -11,6 +11,7 @@ import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse, jsonResp
 import { scoreImage as sharedScoreImage, pickBest, isAcceptable, MIN_ACCEPTANCE_SCORE } from '../_shared/scoreImage.ts'
 import { upsertImageAsset, deriveImageFormat } from '../_shared/image-assets.ts'
 import type { ImageSource } from '../_shared/scoreImage.ts'
+import { evaluateCover } from '../_shared/image-probe.ts'
 import {
   type ImageResult,
   fetchFromPexels,
@@ -433,7 +434,11 @@ async function findBestStockImage(
       })
     }
     const top = pickBest(results, 'cover')
-    if (top && (!best || top.score > best.score)) best = top
+    // Enforce cover dimensions from the stock API's own width/height — a free
+    // gate (no extra fetch) that rejects tiny / portrait images for a cover.
+    if (top && !evaluateCover({ width: top.width, height: top.height }, 'cover')) {
+      if (!best || top.score > best.score) best = top
+    }
   }
   return best
 }
