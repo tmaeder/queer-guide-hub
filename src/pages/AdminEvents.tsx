@@ -85,27 +85,6 @@ const eventStatuses = ['active', 'cancelled', 'postponed', 'completed'];
 const columnHelper = createColumnHelper<EventRow>();
 
 const eventTypes = EVENT_TYPES as readonly string[];
-const eventTypes = [
-  'concert',
-  'festival',
-  'conference',
-  'workshop',
-  'meetup',
-  'party',
-  'pride',
-  'drag',
-  'film',
-  'art',
-  'sports',
-  'theater',
-  'fundraiser',
-  'protest',
-  'social',
-  'fair',
-  'community',
-  'fetish',
-  'other',
-];
 
 const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
   { tag: 'pride:parade', label: 'Parade' },

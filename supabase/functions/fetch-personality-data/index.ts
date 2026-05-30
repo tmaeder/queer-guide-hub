@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
 
     console.log('Starting enhanced LGBTI-focused search for:', searchTerm)
 
-    let entityId = selectedId;
+    const entityId = selectedId;
     
     if (!entityId) {
       // Step 1: Search Wikidata for the person
