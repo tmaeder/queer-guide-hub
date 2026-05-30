@@ -24,11 +24,11 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: SignUpMetadata) => Promise<{ error: unknown }>;
-  signIn: (email: string, password: string) => Promise<{ error: unknown }>;
+  signUp: (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => Promise<{ error: unknown }>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: unknown }>;
   signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: unknown }>;
   resendVerification: (email: string) => Promise<{ error: unknown }>;
-  resetPassword: (email: string) => Promise<{ error: unknown }>;
+  resetPassword: (email: string, captchaToken?: string) => Promise<{ error: unknown }>;
   signOut: () => Promise<void>;
   enrollPasskey: () => Promise<{ error: unknown }>;
   signInWithPasskey: () => Promise<{ error: unknown }>;
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
 
-  const signUp = async (email: string, password: string, metadata?: SignUpMetadata) => {
+  const signUp = async (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => {
     const redirectUrl = `${window.location.origin}/`;
 
     const { error } = await supabase.auth.signUp({
@@ -111,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       options: {
         emailRedirectTo: redirectUrl,
         data: metadata || {},
+        ...(captchaToken ? { captchaToken } : {}),
       },
     });
     return { error };
@@ -142,25 +143,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string, captchaToken?: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth?reset=1`,
+      ...(captchaToken ? { captchaToken } : {}),
     });
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
       // Add retry logic for auth requests
       let attempts = 0;
       const maxAttempts = 3;
       let authResult;
-      
+
       while (attempts < maxAttempts) {
         try {
           authResult = await supabase.auth.signInWithPassword({
             email,
             password,
+            ...(captchaToken ? { options: { captchaToken } } : {}),
           });
           break; // Success, exit retry loop
         } catch (networkError: unknown) {

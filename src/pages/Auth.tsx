@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useTurnstile } from '@/hooks/useTurnstile';
 import { useTranslation } from 'react-i18next';
 import Signup from '@/components/auth/Signup';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
@@ -23,6 +24,7 @@ export default function Auth() {
   const { signIn, resetPassword, user } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { token: captchaToken, widget: captcha, reset: resetCaptcha, required: captchaRequired } = useTurnstile();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const initialMode: Mode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
@@ -61,11 +63,17 @@ export default function Auth() {
       setError(t('auth.errors.fillAllFields', 'Please fill in all fields'));
       return;
     }
+    if (captchaRequired && !captchaToken) {
+      setError(t('auth.errors.captchaRequired', 'Please complete the captcha.'));
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
-      const { error: signInError } = await signIn(loginData.email, loginData.password);
+      const { error: signInError } = await signIn(loginData.email, loginData.password, captchaToken ?? undefined);
       if (signInError) {
+        // Turnstile tokens are single-use — refresh for the next attempt.
+        resetCaptcha();
         if (signInError.message?.includes('Invalid login credentials')) {
           setError(t('auth.errors.invalidCredentials', 'Invalid email or password.'));
         } else if (signInError.message?.includes('Email not confirmed')) {
@@ -90,12 +98,20 @@ export default function Auth() {
       setError(t('auth.errors.emailRequired', 'Email is required'));
       return;
     }
+    if (captchaRequired && !captchaToken) {
+      setError(t('auth.errors.captchaRequired', 'Please complete the captcha.'));
+      return;
+    }
     setIsLoading(true);
     setError(null);
-    const { error: resetError } = await resetPassword(loginData.email);
+    const { error: resetError } = await resetPassword(loginData.email, captchaToken ?? undefined);
     setIsLoading(false);
-    if (resetError) setError(resetError.message);
-    else setResetSent(true);
+    if (resetError) {
+      resetCaptcha();
+      setError(resetError.message);
+    } else {
+      setResetSent(true);
+    }
   };
 
   if (mode === 'signup') {
@@ -231,7 +247,9 @@ export default function Auth() {
                         </div>
                       )}
 
-                      <Button type="submit" disabled={isLoading}>
+                      {captcha}
+
+                      <Button type="submit" disabled={isLoading || (captchaRequired && !captchaToken)}>
                         {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                         {mode === 'forgot' ? t('auth.sendResetLink', 'Send reset link') : t('auth.signIn', 'Sign in')}
                       </Button>
