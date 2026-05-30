@@ -220,12 +220,6 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/@dnd-kit/')) {
             return 'dnd-kit';
           }
-          // i18n locale JSON files: split per-language so only the active
-          // locale ends up downloaded. src/i18n/locales/<lang>.json
-          const localeMatch = id.match(/[\\/]src[\\/]i18n[\\/]locales[\\/]([a-z-]+)\.json$/);
-          if (localeMatch) {
-            return `locale-${localeMatch[1]}`;
-          }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
             return 'vendor';
