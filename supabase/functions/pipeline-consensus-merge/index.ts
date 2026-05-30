@@ -28,8 +28,11 @@ type Json = Record<string, unknown>
 // flow through automatically per the lean auto-commit-high-confidence policy.
 const HIGH_RISK_FIELDS = new Set(['name', 'latitude', 'longitude', 'category'])
 
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
 function setPath(obj: Json, path: string, value: unknown): void {
   const keys = path.split('.')
+  if (keys.some((k) => FORBIDDEN_KEYS.has(k))) return
   let cur: Json = obj
   for (let i = 0; i < keys.length - 1; i++) {
     const k = keys[i]
