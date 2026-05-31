@@ -84,6 +84,9 @@ export const UniversalSearchBar = () => {
   const [railFocused, setRailFocused] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const justSelectedRef = useRef(false);
+  // When the popover closes it refocuses the input; suppress the focus handler
+  // from immediately re-opening it (otherwise Cancel/Escape can't close it).
+  const suppressReopenRef = useRef(false);
   const navigate = useLocalizedNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -418,7 +421,13 @@ export const UniversalSearchBar = () => {
                     justSelectedRef.current = false;
                   }}
                   onKeyDown={handleKeyDown}
-                  onFocus={() => setIsOpen(true)}
+                  onFocus={() => {
+                    if (suppressReopenRef.current) {
+                      suppressReopenRef.current = false;
+                      return;
+                    }
+                    setIsOpen(true);
+                  }}
                   autoComplete="off"
                   className="w-full border-0 bg-transparent text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                   style={{ fontSize: isMobile ? '1rem' : '0.875rem', height: inputHeight }}
@@ -513,6 +522,7 @@ export const UniversalSearchBar = () => {
           }}
           onCloseAutoFocus={(e) => {
             e.preventDefault();
+            suppressReopenRef.current = true;
             inputRef.current?.focus();
           }}
           onEscapeKeyDown={() => setIsOpen(false)}
