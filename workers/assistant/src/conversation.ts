@@ -1,17 +1,22 @@
 /**
- * Per-conversation Durable Object: holds message history and runs the
+ * Per-conversation Durable Object: holds message history and runs the Workers AI
  * tool-calling agent loop (plan §6). Memory is the DO's own storage, so each
  * conversation keeps context across turns without a shared store.
+ *
+ * Stored history is just the clean user/assistant text turns; the in-turn tool
+ * scaffolding (assistant tool-intent + role:"tool" results) lives only in the
+ * working `messages` for that turn.
  */
 
-import type { Env, ClaudeMessage, Card, TextBlock, ToolUseBlock, ToolResultBlock } from "./types";
-import { callClaude } from "./claude";
+import type { Env, AiMessage, Card } from "./types";
+import { runModel } from "./model";
 import { TOOLS, executeTool } from "./tools";
 import { SYSTEM_PROMPT } from "./prompt";
 import { validateGrounding, type GroundingReport } from "./grounding";
 
+const DEFAULT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const MAX_TOOL_STEPS = 4; // bound the agent loop
-const MAX_HISTORY = 24; // cap stored turns to bound tokens/storage
+const MAX_HISTORY = 16; // cap stored user/assistant turns
 
 interface TurnResult {
 	reply: string;
@@ -58,44 +63,50 @@ export class Conversation {
 	}
 
 	private async runTurn(message: string, who: { userId?: string; sessionId?: string }): Promise<TurnResult> {
-		const history = ((await this.ctx.storage.get<ClaudeMessage[]>("history")) ?? []).slice();
-		history.push({ role: "user", content: message });
+		const history = (await this.ctx.storage.get<AiMessage[]>("history")) ?? [];
+		const model = this.env.ROUTER_MODEL || DEFAULT_MODEL;
+		const system =
+			who.userId || who.sessionId
+				? `${SYSTEM_PROMPT}\n\n(The user is signed in; you may call get_recommendations for personalized suggestions.)`
+				: SYSTEM_PROMPT;
 
-		const model = this.env.ROUTER_MODEL || "claude-haiku-4-5-20251001";
-		const system = who.userId || who.sessionId ? `${SYSTEM_PROMPT}\n\n(The user is signed in; you may call get_recommendations for personalized suggestions.)` : SYSTEM_PROMPT;
+		// Working transcript for this turn (system + prior turns + new user message);
+		// tool scaffolding is appended here but never persisted.
+		const messages: AiMessage[] = [{ role: "system", content: system }, ...history, { role: "user", content: message }];
 
 		const cards: Card[] = [];
 		let finalText = "";
 
 		for (let step = 0; step < MAX_TOOL_STEPS; step++) {
-			const resp = await callClaude(this.env, { model, system, messages: history, tools: TOOLS });
-			history.push({ role: "assistant", content: resp.content });
+			const { text, toolCalls } = await runModel(this.env, { model, messages, tools: TOOLS });
 
-			if (resp.stop_reason === "tool_use") {
-				const toolResults: ToolResultBlock[] = [];
-				for (const block of resp.content) {
-					if (block.type !== "tool_use") continue;
-					const tu = block as ToolUseBlock;
-					const outcome = await executeTool(this.env, tu.name, tu.input);
+			if (toolCalls.length > 0) {
+				// Record the model's tool intent, then feed each tool result back.
+				messages.push({
+					role: "assistant",
+					content: text || `(calling: ${toolCalls.map((t) => t.name).join(", ")})`,
+				});
+				for (const tc of toolCalls) {
+					const outcome = await executeTool(this.env, tc.name, tc.arguments);
 					cards.push(...outcome.cards);
-					toolResults.push({ type: "tool_result", tool_use_id: tu.id, content: outcome.content });
+					messages.push({ role: "tool", name: tc.name, content: outcome.content });
 				}
-				history.push({ role: "user", content: toolResults });
 				continue;
 			}
 
-			finalText = resp.content
-				.filter((b): b is TextBlock => b.type === "text")
-				.map((b) => b.text)
-				.join("\n")
-				.trim();
+			finalText = text;
 			break;
 		}
 
 		if (!finalText) finalText = "I couldn't pull that together just now. Want me to try a different search?";
 
-		// Persist a bounded history window.
-		await this.ctx.storage.put("history", history.slice(-MAX_HISTORY));
+		// Persist only the clean user/assistant turns, bounded.
+		const turns: AiMessage[] = [
+			...history,
+			{ role: "user", content: message },
+			{ role: "assistant", content: finalText },
+		];
+		await this.ctx.storage.put("history", turns.slice(-MAX_HISTORY));
 
 		const deduped = dedupeCards(cards);
 		return { reply: finalText, cards: deduped, grounding: validateGrounding(finalText, deduped) };

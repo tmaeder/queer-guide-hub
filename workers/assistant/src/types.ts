@@ -1,53 +1,44 @@
-/** Shared types for the queer-guide-assistant worker. */
+/** Shared types for the queer-guide-assistant worker (Workers AI backed). */
 
 export interface Env {
+	/** Workers AI binding — runs the tool-calling model (through the AI Gateway). */
+	AI: Ai;
 	CONVERSATION: DurableObjectNamespace;
 	SUPABASE_URL: string;
 	SUPABASE_SERVICE_KEY: string;
-	AI_GATEWAY_ACCOUNT_ID: string;
+	/** AI Gateway id for caching/rate-limit/observability on the AI.run calls. */
 	AI_GATEWAY_NAME: string;
-	ANTHROPIC_API_KEY: string;
+	/** Tool-capable Workers AI model, e.g. @cf/meta/llama-3.3-70b-instruct-fp8-fast. */
 	ROUTER_MODEL?: string;
-	SYNTH_MODEL?: string;
 	ALLOWED_ORIGINS: string;
 }
 
-// ── Anthropic Messages API (minimal subset we use) ─────────────────────────
-export interface TextBlock {
-	type: "text";
-	text: string;
-}
-export interface ToolUseBlock {
-	type: "tool_use";
-	id: string;
-	name: string;
-	input: Record<string, unknown>;
-}
-export interface ToolResultBlock {
-	type: "tool_result";
-	tool_use_id: string;
+// ── Workers AI traditional function-calling shapes ─────────────────────────
+// https://developers.cloudflare.com/workers-ai/features/function-calling/traditional/
+export interface AiMessage {
+	role: "system" | "user" | "assistant" | "tool";
 	content: string;
-	is_error?: boolean;
-}
-export type ContentBlock = TextBlock | ToolUseBlock;
-
-export interface ClaudeMessage {
-	role: "user" | "assistant";
-	content: string | Array<TextBlock | ToolUseBlock | ToolResultBlock>;
+	/** Tool name (for role: "tool" result messages). */
+	name?: string;
 }
 
-export interface ClaudeResponse {
-	id: string;
-	role: "assistant";
-	content: ContentBlock[];
-	stop_reason: "end_turn" | "tool_use" | "max_tokens" | "stop_sequence" | null;
-	usage?: { input_tokens: number; output_tokens: number };
-}
-
+/** Flat tool definition Workers AI expects ({ name, description, parameters }). */
 export interface ToolDef {
 	name: string;
 	description: string;
-	input_schema: Record<string, unknown>;
+	parameters: Record<string, unknown>;
+}
+
+/** A tool call the model asked for. */
+export interface ToolCall {
+	name: string;
+	arguments: Record<string, unknown>;
+}
+
+/** Normalized model output from AI.run. */
+export interface ModelResult {
+	text: string;
+	toolCalls: ToolCall[];
 }
 
 /** A grounded entity card returned by a tool — the only thing the UI renders. */
