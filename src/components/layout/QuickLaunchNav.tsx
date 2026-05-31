@@ -16,7 +16,7 @@ export function QuickLaunchNav() {
 
   return (
     <nav
-      className="flex items-center gap-8"
+      className="flex items-center gap-6"
       style={{ height: 40 }}
       aria-label={t('header.primaryNav', 'Primary')}
     >
