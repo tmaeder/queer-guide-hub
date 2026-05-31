@@ -9,6 +9,7 @@ import {
   submitOnboarding,
   fetchSimilar,
   fetchTrending,
+  fetchRecommendations,
   fetchAutocomplete,
 } from '../searchClient';
 
@@ -160,6 +161,27 @@ describe('fetchTrending', () => {
       limit: 5,
       user_id: 'u1',
     });
+  });
+});
+
+describe('fetchRecommendations', () => {
+  it('POSTs to /recommendations and returns the recommendations array', async () => {
+    fetchSpy.mockResolvedValueOnce(
+      jsonResponse({ recommendations: [{ objectID: 'v1', type: 'venue', title: 'Berghain' }] }),
+    );
+    const r = await fetchRecommendations({ types: ['venue'], city: 'Berlin', limit: 8, userId: 'u1' });
+    expect(r).toEqual([{ objectID: 'v1', type: 'venue', title: 'Berghain' }]);
+    const [url, opts] = fetchSpy.mock.calls[0];
+    expect(String(url)).toContain('/recommendations');
+    const body = JSON.parse(opts.body);
+    expect(body).toMatchObject({ types: ['venue'], city: 'Berlin', limit: 8, user_id: 'u1' });
+  });
+
+  it('defaults limit and returns [] when the field is absent', async () => {
+    fetchSpy.mockResolvedValueOnce(jsonResponse({}));
+    expect(await fetchRecommendations()).toEqual([]);
+    const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(body.limit).toBe(12);
   });
 });
 
