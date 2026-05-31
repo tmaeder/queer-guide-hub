@@ -21,6 +21,7 @@ export interface SearchPopoverMobileProps {
   loading: boolean;
   error: string | null;
   trending: ReturnType<typeof useTrendingSuggestions>['trending'];
+  discoverySource?: 'recommended' | 'trending';
   showFilters: boolean;
   filters: SearchFilters;
   setFilters: (f: SearchFilters) => void;
@@ -43,6 +44,7 @@ export function SearchPopoverMobile({
   loading,
   error,
   trending,
+  discoverySource,
   showFilters,
   filters,
   setFilters,
@@ -106,6 +108,7 @@ export function SearchPopoverMobile({
       {query.length === 0 ? (
         <SearchPopoverEmpty
           trending={trending}
+          source={discoverySource}
           onSelectTrending={(hit) =>
             onSelect({
               id: hit.id,
