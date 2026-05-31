@@ -1,0 +1,29 @@
+name: search-eval
+
+# Offline relevance gate for the Postgres search_hybrid RPC (migration plan §8.2).
+# Opt-in: manual dispatch + nightly. NOT run on PRs, so it never adds a red check
+# to unrelated PRs. Requires the SUPABASE_URL / SUPABASE_SERVICE_KEY repo secrets;
+# without them the runner skips and exits 0.
+
+# Least privilege: this workflow only checks out code and runs a script.
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * *" # nightly 03:30 UTC
+
+jobs:
+  search-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run search relevance eval
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/search-eval/run.mjs
