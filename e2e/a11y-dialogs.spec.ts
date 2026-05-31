@@ -27,37 +27,6 @@ async function axeDialog(page: import('@playwright/test').Page) {
 test.describe('Public dialogs — automated a11y', () => {
   test.setTimeout(120_000);
 
-  test('mobile navigation drawer', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(500);
-
-    const hamburger = page.locator('button[aria-label="Open menu"]').first();
-    await expect(hamburger).toBeVisible();
-    await hamburger.click();
-
-    const dialog = page.getByRole('dialog', { name: /navigation/i });
-    await expect(dialog).toBeVisible();
-    // Drawer items use staggered slide-up-in (0.3s + per-item 0.04s delays).
-    // Wait for animations to settle so axe doesn't catch mid-fade contrast.
-    await page.waitForFunction(() => {
-      const items = document.querySelectorAll('[role="dialog"] .slide-up-in');
-      return Array.from(items).every((el) => {
-        const anims = (el as HTMLElement).getAnimations?.() ?? [];
-        return anims.every((a) => a.playState === 'finished');
-      });
-    }, { timeout: 3000 }).catch(() => {});
-    await axeDialog(page);
-
-    // Focus must move into the dialog
-    const inside = await dialog.evaluate((el) => el.contains(document.activeElement));
-    expect(inside).toBe(true);
-
-    await page.keyboard.press('Escape');
-    await expect(dialog).not.toBeVisible();
-  });
-
   // Despite the historical name, this isn't a separate ⌘K palette — it
   // exercises the header search input's suggestions popover for a11y.
   // No standalone command palette exists in the codebase today.

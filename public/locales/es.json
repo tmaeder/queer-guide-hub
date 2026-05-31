@@ -1558,7 +1558,15 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "modeLabel": "[ES] Mode",
+    "modeActive": "[ES] Mode: {{mode}}",
+    "clusters": {
+      "places": "[ES] Places",
+      "community": "[ES] Community",
+      "shop": "[ES] Shop & Read",
+      "support": "[ES] Support"
+    }
   },
   "pages": {
     "venues": {

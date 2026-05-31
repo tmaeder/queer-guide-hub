@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
-import { Loader2, Search, X, Mic, SlidersHorizontal } from 'lucide-react';
+import { Loader2, Search, X, Mic } from 'lucide-react';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { trackSearchUx } from '@/lib/searchClient';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -16,6 +15,8 @@ import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useNearMe } from '@/hooks/useNearMe';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
+import { useUserMode } from '@/hooks/useUserMode';
+import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
 import { SearchPopoverDesktop } from './SearchPopoverDesktop';
 import { SearchPopoverMobile } from './SearchPopoverMobile';
@@ -111,7 +112,12 @@ export const UniversalSearchBar = () => {
     loading: suggestionsLoading,
     error: suggestionsError,
   } = useSearchSuggestions(query, scopeArray);
-  const { trending } = useTrendingSuggestions(isOpen && !query);
+  const { mode } = useUserMode();
+  const trendingTypes = useMemo(
+    () => (MODE_SCOPE_BIAS[mode] ?? ['venue', 'event']).slice(0, 2),
+    [mode],
+  );
+  const { trending } = useTrendingSuggestions(isOpen && !query, 6, trendingTypes);
   const voice = useVoiceSearch();
   const nearMe = useNearMe();
 
@@ -483,24 +489,6 @@ export const UniversalSearchBar = () => {
                   </span>
                 )}
               </div>
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Search filters"
-                  className="relative shrink-0 px-4 text-foreground"
-                  style={{ height: 48 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowFilters(!showFilters);
-                  }}
-                >
-                  <SlidersHorizontal size={20} />
-                  {activeFiltersCount > 0 && (
-                    <Badge variant="destructive">{activeFiltersCount}</Badge>
-                  )}
-                </Button>
-              )}
             </div>
           </div>
         </PopoverAnchor>
@@ -544,6 +532,8 @@ export const UniversalSearchBar = () => {
               setScope={setScope}
               onSelect={handleSelectSuggestion}
               onSearchAll={() => handleSearch()}
+              onToggleFilters={() => setShowFilters(!showFilters)}
+              activeFiltersCount={activeFiltersCount}
               onClose={() => setIsOpen(false)}
               onClear={() => {
                 setQuery('');

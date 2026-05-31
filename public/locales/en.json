@@ -1527,6 +1527,14 @@
       "networking": "Professional Networking",
       "community": "Building Community"
     },
+    "modeLabel": "Mode",
+    "modeActive": "Mode: {{mode}}",
+    "clusters": {
+      "places": "Places",
+      "community": "Community",
+      "shop": "Shop & Read",
+      "support": "Support"
+    },
     "legal": {
       "about": "About",
       "help": "Crisis support",
