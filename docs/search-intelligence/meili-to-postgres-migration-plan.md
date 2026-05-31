@@ -37,7 +37,7 @@ dual-embedding inconsistency — not chase a feature we lack.
 - **Vectorize** is a vector DB only: no BM25, no facet *counts*, no native geo radius/distance sort,
   no typo tolerance. It can hold the semantic half (10M vectors, ≤1536 dims, metadata filters
   `$eq/$ne/$in/$nin/$lt/$lte/$gt/$gte`) but can't be the structured engine. Reserve it as a later
-  scaling lever (see §12).
+  scaling lever (see §13).
 - **AI Search (AutoRAG)** is a managed *document/chunk RAG* product (vector + BM25 hybrid, relevance
   boosting, metadata filters, MCP). Wrong shape for faceted, geo, card-based **entity** search — but
   the **right** shape for the assistant's knowledge/RAG tool over unstructured editorial/news/guide
@@ -87,7 +87,7 @@ columns**. We build the structured-search layer properly.
 `pg_trgm`, `unaccent`, `postgis` (geo columns are bare `numeric` lat/lng today — PostGIS gives true
 `ST_DWithin` radius + `<->` distance sort; `earthdistance`/cube is the lighter fallback).
 
-### 3.2 Searchable layer — two options (decision in §13)
+### 3.2 Searchable layer — two options (decision in §14)
 
 **Option A — per-entity generated tsvector + GIN/GiST indexes** on each table, UNION-ed at query
 time. Example for `venues` (live schema uses **`is_featured`**, not the dropped `featured`):
@@ -145,7 +145,7 @@ Internally, per requested type:
   `personalized_semantic_search` does today (generalize that function, don't reinvent).
 - **Filters:** WHERE from `p_filters` (the Meili `filterable` attrs).
 - **Geo:** `ST_DWithin(geog, point, radius)` + `ORDER BY geog <-> point` (Meili `_geoRadius` parity).
-- **Fusion:** RRF at depth 60 (in SQL — decision in §13).
+- **Fusion:** RRF at depth 60 (in SQL — decision in §14).
 - **Dedup:** `DISTINCT ON (master_event_id)` (replaces Meili `distinctAttribute`).
 - **Highlighting:** `ts_headline` for `<em>` spans.
 - **Trust-aware ranking** (enhancement, baked in — see §8.1): bias the final `ORDER BY` by
@@ -271,7 +271,7 @@ front-run the router later as a cost optimization.
 - **Hyperdrive** — Worker → Supabase connection pooling + read caching.
 - **AI Search (AutoRAG)** — the assistant's `knowledge_search` RAG tool over unstructured content
   (the one place its document/chunk model fits).
-- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§12).
+- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§13).
 
 ---
 
@@ -517,7 +517,70 @@ tool) layers onto Phase 9 trip planning.
 
 ---
 
-## 12. Vectorize off-ramp (deferred)
+## 12. Platform-wide considerations (safety, privacy, AI governance, resilience)
+
+Beyond search, these are **harm-weighted** concerns for a safety-critical product serving a globally
+vulnerable audience — where failure can out a person, give stale life-or-death safety info, or be
+blocked/inaccessible when most needed. The search/assistant work above must respect these; several are
+platform-wide workstreams that run **parallel** to the migration, not inside it.
+
+### 12.1 ★ User safety & privacy — hostile-jurisdiction threat model
+- **Treat user data as toxic.** Saved venues, location, and browse/search history are *outing vectors*.
+  Data minimization; full **anonymous / no-account use**; ephemeral data; **client-side encryption** of
+  sensitive saves so a breach or subpoena can't out anyone. Extends incognito (§8.3) platform-wide.
+- **Stealth & escape:** quick-exit / panic button, optional disguised mode, no revealing notifications.
+- **No ad-tech / third-party leakage:** privacy-preserving analytics only — every embedded script is a
+  data-exfil risk for this audience.
+- **Censorship resistance:** VPN-friendly, avoid blockable CDNs, mirror/alt-domain strategy,
+  account-less access (the site *will* be blocked in some countries).
+- **Account lifecycle:** real GDPR export/delete, 2FA, session hygiene.
+
+### 12.2 ★ AI governance & prompt injection
+- Scraped/external content **already** flows into LLM pipelines (`pipeline-enrich-news`, marketplace
+  relevance, agentic event enrich) and will feed the assistant → an untrusted **prompt-injection
+  surface**. Sanitize/isolate scraped text, validate outputs, label AI-generated content.
+- **Hallucination in safety/legal contexts is life-critical**, and LLMs carry bias on queer/regional
+  topics. Hard rule: safety/legal claims are **never LLM-improvised** — human-reviewed sources only
+  (extends the §6.4 grounding guardrails to the whole AI surface).
+
+### 12.3 ★ Offline & resilience abroad
+- A **PWA with offline access** to saved venues, safety briefings, and maps so critical info survives
+  no-signal, roaming, or a censored network — exactly when it's needed most. Pair with Core Web Vitals
+  / bundle / image discipline (manual chunks already in place).
+
+### 12.4 Content trust beyond events/venues
+- Extend Truth-Engine freshness/provenance rigor to **safety & legal status** (criminalization laws
+  change; an outdated "safe here" is dangerous). Moderate UGC reviews/submissions as the Chrome
+  extension scales — defamation, fake listings, harassment, spam.
+
+### 12.5 Accessibility as a legal + ethical baseline
+- The **European Accessibility Act** (in force 2025) makes WCAG conformance a legal requirement for
+  many EU services. Standing audit cadence (screen reader, keyboard, cognitive load, reduced motion)
+  building on the existing monochrome/a11y/motion locks.
+
+### 12.6 Localization depth (beyond UI strings)
+- The high-value, safety-relevant localization is **content + regional legal/safety data**,
+  **culturally-correct queer terminology** (varies by language/region), **RTL**, and currency/date.
+  Wrong terminology or stale regional status is a safety issue, not polish.
+
+### 12.7 Pipeline fragility, LLM cost & sustainability
+- **Source diversity + graceful degradation** (you already hit scraper CF 403s); **LLM cost
+  caps/budgets + monitoring** (extend existing circuit breakers); data-freshness/coverage dashboards;
+  and a **revenue model that doesn't compromise privacy** (affiliate disclosure, donations/grants/
+  premium over data monetization).
+
+### 12.8 Security posture & DR
+- A breach here is catastrophic, so security must be **continuously verified**: RLS audits (Supabase
+  advisors), secrets hygiene, periodic pen-testing, an incident-response plan, and tested backups/DR.
+
+### 12.9 Priorities
+Top three platform-wide: (1) the **hostile-jurisdiction privacy/safety threat model + "data as toxic"
+posture**; (2) **AI-safety / prompt-injection controls** (untrusted content already feeds the LLMs);
+(3) **offline/mobile resilience**. Parallel workstreams to the search migration, not blockers.
+
+---
+
+## 13. Vectorize off-ramp (deferred)
 
 If DB read-load isolation or edge-local vector latency becomes the bottleneck, mirror
 `content_embeddings` into **Vectorize** and have the Worker query it for the **vector leg only**,
@@ -526,7 +589,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 13. Open decisions
+## 14. Open decisions
 
 1. **Searchable layer** — per-entity tsvector + `UNION ALL` (Option A) vs single `search_documents`
    table (Option B). *Lean B* (uniform ranking, simpler RPC, trivial facets).
@@ -538,10 +601,10 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 14. Risks & mitigations
+## 15. Risks & mitigations
 
 - **Search load on the OLTP primary** (the one real downside): Hyperdrive query caching first; add a
-  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§12) as the last lever.
+  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§13) as the last lever.
 - **Relevance regression:** the shadow-mode diff (Phase 3) against a frozen baseline is the gate —
   no cutover until PG matches. The eval harness (§8.2) keeps it from drifting after.
 - **Generated-column write cost:** STORED tsvector adds a little per write; negligible at this
@@ -554,7 +617,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 15. Sequencing summary
+## 16. Sequencing summary
 
 ```
 Phase 0  Baseline + flag
