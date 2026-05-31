@@ -194,8 +194,7 @@ export async function meiliMultiSearch(
 		...(args.useHybrid ? { hybrid: { semanticRatio: 0.5, embedder: "default" } } : {}),
 	}));
 
-	type MeiliQuery = (typeof queries)[number];
-	const run = async (q: Array<MeiliQuery | Omit<MeiliQuery, "hybrid">>) => {
+	const run = async (q: Array<Record<string, unknown>>) => {
 		const controller = new AbortController();
 		const timer = setTimeout(() => controller.abort("meili-timeout"), 6000);
 		try {
@@ -218,6 +217,15 @@ export async function meiliMultiSearch(
 		// Fallback: lexical only.
 		const q2 = queries.map(({ hybrid: _hybrid, ...rest }) => rest);
 		res = await run(q2);
+	}
+	if (!res.ok) {
+		// Last resort: if an index's facets/filterable attrs have drifted from
+		// the configured set, Meili returns 400 (invalid_search_facets) for the
+		// whole multi-search — which would otherwise 500 the entire search. Retry
+		// once with facets dropped so results still come back; facet counts
+		// degrade until the index settings are re-applied (configure-indexes.sh).
+		const bare = queries.map(({ hybrid: _hybrid, facets: _facets, ...rest }) => rest);
+		res = await run(bare);
 	}
 	if (!res.ok) {
 		const text = await res.text();
