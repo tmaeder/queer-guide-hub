@@ -47,13 +47,11 @@ const FUNCTION_REGISTRY: FunctionMeta[] = [
   { name: 'import-tripadvisor-venues', category: 'api', description: 'Import venues from TripAdvisor', envVars: ['TRIPADVISOR_API_KEY'] },
   { name: 'import-tomtom-venues', category: 'api', description: 'Import venues from TomTom', envVars: ['TOMTOM_API_KEY'] },
   { name: 'ingestion-review-api', category: 'api', description: 'Ingestion review management', envVars: [] },
-  { name: 'link-locations', category: 'api', description: 'Link content to locations', envVars: [] },
   { name: 'manage-api-keys', category: 'api', description: 'API key management', envVars: [] },
   { name: 'mapbox-geocoding', category: 'api', description: 'Mapbox geocoding proxy', envVars: ['MAPBOX_ACCESS_TOKEN'] },
   { name: 'populate-optimization-status', category: 'api', description: 'Track media optimization status', envVars: [] },
   { name: 'process-audio', category: 'api', description: 'Audio file processing', envVars: [] },
   { name: 'process-video', category: 'api', description: 'Video file processing', envVars: [] },
-  { name: 'reimport-personality-images', category: 'api', description: 'Re-import personality images', envVars: [] },
   { name: 'resolve-or-create-city', category: 'api', description: 'Resolve or create city record', envVars: [] },
   { name: 'resolve-origin-airport', category: 'api', description: 'Resolve nearest airport', envVars: [] },
   { name: 'scan-links', category: 'api', description: 'Scan content for URLs', envVars: [] },
@@ -65,7 +63,6 @@ const FUNCTION_REGISTRY: FunctionMeta[] = [
   { name: 'travel-deals', category: 'api', description: 'Travel deal aggregation', envVars: [] },
   { name: 'umami-analytics', category: 'api', description: 'Privacy-friendly analytics tracking', envVars: [] },
   { name: 'umami-dashboard', category: 'api', description: 'Analytics dashboard data', envVars: [] },
-  { name: 'update-musician-concerts', category: 'api', description: 'Update musician concert data', envVars: [] },
   { name: 'verify-turnstile', category: 'api', description: 'Verify Turnstile CAPTCHA', envVars: ['TURNSTILE_SECRET_KEY'] },
 
   // ── Webhook / URL-triggered ──
@@ -80,7 +77,6 @@ const FUNCTION_REGISTRY: FunctionMeta[] = [
   { name: 'import-country-data', category: 'api', description: 'Import country reference data', envVars: [] },
   { name: 'import-events-csv', category: 'api', description: 'Import events from CSV', envVars: [] },
   { name: 'import-personalities-csv', category: 'api', description: 'Import personalities from CSV', envVars: [] },
-  { name: 'import-refuge-restrooms', category: 'api', description: 'Import Refuge Restrooms data', envVars: [] },
   { name: 'import-tags-csv', category: 'api', description: 'Import tags from CSV', envVars: [] },
   { name: 'import-venues-csv', category: 'api', description: 'Import venues from CSV', envVars: [] },
 
