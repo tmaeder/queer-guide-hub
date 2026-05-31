@@ -29,6 +29,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities, fetchDisplayMap } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
+import { pgHybridSearch, type PgSearchArgs } from "./pgSearch";
 import { detectScript, tokenize, isBareLgbtqQuery } from "./queryPrep";
 import { resolveSession } from "./sessionCookie";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
@@ -64,6 +65,14 @@ export interface Env {
 	EMBED_MODEL?: string;
 	ENABLE_RERANKER?: string; // "1" to enable
 	SESSION_CACHE: KVNamespace; // per-session recent views for decay
+	/**
+	 * Search backend selector (Meili -> Postgres migration, Phase 2).
+	 *   "meili"  (default) — current Meilisearch + pgvector fusion path.
+	 *   "pg"     — serve from the Postgres search_hybrid/search_facets RPCs.
+	 *   "shadow" — serve Meili, run PG in parallel and log a comparison
+	 *              (no user-facing change). Used to validate before cutover.
+	 */
+	SEARCH_BACKEND?: string;
 	ADMIN_TOKEN?: string;
 	SENTRY_DSN?: string;
 	SENTRY_ENV?: string;
@@ -320,52 +329,104 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const skipSynonymsForCity = !!rewrite?.city || !!rewrite?.type_hint;
 	const meiliQ = !skipSynonymsForCity && allSynonyms.length ? `${q} ${allSynonyms.join(" ")}` : q;
 	const useHybrid = meiliQ.split(/\s+/).length >= 3;
-	const [meili, sem] = await Promise.all([
-		meiliMultiSearch(env, {
-			indexes: requestedIndexes,
-			query: meiliQ,
-			filter: filterParts,
-			facets: INDEX_FACETS,
-			hitsPerPage,
-			page,
-			useHybrid,
-		}),
-		semanticSearch(env, {
-			queryVec: blendedVec,
-			contentTypes: pgTypes,
-			biasWeight: biasVec ? 0.3 : 0,
-			limit: 100,
-		}),
-	]);
 
-	// Fuse: Meili rankingScore + pgvector score via RRF.
-	const meiliHits = meili.hits.map((h, i: number) => ({ ...h, _source: "meili", _rank: i }));
-	// Enrich semantic hits with title/slug/image_url/city/country from source
-	// tables — content_embeddings metadata only stored a minimal subset at
-	// index time, so the pgvector half of the fused list would otherwise have
-	// missing titles and placeholder images.
-	const semDisplay = await fetchDisplayMap(env, sem).catch(() => new Map());
-	const semHits = sem.map((s, i) => {
-		const d = semDisplay.get(`${s.content_type}:${s.content_id}`) ?? {};
-		return {
-			...s,
-			id: s.content_id,
-			objectID: s.content_id,
-			type: s.content_type,
-			title: s.metadata?.title ?? d.title,
-			city: s.metadata?.city ?? d.city,
-			country: s.metadata?.country ?? d.country,
-			category: s.metadata?.category,
-			tags: s.metadata?.tags || [],
-			slug: s.metadata?.slug ?? d.slug,
-			image_url: s.metadata?.image_url ?? d.image_url ?? null,
-			start_date: s.metadata?.start_date ?? d.date ?? null,
-			featured: s.metadata?.featured || false,
-			_source: "pg",
-			_rank: i,
-		};
-	});
-	const fused = rrfFuse([meiliHits, semHits], 60);
+	// Backend selector (Meili -> Postgres migration, Phase 2). Default "meili"
+	// keeps current behaviour; "pg" serves from search_hybrid; "shadow" serves
+	// Meili but runs PG in parallel and logs a comparison (no user-facing change).
+	const backend = (env.SEARCH_BACKEND || "meili").toLowerCase();
+	const pgArgs: PgSearchArgs = {
+		query: effectiveQ,
+		queryVec: blendedVec,
+		contentTypes: pgTypes.length ? pgTypes : null,
+		filters: {
+			city: mergedFilters.city || mergedFilters.location || undefined,
+			country: mergedFilters.country || undefined,
+			category: mergedFilters.categories?.[0],
+			is_featured: mergedFilters.featured || undefined,
+		},
+		lat: mergedFilters.lat ?? null,
+		lng: mergedFilters.lng ?? null,
+		radiusKm: mergedFilters.radius ?? null,
+		hitsPerPage,
+		page,
+	};
+
+	let fused: FuseItem[];
+	let facetDistribution: Record<string, Record<string, number>>;
+	let totalHits: number;
+	const dbg = { semSize: 0, meiliSize: 0, pgSize: 0, fusedSize: 0 };
+
+	if (backend === "pg") {
+		// search_hybrid already fuses keyword+vector via RRF in SQL, so it
+		// replaces BOTH the Meili call and personalized_semantic_search.
+		const pg = await pgHybridSearch(env, pgArgs).catch((e) => {
+			console.warn("pgHybridSearch", (e as Error).message);
+			return null;
+		});
+		fused = (pg?.hits ?? []) as FuseItem[];
+		facetDistribution = pg?.facetDistribution ?? {};
+		totalHits = pg?.estimatedTotalHits ?? fused.length;
+		dbg.pgSize = fused.length;
+		dbg.fusedSize = fused.length;
+	} else {
+		const [meili, sem] = await Promise.all([
+			meiliMultiSearch(env, {
+				indexes: requestedIndexes,
+				query: meiliQ,
+				filter: filterParts,
+				facets: INDEX_FACETS,
+				hitsPerPage,
+				page,
+				useHybrid,
+			}),
+			semanticSearch(env, {
+				queryVec: blendedVec,
+				contentTypes: pgTypes,
+				biasWeight: biasVec ? 0.3 : 0,
+				limit: 100,
+			}),
+		]);
+
+		// Fuse: Meili rankingScore + pgvector score via RRF.
+		const meiliHits = meili.hits.map((h, i: number) => ({ ...h, _source: "meili", _rank: i }));
+		// Enrich semantic hits with title/slug/image_url/city/country from source
+		// tables — content_embeddings metadata only stored a minimal subset at
+		// index time, so the pgvector half of the fused list would otherwise have
+		// missing titles and placeholder images.
+		const semDisplay = await fetchDisplayMap(env, sem).catch(() => new Map());
+		const semHits = sem.map((s, i) => {
+			const d = semDisplay.get(`${s.content_type}:${s.content_id}`) ?? {};
+			return {
+				...s,
+				id: s.content_id,
+				objectID: s.content_id,
+				type: s.content_type,
+				title: s.metadata?.title ?? d.title,
+				city: s.metadata?.city ?? d.city,
+				country: s.metadata?.country ?? d.country,
+				category: s.metadata?.category,
+				tags: s.metadata?.tags || [],
+				slug: s.metadata?.slug ?? d.slug,
+				image_url: s.metadata?.image_url ?? d.image_url ?? null,
+				start_date: s.metadata?.start_date ?? d.date ?? null,
+				featured: s.metadata?.featured || false,
+				_source: "pg",
+				_rank: i,
+			};
+		});
+		fused = rrfFuse([meiliHits, semHits], 60);
+		facetDistribution = meili.facetDistribution;
+		totalHits = meili.estimatedTotalHits;
+		dbg.semSize = sem.length;
+		dbg.meiliSize = meiliHits.length;
+		dbg.fusedSize = fused.length;
+
+		// Shadow mode: validate PG against live Meili without affecting the
+		// response. Logs overlap@10 + latency for offline diffing.
+		if (backend === "shadow") {
+			ctx.waitUntil(shadowCompare(env, q, pgArgs, fused.slice(0, 10) as FuseItem[]));
+		}
+	}
 
 	// Personalization nudges (boost/decay) + worker-side exact-title boost
 	// for bug #4 (until the Meilisearch index ranking rules are reconfigured).
@@ -392,7 +453,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	}
 
 	// Personalized facet reorder: user interest tags first, then by count.
-	const reorderedFacets = reorderFacets(meili.facetDistribution, signal.recent_tags || [], signal.interests || []);
+	const reorderedFacets = reorderFacets(facetDistribution, signal.recent_tags || [], signal.interests || []);
 
 	const processingTimeMS = Date.now() - started;
 
@@ -424,16 +485,18 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			nbHits: final.length,
 			page,
 			hitsPerPage,
-			totalHits: meili.estimatedTotalHits,
+			totalHits,
 			processingTimeMS,
 			facetDistribution: reorderedFacets,
 			debug: debug
 				? {
+						backend,
 						biasApplied: !!biasVec,
 						biasEvents: signal.biasItems?.length || 0,
-						semSize: sem.length,
-						meiliSize: meiliHits.length,
-						fusedSize: fused.length,
+						semSize: dbg.semSize,
+						meiliSize: dbg.meiliSize,
+						pgSize: dbg.pgSize,
+						fusedSize: dbg.fusedSize,
 						embedModel,
 						reranker: env.ENABLE_RERANKER === "1",
 						rewrite,
@@ -761,6 +824,37 @@ function dedupeById(list: FuseItem[]): FuseItem[] {
 		out.push(it);
 	}
 	return out;
+}
+
+/**
+ * Shadow-mode comparison: run the Postgres search path in parallel with the
+ * (already-served) Meili path and log overlap@10 + latency for offline diffing.
+ * Never throws — best-effort telemetry, fired via ctx.waitUntil.
+ */
+async function shadowCompare(env: Env, q: string, pgArgs: PgSearchArgs, meiliTop: FuseItem[]): Promise<void> {
+	try {
+		const pg = await pgHybridSearch(env, pgArgs);
+		const meiliIds = meiliTop.map((h) => itemId(h)).filter((x): x is string => !!x);
+		const meiliSet = new Set(meiliIds);
+		const pgIds = pg.hits
+			.slice(0, 10)
+			.map((h) => itemId(h as FuseItem))
+			.filter((x): x is string => !!x);
+		const overlap = pgIds.filter((id) => meiliSet.has(id)).length;
+		console.log(
+			JSON.stringify({
+				tag: "search_shadow",
+				q,
+				overlap_at_10: overlap,
+				meili_top: meiliIds,
+				pg_top: pgIds,
+				pg_total: pg.estimatedTotalHits,
+				pg_ms: pg.tookMs,
+			}),
+		);
+	} catch (e) {
+		console.warn("shadowCompare", (e as Error).message);
+	}
 }
 
 function reorderFacets(
