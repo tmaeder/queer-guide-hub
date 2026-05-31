@@ -37,7 +37,7 @@ dual-embedding inconsistency — not chase a feature we lack.
 - **Vectorize** is a vector DB only: no BM25, no facet *counts*, no native geo radius/distance sort,
   no typo tolerance. It can hold the semantic half (10M vectors, ≤1536 dims, metadata filters
   `$eq/$ne/$in/$nin/$lt/$lte/$gt/$gte`) but can't be the structured engine. Reserve it as a later
-  scaling lever (see §14).
+  scaling lever (see §15).
 - **AI Search (AutoRAG)** is a managed *document/chunk RAG* product (vector + BM25 hybrid, relevance
   boosting, metadata filters, MCP). Wrong shape for faceted, geo, card-based **entity** search — but
   the **right** shape for the assistant's knowledge/RAG tool over unstructured editorial/news/guide
@@ -87,7 +87,7 @@ columns**. We build the structured-search layer properly.
 `pg_trgm`, `unaccent`, `postgis` (geo columns are bare `numeric` lat/lng today — PostGIS gives true
 `ST_DWithin` radius + `<->` distance sort; `earthdistance`/cube is the lighter fallback).
 
-### 3.2 Searchable layer — two options (decision in §15)
+### 3.2 Searchable layer — two options (decision in §16)
 
 **Option A — per-entity generated tsvector + GIN/GiST indexes** on each table, UNION-ed at query
 time. Example for `venues` (live schema uses **`is_featured`**, not the dropped `featured`):
@@ -145,7 +145,7 @@ Internally, per requested type:
   `personalized_semantic_search` does today (generalize that function, don't reinvent).
 - **Filters:** WHERE from `p_filters` (the Meili `filterable` attrs).
 - **Geo:** `ST_DWithin(geog, point, radius)` + `ORDER BY geog <-> point` (Meili `_geoRadius` parity).
-- **Fusion:** RRF at depth 60 (in SQL — decision in §15).
+- **Fusion:** RRF at depth 60 (in SQL — decision in §16).
 - **Dedup:** `DISTINCT ON (master_event_id)` (replaces Meili `distinctAttribute`).
 - **Highlighting:** `ts_headline` for `<em>` spans.
 - **Trust-aware ranking** (enhancement, baked in — see §8.1): bias the final `ORDER BY` by
@@ -271,7 +271,7 @@ front-run the router later as a cost optimization.
 - **Hyperdrive** — Worker → Supabase connection pooling + read caching.
 - **AI Search (AutoRAG)** — the assistant's `knowledge_search` RAG tool over unstructured content
   (the one place its document/chunk model fits).
-- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§14).
+- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§15).
 
 ---
 
@@ -643,7 +643,68 @@ beyond search radius); (3) **safety-geo overlays** (the map as a safety instrume
 
 ---
 
-## 14. Vectorize off-ramp (deferred)
+## 14. Temporal & date/time-aware search
+
+The core trap: **time is relative to query time + timezone, but the index stores absolute
+timestamps** — "upcoming" / "tonight" / "open now" are computed at request time, never baked into a
+field. Grounded in the schema (`events.start_date/end_date` + `event_occurrences` + `timezone`,
+`personalities.birth_date/death_date`, `news.published_at`, `festivals` ranges, `venues.hours` jsonb,
+trip date ranges).
+
+### 14.1 Principle — and why the migration helps
+A static index goes stale for time-relative queries; if it lags, availability is wrong. The
+**Postgres-live model (no sync lag) is a correctness win** — `search_hybrid` reads
+`start_date`/occurrences/`hours` live from canonical tables. Give the RPC explicit `p_now timestamptz`
++ `p_tz` params so windows are computed per-request, never cached into the data.
+
+### 14.2 Events — occurrences, recurrence, upcoming-first
+- **Nearest-future occurrence:** join `event_occurrences`, return the *next* upcoming instance per
+  master, `DISTINCT ON (master_event_id)` ordered by soonest — replaces Meili `distinctAttribute`, but
+  live. A weekly drag night surfaces its next date, not past rows.
+- **Hide/demote past:** default-filter `next_occurrence >= now()` (keep past pages for SEO, §14.7) and
+  **boost imminence** (tonight/this weekend rank above next month). Ties to trust/liveness (§8.1).
+- **"Open now":** computed from `venues.hours` jsonb in the **venue's local timezone**.
+
+### 14.3 Per-type temporal decay in federated ranking
+Different types decay differently (matters when one query mixes events + venues + news + people):
+- **News:** exponential recency decay (already `published_at:desc`).
+- **Events:** imminence boost; past excluded.
+- **Venues/personalities:** no time decay.
+`search_hybrid` applies a per-type temporal term in `ORDER BY` so the blend stays sane.
+
+### 14.4 Natural-language temporal parsing (the §9.3 router)
+"drag shows next Saturday", "Pride events in June", "something tonight" → the Haiku router resolves
+relative dates to a concrete range in the **user's timezone**, rendered as editable date chips. Needs
+a robust date parser (relative dates + tz + DST), not regex. Plus quick chips (Today · This weekend ·
+This month · Pride season) and date histograms (§9.3) showing when things cluster.
+
+### 14.5 Personalities — birth/death as temporal axes
+`birth_date`/`death_date` unlock living-vs-deceased filter, era/decade facets ("queer figures of the
+1920s"), age, and an **"on this day in queer history"** module (born/died today + milestones like
+Stonewall) — a daily editorial + search + SEO hook powered by date-indexed entities.
+
+### 14.6 Trips — intersect the window
+The signature query: **intersect the trip's date range with event occurrences** → "what's on during
+my trip"; scope `search_hybrid` to the trip window. Layer **season awareness** — Pride season is
+hemisphere/country-dependent (not globally June) — plus lead-time and date-dependent seasonal safety
+(ties to safety-geo §13.5).
+
+### 14.7 Timezone, DST, caching & lifecycle
+- **Timezone/DST (the trap):** store UTC + local `timezone`; compute "is it on / open now" in the
+  entity's local tz, display in the user's tz, handle DST at boundaries. Explicit test cases.
+- **Time-bucketed cache keys:** temporal queries can't cache by string alone (§8.8) — bucket by time
+  window (round to hour/day) or skip, else "tonight" serves yesterday.
+- **Lifecycle:** past events drop from *search* but keep pages for history/SEO; expiring deals and aged
+  news demote/expire on schedule.
+
+### 14.8 Priorities
+Top three: (1) **event occurrences → nearest-future + upcoming-first + hide-past** (most common, most
+broken-if-wrong); (2) **timezone-correct "open now / tonight" + NL relative-date parsing**; (3)
+**trip-window ↔ occurrence intersection** for the concierge.
+
+---
+
+## 15. Vectorize off-ramp (deferred)
 
 If DB read-load isolation or edge-local vector latency becomes the bottleneck, mirror
 `content_embeddings` into **Vectorize** and have the Worker query it for the **vector leg only**,
@@ -652,7 +713,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 15. Open decisions
+## 16. Open decisions
 
 1. **Searchable layer** — per-entity tsvector + `UNION ALL` (Option A) vs single `search_documents`
    table (Option B). *Lean B* (uniform ranking, simpler RPC, trivial facets).
@@ -664,10 +725,10 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 16. Risks & mitigations
+## 17. Risks & mitigations
 
 - **Search load on the OLTP primary** (the one real downside): Hyperdrive query caching first; add a
-  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§14) as the last lever.
+  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§15) as the last lever.
 - **Relevance regression:** the shadow-mode diff (Phase 3) against a frozen baseline is the gate —
   no cutover until PG matches. The eval harness (§8.2) keeps it from drifting after.
 - **Generated-column write cost:** STORED tsvector adds a little per write; negligible at this
@@ -680,7 +741,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 17. Sequencing summary
+## 18. Sequencing summary
 
 ```
 Phase 0  Baseline + flag
