@@ -7,6 +7,9 @@ import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useSearchActions', () => ({ useTrackClick: () => vi.fn() }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
+vi.mock('@/hooks/useUserMode', () => ({
+  useUserMode: () => ({ mode: 'community', setMode: vi.fn() }),
+}));
 
 import { UniversalSearchBar } from '../UniversalSearchBar';
 

@@ -1558,7 +1558,15 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "modeLabel": "[KO] Mode",
+    "modeActive": "[KO] Mode: {{mode}}",
+    "clusters": {
+      "places": "[KO] Places",
+      "community": "[KO] Community",
+      "shop": "[KO] Shop & Read",
+      "support": "[KO] Support"
+    }
   },
   "pages": {
     "venues": {

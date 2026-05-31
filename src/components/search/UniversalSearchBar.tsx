@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
-import { Loader2, Search, X, Mic, SlidersHorizontal } from 'lucide-react';
+import { Loader2, Search, X, Mic } from 'lucide-react';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { trackSearchUx } from '@/lib/searchClient';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -16,6 +15,8 @@ import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useNearMe } from '@/hooks/useNearMe';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
+import { useUserMode } from '@/hooks/useUserMode';
+import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
 import { SearchPopoverDesktop } from './SearchPopoverDesktop';
 import { SearchPopoverMobile } from './SearchPopoverMobile';
@@ -83,6 +84,9 @@ export const UniversalSearchBar = () => {
   const [railFocused, setRailFocused] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const justSelectedRef = useRef(false);
+  // When the popover closes it refocuses the input; suppress the focus handler
+  // from immediately re-opening it (otherwise Cancel/Escape can't close it).
+  const suppressReopenRef = useRef(false);
   const navigate = useLocalizedNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -111,7 +115,12 @@ export const UniversalSearchBar = () => {
     loading: suggestionsLoading,
     error: suggestionsError,
   } = useSearchSuggestions(query, scopeArray);
-  const { trending } = useTrendingSuggestions(isOpen && !query);
+  const { mode } = useUserMode();
+  const trendingTypes = useMemo(
+    () => (MODE_SCOPE_BIAS[mode] ?? ['venue', 'event']).slice(0, 2),
+    [mode],
+  );
+  const { trending } = useTrendingSuggestions(isOpen && !query, 6, trendingTypes);
   const voice = useVoiceSearch();
   const nearMe = useNearMe();
 
@@ -338,8 +347,7 @@ export const UniversalSearchBar = () => {
     if (isOpen) focusInput();
   }, [isOpen, focusInput]);
 
-  const isMac =
-    typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
 
   const activeFiltersCount =
     (filters.types?.length || 0) +
@@ -412,15 +420,19 @@ export const UniversalSearchBar = () => {
                     justSelectedRef.current = false;
                   }}
                   onKeyDown={handleKeyDown}
-                  onFocus={() => setIsOpen(true)}
+                  onFocus={() => {
+                    if (suppressReopenRef.current) {
+                      suppressReopenRef.current = false;
+                      return;
+                    }
+                    setIsOpen(true);
+                  }}
                   autoComplete="off"
-                  className="w-full border-0 bg-transparent text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
+                  className="w-full border-0 bg-transparent pr-20 text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                   style={{ fontSize: isMobile ? '1rem' : '0.875rem', height: inputHeight }}
                 />
                 {!query && (
-                  <span
-                    className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5"
-                  >
+                  <span className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
                     {voice.supported && (
                       <Button
                         type="button"
@@ -483,24 +495,6 @@ export const UniversalSearchBar = () => {
                   </span>
                 )}
               </div>
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Search filters"
-                  className="relative shrink-0 px-4 text-foreground"
-                  style={{ height: 48 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowFilters(!showFilters);
-                  }}
-                >
-                  <SlidersHorizontal size={20} />
-                  {activeFiltersCount > 0 && (
-                    <Badge variant="destructive">{activeFiltersCount}</Badge>
-                  )}
-                </Button>
-              )}
             </div>
           </div>
         </PopoverAnchor>
@@ -525,6 +519,7 @@ export const UniversalSearchBar = () => {
           }}
           onCloseAutoFocus={(e) => {
             e.preventDefault();
+            suppressReopenRef.current = true;
             inputRef.current?.focus();
           }}
           onEscapeKeyDown={() => setIsOpen(false)}
@@ -544,6 +539,8 @@ export const UniversalSearchBar = () => {
               setScope={setScope}
               onSelect={handleSelectSuggestion}
               onSearchAll={() => handleSearch()}
+              onToggleFilters={() => setShowFilters(!showFilters)}
+              activeFiltersCount={activeFiltersCount}
               onClose={() => setIsOpen(false)}
               onClear={() => {
                 setQuery('');

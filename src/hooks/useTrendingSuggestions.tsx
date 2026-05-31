@@ -8,8 +8,8 @@ import { fetchTrending, type SearchHit } from '@/lib/searchClient';
  * Worker returns `entity_type`/`entity_id` shape; we normalize to SearchHit's
  * `type`/`id` so the dropdown can use the same render path as suggestions.
  */
-let cache: SearchHit[] | null = null;
-let inflight: Promise<SearchHit[]> | null = null;
+const cache: Record<string, SearchHit[]> = {};
+const inflight: Record<string, Promise<SearchHit[]>> = {};
 
 function normalize(raw: Array<Record<string, unknown>>): SearchHit[] {
   return raw
@@ -30,34 +30,45 @@ function normalize(raw: Array<Record<string, unknown>>): SearchHit[] {
     .filter((x): x is SearchHit => Boolean(x));
 }
 
-export function useTrendingSuggestions(enabled: boolean, limit = 6): {
+const DEFAULT_TYPES = ['venue', 'event'];
+
+export function useTrendingSuggestions(
+  enabled: boolean,
+  limit = 6,
+  types: string[] = DEFAULT_TYPES,
+): {
   trending: SearchHit[];
   loading: boolean;
 } {
-  const [trending, setTrending] = useState<SearchHit[]>(cache ?? []);
+  const key = types.join(',');
+  const [trending, setTrending] = useState<SearchHit[]>(cache[key] ?? []);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!enabled || cache) return;
+    if (!enabled) return;
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+    if (cache[key]) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+      setTrending(cache[key]);
+      return;
+    }
     setLoading(true);
     const p =
-      inflight ??
-      (inflight = fetchTrending(['venue', 'event'], undefined, limit)
+      inflight[key] ??
+      (inflight[key] = fetchTrending(key.split(','), undefined, limit)
         .then((hits) => normalize(hits as unknown as Array<Record<string, unknown>>))
         .catch(() => []));
     p.then((hits) => {
       if (cancelled) return;
-      cache = hits;
-      inflight = null;
+      cache[key] = hits;
+      delete inflight[key];
       setTrending(hits);
       setLoading(false);
     });
     return () => {
       cancelled = true;
     };
-  }, [enabled, limit]);
+  }, [enabled, limit, key]);
 
   return { trending, loading };
 }

@@ -1562,7 +1562,15 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "modeLabel": "[FR] Mode",
+    "modeActive": "[FR] Mode: {{mode}}",
+    "clusters": {
+      "places": "[FR] Places",
+      "community": "[FR] Community",
+      "shop": "[FR] Shop & Read",
+      "support": "[FR] Support"
+    }
   },
   "pages": {
     "venues": {
