@@ -170,6 +170,38 @@ export async function fetchTrending(
 	return data.trending ?? [];
 }
 
+/**
+ * Personalized, popularity-aware discovery feed for the zero-query search panel
+ * (get_recommendations RPC via the worker /recommendations endpoint). Blends
+ * popularity + the user's tracked-engagement bias + featured/quality/geo/freshness.
+ * Returns raw worker rows (objectID/type/…); callers normalize to SearchHit.
+ */
+export async function fetchRecommendations(
+	opts: {
+		types?: string[];
+		city?: string;
+		lat?: number;
+		lng?: number;
+		radius?: number;
+		excludeIds?: string[];
+		limit?: number;
+		userId?: string | null;
+	} = {},
+): Promise<SearchHit[]> {
+	const data = await post<{ recommendations: SearchHit[] }>("/recommendations", {
+		types: opts.types,
+		city: opts.city,
+		lat: opts.lat,
+		lng: opts.lng,
+		radius: opts.radius,
+		exclude_ids: opts.excludeIds,
+		limit: opts.limit ?? 12,
+		user_id: opts.userId ?? null,
+		session_id: getSessionId(),
+	});
+	return data.recommendations ?? [];
+}
+
 /** Fast lexical autocomplete — typo-tolerant Meili prefix match. */
 export async function fetchAutocomplete(
 	query: string,

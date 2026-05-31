@@ -30,6 +30,7 @@ export interface SearchPopoverDesktopProps {
   loading: boolean;
   error: string | null;
   trending: ReturnType<typeof useTrendingSuggestions>['trending'];
+  discoverySource?: 'recommended' | 'trending';
   recentSearches: string[];
   showFilters: boolean;
   setShowFilters: (b: boolean) => void;
@@ -65,6 +66,7 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
     loading,
     error,
     trending,
+    discoverySource,
     recentSearches,
     showFilters,
     setShowFilters,
@@ -117,6 +119,7 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
           {query.length === 0 ? (
             <SearchPopoverEmpty
               trending={trending}
+              source={discoverySource}
               onSelectTrending={onSelectTrending}
               onBrowse={onBrowse}
             />
