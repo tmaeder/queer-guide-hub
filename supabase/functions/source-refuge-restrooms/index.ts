@@ -6,7 +6,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: Refuge Restrooms API
-// Replaces: import-refuge-restrooms
+// Superseded the legacy import-refuge-restrooms function (removed 2026-05-31).
 // ============================================================
 
 const API_BASE = 'https://www.refugerestrooms.org/api/v1/restrooms'

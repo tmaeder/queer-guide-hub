@@ -37,25 +37,24 @@ Associated deps to re-check with `depcheck` after B3/B4: `embla-carousel-react`,
 
 | # | Item | Evidence | Risk | Action |
 |---|------|----------|------|--------|
-| C1 | `supabase/functions/background-import-manager/` | Migration `20260501030000` disables it (`is_enabled=false`), description `[DEPRECATED 2026-05-01]`, comment "function deletion in follow-up PR". Only repo ref is that disable migration; 0 frontend invokes, 0 cross-function calls. | Med | Delete dir + `supabase functions delete` + remove from `function-monitor` + cleanup-migration for leftover `workflow_definitions` rows — **after live-DB gate** |
-| C2 | `supabase/functions/ingestion-pipeline/` | Same disable migration. Other `ingestion-pipeline` migration hits are `hotel-ingestion-pipeline` (substring). 0 live callers. | Med | Same as C1 |
+| C1 | `background-import-manager` | Migration `20260501030000` disabled it. **Live-DB check:** 0 cron, 0 pipeline, 0 workflow_definitions rows. **Not present in this repo** (already removed in a prior commit) — only a deployed remnant may remain on Supabase. | Med | Undeploy-only follow-up (`supabase functions delete`); nothing in repo to remove |
+| C2 | `ingestion-pipeline` | Same. The one `cron.job` ILIKE hit was `hotel-ingestion-pipeline` (substring false positive — verified the job invokes `hotel-ingestion-pipeline`). **Not present in this repo.** | Med | Same as C1 |
 
-## D — Unused admin/manual utility functions (live-DB-gated)
+## D — Unused admin/manual utility functions — **live-DB-gated, RESOLVED**
 
-Referenced **only** by `function-monitor/index.ts` metadata; 0 frontend invokes; 0 cron/workflow
-refs in repo. Repo evidence is necessary but **not sufficient** — each must be checked against
-live `cron.job` + enabled `workflow_definitions` before deletion. Keep any with a live reference.
+Live-DB gate run 2026-05-31 against `cron.job`, `pipeline_definitions.nodes`, and
+`workflow_definitions` (project `xqeacpakadqfxjxjcewc`).
 
-| # | Item | Repo evidence | Action |
-|---|------|---------------|--------|
-| D1 | `reimport-personality-images` | only function-monitor | delete if live-DB clean; else keep |
-| D2 | `backfill-personality-qids` | no refs at all | delete if live-DB clean |
-| D3 | `link-locations` | only function-monitor | delete if live-DB clean |
-| D4 | `update-musician-concerts` | only function-monitor | delete if live-DB clean |
-| D5 | `price-drop-check` | no refs at all | delete if live-DB clean |
-| D6 | `source-email-ingestions` | no refs at all | delete if live-DB clean |
-| D7 | `source-ilga` | header "Replaces import-ilga-data"; no DAG ref | delete if live-DB clean (confirm not a planned source) |
-| D8 | `import-refuge-restrooms` | referenced by `source-refuge-restrooms` | **investigate first — likely keep** |
+| # | Item | Live-DB result | Action taken |
+|---|------|----------------|--------------|
+| D1 | `reimport-personality-images` | 0 cron / 0 pipeline | **Deleted** (+ function-monitor entry) |
+| D2 | `backfill-personality-qids` | 0 / 0 | **Deleted** |
+| D3 | `link-locations` | 0 / 0 | **Deleted** (+ function-monitor + config.toml) |
+| D4 | `update-musician-concerts` | 0 / 0 | **Deleted** (+ function-monitor + config.toml) |
+| D5 | `price-drop-check` | 0 / 0 | **Deleted** |
+| D6 | `source-email-ingestions` | **live node in 2 enabled pipelines** (events-ingestion-bulletproof, venue-ingestion-unified) | **KEPT** — wired into active DAGs |
+| D7 | `source-ilga` | 0 / 0 | **Deleted** (+ config.toml) |
+| D8 | `import-refuge-restrooms` | 0 / 0; superseded by `source-refuge-restrooms` ("Replaces:" header) | **Deleted** (+ function-monitor; updated successor comment) |
 
 ## E — Disabled scrape-source adapters (optional)
 

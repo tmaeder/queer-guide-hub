@@ -145,9 +145,6 @@ verify_jwt = false
 [functions.umami-dashboard]
 verify_jwt = false
 
-[functions.link-locations]
-verify_jwt = false
-
 [functions.enrich-venue]
 verify_jwt = false
 
@@ -161,9 +158,6 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.import-ilga-data]
-verify_jwt = false
-
-[functions.update-musician-concerts]
 verify_jwt = false
 
 [functions.import-adult-models-csv]
@@ -283,9 +277,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.source-google-places]
-verify_jwt = false
-
-[functions.source-ilga]
 verify_jwt = false
 
 [functions.source-misterbnb]
