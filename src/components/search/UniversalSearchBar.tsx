@@ -18,6 +18,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
 import { useUserMode } from '@/hooks/useUserMode';
 import { MODE_SCOPE_BIAS } from '@/config/navigation';
+import { DISCOVERY_HUB_NAV_ENABLED } from '@/lib/featureFlags';
 import type { SearchFilters } from '@/hooks/useSearch';
 import { SearchPopoverDesktop } from './SearchPopoverDesktop';
 import { SearchPopoverMobile } from './SearchPopoverMobile';
@@ -490,7 +491,7 @@ export const UniversalSearchBar = () => {
                   </span>
                 )}
               </div>
-              {isMobile && (
+              {isMobile && !DISCOVERY_HUB_NAV_ENABLED && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -551,6 +552,10 @@ export const UniversalSearchBar = () => {
               setScope={setScope}
               onSelect={handleSelectSuggestion}
               onSearchAll={() => handleSearch()}
+              onToggleFilters={
+                DISCOVERY_HUB_NAV_ENABLED ? () => setShowFilters(!showFilters) : undefined
+              }
+              activeFiltersCount={activeFiltersCount}
               onClose={() => setIsOpen(false)}
               onClear={() => {
                 setQuery('');
