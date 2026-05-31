@@ -124,9 +124,14 @@ export const UniversalSearchBar = () => {
   );
   const { trending } = useTrendingSuggestions(isOpen && !query, 6, trendingTypes);
   // §9.1 zero-query panel: prefer the personalized/popularity-aware recommendations
-  // feed when available; fall back to trending (e.g. before the worker endpoint is
-  // deployed, useRecommendations returns []).
-  const { recommendations } = useRecommendations(isOpen && !query, { limit: 6, types: trendingTypes });
+  // feed when available; fall back to trending. Gated behind a build flag so the
+  // panel fires no /recommendations request until the worker endpoint is deployed
+  // (avoids a 404 in preview/prod builds; rollout: deploy worker → flip flag).
+  const recsEnabled = import.meta.env.VITE_RECOMMENDATIONS_ENABLED === 'true';
+  const { recommendations } = useRecommendations(recsEnabled && isOpen && !query, {
+    limit: 6,
+    types: trendingTypes,
+  });
   const discoveryHits = recommendations.length > 0 ? recommendations : trending;
   const discoverySource: 'recommended' | 'trending' =
     recommendations.length > 0 ? 'recommended' : 'trending';
