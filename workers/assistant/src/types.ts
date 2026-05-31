@@ -20,6 +20,10 @@ export interface AiMessage {
 	content: string;
 	/** Tool name (for role: "tool" result messages). */
 	name?: string;
+	/** Structured tool calls on an assistant turn (OpenAI/Chat-Completions shape). */
+	tool_calls?: Array<{ id: string; type: "function"; function: { name: string; arguments: string } }>;
+	/** Links a role:"tool" result back to the assistant tool call that requested it. */
+	tool_call_id?: string;
 }
 
 /** Flat tool definition Workers AI expects ({ name, description, parameters }). */
