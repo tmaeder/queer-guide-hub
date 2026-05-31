@@ -25,7 +25,7 @@ export function QuickLaunchNav() {
         if (items.length === 0) return null;
         return (
           <div key={cluster.id} className="flex shrink-0 items-center gap-3">
-            <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+            <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
               {t(cluster.labelKey)}
             </span>
             {items.map((item) => {

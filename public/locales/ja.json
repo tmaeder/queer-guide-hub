@@ -1558,7 +1558,15 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "modeLabel": "[JA] Mode",
+    "modeActive": "[JA] Mode: {{mode}}",
+    "clusters": {
+      "places": "[JA] Places",
+      "community": "[JA] Community",
+      "shop": "[JA] Shop & Read",
+      "support": "[JA] Support"
+    }
   },
   "pages": {
     "venues": {

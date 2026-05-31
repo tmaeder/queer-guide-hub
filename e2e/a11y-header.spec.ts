@@ -47,7 +47,7 @@ test.describe('Header mobile a11y', () => {
     await expect(modes).toBeVisible();
     expect(await modes.getByRole('radio').count()).toBe(6);
 
-    await page.keyboard.press('Escape');
-    await expect(search).toHaveAttribute('aria-expanded', 'false');
+    await page.getByRole('button', { name: /close search/i }).click();
+    await expect(modes).toBeHidden();
   });
 });
