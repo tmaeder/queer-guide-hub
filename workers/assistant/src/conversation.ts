@@ -76,20 +76,32 @@ export class Conversation {
 
 		const cards: Card[] = [];
 		let finalText = "";
+		let toolsUsed = false;
 
 		for (let step = 0; step < MAX_TOOL_STEPS; step++) {
-			const { text, toolCalls } = await runModel(this.env, { model, messages, tools: TOOLS });
+			// Offer tools only until one gathering round has run. This quantized Llama
+			// re-calls tools indefinitely when they stay in context, so the synthesis
+			// turn omits them to force a grounded prose answer from the tool results.
+			const { text, toolCalls } = await runModel(this.env, { model, messages, tools: toolsUsed ? undefined : TOOLS });
 
-			if (toolCalls.length > 0) {
-				// Record the model's tool intent, then feed each tool result back.
+			if (!toolsUsed && toolCalls.length > 0) {
+				toolsUsed = true;
+				// Assistant turn must carry the structured tool_calls; each tool result
+				// links back via tool_call_id (Workers AI chat round-trip format).
 				messages.push({
 					role: "assistant",
-					content: text || `(calling: ${toolCalls.map((t) => t.name).join(", ")})`,
+					content: text || "",
+					tool_calls: toolCalls.map((tc, i) => ({
+						id: `call_${i}`,
+						type: "function",
+						function: { name: tc.name, arguments: JSON.stringify(tc.arguments) },
+					})),
 				});
-				for (const tc of toolCalls) {
+				for (let i = 0; i < toolCalls.length; i++) {
+					const tc = toolCalls[i];
 					const outcome = await executeTool(this.env, tc.name, tc.arguments);
 					cards.push(...outcome.cards);
-					messages.push({ role: "tool", name: tc.name, content: outcome.content });
+					messages.push({ role: "tool", tool_call_id: `call_${i}`, name: tc.name, content: outcome.content });
 				}
 				continue;
 			}
