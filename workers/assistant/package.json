@@ -1,0 +1,17 @@
+{
+	"name": "queer-guide-assistant",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20260531.1",
+		"typescript": "~6.0.0",
+		"vitest": "^4.1.7",
+		"wrangler": "^4.95.0"
+	}
+}
