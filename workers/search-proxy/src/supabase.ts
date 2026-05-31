@@ -143,6 +143,29 @@ export async function semanticSearch(
 }
 
 /**
+ * "More like this" — embedding neighbours via the related_entities RPC over the
+ * unified search_documents table (liveness-filtered, seed excluded server-side).
+ * Returns ready-to-render card objects. Fail-soft: [] on error.
+ */
+export async function relatedEntities(
+	env: Env,
+	opts: { entityType: string; entityId: string; contentTypes?: string[] | null; sameTypeOnly?: boolean; limit?: number },
+): Promise<Array<Record<string, unknown>>> {
+	try {
+		return await rpc<Array<Record<string, unknown>>>(env, "related_entities", {
+			p_entity_type: opts.entityType,
+			p_entity_id: opts.entityId,
+			p_content_types: opts.contentTypes && opts.contentTypes.length ? opts.contentTypes : null,
+			p_same_type_only: opts.sameTypeOnly ?? false,
+			p_limit: opts.limit ?? 10,
+		});
+	} catch (e) {
+		console.warn("related_entities", (e as Error).message);
+		return [];
+	}
+}
+
+/**
  * Personalized, popularity-aware discovery feed (get_recommendations RPC).
  * Powers the zero-query search panel. The bias vector (if any) is computed
  * Worker-side from tracked engagement, matching the /search blend convention.
