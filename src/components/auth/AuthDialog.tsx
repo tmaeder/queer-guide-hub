@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useTurnstile } from '@/hooks/useTurnstile';
 
 type Mode = 'signin' | 'signup';
 
@@ -26,6 +27,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
   const { signIn } = useAuth();
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
+  const { token: captchaToken, widget: captcha, reset: resetCaptcha, required: captchaRequired } = useTurnstile();
 
   // Sync mode when the dialog is (re)opened with a different default
   useEffect(() => {
@@ -35,11 +37,23 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (captchaRequired && !captchaToken) {
+      toast({
+        title: 'Sign in failed',
+        description: 'Please complete the captcha and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(email, password, captchaToken ?? undefined);
       if (error) {
+        // Turnstile tokens are single-use — refresh for the next attempt.
+        resetCaptcha();
         const msg = error instanceof Error ? error.message : (error as { message?: string })?.message;
         toast({
           title: 'Sign in failed',
@@ -50,6 +64,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
         onOpenChange(false);
       }
     } catch (_error) {
+      resetCaptcha();
       toast({
         title: 'Something went wrong',
         description: 'Please try again later.',
@@ -139,7 +154,9 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
               </div>
             </div>
 
-            <Button type="submit" disabled={loading}>
+            {captcha}
+
+            <Button type="submit" disabled={loading || (captchaRequired && !captchaToken)}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

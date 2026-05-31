@@ -67,7 +67,7 @@ describe('AuthDialog — signin mode', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /Sign In/i }));
 
-    await waitFor(() => expect(signInMock).toHaveBeenCalledWith('a@b.com', 'secret'));
+    await waitFor(() => expect(signInMock).toHaveBeenCalledWith('a@b.com', 'secret', undefined));
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 

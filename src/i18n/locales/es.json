@@ -938,6 +938,7 @@
       "consentRequired": "Acepta los términos, la política de privacidad y confirma que tienes 18+",
       "displayNameRequired": "El nombre visible es obligatorio",
       "fillAllFields": "Completa todos los campos",
+      "captchaRequired": "Completa el captcha.",
       "invalidCredentials": "Correo o contraseña incorrectos.",
       "emailNotConfirmed": "Confirma tu correo antes de iniciar sesión.",
       "alreadyRegistered": "Ya existe una cuenta con este correo. Prueba a iniciar sesión.",
