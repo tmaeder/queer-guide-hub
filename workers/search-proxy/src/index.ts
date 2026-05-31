@@ -26,7 +26,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 		tracesSampleRate: 0.1,
 	});
 }
-import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities, fetchDisplayMap, getRecommendations } from "./supabase";
+import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities, fetchDisplayMap, getRecommendations, relatedEntities } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
 import { pgHybridSearch, type PgSearchArgs } from "./pgSearch";
@@ -723,37 +723,32 @@ async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Pro
 		content_types = r.value;
 	}
 
-	// Fetch vector of seed. Both fields are validated UUIDs / enum so safe to inline.
-	const seed = (await fetch(
-		`${env.SUPABASE_URL}/rest/v1/content_embeddings?content_type=eq.${entity_type}&content_id=eq.${entity_id}&select=embedding&limit=1`,
-		{ headers: { apikey: env.SUPABASE_SERVICE_KEY, authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}` } },
-	).then((r) => r.json())) as Array<{ embedding: unknown }>;
-	if (!seed?.[0]?.embedding) return json({ error: "no seed", code: "not_found" }, 404, cors);
-
-	const vec = parsePgVector(seed[0].embedding);
-	const results = await semanticSearch(env, { queryVec: vec, contentTypes: content_types, biasWeight: 0, limit: limit + 1 });
-	const filtered = results.filter((r) => !(r.content_type === entity_type && r.content_id === entity_id)).slice(0, limit);
-	// content_embeddings.metadata carries only the minimal fields the embedding
-	// pipeline wrote at index time. Enrich title/slug/image_url/city/country
-	// from the source tables so "More like this" rails render proper cards.
-	const displayMap = await fetchDisplayMap(env, filtered).catch(() => new Map());
-	const enriched = filtered.map((r) => {
-		const d = displayMap.get(`${r.content_type}:${r.content_id}`);
-		if (!d) return r;
-		const m = r.metadata ?? {};
-		return {
-			...r,
-			metadata: {
-				...m,
-				title: m.title ?? d.title,
-				slug: m.slug ?? d.slug,
-				image_url: m.image_url ?? d.image_url,
-				city: m.city ?? d.city,
-				country: m.country ?? d.country,
-			},
-		};
+	// Related neighbours via the unified search_documents knn (related_entities RPC):
+	// the seed lookup + liveness filtering happen server-side, and display fields
+	// are already on search_documents — so no separate seed fetch or fetchDisplayMap
+	// hop is needed. Mapped back to the legacy /similar shape
+	// ({ content_type, content_id, score, metadata }) so existing consumers
+	// (SimilarItems, SimilarCities) are unaffected.
+	const related = await relatedEntities(env, {
+		entityType: entity_type,
+		entityId: entity_id,
+		contentTypes: content_types,
+		limit,
 	});
-	return json({ results: enriched }, 200, cors);
+	const results = related.map((r) => ({
+		content_type: r.type as string,
+		content_id: r.objectID as string,
+		score: typeof r._score === "number" ? r._score : undefined,
+		metadata: {
+			title: r.title as string | undefined,
+			city: r.city as string | undefined,
+			country: r.country as string | undefined,
+			category: r.category as string | undefined,
+			slug: r.slug as string | undefined,
+			image_url: (r.imageUrl as string) ?? undefined,
+		},
+	}));
+	return json({ results }, 200, cors);
 }
 
 // ─────────────────────────────────────────────
@@ -920,12 +915,6 @@ async function hydrateTitles(_env: Env, list: HydratableHit[]): Promise<Hydratab
 		...h,
 		_snippet: `${h.title ?? ""}. ${h.description ?? h.content_text ?? ""}`.slice(0, 400),
 	}));
-}
-
-function parsePgVector(raw: unknown): number[] {
-	if (Array.isArray(raw)) return raw.map(Number);
-	if (typeof raw === "string") return raw.replace(/^\[|\]$/g, "").split(",").map(Number);
-	return [];
 }
 
 // ─────────────────────────────────────────────
