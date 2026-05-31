@@ -1,8 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, CalendarDays, Globe, Users, ShoppingBag, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { type SearchHit } from '@/lib/searchClient';
 import { TYPE_ICONS } from '@/hooks/useSearchSuggestions';
+import { DESTINATIONS, NAV_CLUSTERS } from '@/config/navigation';
+import { ModeSwitcher } from './ModeSwitcher';
 
 export interface SearchPopoverEmptyProps {
   trending: SearchHit[];
@@ -17,28 +19,11 @@ export function SearchPopoverEmpty({
 }: SearchPopoverEmptyProps) {
   const { t } = useTranslation();
   const tiles = trending.slice(0, 6);
-  const browseLinks = [
-    { label: t('search.quickLinks.places', 'Places'), icon: MapPin, path: '/places' },
-    { label: t('search.quickLinks.cities', 'Cities'), icon: Globe, path: '/cities' },
-    {
-      label: t('search.quickLinks.eventsWeekend', 'Events this weekend'),
-      icon: CalendarDays,
-      path: '/events?range=weekend',
-    },
-    {
-      label: t('search.quickLinks.personalities', 'Personalities'),
-      icon: Users,
-      path: '/personalities',
-    },
-    {
-      label: t('search.quickLinks.marketplace', 'Marketplace'),
-      icon: ShoppingBag,
-      path: '/marketplace',
-    },
-  ];
 
   return (
-    <div className="flex-1 overflow-y-auto" style={{ maxHeight: 480 }}>
+    <div className="flex-1 overflow-y-auto" style={{ maxHeight: 520 }}>
+      <ModeSwitcher />
+
       {tiles.length > 0 && (
         <div className="px-3 pb-2 pt-3">
           <div className="mb-2 flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -87,22 +72,30 @@ export function SearchPopoverEmpty({
         </div>
       )}
 
-      <div className={tiles.length > 0 ? 'border-t border-border px-3 pb-4 pt-3' : 'px-3 pb-4 pt-3'}>
-        <div className="mb-1.5 px-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t('search.browse', 'Browse')}
-        </div>
-        {browseLinks.map((link) => {
-          const Icon = link.icon;
+      <div className="border-t border-border px-3 pb-4 pt-3">
+        {NAV_CLUSTERS.map((cluster) => {
+          const items = DESTINATIONS.filter((d) => d.cluster === cluster.id);
+          if (items.length === 0) return null;
           return (
-            <button
-              key={link.path}
-              type="button"
-              onClick={() => onBrowse(link.path)}
-              className="flex w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent p-2 text-left transition-colors hover:bg-accent"
-            >
-              <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              <span className="text-sm">{link.label}</span>
-            </button>
+            <div key={cluster.id} className="mb-2 last:mb-0">
+              <div className="mb-1.5 px-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t(cluster.labelKey)}
+              </div>
+              {items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.to}
+                    type="button"
+                    onClick={() => onBrowse(item.to)}
+                    className="flex w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent p-2 text-left transition-colors hover:bg-accent"
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="text-sm">{t(item.labelKey)}</span>
+                  </button>
+                );
+              })}
+            </div>
           );
         })}
       </div>

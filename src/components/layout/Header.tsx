@@ -11,37 +11,11 @@ import {
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import {
-  Heart,
   Menu,
   User,
-  MapPin,
-  Calendar,
-  Store,
-  Globe,
-  Plane,
-  Newspaper,
-  Settings,
-  Users,
   LogOut,
-  Accessibility,
-  Tags,
-  UserCheck,
-  Map,
-  Smile,
-  Handshake,
-  Home,
-  UsersRound,
-  Rss,
   Plus,
   Shield,
-  Info,
-  Scale,
-  Mail,
-  Building,
-  Luggage,
-  LifeBuoy,
-  Puzzle,
-  Footprints,
   Search as SearchIcon,
   X,
   ChevronDown,
@@ -67,56 +41,13 @@ const NotificationList = lazy(() =>
 );
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
-
-// ── Data ────────────────────────────────────────────────────────────────────
-
-const primaryNav = [
-  { to: '/venues', icon: MapPin, labelKey: 'header.nav.venues' },
-  { to: '/events', icon: Calendar, labelKey: 'header.nav.events' },
-  { to: '/places', icon: Globe, labelKey: 'header.nav.places' },
-  { to: '/marketplace', icon: Store, labelKey: 'header.nav.marketplace' },
-  { to: '/news', icon: Newspaper, labelKey: 'header.nav.news' },
-];
-
-const moreNav = [
-  { to: '/map', icon: Map, labelKey: 'header.nav.map' },
-  { to: '/feed', icon: Rss, labelKey: 'header.nav.feed' },
-  { to: '/groups', icon: UsersRound, labelKey: 'header.nav.groups' },
-  { to: '/users', icon: UserCheck, labelKey: 'header.nav.members' },
-  { to: '/resources', icon: Tags, labelKey: 'header.nav.resources' },
-  { to: '/travel', icon: Plane, labelKey: 'header.nav.travel' },
-  { to: '/personalities', icon: Users, labelKey: 'header.nav.personalities' },
-  { to: '/hotels', icon: Building, labelKey: 'header.nav.hotels' },
-  { to: '/help', icon: LifeBuoy, labelKey: 'header.nav.help' },
-];
-
-const userMenuItems = [
-  { to: '/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
-  { to: '/favorites', icon: Heart, labelKey: 'header.userMenu.favorites' },
-  { to: '/profile/footprint', icon: Footprints, labelKey: 'header.userMenu.footprint' },
-  { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
-  { to: '/inbox', icon: Mail, labelKey: 'header.userMenu.inbox' },
-  { to: '/friends', icon: Users, labelKey: 'header.userMenu.friends' },
-  { to: '/my-groups', icon: UsersRound, labelKey: 'header.userMenu.myGroups' },
-  { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },
-];
-
-const userModes = [
-  { value: 'dating', icon: Heart, labelKey: 'header.modes.dating' },
-  { value: 'friends', icon: Users, labelKey: 'header.modes.friends' },
-  { value: 'exploration', icon: Map, labelKey: 'header.modes.exploration' },
-  { value: 'fun', icon: Smile, labelKey: 'header.modes.fun' },
-  { value: 'networking', icon: Handshake, labelKey: 'header.modes.networking' },
-  { value: 'community', icon: Home, labelKey: 'header.modes.community' },
-];
-
-const legalItems = [
-  { to: '/about', icon: Info, labelKey: 'header.legal.about' },
-  { to: '/help', icon: LifeBuoy, labelKey: 'header.legal.help' },
-  { to: '/accessibility', icon: Accessibility, labelKey: 'header.legal.accessibility' },
-  { to: '/legal', icon: Scale, labelKey: 'header.legal.legal' },
-  { to: '/contact', icon: Mail, labelKey: 'header.legal.contact' },
-];
+import {
+  PRIMARY_NAV as primaryNav,
+  MORE_NAV as moreNav,
+  USER_MENU_ITEMS as userMenuItems,
+  USER_MODES as userModes,
+  LEGAL_ITEMS as legalItems,
+} from '@/config/navigation';
 
 // ── Component ───────────────────────────────────────────────────────────────
 

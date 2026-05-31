@@ -1557,7 +1557,15 @@
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "modeLabel": "[ZH] Mode",
+    "modeActive": "[ZH] Mode: {{mode}}",
+    "clusters": {
+      "places": "[ZH] Places",
+      "community": "[ZH] Community",
+      "shop": "[ZH] Shop & Read",
+      "support": "[ZH] Support"
+    }
   },
   "pages": {
     "venues": {

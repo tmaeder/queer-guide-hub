@@ -16,6 +16,8 @@ import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useNearMe } from '@/hooks/useNearMe';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
+import { useUserMode } from '@/hooks/useUserMode';
+import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
 import { SearchPopoverDesktop } from './SearchPopoverDesktop';
 import { SearchPopoverMobile } from './SearchPopoverMobile';
@@ -111,7 +113,12 @@ export const UniversalSearchBar = () => {
     loading: suggestionsLoading,
     error: suggestionsError,
   } = useSearchSuggestions(query, scopeArray);
-  const { trending } = useTrendingSuggestions(isOpen && !query);
+  const { mode } = useUserMode();
+  const trendingTypes = useMemo(
+    () => (MODE_SCOPE_BIAS[mode] ?? ['venue', 'event']).slice(0, 2),
+    [mode],
+  );
+  const { trending } = useTrendingSuggestions(isOpen && !query, 6, trendingTypes);
   const voice = useVoiceSearch();
   const nearMe = useNearMe();
 
