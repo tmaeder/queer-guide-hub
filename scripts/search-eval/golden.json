@@ -1,0 +1,24 @@
+{
+  "_comment": "Golden query set for the Postgres search_hybrid relevance harness (plan §8.2). Assertions match on title+city within top-K rather than exact slug, because well-known venues legitimately have duplicate slugs (berghain-1 / berghain-3). Keyword-only (p_query_vec=null) so results are deterministic in CI. See README.md.",
+  "thresholds": {
+    "maxZeroHitRate": 0.0,
+    "venueKnownItemRecallAt10": 0.8,
+    "p95LatencyMs": 1500
+  },
+  "cases": [
+    { "q": "berghain berlin",      "types": ["venue"], "expect": { "title": "Berghain",    "city": "Berlin",   "maxRank": 3 } },
+    { "q": "kitkatclub",           "types": ["venue"], "expect": { "title": "KitKatClub",  "city": "Berlin",   "maxRank": 3 } },
+    { "q": "woof berlin",          "types": ["venue"], "expect": { "title": "Woof Berlin", "city": "Berlin",   "maxRank": 3 } },
+    { "q": "the eagle new york",   "types": ["venue"], "expect": { "title": "The Eagle",   "city": "New York", "maxRank": 5 } },
+    { "q": "sitges",               "types": ["venue"], "expect": { "minResults": 3 } },
+    { "q": "gay bar berlin",       "types": ["venue"], "expect": { "city": "Berlin", "minResults": 1, "maxRank": 10 } },
+    { "q": "leather bar",          "types": ["venue"], "expect": { "minResults": 3 } },
+    { "q": "drag",                 "types": ["venue", "event"], "expect": { "minResults": 3 } },
+    { "q": "sauna",                "types": ["venue"], "expect": { "minResults": 3 } }
+  ],
+  "zeroHitProbe": [
+    "gay bar", "lesbian bar", "queer cafe", "drag show", "pride", "cruising",
+    "berlin nightlife", "barcelona", "trans friendly", "wheelchair accessible venue",
+    "fetish club", "karaoke", "dance club", "rooftop bar", "bookshop"
+  ]
+}
