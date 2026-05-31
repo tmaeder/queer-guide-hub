@@ -383,7 +383,7 @@ export const UniversalSearchBar = () => {
             <div
               role="search"
               aria-label="Site search"
-              className="flex cursor-text items-center bg-background"
+              className="flex cursor-text items-center rounded-container bg-muted transition-colors hover:bg-accent"
               onClick={() => {
                 setIsOpen(true);
                 focusInput();
