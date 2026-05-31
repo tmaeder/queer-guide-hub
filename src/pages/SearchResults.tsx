@@ -396,6 +396,12 @@ export default function SearchResults() {
               </p>
             )}
             <div className="flex flex-wrap items-center mb-4 gap-2">
+              {result.date && (
+                <div className="flex items-center gap-1">
+                  <Calendar size={12} />
+                  <span className="text-xs text-muted-foreground">{formatResultDate(result.date)}</span>
+                </div>
+              )}
               {result.location && (
                 <div className="flex items-center gap-1">
                   <MapPin size={12} />

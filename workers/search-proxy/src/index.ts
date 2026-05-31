@@ -26,7 +26,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 		tracesSampleRate: 0.1,
 	});
 }
-import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities, fetchDisplayMap } from "./supabase";
+import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities, fetchDisplayMap, getRecommendations } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
 import { pgHybridSearch, type PgSearchArgs } from "./pgSearch";
@@ -121,6 +121,8 @@ export default {
 					return await handleAutocomplete(request, env, cors);
 				case "/trending":
 					return await handleTrending(request, env, cors);
+				case "/recommendations":
+					return await handleRecommendations(request, env, cors);
 				case "/track":
 					return await handleTrack(request, env, cors);
 				case "/onboarding":
@@ -330,6 +332,34 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const meiliQ = !skipSynonymsForCity && allSynonyms.length ? `${q} ${allSynonyms.join(" ")}` : q;
 	const useHybrid = meiliQ.split(/\s+/).length >= 3;
 
+	// Fuse: Meili rankingScore + pgvector score via RRF.
+	const meiliHits = meili.hits.map((h, i: number) => ({ ...h, _source: "meili", _rank: i }));
+	// Enrich semantic hits with title/slug/image_url/city/country from source
+	// tables — content_embeddings metadata only stored a minimal subset at
+	// index time, so the pgvector half of the fused list would otherwise have
+	// missing titles and placeholder images.
+	const semDisplay = await fetchDisplayMap(env, sem).catch(() => new Map());
+	const semHits = sem.map((s, i) => {
+		const d = semDisplay.get(`${s.content_type}:${s.content_id}`) ?? {};
+		return {
+			...s,
+			id: s.content_id,
+			objectID: s.content_id,
+			type: s.content_type,
+			title: s.metadata?.title ?? d.title,
+			city: s.metadata?.city ?? d.city,
+			country: s.metadata?.country ?? d.country,
+			category: s.metadata?.category,
+			tags: s.metadata?.tags || [],
+			slug: s.metadata?.slug ?? d.slug,
+			image_url: s.metadata?.image_url ?? d.image_url ?? null,
+			start_date: s.metadata?.start_date ?? d.date ?? null,
+			featured: s.metadata?.featured || false,
+			_source: "pg",
+			_rank: i,
+		};
+	});
+	const fused = rrfFuse([meiliHits, semHits], 60);
 	// Backend selector (Meili -> Postgres migration, Phase 2). Default "meili"
 	// keeps current behaviour; "pg" serves from search_hybrid; "shadow" serves
 	// Meili but runs PG in parallel and logs a comparison (no user-facing change).
@@ -977,6 +1007,77 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 }
 
 // ─────────────────────────────────────────────
+// /recommendations — personalized, popularity-aware zero-query discovery feed
+// (get_recommendations RPC). Bias vector is derived from tracked engagement
+// (no embed round-trip). Read-only; degrades to [] on backend error.
+// ─────────────────────────────────────────────
+async function handleRecommendations(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
+	const started = Date.now();
+	const parsed = await parseJsonBody<Record<string, unknown>>(request);
+	if (!parsed.ok) return errorResponse(parsed, cors);
+	const body = parsed.value;
+	const knownCheck = rejectUnknown(
+		body,
+		["types", "city", "lat", "lng", "radius", "exclude_ids", "user_id", "session_id", "limit"],
+		"body",
+	);
+	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
+
+	let pgTypes: string[] | null = null;
+	if (body.types !== undefined) {
+		const r = validEntityTypeArray(body.types, "types");
+		if (!r.ok) return errorResponse(r, cors);
+		const mapped = r.value.map((t) => INDEX_TO_PG_TYPE[INDEX_MAP[t] || t] || t).filter(Boolean);
+		pgTypes = mapped.length ? Array.from(new Set(mapped)) : null;
+	}
+
+	let city: string | null = null;
+	if (body.city !== undefined && body.city !== null) {
+		const r = validString(body.city, "city", { max: 100 });
+		if (!r.ok) return errorResponse(r, cors);
+		city = r.value;
+	}
+
+	const limitR = validInt(body.limit, "limit", { min: 1, max: 50, default: 20, clamp: true });
+	if (!limitR.ok) return errorResponse(limitR, cors);
+	const limit = limitR.value;
+
+	const lat = typeof body.lat === "number" ? body.lat : null;
+	const lng = typeof body.lng === "number" ? body.lng : null;
+	const radius = typeof body.radius === "number" ? body.radius : null;
+	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
+	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+
+	let excludeIds: string[] | null = null;
+	if (Array.isArray(body.exclude_ids)) {
+		const ids = body.exclude_ids.filter((x): x is string => typeof x === "string").slice(0, 100);
+		excludeIds = ids.length ? ids : null;
+	}
+
+	// Bias vector from tracked engagement — computed Worker-side (no embed call).
+	const signal = await loadSignal(env, { user_id, session_id });
+	const biasVec = computeBias(signal.biasItems);
+
+	const recommendations = await getRecommendations(env, {
+		biasVec,
+		contentTypes: pgTypes,
+		city,
+		lat,
+		lng,
+		radiusKm: radius,
+		excludeIds,
+		limit,
+	});
+
+	return json(
+		{ recommendations, count: recommendations.length, processingTimeMS: Date.now() - started },
+		200,
+		cors,
+	);
+}
+
+// ─────────────────────────────────────────────
 // /trending — popular by type in the last N days, lightly personalized
 // ─────────────────────────────────────────────
 async function handleTrending(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
@@ -1162,6 +1263,7 @@ const RATE_LIMITS: Record<string, number> = {
 	"/search": 60,
 	"/autocomplete": 120, // typed every keystroke; needs a wider lane
 	"/trending": 60,
+	"/recommendations": 60,
 	"/similar": 60,
 	"/feedback": 30,
 	"/track": 60,
