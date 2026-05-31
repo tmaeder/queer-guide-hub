@@ -13,24 +13,31 @@ vi.mock('react-i18next', () => ({
 }));
 
 import { QuickLaunchNav } from '../QuickLaunchNav';
-import { DESTINATIONS, NAV_CLUSTERS } from '@/config/navigation';
+import { PRIMARY_NAV, NAV_CLUSTERS } from '@/config/navigation';
 
 describe('QuickLaunchNav', () => {
-  it('renders every destination as a crawlable link grouped by cluster', () => {
+  it('renders the primary destinations as crawlable links', () => {
     render(
       <MemoryRouter>
         <QuickLaunchNav />
       </MemoryRouter>,
     );
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(DESTINATIONS.length);
-    for (const d of DESTINATIONS) {
+    expect(links).toHaveLength(PRIMARY_NAV.length);
+    for (const d of PRIMARY_NAV) {
       const link = links.find((l) => l.getAttribute('href') === d.to);
       expect(link, `link for ${d.to}`).toBeTruthy();
     }
-    // Cluster labels are present as scanning aids.
+  });
+
+  it('does not render cluster labels in the header row (those live in the hub)', () => {
+    render(
+      <MemoryRouter>
+        <QuickLaunchNav />
+      </MemoryRouter>,
+    );
     for (const c of NAV_CLUSTERS) {
-      expect(screen.getByText(c.labelKey)).toBeTruthy();
+      expect(screen.queryByText(c.labelKey)).toBeNull();
     }
   });
 });

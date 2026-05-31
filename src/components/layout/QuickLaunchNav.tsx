@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { NAV_CLUSTERS, DESTINATIONS } from '@/config/navigation';
+import { PRIMARY_NAV } from '@/config/navigation';
 
 /**
- * Thin grouped quick-launch row (desktop row 2). Replaces the 5-tab primary
- * nav + "More" dropdown with the 14 destinations organized into labeled
- * clusters. Every destination is a real crawlable <Link> for SEO; the cluster
- * labels are non-interactive scanning aids.
+ * Primary desktop nav (header row 2). A calm row of the high-traffic
+ * destinations only — the full set, grouped by cluster, lives in the search
+ * hub, and every route is pre-rendered for SEO (see scripts/prerender.mjs).
+ * Real crawlable <Link>s.
  */
 export function QuickLaunchNav() {
   const { t } = useTranslation();
@@ -16,36 +16,25 @@ export function QuickLaunchNav() {
 
   return (
     <nav
-      className="flex items-center gap-6 overflow-x-auto"
+      className="flex items-center gap-8"
       style={{ height: 40 }}
       aria-label={t('header.primaryNav', 'Primary')}
     >
-      {NAV_CLUSTERS.map((cluster) => {
-        const items = DESTINATIONS.filter((d) => d.cluster === cluster.id);
-        if (items.length === 0) return null;
+      {PRIMARY_NAV.map((item) => {
+        const active = isActive(item.to);
         return (
-          <div key={cluster.id} className="flex shrink-0 items-center gap-3">
-            <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t(cluster.labelKey)}
-            </span>
-            {items.map((item) => {
-              const active = isActive(item.to);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={`whitespace-nowrap py-2 text-sm transition-colors ${
-                    active
-                      ? 'font-semibold text-foreground underline underline-offset-8 decoration-2'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  style={{ textDecoration: active ? 'underline' : 'none' }}
-                >
-                  {t(item.labelKey)}
-                </Link>
-              );
-            })}
-          </div>
+          <Link
+            key={item.to}
+            to={item.to}
+            aria-current={active ? 'page' : undefined}
+            className={`whitespace-nowrap text-sm transition-colors ${
+              active
+                ? 'font-semibold text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t(item.labelKey)}
+          </Link>
         );
       })}
     </nav>
