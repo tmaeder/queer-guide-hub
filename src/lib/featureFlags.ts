@@ -65,3 +65,19 @@ export const TRAVEL_HUB_V2_ENABLED = (() => {
   }
   return truthy(import.meta.env.VITE_TRAVEL_HUB_V2);
 })();
+
+// DISCOVERY_HUB_NAV_ENABLED — the redesigned discovery-first navigation:
+// desktop replaces the 5-tab row + "More" dropdown with a thin grouped
+// quick-launch row (4 clusters of crawlable links); mobile replaces the
+// hamburger drawer + search-toggle with a bottom-nav center hub button that
+// opens the full-screen search hub. The hub itself (mode switcher + clustered
+// "go to" commands) already ships unconditionally. Off by default. Enable per
+// session with ?ff=discovery_hub or globally via VITE_DISCOVERY_HUB=true.
+export const DISCOVERY_HUB_NAV_ENABLED = (() => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ff') === 'discovery_hub') return true;
+    if (params.get('ff') === 'discovery_hub_off') return false;
+  }
+  return truthy(import.meta.env.VITE_DISCOVERY_HUB);
+})();

@@ -48,6 +48,8 @@ import {
   USER_MODES as userModes,
   LEGAL_ITEMS as legalItems,
 } from '@/config/navigation';
+import { QuickLaunchNav } from '@/components/layout/QuickLaunchNav';
+import { DISCOVERY_HUB_NAV_ENABLED } from '@/lib/featureFlags';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -66,6 +68,7 @@ export function Header() {
   const { unreadCount } = useNotifications();
   const { isAdmin, isModerator } = useAdminRoles();
   const inboxBadgeCount = useInboxBadge();
+  const discoveryHubNav = DISCOVERY_HUB_NAV_ENABLED;
 
   const avatarSrc =
     profile?.avatar_url ||
@@ -356,8 +359,8 @@ export function Header() {
             </Link>
           )}
 
-          {isMobile ? (
-            /* ── MOBILE: logo · search-icon · hamburger (or expanded search) ── */
+          {isMobile && !discoveryHubNav ? (
+            /* ── MOBILE (legacy): logo · search-icon · hamburger (or expanded search) ── */
             mobileSearchOpen ? (
               <>
                 <div className="flex-1 min-w-0">
@@ -415,7 +418,8 @@ export function Header() {
               </>
             )
           ) : (
-            /* ── DESKTOP row 1: logo · BIG search · [+] · avatar ── */
+            /* ── Row 1: logo · BIG search · [+] · avatar — desktop always,
+               and mobile when the discovery-hub nav is enabled ── */
             <>
               <div className="flex-1 min-w-0 mx-2 sm:mx-4 md:mx-8">
                 <UniversalSearchBar />
@@ -600,7 +604,8 @@ export function Header() {
         </div>
 
         {/* ── DESKTOP row 2: tab nav ──────────────────────────────────── */}
-        {!isMobile && (
+        {!isMobile && discoveryHubNav && <QuickLaunchNav />}
+        {!isMobile && !discoveryHubNav && (
           <nav
             className="flex items-center gap-6"
             style={{ height: 36 }}
@@ -661,7 +666,7 @@ export function Header() {
         )}
       </div>
 
-      {isMobile && mobileDrawer}
+      {isMobile && !discoveryHubNav && mobileDrawer}
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </header>
