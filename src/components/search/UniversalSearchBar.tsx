@@ -347,8 +347,7 @@ export const UniversalSearchBar = () => {
     if (isOpen) focusInput();
   }, [isOpen, focusInput]);
 
-  const isMac =
-    typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
 
   const activeFiltersCount =
     (filters.types?.length || 0) +
@@ -429,13 +428,11 @@ export const UniversalSearchBar = () => {
                     setIsOpen(true);
                   }}
                   autoComplete="off"
-                  className="w-full border-0 bg-transparent text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
+                  className="w-full border-0 bg-transparent pr-20 text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                   style={{ fontSize: isMobile ? '1rem' : '0.875rem', height: inputHeight }}
                 />
                 {!query && (
-                  <span
-                    className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5"
-                  >
+                  <span className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
                     {voice.supported && (
                       <Button
                         type="button"
