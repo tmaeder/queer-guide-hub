@@ -142,6 +142,42 @@ export async function semanticSearch(
 	}
 }
 
+/**
+ * Personalized, popularity-aware discovery feed (get_recommendations RPC).
+ * Powers the zero-query search panel. The bias vector (if any) is computed
+ * Worker-side from tracked engagement, matching the /search blend convention.
+ * Fail-soft: returns [] on error so the panel degrades to empty rather than 500.
+ */
+export async function getRecommendations(
+	env: Env,
+	opts: {
+		biasVec?: number[] | null;
+		contentTypes?: string[] | null;
+		city?: string | null;
+		lat?: number | null;
+		lng?: number | null;
+		radiusKm?: number | null;
+		excludeIds?: string[] | null;
+		limit?: number;
+	},
+): Promise<Array<Record<string, unknown>>> {
+	try {
+		return await rpc<Array<Record<string, unknown>>>(env, "get_recommendations", {
+			p_bias_vec: opts.biasVec && opts.biasVec.length ? `[${opts.biasVec.join(",")}]` : null,
+			p_content_types: opts.contentTypes && opts.contentTypes.length ? opts.contentTypes : null,
+			p_city: opts.city ?? null,
+			p_lat: opts.lat ?? null,
+			p_lng: opts.lng ?? null,
+			p_radius_km: opts.radiusKm ?? null,
+			p_exclude_ids: opts.excludeIds && opts.excludeIds.length ? opts.excludeIds : null,
+			p_limit: opts.limit ?? 20,
+		});
+	} catch (e) {
+		console.warn("get_recommendations", (e as Error).message);
+		return [];
+	}
+}
+
 export async function popularEntities(env: Env, contentTypes: string[], limit = 30) {
 	const types = contentTypes.map((t) => `"${t}"`).join(",");
 	const url = `${env.SUPABASE_URL}/rest/v1/v_popular_entities?content_type=in.(${encodeURIComponent(types)})&order=score.desc&limit=${limit}`;
@@ -179,6 +215,7 @@ export interface DisplayRecord {
 	image_url?: string;
 	city?: string;
 	country?: string;
+	date?: string;
 }
 
 const DISPLAY_SOURCES: Record<
@@ -199,7 +236,7 @@ const DISPLAY_SOURCES: Record<
 	},
 	event: {
 		table: "events",
-		columns: ["id", "title", "slug", "logo_url", "images", "city", "country"],
+		columns: ["id", "title", "slug", "logo_url", "images", "city", "country", "start_date"],
 		map: (r) => ({
 			title: firstStr(r.title) ?? undefined,
 			slug: firstStr(r.slug) ?? undefined,
@@ -207,6 +244,7 @@ const DISPLAY_SOURCES: Record<
 				firstStr((r.images as unknown[])?.[0]) ?? firstStr(r.logo_url) ?? undefined,
 			city: firstStr(r.city) ?? undefined,
 			country: firstStr(r.country) ?? undefined,
+			date: firstStr(r.start_date) ?? undefined,
 		}),
 	},
 	city: {
