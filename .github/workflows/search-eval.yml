@@ -5,6 +5,10 @@ name: search-eval
 # to unrelated PRs. Requires the SUPABASE_URL / SUPABASE_SERVICE_KEY repo secrets;
 # without them the runner skips and exits 0.
 
+# Least privilege: this workflow only checks out code and runs a script.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   schedule:
