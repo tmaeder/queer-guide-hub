@@ -332,6 +332,34 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const meiliQ = !skipSynonymsForCity && allSynonyms.length ? `${q} ${allSynonyms.join(" ")}` : q;
 	const useHybrid = meiliQ.split(/\s+/).length >= 3;
 
+	// Fuse: Meili rankingScore + pgvector score via RRF.
+	const meiliHits = meili.hits.map((h, i: number) => ({ ...h, _source: "meili", _rank: i }));
+	// Enrich semantic hits with title/slug/image_url/city/country from source
+	// tables — content_embeddings metadata only stored a minimal subset at
+	// index time, so the pgvector half of the fused list would otherwise have
+	// missing titles and placeholder images.
+	const semDisplay = await fetchDisplayMap(env, sem).catch(() => new Map());
+	const semHits = sem.map((s, i) => {
+		const d = semDisplay.get(`${s.content_type}:${s.content_id}`) ?? {};
+		return {
+			...s,
+			id: s.content_id,
+			objectID: s.content_id,
+			type: s.content_type,
+			title: s.metadata?.title ?? d.title,
+			city: s.metadata?.city ?? d.city,
+			country: s.metadata?.country ?? d.country,
+			category: s.metadata?.category,
+			tags: s.metadata?.tags || [],
+			slug: s.metadata?.slug ?? d.slug,
+			image_url: s.metadata?.image_url ?? d.image_url ?? null,
+			start_date: s.metadata?.start_date ?? d.date ?? null,
+			featured: s.metadata?.featured || false,
+			_source: "pg",
+			_rank: i,
+		};
+	});
+	const fused = rrfFuse([meiliHits, semHits], 60);
 	// Backend selector (Meili -> Postgres migration, Phase 2). Default "meili"
 	// keeps current behaviour; "pg" serves from search_hybrid; "shadow" serves
 	// Meili but runs PG in parallel and logs a comparison (no user-facing change).
