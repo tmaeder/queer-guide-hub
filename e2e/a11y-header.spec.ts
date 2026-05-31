@@ -24,29 +24,30 @@ test.describe('Header a11y', () => {
 test.describe('Header mobile a11y', () => {
   test.setTimeout(120_000);
 
-  test('hamburger opens drawer dialog with proper aria state + 44+ target', async ({ page }) => {
+  test('no hamburger drawer; search opens the discovery hub', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const hamburger = page.locator('button[aria-label="Open menu"]').first();
-    await expect(hamburger).toBeVisible();
-    // React hydration can lag — wait until the click handler is bound
-    // (aria-expanded should already be present, but the actual handler attach
-    // happens after Suspense boundaries resolve).
+    // The legacy hamburger drawer + search-toggle are gone.
+    await expect(page.locator('button[aria-label="Open menu"]')).toHaveCount(0);
+    await expect(page.locator('button[aria-label="Open search"]')).toHaveCount(0);
+
+    // The search bar is the always-visible mobile discovery affordance.
+    const search = page.locator('input[role="combobox"]').first();
+    await expect(search).toBeVisible();
+    // React hydration / Suspense boundaries can lag before handlers bind.
     await page.waitForTimeout(500);
 
-    const box = await hamburger.boundingBox();
-    expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
-    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await search.click();
+    await expect(search).toHaveAttribute('aria-expanded', 'true');
 
-    await hamburger.click();
-    await expect(hamburger).toHaveAttribute('aria-expanded', 'true');
-
-    const dialog = page.getByRole('dialog', { name: /navigation/i });
-    await expect(dialog).toBeVisible();
+    // The full-screen hub exposes the prominent mode switcher.
+    const modes = page.getByRole('radiogroup', { name: /mode/i });
+    await expect(modes).toBeVisible();
+    expect(await modes.getByRole('radio').count()).toBe(6);
 
     await page.keyboard.press('Escape');
-    await expect(dialog).not.toBeVisible();
+    await expect(search).toHaveAttribute('aria-expanded', 'false');
   });
 });

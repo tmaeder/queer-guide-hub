@@ -8,18 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import {
-  Menu,
-  User,
-  LogOut,
-  Plus,
-  Shield,
-  Search as SearchIcon,
-  X,
-  ChevronDown,
-} from 'lucide-react';
+import { LogOut, Plus, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -42,22 +32,15 @@ const NotificationList = lazy(() =>
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 import {
-  PRIMARY_NAV as primaryNav,
-  MORE_NAV as moreNav,
   USER_MENU_ITEMS as userMenuItems,
   USER_MODES as userModes,
-  LEGAL_ITEMS as legalItems,
 } from '@/config/navigation';
 import { QuickLaunchNav } from '@/components/layout/QuickLaunchNav';
-import { DISCOVERY_HUB_NAV_ENABLED } from '@/lib/featureFlags';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -68,7 +51,6 @@ export function Header() {
   const { unreadCount } = useNotifications();
   const { isAdmin, isModerator } = useAdminRoles();
   const inboxBadgeCount = useInboxBadge();
-  const discoveryHubNav = DISCOVERY_HUB_NAV_ENABLED;
 
   const avatarSrc =
     profile?.avatar_url ||
@@ -87,249 +69,11 @@ export function Header() {
   }, [location.pathname, t]);
   const submitCta = getSubmitCta();
 
-  const isActiveRoute = useCallback(
-    (path: string) => {
-      if (path === '/') return location.pathname === '/';
-      return location.pathname.startsWith(path);
-    },
-    [location.pathname],
-  );
-
-  const moreActive = moreNav.some((item) => isActiveRoute(item.to));
-
   const handleModeChange = async (mode: string) => {
     await updateProfile({
       user_mode: mode as 'dating' | 'friends' | 'exploration' | 'fun' | 'networking' | 'community',
     });
   };
-
-  const handleDrawerNav = (path: string) => {
-    navigate(path);
-    setDrawerOpen(false);
-  };
-
-  const handleMoreNav = (path: string) => {
-    navigate(path);
-    setMoreOpen(false);
-  };
-
-  // ── Mobile Drawer ───────────────────────────────────────────────────────
-
-  const mobileDrawer = (
-    <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-      <SheetContent
-        side="right"
-        id="mobile-nav-drawer"
-        aria-label={t('header.navigation', 'Navigation')}
-        className="w-full sm:w-80 p-0 flex flex-col"
-        style={{
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        }}
-      >
-        <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-          <Link
-            to="/"
-            onClick={() => setDrawerOpen(false)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
-          >
-            <img
-              src="/images/logo.png"
-              alt="Queer Guide"
-              className="h-7 w-7 brightness-0 dark:invert"
-            />
-            <span className="text-base font-bold text-foreground">Queer Guide</span>
-          </Link>
-        </div>
-
-        <div className="flex-1 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
-          {user && (
-            <>
-              <div className="px-4 py-4">
-                <div className="flex items-center gap-4 mb-4">
-                  <Avatar style={{ height: 40, width: 40 }}>
-                    <AvatarImage
-                      src={avatarSrc}
-                      alt={(profile?.display_name || 'Your account') as string}
-                    />
-                    <AvatarFallback>
-                      {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
-                      {profile?.display_name || 'User'}
-                    </p>
-                    <p className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap block">
-                      {user.email}
-                    </p>
-                  </div>
-                  {unreadCount > 0 && (
-                    <div
-                      className="flex items-center justify-center px-1 flex-shrink-0 bg-destructive text-destructive-foreground font-bold"
-                      style={{ minWidth: 22, height: 22, fontSize: '0.7rem' }}
-                    >
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </div>
-                  )}
-                </div>
-
-                <Select value={profile?.user_mode || 'community'} onValueChange={handleModeChange}>
-                  <SelectTrigger style={{ width: '100%' }}>
-                    <SelectValue placeholder="Select mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {userModes.map((mode) => (
-                      <SelectItem key={mode.value} value={mode.value}>
-                        <div className="flex items-center gap-2">
-                          <mode.icon style={{ width: 16, height: 16 }} />
-                          <span>{t(mode.labelKey)}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="my-2" />
-            </>
-          )}
-
-          {!user && (
-            <>
-              <div className="px-4 py-4 flex flex-col gap-2">
-                <Button
-                  variant="default"
-                  size="sm"
-                  style={{ width: '100%', height: 44 }}
-                  className="font-semibold"
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    navigate('/auth?mode=signup');
-                  }}
-                >
-                  {t('header.signUp', 'Sign Up')}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{ width: '100%', height: 44 }}
-                  className="font-semibold"
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    setAuthDialogOpen(true);
-                  }}
-                >
-                  <User size={16} className="mr-2" />
-                  {t('header.signIn', 'Sign In')}
-                </Button>
-              </div>
-              <div className="my-2" />
-            </>
-          )}
-
-          <div className="px-4 py-4">
-            <Button
-              variant="default"
-              size="sm"
-              style={{ width: '100%', height: 44, alignItems: 'center' }}
-              className="font-semibold flex gap-2"
-              onClick={() => handleDrawerNav(submitCta.route)}
-            >
-              <Plus size={18} />
-              {submitCta.label}
-            </Button>
-          </div>
-
-          {[...primaryNav, ...moreNav].map((item) => {
-            const active = isActiveRoute(item.to);
-            return (
-              <button
-                key={item.to}
-                onClick={() => handleDrawerNav(item.to)}
-                className={`w-full flex items-center gap-2 px-4 text-left ${active ? 'bg-muted' : 'hover:bg-muted'}`}
-                style={{ minHeight: 48 }}
-              >
-                <item.icon style={{ width: 18, height: 18 }} className="shrink-0" />
-                <span className={`text-sm ${active ? 'font-semibold' : 'font-normal'}`}>
-                  {t(item.labelKey)}
-                </span>
-              </button>
-            );
-          })}
-
-          <div className="my-2" />
-
-          {user && (
-            <>
-              {userMenuItems.map((item) => {
-                const showBadge = item.to === '/trips' && inboxBadgeCount > 0;
-                return (
-                  <button
-                    key={item.to}
-                    onClick={() => handleDrawerNav(item.to)}
-                    className="w-full flex items-center gap-2 px-4 hover:bg-muted text-left"
-                    style={{ minHeight: 48 }}
-                  >
-                    <item.icon style={{ width: 18, height: 18 }} className="shrink-0" />
-                    <span className="text-sm flex-1">{t(item.labelKey)}</span>
-                    {showBadge && (
-                      <Badge variant="default" className="h-5" style={{ fontSize: '0.7rem' }}>
-                        {inboxBadgeCount}
-                      </Badge>
-                    )}
-                  </button>
-                );
-              })}
-
-              {(isAdmin || isModerator) && (
-                <button
-                  onClick={() => handleDrawerNav('/admin')}
-                  className="w-full flex items-center gap-2 px-4 hover:bg-muted text-left"
-                  style={{ minHeight: 48 }}
-                >
-                  <Shield size={18} className="shrink-0" />
-                  <span className="text-sm">{t('header.adminConsole', 'Admin Console')}</span>
-                </button>
-              )}
-
-              <div className="my-2" />
-            </>
-          )}
-
-          {legalItems.map((item) => (
-            <button
-              key={item.to}
-              onClick={() => handleDrawerNav(item.to)}
-              className="w-full flex items-center gap-2 px-4 hover:bg-muted text-left"
-              style={{ minHeight: 44 }}
-            >
-              <item.icon style={{ width: 16, height: 16 }} className="shrink-0" />
-              <span className="text-sm">{t(item.labelKey)}</span>
-            </button>
-          ))}
-
-          {user && (
-            <>
-              <div className="my-2" />
-              <button
-                onClick={() => {
-                  signOut();
-                  setDrawerOpen(false);
-                }}
-                className="w-full flex items-center gap-2 px-4 hover:bg-muted text-left text-destructive"
-                style={{ minHeight: 48 }}
-              >
-                <LogOut size={18} className="shrink-0" />
-                <span className="text-sm font-medium">{t('header.signOut', 'Sign Out')}</span>
-              </button>
-            </>
-          )}
-
-          <div style={{ height: 'env(safe-area-inset-bottom, 16px)', minHeight: 16 }} />
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
 
   // ── Render ──────────────────────────────────────────────────────────────
 
@@ -341,332 +85,189 @@ export function Header() {
       <div className="px-4 sm:px-6 md:px-8">
         <div className="flex items-center gap-2 sm:gap-4" style={{ height: isMobile ? 56 : 64 }}>
           {/* ── Logo ──────────────────────────────────────────────────── */}
-          {!(isMobile && mobileSearchOpen) && (
-            <Link
-              to="/"
-              style={{ alignItems: 'center' }}
-              className="flex gap-2 shrink-0 no-underline"
-            >
-              <img
-                src="/images/logo.png"
-                alt=""
-                aria-hidden="true"
-                tabIndex={-1}
-                className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
-                style={{ height: 28, width: 28 }}
-              />
-              <span className="sr-only">Queer Guide</span>
-            </Link>
-          )}
+          <Link to="/" style={{ alignItems: 'center' }} className="flex gap-2 shrink-0 no-underline">
+            <img
+              src="/images/logo.png"
+              alt=""
+              aria-hidden="true"
+              tabIndex={-1}
+              className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
+              style={{ height: 28, width: 28 }}
+            />
+            <span className="sr-only">Queer Guide</span>
+          </Link>
 
-          {isMobile && !discoveryHubNav ? (
-            /* ── MOBILE (legacy): logo · search-icon · hamburger (or expanded search) ── */
-            mobileSearchOpen ? (
-              <>
-                <div className="flex-1 min-w-0">
-                  <UniversalSearchBar />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setMobileSearchOpen(false)}
-                  aria-label={t('header.closeSearch', 'Close search')}
-                  className="text-foreground flex-shrink-0 p-0"
-                  style={{ width: 48, height: 48 }}
-                >
-                  <X size={22} />
-                </Button>
-              </>
+          {/* ── Row 1: search · [+] · avatar ──────────────────────────── */}
+          <div className="flex-1 min-w-0 mx-2 sm:mx-4 md:mx-8">
+            <UniversalSearchBar />
+          </div>
+
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {user ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(submitCta.route)}
+                aria-label={submitCta.label}
+                title={submitCta.label}
+                style={{ height: 40, width: 40, padding: 0 }}
+              >
+                <Plus size={20} />
+              </Button>
             ) : (
-              <>
-                <div className="flex-1" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setMobileSearchOpen(true)}
-                  aria-label={t('header.openSearch', 'Open search')}
-                  className="text-foreground flex-shrink-0 p-0"
-                  style={{ width: 48, height: 48 }}
-                >
-                  <SearchIcon size={22} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setDrawerOpen(true)}
-                  aria-label={t('header.openMenu', 'Open menu')}
-                  aria-haspopup="dialog"
-                  aria-expanded={drawerOpen}
-                  aria-controls="mobile-nav-drawer"
-                  className="text-foreground relative flex-shrink-0 p-0"
-                  style={{ width: 48, height: 48 }}
-                >
-                  <Menu size={22} />
-                  {user && unreadCount > 0 && (
-                    <>
-                      <span
-                        aria-hidden="true"
-                        className="absolute bg-destructive"
-                        style={{ top: 8, right: 8, width: 8, height: 8 }}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAuthDialogOpen(true)}
+                aria-label={t('header.signInToContribute', 'Sign in to contribute')}
+                title={t('header.signInToContribute', 'Sign in to contribute')}
+                style={{ height: 40, width: 40, padding: 0 }}
+              >
+                <Plus size={20} />
+              </Button>
+            )}
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    style={{ height: 40, width: 40 }}
+                    className="relative p-0"
+                    aria-label={t('header.openUserMenu', 'Open user menu')}
+                  >
+                    <Avatar style={{ height: 36, width: 36 }}>
+                      <AvatarImage
+                        src={avatarSrc}
+                        alt={(profile?.display_name || 'Your account') as string}
                       />
-                      <span role="status" aria-live="polite" className="sr-only">
-                        {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+                      <AvatarFallback>
+                        {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {unreadCount > 0 && (
+                      <span
+                        className="absolute inline-flex items-center justify-center bg-destructive text-destructive-foreground pl-1 pr-1"
+                        style={{
+                          top: -4,
+                          right: -4,
+                          minWidth: '1.25rem',
+                          height: 20,
+                          fontSize: '10px',
+                        }}
+                      >
+                        <span className="absolute inset-0 animate-ping bg-destructive opacity-75" />
+                        {unreadCount}
                       </span>
-                    </>
-                  )}
-                </Button>
-              </>
-            )
-          ) : (
-            /* ── Row 1: logo · BIG search · [+] · avatar — desktop always,
-               and mobile when the discovery-hub nav is enabled ── */
-            <>
-              <div className="flex-1 min-w-0 mx-2 sm:mx-4 md:mx-8">
-                <UniversalSearchBar />
-              </div>
-
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {user ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate(submitCta.route)}
-                    aria-label={submitCta.label}
-                    title={submitCta.label}
-                    style={{ height: 40, width: 40, padding: 0 }}
-                  >
-                    <Plus size={20} />
+                    )}
                   </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setAuthDialogOpen(true)}
-                    aria-label={t('header.signInToContribute', 'Sign in to contribute')}
-                    title={t('header.signInToContribute', 'Sign in to contribute')}
-                    style={{ height: 40, width: 40, padding: 0 }}
-                  >
-                    <Plus size={20} />
-                  </Button>
-                )}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" style={{ width: 320, zIndex: 50 }} className="p-4">
+                  <div className="mb-4">
+                    <Select value={profile?.user_mode || 'community'} onValueChange={handleModeChange}>
+                      <SelectTrigger style={{ width: '100%' }}>
+                        <SelectValue placeholder="Select mode" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {userModes.map((mode) => (
+                          <SelectItem key={mode.value} value={mode.value}>
+                            <div className="flex items-center gap-2">
+                              <mode.icon style={{ width: 16, height: 16 }} />
+                              <span>{t(mode.labelKey)}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                  <div className="mb-4">
+                    <Suspense fallback={null}>
+                      <NotificationList />
+                    </Suspense>
+                  </div>
+
+                  <div className="my-2" />
+
+                  {userMenuItems.map((item) => {
+                    const showBadge = item.to === '/trips' && inboxBadgeCount > 0;
+                    return (
                       <Button
+                        key={item.to}
                         variant="ghost"
                         size="sm"
-                        style={{ height: 40, width: 40 }}
-                        className="relative p-0"
-                        aria-label={t('header.openUserMenu', 'Open user menu')}
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'flex-start',
+                          width: '100%',
+                          padding: '8px 12px',
+                        }}
+                        className="flex gap-2"
+                        onClick={() => navigate(item.to)}
                       >
-                        <Avatar style={{ height: 36, width: 36 }}>
-                          <AvatarImage
-                            src={avatarSrc}
-                            alt={(profile?.display_name || 'Your account') as string}
-                          />
-                          <AvatarFallback>
-                            {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        {unreadCount > 0 && (
-                          <span
-                            className="absolute inline-flex items-center justify-center bg-destructive text-destructive-foreground pl-1 pr-1"
-                            style={{
-                              top: -4,
-                              right: -4,
-                              minWidth: '1.25rem',
-                              height: 20,
-                              fontSize: '10px',
-                            }}
-                          >
-                            <span className="absolute inset-0 animate-ping bg-destructive opacity-75" />
-                            {unreadCount}
-                          </span>
+                        <item.icon style={{ width: 16, height: 16 }} />
+                        <span className="text-sm flex-1 text-left">{t(item.labelKey)}</span>
+                        {showBadge && (
+                          <Badge variant="default" className="h-5" style={{ fontSize: '0.7rem' }}>
+                            {inboxBadgeCount}
+                          </Badge>
                         )}
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      style={{ width: 320, zIndex: 50 }}
-                      className="p-4"
-                    >
-                      <div className="mb-4">
-                        <Select
-                          value={profile?.user_mode || 'community'}
-                          onValueChange={handleModeChange}
-                        >
-                          <SelectTrigger style={{ width: '100%' }}>
-                            <SelectValue placeholder="Select mode" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {userModes.map((mode) => (
-                              <SelectItem key={mode.value} value={mode.value}>
-                                <div className="flex items-center gap-2">
-                                  <mode.icon style={{ width: 16, height: 16 }} />
-                                  <span>{t(mode.labelKey)}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    );
+                  })}
 
-                      <div className="mb-4">
-                        <Suspense fallback={null}>
-                          <NotificationList />
-                        </Suspense>
-                      </div>
-
+                  {(isAdmin || isModerator) && (
+                    <>
                       <div className="my-2" />
-
-                      {userMenuItems.map((item) => {
-                        const showBadge = item.to === '/trips' && inboxBadgeCount > 0;
-                        return (
-                          <Button
-                            key={item.to}
-                            variant="ghost"
-                            size="sm"
-                            style={{
-                              alignItems: 'center',
-                              justifyContent: 'flex-start',
-                              width: '100%',
-                              padding: '8px 12px',
-                            }}
-                            className="flex gap-2"
-                            onClick={() => navigate(item.to)}
-                          >
-                            <item.icon style={{ width: 16, height: 16 }} />
-                            <span className="text-sm flex-1 text-left">{t(item.labelKey)}</span>
-                            {showBadge && (
-                              <Badge
-                                variant="default"
-                                className="h-5"
-                                style={{ fontSize: '0.7rem' }}
-                              >
-                                {inboxBadgeCount}
-                              </Badge>
-                            )}
-                          </Button>
-                        );
-                      })}
-
-                      {(isAdmin || isModerator) && (
-                        <>
-                          <div className="my-2" />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            style={{
-                              alignItems: 'center',
-                              justifyContent: 'flex-start',
-                              width: '100%',
-                              padding: '8px 12px',
-                            }}
-                            className="flex gap-2"
-                            onClick={() => navigate('/admin')}
-                          >
-                            <Shield size={16} />
-                            <span className="text-sm">
-                              {t('header.adminConsole', 'Admin Console')}
-                            </span>
-                          </Button>
-                        </>
-                      )}
-
-                      <div className="my-2" />
-
                       <Button
                         variant="ghost"
                         size="sm"
-                        style={{ width: '100%', justifyContent: 'flex-start' }}
-                        className="text-destructive"
-                        onClick={signOut}
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'flex-start',
+                          width: '100%',
+                          padding: '8px 12px',
+                        }}
+                        className="flex gap-2"
+                        onClick={() => navigate('/admin')}
                       >
-                        <LogOut size={16} className="mr-2" />
-                        {t('header.signOut', 'Sign Out')}
+                        <Shield size={16} />
+                        <span className="text-sm">{t('header.adminConsole', 'Admin Console')}</span>
                       </Button>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
+                    </>
+                  )}
+
+                  <div className="my-2" />
+
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setAuthDialogOpen(true)}
-                    aria-label={t('header.signIn', 'Sign in')}
+                    style={{ width: '100%', justifyContent: 'flex-start' }}
+                    className="text-destructive"
+                    onClick={signOut}
                   >
-                    {t('header.signIn', 'Sign in')}
+                    <LogOut size={16} className="mr-2" />
+                    {t('header.signOut', 'Sign Out')}
                   </Button>
-                )}
-              </div>
-            </>
-          )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAuthDialogOpen(true)}
+                aria-label={t('header.signIn', 'Sign in')}
+              >
+                {t('header.signIn', 'Sign in')}
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* ── DESKTOP row 2: tab nav ──────────────────────────────────── */}
-        {!isMobile && discoveryHubNav && <QuickLaunchNav />}
-        {!isMobile && !discoveryHubNav && (
-          <nav
-            className="flex items-center gap-6"
-            style={{ height: 36 }}
-            aria-label={t('header.primaryNav', 'Primary')}
-          >
-            {primaryNav.map((item) => {
-              const active = isActiveRoute(item.to);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={`text-sm transition-colors py-2 ${
-                    active
-                      ? 'font-semibold text-foreground underline underline-offset-8 decoration-2'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  style={{ textDecoration: active ? 'underline' : 'none' }}
-                >
-                  {t(item.labelKey)}
-                </Link>
-              );
-            })}
-
-            <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className={`text-sm py-2 inline-flex items-center gap-1 transition-colors ${
-                    moreActive
-                      ? 'font-semibold text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  aria-haspopup="menu"
-                  aria-expanded={moreOpen}
-                >
-                  {t('header.nav.more', 'More')}
-                  <ChevronDown size={14} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" style={{ width: 220, zIndex: 50 }} className="p-1">
-                {moreNav.map((item) => {
-                  const active = isActiveRoute(item.to);
-                  return (
-                    <button
-                      key={item.to}
-                      onClick={() => handleMoreNav(item.to)}
-                      className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left ${
-                        active ? 'bg-muted font-semibold' : 'hover:bg-muted'
-                      }`}
-                    >
-                      <item.icon style={{ width: 16, height: 16 }} className="shrink-0" />
-                      <span>{t(item.labelKey)}</span>
-                    </button>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </nav>
-        )}
+        {/* ── Desktop row 2: quick-launch nav ─────────────────────────── */}
+        {!isMobile && <QuickLaunchNav />}
       </div>
-
-      {isMobile && !discoveryHubNav && mobileDrawer}
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </header>
