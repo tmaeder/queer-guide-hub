@@ -21,7 +21,7 @@ export function ModeSwitcher() {
       <div
         role="radiogroup"
         aria-label={t('header.modeLabel', 'Mode')}
-        className="flex gap-2 overflow-x-auto pb-1"
+        className="flex flex-wrap gap-2 pb-1"
       >
         {USER_MODES.map((m) => {
           const active = mode === m.value;
