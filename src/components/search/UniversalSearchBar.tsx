@@ -87,6 +87,7 @@ export const UniversalSearchBar = () => {
   // When the popover closes it refocuses the input; suppress the focus handler
   // from immediately re-opening it (otherwise Cancel/Escape can't close it).
   const suppressReopenRef = useRef(false);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
   const navigate = useLocalizedNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -381,6 +382,7 @@ export const UniversalSearchBar = () => {
           <div className="relative">
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- search landmark also acts as a click target to focus the inner input; keyboard handling provided. */}
             <div
+              ref={searchBoxRef}
               role="search"
               aria-label="Site search"
               className="flex cursor-text items-center rounded-container bg-muted transition-colors hover:bg-accent"
@@ -523,6 +525,14 @@ export const UniversalSearchBar = () => {
             inputRef.current?.focus();
           }}
           onEscapeKeyDown={() => setIsOpen(false)}
+          onPointerDownOutside={(e) => {
+            // Clicking the search box itself is the anchor, not "outside" —
+            // don't let Radix dismiss the popover we just opened.
+            if (searchBoxRef.current?.contains(e.target as Node)) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            if (searchBoxRef.current?.contains(e.target as Node)) e.preventDefault();
+          }}
         >
           {isMobile ? (
             <SearchPopoverMobile
