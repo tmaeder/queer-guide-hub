@@ -32,7 +32,6 @@ const NotificationList = lazy(() =>
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { USER_MENU_ITEMS as userMenuItems, USER_MODES as userModes } from '@/config/navigation';
-import { QuickLaunchNav } from '@/components/layout/QuickLaunchNav';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -74,9 +73,9 @@ export function Header() {
 
   // ── Render ──────────────────────────────────────────────────────────────
 
-  // ── Logo + right action cluster (shared by mobile row & desktop grid) ───
-  const logo = (
-    <Link to="/" style={{ alignItems: 'center' }} className="flex gap-2 shrink-0 no-underline">
+  // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
+  const brand = (
+    <Link to="/" aria-label="Queer Guide" className="flex items-center gap-2 shrink-0 no-underline">
       <img
         src="/images/logo.png"
         alt=""
@@ -85,7 +84,9 @@ export function Header() {
         className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
         style={{ height: 28, width: 28 }}
       />
-      <span className="sr-only">Queer Guide</span>
+      <span className="hidden text-base font-semibold tracking-tight text-foreground md:inline">
+        Queer Guide
+      </span>
     </Link>
   );
 
@@ -262,27 +263,25 @@ export function Header() {
     >
       <div className="px-4 sm:px-6 md:px-8">
         {isMobile ? (
-          /* ── Mobile: logo · search · actions ── */
+          /* ── Mobile: brand · search · actions ── */
           <div className="flex items-center gap-2 sm:gap-4" style={{ height: 56 }}>
-            {logo}
+            {brand}
             <div className="flex-1 min-w-0 mx-2 sm:mx-4">
               <UniversalSearchBar />
             </div>
             {rightCluster}
           </div>
         ) : (
-          /* ── Desktop masthead: logo · centered nav · search + actions ── */
+          /* ── Desktop: brand left · centered search hero · actions right ── */
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4" style={{ height: 64 }}>
-            <div className="flex items-center justify-self-start">{logo}</div>
-            <div className="hidden min-[1340px]:flex justify-self-center">
-              <QuickLaunchNav />
+            <div className="justify-self-start">{brand}</div>
+            <div
+              className="min-w-0 justify-self-center"
+              style={{ width: 'clamp(320px, 34vw, 480px)' }}
+            >
+              <UniversalSearchBar />
             </div>
-            <div className="flex items-center gap-2 justify-self-end min-w-0">
-              <div className="min-w-0" style={{ width: 'clamp(280px, 24vw, 420px)' }}>
-                <UniversalSearchBar />
-              </div>
-              {rightCluster}
-            </div>
+            <div className="justify-self-end">{rightCluster}</div>
           </div>
         )}
       </div>
