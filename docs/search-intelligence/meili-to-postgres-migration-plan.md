@@ -37,7 +37,7 @@ dual-embedding inconsistency — not chase a feature we lack.
 - **Vectorize** is a vector DB only: no BM25, no facet *counts*, no native geo radius/distance sort,
   no typo tolerance. It can hold the semantic half (10M vectors, ≤1536 dims, metadata filters
   `$eq/$ne/$in/$nin/$lt/$lte/$gt/$gte`) but can't be the structured engine. Reserve it as a later
-  scaling lever (see §10).
+  scaling lever (see §11).
 - **AI Search (AutoRAG)** is a managed *document/chunk RAG* product (vector + BM25 hybrid, relevance
   boosting, metadata filters, MCP). Wrong shape for faceted, geo, card-based **entity** search — but
   the **right** shape for the assistant's knowledge/RAG tool over unstructured editorial/news/guide
@@ -87,7 +87,7 @@ columns**. We build the structured-search layer properly.
 `pg_trgm`, `unaccent`, `postgis` (geo columns are bare `numeric` lat/lng today — PostGIS gives true
 `ST_DWithin` radius + `<->` distance sort; `earthdistance`/cube is the lighter fallback).
 
-### 3.2 Searchable layer — two options (decision in §11)
+### 3.2 Searchable layer — two options (decision in §12)
 
 **Option A — per-entity generated tsvector + GIN/GiST indexes** on each table, UNION-ed at query
 time. Example for `venues` (live schema uses **`is_featured`**, not the dropped `featured`):
@@ -145,7 +145,7 @@ Internally, per requested type:
   `personalized_semantic_search` does today (generalize that function, don't reinvent).
 - **Filters:** WHERE from `p_filters` (the Meili `filterable` attrs).
 - **Geo:** `ST_DWithin(geog, point, radius)` + `ORDER BY geog <-> point` (Meili `_geoRadius` parity).
-- **Fusion:** RRF at depth 60 (in SQL — decision in §11).
+- **Fusion:** RRF at depth 60 (in SQL — decision in §12).
 - **Dedup:** `DISTINCT ON (master_event_id)` (replaces Meili `distinctAttribute`).
 - **Highlighting:** `ts_headline` for `<em>` spans.
 - **Trust-aware ranking** (enhancement, baked in — see §8.1): bias the final `ORDER BY` by
@@ -271,7 +271,7 @@ front-run the router later as a cost optimization.
 - **Hyperdrive** — Worker → Supabase connection pooling + read caching.
 - **AI Search (AutoRAG)** — the assistant's `knowledge_search` RAG tool over unstructured content
   (the one place its document/chunk model fits).
-- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§10).
+- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§11).
 
 ---
 
@@ -397,7 +397,72 @@ RPC). **Top two to do first:** NL→filters with editable chips, and the zero-qu
 
 ---
 
-## 10. Vectorize off-ramp (deferred)
+## 10. Content lifecycle — creation, linking & deduplication
+
+The **same embedding substrate** built for search (`content_embeddings` / the `search_documents`
+table) is also the engine for content creation, related-content linking, and dedup — one asset, many
+uses. This does **not** reinvent the existing dedup machinery (ingestion `pipeline-deduplicate`, news
+fingerprints + `news_dedup_audit`, marketplace's 5-tier dedup, the Venue Truth Engine consensus-merge
+with `venue_field_provenance`, `duplicate_of_id`, `entity_cluster_membership`). It **unifies** that
+logic and extends it to creation-time and cross-type.
+
+### 10.1 Content creation (AI-assisted, grounded, human-gated)
+- **Grounded editorial drafting:** Sonnet (via AI Gateway) drafts city guides, "best of" roundups,
+  venue/event descriptions — grounded in real entities via `search_hybrid`/RAG with citations, never
+  invented. Drafts flow through the *existing* `review-gate → commit` pipeline, not straight to publish.
+- **Field enrichment, generalized:** extend the existing `pipeline-enrich-news` / `event-agentic-enrich`
+  pattern to venues/personalities — auto-fill missing `description`, `tags`, `target_groups`,
+  `accessibility`, summaries, with confidence + provenance (reuse Truth-Engine `field_provenance`).
+- **Programmatic SEO collections:** auto-generate + keep-fresh landing pages from `search_hybrid`
+  queries ("Trans-friendly venues in Berlin"), regenerated as data changes. Multilingual (11 langs)
+  via the same pipeline.
+- **Content-gap radar (generalized):** extend `event_coverage_radar` to an embedding-based detector —
+  find under-covered cities/topics in the vector space and queue creation tasks.
+
+### 10.2 Linking of related content (the knowledge graph)
+- **Semantic "related" links:** reuse pgvector cosine (the `/similar` path) for related
+  venues/events/news/personalities/cities and "more in this topic" (via `cluster_ids`).
+- **Cross-type entity linking:** LLM NER over news/editorial → resolve mentions to canonical entity
+  IDs (using alias/synonym tables for disambiguation). Powers internal-linking-for-SEO and the
+  `react-force-graph-2d` view.
+- **A typed `entity_relationships` table:** edges (`mentions`, `located_in`, `hosted_at`,
+  `related_to`, `same_topic`) each with source + confidence + provenance, populated by embeddings +
+  LLM + existing FKs (`city_id`, `country_id`, `venue_id`). Single backbone for related-content
+  modules, the force-graph, and assistant traversal.
+
+### 10.3 Preventing duplication (at creation time, not just ingestion)
+- **Unified `find_duplicates(content_type, text|embedding)` RPC** — embedding similarity + trigram +
+  fingerprint in one place — shared by ingestion, Chrome-extension submissions, *and* AI creation,
+  replacing scattered per-pipeline dedup branches. Single source of truth for "is this a dup?".
+- **Submission-time guard:** when a user or the AI drafter starts creating, surface likely matches
+  live — "This looks like *Berghain* you already have. Update instead?" Stops dupes before they're written.
+- **Semantic fingerprint as a second gate:** your fingerprints are exact (SHA-256 of normalized
+  title/day/source); add an embedding near-dup threshold to catch reworded/cross-source dupes that
+  exact fingerprints miss.
+
+### 10.4 Deduplication (merging what slipped through)
+- **Periodic semantic dedup sweep:** cluster `content_embeddings` by cosine threshold to surface
+  cross-source near-dupes, queued for merge review — the Venue Truth Engine consensus-merge pattern
+  generalized to all entity types (field-level voting + provenance, auto-merge on agreement, review on
+  HIGH-RISK conflicts).
+- **Merge tooling + SEO safety:** field-level side-by-side merge (reuse `venue_field_provenance`),
+  pick winning fields, set `duplicate_of_id`, redirect old slug → canonical (301 via a `slug_redirects`
+  table), and repoint references (`events.venue_id`, `entity_relationships`).
+
+### 10.5 How it rides the plan
+Not a new system — the same three assets reused:
+1. **Embeddings** (`content_embeddings` / `search_documents`) → related-links, gap detection, near-dup.
+2. **Assistant LLM** (Haiku/Sonnet via AI Gateway) → drafting, entity linking, dedup adjudication.
+3. **Review-gate + Truth-Engine provenance** → human-in-the-loop on generated content *and* merges.
+
+**Top two first:** the unified `find_duplicates` RPC (consolidates dedup, protects submissions + AI
+creation), and the `entity_relationships` graph from semantic + LLM linking (foundation for
+related-content, internal linking, and assistant traversal). Both layer **after** Phase 1 (they need
+the embedding/search core) and reuse the assistant from Phase 6.
+
+---
+
+## 11. Vectorize off-ramp (deferred)
 
 If DB read-load isolation or edge-local vector latency becomes the bottleneck, mirror
 `content_embeddings` into **Vectorize** and have the Worker query it for the **vector leg only**,
@@ -406,7 +471,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 11. Open decisions
+## 12. Open decisions
 
 1. **Searchable layer** — per-entity tsvector + `UNION ALL` (Option A) vs single `search_documents`
    table (Option B). *Lean B* (uniform ranking, simpler RPC, trivial facets).
@@ -418,10 +483,10 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 12. Risks & mitigations
+## 13. Risks & mitigations
 
 - **Search load on the OLTP primary** (the one real downside): Hyperdrive query caching first; add a
-  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§10) as the last lever.
+  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§11) as the last lever.
 - **Relevance regression:** the shadow-mode diff (Phase 3) against a frozen baseline is the gate —
   no cutover until PG matches. The eval harness (§8.2) keeps it from drifting after.
 - **Generated-column write cost:** STORED tsvector adds a little per write; negligible at this
@@ -434,7 +499,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 13. Sequencing summary
+## 14. Sequencing summary
 
 ```
 Phase 0  Baseline + flag
