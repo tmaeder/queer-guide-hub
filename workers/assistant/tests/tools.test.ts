@@ -8,15 +8,15 @@ describe("TOOLS", () => {
 		expect(names).toEqual(["find_related", "get_recommendations", "search_entities"]);
 		for (const t of TOOLS) {
 			expect(typeof t.description).toBe("string");
-			expect((t.input_schema as { type?: string }).type).toBe("object");
+			expect((t.parameters as { type?: string }).type).toBe("object");
 		}
 	});
 
 	it("search_entities requires a query; find_related requires entity id+type", () => {
 		const search = TOOLS.find((t) => t.name === "search_entities")!;
-		expect((search.input_schema as { required?: string[] }).required).toEqual(["query"]);
+		expect((search.parameters as { required?: string[] }).required).toEqual(["query"]);
 		const related = TOOLS.find((t) => t.name === "find_related")!;
-		expect((related.input_schema as { required?: string[] }).required).toEqual(["entity_type", "entity_id"]);
+		expect((related.parameters as { required?: string[] }).required).toEqual(["entity_type", "entity_id"]);
 	});
 });
 

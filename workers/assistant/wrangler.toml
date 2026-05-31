@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2026-04-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Workers AI runs the tool-calling model (no external LLM key needed).
+[ai]
+binding = "AI"
+
 # Per-conversation memory lives in a Durable Object.
 [[durable_objects.bindings]]
 name = "CONVERSATION"
@@ -14,17 +18,15 @@ new_sqlite_classes = ["Conversation"]
 
 [vars]
 ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:3000"
-AI_GATEWAY_ACCOUNT_ID = "7aa3765cc5f50f2b681b782eb4a8d296"
+# AI Gateway id — caching / rate-limit / observability on the AI.run calls.
 AI_GATEWAY_NAME = "qg-search"
-# Tiered Claude (plan §6.1): Haiku routes + runs the tool loop; Sonnet for
-# synthesis/escalation (escalation is a follow-up; the skeleton uses ROUTER_MODEL).
-ROUTER_MODEL = "claude-haiku-4-5-20251001"
-SYNTH_MODEL = "claude-sonnet-4-6"
+# Tool-capable Workers AI model that runs the agent loop.
+ROUTER_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 
 # Secrets (set via: wrangler secret put NAME):
-#   ANTHROPIC_API_KEY     - Claude key, proxied through the qg-search AI Gateway
 #   SUPABASE_URL
 #   SUPABASE_SERVICE_KEY  - service role, for the search_documents RPC tools
+# (No LLM API key — inference runs on the Workers AI binding above.)
 
 [observability]
 enabled = true

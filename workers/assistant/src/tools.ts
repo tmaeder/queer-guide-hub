@@ -40,7 +40,7 @@ export const TOOLS: ToolDef[] = [
 		name: "search_entities",
 		description:
 			"Keyword search across the queer.guide corpus (venues, events, cities, people, news, marketplace, tags, queer villages). Use for 'find / where / what is' questions. Returns real entity cards.",
-		input_schema: {
+		parameters: {
 			type: "object",
 			properties: {
 				query: { type: "string", description: "Search query, e.g. 'wheelchair accessible gay bar'." },
@@ -55,7 +55,7 @@ export const TOOLS: ToolDef[] = [
 		name: "get_recommendations",
 		description:
 			"Personalized, popularity-aware discovery feed for when there is no specific query (e.g. 'what's good in Berlin', 'anything for me'). Returns real entity cards.",
-		input_schema: {
+		parameters: {
 			type: "object",
 			properties: {
 				types: { type: "array", items: { type: "string", enum: ENTITY_TYPES } },
@@ -67,7 +67,7 @@ export const TOOLS: ToolDef[] = [
 	{
 		name: "find_related",
 		description: "Find entities similar/related to a known entity (a venue, event, person, etc.). Returns real entity cards.",
-		input_schema: {
+		parameters: {
 			type: "object",
 			properties: {
 				entity_type: { type: "string", enum: ENTITY_TYPES },

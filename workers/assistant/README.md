@@ -3,10 +3,12 @@
 Conversational concierge worker — **Phase 6 skeleton** of the search/assistant plan
 (`docs/search-intelligence/meili-to-postgres-migration-plan.md`, §6).
 
-A per-conversation **Durable Object** runs a **Claude tool-calling loop** (via the
-`qg-search` **AI Gateway**) grounded in the `search_documents` Postgres RPCs. The
-model can only reach real entities through tools, so the cards the UI renders come
-from tool results — never from model prose (grounding by construction, plan §6.4).
+A per-conversation **Durable Object** runs a **Workers AI tool-calling loop**
+(through the `qg-search` **AI Gateway**) grounded in the `search_documents`
+Postgres RPCs. Inference runs on the Cloudflare **`AI` binding** — no external LLM
+key. The model can only reach real entities through tools, so the cards the UI
+renders come from tool results — never from model prose (grounding by
+construction, plan §6.4).
 
 ## Endpoints
 
@@ -26,17 +28,22 @@ from tool results — never from model prose (grounding by construction, plan §
 
 ```
 POST /assistant → Worker → Durable Object (Conversation, holds history)
-                                │ Claude (ROUTER_MODEL) via AI Gateway
-                                │ tool_use → executeTool → Supabase RPC → cards
+                                │ Workers AI (ROUTER_MODEL) via env.AI + AI Gateway
+                                │ tool_calls → executeTool → Supabase RPC → cards
                                 └ loop (max 4 steps) → final text + grounded cards
 ```
+
+Uses Workers AI **traditional function calling**: `env.AI.run(model, { messages,
+tools })` → `{ response, tool_calls: [{ name, arguments }] }`. Tool defs are the
+flat `{ name, description, parameters }` form. Default model
+`@cf/meta/llama-3.3-70b-instruct-fp8-fast` (tool-capable), overridable via
+`ROUTER_MODEL`.
 
 ## What's a skeleton here (follow-ups)
 
 - **Non-streaming** tool loop. SSE streaming of tokens is a follow-up.
-- **Single model** (`ROUTER_MODEL`, Haiku). The plan's tiered Haiku→Sonnet
-  escalation for synthesis/trip-planning is wired in config (`SYNTH_MODEL`) but
-  not yet used.
+- **Single model** (`ROUTER_MODEL`). A two-tier route→synthesis split (e.g. a
+  bigger model for trip-planning) is a follow-up.
 - **Keyword search only** in `search_entities` (`p_query_vec = null`); semantic
   blending needs a Workers-AI embedding round-trip.
 - Personalization is a prompt hint only; deep bias-vector injection + `user_memory`
@@ -45,10 +52,9 @@ POST /assistant → Worker → Durable Object (Conversation, holds history)
 
 ## Run / deploy
 
-Needs secrets:
+Inference is on the `AI` binding, so the only secrets are Supabase:
 
 ```
-wrangler secret put ANTHROPIC_API_KEY     # proxied through the qg-search AI Gateway
 wrangler secret put SUPABASE_URL
 wrangler secret put SUPABASE_SERVICE_KEY
 ```
@@ -61,4 +67,4 @@ wrangler deploy
 ```
 
 Until deployed with those secrets the worker can't run end-to-end; the pure logic
-(tools schema, grounding) is covered by unit tests.
+(tool schemas, grounding) is covered by unit tests.
