@@ -215,6 +215,7 @@ export interface DisplayRecord {
 	image_url?: string;
 	city?: string;
 	country?: string;
+	date?: string;
 }
 
 const DISPLAY_SOURCES: Record<
@@ -235,7 +236,7 @@ const DISPLAY_SOURCES: Record<
 	},
 	event: {
 		table: "events",
-		columns: ["id", "title", "slug", "logo_url", "images", "city", "country"],
+		columns: ["id", "title", "slug", "logo_url", "images", "city", "country", "start_date"],
 		map: (r) => ({
 			title: firstStr(r.title) ?? undefined,
 			slug: firstStr(r.slug) ?? undefined,
@@ -243,6 +244,7 @@ const DISPLAY_SOURCES: Record<
 				firstStr((r.images as unknown[])?.[0]) ?? firstStr(r.logo_url) ?? undefined,
 			city: firstStr(r.city) ?? undefined,
 			country: firstStr(r.country) ?? undefined,
+			date: firstStr(r.start_date) ?? undefined,
 		}),
 	},
 	city: {
