@@ -942,6 +942,7 @@
       "consentRequired": "Accepte les conditions, la politique de confidentialité et confirme avoir 18 ans ou plus",
       "displayNameRequired": "Le nom affiché est requis",
       "fillAllFields": "Remplis tous les champs",
+      "captchaRequired": "Complète le captcha.",
       "invalidCredentials": "Email ou mot de passe incorrect.",
       "emailNotConfirmed": "Confirme ton email avant de te connecter.",
       "alreadyRegistered": "Un compte avec cet email existe déjà. Essaie de te connecter.",

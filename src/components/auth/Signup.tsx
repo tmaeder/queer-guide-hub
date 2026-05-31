@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Eye, EyeOff, Heart, Loader2 } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
+import { useTurnstile } from '@/hooks/useTurnstile';
 import { useSignupFunnel } from '@/hooks/useSignupFunnel';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { OAuthButtons } from './OAuthButtons';
@@ -27,6 +28,7 @@ export default function Signup({ onBack }: Props) {
   const { t, i18n } = useTranslation();
   const { signUp } = useAuth();
   const { emit, reset: resetFunnel } = useSignupFunnel();
+  const { token: captchaToken, widget: captcha, reset: resetCaptcha, required: captchaRequired } = useTurnstile();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -72,6 +74,10 @@ export default function Signup({ onBack }: Props) {
   };
 
   const performSignup = async (username: string, avatar: AvatarConfig) => {
+    if (captchaRequired && !captchaToken) {
+      setError(t('auth.errors.captchaRequired', 'Please complete the captcha.'));
+      return;
+    }
     setIsLoading(true);
     setError(null);
     const now = new Date().toISOString();
@@ -83,9 +89,11 @@ export default function Signup({ onBack }: Props) {
       terms_accepted_at: now,
       privacy_accepted_at: now,
       age_confirmed_at: now,
-    });
+    }, captchaToken ?? undefined);
     setIsLoading(false);
     if (signUpError) {
+      // Turnstile tokens are single-use — refresh for the next attempt.
+      resetCaptcha();
       const msg = signUpError instanceof Error
         ? signUpError.message
         : (signUpError as { message?: string })?.message ?? '';
@@ -121,6 +129,7 @@ export default function Signup({ onBack }: Props) {
           )}
           <UsernameSelector value={pendingUsername} onChange={setPendingUsername} />
           <AvatarQuickPick value={pendingAvatar} onChange={setPendingAvatar} />
+          {captcha}
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -131,7 +140,7 @@ export default function Signup({ onBack }: Props) {
             </Button>
             <Button
               className="flex-1"
-              disabled={!pendingUsername || !pendingAvatar || isLoading}
+              disabled={!pendingUsername || !pendingAvatar || isLoading || (captchaRequired && !captchaToken)}
               onClick={() =>
                 pendingUsername && pendingAvatar && performSignup(pendingUsername, pendingAvatar)
               }
