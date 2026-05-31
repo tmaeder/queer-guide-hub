@@ -37,7 +37,7 @@ dual-embedding inconsistency — not chase a feature we lack.
 - **Vectorize** is a vector DB only: no BM25, no facet *counts*, no native geo radius/distance sort,
   no typo tolerance. It can hold the semantic half (10M vectors, ≤1536 dims, metadata filters
   `$eq/$ne/$in/$nin/$lt/$lte/$gt/$gte`) but can't be the structured engine. Reserve it as a later
-  scaling lever (see §13).
+  scaling lever (see §14).
 - **AI Search (AutoRAG)** is a managed *document/chunk RAG* product (vector + BM25 hybrid, relevance
   boosting, metadata filters, MCP). Wrong shape for faceted, geo, card-based **entity** search — but
   the **right** shape for the assistant's knowledge/RAG tool over unstructured editorial/news/guide
@@ -87,7 +87,7 @@ columns**. We build the structured-search layer properly.
 `pg_trgm`, `unaccent`, `postgis` (geo columns are bare `numeric` lat/lng today — PostGIS gives true
 `ST_DWithin` radius + `<->` distance sort; `earthdistance`/cube is the lighter fallback).
 
-### 3.2 Searchable layer — two options (decision in §14)
+### 3.2 Searchable layer — two options (decision in §15)
 
 **Option A — per-entity generated tsvector + GIN/GiST indexes** on each table, UNION-ed at query
 time. Example for `venues` (live schema uses **`is_featured`**, not the dropped `featured`):
@@ -145,7 +145,7 @@ Internally, per requested type:
   `personalized_semantic_search` does today (generalize that function, don't reinvent).
 - **Filters:** WHERE from `p_filters` (the Meili `filterable` attrs).
 - **Geo:** `ST_DWithin(geog, point, radius)` + `ORDER BY geog <-> point` (Meili `_geoRadius` parity).
-- **Fusion:** RRF at depth 60 (in SQL — decision in §14).
+- **Fusion:** RRF at depth 60 (in SQL — decision in §15).
 - **Dedup:** `DISTINCT ON (master_event_id)` (replaces Meili `distinctAttribute`).
 - **Highlighting:** `ts_headline` for `<em>` spans.
 - **Trust-aware ranking** (enhancement, baked in — see §8.1): bias the final `ORDER BY` by
@@ -271,7 +271,7 @@ front-run the router later as a cost optimization.
 - **Hyperdrive** — Worker → Supabase connection pooling + read caching.
 - **AI Search (AutoRAG)** — the assistant's `knowledge_search` RAG tool over unstructured content
   (the one place its document/chunk model fits).
-- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§13).
+- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§14).
 
 ---
 
@@ -580,7 +580,70 @@ posture**; (2) **AI-safety / prompt-injection controls** (untrusted content alre
 
 ---
 
-## 13. Vectorize off-ramp (deferred)
+## 13. Map & geo integration
+
+Geo is unusually central — a travel product where location is both the core value and the **most
+sensitive datum** for the audience. Capability and safety/privacy must be designed together. Grounded
+in the stack (MapLibre GL, PostGIS from §3.1, lat/lng on venues/events/hotels/festivals/queer_villages,
+`queer_villages` polygons, R2, Workers).
+
+### 13.1 Geo data backbone — PostGIS as source of truth
+- Migrate bare `numeric` lat/lng to `geography(Point,4326)` + **GiST spatial indexes** → radius,
+  bounding-box, KNN distance sort, and **point-in-polygon**.
+- **Auto-link by containment:** `ST_Contains` against `queer_villages`/`cities` polygons makes the
+  `geo_linked_at` entity→`city_id`/`country_id`/`queer_village_id` linking exact and automatic.
+- **Proximity as a dedup signal:** same-coordinate listings are almost certainly the same place — feed
+  `ST_DWithin` into the unified `find_duplicates` RPC (§10.3) as a strong dedup vote.
+
+### 13.2 ★ Self-hosted, privacy-first tiles — PMTiles on R2 + Worker
+Today MapLibre likely pulls tiles from a provider (the Mapbox token in env) → **every map pan leaks the
+user's location + interests to a third party**, unacceptable for this audience. Instead host **PMTiles**
+(single-file vector tiles) on **R2**, served via a Worker (HTTP range requests); MapLibre reads them
+directly. Yields: no third-party location leakage (§12.1), a **custom monochrome style** (map vector
+tiles are an allowlisted color exception), **offline-cacheable** tiles (§12.3), low cost, one fewer
+external dependency, and full Cloudflare-native fit. Drop the Mapbox token.
+
+### 13.3 Geocoding pipeline (privacy-respecting)
+Address→coords at ingestion, coords→place for "near me" — run **proxied + cached through a Worker**
+(never the client calling a provider directly), store a **confidence score**, prefer privacy-respecting
+providers (self-hosted Nominatim an option). Low-confidence geocodes flag for review (Truth-Engine
+provenance).
+
+### 13.4 Map ↔ search integration (UX)
+Where §9 meets the map:
+- **Split list+map** with sync: searching filters the map; **"Search this area"** runs a bounding-box
+  `search_hybrid`; clicking a marker opens the card.
+- **Marker clustering** (supercluster) + **viewport-bounded queries** so all points never load at once.
+- **Intent-aware:** "near me / open now" uses geolocation + the `hours` jsonb; distance is the default
+  sort when geo is present (§9.4).
+
+### 13.5 ★ Safety geo — the differentiator
+Risk is neighborhood-level, not country-uniform. Overlay **safety context on the map** grounded in
+safety-briefing data: highlight safer areas/routes, flag higher-risk zones, plan around them. Plus a
+country-level **choropleth of legal/safety status** (reuse the existing "equality scores" functional
+color scale) for the world-map view. The map becomes a safety instrument, not just a finder — no
+generic OTA does this.
+
+### 13.6 Geo privacy & safety (per §12.1)
+- **User location is the most sensitive datum:** client-side geolocation only, **coarse + ephemeral +
+  opt-in**, never stored precisely.
+- **Venue-side:** let sensitive venues be **fuzzed/hidden** on public maps in hostile regions — don't
+  pinpoint a queer space for someone hunting it.
+- Strip location from shared map screenshots/links.
+
+### 13.7 Trip planning & routing
+For the Phase 9 concierge: **walking/transit routing** between itinerary stops and **isochrones**
+("venues within a 15-min walk of my hotel") via OSRM or a routing provider — keeps assistant plans
+geographically coherent.
+
+### 13.8 Priorities
+Top three: (1) **PMTiles-on-R2 self-hosted tiles** (kills the biggest location-privacy leak, pure
+Cloudflare-native); (2) **PostGIS as the geo backbone** (containment auto-linking + proximity dedup,
+beyond search radius); (3) **safety-geo overlays** (the map as a safety instrument).
+
+---
+
+## 14. Vectorize off-ramp (deferred)
 
 If DB read-load isolation or edge-local vector latency becomes the bottleneck, mirror
 `content_embeddings` into **Vectorize** and have the Worker query it for the **vector leg only**,
@@ -589,7 +652,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 14. Open decisions
+## 15. Open decisions
 
 1. **Searchable layer** — per-entity tsvector + `UNION ALL` (Option A) vs single `search_documents`
    table (Option B). *Lean B* (uniform ranking, simpler RPC, trivial facets).
@@ -601,10 +664,10 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 15. Risks & mitigations
+## 16. Risks & mitigations
 
 - **Search load on the OLTP primary** (the one real downside): Hyperdrive query caching first; add a
-  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§13) as the last lever.
+  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§14) as the last lever.
 - **Relevance regression:** the shadow-mode diff (Phase 3) against a frozen baseline is the gate —
   no cutover until PG matches. The eval harness (§8.2) keeps it from drifting after.
 - **Generated-column write cost:** STORED tsvector adds a little per write; negligible at this
@@ -617,7 +680,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 16. Sequencing summary
+## 17. Sequencing summary
 
 ```
 Phase 0  Baseline + flag
