@@ -4,13 +4,34 @@
  * way the model can reach real entities, which is how grounding is enforced:
  * the cards the UI renders come from tool results, never from model prose.
  *
- * Skeleton note: search uses the keyword leg only (p_query_vec = null). Semantic
- * blending would require an embedding round-trip (Workers AI) — a follow-up.
+ * Hybrid: search_entities embeds the query with bge-m3 (the same 1024-dim model
+ * that populates search_documents.embedding) and passes it as p_query_vec, so the
+ * keyword + semantic legs fuse via RRF. Embedding is fail-soft — on error we fall
+ * back to keyword-only rather than failing the search.
  */
 
 import type { Env, ToolDef, Card } from "./types";
 
 const RPC_TIMEOUT_MS = 6000;
+const EMBED_MODEL = "@cf/baai/bge-m3"; // 1024-dim, multilingual — matches search_documents.embedding
+const EMBED_TIMEOUT_MS = 4000;
+
+/** Embed the query with bge-m3 and return a pgvector string literal, or null on failure. */
+async function embedQuery(env: Env, text: string): Promise<string | null> {
+	try {
+		const ai = env.AI as unknown as { run: (m: string, i: unknown, o?: unknown) => Promise<unknown> };
+		const gateway = env.AI_GATEWAY_NAME ? { gateway: { id: env.AI_GATEWAY_NAME } } : undefined;
+		const res = (await Promise.race([
+			ai.run(EMBED_MODEL, { text: [text] }, gateway),
+			new Promise((_, reject) => setTimeout(() => reject(new Error("embed timeout")), EMBED_TIMEOUT_MS)),
+		])) as { data?: number[][] };
+		const vec = res?.data?.[0];
+		if (!Array.isArray(vec) || !vec.length) return null;
+		return `[${vec.join(",")}]`;
+	} catch {
+		return null;
+	}
+}
 
 async function rpc<T>(env: Env, fn: string, args: Record<string, unknown>): Promise<T> {
 	const controller = new AbortController();
@@ -112,9 +133,10 @@ export async function executeTool(env: Env, name: string, input: Record<string, 
 		if (name === "search_entities") {
 			const filters: Record<string, unknown> = {};
 			if (typeof input.city === "string" && input.city) filters.city = input.city;
+			const query = String(input.query ?? "");
 			const rows = await rpc<{ hits?: unknown }>(env, "search_hybrid", {
-				p_query: String(input.query ?? ""),
-				p_query_vec: null,
+				p_query: query,
+				p_query_vec: query ? await embedQuery(env, query) : null,
 				p_content_types: Array.isArray(input.types) && input.types.length ? input.types : null,
 				p_filters: filters,
 				p_limit: clampLimit(input.limit, 8),
