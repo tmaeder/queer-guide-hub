@@ -68,7 +68,7 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
     render(<Signup onBack={onBack} />);
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
-    expect(screen.getByText('Continue with Google')).toBeInTheDocument();
+    expect(screen.queryByText('Continue with Google')).not.toBeInTheDocument();
     expect(screen.getByText('Continue with Apple')).toBeInTheDocument();
     expect(screen.getAllByRole('checkbox')).toHaveLength(1);
   });
