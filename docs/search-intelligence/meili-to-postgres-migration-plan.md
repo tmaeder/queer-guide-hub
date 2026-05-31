@@ -37,7 +37,7 @@ dual-embedding inconsistency — not chase a feature we lack.
 - **Vectorize** is a vector DB only: no BM25, no facet *counts*, no native geo radius/distance sort,
   no typo tolerance. It can hold the semantic half (10M vectors, ≤1536 dims, metadata filters
   `$eq/$ne/$in/$nin/$lt/$lte/$gt/$gte`) but can't be the structured engine. Reserve it as a later
-  scaling lever (see §15).
+  scaling lever (see §16).
 - **AI Search (AutoRAG)** is a managed *document/chunk RAG* product (vector + BM25 hybrid, relevance
   boosting, metadata filters, MCP). Wrong shape for faceted, geo, card-based **entity** search — but
   the **right** shape for the assistant's knowledge/RAG tool over unstructured editorial/news/guide
@@ -87,7 +87,7 @@ columns**. We build the structured-search layer properly.
 `pg_trgm`, `unaccent`, `postgis` (geo columns are bare `numeric` lat/lng today — PostGIS gives true
 `ST_DWithin` radius + `<->` distance sort; `earthdistance`/cube is the lighter fallback).
 
-### 3.2 Searchable layer — two options (decision in §16)
+### 3.2 Searchable layer — two options (decision in §17)
 
 **Option A — per-entity generated tsvector + GIN/GiST indexes** on each table, UNION-ed at query
 time. Example for `venues` (live schema uses **`is_featured`**, not the dropped `featured`):
@@ -145,7 +145,7 @@ Internally, per requested type:
   `personalized_semantic_search` does today (generalize that function, don't reinvent).
 - **Filters:** WHERE from `p_filters` (the Meili `filterable` attrs).
 - **Geo:** `ST_DWithin(geog, point, radius)` + `ORDER BY geog <-> point` (Meili `_geoRadius` parity).
-- **Fusion:** RRF at depth 60 (in SQL — decision in §16).
+- **Fusion:** RRF at depth 60 (in SQL — decision in §17).
 - **Dedup:** `DISTINCT ON (master_event_id)` (replaces Meili `distinctAttribute`).
 - **Highlighting:** `ts_headline` for `<em>` spans.
 - **Trust-aware ranking** (enhancement, baked in — see §8.1): bias the final `ORDER BY` by
@@ -271,7 +271,7 @@ front-run the router later as a cost optimization.
 - **Hyperdrive** — Worker → Supabase connection pooling + read caching.
 - **AI Search (AutoRAG)** — the assistant's `knowledge_search` RAG tool over unstructured content
   (the one place its document/chunk model fits).
-- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§15).
+- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§16).
 
 ---
 
@@ -704,7 +704,67 @@ broken-if-wrong); (2) **timezone-correct "open now / tonight" + NL relative-date
 
 ---
 
-## 15. Vectorize off-ramp (deferred)
+## 15. Currencies & prices in search and filtering
+
+Hard because queer.guide mixes **four incompatible price models** (exact marketplace prices, event
+min/max ranges, venue/hotel `$–$$$$` tiers, live flight/hotel rates) across a global, 11-language
+audience — and you can't filter/sort across mixed currencies without normalization. Partly solved
+already (`marketplace.price_usd` from `fx_rates`, 23 currencies via `marketplace-fx-sync`); the work is
+generalizing it. Grounded in `marketplace.price`/`price_usd`/`currency` + price-history,
+`events.price_min/max`/`is_free`, `venues.price_range`, `hotels.price_range`/`star_rating`,
+Travelpayouts live prices.
+
+### 15.1 Canonical normalized price — the foundation
+Generalize `price_usd` to **every priced entity**: store both the **original** (`price` + `currency`)
+and a **normalized base** (`price_base`, integer minor units / USD cents) from `fx_rates`. Filtering,
+sorting, ranges, and histograms all operate on `price_base`; the original is for display. A backend
+normalization job (a pgmq node like `marketplace-fx-sync`, extended) keeps events/hotels fresh too.
+
+### 15.2 Currency-agnostic search cache (key design choice)
+Don't convert to the user's currency inside search — that explodes the cache by currency.
+`search_hybrid` filters/sorts on `price_base` and **returns `price_base` + original currency**; the
+**Worker/frontend converts + formats at the edge** using `fx_rates` cached in KV + `Intl.NumberFormat`
+(locale symbol placement, JPY/no-decimal, RTL). One cache entry serves all users; display localizes on
+the way out. Label converted values **"approx."** with an "as of" date for FX staleness.
+
+### 15.3 Heterogeneous models — two-layer filtering
+- **Cross-type facet:** a normalized `price_band` (0 = free, then bands from `price_base`, with
+  `$–$$$$` tiers mapped to representative bands) so federated venues + events + hotels + marketplace
+  share one coarse "price" facet.
+- **Type-aware precise filters:** within a type use the real field — event `price_min/max`, hotel
+  nightly + `star_rating`, marketplace exact price. The slider adapts per type.
+
+### 15.4 Ranges, free, and unknown (correctness traps)
+- **Overlap, not containment:** an event `price_min=5, max=50` must match filter `[0,20]`.
+- **Free / donation / on-request:** `is_free` is a first-class facet; translate "Free" per locale.
+- **Null/unknown price:** separate "price unknown" bucket — never silently drop from price-sorted
+  results, or you lose the many venues lacking price data.
+- **Histograms (§9.3):** computed in `price_base`, rendered in the user's currency.
+
+### 15.5 Sales, discounts & price-drop alerts
+Surface marketplace price-history delta as **"on sale / price dropped / X% off"** (ranking boost +
+badge) and wire **price-drop alerts** into saved searches (§8.11) — effectively reviving the removed
+`price-drop-check` as a saved-search trigger.
+
+### 15.6 Live/volatile prices (Travelpayouts, §11)
+Flight/hotel live rates can't be indexed — fetch at request time (Pattern A), **normalize + display in
+the user's currency, labeled "approx., as of"**, respecting caching limits; keep them in the separate
+"Travel / Book" module, not blended into organic price ranking.
+
+### 15.7 Price as a (gentle) signal & ethics
+Optional budget personalization + sale boosts, but **relevance first** — price never dominates. Since
+prices link to affiliate partners (§11), **don't let commission skew price ranking**, and disclose
+(§12.7).
+
+### 15.8 Priorities
+Top three: (1) **canonical `price_base` on all priced entities + currency-agnostic search cache**
+(format at the edge) — everything depends on it; (2) **overlap range filtering + `is_free` +
+base-currency histograms** with the null bucket; (3) **cross-type `price_band` facet + type-aware
+precise filters**.
+
+---
+
+## 16. Vectorize off-ramp (deferred)
 
 If DB read-load isolation or edge-local vector latency becomes the bottleneck, mirror
 `content_embeddings` into **Vectorize** and have the Worker query it for the **vector leg only**,
@@ -713,7 +773,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 16. Open decisions
+## 17. Open decisions
 
 1. **Searchable layer** — per-entity tsvector + `UNION ALL` (Option A) vs single `search_documents`
    table (Option B). *Lean B* (uniform ranking, simpler RPC, trivial facets).
@@ -725,10 +785,10 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 17. Risks & mitigations
+## 18. Risks & mitigations
 
 - **Search load on the OLTP primary** (the one real downside): Hyperdrive query caching first; add a
-  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§15) as the last lever.
+  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§16) as the last lever.
 - **Relevance regression:** the shadow-mode diff (Phase 3) against a frozen baseline is the gate —
   no cutover until PG matches. The eval harness (§8.2) keeps it from drifting after.
 - **Generated-column write cost:** STORED tsvector adds a little per write; negligible at this
@@ -741,7 +801,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 18. Sequencing summary
+## 19. Sequencing summary
 
 ```
 Phase 0  Baseline + flag
