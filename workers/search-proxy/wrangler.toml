@@ -21,6 +21,10 @@ AI_GATEWAY_ACCOUNT_ID = "7aa3765cc5f50f2b681b782eb4a8d296"
 AI_GATEWAY_NAME = "qg-search"
 EMBED_MODEL = "@cf/baai/bge-m3"
 ENABLE_RERANKER = "1"
+# Meili -> Postgres migration (Phase 2). "meili" (default) | "pg" | "shadow".
+# Flip to "shadow" to validate the Postgres search_hybrid path against live Meili,
+# then "pg" to cut over. Reversible at any time.
+SEARCH_BACKEND = "meili"
 
 # Secrets (set via: wrangler secret put NAME):
 #   MEILISEARCH_SEARCH_KEY
