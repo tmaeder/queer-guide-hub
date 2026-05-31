@@ -1,6 +1,11 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { scoreMarketplaceQuality } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { gateImages } from '../_shared/image-gate.ts'
+
+/** Entity types that carry a photo `images[]` array worth gating before commit. */
+const IMAGE_GATED_TYPES = new Set(['venue', 'event', 'marketplace', 'news_article'])
+const IMAGE_GATED_TABLES = new Set(['venues', 'events', 'marketplace_listings', 'news_articles'])
 
 // ============================================================
 // Pipeline Quality Score Node
@@ -40,6 +45,18 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
       const normalized = (item.normalized_data || {}) as Record<string, unknown>
       const type = item.entity_type || entityType
 
+      // Drop logos / sprites / data-URIs / ad pixels from the image array before
+      // scoring + commit. Cheap URL-only checks; dimension/solid-colour checks
+      // live downstream in the probe / ingest worker.
+      let imageGate: ReturnType<typeof gateImages> | null = null
+      if (IMAGE_GATED_TYPES.has(type) || IMAGE_GATED_TABLES.has(item.target_table)) {
+        const gate = gateImages(normalized.images)
+        if (gate.dropped.length > 0) {
+          normalized.images = gate.kept
+          imageGate = gate
+        }
+      }
+
       const score = type === 'personality' || item.target_table === 'personalities'
         ? computePersonalityScore(normalized)
         : (type === 'marketplace' || item.target_table === 'marketplace_listings')
@@ -54,7 +71,14 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
           .from('ingestion_staging')
           .update({
             enrichment_status: 'completed',
-            enriched_data: { ...(item.enriched_data as Record<string, unknown> || {}), quality_score: score },
+            enriched_data: {
+              ...(item.enriched_data as Record<string, unknown> || {}),
+              quality_score: score,
+              ...(imageGate ? { image_gate: { dropped: imageGate.dropped, kept: imageGate.kept.length } } : {}),
+            },
+            // Persist the filtered image array so the commit RPC (which reads
+            // normalized_data->images) never sees the dropped URLs.
+            ...(imageGate ? { normalized_data: normalized } : {}),
             ...(belowMin ? { review_status: 'pending_review', disposition: 'pending' } : {}),
           })
           .eq('id', item.id)

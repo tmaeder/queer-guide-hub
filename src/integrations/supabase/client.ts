@@ -13,5 +13,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+    // Explicit rather than relying on v2 defaults: PKCE for OAuth + email
+    // links, and auto-exchange of the code/token when it lands in the URL
+    // (e.g. password-reset link on /auth?reset=1).
+    flowType: 'pkce',
+    detectSessionInUrl: true,
   }
 });

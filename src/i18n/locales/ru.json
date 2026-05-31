@@ -966,6 +966,7 @@
       "consentRequired": "Примите условия, политику конфиденциальности и подтвердите возраст 18+",
       "displayNameRequired": "Укажите отображаемое имя",
       "fillAllFields": "Заполните все поля",
+      "captchaRequired": "Пройдите проверку captcha.",
       "invalidCredentials": "Неверный email или пароль.",
       "emailNotConfirmed": "Подтвердите email перед входом.",
       "alreadyRegistered": "Аккаунт с таким email уже существует. Попробуйте войти.",

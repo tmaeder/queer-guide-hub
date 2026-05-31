@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import { supabase } from '@/integrations/supabase/client';
 
 interface SignUpMetadata {
@@ -24,11 +25,11 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: SignUpMetadata) => Promise<{ error: unknown }>;
-  signIn: (email: string, password: string) => Promise<{ error: unknown }>;
+  signUp: (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => Promise<{ error: unknown }>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: unknown }>;
   signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: unknown }>;
   resendVerification: (email: string) => Promise<{ error: unknown }>;
-  resetPassword: (email: string) => Promise<{ error: unknown }>;
+  resetPassword: (email: string, captchaToken?: string) => Promise<{ error: unknown }>;
   signOut: () => Promise<void>;
   enrollPasskey: () => Promise<{ error: unknown }>;
   signInWithPasskey: () => Promise<{ error: unknown }>;
@@ -55,43 +56,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Check for existing passkey enrollment when user signs in
+        // Check for existing passkey enrollment when user signs in.
+        // Pass the event's user id directly — the `user` state set above
+        // has not flushed yet, so reading it inside the check would see the
+        // previous (often null) value on first sign-in.
         if (session?.user) {
           // eslint-disable-next-line react-hooks/immutability -- checkPasskeyEnrollment declared below; auth callback fires after mount, after the binding is initialized.
-          checkPasskeyEnrollment();
+          checkPasskeyEnrollment(session.user.id);
+        } else {
+          setHasPasskey(false);
         }
       }
     );
 
     return () => subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- checkPasskeyEnrollment defined below, run once on mount to set up auth listener
   }, []);
 
   // Secure passkey enrollment check using database
-  const checkPasskeyEnrollment = async () => {
-    if (!user) {
-      setHasPasskey(false);
-      return;
-    }
-
+  const checkPasskeyEnrollment = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('user_passkey_enrollment')
         .select('is_enrolled')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // Not found error is okay
+      if (error) {
         console.error('Error checking passkey enrollment:', error);
         setHasPasskey(false);
       } else {
         setHasPasskey(data?.is_enrolled ?? false);
       }
-      
+
       // Clean up any legacy localStorage entries
       try {
         localStorage.removeItem('hasPasskey');
-        localStorage.removeItem(`passkey_enrolled_${user.id}`);
+        localStorage.removeItem(`passkey_enrolled_${userId}`);
       } catch (_e) {
         // Ignore localStorage errors
       }
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
 
-  const signUp = async (email: string, password: string, metadata?: SignUpMetadata) => {
+  const signUp = async (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => {
     const redirectUrl = `${window.location.origin}/`;
 
     const { error } = await supabase.auth.signUp({
@@ -111,13 +111,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       options: {
         emailRedirectTo: redirectUrl,
         data: metadata || {},
+        ...(captchaToken ? { captchaToken } : {}),
       },
     });
     return { error };
   };
 
   const signInWithOAuth = async (provider: OAuthProvider) => {
-    const redirectUrl = `${window.location.origin}/`;
+    // Land on /auth/callback so the PKCE code is exchanged there and the
+    // one-time "claim username" step can run for new OAuth users (whose
+    // profiles.username starts NULL). Returning to "/" skips that step.
+    const redirectUrl = `${window.location.origin}/auth/callback`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -142,25 +146,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string, captchaToken?: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth?reset=1`,
+      ...(captchaToken ? { captchaToken } : {}),
     });
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
       // Add retry logic for auth requests
       let attempts = 0;
       const maxAttempts = 3;
       let authResult;
-      
+
       while (attempts < maxAttempts) {
         try {
           authResult = await supabase.auth.signInWithPassword({
             email,
             password,
+            ...(captchaToken ? { options: { captchaToken } } : {}),
           });
           break; // Success, exit retry loop
         } catch (networkError: unknown) {
@@ -241,92 +247,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!user || !session) {
         throw new Error('User must be signed in to enroll passkey');
       }
-
-      // Check if WebAuthn is supported
       if (!window.PublicKeyCredential) {
         throw new Error('WebAuthn is not supported on this device');
       }
-
-      // Check if running in iframe (like preview environment)
       if (isInIframe()) {
         throw new Error('Passkey setup is not available in preview mode. Please use the deployed app for passkey functionality.');
       }
 
-      // Call secure edge function to get challenge and options
+      // 1. Get registration options from the server.
       const { data: enrollData, error: enrollError } = await supabase.functions.invoke(
         'secure-passkey-operations',
         {
           body: { action: 'enroll' },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
+          headers: { Authorization: `Bearer ${session.access_token}` },
         }
       );
-
-      if (enrollError || !enrollData?.publicKeyCredentialCreationOptions) {
+      if (enrollError || !enrollData?.options) {
         throw new Error(enrollError?.message || 'Failed to initiate passkey enrollment');
       }
 
-      // Convert challenge back to Uint8Array
-      const options = enrollData.publicKeyCredentialCreationOptions;
-      options.challenge = new Uint8Array(options.challenge);
-      options.user.id = new Uint8Array(options.user.id);
+      // 2. Create the credential via the WebAuthn API.
+      const regResponse = await startRegistration({ optionsJSON: enrollData.options });
 
-      const credential = await navigator.credentials.create({
-        publicKey: options,
-      }) as PublicKeyCredential;
-
-      if (credential) {
-        // Verify enrollment with server
-        const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
-          'secure-passkey-operations',
-          {
-            body: { 
-              action: 'verify-enrollment',
-              credentialData: {
-                id: credential.id,
-                response: {
-                  publicKey: credential.response,
-                  counter: 0
-                },
-                type: credential.type
-              }
-            },
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          }
-        );
-
-        if (verifyError || !verifyData?.success) {
-          throw new Error(verifyError?.message || 'Failed to verify passkey enrollment');
+      // 3. Verify + persist server-side (also sets the enrollment flag).
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+        'secure-passkey-operations',
+        {
+          body: { action: 'verify-enrollment', credentialData: regResponse },
+          headers: { Authorization: `Bearer ${session.access_token}` },
         }
-
-        // Store passkey enrollment status securely in database
-        try {
-          const { error: enrollmentError } = await supabase
-            .from('user_passkey_enrollment')
-            .upsert({
-              user_id: user.id,
-              is_enrolled: true,
-              enrolled_at: new Date().toISOString(),
-              device_name: 'WebAuthn Device',
-              updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' });
-
-          if (enrollmentError) {
-            console.error('Error storing passkey enrollment:', enrollmentError);
-          } else {
-            setHasPasskey(true);
-          }
-        } catch (error) {
-          console.error('Error updating passkey enrollment status:', error);
-        }
-        
-        return { error: null };
+      );
+      if (verifyError || !verifyData?.success) {
+        throw new Error(verifyError?.message || verifyData?.error || 'Failed to verify passkey enrollment');
       }
-      
-      throw new Error('Failed to create passkey');
+
+      setHasPasskey(true);
+      return { error: null };
     } catch (error) {
       console.error('Passkey enrollment error:', error);
       return { error };
@@ -335,60 +291,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithPasskey = async () => {
     try {
-      // Check if WebAuthn is supported
       if (!window.PublicKeyCredential) {
         throw new Error('WebAuthn is not supported on this device');
       }
-
-      // Check if running in iframe (like preview environment)
       if (isInIframe()) {
         throw new Error('Passkey sign-in is not available in preview mode. Please use the deployed app for passkey functionality.');
       }
 
-      // Note: For sign-in, we would need to identify the user first
-      // This is a simplified implementation for demonstration
-      if (!session) {
-        throw new Error('User session required for passkey authentication');
-      }
-
-      // Call secure edge function to get authentication challenge
+      // 1. Get a discoverable-credential challenge (no session required —
+      //    the browser surfaces the user's resident keys).
       const { data: authData, error: authError } = await supabase.functions.invoke(
         'secure-passkey-operations',
-        {
-          body: { action: 'authenticate' },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
+        { body: { action: 'authenticate' } }
       );
-
-      if (authError || !authData?.publicKeyCredentialRequestOptions) {
+      if (authError || !authData?.options || !authData?.challengeId) {
         throw new Error(authError?.message || 'Failed to initiate passkey authentication');
       }
 
-      // Convert challenge back to Uint8Array
-      const options = authData.publicKeyCredentialRequestOptions;
-      options.challenge = new Uint8Array(options.challenge);
-      
-      // Convert allowCredentials IDs if needed
-      if (options.allowCredentials) {
-        options.allowCredentials = options.allowCredentials.map((cred: Record<string, unknown>) => ({
-          ...cred,
-          id: typeof cred.id === 'string' ? new TextEncoder().encode(cred.id) : cred.id
-        }));
+      // 2. Produce the assertion.
+      const assertion = await startAuthentication({ optionsJSON: authData.options });
+
+      // 3. Verify server-side and receive a one-time OTP to mint a session.
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+        'secure-passkey-operations',
+        {
+          body: {
+            action: 'verify-authentication',
+            credentialData: assertion,
+            challengeId: authData.challengeId,
+          },
+        }
+      );
+      if (verifyError || !verifyData?.success || !verifyData?.email || !verifyData?.otp) {
+        throw new Error(verifyError?.message || verifyData?.error || 'Passkey authentication failed');
       }
 
-      const credential = await navigator.credentials.get({
-        publicKey: options,
-      }) as PublicKeyCredential;
+      // 4. Exchange the OTP for a real Supabase session. This fires
+      //    onAuthStateChange (SIGNED_IN), which the provider listens to.
+      const { error: otpError } = await supabase.auth.verifyOtp({
+        email: verifyData.email,
+        token: verifyData.otp,
+        type: 'email',
+      });
+      if (otpError) throw otpError;
 
-      if (credential) {
-        // In a full implementation, you would verify the assertion on the server
-        // and then complete the sign-in process
-        return { error: null };
-      }
-      
-      throw new Error('Failed to authenticate with passkey');
+      return { error: null };
     } catch (error) {
       console.error('Passkey sign-in error:', error);
       return { error };

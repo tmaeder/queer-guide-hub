@@ -1,0 +1,201 @@
+import * as React from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
+import { isTrustedSrc } from '@/utils/imageHost';
+import { getFallbackImage, type FallbackTheme } from '@/utils/fallbackImages';
+
+/**
+ * Single image primitive for every card and hero on the site.
+ *
+ * Replaces ~30 hand-rolled `<img>` blocks. It wires the existing image utilities
+ * so every surface gets the same treatment for free:
+ *   - source resolution (R2 optimized → thumbnail → original) via resolveImageUrl
+ *   - responsive Cloudflare srcset for img.queer.guide assets via buildCfSrcSet,
+ *     with a two-stop thumb/optimized fallback for external hosts
+ *   - host-aware referrerPolicy, lazy/eager + fetchpriority by `priority`
+ *   - a fade-in on load with an 8s stall guard
+ *   - a deterministic, on-brand fallback (stable per entity — no reload reshuffle)
+ *
+ * Cohesion comes from a small fixed set of aspect ratios and a 3-tier scrim —
+ * NOT from desaturation. Images render in full color.
+ *
+ * The hover zoom assumes a `group` ancestor (the card root); it's a no-op
+ * otherwise.
+ */
+
+export type ImageRole = 'cover' | 'hero' | 'thumb' | 'avatar';
+export type AspectToken = 'card' | 'hero' | 'portrait' | 'thumb' | 'square' | 'auto';
+export type ScrimVariant = 'none' | 'readable' | 'strong';
+type RoundedToken = 'container' | 'element' | 'top' | 'none';
+
+interface ImageProps {
+  // ── Source (pick one path) ──────────────────────────────────────────
+  /** Pre-resolved URL escape hatch. Takes precedence over the *Url props. */
+  src?: string | null;
+  imageUrl?: string | null;
+  optimizedUrl?: string | null;
+  thumbnailUrl?: string | null;
+  preferThumb?: boolean;
+
+  // ── Deterministic fallback ──────────────────────────────────────────
+  fallbackEntityType?: FallbackTheme;
+  /** Stable entity id/slug — same key always yields the same fallback. */
+  fallbackKey?: string;
+  /** When set, a missing image renders an icon tile instead of a photo. */
+  fallbackIcon?: LucideIcon;
+
+  // ── Layout / treatment ──────────────────────────────────────────────
+  alt: string;
+  aspect?: AspectToken;
+  /** Fixed pixel height escape hatch; overrides `aspect` when set. */
+  heightPx?: number;
+  /** Named `imageRole` (not `role`) to avoid the ARIA `role` attribute. */
+  imageRole?: ImageRole;
+  objectPosition?: string;
+  scrim?: ScrimVariant;
+  priority?: boolean;
+  rounded?: RoundedToken;
+
+  // ── Responsive overrides ────────────────────────────────────────────
+  sizes?: string;
+  widths?: number[];
+
+  className?: string;
+  /** Overlay slot (badges, favorite button, gradient text). */
+  children?: React.ReactNode;
+}
+
+const ASPECT_CLASS: Record<AspectToken, string> = {
+  card: 'aspect-[16/10]',
+  hero: 'aspect-[21/9]',
+  portrait: 'aspect-[3/4]',
+  thumb: 'aspect-square',
+  square: 'aspect-square',
+  auto: '',
+};
+
+const ROUNDED_CLASS: Record<RoundedToken, string> = {
+  container: 'rounded-container',
+  element: 'rounded-element',
+  top: 'rounded-t-container',
+  none: '',
+};
+
+const SCRIM_CLASS: Record<ScrimVariant, string | null> = {
+  none: null,
+  readable: 'img-scrim-readable',
+  strong: 'img-scrim-strong',
+};
+
+const DEFAULT_WIDTHS: Record<ImageRole, number[]> = {
+  cover: [400, 800, 1200],
+  hero: [800, 1280, 1920],
+  thumb: [200, 400],
+  avatar: [200, 400],
+};
+
+const DEFAULT_SIZES: Record<ImageRole, string> = {
+  cover: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px',
+  hero: '100vw',
+  thumb: '(max-width: 640px) 160px, 250px',
+  avatar: '(max-width: 640px) 160px, 250px',
+};
+
+export const Image = ({
+  src,
+  imageUrl,
+  optimizedUrl,
+  thumbnailUrl,
+  preferThumb,
+  fallbackEntityType = 'default',
+  fallbackKey,
+  fallbackIcon: FallbackIcon,
+  alt,
+  aspect = 'card',
+  heightPx,
+  imageRole = 'cover',
+  objectPosition,
+  scrim = 'none',
+  priority = false,
+  rounded = 'top',
+  sizes,
+  widths,
+  className,
+  children,
+}: ImageProps) => {
+  const resolved = src ?? resolveImageUrl({ imageUrl, optimizedUrl, thumbnailUrl, preferThumb });
+
+  const [error, setError] = React.useState(false);
+  const [loaded, setLoaded] = React.useState(false);
+
+  // Reset on src change, and guard against Pexels-style 200-then-stall URLs
+  // that never fire onLoad/onError (8s → treat as failed).
+  React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state with external src prop
+    setError(false);
+    setLoaded(false);
+    if (!resolved) return;
+    const timer = setTimeout(() => setError((prev) => prev || !loaded), 8000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolved]);
+
+  const fallback = React.useMemo(
+    () => getFallbackImage(fallbackEntityType, fallbackKey),
+    [fallbackEntityType, fallbackKey],
+  );
+
+  const showIconTile = (!resolved || error) && !!FallbackIcon;
+  const effectiveSrc = showIconTile ? null : (!resolved || error ? fallback : resolved);
+
+  const widthSet = widths ?? DEFAULT_WIDTHS[imageRole];
+  const cfSrcSet = effectiveSrc ? buildCfSrcSet(effectiveSrc, widthSet) : undefined;
+  // External hosts can't use CF resizing; fall back to a two-stop set when we
+  // have both a small and a large URL for the same asset.
+  const externalSrcSet =
+    !cfSrcSet && effectiveSrc === optimizedUrl && optimizedUrl && thumbnailUrl
+      ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w`
+      : undefined;
+  const srcSet = cfSrcSet ?? externalSrcSet;
+  const referrerPolicy = effectiveSrc && !isTrustedSrc(effectiveSrc) ? 'no-referrer' : undefined;
+
+  const scrimClass = SCRIM_CLASS[scrim];
+
+  return (
+    <div
+      className={cn('relative overflow-hidden bg-muted', heightPx == null && ASPECT_CLASS[aspect], ROUNDED_CLASS[rounded])}
+      style={heightPx != null ? { height: heightPx } : undefined}
+    >
+      {showIconTile ? (
+        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+          {FallbackIcon ? <FallbackIcon className="h-10 w-10" aria-hidden /> : null}
+        </div>
+      ) : (
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener.
+        <img
+          src={effectiveSrc ?? undefined}
+          srcSet={srcSet}
+          sizes={srcSet ? (sizes ?? DEFAULT_SIZES[imageRole]) : undefined}
+          alt={alt}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding={priority ? 'sync' : 'async'}
+          fetchPriority={priority ? 'high' : 'auto'}
+          referrerPolicy={referrerPolicy}
+          onLoad={() => setLoaded(true)}
+          onError={() => { if (!error) setError(true); }}
+          style={objectPosition ? { objectPosition } : undefined}
+          className={cn(
+            'img-lazy-fade h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]',
+            loaded && 'loaded',
+            className,
+          )}
+        />
+      )}
+      {scrimClass ? <div className={cn('pointer-events-none absolute inset-0', scrimClass)} aria-hidden /> : null}
+      {children}
+    </div>
+  );
+};
+Image.displayName = 'Image';
