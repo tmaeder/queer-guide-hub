@@ -37,7 +37,7 @@ dual-embedding inconsistency — not chase a feature we lack.
 - **Vectorize** is a vector DB only: no BM25, no facet *counts*, no native geo radius/distance sort,
   no typo tolerance. It can hold the semantic half (10M vectors, ≤1536 dims, metadata filters
   `$eq/$ne/$in/$nin/$lt/$lte/$gt/$gte`) but can't be the structured engine. Reserve it as a later
-  scaling lever (see §16).
+  scaling lever (see §17).
 - **AI Search (AutoRAG)** is a managed *document/chunk RAG* product (vector + BM25 hybrid, relevance
   boosting, metadata filters, MCP). Wrong shape for faceted, geo, card-based **entity** search — but
   the **right** shape for the assistant's knowledge/RAG tool over unstructured editorial/news/guide
@@ -87,7 +87,7 @@ columns**. We build the structured-search layer properly.
 `pg_trgm`, `unaccent`, `postgis` (geo columns are bare `numeric` lat/lng today — PostGIS gives true
 `ST_DWithin` radius + `<->` distance sort; `earthdistance`/cube is the lighter fallback).
 
-### 3.2 Searchable layer — two options (decision in §17)
+### 3.2 Searchable layer — two options (decision in §18)
 
 **Option A — per-entity generated tsvector + GIN/GiST indexes** on each table, UNION-ed at query
 time. Example for `venues` (live schema uses **`is_featured`**, not the dropped `featured`):
@@ -145,7 +145,7 @@ Internally, per requested type:
   `personalized_semantic_search` does today (generalize that function, don't reinvent).
 - **Filters:** WHERE from `p_filters` (the Meili `filterable` attrs).
 - **Geo:** `ST_DWithin(geog, point, radius)` + `ORDER BY geog <-> point` (Meili `_geoRadius` parity).
-- **Fusion:** RRF at depth 60 (in SQL — decision in §17).
+- **Fusion:** RRF at depth 60 (in SQL — decision in §18).
 - **Dedup:** `DISTINCT ON (master_event_id)` (replaces Meili `distinctAttribute`).
 - **Highlighting:** `ts_headline` for `<em>` spans.
 - **Trust-aware ranking** (enhancement, baked in — see §8.1): bias the final `ORDER BY` by
@@ -271,7 +271,7 @@ front-run the router later as a cost optimization.
 - **Hyperdrive** — Worker → Supabase connection pooling + read caching.
 - **AI Search (AutoRAG)** — the assistant's `knowledge_search` RAG tool over unstructured content
   (the one place its document/chunk model fits).
-- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§16).
+- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§17).
 
 ---
 
@@ -764,7 +764,69 @@ precise filters**.
 
 ---
 
-## 16. Vectorize off-ramp (deferred)
+## 16. Typo tolerance, synonyms, multilanguage & translations
+
+The **linguistic layer** — where a generic engine fails queer.guide hardest (specialized, reclaimed,
+regional, dignity-sensitive vocabulary). Consolidates and deepens bits already in §3.3 (trigram typo),
+the `search_synonyms` table, and `unaccent`/`bge-m3`/`cities.aliases`. Throughline: the **vector leg
+(`bge-m3`, multilingual) gives cross-lingual recall almost for free**, so the hard work is the keyword
+leg, the curated lexicon, and dignified translation.
+
+### 16.1 Typo tolerance
+- **Length-scaled fuzzy:** replicate Meili's typo budget (oneTypo@8, twoTypos@12) with a `pg_trgm`
+  threshold that **tightens for short queries** (prevents "berlin"→"leipzig"); add `levenshtein`
+  (fuzzystrmatch) for short tokens.
+- **Names → phonetic:** `dmetaphone` for personality/venue names, gated to Latin-script fields.
+- **Don't fuzz proper nouns/stop words** into noise; "did you mean" (§9.2) surfaces the correction
+  while still searching the original.
+- **Multilingual typos:** `unaccent` for diacritics; transliteration variants (München/Muenchen/
+  Munich) live in `aliases`, not typo logic.
+
+### 16.2 Synonyms — build the queer lexicon (the moat)
+`search_synonyms` (locale-aware, one-way/two-way, index-scoped, taxonomy-linked) is the foundation;
+the value is the **curated domain lexicon a generic engine can't have**:
+- **Community vocabulary:** "gay bar" ↔ "LGBTQ venue," "enby" ↔ "non-binary," AFAB/AMAB, trans
+  masc/femme, drag/ballroom, kink/fetish, "darkroom/sauna/cruising/beat" (regional).
+- **Locale + culturally scoped:** queer slang is intensely language/region-specific; the `locale`
+  column scopes it — never globalize a reclaimed term.
+- **Acronyms:** LGBTQ+ / LGBTQIA2S+ / 2SLGBTQ variants — stop-word for noise but **expand for intent**,
+  don't blanket-drop.
+- **Taxonomy hyponyms:** link to `unified_tags`/`tag_aliases`/clusters so "bar" pulls "leather bar."
+- **Governance + dignity guardrails:** AI-suggested → reviewed (`status`/`confidence`); hard rule on
+  slurs/reclaimed terms — match respectfully, never *surface* a harmful term as a suggestion. Dignity
+  over recall (ties to §12.2).
+
+### 16.3 Multilanguage
+- **Cross-lingual recall via the vector leg:** `bge-m3` lets a German query find English/Spanish
+  content semantically — largely **no query translation needed for recall**.
+- **Per-language FTS config for the keyword leg:** use `content_language` to pick the right
+  `to_tsvector` config (stemming/stop-words), with `'simple'` + `unaccent` fallback — fixes query-lang
+  ≠ content-lang mismatch.
+- **CJK/Thai tokenization gap (real):** standard FTS doesn't segment space-less scripts; `pg_trgm`
+  partially covers it — if CJK traffic matters, consider **PGroonga**/a segmenter. Known limitation to
+  decide on.
+- Per-language stop words, query language detection to route config, RTL normalization.
+
+### 16.4 Translations
+- **★ Identity termbase/glossary (dignity-critical):** MT of identity terms is often wrong/offensive —
+  maintain an enforced, **human-reviewed glossary** ("non-binary," "trans," pronouns) per language;
+  consistency + respect across the whole product, not just search.
+- **Content translation as a §10 pipeline:** scraped content is source-language; translate descriptions
+  for the user's language via the content-creation pipeline (LLM + **human review for safety/identity-
+  sensitive text**), cached, labeled "auto-translated." Don't block recall on it — `bge-m3` already
+  finds it; translation is for *display*.
+- **Localized taxonomy/facets:** translate `unified_tags`/category/facet *values* so filter chips
+  appear in the user's language.
+- **Translated synonyms** ride the `locale`-scoped lexicon.
+
+### 16.5 Priorities
+Top three: (1) the **curated, locale-aware queer lexicon** (synonyms + termbase) — biggest recall win
+and differentiator; (2) **cross-lingual via `bge-m3` + per-language FTS config** with the CJK decision;
+(3) the **identity-term glossary** for dignified, consistent translations.
+
+---
+
+## 17. Vectorize off-ramp (deferred)
 
 If DB read-load isolation or edge-local vector latency becomes the bottleneck, mirror
 `content_embeddings` into **Vectorize** and have the Worker query it for the **vector leg only**,
@@ -773,7 +835,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 17. Open decisions
+## 18. Open decisions
 
 1. **Searchable layer** — per-entity tsvector + `UNION ALL` (Option A) vs single `search_documents`
    table (Option B). *Lean B* (uniform ranking, simpler RPC, trivial facets).
@@ -785,10 +847,10 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 18. Risks & mitigations
+## 19. Risks & mitigations
 
 - **Search load on the OLTP primary** (the one real downside): Hyperdrive query caching first; add a
-  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§16) as the last lever.
+  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§17) as the last lever.
 - **Relevance regression:** the shadow-mode diff (Phase 3) against a frozen baseline is the gate —
   no cutover until PG matches. The eval harness (§8.2) keeps it from drifting after.
 - **Generated-column write cost:** STORED tsvector adds a little per write; negligible at this
@@ -801,7 +863,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 19. Sequencing summary
+## 20. Sequencing summary
 
 ```
 Phase 0  Baseline + flag
