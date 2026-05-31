@@ -37,7 +37,7 @@ dual-embedding inconsistency — not chase a feature we lack.
 - **Vectorize** is a vector DB only: no BM25, no facet *counts*, no native geo radius/distance sort,
   no typo tolerance. It can hold the semantic half (10M vectors, ≤1536 dims, metadata filters
   `$eq/$ne/$in/$nin/$lt/$lte/$gt/$gte`) but can't be the structured engine. Reserve it as a later
-  scaling lever (see §11).
+  scaling lever (see §12).
 - **AI Search (AutoRAG)** is a managed *document/chunk RAG* product (vector + BM25 hybrid, relevance
   boosting, metadata filters, MCP). Wrong shape for faceted, geo, card-based **entity** search — but
   the **right** shape for the assistant's knowledge/RAG tool over unstructured editorial/news/guide
@@ -87,7 +87,7 @@ columns**. We build the structured-search layer properly.
 `pg_trgm`, `unaccent`, `postgis` (geo columns are bare `numeric` lat/lng today — PostGIS gives true
 `ST_DWithin` radius + `<->` distance sort; `earthdistance`/cube is the lighter fallback).
 
-### 3.2 Searchable layer — two options (decision in §12)
+### 3.2 Searchable layer — two options (decision in §13)
 
 **Option A — per-entity generated tsvector + GIN/GiST indexes** on each table, UNION-ed at query
 time. Example for `venues` (live schema uses **`is_featured`**, not the dropped `featured`):
@@ -145,7 +145,7 @@ Internally, per requested type:
   `personalized_semantic_search` does today (generalize that function, don't reinvent).
 - **Filters:** WHERE from `p_filters` (the Meili `filterable` attrs).
 - **Geo:** `ST_DWithin(geog, point, radius)` + `ORDER BY geog <-> point` (Meili `_geoRadius` parity).
-- **Fusion:** RRF at depth 60 (in SQL — decision in §12).
+- **Fusion:** RRF at depth 60 (in SQL — decision in §13).
 - **Dedup:** `DISTINCT ON (master_event_id)` (replaces Meili `distinctAttribute`).
 - **Highlighting:** `ts_headline` for `<em>` spans.
 - **Trust-aware ranking** (enhancement, baked in — see §8.1): bias the final `ORDER BY` by
@@ -271,7 +271,7 @@ front-run the router later as a cost optimization.
 - **Hyperdrive** — Worker → Supabase connection pooling + read caching.
 - **AI Search (AutoRAG)** — the assistant's `knowledge_search` RAG tool over unstructured content
   (the one place its document/chunk model fits).
-- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§11).
+- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§12).
 
 ---
 
@@ -462,7 +462,62 @@ the embedding/search core) and reuse the assistant from Phase 6.
 
 ---
 
-## 11. Vectorize off-ramp (deferred)
+## 11. External travel data & affiliate integration (Travelpayouts)
+
+External providers (Travelpayouts: Aviasales flights, Hotellook hotels, destination/airport data) fit
+as **two complementary patterns**, reusing the assistant's tool-calling and your existing affiliate +
+ingestion stack (`affiliate_partners`, `marketplace_merchants`, `source-*` pipeline). The trick is
+routing each data kind to the right pattern by volatility.
+
+### 11.1 Pattern A — live tool call (volatile data)
+Flight prices, availability, and live hotel rates change by the minute and usually can't be cached
+long under affiliate ToS — so they are **not** indexed in `search_hybrid`. They become **tools the
+assistant calls at query time**: `flight_offers(origin, dest, dates)`, `hotel_offers(city, dates)`.
+A natural extension of §6 / trip-planning (Phase 9): "flight to Berlin for Pride weekend + a
+queer-friendly hotel near the gayborhood" → the LLM calls `search_hybrid` (curated, grounded
+venues/events) **and** Travelpayouts (live flights/hotels) and composes one answer.
+
+### 11.2 Pattern B — ingest as a source (stable reference data + monetization)
+Airports, destination metadata, and static hotel records are stable and cacheable — pull them through
+the **existing `source-* → normalize → dedupe → commit` pipeline** (like `source-awin`/`source-shopify`
+in the marketplace DAG), store in Postgres, embed, and index so external hotels become first-class,
+rankable, geo-linked entities ("hotels near this queer village"). Monetize via `affiliate_partners` +
+the `marketplace_merchants` registry pattern (provider, `api_key_env`, last-sync). Travelpayouts *is*
+an affiliate network — squarely in the existing revenue model.
+
+### 11.3 Routing into intelligent search
+The §9.3 NL→intent router is the dispatcher: on **travel intent** ("flights to…", "hotels in…",
+dates), route to the external tool and render a **clearly-labeled, separate "Travel / Book" module** —
+never blended into organic curated ranking (paid third-party inventory must not pollute vetted,
+safety-first data). Personalization rides along: home city, saved trips, and bias pre-fill
+origin/destination/dates; the concierge can be proactive ("Flights to your saved Pride event are €120
+this week").
+
+### 11.4 Architecture on the stack
+- **Adapter Worker/edge function** holds the Travelpayouts marker/token (like `search-proxy` holds the
+  Meili key), normalizes responses, exposes the tools.
+- **Short-TTL caching** via Workers Cache API + KV (respecting Travelpayouts caching limits — longer
+  for static hotel/airport data, very short/none for live prices) + per-IP rate-limiting.
+- **Circuit breaker + fail-soft** (existing pipeline pattern): if the API is slow/down, the offer
+  module simply doesn't render; core search/assistant never breaks.
+- **Network policy:** the environment's outbound policy must allow `api.travelpayouts.com`.
+- **Generic provider interface:** model like `marketplace_merchants` so Booking/Expedia/GetYourGuide
+  drop in later behind the same adapter contract.
+
+### 11.5 Guardrails
+- **ToS & caching limits** on live prices — live-fetch what can't be stored.
+- **Affiliate disclosure** (FTC/EU) — label the module "Booking option (affiliate)".
+- **Not curated:** external hotels aren't vetted to your LGBTQ+ standards — pair offers with the **Trip
+  Safety Briefing** so a trip to a high-risk destination is never sold without safety context.
+  Differentiator vs a generic OTA.
+- **Latency/cost:** call the live API only on explicit travel intent, never per keystroke.
+
+Sequencing: Pattern B (ingestion source) can land anytime after Phase 1; Pattern A (live assistant
+tool) layers onto Phase 9 trip planning.
+
+---
+
+## 12. Vectorize off-ramp (deferred)
 
 If DB read-load isolation or edge-local vector latency becomes the bottleneck, mirror
 `content_embeddings` into **Vectorize** and have the Worker query it for the **vector leg only**,
@@ -471,7 +526,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 12. Open decisions
+## 13. Open decisions
 
 1. **Searchable layer** — per-entity tsvector + `UNION ALL` (Option A) vs single `search_documents`
    table (Option B). *Lean B* (uniform ranking, simpler RPC, trivial facets).
@@ -483,10 +538,10 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 13. Risks & mitigations
+## 14. Risks & mitigations
 
 - **Search load on the OLTP primary** (the one real downside): Hyperdrive query caching first; add a
-  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§11) as the last lever.
+  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§12) as the last lever.
 - **Relevance regression:** the shadow-mode diff (Phase 3) against a frozen baseline is the gate —
   no cutover until PG matches. The eval harness (§8.2) keeps it from drifting after.
 - **Generated-column write cost:** STORED tsvector adds a little per write; negligible at this
@@ -499,7 +554,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 14. Sequencing summary
+## 15. Sequencing summary
 
 ```
 Phase 0  Baseline + flag
