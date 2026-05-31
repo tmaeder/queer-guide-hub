@@ -11,6 +11,7 @@ import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { cn } from '@/lib/utils';
 import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
+import { useRecommendations } from '@/hooks/useRecommendations';
 import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useNearMe } from '@/hooks/useNearMe';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -122,6 +123,18 @@ export const UniversalSearchBar = () => {
     [mode],
   );
   const { trending } = useTrendingSuggestions(isOpen && !query, 6, trendingTypes);
+  // §9.1 zero-query panel: prefer the personalized/popularity-aware recommendations
+  // feed when available; fall back to trending. Gated behind a build flag so the
+  // panel fires no /recommendations request until the worker endpoint is deployed
+  // (avoids a 404 in preview/prod builds; rollout: deploy worker → flip flag).
+  const recsEnabled = import.meta.env.VITE_RECOMMENDATIONS_ENABLED === 'true';
+  const { recommendations } = useRecommendations(recsEnabled && isOpen && !query, {
+    limit: 6,
+    types: trendingTypes,
+  });
+  const discoveryHits = recommendations.length > 0 ? recommendations : trending;
+  const discoverySource: 'recommended' | 'trending' =
+    recommendations.length > 0 ? 'recommended' : 'trending';
   const voice = useVoiceSearch();
   const nearMe = useNearMe();
 
@@ -542,7 +555,8 @@ export const UniversalSearchBar = () => {
               countsByType={countsByType}
               loading={suggestionsLoading}
               error={suggestionsError}
-              trending={trending}
+              trending={discoveryHits}
+              discoverySource={discoverySource}
               showFilters={showFilters}
               filters={filters}
               setFilters={setFilters}
@@ -567,7 +581,8 @@ export const UniversalSearchBar = () => {
               countsByType={countsByType}
               loading={suggestionsLoading}
               error={suggestionsError}
-              trending={trending}
+              trending={discoveryHits}
+              discoverySource={discoverySource}
               recentSearches={recentSearches}
               showFilters={showFilters}
               setShowFilters={setShowFilters}
