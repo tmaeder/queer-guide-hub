@@ -82,6 +82,36 @@ function sanitiseFacets(input: FacetDistribution | undefined): FacetDistribution
 }
 
 /**
+ * Worker hits carry transport-shaped fields (`start_date` as epoch seconds or
+ * ISO, `city`/`country`, `image_url`) that the UI reads under different names
+ * (`date`, `location`, `imageUrl`). Normalise so cards render dates/locations
+ * — without this, same-titled events (e.g. recurring rides) look like dupes.
+ */
+function coerceDate(v: unknown): string | undefined {
+  if (v == null) return undefined;
+  if (typeof v === 'number') return new Date(v * 1000).toISOString();
+  if (typeof v === 'string') {
+    return /^\d{10}$/.test(v) ? new Date(Number(v) * 1000).toISOString() : v;
+  }
+  return undefined;
+}
+
+function normaliseHit(h: SearchResult): SearchResult {
+  const r = h as SearchResult & {
+    start_date?: unknown;
+    image_url?: string;
+    city?: string;
+    country?: string;
+  };
+  return {
+    ...h,
+    date: r.date ?? coerceDate(r.start_date),
+    location: r.location ?? ([r.city, r.country].filter(Boolean).join(', ') || undefined),
+    imageUrl: r.imageUrl ?? r.image_url,
+  };
+}
+
+/**
  * P0-1 / P1-5 / P0-3: post-process worker hits before they reach the UI.
  * - Drop hits without a displayable title (worker has a defence-in-depth
  *   guard but stale Meili docs may still slip through during reindex).
@@ -109,7 +139,7 @@ export function sanitiseHits(
       if (!cat || !activeCategories.has(cat)) continue;
     }
     seen.add(String(id));
-    out.push(h);
+    out.push(normaliseHit(h));
   }
   return out;
 }

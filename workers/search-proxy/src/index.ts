@@ -359,6 +359,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			tags: s.metadata?.tags || [],
 			slug: s.metadata?.slug ?? d.slug,
 			image_url: s.metadata?.image_url ?? d.image_url ?? null,
+			start_date: s.metadata?.start_date ?? d.date ?? null,
 			featured: s.metadata?.featured || false,
 			_source: "pg",
 			_rank: i,
