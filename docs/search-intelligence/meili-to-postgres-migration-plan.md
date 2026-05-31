@@ -37,7 +37,7 @@ dual-embedding inconsistency — not chase a feature we lack.
 - **Vectorize** is a vector DB only: no BM25, no facet *counts*, no native geo radius/distance sort,
   no typo tolerance. It can hold the semantic half (10M vectors, ≤1536 dims, metadata filters
   `$eq/$ne/$in/$nin/$lt/$lte/$gt/$gte`) but can't be the structured engine. Reserve it as a later
-  scaling lever (see §9).
+  scaling lever (see §10).
 - **AI Search (AutoRAG)** is a managed *document/chunk RAG* product (vector + BM25 hybrid, relevance
   boosting, metadata filters, MCP). Wrong shape for faceted, geo, card-based **entity** search — but
   the **right** shape for the assistant's knowledge/RAG tool over unstructured editorial/news/guide
@@ -87,7 +87,7 @@ columns**. We build the structured-search layer properly.
 `pg_trgm`, `unaccent`, `postgis` (geo columns are bare `numeric` lat/lng today — PostGIS gives true
 `ST_DWithin` radius + `<->` distance sort; `earthdistance`/cube is the lighter fallback).
 
-### 3.2 Searchable layer — two options (decision in §10)
+### 3.2 Searchable layer — two options (decision in §11)
 
 **Option A — per-entity generated tsvector + GIN/GiST indexes** on each table, UNION-ed at query
 time. Example for `venues` (live schema uses **`is_featured`**, not the dropped `featured`):
@@ -145,7 +145,7 @@ Internally, per requested type:
   `personalized_semantic_search` does today (generalize that function, don't reinvent).
 - **Filters:** WHERE from `p_filters` (the Meili `filterable` attrs).
 - **Geo:** `ST_DWithin(geog, point, radius)` + `ORDER BY geog <-> point` (Meili `_geoRadius` parity).
-- **Fusion:** RRF at depth 60 (in SQL — decision in §10).
+- **Fusion:** RRF at depth 60 (in SQL — decision in §11).
 - **Dedup:** `DISTINCT ON (master_event_id)` (replaces Meili `distinctAttribute`).
 - **Highlighting:** `ts_headline` for `<em>` spans.
 - **Trust-aware ranking** (enhancement, baked in — see §8.1): bias the final `ORDER BY` by
@@ -271,7 +271,7 @@ front-run the router later as a cost optimization.
 - **Hyperdrive** — Worker → Supabase connection pooling + read caching.
 - **AI Search (AutoRAG)** — the assistant's `knowledge_search` RAG tool over unstructured content
   (the one place its document/chunk model fits).
-- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§9).
+- **Vectorize** — *not* in the initial design; a later off-ramp for the vector leg only (§10).
 
 ---
 
@@ -334,7 +334,70 @@ Reuse `get_recommendations` for a concierge "what's on near you / matches your s
 
 ---
 
-## 9. Vectorize off-ramp (deferred)
+## 9. Search UX intelligence (instant recommendations, intelligent filters & options)
+
+The UX-intelligence layer sits **on top** of the engine above and reuses pieces already in the
+plan — `/autocomplete`, `search_facets`, the Haiku router (§6), `get_recommendations` (§8.x), and the
+`_boostReason` the Worker already computes. Almost no new backend; mostly frontend + three reuses.
+
+### 9.1 Zero-query state — recommend before a keystroke
+The empty, focused search box is the highest-value overlooked moment. Render a personalized/contextual
+panel from `get_recommendations` instead of blank:
+- **Personalized:** "Because you saved Berghain", "Matches your interests".
+- **Page-contextual:** on a city page → top venues/events there; on an event → similar/nearby.
+- **Time + place contextual:** "This weekend near you", "Open now nearby" (geo + `hours` jsonb + event dates).
+- **Trending chips:** top queries from `top_queries` analytics + trending entities.
+- **Recent searches** (local-only; suppressed in incognito mode §8.3).
+
+### 9.2 As-you-type intelligence (instant search)
+The `/autocomplete` path (trigram-prefix RPC, KV-cached popular prefixes, <40ms) gets smarter:
+- **Federated grouped preview:** results bucketed by type (Venues / Events / Cities / People) in one
+  dropdown, prefix-highlighted; Enter jumps straight to the entity.
+- **Query autosuggest:** complete the *query*, not just match entities — from popular queries + entity
+  names + tag taxonomy ("ber…" → "Berlin", "Berlin pride 2026", "bears in Berlin").
+- **"Did you mean"** inline via trigram, with one-tap "search original instead".
+
+### 9.3 ★ Intelligent filters
+- **Natural-language → structured filters.** "wheelchair-accessible trans-friendly bars in Berlin open
+  late" auto-applies `category=bar`, `accessibility=wheelchair`, `target_groups=trans`, `city=Berlin`,
+  `open_now=true`. Reuses the **Haiku router** (§6) as a cheap, cached "parse query → filter JSON" call
+  — the same brain exposed to the classic search box. Extracted filters render as **visible, editable
+  chips** the user can toggle off → explainable, not magic.
+- **Dynamic / contextual facets:** show only facets relevant to the intent + result set (events → date
+  + event_type; venues → category + accessibility), hide empty ones, order by user interest (already
+  reordering `facetDistribution`). One source: `search_facets`.
+- **Range filters with histograms:** return price/date *distributions* (`width_bucket` in
+  `search_facets`) so users drag a slider over the real shape of the data.
+- **Smart filter prompts:** "Free only? · This weekend? · Open now?" suggested from query + result
+  distribution — one-tap refinements.
+- **Personalized defaults / presets:** apply a user's "prefer accessible" by default; let power users
+  save filter presets ("queer nightlife near me").
+
+### 9.4 Intelligent search options
+- **Intent-aware sort:** surface the fitting sort — distance when geo present, date for events, rating
+  for venues — instead of a static list.
+- **Synonym/expansion transparency:** "also searching: gay bar · LGBTQ venue" (already expanded via
+  `pgSynonyms`/LLM — just show it, with a toggle).
+- **Result explanations ("why this?"):** expose the existing `_boostReason` as a subtle card tag;
+  pairs with trust-aware ranking (§8.1) → "Verified this week".
+- **Cross-lingual:** detect query language, search cross-lingual via `bge-m3`, offer "show results in
+  English too".
+
+### 9.5 Build mapping & sequencing
+Low new infra — frontend + three reuses:
+1. **Haiku router** (§6, Phase 6) doubles as the NL→filter parser for the plain search box — the
+   assistant work pays off twice.
+2. **`search_facets`** extended with numeric histograms + always-on distributions → dynamic facets +
+   range sliders.
+3. **`get_recommendations`** (Phase 8) → the zero-query panel.
+
+Sequencing: as-you-type + did-you-mean + result explanations are **quick wins alongside Phase 2**;
+NL→filters and zero-query recommendations land **with Phases 6/8** (shared router + recommendations
+RPC). **Top two to do first:** NL→filters with editable chips, and the zero-query personalized panel.
+
+---
+
+## 10. Vectorize off-ramp (deferred)
 
 If DB read-load isolation or edge-local vector latency becomes the bottleneck, mirror
 `content_embeddings` into **Vectorize** and have the Worker query it for the **vector leg only**,
@@ -343,7 +406,7 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 10. Open decisions
+## 11. Open decisions
 
 1. **Searchable layer** — per-entity tsvector + `UNION ALL` (Option A) vs single `search_documents`
    table (Option B). *Lean B* (uniform ranking, simpler RPC, trivial facets).
@@ -355,10 +418,10 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 11. Risks & mitigations
+## 12. Risks & mitigations
 
 - **Search load on the OLTP primary** (the one real downside): Hyperdrive query caching first; add a
-  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§9) as the last lever.
+  Supabase **read replica** if QPS climbs; Vectorize off-ramp (§10) as the last lever.
 - **Relevance regression:** the shadow-mode diff (Phase 3) against a frozen baseline is the gate —
   no cutover until PG matches. The eval harness (§8.2) keeps it from drifting after.
 - **Generated-column write cost:** STORED tsvector adds a little per write; negligible at this
@@ -371,19 +434,20 @@ moves. Scaling lever, not part of the initial migration.
 
 ---
 
-## 12. Sequencing summary
+## 13. Sequencing summary
 
 ```
 Phase 0  Baseline + flag
 Phase 1  Postgres core (search_hybrid + facets + TRUST-AWARE ranking) + eval harness (8.2)
-Phase 2  Worker rewrite (pgSearch + Hyperdrive)
+Phase 2  Worker rewrite (pgSearch + Hyperdrive)  + UX quick wins (§9.2 as-you-type, did-you-mean, §9.4 explanations)
 Phase 3  Shadow mode + relevance validation
 Phase 4  Cutover (flag flip, instant rollback)
 Phase 5  Decommission Meili
 ─────────  structured search done; assistant builds on top ─────────
-Phase 6  Assistant skeleton (conversational search)
+Phase 6  Assistant skeleton (conversational search)  + NL→filters with editable chips (§9.3)
 Phase 7  Knowledge RAG (CF AI Search)
-Phase 8  Concierge + memory + deepened personalization
+Phase 8  Concierge + memory + deepened personalization  + zero-query recommendations panel (§9.1)
 Phase 9  Trip planning
-Enhancements 8.x folded across phases; incognito (8.3) with Phase 2, analytics (8.9) with Phase 4+.
+Enhancements 8.x folded across phases; incognito (8.3) with Phase 2, analytics (8.9) with Phase 4+;
+UX intelligence (§9) layered per the mapping in §9.5.
 ```
