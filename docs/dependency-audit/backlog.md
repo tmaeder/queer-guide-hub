@@ -32,7 +32,15 @@ _Prioritized. P0 = do now, low risk. Audit date 2026-06-01._
 ## P2 — Structural (gated)
 - [ ] **pgvector → Vectorize**: indexes per entity type, dual-write, rebuild RRF+geo fusion in `search-proxy`.
 - [ ] **Shadow-validate** Vectorize search vs the live Postgres `search_hybrid` path (overlap + p95) before cutover.
-- [x] **Retire Meilisearch** — DONE in PR #1405 (search cut over to Postgres; `meilisearch-sync` deleted).
+- [x] **Retire Meilisearch (search serving)** — DONE in PR #1405 (search → Postgres; `meilisearch-sync` deleted; ingest worker Meili write removed upstream).
+- [ ] **Shut down the Infomaniak Meili node** — serving-safe now: no writers left; the only readers
+  (`trip-concierge`, `ai-plan-trip`) are guarded (`if (!MEILISEARCH_URL) return []`) and throw-safe (`.catch`).
+  **Order matters:** (1) unset `MEILISEARCH_URL` / `MEILISEARCH_SEARCH_KEY` / `MEILISEARCH_ADMIN_KEY` secrets on
+  those two functions first — else each call eats a dead-node fetch timeout before `.catch` fires (adds latency);
+  with the secret unset they short-circuit instantly. (2) Then stop the node. _(Needs Supabase secrets access +
+  Infomaniak SSH — no agent tool for either.)_
+- [ ] **Follow-up: migrate `trip-concierge` + `ai-plan-trip` candidate retrieval off Meili** → pg `search_hybrid`
+  / search-proxy. Until then, killing Meili degrades trip suggestions to empty candidate lists (graceful, not an outage).
 - [ ] **Relocate Nominatim** (min EU host / CF Container) — Mapbox geocoding then deprecated.
 - [ ] **Move Plane off VPS** (Plane Cloud EU / Linear / small host). _Open Q3._
 - [ ] **Decommission Infomaniak VPS** (after vLLM + Nominatim + Plane relocated — Meili already gone, #1405).
