@@ -26,11 +26,11 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 		tracesSampleRate: 0.1,
 	});
 }
-import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities, fetchDisplayMap, getRecommendations, relatedEntities } from "./supabase";
+import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
-import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
+import { INDEX_MAP, ALL_INDEXES } from "./meili";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
-import { detectScript, tokenize, isBareLgbtqQuery } from "./queryPrep";
+import { tokenize, isBareLgbtqQuery } from "./queryPrep";
 import { resolveSession } from "./sessionCookie";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
 import {
@@ -54,8 +54,6 @@ import {
 
 export interface Env {
 	AI: Ai;
-	MEILISEARCH_URL: string;
-	MEILISEARCH_SEARCH_KEY: string;
 	SUPABASE_URL: string;
 	SUPABASE_SERVICE_KEY: string; // service role for RPC
 	AI_GATEWAY_ACCOUNT_ID: string;
@@ -180,35 +178,10 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		);
 	}
 
-	// Bug #10: non-Latin script. Without aliases populated for the queried
-	// city, fuzzy matching against the Latin index would return random
-	// near-matches (柏林 → Bamberg). The aliases backfill (seed-city-aliases.sh)
-	// covers the most-populous cities; for everything else we'd rather
-	// return empty + a hint than a wrong answer.
-	const script = detectScript(q);
-	if (script !== "latin" && script !== "mixed") {
-		// Try a strict alias match against the cities index. If none, give up.
-		const aliasHits = await meiliMultiSearch(env, {
-			indexes: ["cities"],
-			query: q,
-			facets: INDEX_FACETS,
-			hitsPerPage: 5,
-			useHybrid: false,
-		}).catch(() => null);
-		if (!aliasHits || aliasHits.hits.length === 0) {
-			return json(
-				{ hits: [], suggestions: [], facetDistribution: {}, processingTimeMS: Date.now() - started, reason: "unsupported_script", script },
-				200,
-				cors,
-			);
-		}
-		// Fall through with the alias-matched seed hits as the primary result.
-		return json(
-			{ hits: aliasHits.hits, suggestions: aliasHits.hits.slice(0, 5), facetDistribution: {}, processingTimeMS: Date.now() - started, script },
-			200,
-			cors,
-		);
-	}
+	// Non-Latin script (CJK/Cyrillic/…) flows through the normal Postgres
+	// pipeline: search_hybrid's trigram leg matches non-Latin titles directly
+	// (search_documents stores native-script city/venue titles), so the old
+	// Meili city-alias special-case is no longer needed.
 
 	const filtersR = validFilters(body.filters);
 	if (!filtersR.ok) return errorResponse(filtersR, cors);
@@ -236,19 +209,20 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const popular = await popularEntities(env, ["venue", "event"], hitsPerPage * (page + 1));
 		let hits: Array<Record<string, unknown>> = popular as Array<Record<string, unknown>>;
 
-		// Fallback: if user_events is empty (popular view returns nothing),
-		// browse featured docs directly from Meilisearch with an empty query.
-		// Without this, "trans"/"queer"/"gay" returned []. Bug #9 follow-up.
+		// Fallback: if the popular view returns nothing, browse featured docs
+		// from Postgres (search_hybrid with an empty query + is_featured filter
+		// returns the featured set ranked). Without this, "trans"/"queer"/"gay"
+		// returned []. Bug #9 follow-up (was a Meili empty-query browse).
 		if (hits.length === 0) {
-			const browse = await meiliMultiSearch(env, {
-				indexes: ["venues", "events"],
+			const browse = await pgHybridSearch(env, {
 				query: "",
-				facets: INDEX_FACETS,
+				queryVec: null,
+				contentTypes: ["venue", "event"],
+				filters: { is_featured: true },
 				hitsPerPage: hitsPerPage * (page + 1),
 				page: 0,
-				useHybrid: false,
 			}).catch(() => null);
-			hits = browse?.hits ?? [];
+			hits = (browse?.hits ?? []) as Array<Record<string, unknown>>;
 		}
 
 		const slice = hits.slice(page * hitsPerPage, (page + 1) * hitsPerPage);
@@ -292,8 +266,6 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		? [...new Set<string>(allTypes.map((t) => INDEX_MAP[t] || t).filter((t) => ALL_INDEXES.includes(t)))]
 		: ALL_INDEXES;
 
-	const filterParts = buildFilters(mergedFilters);
-
 	// Parallel: embed q + load personalization signal + seen-recently set.
 	const embedModel = env.EMBED_MODEL || DEFAULT_EMBED_MODEL;
 	const sessionKey = user_id ? `u:${user_id}` : session_id ? `s:${session_id}` : null;
@@ -318,24 +290,10 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const biasVec = computeBias(signal.biasItems);
 	const blendedVec = biasVec ? blendVectors(qVec, biasVec, 0.7) : qVec;
 
-	// Parallel: Meili multi-search + pgvector personalized_semantic_search.
 	const pgTypes = requestedIndexes
 		.map((i) => INDEX_TO_PG_TYPE[i])
 		.filter(Boolean) as string[];
 
-	// Search with rewritten query if available — preserves original q for lexical
-	// match by OR-ing synonyms (LLM rewrite + Postgres-backed) into the Meili
-	// query string. EXCEPT when the rewrite identified a city: the LLM tends to
-	// emit other city names as "synonyms" ('munich' → ['berlin', 'frankfurt'])
-	// which then dominate the Meili exact-match score and bury the actual hit.
-	const skipSynonymsForCity = !!rewrite?.city || !!rewrite?.type_hint;
-	const meiliQ = !skipSynonymsForCity && allSynonyms.length ? `${q} ${allSynonyms.join(" ")}` : q;
-	const useHybrid = meiliQ.split(/\s+/).length >= 3;
-
-	// Backend selector (Meili -> Postgres migration, Phase 2). Default "meili"
-	// keeps current behaviour; "pg" serves from search_hybrid; "shadow" serves
-	// Meili but runs PG in parallel and logs a comparison (no user-facing change).
-	const backend = (env.SEARCH_BACKEND || "meili").toLowerCase();
 	const pgArgs: PgSearchArgs = {
 		query: effectiveQ,
 		queryVec: blendedVec,
@@ -353,82 +311,16 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		page,
 	};
 
-	let fused: FuseItem[];
-	let facetDistribution: Record<string, Record<string, number>>;
-	let totalHits: number;
-	const dbg = { semSize: 0, meiliSize: 0, pgSize: 0, fusedSize: 0 };
-
-	if (backend === "pg") {
-		// search_hybrid already fuses keyword+vector via RRF in SQL, so it
-		// replaces BOTH the Meili call and personalized_semantic_search.
-		const pg = await pgHybridSearch(env, pgArgs).catch((e) => {
-			console.warn("pgHybridSearch", (e as Error).message);
-			return null;
-		});
-		fused = (pg?.hits ?? []) as FuseItem[];
-		facetDistribution = pg?.facetDistribution ?? {};
-		totalHits = pg?.estimatedTotalHits ?? fused.length;
-		dbg.pgSize = fused.length;
-		dbg.fusedSize = fused.length;
-	} else {
-		const [meili, sem] = await Promise.all([
-			meiliMultiSearch(env, {
-				indexes: requestedIndexes,
-				query: meiliQ,
-				filter: filterParts,
-				facets: INDEX_FACETS,
-				hitsPerPage,
-				page,
-				useHybrid,
-			}),
-			semanticSearch(env, {
-				queryVec: blendedVec,
-				contentTypes: pgTypes,
-				biasWeight: biasVec ? 0.3 : 0,
-				limit: 100,
-			}),
-		]);
-
-		// Fuse: Meili rankingScore + pgvector score via RRF.
-		const meiliHits = meili.hits.map((h, i: number) => ({ ...h, _source: "meili", _rank: i }));
-		// Enrich semantic hits with title/slug/image_url/city/country from source
-		// tables — content_embeddings metadata only stored a minimal subset at
-		// index time, so the pgvector half of the fused list would otherwise have
-		// missing titles and placeholder images.
-		const semDisplay = await fetchDisplayMap(env, sem).catch(() => new Map());
-		const semHits = sem.map((s, i) => {
-			const d = semDisplay.get(`${s.content_type}:${s.content_id}`) ?? {};
-			return {
-				...s,
-				id: s.content_id,
-				objectID: s.content_id,
-				type: s.content_type,
-				title: s.metadata?.title ?? d.title,
-				city: s.metadata?.city ?? d.city,
-				country: s.metadata?.country ?? d.country,
-				category: s.metadata?.category,
-				tags: s.metadata?.tags || [],
-				slug: s.metadata?.slug ?? d.slug,
-				image_url: s.metadata?.image_url ?? d.image_url ?? null,
-				start_date: s.metadata?.start_date ?? d.date ?? null,
-				featured: s.metadata?.featured || false,
-				_source: "pg",
-				_rank: i,
-			};
-		});
-		fused = rrfFuse([meiliHits, semHits], 60);
-		facetDistribution = meili.facetDistribution;
-		totalHits = meili.estimatedTotalHits;
-		dbg.semSize = sem.length;
-		dbg.meiliSize = meiliHits.length;
-		dbg.fusedSize = fused.length;
-
-		// Shadow mode: validate PG against live Meili without affecting the
-		// response. Logs overlap@10 + latency for offline diffing.
-		if (backend === "shadow") {
-			ctx.waitUntil(shadowCompare(env, q, pgArgs, fused.slice(0, 10) as FuseItem[]));
-		}
-	}
+	// search_hybrid fuses keyword (FTS+trigram) + vector via RRF in SQL, so it
+	// replaces both the old Meili multi-search and personalized_semantic_search.
+	const pg = await pgHybridSearch(env, pgArgs).catch((e) => {
+		console.warn("pgHybridSearch", (e as Error).message);
+		return null;
+	});
+	const fused = (pg?.hits ?? []) as FuseItem[];
+	const facetDistribution = pg?.facetDistribution ?? {};
+	const totalHits = pg?.estimatedTotalHits ?? fused.length;
+	const dbg = { pgSize: fused.length, fusedSize: fused.length };
 
 	// Personalization nudges (boost/decay) + worker-side exact-title boost
 	// for bug #4 (until the Meilisearch index ranking rules are reconfigured).
@@ -492,11 +384,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			facetDistribution: reorderedFacets,
 			debug: debug
 				? {
-						backend,
+						backend: "pg",
 						biasApplied: !!biasVec,
 						biasEvents: signal.biasItems?.length || 0,
-						semSize: dbg.semSize,
-						meiliSize: dbg.meiliSize,
 						pgSize: dbg.pgSize,
 						fusedSize: dbg.fusedSize,
 						embedModel,
@@ -790,21 +680,6 @@ type FuseItem = {
 	[key: string]: unknown;
 };
 
-function rrfFuse(lists: FuseItem[][], k = 60): FuseItem[] {
-	const scores = new Map<string, FuseItem>();
-	for (const list of lists) {
-		list.forEach((item, i) => {
-			const id = itemId(item);
-			if (!id) return;
-			const prev = scores.get(id);
-			const add = 1 / (k + i + 1);
-			if (prev) prev._fused = (prev._fused ?? 0) + add;
-			else scores.set(id, { ...item, _fused: add });
-		});
-	}
-	return [...scores.values()].sort((a, b) => (b._fused ?? 0) - (a._fused ?? 0));
-}
-
 function itemId(h: FuseItem): string | null {
 	if (h.id) return `${h.type || h.content_type || "x"}:${h.id}`;
 	if (h.content_id) return `${h.content_type}:${h.content_id}`;
@@ -821,62 +696,6 @@ function dedupeById(list: FuseItem[]): FuseItem[] {
 		out.push(it);
 	}
 	return out;
-}
-
-/**
- * Shadow-mode comparison: run the Postgres search path in parallel with the
- * (already-served) Meili path and log overlap@10 + latency for offline diffing.
- * Never throws — best-effort telemetry, fired via ctx.waitUntil.
- */
-async function shadowCompare(env: Env, q: string, pgArgs: PgSearchArgs, meiliTop: FuseItem[]): Promise<void> {
-	try {
-		// 8s timeout (vs the 4s default the user-facing PG path uses): shadow must
-		// RECORD slow PG queries, not drop them on timeout — otherwise the latency
-		// sample is biased optimistically toward only the fast completions.
-		const pg = await pgHybridSearch(env, pgArgs, 8000);
-		const meiliIds = meiliTop.map((h) => itemId(h)).filter((x): x is string => !!x);
-		const meiliSet = new Set(meiliIds);
-		const pgIds = pg.hits
-			.slice(0, 10)
-			.map((h) => itemId(h as FuseItem))
-			.filter((x): x is string => !!x);
-		const overlap = pgIds.filter((id) => meiliSet.has(id)).length;
-		const row = {
-			tag: "search_shadow",
-			q,
-			overlap_at_10: overlap,
-			meili_top: meiliIds,
-			pg_top: pgIds,
-			pg_total: pg.estimatedTotalHits,
-			pg_ms: pg.tookMs,
-		};
-		console.log(JSON.stringify(row));
-		// Durable sink for the 24h cutover go/no-go aggregation. Best-effort:
-		// Observability log retention is short, so persist each comparison to
-		// search_shadow_log (service-role, RLS deny-all). Never blocks the served
-		// Meili response — this whole fn runs inside ctx.waitUntil.
-		if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
-			await fetch(`${env.SUPABASE_URL}/rest/v1/search_shadow_log`, {
-				method: "POST",
-				headers: {
-					apikey: env.SUPABASE_SERVICE_KEY,
-					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-					"Content-Type": "application/json",
-					Prefer: "return=minimal",
-				},
-				body: JSON.stringify({
-					q,
-					overlap_at_10: overlap,
-					pg_total: pg.estimatedTotalHits,
-					pg_ms: Math.round(pg.tookMs),
-					meili_top: meiliIds,
-					pg_top: pgIds,
-				}),
-			}).catch((e) => console.warn("shadowSink", (e as Error).message));
-		}
-	} catch (e) {
-		console.warn("shadowCompare", (e as Error).message);
-	}
 }
 
 function reorderFacets(
@@ -956,79 +775,18 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 	// start in KV by the `populatePopularCache` helper below.
 	const AUTOCOMPLETE_TIMEOUT_MS = 800;
 
-	// PG backend: Postgres-native typeahead via the search_autocomplete RPC
-	// (prefix-first + trigram fuzzy). Shadow mode intentionally does NOT fan out
-	// here — autocomplete is latency-critical and the runbook scopes the shadow
-	// diff to /search only. On empty/timeout/error we fall through to the Meili
-	// path + popular-cities cache below, so this is safe to flip incrementally.
-	if ((env.SEARCH_BACKEND || "meili").toLowerCase() === "pg") {
-		const pgTypes = indexes.map((i) => INDEX_TO_PG_TYPE[i]).filter(Boolean) as string[];
-		const suggestions = await Promise.race([
-			pgAutocomplete(env, q, pgTypes.length ? pgTypes : null, limit),
-			new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTOCOMPLETE_TIMEOUT_MS)),
-		]).catch((e) => {
-			console.warn("pgAutocomplete", (e as Error).message);
-			return null;
-		});
-		if (suggestions && suggestions.length) {
-			return json({ suggestions: suggestions.slice(0, limit) }, 200, cors);
-		}
-	}
-
-	const timed = await Promise.race([
-		meiliMultiSearch(env, {
-			indexes,
-			query: q,
-			facets: INDEX_FACETS,
-			hitsPerPage: limit,
-			useHybrid: false, // lexical only — autocomplete must be < 40ms
-		}),
-		new Promise<{ hits: never[] } | null>((resolve) =>
-			setTimeout(() => resolve(null), AUTOCOMPLETE_TIMEOUT_MS),
-		),
-	]).catch(() => null);
-
-	let hits: Array<Record<string, unknown>> = (timed && "hits" in timed ? timed.hits : []) as Array<Record<string, unknown>>;
-	if (hits.length === 0) {
-		// Cache fallback: substring match against popular city titles.
-		const cached = (await env.EMBED_CACHE.get("popular_cities:v1", { type: "json" }).catch(() => null)) as Array<Record<string, unknown>> | null;
-		if (cached) {
-			const ql = q.toLowerCase();
-			hits = cached.filter((c) => String(c.title || "").toLowerCase().includes(ql)).slice(0, limit);
-		}
-	}
-
-	// Diversify: Meili _rankingScore isn't comparable across indexes, so a plain
-	// score-sort lets the densest type (venues) fill every slot. Round-robin
-	// across types (preserving per-type score order) so the dropdown shows a mix.
-	const byType = new Map<string, Array<Record<string, unknown>>>();
-	for (const h of hits) {
-		const t = String(h.type ?? h.content_type ?? "other");
-		(byType.get(t) ?? byType.set(t, []).get(t)!).push(h);
-	}
-	const groups = [...byType.values()];
-	const diversified: Array<Record<string, unknown>> = [];
-	for (let i = 0; diversified.length < limit && groups.some((g) => g.length); i++) {
-		const g = groups[i % groups.length];
-		if (g.length) diversified.push(g.shift()!);
-	}
-
-	const out = diversified.map((h) => {
-		// Pass Meili-highlighted title through so the client can render
-		// authoritative <em>…</em> matches (preserves typo-tolerant matching
-		// that a client-side substring-match would miss).
-		const formatted = (h._formatted ?? {}) as Record<string, unknown>;
-		return {
-			id: h.id,
-			type: h.type,
-			title: h.title,
-			title_formatted: formatted.title ?? formatted.name ?? null,
-			city: h.city,
-			country: h.country,
-			slug: h.slug,
-		};
+	// Postgres-native typeahead via the search_autocomplete RPC (prefix-first +
+	// trigram fuzzy, type-diversified in SQL). 800ms hard timeout so the dropdown
+	// never blocks typing; on timeout/error we return whatever we have ([]).
+	const pgTypes = indexes.map((i) => INDEX_TO_PG_TYPE[i]).filter(Boolean) as string[];
+	const suggestions = await Promise.race([
+		pgAutocomplete(env, q, pgTypes.length ? pgTypes : null, limit),
+		new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTOCOMPLETE_TIMEOUT_MS)),
+	]).catch((e) => {
+		console.warn("pgAutocomplete", (e as Error).message);
+		return null;
 	});
-	return json({ suggestions: out }, 200, cors);
+	return json({ suggestions: (suggestions ?? []).slice(0, limit) }, 200, cors);
 }
 
 // ─────────────────────────────────────────────
