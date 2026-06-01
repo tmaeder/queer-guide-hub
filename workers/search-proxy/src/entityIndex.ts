@@ -5,7 +5,7 @@
  * are just the canonical entity-type vocabulary. `INDEX_MAP` normalises the
  * singular/plural client tokens callers pass (`type: 'venue'` vs `'venues'`),
  * and `index.ts` maps these to Postgres entity types via INDEX_TO_PG_TYPE.
- * (All Meilisearch HTTP code was removed when search moved to Postgres.)
+ * (All Meilisearch HTTP code is gone; renamed from meili.ts in the decommission.)
  */
 
 export const INDEX_MAP: Record<string, string> = {
