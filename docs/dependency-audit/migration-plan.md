@@ -58,8 +58,10 @@ _Locked decisions: (1) AI residency hybrid-by-sensitivity; (2) full pgvector→V
 - **Test:** shadow harness (`scripts/search-eval/shadow-analyze.mjs` pattern) — result overlap ≥ target and
   p95 < Meili baseline; recommendations/dedup parity. **Cutover:** flip after N days green. **Rollback:** keep pgvector.
 
-### C2. Retire Meilisearch
-- After Vectorize+PG path meets SLOs (resolves current NO-GO). **Test:** prod search parity. **Rollback:** flip `SEARCH_BACKEND` back to `meili`.
+### C2. Retire Meilisearch — ✅ DONE (PR #1405)
+- Shipped: `SEARCH_BACKEND="pg"`, `meilisearch-sync` deleted, Meili decommissioned. Search is now 100%
+  Postgres (`search_hybrid`). **Consequence:** there is no longer a Meili fallback — the Vectorize migration
+  (C1) now refactors the *live* search path, so shadow-validate against the current PG path before flipping.
 
 ### C3. Decommission Infomaniak
 - Relocate Nominatim (min EU host or CF Container); move Plane (Plane Cloud EU / Linear / small host).
@@ -84,7 +86,8 @@ _Locked decisions: (1) AI residency hybrid-by-sensitivity; (2) full pgvector→V
 | B1 vLLM relocation | pending | human (server provisioning) |
 | B2 AutoRAG | pending | human (corpus choice + dashboard) |
 | C1 Vectorize | pending | human+agent (no Vectorize MCP tool; needs wrangler + Worker rebuild; gated on PG cutover) |
-| C2/C3 Meili/Infomaniak retire | pending | human (infra) |
+| C2 Meili retire | **DONE (#1405)** ✅ | shipped |
+| C3 Infomaniak retire (Nominatim, Plane, vLLM) | pending | human (infra) |
 
 ## Activation commands (for the human-gated steps)
 
@@ -123,4 +126,5 @@ Then: dual-write embeddings (Postgres + Vectorize) from the `ingest` Worker; reb
 ## Sequencing gates
 - A1/A3/A4 independent — do first.
 - B1 must precede C3 (vLLM needs a new home before VPS dies).
-- C2 before C3 (Meili lives on VPS). C1 before C2 (search needs vectors).
+- C2 (Meili retire) already done (#1405). C3 now only needs Nominatim + Plane + vLLM relocated.
+- C1 (Vectorize) now refactors the live PG search path — no Meili fallback, so validate carefully.

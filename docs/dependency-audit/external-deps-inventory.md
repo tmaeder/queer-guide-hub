@@ -37,7 +37,7 @@ Keys: `FOURSQUARE_API_KEY`, `GOOGLE_PLACES_API_KEY`, `TOMTOM_API_KEY`, `TRIPADVI
 
 | Service | URL | Purpose | Egress? |
 |---|---|---|---|
-| Meilisearch | `s.queer.guide` | search index (prod default) | none (self-hosted) |
+| ~~Meilisearch~~ | ~~`s.queer.guide`~~ | **decommissioned (#1405)** — search moved to Postgres `search_hybrid` | — |
 | Nominatim | `nominatim.queer.guide` | reverse geocoding | none (self-hosted) |
 | Plane | `plane.queer.guide` | internal issue tracker | none |
 | Gemma vLLM | `ai.queer.guide` | EU inference fallback | none |

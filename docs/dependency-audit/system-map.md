@@ -2,6 +2,11 @@
 
 _Audit date: 2026-06-01. Built from live Cloudflare + Supabase config and a full codebase sweep._
 
+> **Update 2026-06-01 (post-PR #1405):** the Meilisearch → Postgres cutover **shipped** —
+> `SEARCH_BACKEND="pg"`, `meilisearch-sync` deleted, Meili **fully decommissioned**. Search is now
+> 100% Postgres-backed (pgvector + tsvector + PostGIS). Infomaniak now hosts only Nominatim, Plane, vLLM.
+> Sections below are updated to reflect this.
+
 ## Components
 
 | Layer | Component | Home | Notes |
@@ -13,7 +18,7 @@ _Audit date: 2026-06-01. Built from live Cloudflare + Supabase config and a full
 | Auth | email + magic-link + passkey | **Supabase Auth** | |
 | Object storage | R2 ×8, Supabase Storage | **Cloudflare + Supabase** | images, snapshots, plane backups, map tiles |
 | Cache/state | KV ×5, D1 ×1 | **Cloudflare** | embed cache, sessions, rate-limit, ingest state; D1 `operator_notify` = `env.DB` of the active operator-notify-inbound mail Worker (NOT stale) |
-| Search | Meilisearch | **Infomaniak VPS (CH)** `s.queer.guide` | prod default; PG cutover mid-validation |
+| Search | ~~Meilisearch~~ → **Postgres** | **Supabase (Zürich)** | Meili decommissioned (#1405); `search_hybrid` RPC is the backend |
 | Geocoding | Nominatim | **Infomaniak VPS (CH)** `nominatim.queer.guide` | self-hosted, no per-query egress |
 | Issue tracker | Plane (Django) | **Infomaniak VPS (CH)** `plane.queer.guide` | own redis/mq; R2-backed |
 | Inference | Gemma vLLM | **Infomaniak VPS (CH)** `ai.queer.guide` | EU-residency fallback for cms-ai |
@@ -31,7 +36,7 @@ _Audit date: 2026-06-01. Built from live Cloudflare + Supabase config and a full
 │    pgvector HNSW ×5 tables · pgmq · pg_cron · Realtime                  │
 │                                                                         │
 │  Infomaniak VPS (Switzerland) ── Caddy:443 TLS, NOT CF-proxied ──       │
-│    Meilisearch · Nominatim · Plane · Gemma vLLM                         │
+│    Nominatim · Plane · Gemma vLLM   (Meilisearch decommissioned #1405)   │
 └─────────────────────────────────────────────────────────────────────────┘
    │ outbound egress (leaves EU/CH)
    ├─ AI:    OpenAI gpt-4o-mini (US) · Workers AI (CF global GPUs) · Anthropic* (US)
@@ -50,8 +55,8 @@ _Audit date: 2026-06-01. Built from live Cloudflare + Supabase config and a full
    `s./plane./nominatim./ai.queer.guide` resolve **directly to the Infomaniak VPS** (Caddy TLS, **CF proxy
    bypassed → origin IP exposed, no WAF/cache**).
 2. **App** — SPA on Pages → calls Supabase (PostgREST/RPC, Auth) and Workers (`search.`, `submit.`, `assistant.`, `/api/geo`).
-3. **Search** — `search-proxy` Worker embeds query (Workers AI bge-m3, cached in KV) → Meilisearch (`s.queer.guide`)
-   today, or Postgres `search_hybrid` in shadow/pg mode.
+3. **Search** — `search-proxy` Worker embeds query (Workers AI bge-m3, cached in KV) → Postgres `search_hybrid`
+   RPC (`SEARCH_BACKEND="pg"`; Meili removed in #1405).
 4. **AI** — inference originates in **two places**: Supabase edge functions (OpenAI direct + Workers AI REST,
    mostly **not** gatewayed) and CF Workers (Workers AI, **gatewayed** via `qg-search`). Sensitive cms-ai path
    falls back to the EU vLLM.

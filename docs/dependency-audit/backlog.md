@@ -31,11 +31,11 @@ _Prioritized. P0 = do now, low risk. Audit date 2026-06-01._
 
 ## P2 — Structural (gated)
 - [ ] **pgvector → Vectorize**: indexes per entity type, dual-write, rebuild RRF+geo fusion in `search-proxy`.
-- [ ] **Shadow-validate** Vectorize+PG search vs Meili (overlap + p95) before cutover.
-- [ ] **Retire Meilisearch** after SLOs met.
+- [ ] **Shadow-validate** Vectorize search vs the live Postgres `search_hybrid` path (overlap + p95) before cutover.
+- [x] **Retire Meilisearch** — DONE in PR #1405 (search cut over to Postgres; `meilisearch-sync` deleted).
 - [ ] **Relocate Nominatim** (min EU host / CF Container) — Mapbox geocoding then deprecated.
 - [ ] **Move Plane off VPS** (Plane Cloud EU / Linear / small host). _Open Q3._
-- [ ] **Decommission Infomaniak VPS** (after vLLM + Meili + Nominatim + Plane all relocated).
+- [ ] **Decommission Infomaniak VPS** (after vLLM + Nominatim + Plane relocated — Meili already gone, #1405).
 - [ ] _Optional:_ **Hyperdrive** front for hot Postgres reads.
 
 ## Accept (no action)
