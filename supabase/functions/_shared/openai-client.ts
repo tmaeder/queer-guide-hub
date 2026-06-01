@@ -9,6 +9,7 @@
  */
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
 
 // ---------------------------------------------------------------------------
 // AES-GCM encryption helpers (same pattern as manage-api-keys)
@@ -230,10 +231,11 @@ function cfWorkersAiConfig(): { baseUrl: string; apiKey: string } | null {
   const acct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
   const token = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
   if (!acct || !token) return null
-  return {
-    baseUrl: `https://api.cloudflare.com/client/v4/accounts/${acct}/ai/v1`,
-    apiKey: token,
-  }
+  // Route through AI Gateway when configured; else hit Workers AI directly.
+  const baseUrl =
+    gatewayBaseUrl('workers-ai') ??
+    `https://api.cloudflare.com/client/v4/accounts/${acct}/ai/v1`
+  return { baseUrl, apiKey: token }
 }
 
 /**
@@ -264,7 +266,7 @@ export async function chatCompletion(
 
   const endpoint = cf
     ? `${cf.baseUrl}/chat/completions`
-    : 'https://api.openai.com/v1/chat/completions'
+    : `${gatewayBaseUrl('openai') ?? 'https://api.openai.com/v1'}/chat/completions`
   const accessToken = cf ? cf.apiKey : await getOpenAIAccessToken(supabase)
   const effectiveModel = cf ? mapToCfModel(model) : model
 
@@ -293,6 +295,7 @@ export async function chatCompletion(
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
+          ...gatewayHeaders({ fn: 'chatCompletion', backend: cf ? 'workers-ai' : 'openai' }),
         },
         body: JSON.stringify(body),
         signal: ac.signal,
