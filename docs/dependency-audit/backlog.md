@@ -46,6 +46,17 @@ _Prioritized. P0 = do now, low risk. Audit date 2026-06-01._
 - [ ] **Decommission Infomaniak VPS** (after vLLM + Nominatim + Plane relocated — Meili already gone, #1405).
 - [ ] _Optional:_ **Hyperdrive** front for hot Postgres reads.
 
+## search-intelligence cleanup (post-#1405) — scoped, NOT a blind strip
+- [ ] **BUG: `startReindex` drives the deleted `meilisearch-sync`** — `search-intelligence/index.ts:751`
+  POSTs `/functions/v1/meilisearch-sync` (removed in #1405) → the admin "reindex" action always fails.
+  Targeted fix: disable/guard that route (return a clear 410/"search is Postgres-backed now") — small + safe.
+- [ ] **Full Meili-route removal is a FE+BE refactor, not a no-op strip.** Meili routes (`indexStats`,
+  `searchDebug`, `getTask`, `cronReconcile`, reindex, + meili branches in `listIndexes`/`getIndexSettings`/
+  `patch`/`rollback`/`syncSynonyms`/`consistencyCheck`) are interwoven with still-useful DB-backed routes
+  (synonyms, clusters, suggestions, visibility, settings-versions, audit) AND called by the admin UI
+  (`AdminSearchIntelligence.tsx`, `useSearchIntelligence.ts`, `SetupTab.tsx`, `adminNavigation.ts`,
+  `routes.tsx`, + test). Do as a scoped, reviewed PR across edge fn + ~7 frontend files — not an autonomous gut.
+
 ## Accept (no action)
 - Stripe (necessary, PCI-scoped, DPA on file).
 - 18 read-only ingestion sources (no user PII egress).
