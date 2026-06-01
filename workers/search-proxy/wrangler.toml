@@ -25,6 +25,9 @@ ENABLE_RERANKER = "1"
 # Flip to "shadow" to validate the Postgres search_hybrid path against live Meili,
 # then "pg" to cut over. Reversible at any time.
 SEARCH_BACKEND = "shadow"
+# Shadow A/B: evaluate the candidate search_hybrid_v2 (keyword-dominant RRF +
+# HNSW-only vector + wrong-city penalty) against live Meili. "search_hybrid" = v1.
+SHADOW_HYBRID_FN = "search_hybrid_v2"
 
 # Secrets (set via: wrangler secret put NAME):
 #   MEILISEARCH_SEARCH_KEY

@@ -73,6 +73,10 @@ export interface Env {
 	 *              (no user-facing change). Used to validate before cutover.
 	 */
 	SEARCH_BACKEND?: string;
+	/** Shadow-mode A/B: which Postgres RPC the shadow comparison calls.
+	 *  Defaults to "search_hybrid"; set to "search_hybrid_v2" to evaluate a
+	 *  candidate ranking function against live Meili. No effect on served path. */
+	SHADOW_HYBRID_FN?: string;
 	ADMIN_TOKEN?: string;
 	SENTRY_DSN?: string;
 	SENTRY_ENV?: string;
@@ -833,7 +837,10 @@ async function shadowCompare(env: Env, q: string, pgArgs: PgSearchArgs, meiliTop
 		// 8s timeout (vs the 4s default the user-facing PG path uses): shadow must
 		// RECORD slow PG queries, not drop them on timeout — otherwise the latency
 		// sample is biased optimistically toward only the fast completions.
-		const pg = await pgHybridSearch(env, pgArgs, 8000);
+		// SHADOW_HYBRID_FN lets us A/B a candidate RPC (e.g. search_hybrid_v2)
+		// against live Meili without touching the served path.
+		const fn = env.SHADOW_HYBRID_FN || "search_hybrid";
+		const pg = await pgHybridSearch(env, pgArgs, 8000, fn);
 		const meiliIds = meiliTop.map((h) => itemId(h)).filter((x): x is string => !!x);
 		const meiliSet = new Set(meiliIds);
 		const pgIds = pg.hits
@@ -844,6 +851,7 @@ async function shadowCompare(env: Env, q: string, pgArgs: PgSearchArgs, meiliTop
 		const row = {
 			tag: "search_shadow",
 			q,
+			fn,
 			overlap_at_10: overlap,
 			meili_top: meiliIds,
 			pg_top: pgIds,
@@ -866,6 +874,7 @@ async function shadowCompare(env: Env, q: string, pgArgs: PgSearchArgs, meiliTop
 				},
 				body: JSON.stringify({
 					q,
+					fn,
 					overlap_at_10: overlap,
 					pg_total: pg.estimatedTotalHits,
 					pg_ms: Math.round(pg.tookMs),
