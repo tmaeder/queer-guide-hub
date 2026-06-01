@@ -28,7 +28,7 @@ queer-guide-hub/
 │   └── migrations/       # PostgreSQL migrations
 ├── workers/
 │   ├── ingest/           # CF Worker: search-intelligence ingest pipeline
-│   ├── search-proxy/     # CF Worker: Meilisearch proxy with Postgres-driven synonyms
+│   ├── search-proxy/     # CF Worker: search proxy (Meili|pg|shadow backend), Postgres-driven synonyms
 │   ├── snapshot-archiver/ # CF Worker: archives admin/editorial snapshots
 │   └── submit/           # CF Worker: extension submissions → ingestion_staging
 ├── docs/                 # Project-wide docs (a11y-audit, architecture, search-intelligence, …)
@@ -61,7 +61,7 @@ queer-guide-hub/
 ## Repo stats
 
 - **Edge functions:** 191
-- **Migrations:** 451
+- **Migrations:** 452
 - **Migrations:** 438
 - **Migrations:** 434
 - **Edge functions:** 196
@@ -96,12 +96,14 @@ queer-guide-hub/
 - **Supabase:** project `xqeacpakadqfxjxjcewc` (eu-central-2)
 - **Cloudflare Pages:** project `queer-guide` at `queer-guide.pages.dev`
 - **CF Account:** `7aa3765cc5f50f2b681b782eb4a8d296`
-- **Search:** Meilisearch (self-hosted, Infomaniak) — hybrid search (keyword + semantic via OpenAI embeddings)
-  - **CF Worker:** `search-proxy` proxies frontend → Meilisearch, holds API key
-  - **Sync:** `meilisearch-sync` edge function (full sync + incremental via pg_net triggers)
-  - **Indexes:** venues, events, cities, countries, news, marketplace, personalities, tags, queer_villages
+- **Search:** **migrating Meilisearch → Postgres + Cloudflare** (plan: `docs/search-intelligence/meili-to-postgres-migration-plan.md`). Meilisearch (self-hosted, Infomaniak) still serves production by default; the Postgres engine is live and shadow-tested for cutover.
+  - **Postgres engine (live):** denormalized `search_documents` table (weighted tsvector + `vector(1024)` HNSW embedding + PostGIS `geog` + facets/trust/liveness/price/temporal). RPCs: `search_hybrid` (RRF keyword+vector fusion in SQL, with target_groups filter + news-recency decay + vnn top-200 admission), `search_facets`, `search_autocomplete` (prefix + trigram), plus discovery RPCs (`get_recommendations`, `related_entities`, `find_duplicate_clusters`, `events_in_window`, `personalities_on_this_day`). Excludes `duplicate_of_id IS NOT NULL`.
+  - **CF Worker:** `search-proxy` — `SEARCH_BACKEND` flag (`meili` default | `pg` | `shadow`). `pg` serves `/search` + `/autocomplete` from the Postgres RPCs; `shadow` serves Meili but logs a `search_shadow` comparison for cutover validation (analyze with `scripts/search-eval/shadow-analyze.mjs`). Rollout runbook: `docs/deploy/search-rollout.md`.
+  - **Sync:** `meilisearch-sync` edge function (Meili); Postgres `search_documents` stays fresh via entity + `content_embeddings` triggers.
+  - **Indexes (Meili):** venues, events, cities, countries, news, marketplace, personalities, tags, queer_villages
   - **Config:** `meilisearch/` directory (Docker Compose, Caddy, index config scripts)
   - **Legacy:** PostgreSQL FTS `universal_search()` and `algolia-sync` are deprecated
+- **Dedup:** `find_duplicate_clusters(content_type)` groups near-duplicate live entities (date-aware for events/festivals). Admins review + merge venues at `/admin/duplicates` — a soft, reversible merge via `merge_venues`/`unmerge_venues` (sets `duplicate_of_id`, reparents children, slug redirect via `venue_slug_redirects`, audited in `venue_merge_audit`).
 
 ## Environment
 
