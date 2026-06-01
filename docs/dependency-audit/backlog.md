@@ -3,14 +3,18 @@
 _Prioritized. P0 = do now, low risk. Audit date 2026-06-01._
 
 ## P0 — Quick wins
-- [ ] **AI Gateway: route OpenAI calls through `qg-ai`** + short/zero retention. (`_shared/openai-client.ts`)
-- [ ] **AI Gateway: route edge-function Workers-AI REST calls** through the gateway (unify with the 4 Workers already on it).
-- [ ] **PII-redaction helper** applied before every model prompt. (`_shared/`)
+- [x] **AI Gateway: route OpenAI + edge-fn Workers-AI calls through the gateway** — code landed
+  (`_shared/ai-gateway.ts` + wired into `_shared/openai-client.ts` & `_shared/llm-client.ts`).
+  **Activation (no code):** set `AI_GATEWAY_NAME` (= `qg-search` or a new `qg-ai`) on Supabase edge secrets;
+  optional `AI_GATEWAY_TOKEN` for an authenticated gateway; configure short/zero log retention in the gateway.
+  Inert until `AI_GATEWAY_NAME` is set. Then `supabase functions deploy` the AI functions.
+- [x] **PII-redaction helper** created (`_shared/pii-redact.ts`). _Wire into sensitive flows (trip/cms/submission) in P1._
 - [ ] **Resend EU region** enabled; **inbound → Cloudflare Email Routing**.
 - [ ] **Sentry PII scrub** + disable session replay + sampling. (`src` + `_shared` sentry init)
 - [ ] **GitHub feedback: strip submitter identifiers** before forward. (`forward-feedback-to-github`, `push-feedback-to-github`)
 - [ ] **Fix 2 security-advisor ERRORs** (RLS-disabled public table; security-definer view) + 3 `function_search_path_mutable`.
-- [ ] **Confirm `redis-*` backing store** (Upstash / VPS / Plane redis). _Blocks Infomaniak teardown._
+- [x] **Confirm `redis-*` backing store** → **Upstash Redis** (external, not Infomaniak). Does not block teardown.
+- [ ] **Consolidate Upstash Redis → Cloudflare KV** (or Upstash EU region) to drop a US vendor. (`_shared/redis-client.ts`)
 
 ## P1 — Decisions + relocations
 - [ ] **Decide vLLM relocation target** (CH/EU GPU VPS vs EU managed endpoint). _Open Q1._

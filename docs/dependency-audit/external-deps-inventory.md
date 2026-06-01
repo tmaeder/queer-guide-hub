@@ -52,7 +52,10 @@ DNS zone, Pages, 18 Workers, R2×8, KV×5, D1×1, AI Gateway `qg-search`, Worker
 - **Umami** — self-hosted in Supabase Postgres (`umami-analytics`, `umami-dashboard`). No external egress.
 - Cloudflare Web Analytics — implicit via Pages.
 
-## Unconfirmed
+## Resolved
 
-- `redis-get/set/keys/delete` edge functions — backing store not confirmed (Upstash? VPS redis? Plane's redis?).
-  **Resolve before Infomaniak teardown.**
+- `redis-get/set/keys/delete` edge functions → **Upstash Redis REST API** (`UPSTASH_REDIS_REST_URL` /
+  `UPSTASH_REDIS_REST_TOKEN`, see `_shared/redis-client.ts`). External vendor (US/global), browser-callable
+  from `queer.guide` origins. **Not on Infomaniak** → does NOT block VPS teardown. Overlaps Cloudflare KV →
+  **consolidation candidate** (migrate Upstash usage → CF KV to drop a vendor; or move to Upstash EU region).
+  Note: these functions are not in the repo checkout (deployed from CI) — pulled live via Supabase MCP.

@@ -11,7 +11,13 @@
  *
  * Both backends speak the OpenAI chat-completions wire format, so callers
  * stay identical. Set both and CF wins.
+ *
+ * When `AI_GATEWAY_NAME` is set, the Cloudflare Workers AI path is routed
+ * through AI Gateway. The self-hosted vLLM path stays direct (it is already an
+ * EU-resident endpoint; gatewaying it is a deliberate, residency-aware step).
  */
+
+import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
 
 export interface LlmMessage {
   role: 'system' | 'user' | 'assistant'
@@ -54,9 +60,12 @@ function readConfig() {
   const cfToken = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
   if (cfAcct && cfToken) {
     return {
-      baseUrl: `https://api.cloudflare.com/client/v4/accounts/${cfAcct}/ai/v1`,
+      baseUrl:
+        gatewayBaseUrl('workers-ai') ??
+        `https://api.cloudflare.com/client/v4/accounts/${cfAcct}/ai/v1`,
       apiKey: cfToken,
       defaultModel: Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+      gatewayed: true,
     }
   }
   const baseUrl = Deno.env.get('QG_LLM_BASE_URL')
@@ -66,6 +75,7 @@ function readConfig() {
     baseUrl: baseUrl.replace(/\/$/, ''),
     apiKey,
     defaultModel: Deno.env.get('QG_LLM_MODEL') || 'gemma-4-26b',
+    gatewayed: false,
   }
 }
 
@@ -87,7 +97,7 @@ export function isLlmConfigured(): boolean {
 export async function llmChatCompletion(
   options: LlmCompletionOptions,
 ): Promise<LlmCompletionResult> {
-  const { baseUrl, apiKey, defaultModel } = readConfig()
+  const { baseUrl, apiKey, defaultModel, gatewayed } = readConfig()
   const {
     messages,
     model = defaultModel,
@@ -109,6 +119,7 @@ export async function llmChatCompletion(
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
+        ...(gatewayed ? gatewayHeaders({ fn: 'llmChatCompletion', backend: 'workers-ai' }) : {}),
       },
       body: JSON.stringify(body),
       signal: controller.signal,

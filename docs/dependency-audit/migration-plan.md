@@ -62,7 +62,8 @@ _Locked decisions: (1) AI residency hybrid-by-sensitivity; (2) full pgvector→V
 
 ### C3. Decommission Infomaniak
 - Relocate Nominatim (min EU host or CF Container); move Plane (Plane Cloud EU / Linear / small host).
-- **Precondition:** resolve `redis-*` backing store. Tear down VPS only after Meili retired + vLLM + Nominatim + Plane relocated.
+- **Precondition:** `redis-*` backing store confirmed = **Upstash** (external, not on the VPS — no longer a blocker).
+  Tear down VPS only after Meili retired + vLLM + Nominatim + Plane relocated.
 - **Rollback:** keep VPS until all four confirmed healthy elsewhere.
 
 ### C4. Optional — Hyperdrive
@@ -72,4 +73,3 @@ _Locked decisions: (1) AI residency hybrid-by-sensitivity; (2) full pgvector→V
 - A1/A3/A4 independent — do first.
 - B1 must precede C3 (vLLM needs a new home before VPS dies).
 - C2 before C3 (Meili lives on VPS). C1 before C2 (search needs vectors).
-- Resolve `redis-*` (open Q6) before C3.
