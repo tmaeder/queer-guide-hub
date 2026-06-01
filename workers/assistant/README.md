@@ -44,8 +44,6 @@ flat `{ name, description, parameters }` form. Default model
 - **Non-streaming** tool loop. SSE streaming of tokens is a follow-up.
 - **Single model** (`ROUTER_MODEL`). A two-tier route→synthesis split (e.g. a
   bigger model for trip-planning) is a follow-up.
-- **Keyword search only** in `search_entities` (`p_query_vec = null`); semantic
-  blending needs a Workers-AI embedding round-trip.
 - Personalization is a prompt hint only; deep bias-vector injection + `user_memory`
   (plan §6.3) are follow-ups.
 - No `knowledge_search` tool yet (plan §7 / Phase 7, Cloudflare AI Search).
