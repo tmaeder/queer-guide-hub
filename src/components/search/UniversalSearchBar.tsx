@@ -11,7 +11,7 @@ import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { cn } from '@/lib/utils';
 import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
-import { useRecommendations } from '@/hooks/useRecommendations';
+import { useSearchRecommendations } from '@/hooks/useSearchRecommendations';
 import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useNearMe } from '@/hooks/useNearMe';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -128,7 +128,7 @@ export const UniversalSearchBar = () => {
   // panel fires no /recommendations request until the worker endpoint is deployed
   // (avoids a 404 in preview/prod builds; rollout: deploy worker → flip flag).
   const recsEnabled = import.meta.env.VITE_RECOMMENDATIONS_ENABLED === 'true';
-  const { recommendations } = useRecommendations(recsEnabled && isOpen && !query, {
+  const { recommendations } = useSearchRecommendations(recsEnabled && isOpen && !query, {
     limit: 6,
     types: trendingTypes,
   });

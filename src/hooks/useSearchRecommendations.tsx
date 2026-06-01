@@ -8,6 +8,13 @@ import { fetchRecommendations, type SearchHit } from '@/lib/searchClient';
  * /recommendations (popularity + engagement bias + featured/geo/freshness) and
  * is keyed by (types, city) so a city-scoped panel caches separately.
  *
+ * NB: named `useSearchRecommendations` (not `useRecommendations`) to avoid a
+ * filename collision with the pre-existing travel hook `useRecommendations.ts`.
+ * Vite resolves `.ts` before `.tsx`, so a shared `@/hooks/useRecommendations`
+ * import silently resolved to the travel hook — its result has no
+ * `recommendations` field, so the searchbar crashed on `recommendations.length`
+ * and the header error boundary blanked the whole topbar.
+ *
  * Worker returns the search_documents card shape (objectID/type/…); we normalize
  * to SearchHit so the dropdown reuses the suggestion render path. Fail-soft: an
  * undeployed endpoint or error yields [] and the caller falls back to trending.
@@ -39,7 +46,7 @@ function normalize(raw: Array<Record<string, unknown>>): SearchHit[] {
 
 const DEFAULT_TYPES = ['venue', 'event'];
 
-export function useRecommendations(
+export function useSearchRecommendations(
   enabled: boolean,
   opts: { limit?: number; types?: string[]; city?: string } = {},
 ): {
