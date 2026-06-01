@@ -8,7 +8,6 @@ import { jsonResponse, errorResponse, corsResponse, requireAdmin, getServiceClie
 //           'internal' = called only by other functions.
 const FUNCTION_REGISTRY: FunctionMeta[] = [
   // ── Workflow-registered (cron + manual) ──
-  { name: 'fetch-news', category: 'workflow', description: 'Fetch news from RSS/API sources', envVars: ['NEWS_API_KEY'] },
   { name: 'import-foursquare-venues', category: 'workflow', description: 'Import venues from Foursquare Places API', envVars: ['FOURSQUARE_API_KEY'] },
   { name: 'import-ilga-data', category: 'workflow', description: 'Import LGBTQ rights data for countries', envVars: [] },
   { name: 'geo-link-content', category: 'workflow', description: 'Geo-link content to cities/countries', envVars: [] },

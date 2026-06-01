@@ -20,13 +20,11 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { listFrom, insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
-import { Plus, Edit2, Trash2, Rss, Globe, Play, Tags, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Edit2, Trash2, Rss, Globe, Tags, ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { validateNewsSource } from '@/utils/contentValidation';
-import { LEGACY_NEWS_TRIGGER_ENABLED } from '@/lib/featureFlags';
 
 type NewsSource = Tables<'news_sources'>;
 
@@ -166,24 +164,6 @@ export function NewsSourcesManager() {
       fetchSources();
     } catch (_error) {
       toast.error('Error: Failed to update news source');
-    }
-  };
-
-  const triggerFetch = async (_sourceId: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('pipeline-executor', {
-        body: {
-          action: 'start',
-          pipeline_name: 'news-ingestion',
-          context: { triggered_by: 'admin-news-sources-manual' },
-        },
-      });
-
-      if (error) throw error;
-
-      toast.success('Manual ingestion enqueued: Run progress visible at /admin/pipelines?tab=news');
-    } catch (_error) {
-      toast.error('Error: Failed to enqueue news ingestion');
     }
   };
 
@@ -481,18 +461,6 @@ export function NewsSourcesManager() {
                             checked={source.is_active}
                             onCheckedChange={() => handleToggleActive(source.id, source.is_active)}
                           />
-
-                          {LEGACY_NEWS_TRIGGER_ENABLED && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => triggerFetch(source.id)}
-                              disabled={!source.is_active}
-                              aria-label={`Fetch news from ${source.name} (legacy path)`}
-                            >
-                              <Play className="h-3 w-3" aria-hidden="true" />
-                            </Button>
-                          )}
 
                           <Button
                             variant="outline"
