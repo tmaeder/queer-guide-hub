@@ -12,7 +12,12 @@ _Prioritized. P0 = do now, low risk. Audit date 2026-06-01._
 - [ ] **Resend EU region** enabled; **inbound → Cloudflare Email Routing**.
 - [ ] **Sentry PII scrub** + disable session replay + sampling. (`src` + `_shared` sentry init)
 - [ ] **GitHub feedback: strip submitter identifiers** before forward. (`forward-feedback-to-github`, `push-feedback-to-github`)
-- [ ] **Fix 2 security-advisor ERRORs** (RLS-disabled public table; security-definer view) + 3 `function_search_path_mutable`.
+- [x] **Fix 2 security-advisor ERRORs + 3 `function_search_path_mutable`** — migration **drafted**
+  (`supabase/migrations/20260601130000_security_advisor_fixes.sql`): `personality_data_health` view →
+  security_invoker; `personality_profession_tags` → RLS (public read / authenticated write, mirrors
+  `personalities`+`unified_tags`); pin search_path on `hamming_hex`, `find_near_duplicate_assets`,
+  `collapse_duplicate_image_assets`. View body validated via EXPLAIN. **Not applied** — apply via
+  Supabase CLI / `apply_migration`, then re-run `get_advisors security` → expect 0 ERROR.
 - [x] **Confirm `redis-*` backing store** → **Upstash Redis** (external, not Infomaniak). Does not block teardown.
 - [ ] **Consolidate Upstash Redis → Cloudflare KV** (or Upstash EU region) to drop a US vendor. (`_shared/redis-client.ts`)
 
