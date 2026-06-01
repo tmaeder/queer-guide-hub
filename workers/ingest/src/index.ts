@@ -18,8 +18,6 @@ export interface Env {
 	AI: Ai;
 	EMBED_CACHE: KVNamespace;
 	INGEST_STATE: KVNamespace;
-	MEILISEARCH_URL: string;
-	MEILISEARCH_ADMIN_KEY: string;
 	SUPABASE_URL: string;
 	SUPABASE_SERVICE_KEY: string;
 	INGEST_TOKEN: string;
@@ -239,34 +237,25 @@ async function indexRow(env: Env, table: string, row: TableRow): Promise<void> {
 	const text = composeEmbedText(table, row);
 	const vec = await embedText(env, text);
 
-	// 2. Upsert pgvector embedding.
+	// 2. Upsert pgvector embedding. (Search is served from Postgres
+	// search_documents, kept fresh by DB triggers; Meili was decommissioned.)
 	await upsertEmbedding(env, tm.contentType, row.id, text, vec, extractMetadata(table, row));
-
-	// 3. Upsert Meili doc.
-	const doc = toMeiliDoc(table, row);
-	await meiliUpsert(env, tm.index, [doc]);
 }
 
 async function deleteRow(env: Env, table: string, id?: string): Promise<void> {
 	if (!id) return;
 	const tm = TABLE_MAP[table];
 	if (!tm) return;
-	await Promise.all([
-		fetch(
-			`${env.SUPABASE_URL}/rest/v1/content_embeddings?content_type=eq.${tm.contentType}&content_id=eq.${id}`,
-			{
-				method: "DELETE",
-				headers: {
-					apikey: env.SUPABASE_SERVICE_KEY,
-					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-				},
-			},
-		),
-		fetch(`${env.MEILISEARCH_URL}/indexes/${tm.index}/documents/${id}`, {
+	await fetch(
+		`${env.SUPABASE_URL}/rest/v1/content_embeddings?content_type=eq.${tm.contentType}&content_id=eq.${id}`,
+		{
 			method: "DELETE",
-			headers: { Authorization: `Bearer ${env.MEILISEARCH_ADMIN_KEY}` },
-		}),
-	]);
+			headers: {
+				apikey: env.SUPABASE_SERVICE_KEY,
+				authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+			},
+		},
+	);
 }
 
 async function fetchRow(env: Env, table: string, id: string): Promise<TableRow | null> {
@@ -317,42 +306,6 @@ function extractMetadata(_table: string, r: TableRow): Record<string, unknown> {
 	};
 }
 
-type MeiliDoc = Record<string, unknown> & { id: string };
-
-function toMeiliDoc(table: string, r: TableRow): MeiliDoc {
-	const base: MeiliDoc = {
-		id: r.id,
-		type: TABLE_MAP[table].contentType,
-		title: r.title || r.name,
-		description: r.description || r.bio,
-		slug: r.slug,
-		city: r.city,
-		country: r.country,
-		category: r.category || r.event_type || r.profession,
-		tags: r.tags || [],
-		image_url: r.image_url || r.logo_url,
-		logo_url: r.logo_url,
-		featured: r.featured || r.is_featured || false,
-		is_featured: r.is_featured ?? r.featured,
-		updated_at: r.updated_at,
-	};
-	if (r.latitude != null && r.longitude != null) {
-		base._geo = { lat: Number(r.latitude), lng: Number(r.longitude) };
-	}
-	if (table === "events") {
-		return {
-			...base,
-			event_type: r.event_type,
-			start_date: r.start_date ? Math.floor(new Date(r.start_date).getTime() / 1000) : null,
-			end_date: r.end_date ? Math.floor(new Date(r.end_date).getTime() / 1000) : null,
-			venue_name: r.venue_name,
-		};
-	}
-	if (table === "personalities") {
-		return { ...base, profession: r.profession, nationality: r.nationality };
-	}
-	return base;
-}
 
 // ─── AI ───────────────────────────────────────
 async function embedText(env: Env, text: string): Promise<number[]> {
@@ -413,23 +366,6 @@ async function upsertEmbedding(
 		body: JSON.stringify(body),
 	});
 	if (!res.ok) throw new Error(`pgvector upsert ${res.status}: ${await res.text()}`);
-}
-
-// ─── Meilisearch upsert ───────────────────────
-async function meiliUpsert(env: Env, index: string, docs: MeiliDoc[]): Promise<void> {
-	const res = await fetch(`${env.MEILISEARCH_URL}/indexes/${index}/documents?primaryKey=id`, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${env.MEILISEARCH_ADMIN_KEY}`,
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(docs),
-	});
-	if (!res.ok) {
-		// Meili sync is also handled by Supabase edge function (meilisearch-sync) on DB triggers.
-		// Don't fail ingest on Meili errors — just warn so embeddings backfill keeps going.
-		console.warn(`meili upsert ${res.status}: ${await res.text()}`);
-	}
 }
 
 // ─── utils ────────────────────────────────────

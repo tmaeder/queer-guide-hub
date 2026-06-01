@@ -22,8 +22,6 @@ import { anthropicMessages } from '../_shared/anthropic-shim.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const MEILISEARCH_URL = Deno.env.get('MEILISEARCH_URL') ?? '';
-const MEILISEARCH_KEY = Deno.env.get('MEILISEARCH_SEARCH_KEY') ?? '';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -128,57 +126,24 @@ async function loadHistory(supabase: any, tripId: string): Promise<HistoryMessag
 }
 
 async function searchCandidates(query: string): Promise<Candidate[]> {
-  if (!MEILISEARCH_URL) return [];
-  const headers = {
-    Authorization: `Bearer ${MEILISEARCH_KEY}`,
-    'Content-Type': 'application/json',
-  };
-  const [venuesRes, eventsRes] = await Promise.all([
-    fetch(`${MEILISEARCH_URL}/indexes/venues/search`, {
+  // Postgres search_hybrid (venues + events), 12 each. Was Meilisearch before
+  // the cutover.
+  const call = (types: string[]) =>
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/search_hybrid`, {
       method: 'POST',
-      headers,
-      body: JSON.stringify({
-        q: query,
-        limit: 12,
-        attributesToRetrieve: ['id', 'name', 'city', 'country', 'category'],
-      }),
-    }).catch(() => null),
-    fetch(`${MEILISEARCH_URL}/indexes/events/search`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        q: query,
-        limit: 12,
-        attributesToRetrieve: ['id', 'title', 'city', 'country', 'event_type'],
-      }),
-    }).catch(() => null),
-  ]);
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_query: query, p_content_types: types, p_limit: 12 }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+
+  const [venuesRes, eventsRes] = await Promise.all([call(['venue']), call(['event'])]);
   const candidates: Candidate[] = [];
-  if (venuesRes?.ok) {
-    const { hits } = await venuesRes.json();
-    for (const h of hits) {
-      candidates.push({
-        id: h.id,
-        kind: 'venue',
-        name: h.name,
-        city: h.city,
-        country: h.country,
-        category: h.category,
-      });
-    }
+  for (const h of (venuesRes?.hits ?? [])) {
+    candidates.push({ id: h.objectID, kind: 'venue', name: h.title, city: h.city, country: h.country, category: h.category });
   }
-  if (eventsRes?.ok) {
-    const { hits } = await eventsRes.json();
-    for (const h of hits) {
-      candidates.push({
-        id: h.id,
-        kind: 'event',
-        name: h.title,
-        city: h.city,
-        country: h.country,
-        category: h.event_type,
-      });
-    }
+  for (const h of (eventsRes?.hits ?? [])) {
+    candidates.push({ id: h.objectID, kind: 'event', name: h.title, city: h.city, country: h.country, category: h.category });
   }
   return candidates;
 }
