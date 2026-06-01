@@ -68,41 +68,9 @@ export const queryKeys = {
   favorites: (userId?: string, type?: string) => ['favorites', userId, type],
 } as const;
 
-// Background prefetching helpers
-export const prefetchQueries = {
-  prefetchRelatedVenues: async (queryClient: QueryClient, cityId: string) => {
-    return queryClient.prefetchQuery({
-      queryKey: queryKeys.venues({ city: cityId }),
-      queryFn: () => fetch(`/api/venues?city=${cityId}`).then(res => res.json()),
-      staleTime: 10 * 60 * 1000, // 10 minutes
-    });
-  },
-  
-  prefetchUserProfile: async (queryClient: QueryClient, userId: string) => {
-    return queryClient.prefetchQuery({
-      queryKey: queryKeys.profiles(userId),
-      queryFn: () => fetch(`/api/profiles/${userId}`).then(res => res.json()),
-      staleTime: 30 * 60 * 1000, // 30 minutes
-    });
-  },
-};
-
-// Cache invalidation patterns
-export const invalidationPatterns = {
-  invalidateVenueRelated: (queryClient: QueryClient, venueId?: string) => {
-    queryClient.invalidateQueries({ queryKey: ['venues'] });
-    queryClient.invalidateQueries({ queryKey: ['events'] });
-    if (venueId) {
-      queryClient.invalidateQueries({ queryKey: ['venue', venueId] });
-    }
-  },
-  
-  invalidateUserRelated: (queryClient: QueryClient, userId?: string) => {
-    queryClient.invalidateQueries({ queryKey: ['profiles'] });
-    queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    queryClient.invalidateQueries({ queryKey: ['favorites'] });
-    if (userId) {
-      queryClient.invalidateQueries({ queryKey: ['profiles', userId] });
-    }
-  },
-};
+// NB: `prefetchQueries` + `invalidationPatterns` were removed here — both were
+// unused (0 references), and `prefetchQueries` fetched non-existent same-origin
+// endpoints (`/api/venues`, `/api/profiles/:id`). With the `/*` → index.html
+// catch-all those would have resolved to HTML with a 200, so `.then(r=>r.json())`
+// would throw — a footgun for anyone who wired them up. Reintroduce as real
+// Pages Functions / Supabase queries if prefetching is needed.
