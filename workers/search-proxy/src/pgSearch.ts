@@ -155,3 +155,45 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs): Promise<PgSe
 		tookMs: Date.now() - started,
 	};
 }
+
+/** A typeahead suggestion in the same shape the Worker's /autocomplete emits. */
+export interface PgSuggestion {
+	id?: string;
+	type?: string;
+	title?: string;
+	/** No Meili highlight payload on the PG path; the client falls back to its
+	 *  own substring highlight when this is null. */
+	title_formatted: string | null;
+	city?: string;
+	country?: string;
+	slug?: string;
+}
+
+/**
+ * Postgres-native autocomplete via the `search_autocomplete` RPC (prefix-first
+ * with a trigram fuzzy fallback for typo tolerance; filters dead/cancelled/
+ * closed entities and past events). Replaces the Meili multi-search on the PG
+ * backend. `contentTypes` are Postgres entity types (e.g. ["venue","event"]);
+ * null searches all indexed types.
+ */
+export async function pgAutocomplete(
+	env: Env,
+	prefix: string,
+	contentTypes: string[] | null,
+	limit: number,
+): Promise<PgSuggestion[]> {
+	const rows = await callRpc<Array<Record<string, unknown>>>(env, "search_autocomplete", {
+		p_prefix: prefix,
+		p_content_types: contentTypes && contentTypes.length ? contentTypes : null,
+		p_limit: limit,
+	});
+	return (rows ?? []).map((r) => ({
+		id: r.objectID as string | undefined,
+		type: r.type as string | undefined,
+		title: r.title as string | undefined,
+		title_formatted: null,
+		city: r.city as string | undefined,
+		country: r.country as string | undefined,
+		slug: r.slug as string | undefined,
+	}));
+}

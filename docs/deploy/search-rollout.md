@@ -71,6 +71,12 @@ Collect ~24h of real traffic, then assess against the **cutover gate**:
 ```bash
 npx wrangler deploy --var SEARCH_BACKEND:pg
 ```
+Under `pg`, **`/autocomplete` also serves from Postgres** (the `search_autocomplete`
+RPC — prefix-first + trigram fuzzy), not Meili. It fails open: on empty/timeout/error
+it falls through to the Meili multi-search + popular-cities cache, so flipping the
+flag can't blank the typeahead. (Shadow mode does **not** fan out on autocomplete —
+it's latency-critical and the shadow diff is scoped to `/search`.)
+
 Monitor zero-hit rate / latency / errors on **production** (queer.guide) for ~1
 week. Instant rollback at any time:
 ```bash
