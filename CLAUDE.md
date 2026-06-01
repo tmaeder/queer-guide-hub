@@ -32,7 +32,7 @@ queer-guide-hub/
 │   ├── snapshot-archiver/ # CF Worker: archives admin/editorial snapshots
 │   └── submit/           # CF Worker: extension submissions → ingestion_staging
 ├── docs/                 # Project-wide docs (a11y-audit, architecture, search-intelligence, …)
-├── scripts/              # One-shot operator scripts (configure-meili.sh, …)
+├── scripts/              # One-shot operator scripts (search-eval/, …)
 └── e2e/                  # Playwright e2e specs
 ```
 
@@ -61,7 +61,7 @@ queer-guide-hub/
 ## Repo stats
 
 - **Edge functions:** 190
-- **Migrations:** 455
+- **Migrations:** 458
 - **Migrations:** 438
 - **Migrations:** 434
 - **Edge functions:** 196
@@ -101,7 +101,7 @@ queer-guide-hub/
   - **CF Worker:** `search-proxy` — `SEARCH_BACKEND` flag (`meili` default | `pg` | `shadow`). `pg` serves `/search` + `/autocomplete` from the Postgres RPCs; `shadow` serves Meili but logs a `search_shadow` comparison for cutover validation (analyze with `scripts/search-eval/shadow-analyze.mjs`). Rollout runbook: `docs/deploy/search-rollout.md`.
   - **Sync:** `meilisearch-sync` edge function (Meili); Postgres `search_documents` stays fresh via entity + `content_embeddings` triggers.
   - **Indexes (Meili):** venues, events, cities, countries, news, marketplace, personalities, tags, queer_villages
-  - **Config:** `meilisearch/` directory (Docker Compose, Caddy, index config scripts)
+  - **Decommission (in progress):** the worker now serves Postgres directly; the DB sync triggers/crons and the `meilisearch-sync` edge function are gone; the `meilisearch/` ops dir + `configure-meili.sh`/`meili-direct-resync.sh` are removed. Remaining: the `INDEX_MAP`/`ALL_INDEXES` lookup in `workers/search-proxy/src/meili.ts`, the admin search-intelligence UI, dangling `meilisearch-sync` refs (`backfill-venue-cities`, `search-intelligence`, `workers/ingest`), and the Infomaniak node shutdown.
   - **Legacy:** PostgreSQL FTS `universal_search()` and `algolia-sync` are deprecated
 - **Dedup:** `find_duplicate_clusters(content_type)` groups near-duplicate live entities (date-aware for events/festivals). Admins review + merge venues at `/admin/duplicates` — a soft, reversible merge via `merge_venues`/`unmerge_venues` (sets `duplicate_of_id`, reparents children, slug redirect via `venue_slug_redirects`, audited in `venue_merge_audit`).
 

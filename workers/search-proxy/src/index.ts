@@ -28,7 +28,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 }
 import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
-import { INDEX_MAP, ALL_INDEXES } from "./meili";
+import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
 import { tokenize, isBareLgbtqQuery } from "./queryPrep";
 import { resolveSession } from "./sessionCookie";

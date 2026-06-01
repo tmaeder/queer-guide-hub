@@ -14,7 +14,12 @@ describe('AdminSearchIntelligence', () => {
   it('renders the tab surface', () => {
     renderWithProviders(<AdminSearchIntelligence />);
     expect(screen.getByText(/Search Intelligence/i)).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Overview/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Synonyms/i })).toBeInTheDocument();
+    // Surviving (non-Meili) tabs after the Meili decommission.
+    expect(screen.getByRole('tab', { name: /Setup/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Topics/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Audit/i })).toBeInTheDocument();
+    // The Meili index-management tabs are gone.
+    expect(screen.queryByRole('tab', { name: /Reindex/i })).toBeNull();
+    expect(screen.queryByRole('tab', { name: /Synonyms/i })).toBeNull();
   });
 });

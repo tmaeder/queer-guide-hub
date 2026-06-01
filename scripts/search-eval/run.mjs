@@ -62,6 +62,25 @@ function matches(hit, expect) {
 let failures = 0;
 const latencies = [];
 
+// Contract guard — fail fast if search_hybrid lost the target_groups filter or
+// regained the vnn OR-subquery seq-scan admission (both have regressed several
+// times from rewrites based on stale copies). Backed by the SQL function
+// public.assert_search_hybrid_contract(), which RAISES on either.
+console.log("\n=== Contract ===");
+{
+	const res = await fetch(`${URL_BASE}/rest/v1/rpc/assert_search_hybrid_contract`, {
+		method: "POST",
+		headers: { apikey: KEY, authorization: `Bearer ${KEY}`, "content-type": "application/json" },
+		body: "{}",
+	});
+	const msg = (await res.text()).trim().replace(/^"|"$/g, "");
+	if (!res.ok) {
+		console.error(`  FAIL  search_hybrid contract: ${msg}`);
+		process.exit(1);
+	}
+	console.log(`  PASS  ${msg}`);
+}
+
 console.log("\n=== Golden cases ===");
 for (const c of golden.cases) {
 	const { hits, ms } = await searchHybrid(c.q, c.types, { limit: Math.max(10, c.expect?.maxRank ?? 10) });
