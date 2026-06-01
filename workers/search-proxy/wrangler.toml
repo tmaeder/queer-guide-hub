@@ -24,7 +24,7 @@ ENABLE_RERANKER = "1"
 # Meili -> Postgres migration (Phase 2). "meili" (default) | "pg" | "shadow".
 # Flip to "shadow" to validate the Postgres search_hybrid path against live Meili,
 # then "pg" to cut over. Reversible at any time.
-SEARCH_BACKEND = "shadow"
+SEARCH_BACKEND = "pg"
 
 # Secrets (set via: wrangler secret put NAME):
 #   MEILISEARCH_SEARCH_KEY
