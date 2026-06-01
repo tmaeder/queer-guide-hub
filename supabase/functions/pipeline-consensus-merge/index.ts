@@ -32,14 +32,16 @@ const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 
 function setPath(obj: Json, path: string, value: unknown): void {
   const keys = path.split('.')
-  if (keys.some((k) => FORBIDDEN_KEYS.has(k))) return
   let cur: Json = obj
   for (let i = 0; i < keys.length - 1; i++) {
     const k = keys[i]
+    if (FORBIDDEN_KEYS.has(k)) return
     if (typeof cur[k] !== 'object' || cur[k] === null) cur[k] = {}
     cur = cur[k] as Json
   }
-  cur[keys[keys.length - 1]] = value
+  const last = keys[keys.length - 1]
+  if (FORBIDDEN_KEYS.has(last)) return
+  cur[last] = value
 }
 
 Deno.serve(withErrorReporting('pipeline-consensus-merge', async (req) => {
