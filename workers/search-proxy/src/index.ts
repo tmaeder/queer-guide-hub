@@ -920,7 +920,10 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 			return json({ suggestions: [] }, 200, cors);
 		}
 	} else {
-		indexes = ["venues", "events", "cities", "personalities"];
+		// Default to a broad set so the typeahead surfaces all content types,
+		// not just venues. Diversified round-robin below keeps any one type from
+		// monopolising the slots.
+		indexes = ["venues", "events", "cities", "countries", "personalities", "news", "marketplace", "queer_villages"];
 	}
 
 	// Bug #9: 800ms hard timeout on autocomplete. Falls back to popular-cities
@@ -970,7 +973,22 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 		}
 	}
 
-	const out = hits.slice(0, limit).map((h) => {
+	// Diversify: Meili _rankingScore isn't comparable across indexes, so a plain
+	// score-sort lets the densest type (venues) fill every slot. Round-robin
+	// across types (preserving per-type score order) so the dropdown shows a mix.
+	const byType = new Map<string, Array<Record<string, unknown>>>();
+	for (const h of hits) {
+		const t = String(h.type ?? h.content_type ?? "other");
+		(byType.get(t) ?? byType.set(t, []).get(t)!).push(h);
+	}
+	const groups = [...byType.values()];
+	const diversified: Array<Record<string, unknown>> = [];
+	for (let i = 0; diversified.length < limit && groups.some((g) => g.length); i++) {
+		const g = groups[i % groups.length];
+		if (g.length) diversified.push(g.shift()!);
+	}
+
+	const out = diversified.map((h) => {
 		// Pass Meili-highlighted title through so the client can render
 		// authoritative <em>…</em> matches (preserves typo-tolerant matching
 		// that a client-side substring-match would miss).
