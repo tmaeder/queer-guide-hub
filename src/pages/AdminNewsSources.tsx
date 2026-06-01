@@ -18,14 +18,12 @@ import {
   Edit,
   Trash2,
   ExternalLink,
-  RefreshCw,
   Globe,
   Rss,
   AlertCircle,
   CheckCircle,
   Tags,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
@@ -39,8 +37,6 @@ import {
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
-import { LEGACY_NEWS_TRIGGER_ENABLED } from '@/lib/featureFlags';
-
 interface NewsSourceRow {
   id: string;
   name: string;
@@ -136,22 +132,6 @@ export default function AdminNewsSources() {
       fetch_frequency: source.fetch_frequency,
     });
     setDialogOpen(true);
-  };
-
-  const triggerFetch = async (source: NewsSourceRow) => {
-    try {
-      const { error } = await supabase.functions.invoke('fetch-news', {
-        body: { sourceId: source.id },
-      });
-      if (error) throw error;
-      toast({ title: 'Success', description: `Fetch triggered for ${source.name}` });
-    } catch {
-      toast({
-        title: 'Error',
-        description: `Failed to fetch news for ${source.name}`,
-        variant: 'destructive',
-      });
-    }
   };
 
   const handleKeywordsEdit = (source: NewsSourceRow) => {
@@ -319,13 +299,6 @@ export default function AdminNewsSources() {
       ],
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEdit },
-        {
-          key: 'fetch',
-          label: 'Fetch Now (legacy)',
-          icon: RefreshCw,
-          onClick: triggerFetch,
-          visible: () => LEGACY_NEWS_TRIGGER_ENABLED,
-        },
         {
           key: 'open',
           label: 'Open URL',
