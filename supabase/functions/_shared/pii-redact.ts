@@ -8,8 +8,8 @@
  */
 
 const EMAIL = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g
-// +41 79 123 45 67, (079) 123-4567, 0791234567 …
-const PHONE = /\+?\d[\d ().-]{7,}\d/g
+// +41 79 123 45 67, (079) 123-4567, 0791234567 … (optional leading + and/or paren)
+const PHONE = /\+?\(?\d[\d ().-]{6,}\d/g
 
 export function redactPII(text: string): string {
   if (!text) return text
