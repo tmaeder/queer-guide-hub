@@ -10,10 +10,10 @@ vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.
 vi.mock('@/hooks/useUserMode', () => ({
   useUserMode: () => ({ mode: 'community', setMode: vi.fn() }),
 }));
-// useRecommendations calls useAuth internally; mock it so the bar renders in
-// isolation without an AuthProvider (matches the other hook mocks here).
-vi.mock('@/hooks/useRecommendations', () => ({
-  useRecommendations: () => ({ recommendations: [], loading: false }),
+// useSearchRecommendations fetches lazily; mock it so the bar renders in
+// isolation (matches the other hook mocks here).
+vi.mock('@/hooks/useSearchRecommendations', () => ({
+  useSearchRecommendations: () => ({ recommendations: [], loading: false }),
 }));
 
 import { UniversalSearchBar } from '../UniversalSearchBar';
