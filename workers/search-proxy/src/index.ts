@@ -54,8 +54,6 @@ import {
 
 export interface Env {
 	AI: Ai;
-	MEILISEARCH_URL: string;
-	MEILISEARCH_SEARCH_KEY: string;
 	SUPABASE_URL: string;
 	SUPABASE_SERVICE_KEY: string; // service role for RPC
 	AI_GATEWAY_ACCOUNT_ID: string;
@@ -681,21 +679,6 @@ type FuseItem = {
 	_fused?: number;
 	[key: string]: unknown;
 };
-
-function rrfFuse(lists: FuseItem[][], k = 60): FuseItem[] {
-	const scores = new Map<string, FuseItem>();
-	for (const list of lists) {
-		list.forEach((item, i) => {
-			const id = itemId(item);
-			if (!id) return;
-			const prev = scores.get(id);
-			const add = 1 / (k + i + 1);
-			if (prev) prev._fused = (prev._fused ?? 0) + add;
-			else scores.set(id, { ...item, _fused: add });
-		});
-	}
-	return [...scores.values()].sort((a, b) => (b._fused ?? 0) - (a._fused ?? 0));
-}
 
 function itemId(h: FuseItem): string | null {
 	if (h.id) return `${h.type || h.content_type || "x"}:${h.id}`;
