@@ -24,23 +24,27 @@ describe('useVisitorLocation', () => {
     expect(result.current.location?.city).toBe('Zurich');
   });
 
-  it('should cache in sessionStorage', async () => {
+  it('does not persist coordinates to web storage (memory-only)', async () => {
+    // The hook keeps geo in memory only — sensitive coordinates must never be
+    // written to sessionStorage/localStorage (see hook docstring).
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ latitude: 47.37, longitude: 8.54 })),
     );
     const { result } = renderHook(() => useVisitorLocation());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    const cached = JSON.parse(sessionStorage.getItem('ip_geo')!);
-    expect(cached.latitude).toBe(47.37);
+    expect(result.current.location?.latitude).toBe(47.37);
+    expect(sessionStorage.getItem('ip_geo')).toBeNull();
+    expect(sessionStorage.length).toBe(0);
   });
 
-  it('should use cached data from sessionStorage', async () => {
-    sessionStorage.setItem('ip_geo', JSON.stringify({ latitude: 52.52, longitude: 13.4 }));
-    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+  it('fetches the same-origin /api/geo endpoint (no external vendor)', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ latitude: 52.52, longitude: 13.4 })),
+    );
     const { result } = renderHook(() => useVisitorLocation());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.location?.latitude).toBe(52.52);
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(fetchSpy).toHaveBeenCalledWith('/api/geo');
   });
 
   it('should handle fetch failure gracefully', async () => {
