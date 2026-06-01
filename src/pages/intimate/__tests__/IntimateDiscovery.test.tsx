@@ -10,6 +10,17 @@ vi.mock('@/hooks/useIntimateProfile', () => ({
   useIntimateDiscovery: () => ({ data: [], isLoading: false }),
 }));
 
+// useIntimateMatches reaches useAuth (via useMyIntimateLikes); mock it so the
+// component renders without an AuthProvider, mirroring the profile-hook mock.
+vi.mock('@/hooks/useIntimateMatches', () => ({
+  useIntimateMatches: () => ({ data: [] }),
+  useMyIntimateLikes: () => ({ data: [] }),
+  useMyIntimatePasses: () => ({ data: [] }),
+  useLikeTarget: () => ({ mutate: vi.fn(), isPending: false }),
+  usePassTarget: () => ({ mutate: vi.fn(), isPending: false }),
+  useIncomingLikeListener: () => {},
+}));
+
 import IntimateDiscovery from '../IntimateDiscovery';
 
 describe('IntimateDiscovery', () => {

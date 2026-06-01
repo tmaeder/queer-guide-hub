@@ -29,7 +29,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities, fetchDisplayMap, getRecommendations, relatedEntities } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
-import { pgHybridSearch, type PgSearchArgs } from "./pgSearch";
+import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
 import { detectScript, tokenize, isBareLgbtqQuery } from "./queryPrep";
 import { resolveSession } from "./sessionCookie";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
@@ -410,6 +410,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				tags: s.metadata?.tags || [],
 				slug: s.metadata?.slug ?? d.slug,
 				image_url: s.metadata?.image_url ?? d.image_url ?? null,
+				start_date: s.metadata?.start_date ?? d.date ?? null,
 				featured: s.metadata?.featured || false,
 				_source: "pg",
 				_rank: i,
@@ -929,6 +930,26 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 	// cache so the dropdown never blocks user typing. Cache populated on cold
 	// start in KV by the `populatePopularCache` helper below.
 	const AUTOCOMPLETE_TIMEOUT_MS = 800;
+
+	// PG backend: Postgres-native typeahead via the search_autocomplete RPC
+	// (prefix-first + trigram fuzzy). Shadow mode intentionally does NOT fan out
+	// here — autocomplete is latency-critical and the runbook scopes the shadow
+	// diff to /search only. On empty/timeout/error we fall through to the Meili
+	// path + popular-cities cache below, so this is safe to flip incrementally.
+	if ((env.SEARCH_BACKEND || "meili").toLowerCase() === "pg") {
+		const pgTypes = indexes.map((i) => INDEX_TO_PG_TYPE[i]).filter(Boolean) as string[];
+		const suggestions = await Promise.race([
+			pgAutocomplete(env, q, pgTypes.length ? pgTypes : null, limit),
+			new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTOCOMPLETE_TIMEOUT_MS)),
+		]).catch((e) => {
+			console.warn("pgAutocomplete", (e as Error).message);
+			return null;
+		});
+		if (suggestions && suggestions.length) {
+			return json({ suggestions: suggestions.slice(0, limit) }, 200, cors);
+		}
+	}
+
 	const timed = await Promise.race([
 		meiliMultiSearch(env, {
 			indexes,

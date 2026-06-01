@@ -29,6 +29,23 @@ and isolates the FTS + trigram + ranking legs (what the title/known-item
 assertions target). The semantic leg is exercised end-to-end by the live
 shadow-mode comparison in the Worker.
 
+## Shadow-mode cutover gate
+
+`shadow-analyze.mjs` reads the `search_shadow` lines the Worker emits under
+`SEARCH_BACKEND=shadow` (see `docs/deploy/search-rollout.md` Stage A) and prints
+a GO / NO-GO read against the cutover gate (median `overlap_at_10` ≥ 6, near-zero
+`pg_total=0`-vs-Meili-hits divergences, `pg_ms` p95 ≤ 500ms), plus an overlap
+histogram and the worst-overlap queries to eyeball. Exit 0 = GO, 1 = NO-GO,
+2 = no usable input.
+
+```bash
+# from a captured file …
+node scripts/search-eval/shadow-analyze.mjs shadow.log
+# … or straight off the tail
+wrangler tail queer-guide-search-proxy --format json | node scripts/search-eval/shadow-analyze.mjs
+```
+It tolerates raw JSON lines or `wrangler tail` lines that merely contain the JSON.
+
 ## Assertions
 
 Golden cases match on **title + city within top-K**, not exact slug — well-known
@@ -36,9 +53,22 @@ venues legitimately have duplicate slugs (`berghain-1` / `berghain-3`), so a
 slug-exact assertion would be brittle. `minResults` cases assert a non-empty,
 on-topic result set.
 
-## Baselines (venues+events pilot, 2026-05-31, n=200)
+## Baselines (full corpus, 2026-05-31)
 
-- **Venues** — Recall@10 **0.89**, MRR@10 **0.61**, rank-1 48%. The reliable gate.
+Per-type known-item Recall@10 / MRR@10 (see `known-item.sql`):
+
+| Type | Recall@10 | MRR@10 | Notes |
+|------|-----------|--------|-------|
+| country | 1.00 | 1.00 | |
+| marketplace | 1.00 | 0.96 | |
+| tag | 1.00 | 0.95 | |
+| personality | 1.00 | 0.92 | |
+| queer_village | 1.00 | 0.86 | |
+| city | 1.00 | 0.77 | globally-duplicate city names |
+| venue | 0.89 | 0.61 | **the reliable regression gate** |
+| event / news | — | — | intentionally noisier (below) |
+
+- **Venues** are the reliable gate (distinct names): Recall@10 0.89, MRR@10 0.61, rank-1 ~48%.
 - **Events** — noisier and intentionally so:
   - Past events are **hidden** by `search_hybrid` (`start_date >= now-1d`), so a
     random sample that includes past events scores near-zero — expected, not a defect.
@@ -53,4 +83,5 @@ on-topic result set.
 - `venueKnownItemRecallAt10` — gate for the SQL known-item eval (run separately).
 - `p95LatencyMs` — p95 over all harness calls.
 
-Tune these as the pilot expands from venues+events to the remaining entity types.
+The corpus now covers all 9 canonical entity types (not just the venues+events
+pilot); the per-type baselines above are the reference for regression checks.

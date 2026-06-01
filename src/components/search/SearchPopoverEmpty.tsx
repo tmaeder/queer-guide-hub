@@ -8,17 +8,24 @@ import { ModeSwitcher } from './ModeSwitcher';
 
 export interface SearchPopoverEmptyProps {
   trending: SearchHit[];
+  /** Whether `trending` is the personalized recommendations feed or plain trending. */
+  source?: 'recommended' | 'trending';
   onSelectTrending: (hit: SearchHit) => void;
   onBrowse: (path: string) => void;
 }
 
 export function SearchPopoverEmpty({
   trending,
+  source = 'trending',
   onSelectTrending,
   onBrowse,
 }: SearchPopoverEmptyProps) {
   const { t } = useTranslation();
   const tiles = trending.slice(0, 6);
+  const heading =
+    source === 'recommended'
+      ? t('search.forYou', 'For you')
+      : t('search.trending', 'Trending');
 
   return (
     <div className="flex-1 overflow-y-auto" style={{ maxHeight: 520 }}>
@@ -28,7 +35,7 @@ export function SearchPopoverEmpty({
         <div className="px-3 pb-2 pt-3">
           <div className="mb-2 flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
             <TrendingUp size={11} />
-            {t('search.trending', 'Trending')}
+            {heading}
           </div>
           <div className="grid grid-cols-3 gap-2">
             {tiles.map((hit) => {
