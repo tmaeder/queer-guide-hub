@@ -39,6 +39,7 @@ import {
   Search,
   Flag,
   Award,
+  CopyCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -111,6 +112,12 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Building,
         route: '/admin/content/venues',
         countTable: 'venues',
+      },
+      {
+        id: 'duplicates',
+        label: 'Duplicate venues',
+        icon: CopyCheck,
+        route: '/admin/duplicates',
       },
       {
         id: 'events',

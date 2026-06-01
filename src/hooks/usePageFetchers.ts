@@ -231,11 +231,30 @@ export async function fetchVenueWithReviews<TVenue, TReview>(
   redirectTo?: string;
   notFound?: boolean;
 }> {
-  let { data: venueData, error: venueError } = await supabase
-    .from('venues')
-    .select(selectFields)
-    .eq('slug', slug)
-    .single();
+  // Merged-duplicate slug redirect (dedup Phase 1): a dropped venue's old slug
+  // 301s to the canonical. Runs in parallel with the main lookup so it adds no
+  // latency to normal loads. (`venue_slug_redirects` isn't in the generated
+  // types yet — cast, per the project's convention for new tables/RPCs.)
+  const [primary, redirect] = await Promise.all([
+    supabase.from('venues').select(selectFields).eq('slug', slug).single(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from('venue_slug_redirects')
+      .select('venue_id')
+      .eq('old_slug', slug)
+      .maybeSingle(),
+  ]);
+  const redirectVenueId = (redirect?.data as { venue_id?: string } | null)?.venue_id;
+  if (redirectVenueId) {
+    const { data: canon } = await supabase
+      .from('venues')
+      .select('slug, id')
+      .eq('id', redirectVenueId)
+      .maybeSingle();
+    const c = canon as { slug?: string; id?: string } | null;
+    if (c?.slug || c?.id) return { venue: null, reviews: [], redirectTo: `/venues/${c.slug || c.id}` };
+  }
+  let { data: venueData, error: venueError } = primary;
   if (venueError && /uuid|invalid|no rows/i.test(venueError.message || '')) {
     const fb = await supabase.from('venues').select(selectFields).eq('id', slug).single();
     venueData = fb.data;

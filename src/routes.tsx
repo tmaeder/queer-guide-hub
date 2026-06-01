@@ -75,6 +75,7 @@ const Travel = lazyRetry(() => import('./pages/Travel'));
 const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
 const AdminVenues = lazy(() => import('./pages/AdminVenues'));
+const AdminDuplicates = lazy(() => import('./pages/AdminDuplicates'));
 const AdminVenueCategories = lazy(() => import('./pages/AdminVenueCategories'));
 const AdminVenueAmenities = lazy(() => import('./pages/AdminVenueAmenities'));
 const AdminVenueServices = lazy(() => import('./pages/AdminVenueServices'));
@@ -346,6 +347,7 @@ export const AppRoutes = () => {
 
                 {/* Legacy routes -- redirect to new paths */}
                 <Route path="venues" element={<AdminVenues />} />
+                <Route path="duplicates" element={<AdminDuplicates />} />
                 <Route path="events" element={<AdminEvents />} />
                 <Route path="tags" element={<AdminTags />} />
                 <Route path="cities" element={<Navigate to="/admin/content/cities" replace />} />
