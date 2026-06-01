@@ -69,6 +69,56 @@ _Locked decisions: (1) AI residency hybrid-by-sensitivity; (2) full pgvector→V
 ### C4. Optional — Hyperdrive
 - Front hot Postgres read paths from Workers. **Test:** latency improvement, correctness. **Rollback:** remove binding.
 
+## Execution status (2026-06-01)
+
+| Step | Status | Who can finish |
+|---|---|---|
+| A1 gateway routing code | **done** (branch) | agent ✅ |
+| A1 gateway **activation** | pending | human (set secret + deploy + watch dashboard) |
+| A4 PII-redact helper | **done** (branch) | agent ✅ |
+| A5 security advisors | **APPLIED to prod** ✅ (0 ERROR verified) | agent ✅ |
+| Q6 redis backing store | **resolved** = Upstash | agent ✅ |
+| A2 clean dormant CF resources | pending | agent-capable (needs go-ahead — destructive) |
+| A3 Resend EU + CF Email Routing | pending | human (Resend + CF dashboards) |
+| B1 vLLM relocation | pending | human (server provisioning) |
+| B2 AutoRAG | pending | human (corpus choice + dashboard) |
+| C1 Vectorize | pending | human+agent (no Vectorize MCP tool; needs wrangler + Worker rebuild; gated on PG cutover) |
+| C2/C3 Meili/Infomaniak retire | pending | human (infra) |
+
+## Activation commands (for the human-gated steps)
+
+### A1 — activate AI Gateway (reversible: unset the secret)
+```bash
+# 1. set the gateway name as a Supabase edge secret (qg-search exists, or make a qg-ai chat gateway)
+supabase secrets set AI_GATEWAY_NAME=qg-search --project-ref xqeacpakadqfxjxjcewc
+#    (optional, authenticated gateway) supabase secrets set AI_GATEWAY_TOKEN=<token> ...
+# 2. deploy the AI edge functions so they pick up the new _shared routing code, e.g.
+supabase functions deploy pipeline-enrich-news pipeline-enrich-events pipeline-enrich-venue \
+  pipeline-quality-enhance event-agentic-enrich trip-concierge cms-ai packing-suggestions-llm \
+  --project-ref xqeacpakadqfxjxjcewc
+# 3. watch the gateway dashboard fill (requests, cache hits, cost). Rollback: `supabase secrets unset AI_GATEWAY_NAME`
+```
+Also set short/zero log retention on the gateway (dashboard) and confirm processing region before flipping.
+
+### A2 — clean dormant CF resources (destructive; confirm unused first)
+```bash
+wrangler d1 delete operator_notify
+wrangler delete --name broken-bar-05d3-nlweb     # dormant AutoRAG/NLWeb trial
+wrangler delete --name scraper-api               # duplicate of queer-guide-scraper-api
+wrangler r2 bucket delete ai-search-broken-bar-05d3-25f0b8   # only if NOT activating AutoRAG (B2)
+```
+
+### A3 — email residency
+- Resend dashboard → enable EU data region; rotate `RESEND_API_KEY`.
+- CF dashboard → Email Routing for inbound `*@queer.guide` (already own the zone).
+
+### C1 — Vectorize (no MCP tool; needs wrangler + Worker work)
+```bash
+wrangler vectorize create qg-venues --dimensions=1024 --metric=cosine   # repeat per entity type
+```
+Then: dual-write embeddings (Postgres + Vectorize) from the `ingest` Worker; rebuild RRF+geo fusion in
+`search-proxy`; shadow-validate overlap + p95 vs Meili before flipping `SEARCH_BACKEND`.
+
 ## Sequencing gates
 - A1/A3/A4 independent — do first.
 - B1 must precede C3 (vLLM needs a new home before VPS dies).
