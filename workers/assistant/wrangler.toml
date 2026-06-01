@@ -1,0 +1,36 @@
+name = "queer-guide-assistant"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers AI runs the tool-calling model (no external LLM key needed).
+[ai]
+binding = "AI"
+
+# Per-conversation memory lives in a Durable Object.
+[[durable_objects.bindings]]
+name = "CONVERSATION"
+class_name = "Conversation"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Conversation"]
+
+[vars]
+ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:3000"
+# AI Gateway id — caching / rate-limit / observability on the AI.run calls.
+AI_GATEWAY_NAME = "qg-search"
+# Tool-capable Workers AI model that runs the agent loop.
+ROUTER_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+
+# Secrets (set via: wrangler secret put NAME):
+#   SUPABASE_URL
+#   SUPABASE_SERVICE_KEY  - service role, for the search_documents RPC tools
+# (No LLM API key — inference runs on the Workers AI binding above.)
+
+[observability]
+enabled = true
+
+[[routes]]
+pattern = "assistant.queer.guide"
+custom_domain = true
