@@ -830,7 +830,10 @@ function dedupeById(list: FuseItem[]): FuseItem[] {
  */
 async function shadowCompare(env: Env, q: string, pgArgs: PgSearchArgs, meiliTop: FuseItem[]): Promise<void> {
 	try {
-		const pg = await pgHybridSearch(env, pgArgs);
+		// 8s timeout (vs the 4s default the user-facing PG path uses): shadow must
+		// RECORD slow PG queries, not drop them on timeout — otherwise the latency
+		// sample is biased optimistically toward only the fast completions.
+		const pg = await pgHybridSearch(env, pgArgs, 8000);
 		const meiliIds = meiliTop.map((h) => itemId(h)).filter((x): x is string => !!x);
 		const meiliSet = new Set(meiliIds);
 		const pgIds = pg.hits

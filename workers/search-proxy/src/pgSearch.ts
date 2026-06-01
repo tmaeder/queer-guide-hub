@@ -50,9 +50,9 @@ function vecLiteral(v?: number[] | null): string | null {
 	return v && v.length ? `[${v.join(",")}]` : null;
 }
 
-async function callRpc<T>(env: Env, fn: string, args: Record<string, unknown>): Promise<T> {
+async function callRpc<T>(env: Env, fn: string, args: Record<string, unknown>, timeoutMs = RPC_TIMEOUT_MS): Promise<T> {
 	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort("pg-rpc-timeout"), RPC_TIMEOUT_MS);
+	const timer = setTimeout(() => controller.abort("pg-rpc-timeout"), timeoutMs);
 	try {
 		const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
 			method: "POST",
@@ -110,7 +110,7 @@ function mapHit(h: Record<string, unknown>): Record<string, unknown> {
 	};
 }
 
-export async function pgHybridSearch(env: Env, args: PgSearchArgs): Promise<PgSearchResult> {
+export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = RPC_TIMEOUT_MS): Promise<PgSearchResult> {
 	const started = Date.now();
 	const pFilters: Record<string, unknown> = {};
 	if (args.filters?.city) pFilters.city = args.filters.city;
@@ -143,8 +143,8 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs): Promise<PgSe
 	};
 
 	const [hybrid, facets] = await Promise.all([
-		callRpc<{ total?: number; hits?: Array<Record<string, unknown>> }>(env, "search_hybrid", hybridArgs),
-		callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs).catch(() => ({})),
+		callRpc<{ total?: number; hits?: Array<Record<string, unknown>> }>(env, "search_hybrid", hybridArgs, timeoutMs),
+		callRpc<Record<string, Record<string, number>>>(env, "search_facets", facetArgs, timeoutMs).catch(() => ({})),
 	]);
 
 	const hits = (hybrid?.hits ?? []).map(mapHit);
