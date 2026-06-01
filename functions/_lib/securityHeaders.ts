@@ -57,13 +57,13 @@ const SCRIPT_SRC_HOSTS = [
   'https://widget.getyourguide.com',
 ];
 
-// Cloudflare Pages injects two inline scripts (beacon + analytics loader)
-// that we cannot nonce because they are added after HTMLRewriter runs.
-// Whitelisting their stable SHA-256 hashes is the correct CSP fix.
-const CF_PAGES_INLINE_SCRIPT_HASHES = [
-  "'sha256-xN+1I4nJkqNT1TN3imzsKuRrdUJwqycndmk/7+tjN0w='",
-  "'sha256-gpv3+1ui2RRNM14g5v6XIjymGrMZxrbVxUzdTeKXUlE='",
-];
+// Intentionally empty. Two inline-script SHA-256 hashes were previously
+// allow-listed here under the assumption they were Cloudflare Pages' own
+// beacon. They are in fact the inline stubs that bootstrap Google Tag Manager
+// + Microsoft Clarity — allow-listing them re-enables the analytics chain this
+// project intentionally turned off. They stay blocked. (CF's Web Analytics
+// beacon is an external script under script-src hosts, not an inline hash.)
+const CF_PAGES_INLINE_SCRIPT_HASHES: string[] = [];
 
 const FRAME_SRC = [
   "'self'",
