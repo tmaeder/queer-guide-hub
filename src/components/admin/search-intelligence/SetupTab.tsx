@@ -18,7 +18,6 @@ interface SetupStatus {
   summary: { ok: number; warn: number; fail: number; na: number };
   checks: Check[];
   runtime: {
-    meili_configured: boolean;
     function_env: Record<string, boolean>;
   };
 }
