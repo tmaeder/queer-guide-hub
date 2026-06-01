@@ -838,17 +838,39 @@ async function shadowCompare(env: Env, q: string, pgArgs: PgSearchArgs, meiliTop
 			.map((h) => itemId(h as FuseItem))
 			.filter((x): x is string => !!x);
 		const overlap = pgIds.filter((id) => meiliSet.has(id)).length;
-		console.log(
-			JSON.stringify({
-				tag: "search_shadow",
-				q,
-				overlap_at_10: overlap,
-				meili_top: meiliIds,
-				pg_top: pgIds,
-				pg_total: pg.estimatedTotalHits,
-				pg_ms: pg.tookMs,
-			}),
-		);
+		const row = {
+			tag: "search_shadow",
+			q,
+			overlap_at_10: overlap,
+			meili_top: meiliIds,
+			pg_top: pgIds,
+			pg_total: pg.estimatedTotalHits,
+			pg_ms: pg.tookMs,
+		};
+		console.log(JSON.stringify(row));
+		// Durable sink for the 24h cutover go/no-go aggregation. Best-effort:
+		// Observability log retention is short, so persist each comparison to
+		// search_shadow_log (service-role, RLS deny-all). Never blocks the served
+		// Meili response — this whole fn runs inside ctx.waitUntil.
+		if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+			await fetch(`${env.SUPABASE_URL}/rest/v1/search_shadow_log`, {
+				method: "POST",
+				headers: {
+					apikey: env.SUPABASE_SERVICE_KEY,
+					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+					"Content-Type": "application/json",
+					Prefer: "return=minimal",
+				},
+				body: JSON.stringify({
+					q,
+					overlap_at_10: overlap,
+					pg_total: pg.estimatedTotalHits,
+					pg_ms: Math.round(pg.tookMs),
+					meili_top: meiliIds,
+					pg_top: pgIds,
+				}),
+			}).catch((e) => console.warn("shadowSink", (e as Error).message));
+		}
 	} catch (e) {
 		console.warn("shadowCompare", (e as Error).message);
 	}
