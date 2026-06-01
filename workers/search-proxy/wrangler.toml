@@ -15,19 +15,16 @@ binding = "SESSION_CACHE"
 id = "d3c4fcf5602545e28515d0a62ebea64c"
 
 [vars]
-MEILISEARCH_URL = "https://s.queer.guide"
 ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:3000"
 AI_GATEWAY_ACCOUNT_ID = "7aa3765cc5f50f2b681b782eb4a8d296"
 AI_GATEWAY_NAME = "qg-search"
 EMBED_MODEL = "@cf/baai/bge-m3"
 ENABLE_RERANKER = "1"
-# Meili -> Postgres migration (Phase 2). "meili" (default) | "pg" | "shadow".
-# Flip to "shadow" to validate the Postgres search_hybrid path against live Meili,
-# then "pg" to cut over. Reversible at any time.
-SEARCH_BACKEND = "shadow"
+# Search backend. Postgres (search_hybrid / search_autocomplete) is the only
+# backend now; Meilisearch was fully decommissioned. Kept as a var for clarity.
+SEARCH_BACKEND = "pg"
 
 # Secrets (set via: wrangler secret put NAME):
-#   MEILISEARCH_SEARCH_KEY
 #   SUPABASE_URL
 #   SUPABASE_SERVICE_KEY
 

@@ -36,9 +36,20 @@ jobs:
       security-events: write
       # pull-requests: write     # Required if DO_PR_COMMENT is set to true
 
+    # Fortify on Demand / ScanCentral need credentials to run. When none are
+    # provisioned the action fast-fails on login, turning the check red on every
+    # PR. Surface the credentials as job-level env so the scan step can gate on
+    # them and no-op (job = success) when they're absent; it runs normally once
+    # the secrets are added. Functional SAST coverage is provided by CodeQL +
+    # OSSAR + bandit + binskim regardless.
+    env:
+      FOD_PAT: ${{ secrets.FOD_PAT }}
+      SSC_TOKEN: ${{ secrets.SSC_TOKEN }}
+
     steps:
       # Check out source code
       - name: Check Out Source Code
+        if: ${{ env.FOD_PAT != '' || env.SSC_TOKEN != '' }}
         uses: actions/checkout@v4
 
       # Perform SAST and/or SCA scan via Fortify on Demand/Fortify Hosted/ScanCentral SAST/Debricked. Based on
@@ -50,6 +61,7 @@ jobs:
       # documentation at https://github.com/fortify/github-action#readme for more information on the various
       # configuration options and available sub-actions.
       - name: Run Fortify Scan
+        if: ${{ env.FOD_PAT != '' || env.SSC_TOKEN != '' }}
         # Specify Fortify GitHub Action version to run. As per GitHub starter workflow requirements, this example
         # uses the commit id corresponding to version 1.6.2. It is recommended to check whether any later releases
         # are available at https://github.com/fortify/github-action/releases. Depending on the amount of stability

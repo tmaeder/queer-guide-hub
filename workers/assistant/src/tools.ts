@@ -4,11 +4,14 @@
  * way the model can reach real entities, which is how grounding is enforced:
  * the cards the UI renders come from tool results, never from model prose.
  *
- * Skeleton note: search uses the keyword leg only (p_query_vec = null). Semantic
- * blending would require an embedding round-trip (Workers AI) — a follow-up.
+ * search_entities runs the full hybrid path: the query is embedded with bge-m3
+ * (same model/space as the corpus) and passed to search_hybrid so SQL fuses the
+ * keyword + vector legs via RRF. Embedding is fail-soft — on any hiccup it falls
+ * back to the keyword-only leg.
  */
 
 import type { Env, ToolDef, Card } from "./types";
+import { embedQuery } from "./embed";
 
 const RPC_TIMEOUT_MS = 6000;
 
@@ -39,7 +42,7 @@ export const TOOLS: ToolDef[] = [
 	{
 		name: "search_entities",
 		description:
-			"Keyword search across the queer.guide corpus (venues, events, cities, people, news, marketplace, tags, queer villages). Use for 'find / where / what is' questions. Returns real entity cards.",
+			"Hybrid (keyword + semantic) search across the queer.guide corpus (venues, events, cities, people, news, marketplace, tags, queer villages). Use for 'find / where / what is' questions. Returns real entity cards.",
 		parameters: {
 			type: "object",
 			properties: {
@@ -112,9 +115,13 @@ export async function executeTool(env: Env, name: string, input: Record<string, 
 		if (name === "search_entities") {
 			const filters: Record<string, unknown> = {};
 			if (typeof input.city === "string" && input.city) filters.city = input.city;
+			const query = String(input.query ?? "");
+			// Embed the query (bge-m3, corpus-matched) so search_hybrid fuses the
+			// keyword + vector legs; null on failure → keyword-only fallback.
+			const p_query_vec = await embedQuery(env, query);
 			const rows = await rpc<{ hits?: unknown }>(env, "search_hybrid", {
-				p_query: String(input.query ?? ""),
-				p_query_vec: null,
+				p_query: query,
+				p_query_vec,
 				p_content_types: Array.isArray(input.types) && input.types.length ? input.types : null,
 				p_filters: filters,
 				p_limit: clampLimit(input.limit, 8),
