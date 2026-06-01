@@ -27,7 +27,7 @@ _Prioritized. P0 = do now, low risk. Audit date 2026-06-01._
 - [ ] **Relocate sensitive-inference vLLM** off Infomaniak; route trip/submission/cms-ai flows to it.
 - [ ] **AutoRAG decision** for `assistant.knowledge_search`: activate (define corpus) or delete trial. _Open Q2._
 - [ ] **Standardize `tag_embeddings`** ada-002 → bge-m3 (1024-d).
-- [ ] **Delete dormant CF resources** (D1 `operator_notify`, `broken-bar-05d3-nlweb`, dup `scraper-api`, stale R2) — after AutoRAG decision.
+- [ ] **Delete dormant CF resources** (`broken-bar-05d3-nlweb`, dup `scraper-api`, stale R2) via wrangler — after AutoRAG decision. _(NOT D1 `operator_notify` — active env.DB of operator-notify-inbound.)_
 
 ## P2 — Structural (gated)
 - [ ] **pgvector → Vectorize**: indexes per entity type, dual-write, rebuild RRF+geo fusion in `search-proxy`.

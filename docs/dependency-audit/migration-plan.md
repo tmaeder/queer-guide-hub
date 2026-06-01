@@ -15,8 +15,9 @@ _Locked decisions: (1) AI residency hybrid-by-sensitivity; (2) full pgvector→V
 - **Cutover:** env flag, function-by-function.
 
 ### A2. Clean dormant resources
-- Delete D1 `operator_notify` (0 tables), Worker `broken-bar-05d3-nlweb`, duplicate `scraper-api`, R2
-  `ai-search-broken-bar-05d3-25f0b8` — **only after** the AutoRAG decision (B2) and confirming unused.
+- Delete Worker `broken-bar-05d3-nlweb`, duplicate `scraper-api`, R2 `ai-search-broken-bar-05d3-25f0b8` —
+  **only after** the AutoRAG decision (B2) and confirming unused. Requires wrangler (no Worker-delete MCP tool).
+- **NOT a candidate:** D1 `operator_notify` is the active `operator-notify-inbound` mail Worker's `env.DB`. Keep.
 - **Test:** no references in code/wrangler. **Rollback:** recreate (config is in repo).
 
 ### A3. Email residency
@@ -102,7 +103,7 @@ Also set short/zero log retention on the gateway (dashboard) and confirm process
 
 ### A2 — clean dormant CF resources (destructive; confirm unused first)
 ```bash
-wrangler d1 delete operator_notify
+# NOTE: do NOT delete D1 operator_notify — it is the active operator-notify-inbound Worker's env.DB.
 wrangler delete --name broken-bar-05d3-nlweb     # dormant AutoRAG/NLWeb trial
 wrangler delete --name scraper-api               # duplicate of queer-guide-scraper-api
 wrangler r2 bucket delete ai-search-broken-bar-05d3-25f0b8   # only if NOT activating AutoRAG (B2)

@@ -12,7 +12,7 @@ _Audit date: 2026-06-01. Built from live Cloudflare + Supabase config and a full
 | Backend | 261 Edge Functions (Deno) | **Supabase** | ingestion pipelines, AI enrichment, trips, payments, email |
 | Auth | email + magic-link + passkey | **Supabase Auth** | |
 | Object storage | R2 ×8, Supabase Storage | **Cloudflare + Supabase** | images, snapshots, plane backups, map tiles |
-| Cache/state | KV ×5, D1 ×1 | **Cloudflare** | embed cache, sessions, rate-limit, ingest state; D1 `operator_notify` empty |
+| Cache/state | KV ×5, D1 ×1 | **Cloudflare** | embed cache, sessions, rate-limit, ingest state; D1 `operator_notify` = `env.DB` of the active operator-notify-inbound mail Worker (NOT stale) |
 | Search | Meilisearch | **Infomaniak VPS (CH)** `s.queer.guide` | prod default; PG cutover mid-validation |
 | Geocoding | Nominatim | **Infomaniak VPS (CH)** `nominatim.queer.guide` | self-hosted, no per-query egress |
 | Issue tracker | Plane (Django) | **Infomaniak VPS (CH)** `plane.queer.guide` | own redis/mq; R2-backed |
