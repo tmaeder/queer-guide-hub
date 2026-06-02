@@ -109,7 +109,7 @@ Deno.serve(async (req: Request) => {
 
   if (!isLlmConfigured()) {
     return new Response(
-      JSON.stringify({ ok: false, error: 'LLM not configured (QG_LLM_BASE_URL/QG_LLM_API_KEY)' }),
+      JSON.stringify({ ok: false, error: 'LLM not configured (CF_ACCOUNT_ID/CF_AI_API_TOKEN)' }),
       { status: 503, headers: { ...CORS, 'Content-Type': 'application/json' } },
     );
   }

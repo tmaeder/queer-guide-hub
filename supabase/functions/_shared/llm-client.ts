@@ -1,16 +1,13 @@
 /**
  * LLM client — OpenAI-compatible endpoint.
  *
- * Backend resolution (first match wins):
- *   1. Cloudflare Workers AI — set `CF_ACCOUNT_ID` + `CF_AI_API_TOKEN`.
- *      Default model: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (override
- *      with `CF_AI_MODEL`). Endpoint:
- *      `https://api.cloudflare.com/client/v4/accounts/{ACCT}/ai/v1`
- *   2. Self-hosted Gemma — set `QG_LLM_BASE_URL` + `QG_LLM_API_KEY`
- *      (vLLM at ai.queer.guide; legacy/fallback).
+ * Backend: Cloudflare Workers AI — set `CF_ACCOUNT_ID` + `CF_AI_API_TOKEN`.
+ *   Default model: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (override with
+ *   `CF_AI_MODEL`). Endpoint:
+ *   `https://api.cloudflare.com/client/v4/accounts/{ACCT}/ai/v1`
  *
- * Both backends speak the OpenAI chat-completions wire format, so callers
- * stay identical. Set both and CF wins.
+ * (The self-hosted EU vLLM fallback at ai.queer.guide was retired with the
+ *  Infomaniak VPS — Cloudflare Workers AI is now the sole backend.)
  *
  * When `AI_GATEWAY_NAME` is set, the Cloudflare Workers AI path is routed
  * through AI Gateway. The self-hosted vLLM path stays direct (it is already an
@@ -43,7 +40,7 @@ export interface LlmCompletionResult {
 
 export class LlmNotConfiguredError extends Error {
   constructor() {
-    super('Self-hosted LLM not configured. Set QG_LLM_BASE_URL + QG_LLM_API_KEY.')
+    super('Cloudflare Workers AI not configured. Set CF_ACCOUNT_ID + CF_AI_API_TOKEN.')
     this.name = 'LlmNotConfiguredError'
   }
 }
@@ -56,36 +53,26 @@ export class LlmRequestError extends Error {
 }
 
 function readConfig() {
+  // Cloudflare Workers AI is the sole inference backend (the self-hosted EU vLLM
+  // fallback at ai.queer.guide was retired when the Infomaniak VPS was
+  // decommissioned). Routed through AI Gateway when AI_GATEWAY_NAME is set.
   const cfAcct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
   const cfToken = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
-  if (cfAcct && cfToken) {
-    return {
-      baseUrl:
-        gatewayBaseUrl('workers-ai') ??
-        `https://api.cloudflare.com/client/v4/accounts/${cfAcct}/ai/v1`,
-      apiKey: cfToken,
-      defaultModel: Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-      gatewayed: true,
-    }
-  }
-  const baseUrl = Deno.env.get('QG_LLM_BASE_URL')
-  const apiKey = Deno.env.get('QG_LLM_API_KEY')
-  if (!baseUrl || !apiKey) throw new LlmNotConfiguredError()
+  if (!cfAcct || !cfToken) throw new LlmNotConfiguredError()
   return {
-    baseUrl: baseUrl.replace(/\/$/, ''),
-    apiKey,
-    defaultModel: Deno.env.get('QG_LLM_MODEL') || 'gemma-4-26b',
-    gatewayed: false,
+    baseUrl:
+      gatewayBaseUrl('workers-ai') ??
+      `https://api.cloudflare.com/client/v4/accounts/${cfAcct}/ai/v1`,
+    apiKey: cfToken,
+    defaultModel: Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+    gatewayed: true,
   }
 }
 
 export function isLlmConfigured(): boolean {
-  return (
-    Boolean(
-      (Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')) &&
-      (Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN'))
-    ) ||
-    Boolean(Deno.env.get('QG_LLM_BASE_URL') && Deno.env.get('QG_LLM_API_KEY'))
+  return Boolean(
+    (Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')) &&
+    (Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN'))
   )
 }
 
