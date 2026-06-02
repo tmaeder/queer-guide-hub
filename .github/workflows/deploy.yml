@@ -6,6 +6,7 @@ on:
     paths:
       - "workers/search-proxy/**"
       - "workers/ingest/**"
+      - "workers/assistant/**"
       - ".github/workflows/deploy.yml"
   workflow_dispatch: {}
 
@@ -45,6 +46,23 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: workers/ingest
+          command: deploy
+
+  deploy-assistant:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: workers/assistant
+      - run: npx tsc --noEmit
+        working-directory: workers/assistant
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/assistant
           command: deploy
 
   smoke:
