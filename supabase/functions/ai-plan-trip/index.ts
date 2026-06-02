@@ -12,7 +12,8 @@
  *   1. Auth caller, verify they're a member of trip_id (RLS does the heavy lifting,
  *      we just need an authenticated supabase client).
  *   2. Pull trip metadata (start/end dates, country/city scope from existing places).
- *   3. Search Meilisearch for ~30 candidate venues + events matching the destination.
+ *   3. Search the Postgres search_documents engine (search_hybrid) for ~30
+ *      candidate venues + events matching the destination.
  *   4. Send candidates + prompt + dates to Claude; ask for structured JSON.
  *   5. Return draft to client. The client renders a diff and the user clicks Apply,
  *      which inserts trip_places rows via the standard mutation.
@@ -27,8 +28,6 @@ import { anthropicMessages } from '../_shared/anthropic-shim.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const MEILISEARCH_URL = Deno.env.get('MEILISEARCH_URL') ?? '';
-const MEILISEARCH_KEY = Deno.env.get('MEILISEARCH_SEARCH_KEY') ?? '';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -102,58 +101,34 @@ async function loadTripContext(supabase: any, tripId: string): Promise<TripConte
   };
 }
 
-async function searchCandidates(query: string): Promise<Candidate[]> {
-  if (!MEILISEARCH_URL) return [];
-
-  // Two parallel searches: venues + events. Cap at 15 each so the prompt stays small.
-  const headers = {
-    Authorization: `Bearer ${MEILISEARCH_KEY}`,
-    'Content-Type': 'application/json',
-  };
-
-  const [venuesRes, eventsRes] = await Promise.all([
-    fetch(`${MEILISEARCH_URL}/indexes/venues/search`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ q: query, limit: 15, attributesToRetrieve: ['id', 'name', 'city', 'country', 'category', 'description'] }),
-    }).catch(() => null),
-    fetch(`${MEILISEARCH_URL}/indexes/events/search`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ q: query, limit: 15, attributesToRetrieve: ['id', 'title', 'city', 'country', 'event_type', 'description'] }),
-    }).catch(() => null),
-  ]);
-
-  const candidates: Candidate[] = [];
-  if (venuesRes?.ok) {
-    const { hits } = await venuesRes.json();
-    for (const h of hits) {
-      candidates.push({
-        id: h.id,
-        kind: 'venue',
-        name: h.name,
-        city: h.city,
-        country: h.country,
-        category: h.category,
-        description: h.description?.slice(0, 200),
-      });
-    }
-  }
-  if (eventsRes?.ok) {
-    const { hits } = await eventsRes.json();
-    for (const h of hits) {
-      candidates.push({
-        id: h.id,
-        kind: 'event',
-        name: h.title,
-        city: h.city,
-        country: h.country,
-        category: h.event_type,
-        description: h.description?.slice(0, 200),
-      });
-    }
-  }
-  return candidates;
+async function searchCandidates(
+  supabase: ReturnType<typeof createClient>,
+  query: string,
+): Promise<Candidate[]> {
+  // Postgres hybrid search over the search_documents engine. Keyword-only
+  // (no query embedding) is sufficient for candidate gathering; search_hybrid
+  // returns a single RRF-ranked list across the requested entity types.
+  // Replaces the former Meilisearch venues/events multi-search (Meili →
+  // Postgres decommission). ~30 mixed candidates keeps the prompt small.
+  const { data, error } = await supabase.rpc('search_hybrid', {
+    p_query: query,
+    p_content_types: ['venue', 'event'],
+    p_limit: 30,
+  });
+  if (error || !data) return [];
+  const hits = (data as { hits?: Array<Record<string, unknown>> }).hits ?? [];
+  return hits
+    .map((h): Candidate => ({
+      id: String(h.objectID ?? h.entity_id ?? ''),
+      kind: h.type === 'event' ? 'event' : 'venue',
+      name: (h.title as string) ?? '',
+      city: (h.city as string | null) ?? undefined,
+      country: (h.country as string | null) ?? undefined,
+      category: (h.category as string | null) ?? undefined,
+      description:
+        typeof h.description === 'string' ? h.description.slice(0, 200) : undefined,
+    }))
+    .filter((c) => c.id);
 }
 
 async function generateDraft(
@@ -240,9 +215,9 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'trip not found or no access' }), { status: 404, headers: { ...cors, 'content-type': 'application/json' } });
   }
 
-  // Compose Meilisearch query: prompt + destination hint.
+  // Compose the search query: prompt + destination hint.
   const searchQuery = [prompt, ...ctx.cities, ...ctx.countries].filter(Boolean).join(' ');
-  const candidates = await searchCandidates(searchQuery);
+  const candidates = await searchCandidates(supabase, searchQuery);
 
   if (candidates.length === 0) {
     return new Response(
