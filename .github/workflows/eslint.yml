@@ -59,7 +59,7 @@ jobs:
         # Guard against an ESLint crash leaving no SARIF file behind so the
         # whole job doesn't fail on a missing path.
         if: hashFiles('eslint-results.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: eslint-results.sarif
           wait-for-processing: true
