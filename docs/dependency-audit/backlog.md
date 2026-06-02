@@ -31,6 +31,11 @@ _Prioritized. P0 = do now, low risk. Audit date 2026-06-01._
 
 ## P2 — Structural (gated)
 - [ ] **pgvector → Vectorize**: indexes per entity type, dual-write, rebuild RRF+geo fusion in `search-proxy`.
+- [ ] **Search latency fix (root-caused 2026-06-02):** `search_hybrid` hydrates ALL heavy columns for
+  every candidate (2k–5k rows for broad terms) before limiting to 20 → p95 4.4s. Fix = **rank-then-hydrate**
+  (rank on slim doc_id+score, hydrate only the 20 returned). Full evidence + recipe in
+  [search-latency-finding.md](search-latency-finding.md). Implement as `search_hybrid_v2` + shadow-validate
+  parity (live, no-fallback path).
 - [ ] **Shadow-validate** Vectorize search vs the live Postgres `search_hybrid` path (overlap + p95) before cutover.
 - [x] **Retire Meilisearch (search serving)** — DONE in PR #1405 (search → Postgres; `meilisearch-sync` deleted; ingest worker Meili write removed upstream).
 - [ ] **Shut down the Infomaniak Meili node** — serving-safe now: no writers left; the only readers
