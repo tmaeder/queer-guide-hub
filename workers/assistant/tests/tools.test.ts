@@ -3,9 +3,14 @@ import { TOOLS, executeTool } from "../src/tools";
 import type { Env } from "../src/types";
 
 describe("TOOLS", () => {
-	it("exposes the three grounded tools with valid schemas", () => {
+	it("exposes the grounded tools with valid schemas", () => {
 		const names = TOOLS.map((t) => t.name).sort();
-		expect(names).toEqual(["find_related", "get_recommendations", "search_entities"]);
+		expect(names).toEqual([
+			"find_related",
+			"get_recommendations",
+			"knowledge_search",
+			"search_entities",
+		]);
 		for (const t of TOOLS) {
 			expect(typeof t.description).toBe("string");
 			expect((t.parameters as { type?: string }).type).toBe("object");
