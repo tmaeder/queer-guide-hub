@@ -22,8 +22,6 @@ import { anthropicMessages } from '../_shared/anthropic-shim.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const MEILISEARCH_URL = Deno.env.get('MEILISEARCH_URL') ?? '';
-const MEILISEARCH_KEY = Deno.env.get('MEILISEARCH_SEARCH_KEY') ?? '';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -127,60 +125,32 @@ async function loadHistory(supabase: any, tripId: string): Promise<HistoryMessag
   }));
 }
 
-async function searchCandidates(query: string): Promise<Candidate[]> {
-  if (!MEILISEARCH_URL) return [];
-  const headers = {
-    Authorization: `Bearer ${MEILISEARCH_KEY}`,
-    'Content-Type': 'application/json',
-  };
-  const [venuesRes, eventsRes] = await Promise.all([
-    fetch(`${MEILISEARCH_URL}/indexes/venues/search`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        q: query,
-        limit: 12,
-        attributesToRetrieve: ['id', 'name', 'city', 'country', 'category'],
-      }),
-    }).catch(() => null),
-    fetch(`${MEILISEARCH_URL}/indexes/events/search`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        q: query,
-        limit: 12,
-        attributesToRetrieve: ['id', 'title', 'city', 'country', 'event_type'],
-      }),
-    }).catch(() => null),
-  ]);
-  const candidates: Candidate[] = [];
-  if (venuesRes?.ok) {
-    const { hits } = await venuesRes.json();
-    for (const h of hits) {
-      candidates.push({
-        id: h.id,
-        kind: 'venue',
-        name: h.name,
-        city: h.city,
-        country: h.country,
-        category: h.category,
-      });
-    }
-  }
-  if (eventsRes?.ok) {
-    const { hits } = await eventsRes.json();
-    for (const h of hits) {
-      candidates.push({
-        id: h.id,
-        kind: 'event',
-        name: h.title,
-        city: h.city,
-        country: h.country,
-        category: h.event_type,
-      });
-    }
-  }
-  return candidates;
+async function searchCandidates(
+  supabase: ReturnType<typeof createClient>,
+  query: string,
+): Promise<Candidate[]> {
+  // Postgres hybrid search over the search_documents engine. Keyword-only
+  // (no query embedding) is sufficient for candidate gathering; search_hybrid
+  // returns a single RRF-ranked list across the requested entity types.
+  // Replaces the former Meilisearch venues/events multi-search (Meili →
+  // Postgres decommission).
+  const { data, error } = await supabase.rpc('search_hybrid', {
+    p_query: query,
+    p_content_types: ['venue', 'event'],
+    p_limit: 24,
+  });
+  if (error || !data) return [];
+  const hits = (data as { hits?: Array<Record<string, unknown>> }).hits ?? [];
+  return hits
+    .map((h): Candidate => ({
+      id: String(h.objectID ?? h.entity_id ?? ''),
+      kind: h.type === 'event' ? 'event' : 'venue',
+      name: (h.title as string) ?? '',
+      city: (h.city as string | null) ?? undefined,
+      country: (h.country as string | null) ?? undefined,
+      category: (h.category as string | null) ?? undefined,
+    }))
+    .filter((c) => c.id);
 }
 
 interface ClaudeResponse {
@@ -313,7 +283,7 @@ Deno.serve(async (req) => {
   const searchQuery = [message, ...ctx.cities, ...ctx.countries]
     .filter(Boolean)
     .join(' ');
-  const candidates = await searchCandidates(searchQuery);
+  const candidates = await searchCandidates(supabase, searchQuery);
 
   // Persist the user's message before calling Claude so a Claude failure
   // still leaves the user's input on the thread for retry.
