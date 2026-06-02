@@ -34,6 +34,14 @@ export interface SearchPopoverMobileProps {
   onClear: () => void;
   onPrefetch: (s: SearchSuggestion) => void;
   navigate: (path: string) => void;
+  onAsk: () => void;
+  onExploreMap: (center?: { lat: number; lng: number }) => void;
+  onNearMe: () => void;
+  nearMeSupported: boolean;
+  nearMeLoading: boolean;
+  recentSearches: string[];
+  onSelectRecent: (term: string) => void;
+  clearRecents: () => void;
 }
 
 export function SearchPopoverMobile({
@@ -57,6 +65,14 @@ export function SearchPopoverMobile({
   onClear,
   onPrefetch,
   navigate,
+  onAsk,
+  onExploreMap,
+  onNearMe,
+  nearMeSupported,
+  nearMeLoading,
+  recentSearches,
+  onSelectRecent,
+  clearRecents,
 }: SearchPopoverMobileProps) {
   const { t } = useTranslation();
 
@@ -82,7 +98,7 @@ export function SearchPopoverMobile({
               {t('common.clear', 'Clear')}
             </button>
           )}
-          {onToggleFilters && (
+          {query && onToggleFilters && (
             <button
               type="button"
               onClick={onToggleFilters}
@@ -99,12 +115,6 @@ export function SearchPopoverMobile({
           )}
         </div>
       </div>
-      <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
-      {showFilters && (
-        <Suspense fallback={null}>
-          <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
-        </Suspense>
-      )}
       {query.length === 0 ? (
         <SearchPopoverEmpty
           trending={trending}
@@ -124,25 +134,42 @@ export function SearchPopoverMobile({
             onClose();
             navigate(path);
           }}
+          onAsk={onAsk}
+          onExploreMap={onExploreMap}
+          onNearMe={onNearMe}
+          nearMeSupported={nearMeSupported}
+          nearMeLoading={nearMeLoading}
+          recents={recentSearches}
+          onSelectRecent={onSelectRecent}
+          onClearRecents={clearRecents}
         />
       ) : (
-        <SearchPopoverResults
-          query={query}
-          activeScope={activeScope}
-          suggestions={suggestions}
-          countsByType={countsByType}
-          loading={loading}
-          error={error}
-          focusedIndex={null}
-          onSelect={(s) => onSelect(s)}
-          onHover={() => undefined}
-          onPrefetch={onPrefetch}
-          onToggleFilters={() => undefined}
-          filtersOpen={false}
-          activeFiltersCount={0}
-          onSearchAll={onSearchAll}
-          onClearScope={() => setScope(null)}
-        />
+        <>
+          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
+          {showFilters && (
+            <Suspense fallback={null}>
+              <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
+            </Suspense>
+          )}
+          <SearchPopoverResults
+            query={query}
+            activeScope={activeScope}
+            suggestions={suggestions}
+            countsByType={countsByType}
+            loading={loading}
+            error={error}
+            focusedIndex={null}
+            onSelect={(s) => onSelect(s)}
+            onHover={() => undefined}
+            onPrefetch={onPrefetch}
+            onToggleFilters={onToggleFilters ?? (() => undefined)}
+            filtersOpen={showFilters}
+            activeFiltersCount={activeFiltersCount}
+            onSearchAll={onSearchAll}
+            onClearScope={() => setScope(null)}
+            onAsk={onAsk}
+          />
+        </>
       )}
     </>
   );

@@ -14,8 +14,8 @@ export function ModeSwitcher() {
   const activeLabel = USER_MODES.find((m) => m.value === mode)?.labelKey;
 
   return (
-    <div className="px-3 pt-3">
-      <div className="mb-2 px-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <div className="px-4">
+      <div className="mb-2 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
         {t('header.modeLabel', 'Mode')}
       </div>
       <div

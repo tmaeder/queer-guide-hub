@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapPin, Calendar, Store, Tag, Users, User, Newspaper, Globe } from 'lucide-react';
+import { MapPin, Tag, Users, Newspaper, Globe, Building2, CalendarDays, ShoppingBag } from 'lucide-react';
 import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
 import { toIndexKeys } from '@/lib/searchTaxonomy';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -27,12 +27,13 @@ export interface SearchSuggestion {
   image?: string;
 }
 
+// Icon set shared with SearchScopeChips — distinct, recognizable glyphs per type.
 export const TYPE_ICONS: Record<string, React.ComponentType> = {
-  venue: MapPin,
-  event: Calendar,
-  marketplace: Store,
+  venue: Building2,
+  event: CalendarDays,
+  marketplace: ShoppingBag,
   tag: Tag,
-  personality: User,
+  personality: Users,
   city: Globe,
   country: Globe,
   queer_village: MapPin,

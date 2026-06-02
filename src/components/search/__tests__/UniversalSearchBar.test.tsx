@@ -15,6 +15,7 @@ vi.mock('@/hooks/useUserMode', () => ({
 vi.mock('@/hooks/useSearchRecommendations', () => ({
   useSearchRecommendations: () => ({ recommendations: [], loading: false }),
 }));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 
 import { UniversalSearchBar } from '../UniversalSearchBar';
 

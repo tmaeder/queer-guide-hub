@@ -1,26 +1,14 @@
 import { Suspense, lazy } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import type { SearchFilters } from '@/hooks/useSearch';
-import { SearchPopoverRail } from './SearchPopoverRail';
+import { SearchScopeChips } from './SearchScopeChips';
 import { SearchPopoverResults } from './SearchPopoverResults';
 import { SearchPopoverEmpty } from './SearchPopoverEmpty';
 
 const SearchFiltersPanel = lazy(() =>
   import('./SearchFiltersPanel').then((m) => ({ default: m.SearchFiltersPanel })),
 );
-
-function KbdHint({ label, desc }: { label: string; desc: string }) {
-  return (
-    <span className="inline-flex items-center gap-1">
-      <kbd className="inline-block min-w-[18px] border border-border px-1 py-px text-center text-[0.65rem] leading-tight font-[inherit]">
-        {label}
-      </kbd>
-      {desc}
-    </span>
-  );
-}
 
 export interface SearchPopoverDesktopProps {
   query: string;
@@ -39,25 +27,22 @@ export interface SearchPopoverDesktopProps {
   setScope: (s: string | null) => void;
   onSelectIndex: (s: SearchSuggestion, i: number) => void;
   resultsFocused: number | null;
-  railFocused: number | null;
   setResultsFocused: (i: number | null) => void;
   activeFiltersCount: number;
   onSearchAll: () => void;
-  removeRecent: (i: number) => void;
   clearRecents: () => void;
   onSelectRecent: (term: string) => void;
   nearMeSupported: boolean;
   nearMeLoading: boolean;
   onNearMe: () => void;
-  onBrowseAll: () => void;
+  onExploreMap: (center?: { lat: number; lng: number }) => void;
   onSelectTrending: (hit: ReturnType<typeof useTrendingSuggestions>['trending'][number]) => void;
   onBrowse: (path: string) => void;
   onPrefetch: (s: SearchSuggestion) => void;
-  isMac: boolean;
+  onAsk: () => void;
 }
 
 export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
-  const { t } = useTranslation();
   const {
     query,
     activeScope,
@@ -75,98 +60,66 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
     setScope,
     onSelectIndex,
     resultsFocused,
-    railFocused,
     setResultsFocused,
     activeFiltersCount,
     onSearchAll,
-    removeRecent,
     clearRecents,
     onSelectRecent,
     nearMeSupported,
     nearMeLoading,
     onNearMe,
-    onBrowseAll,
+    onExploreMap,
     onSelectTrending,
     onBrowse,
     onPrefetch,
-    isMac,
+    onAsk,
   } = props;
 
   return (
     <div className="flex min-h-[320px] flex-col" id="qg-search-listbox">
-      <div className="flex max-h-[560px] min-h-[320px] flex-1">
-        <SearchPopoverRail
-          query={query}
-          activeScope={activeScope}
-          countsByType={countsByType}
-          recents={recentSearches}
-          onSelectScope={setScope}
-          onSelectRecent={onSelectRecent}
-          onRemoveRecent={removeRecent}
-          onClearRecents={clearRecents}
+      {query.length === 0 ? (
+        <SearchPopoverEmpty
+          trending={trending}
+          source={discoverySource}
+          onSelectTrending={onSelectTrending}
+          onBrowse={onBrowse}
+          onAsk={onAsk}
+          onExploreMap={onExploreMap}
+          onNearMe={onNearMe}
           nearMeSupported={nearMeSupported}
           nearMeLoading={nearMeLoading}
-          onNearMe={onNearMe}
-          onBrowseAll={onBrowseAll}
-          focusedIndex={railFocused}
+          recents={recentSearches}
+          onSelectRecent={onSelectRecent}
+          onClearRecents={clearRecents}
         />
-        <div className="flex min-w-0 flex-1 flex-col">
+      ) : (
+        <>
+          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
           {showFilters && (
             <Suspense fallback={null}>
               <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
             </Suspense>
           )}
-          {query.length === 0 ? (
-            <SearchPopoverEmpty
-              trending={trending}
-              source={discoverySource}
-              onSelectTrending={onSelectTrending}
-              onBrowse={onBrowse}
-            />
-          ) : (
-            <SearchPopoverResults
-              query={query}
-              activeScope={activeScope}
-              suggestions={suggestions}
-              countsByType={countsByType}
-              loading={loading}
-              error={error}
-              focusedIndex={resultsFocused}
-              onSelect={onSelectIndex}
-              onHover={(i) => setResultsFocused(i)}
-              onPrefetch={onPrefetch}
-              onToggleFilters={() => setShowFilters(!showFilters)}
-              filtersOpen={showFilters}
-              activeFiltersCount={activeFiltersCount}
-              onSearchAll={onSearchAll}
-              onClearScope={() => setScope(null)}
-            />
-          )}
-        </div>
-      </div>
-      <div
-        aria-hidden="true"
-        className="flex items-center justify-between gap-4 border-t border-border px-3 py-1.5 text-[0.7rem] text-muted-foreground"
-      >
-        <span className="inline-flex items-center gap-2">
-          <KbdHint label="↑↓" desc={t('search.kbd.navigate', 'Navigate')} />
-          <KbdHint label="↵" desc={t('search.kbd.select', 'Select')} />
-          <KbdHint label={isMac ? '⌥1-9' : 'Alt+1-9'} desc={t('search.kbd.scope', 'Scope')} />
-          <KbdHint label="⇥" desc={t('search.kbd.complete', 'Complete')} />
-        </span>
-        <span className="inline-flex items-center gap-2">
-          {query && (
-            <button
-              type="button"
-              onClick={onSearchAll}
-              className="cursor-pointer border-0 bg-transparent p-0 text-inherit underline"
-            >
-              {t('search.seeAll', 'See all results')} →
-            </button>
-          )}
-          <KbdHint label="Esc" desc={t('search.kbd.close', 'Close')} />
-        </span>
-      </div>
+          <SearchPopoverResults
+            query={query}
+            activeScope={activeScope}
+            suggestions={suggestions}
+            countsByType={countsByType}
+            loading={loading}
+            error={error}
+            focusedIndex={resultsFocused}
+            onSelect={onSelectIndex}
+            onHover={(i) => setResultsFocused(i)}
+            onPrefetch={onPrefetch}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            filtersOpen={showFilters}
+            activeFiltersCount={activeFiltersCount}
+            onSearchAll={onSearchAll}
+            onClearScope={() => setScope(null)}
+            onAsk={onAsk}
+          />
+        </>
+      )}
     </div>
   );
 }
