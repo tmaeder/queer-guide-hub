@@ -47,9 +47,11 @@ _Prioritized. P0 = do now, low risk. Audit date 2026-06-01._
 - [ ] _Optional:_ **Hyperdrive** front for hot Postgres reads.
 
 ## search-intelligence cleanup (post-#1405) — scoped, NOT a blind strip
-- [ ] **BUG: `startReindex` drives the deleted `meilisearch-sync`** — `search-intelligence/index.ts:751`
-  POSTs `/functions/v1/meilisearch-sync` (removed in #1405) → the admin "reindex" action always fails.
-  Targeted fix: disable/guard that route (return a clear 410/"search is Postgres-backed now") — small + safe.
+- [x] **BUG FIXED: `startReindex` drove the deleted `meilisearch-sync`** — now returns a clear 410
+  ("search moved to Postgres #1405; re-embedding via search-ingest /backfill") instead of spawning a
+  job that can never complete. Removed the dead `driveSyncTypeAndUpdate` + `failJob` helpers. Route is
+  unused by the admin UI (FE only calls `indexes` + `synonyms`). Also fixed a pre-existing unrelated
+  type error in `_shared/ai-suggestions.ts:188` (cast-through-unknown) so `deno check` passes clean.
 - [ ] **Full Meili-route removal is a FE+BE refactor, not a no-op strip.** Meili routes (`indexStats`,
   `searchDebug`, `getTask`, `cronReconcile`, reindex, + meili branches in `listIndexes`/`getIndexSettings`/
   `patch`/`rollback`/`syncSynonyms`/`consistencyCheck`) are interwoven with still-useful DB-backed routes

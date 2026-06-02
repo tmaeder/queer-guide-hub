@@ -690,129 +690,16 @@ async function syncSynonyms(ctx: RouteContext): Promise<Response> {
 }
 
 async function startReindex(ctx: RouteContext): Promise<Response> {
-  const rl = await checkRateLimit(ctx)
-  if (rl) return rl
-  const body = await readJson<{
-    index: string
-    scope?: Record<string, unknown>
-    confirm?: boolean
-    async?: boolean
-  }>(ctx.req)
-  if (!body.index) return errorResponse('index required', 400, ctx.req)
-  if (!body.confirm) {
-    return errorResponse('confirm: true required for destructive operation', 400, ctx.req)
-  }
-  if (!ALL_INDEXES.includes(body.index as (typeof ALL_INDEXES)[number])) {
-    return errorResponse(`unknown index: ${body.index}`, 400, ctx.req)
-  }
-  const startedAt = new Date().toISOString()
-  const { data: job, error } = await ctx.service
-    .from('search_reindex_jobs')
-    .insert({
-      index_name: body.index,
-      scope: body.scope ?? { full: true },
-      status: 'running',
-      started_at: startedAt,
-      triggered_by: ctx.actorId === 'service-role' ? null : ctx.actorId,
-    })
-    .select()
-    .single()
-  if (error) return errorResponse(error.message, 500, ctx.req)
-  await recordAudit(ctx, 'reindex.start', 'reindex_job', job.id, null, job)
-
-  // Drive the existing meilisearch-sync edge function. Synchronous: small
-  // indexes return in seconds, large ones may approach the function timeout.
-  // For very large reindexes, pass async=true to get a job row and poll.
-  if (body.async) {
-    return jsonResponse({ success: true, data: { jobId: job.id, status: 'running' } }, 202, ctx.req)
-  }
-
-  const finalJob = await driveSyncTypeAndUpdate(ctx, job.id, body.index)
-  return jsonResponse({ success: true, data: finalJob }, 200, ctx.req)
-}
-
-async function driveSyncTypeAndUpdate(
-  ctx: RouteContext,
-  jobId: string,
-  indexName: string,
-): Promise<unknown> {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  // anon key is JWT-format; gateway accepts it as `apikey`. Required because
-  // SUPABASE_SERVICE_ROLE_KEY may now be the non-JWT `sb_secret_*` format,
-  // which the gateway rejects when sent as Authorization Bearer alone.
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
-  if (!supabaseUrl || !serviceKey || !anonKey) {
-    return await failJob(ctx, jobId, [
-      'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / SUPABASE_ANON_KEY missing',
-    ])
-  }
-  try {
-    const res = await fetch(`${supabaseUrl}/functions/v1/meilisearch-sync`, {
-      method: 'POST',
-      headers: {
-        apikey: anonKey,
-        Authorization: `Bearer ${serviceKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ action: 'sync-type', type: indexName }),
-    })
-    const text = await res.text()
-    let parsed: unknown = text
-    try {
-      parsed = text ? JSON.parse(text) : null
-    } catch {
-      // leave as raw text
-    }
-    if (!res.ok) {
-      return await failJob(ctx, jobId, [
-        `meilisearch-sync ${res.status}: ${typeof parsed === 'string' ? parsed : JSON.stringify(parsed)}`,
-      ])
-    }
-    const body = parsed as { success?: boolean; count?: number; error?: string }
-    if (body.error || body.success === false) {
-      return await failJob(ctx, jobId, [body.error ?? 'meilisearch-sync reported failure'])
-    }
-    const total = typeof body.count === 'number' ? body.count : 0
-    const finishedAt = new Date().toISOString()
-    const { data: updated } = await ctx.service
-      .from('search_reindex_jobs')
-      .update({
-        status: 'completed',
-        total,
-        processed: total,
-        finished_at: finishedAt,
-      })
-      .eq('id', jobId)
-      .select()
-      .single()
-    await recordAudit(ctx, 'reindex.complete', 'reindex_job', jobId, null, updated, {
-      processed: total,
-    })
-    return updated
-  } catch (err) {
-    return await failJob(ctx, jobId, [err instanceof Error ? err.message : 'unknown error'])
-  }
-}
-
-async function failJob(
-  ctx: RouteContext,
-  jobId: string,
-  errors: string[],
-): Promise<unknown> {
-  const finishedAt = new Date().toISOString()
-  const { data } = await ctx.service
-    .from('search_reindex_jobs')
-    .update({
-      status: 'failed',
-      errors,
-      finished_at: finishedAt,
-    })
-    .eq('id', jobId)
-    .select()
-    .single()
-  await recordAudit(ctx, 'reindex.fail', 'reindex_job', jobId, null, data, { errors })
-  return data
+  // Meilisearch was decommissioned in #1405; search is Postgres-backed and kept fresh by the
+  // queer-guide-search-ingest worker (embeddings + search_documents). There is no Meili index to
+  // rebuild, and the old path drove the now-deleted meilisearch-sync function (always failed).
+  // Return a clear 410 instead of spawning a job that can never complete.
+  return errorResponse(
+    'Reindex is no longer supported: search moved to Postgres (#1405). ' +
+      'Re-embedding is handled by the search-ingest worker (/backfill).',
+    410,
+    ctx.req,
+  )
 }
 
 async function getReindex(ctx: RouteContext): Promise<Response> {

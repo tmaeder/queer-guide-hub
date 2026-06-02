@@ -185,7 +185,7 @@ export async function applySuggestion(
         .eq('id', s.entity_id)
         .single()
       if (readErr) throw new Error(`translation read failed: ${readErr.message}`)
-      const current = ((row as Record<string, unknown>)[i18nCol] as Record<string, unknown> | null) ?? {}
+      const current = ((row as unknown as Record<string, unknown>)[i18nCol] as Record<string, unknown> | null) ?? {}
       const next = { ...current, [s.locale]: value }
       const { error: writeErr } = await client
         .from(s.entity_type)
