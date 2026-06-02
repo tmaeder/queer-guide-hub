@@ -17,20 +17,22 @@ import { useNearMe } from '@/hooks/useNearMe';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
 import { useUserMode } from '@/hooks/useUserMode';
+import { useAssistant } from '@/hooks/useAssistant';
 import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
+import type { AssistantCard } from '@/lib/assistantClient';
 import { SearchPopoverDesktop } from './SearchPopoverDesktop';
 import { SearchPopoverMobile } from './SearchPopoverMobile';
+import { SearchAskPanel } from './SearchAskPanel';
 
-const RAIL_SCOPE_IDS = [
+// Order for Alt+1-9 scope shortcuts (mirrors SearchScopeChips).
+const SCOPE_IDS = [
   'venue',
   'event',
-  'city',
-  'country',
-  'personality',
-  'news',
   'marketplace',
-  'tag',
+  'news',
+  'personality',
+  'city',
   'queer_village',
 ];
 
@@ -77,12 +79,11 @@ export const UniversalSearchBar = () => {
   const trackClickFromSearch = useTrackClick();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [mode, setMode] = useState<'search' | 'ask'>('search');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({ types: [] });
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [focusedPane, setFocusedPane] = useState<'rail' | 'results'>('results');
   const [resultsFocused, setResultsFocused] = useState<number | null>(null);
-  const [railFocused, setRailFocused] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const justSelectedRef = useRef(false);
   // When the popover closes it refocuses the input; suppress the focus handler
@@ -93,6 +94,7 @@ export const UniversalSearchBar = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { t } = useTranslation();
+  const assistant = useAssistant();
 
   const activeScope = filters.types && filters.types.length === 1 ? filters.types[0] : null;
   const scopeArray = useMemo(() => (activeScope ? [activeScope] : undefined), [activeScope]);
@@ -105,6 +107,7 @@ export const UniversalSearchBar = () => {
     if (prevPath !== location.pathname) {
       setIsOpen(false);
       setShowFilters(false);
+      setMode('search');
       if (prevPath.startsWith('/search') && !location.pathname.startsWith('/search')) {
         setQuery('');
       }
@@ -117,16 +120,15 @@ export const UniversalSearchBar = () => {
     loading: suggestionsLoading,
     error: suggestionsError,
   } = useSearchSuggestions(query, scopeArray);
-  const { mode } = useUserMode();
+  const { mode: userMode } = useUserMode();
   const trendingTypes = useMemo(
-    () => (MODE_SCOPE_BIAS[mode] ?? ['venue', 'event']).slice(0, 2),
-    [mode],
+    () => (MODE_SCOPE_BIAS[userMode] ?? ['venue', 'event']).slice(0, 2),
+    [userMode],
   );
   const { trending } = useTrendingSuggestions(isOpen && !query, 6, trendingTypes);
   // §9.1 zero-query panel: prefer the personalized/popularity-aware recommendations
   // feed when available; fall back to trending. Gated behind a build flag so the
-  // panel fires no /recommendations request until the worker endpoint is deployed
-  // (avoids a 404 in preview/prod builds; rollout: deploy worker → flip flag).
+  // panel fires no /recommendations request until the worker endpoint is deployed.
   const recsEnabled = import.meta.env.VITE_RECOMMENDATIONS_ENABLED === 'true';
   const { recommendations } = useSearchRecommendations(recsEnabled && isOpen && !query, {
     limit: 6,
@@ -244,23 +246,60 @@ export const UniversalSearchBar = () => {
     [focusInput],
   );
 
-  // Rail navigable list: [All, ...RAIL_SCOPE_IDS]
-  const railLength = 1 + RAIL_SCOPE_IDS.length;
+  // Enter the inline Ask-the-guide chat, seeding it with the current query.
+  const enterAsk = useCallback(() => {
+    setMode('ask');
+    const q = query.trim();
+    if (q && assistant.messages.length === 0 && !assistant.pending) {
+      void assistant.send(q);
+    }
+  }, [query, assistant]);
+
+  const navigateToCard = useCallback(
+    (card: AssistantCard) => {
+      const slug = (card.slug as string) || card.objectID;
+      const href = ROUTE_HREFS[card.type]?.(slug);
+      setIsOpen(false);
+      if (href) navigate(href);
+      else navigate(`/search?q=${encodeURIComponent(card.title ?? '')}`);
+    },
+    [navigate],
+  );
+
+  const onExploreMap = useCallback(
+    (center?: { lat: number; lng: number }) => {
+      setIsOpen(false);
+      navigate(center ? `/map?lat=${center.lat}&lng=${center.lng}&z=11` : '/map');
+    },
+    [navigate],
+  );
+
+  const onNearMe = useCallback(async () => {
+    const c = await nearMe.request();
+    if (!c) return;
+    setIsOpen(false);
+    navigate(`/search?lat=${c.lat}&lng=${c.lng}&radius=25000`);
+  }, [nearMe, navigate]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       // Alt+1..9 → scope shortcut
       if (e.altKey && /^[1-9]$/.test(e.key)) {
         const idx = parseInt(e.key, 10) - 1;
-        const target = idx === 0 ? null : (RAIL_SCOPE_IDS[idx - 1] ?? null);
+        const target = idx === 0 ? null : (SCOPE_IDS[idx - 1] ?? null);
         setScope(target);
         e.preventDefault();
         return;
       }
 
       if (e.key === 'Escape') {
-        setIsOpen(false);
-        inputRef.current?.blur();
+        if (mode === 'ask') {
+          setMode('search');
+          focusInput();
+        } else {
+          setIsOpen(false);
+          inputRef.current?.blur();
+        }
         return;
       }
 
@@ -279,56 +318,23 @@ export const UniversalSearchBar = () => {
         }
       }
 
-      if (e.key === 'ArrowLeft') {
-        if (focusedPane !== 'rail') {
-          setFocusedPane('rail');
-          const currentRailIdx = activeScope ? 1 + RAIL_SCOPE_IDS.indexOf(activeScope) : 0;
-          setRailFocused(currentRailIdx >= 0 ? currentRailIdx : 0);
-          e.preventDefault();
-        }
-        return;
-      }
-      if (e.key === 'ArrowRight') {
-        if (focusedPane !== 'results') {
-          setFocusedPane('results');
-          setResultsFocused(suggestions.length > 0 ? 0 : null);
-          e.preventDefault();
-        }
-        return;
-      }
-
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        if (focusedPane === 'rail') {
-          setRailFocused((i) => (i === null ? 0 : (i + 1) % railLength));
-        } else {
-          setResultsFocused((i) => {
-            if (suggestions.length === 0) return null;
-            if (i === null) return 0;
-            return Math.min(i + 1, suggestions.length - 1);
-          });
-        }
+        setResultsFocused((i) => {
+          if (suggestions.length === 0) return null;
+          if (i === null) return 0;
+          return Math.min(i + 1, suggestions.length - 1);
+        });
         return;
       }
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        if (focusedPane === 'rail') {
-          setRailFocused((i) => (i === null ? railLength - 1 : (i - 1 + railLength) % railLength));
-        } else {
-          setResultsFocused((i) => (i === null || i === 0 ? null : i - 1));
-        }
+        setResultsFocused((i) => (i === null || i === 0 ? null : i - 1));
         return;
       }
 
       if (e.key === 'Enter') {
-        if (focusedPane === 'rail' && railFocused !== null) {
-          e.preventDefault();
-          const target = railFocused === 0 ? null : (RAIL_SCOPE_IDS[railFocused - 1] ?? null);
-          setScope(target);
-          setFocusedPane('results');
-          return;
-        }
-        if (focusedPane === 'results' && resultsFocused !== null && suggestions[resultsFocused]) {
+        if (resultsFocused !== null && suggestions[resultsFocused]) {
           e.preventDefault();
           handleSelectSuggestion(suggestions[resultsFocused]);
           return;
@@ -336,18 +342,7 @@ export const UniversalSearchBar = () => {
         handleSearch();
       }
     },
-    [
-      activeScope,
-      focusedPane,
-      handleSearch,
-      handleSelectSuggestion,
-      query,
-      railFocused,
-      railLength,
-      resultsFocused,
-      setScope,
-      suggestions,
-    ],
+    [mode, query, suggestions, resultsFocused, setScope, focusInput, handleSelectSuggestion, handleSearch],
   );
 
   // ⌘K / Ctrl+K hotkey.
@@ -356,10 +351,10 @@ export const UniversalSearchBar = () => {
     focusInput();
   });
 
-  // Auto-focus when popover opens.
+  // Auto-focus when popover opens (search mode only — Ask owns its own input).
   useEffect(() => {
-    if (isOpen) focusInput();
-  }, [isOpen, focusInput]);
+    if (isOpen && mode === 'search') focusInput();
+  }, [isOpen, mode, focusInput]);
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
 
@@ -369,14 +364,6 @@ export const UniversalSearchBar = () => {
     (filters.categories?.length || 0) +
     (filters.priceRange ? 1 : 0) +
     (filters.rating ? 1 : 0);
-
-  const removeRecent = useCallback((index: number) => {
-    setRecentSearches((prev) => {
-      const updated = prev.filter((_, i) => i !== index);
-      localStorage.setItem('recent-searches', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
 
   const clearRecents = useCallback(() => {
     setRecentSearches([]);
@@ -431,6 +418,7 @@ export const UniversalSearchBar = () => {
                   value={query}
                   onChange={(e) => {
                     setQuery(e.target.value);
+                    if (mode === 'ask') setMode('search');
                     if (!isOpen && !justSelectedRef.current) setIsOpen(true);
                     justSelectedRef.current = false;
                   }}
@@ -525,7 +513,7 @@ export const UniversalSearchBar = () => {
                   maxHeight: '100dvh',
                   zIndex: 50,
                 }
-              : { width: 'min(820px, calc(100vw - 32px))', zIndex: 50 }
+              : { width: 'min(560px, calc(100vw - 32px))', zIndex: 50 }
           }
           align="start"
           onOpenAutoFocus={(e) => {
@@ -537,7 +525,15 @@ export const UniversalSearchBar = () => {
             suppressReopenRef.current = true;
             inputRef.current?.focus();
           }}
-          onEscapeKeyDown={() => setIsOpen(false)}
+          onEscapeKeyDown={(e) => {
+            if (mode === 'ask') {
+              e.preventDefault();
+              setMode('search');
+              focusInput();
+            } else {
+              setIsOpen(false);
+            }
+          }}
           onPointerDownOutside={(e) => {
             // Clicking the search box itself is the anchor, not "outside" —
             // don't let Radix dismiss the popover we just opened.
@@ -547,7 +543,19 @@ export const UniversalSearchBar = () => {
             if (searchBoxRef.current?.contains(e.target as Node)) e.preventDefault();
           }}
         >
-          {isMobile ? (
+          {mode === 'ask' ? (
+            <SearchAskPanel
+              messages={assistant.messages}
+              pending={assistant.pending}
+              error={assistant.error}
+              onSend={(m) => void assistant.send(m)}
+              onBack={() => {
+                setMode('search');
+                focusInput();
+              }}
+              onSelectCard={navigateToCard}
+            />
+          ) : isMobile ? (
             <SearchPopoverMobile
               query={query}
               activeScope={activeScope}
@@ -572,6 +580,17 @@ export const UniversalSearchBar = () => {
               }}
               onPrefetch={prefetchRoute}
               navigate={navigate}
+              onAsk={enterAsk}
+              onExploreMap={onExploreMap}
+              onNearMe={onNearMe}
+              nearMeSupported={nearMe.supported}
+              nearMeLoading={nearMe.loading}
+              recentSearches={recentSearches}
+              onSelectRecent={(term) => {
+                setQuery(term);
+                handleSearch(term);
+              }}
+              clearRecents={clearRecents}
             />
           ) : (
             <SearchPopoverDesktop
@@ -593,15 +612,10 @@ export const UniversalSearchBar = () => {
                 setResultsFocused(i);
                 handleSelectSuggestion(s);
               }}
-              resultsFocused={focusedPane === 'results' ? resultsFocused : null}
-              railFocused={focusedPane === 'rail' ? railFocused : null}
-              setResultsFocused={(i) => {
-                setResultsFocused(i);
-                setFocusedPane('results');
-              }}
+              resultsFocused={resultsFocused}
+              setResultsFocused={setResultsFocused}
               activeFiltersCount={activeFiltersCount}
               onSearchAll={() => handleSearch()}
-              removeRecent={removeRecent}
               clearRecents={clearRecents}
               onSelectRecent={(term) => {
                 setQuery(term);
@@ -609,16 +623,8 @@ export const UniversalSearchBar = () => {
               }}
               nearMeSupported={nearMe.supported}
               nearMeLoading={nearMe.loading}
-              onNearMe={async () => {
-                const c = await nearMe.request();
-                if (!c) return;
-                setIsOpen(false);
-                navigate(`/search?lat=${c.lat}&lng=${c.lng}&radius=25000`);
-              }}
-              onBrowseAll={() => {
-                setIsOpen(false);
-                navigate('/search');
-              }}
+              onNearMe={onNearMe}
+              onExploreMap={onExploreMap}
               onSelectTrending={(hit) =>
                 handleSelectSuggestion({
                   id: hit.id,
@@ -635,7 +641,7 @@ export const UniversalSearchBar = () => {
                 navigate(path);
               }}
               onPrefetch={prefetchRoute}
-              isMac={isMac}
+              onAsk={enterAsk}
             />
           )}
         </PopoverContent>
