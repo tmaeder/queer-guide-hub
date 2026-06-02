@@ -322,6 +322,12 @@ verify_jwt = false
 [functions.pipeline-safety-relevance]
 verify_jwt = false
 
+[functions.pipeline-consensus-merge]
+verify_jwt = false
+
+[functions.pipeline-image-vision]
+verify_jwt = false
+
 [functions.source-community-submissions]
 verify_jwt = false
 
