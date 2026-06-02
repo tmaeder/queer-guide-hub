@@ -9,9 +9,36 @@ cutover and (2) guard against silent ranking drift afterwards.
 
 | File | Purpose |
 |------|---------|
-| `run.mjs` | Dependency-free Node runner. Hits `search_hybrid` via PostgREST, checks a curated golden set + a zero-hit probe + p95 latency, exits non-zero on regression. |
+| `search-test.mjs` | **End-to-end API/contract/resilience suite — no credentials needed.** Hits the live `search-proxy` HTTP API (`/search`, `/autocomplete`, `/health`) and asserts the contract, filters, geo, pagination, edge cases, entity-type coverage + a latency sample. Agent-runnable (see below). |
+| `run.mjs` | Dependency-free Node runner. Hits `search_hybrid` via PostgREST, checks a curated golden set + a zero-hit probe + p95 latency, exits non-zero on regression. (Needs Supabase service key.) |
 | `golden.json` | Curated query → expected result assertions + thresholds. |
 | `known-item.sql` | SQL-side known-item retrieval eval (Recall@10 / MRR@10) over a random sample. Run in `psql` / Supabase SQL editor. |
+
+## Running the E2E suite (for a Claude / cowork agent)
+
+`search-test.mjs` needs **no secrets** — it tests the public search endpoint. Just run it:
+
+```bash
+node scripts/search-eval/search-test.mjs            # against prod (search.queer.guide)
+SEARCH_URL=https://search.queer.guide node scripts/search-eval/search-test.mjs
+node scripts/search-eval/search-test.mjs --json     # machine-readable summary for an agent to parse
+```
+
+- **Exit 0** = all HARD assertions passed; **non-zero** = a contract/functional regression.
+- **HARD** assertions = deterministic invariants (status codes, response shape, filter correctness,
+  pagination, clamping, graceful validation). These gate the run.
+- **SOFT** checks = relevance/ranking (data-dependent) — printed as warnings, never fail the run, so an
+  agent can eyeball quality without flakiness.
+- Prints a server + wall-clock latency sample (p50/p95). Last green baseline: 36/36 hard, server p50 ~430 ms / p95 ~640 ms (warm).
+
+**Scenario coverage:** smoke/contract (S*), relevance (R*, soft), keyword robustness — typo/diacritics (K*),
+filters incl. type/city/facets (F*), geo radius (G*), autocomplete (A*), pagination (PG*), edge cases —
+injection/long/unicode/clamp (X*), entity-type coverage (E*), latency (L*).
+
+**SQL-side scenarios** (parity + recall) that need DB access — run via the Supabase MCP / SQL editor:
+- **Embedding-move parity** (PR #1421 gate): compare `search_hybrid` vs the candidate `search_hybrid_v3`
+  across keyword / keyword+vector / pure-vector — totals + ordered `_rankingScore` sequences must match.
+- **Known-item recall** (`known-item.sql`): per-type Recall@10 / MRR@10 vs the baselines below.
 
 ## Running
 
