@@ -80,6 +80,21 @@ export const TOOLS: ToolDef[] = [
 			required: ["entity_type", "entity_id"],
 		},
 	},
+	{
+		name: "knowledge_search",
+		description:
+			"Search queer.guide's published guides, articles, city/country pages and editorial content for background, advice, safety, and 'how / why / tell me about' questions. Returns text passages with their source URLs so the answer is grounded and citable. Use this for informational questions; use search_entities to find a specific venue/event/person.",
+		parameters: {
+			type: "object",
+			properties: {
+				query: {
+					type: "string",
+					description: "Natural-language question, e.g. 'is it safe to travel to Qatar as a gay couple'.",
+				},
+			},
+			required: ["query"],
+		},
+	},
 ];
 
 function asCards(rows: unknown): Card[] {
@@ -142,6 +157,11 @@ export async function executeTool(env: Env, name: string, input: Record<string, 
 				p_limit: clampLimit(input.limit, 8),
 			});
 			cards = asCards(rows);
+		} else if (name === "knowledge_search") {
+			// RAG over published queer.guide content via Cloudflare AutoRAG. Returns
+			// text passages + source URLs (not entity cards) for prose/advice answers.
+			const passages = await autoragSearch(env, String(input.query ?? ""));
+			return { content: JSON.stringify({ passages }), cards: [] };
 		} else {
 			return { content: JSON.stringify({ error: `unknown tool: ${name}` }), cards: [] };
 		}
@@ -154,4 +174,52 @@ export async function executeTool(env: Env, name: string, input: Record<string, 
 function clampLimit(v: unknown, dflt: number): number {
 	const n = typeof v === "number" ? Math.floor(v) : dflt;
 	return Math.max(1, Math.min(20, n));
+}
+
+// ── AutoRAG (Cloudflare AI Search) ─────────────────────────────────────────
+// Queries the `queerguide` instance (web crawl of queer.guide). We use search()
+// — raw passages — not aiSearch(), so the assistant's own model synthesizes the
+// answer (single generation, consistent grounding). Fail-soft: any error/timeout
+// returns [] so the tool never breaks the turn. The AI binding's autorag() method
+// isn't in the shipped types, so reach it through a minimal structural type.
+const AUTORAG_INSTANCE = "queerguide";
+const AUTORAG_TIMEOUT_MS = 6000;
+
+interface AutoragChunk {
+	filename?: string;
+	score?: number;
+	content?: Array<{ text?: string }> | string;
+}
+interface AutoragBinding {
+	search(opts: { query: string; max_num_results?: number }): Promise<{ data?: AutoragChunk[] }>;
+}
+
+function chunkText(content: AutoragChunk["content"]): string {
+	if (typeof content === "string") return content;
+	if (Array.isArray(content)) return content.map((c) => c?.text ?? "").join(" ").trim();
+	return "";
+}
+
+async function autoragSearch(
+	env: Env,
+	query: string,
+): Promise<Array<{ source: string; score?: number; text: string }>> {
+	if (!query) return [];
+	try {
+		const ai = env.AI as unknown as { autorag: (id: string) => AutoragBinding };
+		const result = await Promise.race([
+			ai.autorag(AUTORAG_INSTANCE).search({ query, max_num_results: 6 }),
+			new Promise<{ data?: AutoragChunk[] }>((_, reject) =>
+				setTimeout(() => reject(new Error("autorag-timeout")), AUTORAG_TIMEOUT_MS),
+			),
+		]);
+		const data = Array.isArray(result?.data) ? result.data : [];
+		return data
+			.slice(0, 6)
+			.map((d) => ({ source: d.filename ?? "", score: d.score, text: chunkText(d.content).slice(0, 1200) }))
+			.filter((p) => p.text);
+	} catch (e) {
+		console.warn("knowledge_search (autorag) failed:", (e as Error).message);
+		return [];
+	}
 }
