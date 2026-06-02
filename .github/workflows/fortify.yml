@@ -50,7 +50,7 @@ jobs:
       # Check out source code
       - name: Check Out Source Code
         if: ${{ env.FOD_PAT != '' || env.SSC_TOKEN != '' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Perform SAST and/or SCA scan via Fortify on Demand/Fortify Hosted/ScanCentral SAST/Debricked. Based on
       # configuration, the Fortify GitHub Action can optionally set up the application version/release, generate
