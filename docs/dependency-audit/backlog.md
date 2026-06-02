@@ -31,11 +31,12 @@ _Prioritized. P0 = do now, low risk. Audit date 2026-06-01._
 
 ## P2 — Structural (gated)
 - [ ] **pgvector → Vectorize**: indexes per entity type, dual-write, rebuild RRF+geo fusion in `search-proxy`.
-- [ ] **Search latency fix (root-caused 2026-06-02):** `search_hybrid` hydrates ALL heavy columns for
-  every candidate (2k–5k rows for broad terms) before limiting to 20 → p95 4.4s. Fix = **rank-then-hydrate**
-  (rank on slim doc_id+score, hydrate only the 20 returned). Full evidence + recipe in
-  [search-latency-finding.md](search-latency-finding.md). Implement as `search_hybrid_v2` + shadow-validate
-  parity (live, no-fallback path).
+- [ ] **Search latency (investigated 2026-06-02 — NOT a query-rewrite fix):** two `search_hybrid_v2`
+  rewrites (rank-then-hydrate, inline-kwvec) were built, benchmarked + parity-tested on the live DB, and
+  **both regressed** (553ms / 876ms vs 270ms baseline) — dropped. Warm is ~270ms; p95 4.4s is **cold-cache
+  I/O on a 1.23GB table**. Real levers (each to be measured): `pg_prewarm` GIN+HNSW, move the 4KB
+  `vector(1024)` embedding to a sibling table (keyword queries skip it), VACUUM/repack + ANALYZE. Full
+  evidence in [search-latency-finding.md](search-latency-finding.md).
 - [ ] **Shadow-validate** Vectorize search vs the live Postgres `search_hybrid` path (overlap + p95) before cutover.
 - [x] **Retire Meilisearch (search serving)** — DONE in PR #1405 (search → Postgres; `meilisearch-sync` deleted; ingest worker Meili write removed upstream).
 - [ ] **Shut down the Infomaniak Meili node** — serving-safe now: no writers left; the only readers
