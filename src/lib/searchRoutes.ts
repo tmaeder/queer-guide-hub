@@ -14,8 +14,10 @@ export const ROUTE_HREFS: Record<string, (slug: string) => string> = {
   personality: (s) => `/personalities/${s}`,
   city: (s) => `/city/${s}`,
   country: (s) => `/country/${s}`,
-  queer_village: (s) => `/queer-villages/${s}`,
+  // Route is /villages/:slug (NOT /queer-villages — that path 404s).
+  queer_village: (s) => `/villages/${s}`,
   news: (s) => `/news/${s}`,
+  tag: (s) => `/tags/${s}`,
 };
 
 export interface EntityRef {
@@ -36,7 +38,6 @@ export function hrefForEntity({ type, slug, title, isCountry }: EntityRef): stri
   const id = resolveType(type) ?? type;
   const key = slug || '';
   if (id === 'city' && isCountry) return `/country/${key}`;
-  if (id === 'tag') return `/resources/${key}`;
   const build = ROUTE_HREFS[id];
   if (build && key) return build(key);
   // Types without a dedicated detail route (hotels, festivals, travel, …)

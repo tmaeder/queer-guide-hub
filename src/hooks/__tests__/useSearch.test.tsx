@@ -95,13 +95,15 @@ describe('useSearch', () => {
     expect(cats.Other).toBe(8);
   });
 
-  // P0-3: UI-side type ids must be mapped to worker indexKeys before sending.
-  it('maps UI type ids to worker indexKeys when calling the worker', async () => {
+  // The worker's filters.types enum is the singular entity type (venue, event,
+  // …) which equals our scope id — send ids verbatim, NOT plural index keys
+  // (the worker rejects "venues"/"personalities" as invalid_enum).
+  it('sends singular entity-type ids to the worker', async () => {
     mockFetch.mockResolvedValue(okJson({ hits: [], suggestions: [] }));
     renderHook(() => useSearch('berlin', { types: ['venue', 'personality'] }));
     await waitFor(() => expect(mockFetch).toHaveBeenCalled(), { timeout: 2000 });
     const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string);
-    expect(body.filters.types).toEqual(['venues', 'personalities']);
+    expect(body.filters.types).toEqual(['venue', 'personality']);
   });
 
   // P0-4: page param must be threaded into the request body.

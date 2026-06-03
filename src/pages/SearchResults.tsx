@@ -203,7 +203,7 @@ export default function SearchResults() {
       navigate(
         hrefForEntity({
           type: result.type,
-          slug: (result.metadata?.slug as string) || result.objectID,
+          slug: result.slug || (result.metadata?.slug as string) || result.objectID,
           title: result.title,
           isCountry: Boolean(result.metadata?.isCountry),
         }),
