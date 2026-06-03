@@ -1,14 +1,24 @@
 /**
- * SubmitHub — /submit/ hub page
- * Shows 6 content type cards for community submissions.
+ * SubmitHub — /submit hub page.
+ * Scan-first: a flyer/photo/PDF/link scanner is the default entry; manual type cards sit
+ * below, with the high-volume directory types up front and the niche ones behind a
+ * "More ways to contribute" disclosure.
  */
 
+import { useState } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { submissionTypes } from '@/config/submissionRegistry';
-import { ArrowRight, Heart, ArrowLeft, Camera } from 'lucide-react';
+import {
+  primarySubmissionTypes,
+  moreSubmissionTypes,
+  type SubmissionTypeConfig,
+} from '@/config/submissionRegistry';
+import { useFlyerScan } from '@/hooks/useFlyerScan';
+import { FlyerScanUpload } from '@/components/submission/FlyerScanUpload';
+import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
+import { ArrowRight, Heart, ArrowLeft, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const SubmitHub = () => {
@@ -16,13 +26,31 @@ const SubmitHub = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
 
+  const flyerScan = useFlyerScan();
+  const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
+
+  const handleResetScan = () => {
+    setSelectedVenueId(null);
+    flyerScan.reset();
+  };
+
+  const handleApplyScan = (
+    resultIdx: number,
+    itemIdx: number,
+    detectedType: 'event' | 'venue',
+  ) => {
+    const formData = flyerScan.applyToForm(resultIdx, itemIdx, selectedVenueId ?? undefined);
+    const imageUrl = flyerScan.results[resultIdx]?.image_url;
+    navigate(`/submit/${detectedType}`, { state: { prefill: formData, imageUrl } });
+  };
+
   return (
-    <div className="mx-auto py-8 px-4">
+    <div className="mx-auto max-w-3xl py-8 px-4">
       <Button
         variant="ghost"
         size="sm"
         onClick={() => navigate(-1)}
-        style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}
+        className="mb-4 flex items-center gap-2"
       >
         <ArrowLeft size={16} />
         Back
@@ -36,12 +64,47 @@ const SubmitHub = () => {
           {t('pages.submit.title', 'Contribute to Queer Guide')}
         </h4>
         <p className="text-base text-muted-foreground max-w-lg mx-auto">
-          {t('pages.submit.subtitle', "Help build the world's most comprehensive LGBTQ+ directory. All submissions are reviewed before publishing.")}
+          {t(
+            'pages.submit.subtitle',
+            "Help build the world's most comprehensive LGBTQ+ directory. All submissions are reviewed before publishing.",
+          )}
         </p>
       </div>
 
-      {!user && (
-        <Card>
+      {/* Scan-first hero */}
+      {user ? (
+        <section className="mb-8" aria-label={t('pages.submit.scanHeroLabel', 'Scan to auto-fill')}>
+          <h5 className="text-sm font-semibold mb-1">
+            {t('pages.submit.scanHeroTitle', 'Let us fill the form for you')}
+          </h5>
+          <p className="text-sm text-muted-foreground mb-4">
+            {t(
+              'pages.submit.scanHeroSubtitle',
+              'Drop a flyer, photo or PDF — or paste a link (event page, Instagram, venue site, news). We extract the details.',
+            )}
+          </p>
+          <FlyerScanUpload
+            scanState={flyerScan.scanState}
+            error={flyerScan.error}
+            currentFileIndex={flyerScan.currentFileIndex}
+            totalFiles={flyerScan.totalFiles}
+            onFilesSelected={flyerScan.startScan}
+            onUrlSubmit={flyerScan.startUrlScan}
+            onReset={handleResetScan}
+          >
+            {flyerScan.results.length > 0 && (
+              <FlyerScanResults
+                results={flyerScan.results}
+                selectedVenueId={selectedVenueId}
+                onSelectVenue={setSelectedVenueId}
+                onApply={handleApplyScan}
+                onDismiss={handleResetScan}
+              />
+            )}
+          </FlyerScanUpload>
+        </section>
+      ) : (
+        <Card className="mb-8">
           <CardContent>
             <p className="text-sm text-muted-foreground text-center">
               <strong>Tip:</strong>{' '}
@@ -52,60 +115,72 @@ const SubmitHub = () => {
               >
                 Sign in or create an account
               </button>{' '}
-              to submit content. Guest submissions are not currently supported.
+              to scan a flyer or submit content. Guest submissions are not currently supported.
             </p>
           </CardContent>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <Card onClick={() => navigate('/submit/event?mode=scan')}>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div
-                className="flex items-center justify-center flex-shrink-0 bg-muted"
-                style={{ width: 44, height: 44 }}
-              >
-                <Camera size={22} />
-              </div>
-              <div>
-                <p className="text-base font-semibold mb-0.5">Scan a Flyer</p>
-                <p className="text-sm text-muted-foreground">
-                  Take a photo of an event flyer or venue card and we'll extract the details
-                  automatically.
-                </p>
-              </div>
-              <ArrowRight size={18} className="shrink-0" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {submissionTypes.map((type) => {
-          const Icon = type.icon;
-          return (
-            <Card key={type.id} onClick={() => navigate(`/submit/${type.id}`)}>
-              <CardContent>
-                <div
-                  className="flex items-center justify-center mb-4"
-                  style={{ width: 44, height: 44, backgroundColor: `${type.color}15` }}
-                >
-                  <Icon style={{ width: 22, height: 22, color: type.color }} />
-                </div>
-                <p className="text-base font-semibold mb-1">Submit {type.label}</p>
-                <p className="text-sm text-muted-foreground mb-4" style={{ minHeight: '2.5em' }}>
-                  {type.description}
-                </p>
-                <div className="flex items-center gap-1">
-                  <p className="text-sm font-semibold text-foreground">Get started</p>
-                  <ArrowRight size={14} style={{ color: type.color }} aria-hidden="true" />
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+      {/* Manual type cards — primary */}
+      <p className="text-sm font-semibold mb-4">
+        {t('pages.submit.manualTitle', 'Prefer to type it in?')}
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {primarySubmissionTypes.map((type) => (
+          <SubmitTypeCard key={type.id} type={type} onClick={() => navigate(`/submit/${type.id}`)} />
+        ))}
       </div>
+
+      {/* More ways to contribute — disclosure */}
+      <details className="mt-6 group">
+        <summary className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-muted-foreground list-none py-2">
+          <ChevronDown
+            size={16}
+            className="transition-transform group-open:rotate-180"
+            aria-hidden="true"
+          />
+          {t('pages.submit.moreTitle', 'More ways to contribute')}
+        </summary>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+          {moreSubmissionTypes.map((type) => (
+            <SubmitTypeCard
+              key={type.id}
+              type={type}
+              onClick={() => navigate(`/submit/${type.id}`)}
+            />
+          ))}
+        </div>
+      </details>
     </div>
   );
 };
+
+// ── Monochrome type card ──────────────────────────────────────────
+
+interface SubmitTypeCardProps {
+  type: SubmissionTypeConfig;
+  onClick: () => void;
+}
+
+function SubmitTypeCard({ type, onClick }: SubmitTypeCardProps) {
+  const Icon = type.icon;
+  return (
+    <Card onClick={onClick} className="cursor-pointer">
+      <CardContent>
+        <div className="w-10 h-10 rounded-element flex items-center justify-center mb-4 bg-muted">
+          <Icon size={20} className="text-foreground" />
+        </div>
+        <p className="text-base font-semibold mb-1">Submit {type.label}</p>
+        <p className="text-sm text-muted-foreground mb-4" style={{ minHeight: '2.5em' }}>
+          {type.description}
+        </p>
+        <div className="flex items-center gap-1">
+          <p className="text-sm font-semibold text-foreground">Get started</p>
+          <ArrowRight size={14} aria-hidden="true" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default SubmitHub;

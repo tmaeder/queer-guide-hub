@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   submissionRegistry,
   submissionTypes,
+  primarySubmissionTypes,
+  moreSubmissionTypes,
   getSubmissionType,
 } from '../submissionRegistry';
 
@@ -42,10 +44,24 @@ describe('submissionRegistry', () => {
 });
 
 describe('submissionTypes ordered list', () => {
-  it('matches the registry contents (same set, may differ in order)', () => {
-    const setA = new Set(submissionTypes.map(t => t.id));
+  it('covers the registry except hotel (folded into venue on the hub)', () => {
+    const setA = new Set(submissionTypes.map((t) => t.id));
     const setB = new Set(Object.keys(submissionRegistry));
+    setB.delete('hotel');
     expect(setA).toEqual(setB);
+  });
+
+  it('does not surface hotel as its own hub card', () => {
+    expect(submissionTypes.map((t) => t.id)).not.toContain('hotel');
+  });
+
+  it('every type declares a group, split into primary + more', () => {
+    for (const t of submissionTypes) {
+      expect(t.group === 'primary' || t.group === 'more').toBe(true);
+    }
+    expect(primarySubmissionTypes.map((t) => t.id)).toEqual(['event', 'venue', 'product']);
+    expect(moreSubmissionTypes.every((t) => t.group === 'more')).toBe(true);
+    expect(primarySubmissionTypes.length + moreSubmissionTypes.length).toBe(submissionTypes.length);
   });
 });
 

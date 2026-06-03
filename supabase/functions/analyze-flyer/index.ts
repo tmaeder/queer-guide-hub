@@ -24,6 +24,7 @@ interface AnalyzeRequest {
   image_url?: string
   image_urls?: string[]
   text?: string
+  page_url?: string
   hint_city?: string
   hint_country?: string
 }
@@ -386,15 +387,39 @@ async function matchVenues(
   return data || []
 }
 
+/** Shared duplicate matcher: trigram + vector over search_documents via find_duplicates RPC. */
+// deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function findDuplicates(entityType: string, title: string, supabase: SupabaseClient): Promise<any[]> {
+  const { data, error } = await supabase.rpc('find_duplicates', {
+    p_content_type: entityType,
+    p_title: title.trim(),
+    p_limit: 5,
+  })
+  if (error || !Array.isArray(data)) return []
+  return data
+}
+
 async function checkEventDuplicates(
   title: string | null | undefined,
   startDate: string | null | undefined,
   cityId: string | null,
   supabase: SupabaseClient,
 ): Promise<Array<{ id: string; title: string; start_date: string; score: number }>> {
-  if (!title || !startDate) return []
+  if (!title || title.trim().length < 2) return []
 
-  // Simple title + date proximity check
+  const dups = await findDuplicates('event', title, supabase)
+  if (dups.length > 0) {
+    return dups.map((d) => ({
+      id: d.id,
+      title: d.title,
+      start_date: d.start_date ?? '',
+      score: d.title_sim ?? d.vec_sim ?? 0.6,
+    }))
+  }
+
+  // Fallback: title + date proximity check
+  if (!startDate) return []
   const { data } = await supabase
     .from('events')
     .select('id, title, start_date')
@@ -416,8 +441,14 @@ async function checkVenueDuplicates(
   cityId: string | null,
   supabase: SupabaseClient,
 ): Promise<Array<{ id: string; name: string; score: number }>> {
-  if (!name) return []
+  if (!name || name.trim().length < 2) return []
 
+  const dups = await findDuplicates('venue', name, supabase)
+  if (dups.length > 0) {
+    return dups.map((d) => ({ id: d.id, name: d.title, score: d.title_sim ?? d.vec_sim ?? 0.9 }))
+  }
+
+  // Fallback: exact-ish name match
   let query = supabase
     .from('venues')
     .select('id, name, address, city')
@@ -479,6 +510,85 @@ async function fetchImageAsBase64(imageUrl: string): Promise<string> {
   return `data:${mime};base64,${base64}`
 }
 
+// ── Page URL Fetching (SSRF-guarded) ──────────────────────────────────────
+
+/** Reject obviously-internal hosts to limit SSRF. IP literals in private/loopback/
+ *  link-local ranges and well-known internal hostnames are blocked. */
+function isBlockedHost(host: string): boolean {
+  const h = host.toLowerCase().replace(/^\[|\]$/g, '') // strip IPv6 brackets
+  if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.internal') || h.endsWith('.local')) return true
+  // IPv6 loopback / unique-local / link-local
+  if (h === '::1' || h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe80')) return true
+  // IPv4 literal in private/loopback/link-local/unspecified ranges
+  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
+  if (m) {
+    const [a, b] = [Number(m[1]), Number(m[2])]
+    if (a === 0 || a === 10 || a === 127) return true
+    if (a === 169 && b === 254) return true // link-local incl. cloud metadata 169.254.169.254
+    if (a === 192 && b === 168) return true
+    if (a === 172 && b >= 16 && b <= 31) return true
+  }
+  return false
+}
+
+/** Strip an HTML document down to readable text for the structuring pass. */
+function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const MAX_PAGE_BYTES = 2 * 1024 * 1024 // 2MB of HTML is plenty for extraction
+
+/** Fetch a public web page and return its visible text (SSRF-guarded). */
+async function fetchPageText(pageUrl: string): Promise<string> {
+  let parsed: URL
+  try {
+    parsed = new URL(pageUrl)
+  } catch {
+    throw new Error('Invalid page_url')
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('page_url must be http(s)')
+  }
+  if (isBlockedHost(parsed.hostname)) {
+    throw new Error('page_url host is not allowed')
+  }
+
+  const response = await fetch(parsed.toString(), {
+    signal: AbortSignal.timeout(12_000),
+    redirect: 'follow',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide)',
+      'Accept': 'text/html,application/xhtml+xml',
+    },
+  })
+  if (!response.ok) throw new Error(`Failed to fetch page: ${response.status}`)
+
+  const contentType = response.headers.get('content-type') || ''
+  if (contentType && !/text\/html|application\/xhtml|text\/plain/i.test(contentType)) {
+    throw new Error('page_url did not return an HTML page')
+  }
+
+  const buffer = await response.arrayBuffer()
+  if (buffer.byteLength > MAX_PAGE_BYTES) throw new Error('Page too large (max 2MB)')
+  const html = new TextDecoder().decode(buffer)
+  const text = htmlToText(html)
+  if (text.length < 20) throw new Error('Page had no extractable text')
+  return text.slice(0, 16_000)
+}
+
 // ── Main Handler ──────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -510,21 +620,30 @@ Deno.serve(async (req) => {
     if (!withinLimit) return errorResponse('Rate limit exceeded (20 scans/hour)', 429)
 
     // Parse request
-    const { image_url, image_urls, text, hint_city, hint_country }: AnalyzeRequest = await req.json()
+    const { image_url, image_urls, text, page_url, hint_city, hint_country }: AnalyzeRequest = await req.json()
     const urls: string[] = (Array.isArray(image_urls) ? image_urls : [])
       .concat(image_url ? [image_url] : [])
       .filter((u, i, arr) => typeof u === 'string' && u.length > 0 && arr.indexOf(u) === i)
       .slice(0, MAX_IMAGES_PER_SCAN)
-    if (urls.length === 0 && !text) return errorResponse('image_url, image_urls, or text is required', 400)
+    if (urls.length === 0 && !text && !page_url) {
+      return errorResponse('image_url, image_urls, text, or page_url is required', 400)
+    }
 
-    const isTextMode = !!text && urls.length === 0
+    // A pasted link is fetched + stripped to text, then rides the text pipeline.
+    let textInput = text
+    if (urls.length === 0 && !textInput && page_url) {
+      console.log(`Fetching page for extraction: ${page_url}`)
+      textInput = await fetchPageText(page_url)
+    }
+
+    const isTextMode = !!textInput && urls.length === 0
     console.log(`Analyzing flyer for user ${user.id} (${isTextMode ? 'text' : `image x${urls.length}`} mode)`)
 
     // Step 1: Get content for structuring
     let contentForStructuring: string
 
     if (isTextMode) {
-      contentForStructuring = text!
+      contentForStructuring = textInput!
       console.log(`Text input length: ${contentForStructuring.length}`)
     } else {
       console.log('Pass 1: CF AI Vision analysis...')
@@ -606,7 +725,7 @@ Deno.serve(async (req) => {
       .from('flyer_scans')
       .insert({
         user_id: user.id,
-        image_url: urls[0] || `text://${text!.slice(0, 60)}`,
+        image_url: urls[0] || page_url || `text://${(textInput || '').slice(0, 60)}`,
         detected_type: primaryItem.detected_type,
         raw_extraction: {
           vision_description: isTextMode ? null : contentForStructuring,
