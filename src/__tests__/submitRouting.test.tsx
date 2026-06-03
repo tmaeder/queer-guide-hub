@@ -43,7 +43,16 @@ vi.mock('@/components/motion', () => ({
   MotionPage: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('@/pages/SubmitForm', () => ({ default: () => <div>SUBMIT_FORM_SENTINEL</div> }));
+// Mirror the real SubmitForm's type resolution (prop ?? :contentType param)
+// so the test catches not just "form renders" but "the right type reaches it".
+vi.mock('@/pages/SubmitForm', async () => {
+  const { useParams } = await import('react-router');
+  const SubmitFormMock = ({ contentType }: { contentType?: string }) => {
+    const { contentType: param } = useParams<{ contentType: string }>();
+    return <div>SUBMIT_FORM_SENTINEL:{contentType ?? param ?? 'NONE'}</div>;
+  };
+  return { default: SubmitFormMock };
+});
 vi.mock('@/pages/SubmitHub', () => ({ default: () => <div>SUBMIT_HUB_SENTINEL</div> }));
 vi.mock('@/pages/NotFound', () => ({ default: () => <div>NOT_FOUND_SENTINEL</div> }));
 vi.mock('@/pages/News', () => ({ default: () => <div>NEWS_SENTINEL</div> }));
@@ -60,12 +69,12 @@ function renderAt(path: string) {
 }
 
 describe('submit route resolution', () => {
-  it('renders the submit form for every registered submission type', async () => {
+  it('renders the submit form with the correct type for every registered submission type', async () => {
     for (const slug of Object.keys(submissionRegistry)) {
       const { unmount } = renderAt(`/submit/${slug}`);
       expect(
-        await screen.findByText('SUBMIT_FORM_SENTINEL'),
-        `/submit/${slug} should render SubmitForm, not NotFound`,
+        await screen.findByText(`SUBMIT_FORM_SENTINEL:${slug}`),
+        `/submit/${slug} should render SubmitForm with type "${slug}", not NotFound or an empty type`,
       ).toBeTruthy();
       unmount();
     }
@@ -74,7 +83,7 @@ describe('submit route resolution', () => {
   it('renders the submit form for the two slugs that collide with top-level routes', async () => {
     for (const slug of ['news', 'feedback']) {
       const { unmount } = renderAt(`/submit/${slug}`);
-      expect(await screen.findByText('SUBMIT_FORM_SENTINEL')).toBeTruthy();
+      expect(await screen.findByText(`SUBMIT_FORM_SENTINEL:${slug}`)).toBeTruthy();
       expect(screen.queryByText('NOT_FOUND_SENTINEL')).toBeNull();
       expect(screen.queryByText('NEWS_SENTINEL')).toBeNull();
       expect(screen.queryByText('FEEDBACK_SENTINEL')).toBeNull();
