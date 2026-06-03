@@ -534,7 +534,7 @@ export const AppRoutes = () => {
                   slugs stay covered. The `:contentType` route below still
                   handles unknown types ("Unknown submission type"). */}
                 {Object.keys(submissionRegistry).map((slug) => (
-                  <Route key={slug} path={`submit/${slug}`} element={<SubmitForm />} />
+                  <Route key={slug} path={`submit/${slug}`} element={<SubmitForm contentType={slug} />} />
                 ))}
                 <Route path="submit/:contentType" element={<SubmitForm />} />
                 <Route path="p/:slug" element={<CMSPage />} />
