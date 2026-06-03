@@ -28,12 +28,20 @@ import { useEventTypeOptions } from '@/lib/eventTypes';
 
 const SubmitForm = ({ contentType: contentTypeProp }: { contentType?: string } = {}) => {
   const { _t } = useTranslation();
+  const { contentType: paramContentType } = useParams<{ contentType: string }>();
+  const location = useLocation();
   // Static `submit/<slug>` routes pass the type as a prop (they carry no
   // :contentType param); the dynamic `submit/:contentType` route supplies it
   // via useParams. Prefer the explicit prop, fall back to the URL param.
   const { contentType: contentTypeParam } = useParams<{ contentType: string }>();
   const contentType = contentTypeProp ?? contentTypeParam;
   const navigate = useLocalizedNavigate();
+
+  // The explicit per-type `submit/<slug>` routes (routes.tsx — they outrank the
+  // /:locale? collision for slugs that are also top-level routes, e.g. news/feedback)
+  // carry no :contentType param. Fall back to the last path segment so the form
+  // still resolves its type instead of showing "Unknown submission type".
+  const contentType = paramContentType ?? location.pathname.split('/').filter(Boolean).pop();
 
   const config = contentType ? submissionRegistry[contentType] : undefined;
 
