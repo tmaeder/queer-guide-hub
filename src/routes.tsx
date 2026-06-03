@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MotionPage } from '@/components/motion';
 import { lazyRetry } from '@/utils/lazyRetry';
+import { submissionRegistry } from '@/config/submissionRegistry';
 
 const Index = lazyRetry(() => import('./pages/Index'));
 const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
@@ -521,6 +522,20 @@ export const AppRoutes = () => {
                 <Route path="help" element={<HelpHotlines />} />
                 <Route path="help/:country" element={<HelpHotlines />} />
                 <Route path="submit" element={<SubmitHub />} />
+                {/* Explicit static route per submission type. The locale
+                  layout parent is `/:locale?`; React Router expands the
+                  optional segment, so /submit/news scores `/:locale/news`
+                  (locale="submit") identically to `/submit/:contentType` and
+                  the earlier sibling (news / feedback) wins the tie — making
+                  LocaleRouter treat "submit" as an unknown locale and render
+                  NotFound. A fully-static two-segment path outranks the locale
+                  branch deterministically, so every submit slug resolves to
+                  the form. Generated from the registry so future colliding
+                  slugs stay covered. The `:contentType` route below still
+                  handles unknown types ("Unknown submission type"). */}
+                {Object.keys(submissionRegistry).map((slug) => (
+                  <Route key={slug} path={`submit/${slug}`} element={<SubmitForm />} />
+                ))}
                 <Route path="submit/:contentType" element={<SubmitForm />} />
                 <Route path="p/:slug" element={<CMSPage />} />
                 <Route path="share-target" element={<ShareTarget />} />
