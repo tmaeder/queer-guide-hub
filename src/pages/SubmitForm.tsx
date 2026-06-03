@@ -26,9 +26,13 @@ import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEventTypeOptions } from '@/lib/eventTypes';
 
-const SubmitForm = () => {
+const SubmitForm = ({ contentType: contentTypeProp }: { contentType?: string } = {}) => {
   const { _t } = useTranslation();
-  const { contentType } = useParams<{ contentType: string }>();
+  // Static `submit/<slug>` routes pass the type as a prop (they carry no
+  // :contentType param); the dynamic `submit/:contentType` route supplies it
+  // via useParams. Prefer the explicit prop, fall back to the URL param.
+  const { contentType: contentTypeParam } = useParams<{ contentType: string }>();
+  const contentType = contentTypeProp ?? contentTypeParam;
   const navigate = useLocalizedNavigate();
 
   const config = contentType ? submissionRegistry[contentType] : undefined;
