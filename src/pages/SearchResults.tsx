@@ -79,7 +79,9 @@ export default function SearchResults() {
   const query = searchParams.get('q') || '';
   const [searchQuery, setSearchQuery] = useState(query);
   const [showFilters, setShowFilters] = useState(false);
-  const [page, setPage] = useState(1);
+  // 0-indexed to match the worker (offset = page × hitsPerPage). Starting at 1
+  // would skip the first page of results — fatal for scopes with < hitsPerPage.
+  const [page, setPage] = useState(0);
   const [askOpen, setAskOpen] = useState(false);
 
   const initialLat = Number(searchParams.get('lat')) || undefined;
@@ -145,7 +147,7 @@ export default function SearchResults() {
   const handleFiltersChange = useCallback(
     (next: SearchFilters) => {
       setFilters(next);
-      setPage(1);
+      setPage(0);
       writeParams(next, sortId);
     },
     [writeParams, sortId],
@@ -158,7 +160,7 @@ export default function SearchResults() {
       const nextSort: SearchSortId =
         geoActive && cfg.sorts.includes('distance') ? 'distance' : (cfg.sorts[0] ?? 'relevance');
       setFilters(next);
-      setPage(1);
+      setPage(0);
       setViewMode(cfg.defaultView);
       setSortId(nextSort);
       writeParams(next, nextSort);
@@ -169,7 +171,7 @@ export default function SearchResults() {
   const handleClearAll = useCallback(() => {
     setSearchQuery('');
     setFilters({});
-    setPage(1);
+    setPage(0);
     setSortId('relevance');
     setSearchParams(new URLSearchParams());
   }, [setSearchParams]);
@@ -178,7 +180,7 @@ export default function SearchResults() {
     (next: string) => {
       const s = next as SearchSortId;
       setSortId(s);
-      setPage(1);
+      setPage(0);
       writeParams(filters, s);
       void trackSearchUx('facet_apply', { facet: 'sort', value: s, query });
     },
@@ -187,7 +189,7 @@ export default function SearchResults() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset paging on new query.
-    setPage(1);
+    setPage(0);
   }, [query]);
 
   const submitSearch = useCallback(() => {
