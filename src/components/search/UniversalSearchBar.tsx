@@ -21,6 +21,7 @@ import { useAssistant } from '@/hooks/useAssistant';
 import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
 import type { AssistantCard } from '@/lib/assistantClient';
+import { ROUTE_HREFS } from '@/lib/searchRoutes';
 import { SearchPopoverDesktop } from './SearchPopoverDesktop';
 import { SearchPopoverMobile } from './SearchPopoverMobile';
 import { SearchAskPanel } from './SearchAskPanel';
@@ -35,17 +36,6 @@ const SCOPE_IDS = [
   'city',
   'queer_village',
 ];
-
-const ROUTE_HREFS: Record<string, (slug: string) => string> = {
-  venue: (s) => `/venues/${s}`,
-  event: (s) => `/events/${s}`,
-  marketplace: (s) => `/marketplace/${s}`,
-  personality: (s) => `/personalities/${s}`,
-  city: (s) => `/city/${s}`,
-  country: (s) => `/country/${s}`,
-  queer_village: (s) => `/queer-villages/${s}`,
-  news: (s) => `/news/${s}`,
-};
 
 function prefetchRoute(suggestion: SearchSuggestion) {
   const slug = suggestion.slug || suggestion.id;

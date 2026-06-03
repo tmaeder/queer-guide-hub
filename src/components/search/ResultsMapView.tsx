@@ -16,6 +16,9 @@ interface ResultsMapViewProps {
   onAreaSearch?: (area: { lat: number; lng: number; radius: number }) => void;
 }
 
+/** Upper bound on markers rendered at once — protects MapLibre on huge result sets. */
+const MAX_MARKERS = 300;
+
 const TYPE_TO_MAP_KIND: Record<string, EntityMapMarker['type']> = {
   venue: 'venues',
   venues: 'venues',
@@ -50,6 +53,14 @@ export function ResultsMapView({
         subtitle: r.location || undefined,
         type: TYPE_TO_MAP_KIND[r.type],
       });
+    }
+    // Cap markers to keep MapLibre geometry cheap. `results` already arrives in
+    // rank/distance order, so we keep the strongest hits and drop the tail.
+    // No silent truncation: log how many were dropped.
+    if (out.length > MAX_MARKERS) {
+      const dropped = out.length - MAX_MARKERS;
+      console.info(`[ResultsMapView] capped map markers: showing ${MAX_MARKERS}, dropped ${dropped}`);
+      return out.slice(0, MAX_MARKERS);
     }
     return out;
   }, [results]);

@@ -1,13 +1,26 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import {
+  Search,
+  Filter,
+  Star,
+  Eye,
+  Clock,
+  TrendingUp,
+  ArrowUpDown,
+  List,
+  Grid,
+  MapPin,
+  Navigation,
+  Sparkles,
+} from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Select,
   SelectContent,
@@ -15,75 +28,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  MapPin,
-  Calendar,
-  Star,
-  Eye,
-  Users,
-  ShoppingBag,
-  Newspaper,
-  Globe,
-  Plane,
-  FileText,
-  Search,
-  Filter,
-  ArrowUpDown,
-  Grid,
-  List,
-  TrendingUp,
-  Clock,
-  Sparkles,
-  Tag,
-  User,
-  Hotel,
-  Tent,
-  HelpCircle,
-} from 'lucide-react';
-import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
+import { useSearch, type SearchResult, type SearchFilters } from '@/hooks/useSearch';
+import { useAssistant } from '@/hooks/useAssistant';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 import { ActiveFilterChips } from '@/components/search/ActiveFilterChips';
 import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
 import { BackToTopButton } from '@/components/search/BackToTopButton';
-import { BoostReasonBadge } from '@/components/search/BoostReasonBadge';
-import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
 import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
 import { ResultsMapView } from '@/components/search/ResultsMapView';
+import { SearchScopeChips } from '@/components/search/SearchScopeChips';
+import { SearchResultCard } from '@/components/search/SearchResultCard';
+import { SearchAskPanel } from '@/components/search/SearchAskPanel';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { trackSearchUx } from '@/lib/searchClient';
 import { useDidYouMean } from '@/hooks/useDidYouMean';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { ColourfulText } from '@/components/effects/ColourfulText';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { useTranslation } from 'react-i18next';
-import { CONTENT_TYPES, supportsPriceSort, resolveType } from '@/lib/searchTaxonomy';
+import { supportsPriceSort } from '@/lib/searchTaxonomy';
+import { hrefForEntity } from '@/lib/searchRoutes';
+import type { AssistantCard } from '@/lib/assistantClient';
+import { cn } from '@/lib/utils';
 
 const MAX_HEADING_QUERY_LEN = 80;
+const SUGGESTED_SEARCHES = [
+  'Berlin venues',
+  'Pride events',
+  'Drag shows',
+  'LGBTQ+ history',
+  'Queer artists',
+  'Safe spaces',
+];
 
-const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
-  venue: MapPin,
-  venues: MapPin,
-  event: Calendar,
-  events: Calendar,
-  marketplace: ShoppingBag,
-  user: Users,
-  news: Newspaper,
-  location: Globe,
-  cities: Globe,
-  countries: Globe,
-  content: FileText,
-  ressource: FileText,
-  travel: Plane,
-  personality: User,
-  personalities: User,
-  tag: Tag,
-  tags: Tag,
-  group: Users,
-  hotels: Hotel,
-  queer_villages: MapPin,
-  festivals: Tent,
-};
+function countActiveFilters(f: SearchFilters): number {
+  return (
+    (f.types?.length || 0) +
+    (f.location ? 1 : 0) +
+    (f.categories?.length || 0) +
+    (f.cluster_ids?.length || 0) +
+    (f.priceRange ? 1 : 0) +
+    (f.dateRange ? 1 : 0) +
+    (f.rating ? 1 : 0) +
+    (f.featured ? 1 : 0) +
+    (f.verified ? 1 : 0) +
+    (f.lat != null && f.lng != null ? 1 : 0)
+  );
+}
 
 export default function SearchResults() {
   const { t } = useTranslation();
@@ -91,163 +80,173 @@ export default function SearchResults() {
   const navigate = useLocalizedNavigate();
   const trackClick = useTrackClick();
   const isMobile = useIsMobile();
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedTab, setSelectedTab] = useState('all');
-  const initialSort = searchParams.get('sort') || 'relevance';
-  const [sortBy, setSortBy] = useState(initialSort);
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('list');
-  const [searchQuery, setSearchQuery] = useState('');
-  // P0-4: 1-indexed page param survives reload; resets to 1 when q/sort/filters change.
-  const initialPage = Math.max(1, Number(searchParams.get('page') || 1));
-  const [page, setPage] = useState(initialPage);
 
   const query = searchParams.get('q') || '';
-  const initialTypes = searchParams.get('types')?.split(',') || [];
-  const initialLocation = searchParams.get('location') || undefined;
-  const initialCategories = searchParams.get('categories')?.split(',') || [];
-  const initialClusterIds = searchParams.get('clusters')?.split(',') || [];
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSearchQuery(query);
-  }, [query]);
+  const [searchQuery, setSearchQuery] = useState(query);
+  const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('list');
+  const [page, setPage] = useState(1);
+  const [askOpen, setAskOpen] = useState(false);
 
   const initialLat = Number(searchParams.get('lat')) || undefined;
   const initialLng = Number(searchParams.get('lng')) || undefined;
-  const initialRadius = Number(searchParams.get('radius')) || undefined;
-
   const [filters, setFilters] = useState<SearchFilters>({
-    types: initialTypes,
-    location: initialLocation,
-    categories: initialCategories.length > 0 ? initialCategories : undefined,
-    cluster_ids: initialClusterIds.length > 0 ? initialClusterIds : undefined,
+    types: searchParams.get('types')?.split(',').filter(Boolean) || [],
+    location: searchParams.get('location') || undefined,
+    categories: searchParams.get('categories')?.split(',').filter(Boolean) || undefined,
+    cluster_ids: searchParams.get('clusters')?.split(',').filter(Boolean) || undefined,
     lat: initialLat,
     lng: initialLng,
-    radius: initialRadius,
+    radius: Number(searchParams.get('radius')) || undefined,
   });
+  const geoActive = filters.lat != null && filters.lng != null;
+  const [sortBy, setSortBy] = useState(
+    searchParams.get('sort') || (geoActive ? 'distance' : 'relevance'),
+  );
 
-  const activeTypes = selectedTab === 'all' ? filters.types : [selectedTab];
+  const activeScope = filters.types && filters.types.length === 1 ? filters.types[0] : null;
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync input with URL query.
+    setSearchQuery(query);
+  }, [query]);
+
   const { results, loading, error, errorKind, totalHits, tooShort, facets } = useSearch(
     query,
-    { ...filters, types: activeTypes },
+    filters,
     page,
   );
 
-  const handleFiltersChange = (newFilters: SearchFilters) => {
-    setFilters(newFilters);
-    setPage(1); // P0-4: any filter change resets paging.
-    const params = new URLSearchParams(searchParams);
-    if (newFilters.types && newFilters.types.length > 0) {
-      params.set('types', newFilters.types.join(','));
-    } else {
-      params.delete('types');
-    }
-    if (newFilters.location) {
-      params.set('location', newFilters.location);
-    } else {
-      params.delete('location');
-    }
-    if (newFilters.categories && newFilters.categories.length > 0) {
-      params.set('categories', newFilters.categories.join(','));
-    } else {
-      params.delete('categories');
-    }
-    if (newFilters.cluster_ids && newFilters.cluster_ids.length > 0) {
-      params.set('clusters', newFilters.cluster_ids.join(','));
-    } else {
-      params.delete('clusters');
-    }
-    if (newFilters.lat !== undefined && newFilters.lng !== undefined) {
-      params.set('lat', String(newFilters.lat));
-      params.set('lng', String(newFilters.lng));
-      if (newFilters.radius) params.set('radius', String(newFilters.radius));
-    } else {
-      params.delete('lat');
-      params.delete('lng');
-      params.delete('radius');
-    }
-    params.delete('page');
-    setSearchParams(params);
-  };
+  // ── URL sync ───────────────────────────────────────────────────────────
+  const writeFilterParams = useCallback(
+    (next: SearchFilters, nextSort = sortBy) => {
+      const params = new URLSearchParams();
+      if (query) params.set('q', query);
+      if (next.types?.length) params.set('types', next.types.join(','));
+      if (next.location) params.set('location', next.location);
+      if (next.categories?.length) params.set('categories', next.categories.join(','));
+      if (next.cluster_ids?.length) params.set('clusters', next.cluster_ids.join(','));
+      if (next.lat != null && next.lng != null) {
+        params.set('lat', String(next.lat));
+        params.set('lng', String(next.lng));
+        if (next.radius) params.set('radius', String(next.radius));
+      }
+      if (nextSort && nextSort !== 'relevance') params.set('sort', nextSort);
+      setSearchParams(params);
+    },
+    [query, sortBy, setSearchParams],
+  );
 
-  // P1-7: Clear All in the filters panel must also clear the visible search input.
-  const handleClearAll = () => {
+  const handleFiltersChange = useCallback(
+    (next: SearchFilters) => {
+      setFilters(next);
+      setPage(1);
+      writeFilterParams(next);
+    },
+    [writeFilterParams],
+  );
+
+  const handleScopeChange = useCallback(
+    (scope: string | null) => {
+      handleFiltersChange({ ...filters, types: scope ? [scope] : [] });
+    },
+    [filters, handleFiltersChange],
+  );
+
+  const handleClearAll = useCallback(() => {
     setSearchQuery('');
     setFilters({});
     setPage(1);
     const params = new URLSearchParams();
     if (sortBy && sortBy !== 'relevance') params.set('sort', sortBy);
     setSearchParams(params);
-  };
+  }, [sortBy, setSearchParams]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    if (sortBy && sortBy !== 'relevance') {
-      params.set('sort', sortBy);
-    } else {
-      params.delete('sort');
-    }
-    params.delete('page');
-    setSearchParams(params);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- searchParams/setSearchParams are from useSearchParams, stable refs; only re-run on sortBy
-  }, [sortBy]);
+  const handleSortChange = useCallback(
+    (next: string) => {
+      setSortBy(next);
+      setPage(1);
+      writeFilterParams(filters, next);
+      void trackSearchUx('facet_apply', { facet: 'sort', value: next, query });
+    },
+    [filters, query, writeFilterParams],
+  );
 
-  // P0-4: keep page param in URL in sync with state, removing when on page 1.
+  // Reset paging when the query string changes.
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    if (page > 1) params.set('page', String(page));
-    else params.delete('page');
-    setSearchParams(params);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
-
-  // Reset to page 1 whenever the query string itself changes.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset paging on new query.
     setPage(1);
   }, [query]);
 
-  // Fire zero_results telemetry once when a real query lands with no hits.
+  const submitSearch = useCallback(() => {
+    if (!searchQuery.trim()) return;
+    const params = new URLSearchParams(searchParams);
+    params.set('q', searchQuery);
+    setSearchParams(params);
+  }, [searchQuery, searchParams, setSearchParams]);
+
+  const navigateToResult = useCallback(
+    (result: SearchResult) => {
+      trackClick({ type: result.type, id: result.objectID }, 'search', { query });
+      navigate(
+        hrefForEntity({
+          type: result.type,
+          slug: (result.metadata?.slug as string) || result.objectID,
+          title: result.title,
+          isCountry: Boolean(result.metadata?.isCountry),
+        }),
+      );
+    },
+    [navigate, trackClick, query],
+  );
+
+  // ── Inline AI ──────────────────────────────────────────────────────────
+  const assistant = useAssistant();
+  const openAsk = useCallback(() => {
+    setAskOpen(true);
+    const q = query.trim();
+    if (q && assistant.messages.length === 0 && !assistant.pending) void assistant.send(q);
+  }, [query, assistant]);
+
+  const navigateToCard = useCallback(
+    (card: AssistantCard) => {
+      setAskOpen(false);
+      navigate(
+        hrefForEntity({ type: card.type, slug: (card.slug as string) || card.objectID, title: card.title }),
+      );
+    },
+    [navigate],
+  );
+
+  // ── Accumulate pages (infinite scroll), keep previous during refetch ─────
+  const queryKey = `${query}|${JSON.stringify(filters)}`;
+  const [accumulated, setAccumulated] = useState<SearchResult[]>([]);
+  const lastKeyRef = useRef('');
   useEffect(() => {
-    if (!query || query.trim().length < 2 || loading || tooShort) return;
-    if (totalHits === 0 && !errorKind) {
-      void trackSearchUx('zero_results', {
-        query,
-        scope: filters.types && filters.types.length === 1 ? filters.types[0] : 'all',
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, totalHits, loading, tooShort, errorKind]);
+    if (loading) return; // keep previous results visible while refetching
+    setAccumulated((prev) => {
+      if (queryKey !== lastKeyRef.current) {
+        lastKeyRef.current = queryKey;
+        return results;
+      }
+      const seen = new Set(prev.map((r) => r.objectID));
+      const fresh = results.filter((r) => r.objectID && !seen.has(r.objectID));
+      if (fresh.length > 0) return [...prev, ...fresh];
+      return prev.length === results.length ? prev : results;
+    });
+  }, [results, loading, queryKey]);
 
-  const getResultsByType = (source: SearchResult[]) => {
-    return source.reduce(
-      (acc, result) => {
-        if (!acc[result.type]) acc[result.type] = [];
-        acc[result.type].push(result);
-        return acc;
-      },
-      {} as Record<string, SearchResult[]>,
-    );
-  };
-
-  const formatResultDate = (dateString?: string) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const sortResults = (results: SearchResult[]) => {
-    const sorted = [...results];
+  const sortedResults = useMemo(() => {
+    const sorted = [...accumulated];
     switch (sortBy) {
+      case 'distance':
+        return sorted.sort(
+          (a, b) => (a._distance_m ?? Infinity) - (b._distance_m ?? Infinity),
+        );
       case 'newest':
-        return sorted.sort(
-          (a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime(),
-        );
+        return sorted.sort((a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime());
       case 'oldest':
-        return sorted.sort(
-          (a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime(),
-        );
+        return sorted.sort((a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime());
       case 'rating':
         return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
       case 'price-low':
@@ -255,7 +254,10 @@ export default function SearchResults() {
       case 'price-high':
         return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
       case 'popular':
-        return sorted.sort((a, b) => (b.metadata?.viewsCount || 0) - (a.metadata?.viewsCount || 0));
+        return sorted.sort(
+          (a, b) =>
+            ((b.metadata?.viewsCount as number) || 0) - ((a.metadata?.viewsCount as number) || 0),
+        );
       case 'alpha-asc':
         return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
       case 'alpha-desc':
@@ -263,420 +265,76 @@ export default function SearchResults() {
       default:
         return sorted;
     }
-  };
+  }, [accumulated, sortBy]);
 
-  const handleSearch = () => {
-    if (!searchQuery.trim()) return;
-    const params = new URLSearchParams(searchParams);
-    params.set('q', searchQuery);
-    setSearchParams(params);
-  };
-
-  const navigateToResult = (result: SearchResult) => {
-    trackClick({ type: result.type, id: result.objectID }, 'search', { query });
-    const slug = result.metadata?.slug || result.objectID;
-    switch (result.type) {
-      case 'venue':
-      case 'venues':
-        navigate(`/venues/${slug}`);
-        break;
-      case 'event':
-      case 'events':
-        navigate(`/events/${slug}`);
-        break;
-      case 'marketplace':
-        navigate(`/marketplace/${slug}`);
-        break;
-      case 'user':
-      case 'personalities':
-      case 'personality':
-        navigate(`/personalities/${slug}`);
-        break;
-      case 'news':
-        navigate(`/news/${slug}`);
-        break;
-      case 'cities':
-      case 'location':
-        if (result.metadata?.isCountry) {
-          navigate(`/country/${slug}`);
-        } else {
-          navigate(`/city/${slug}`);
-        }
-        break;
-      case 'countries':
-        navigate(`/country/${slug}`);
-        break;
-      case 'content':
-      case 'ressource':
-      case 'tags':
-      case 'tag':
-        navigate(`/resources/${slug}`);
-        break;
-      case 'hotels':
-      case 'festivals':
-      case 'queer_villages':
-      case 'travel':
-        navigate('/places');
-        break;
-      default:
-        navigate(`/search?q=${encodeURIComponent(result.title)}`);
-        break;
-    }
-  };
-
-  const renderResultCard = (result: SearchResult) => {
-    // P0-2: never render a card without an objectID — clicking would build a
-    // /search?q=undefined link. P1-6: fall back to name/title legacy variants
-    // so a personality with `name` but no `title` still shows its label.
-    if (!result?.objectID) return null;
-    const displayTitle = result.title || (result as unknown as { name?: string }).name || '';
-    if (!displayTitle) return null;
-    const Icon = contentTypeIcons[result.type] || HelpCircle;
-
-    if (viewMode === 'grid') {
-      return (
-        <Card key={`${result.type}-${result.objectID}`} onClick={() => navigateToResult(result)}>
-          <div className="relative">
-            {result.imageUrl ? (
-              <div
-                className="relative overflow-hidden rounded-t-container"
-                style={{ aspectRatio: '16/9' }}
-              >
-                <img
-                  src={result.imageUrl}
-                  alt={result.title}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transition: 'transform 0.2s',
-                  }}
-                />
-                <div className="absolute" style={{ top: 8, left: 8 }}>
-                  <Badge
-                    variant="secondary"
-                    style={{ background: 'hsl(var(--card))' }}
-                    className="text-xs"
-                  >
-                    <Icon style={{ width: 12, height: 12 }} className="mr-1" />
-                    {result.type}
-                  </Badge>
-                </div>
-                {result.metadata?.featured && (
-                  <div className="absolute" style={{ top: 8, right: 8 }}>
-                    <Badge className="text-xs">
-                      <Sparkles size={12} className="mr-1" />
-                      Featured
-                    </Badge>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div
-                className="flex items-center justify-center bg-muted rounded-t-container"
-                style={{ aspectRatio: '16/9' }}
-              >
-                <Icon style={{ width: 48, height: 48 }} className="text-muted-foreground" />
-              </div>
-            )}
-          </div>
-          <CardContent className="p-4">
-            <p
-              className="font-semibold mb-2 text-base overflow-hidden"
-              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-            >
-              {result.title}
-            </p>
-            {result.description && (
-              <p
-                className="text-sm text-muted-foreground overflow-hidden mb-4"
-                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-              >
-                {result.description}
-              </p>
-            )}
-            <div className="flex flex-wrap items-center mb-4 gap-2">
-              {result.date && (
-                <div className="flex items-center gap-1">
-                  <Calendar size={12} />
-                  <span className="text-xs text-muted-foreground">{formatResultDate(result.date)}</span>
-                </div>
-              )}
-              {result.location && (
-                <div className="flex items-center gap-1">
-                  <MapPin size={12} />
-                  <span className="text-xs text-muted-foreground">{result.location}</span>
-                </div>
-              )}
-              {result.rating && (
-                <div className="flex items-center gap-1">
-                  <Star size={12} style={{ fill: 'currentColor' }} />
-                  <span className="text-xs text-muted-foreground">{result.rating}</span>
-                </div>
-              )}
-            </div>
-            <BoostReasonBadge reason={result._boostReason} />
-            <div className="flex items-center justify-between">
-              {result.price ? (
-                <p className="font-semibold text-lg" style={{ color: 'hsl(var(--primary))' }}>
-                  ${result.price}
-                </p>
-              ) : (
-                <div />
-              )}
-              <div className="flex items-center gap-2">
-                <SearchFeedbackButtons
-                  entity={{ type: result.type, id: result.objectID }}
-                  query={query}
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{ transition: 'color 0.15s, background-color 0.15s' }}
-                >
-                  View
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    return (
-      <Card key={`${result.type}-${result.objectID}`} onClick={() => navigateToResult(result)}>
-        <CardContent className="p-4">
-          <div className="flex items-start gap-4">
-            {result.imageUrl && (
-              <div className="flex-shrink-0">
-                <img
-                  src={result.imageUrl}
-                  alt={result.title}
-                  className="rounded-element"
-                  style={{
-                    width: 80,
-                    height: 80,
-                    objectFit: 'cover',
-                    transition: 'transform 0.2s',
-                  }}
-                />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1">
-                  <div className="flex items-center mb-2 gap-2">
-                    <Icon style={{ width: 16, height: 16 }} className="text-muted-foreground" />
-                    <Badge variant="secondary" className="text-xs">
-                      {result.type}
-                    </Badge>
-                    {result.metadata?.featured && (
-                      <Badge className="text-xs">
-                        <Sparkles size={12} className="mr-1" />
-                        Featured
-                      </Badge>
-                    )}
-                  </div>
-                  <h3 className="font-semibold mb-2 text-lg">{result.title}</h3>
-                  {result.description && (
-                    <p
-                      className="text-sm text-muted-foreground overflow-hidden mb-4"
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                      }}
-                    >
-                      {result.description}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap items-center mb-4 gap-4">
-                    {result.location && (
-                      <div className="flex items-center gap-1">
-                        <MapPin size={12} />
-                        <span className="text-sm text-muted-foreground">{result.location}</span>
-                      </div>
-                    )}
-                    {result.date && (
-                      <div className="flex items-center gap-1">
-                        <Calendar size={12} />
-                        <span className="text-sm text-muted-foreground">
-                          {formatResultDate(result.date)}
-                        </span>
-                      </div>
-                    )}
-                    {result.rating && (
-                      <div className="flex items-center gap-1">
-                        <Star size={12} style={{ fill: 'currentColor' }} />
-                        <span className="text-sm text-muted-foreground">{result.rating}</span>
-                      </div>
-                    )}
-                    {result.metadata?.viewsCount && (
-                      <div className="flex items-center gap-1">
-                        <Eye size={12} />
-                        <span className="text-sm text-muted-foreground">
-                          {result.metadata.viewsCount} views
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  {result.metadata?.tags && result.metadata.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {result.metadata.tags.slice(0, 4).map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {result.metadata.tags.length > 4 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{result.metadata.tags.length - 4} more
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                  <BoostReasonBadge reason={result._boostReason} />
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  {result.price && (
-                    <p className="font-semibold text-xl" style={{ color: 'hsl(var(--primary))' }}>
-                      ${result.price}
-                    </p>
-                  )}
-                  <SearchFeedbackButtons
-                    entity={{ type: result.type, id: result.objectID }}
-                    query={query}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    style={{ transition: 'color 0.15s, background-color 0.15s' }}
-                  >
-                    View Details
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-
-  // Accumulate results across pages so /search behaves like infinite scroll
-  // instead of paginated. Reset whenever the query/filter/sort/tab changes.
-  const queryKey = `${query}|${selectedTab}|${JSON.stringify(filters)}|${sortBy}`;
-  const [accumulated, setAccumulated] = useState<SearchResult[]>([]);
-  const lastKeyRef = useRef('');
-
-  useEffect(() => {
-    if (loading) return;
-    setAccumulated((prev) => {
-      // New query/filter/sort/tab → reset to the current results.
-      if (queryKey !== lastKeyRef.current) {
-        lastKeyRef.current = queryKey;
-        return results;
-      }
-      // Same scope — append any results not already accumulated. Detecting
-      // by objectID rather than page index avoids a race where setPage runs
-      // a render ahead of the worker fetch and the prior page's results
-      // briefly look "stale for the new page".
-      const seen = new Set(prev.map((r) => r.objectID));
-      const newOnes = results.filter((r) => r.objectID && !seen.has(r.objectID));
-      if (newOnes.length > 0) return [...prev, ...newOnes];
-      // No new objectIDs. Replace only on length-different (handles initial
-      // empty → populated). The length-equal branch keeps `prev` so a fresh
-      // empty-array reference from useSearch doesn't loop setAccumulated.
-      return prev.length === results.length ? prev : results;
-    });
-  }, [results, loading, queryKey]);
-
-  const resultsByType = getResultsByType(accumulated);
   const totalResults = accumulated.length;
-  const sortedResults = sortResults(accumulated);
-  const sortedResultsByType = Object.entries(resultsByType).reduce(
-    (acc, [type, typeResults]) => {
-      acc[type] = sortResults(typeResults);
-      return acc;
-    },
-    {} as Record<string, SearchResult[]>,
-  );
   const hasMore = totalResults < totalHits;
+  const activeFilterCount = countActiveFilters(filters);
+  const showInitialSkeleton = loading && accumulated.length === 0;
+  const hasQuery = query.trim().length > 0;
+
+  // Fire zero_results telemetry once when a real query lands with no hits.
+  useEffect(() => {
+    if (!query || query.trim().length < 2 || loading || tooShort) return;
+    if (totalHits === 0 && !errorKind) {
+      void trackSearchUx('zero_results', { query, scope: activeScope || 'all' });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, totalHits, loading, tooShort, errorKind]);
+
   const dymHit = useDidYouMean(
     query,
     query.trim().length >= 2 && !loading && !tooShort && totalHits === 0 && !errorKind,
   );
 
-  const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
-  const listClass = 'flex flex-col gap-4';
+  const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
+  const listClass = 'flex flex-col gap-3';
+
+  const askButton = (
+    <Button variant="outline" size="sm" onClick={openAsk} className="gap-2">
+      <Sparkles className="h-4 w-4" />
+      {t('search.ask.title', 'Ask the guide')}
+    </Button>
+  );
 
   return (
     <div className="relative">
-      <SpotlightV2 anchor="top-center" intensity={0.1} />
-      <div className="container mx-auto px-4 py-8 relative">
-        {/* Header */}
+      <div className="container relative mx-auto px-4 py-8">
         <PageHeader
-          title={<ColourfulText text="Search Results" />}
+          title={t('search.resultsTitle', 'Search')}
           subtitle={
-            loading
-              ? 'Searching across all content...'
-              : query
-                ? `${totalResults} results found for "${
-                    query.length > MAX_HEADING_QUERY_LEN
-                      ? query.slice(0, MAX_HEADING_QUERY_LEN) + '…'
-                      : query
-                  }"`
+            loading && accumulated.length === 0
+              ? t('search.searching', 'Searching…')
+              : hasQuery
+                ? t('search.resultsCount', {
+                    defaultValue: '{{count}} results for "{{q}}"',
+                    count: totalHits,
+                    q:
+                      query.length > MAX_HEADING_QUERY_LEN
+                        ? query.slice(0, MAX_HEADING_QUERY_LEN) + '…'
+                        : query,
+                  })
                 : undefined
           }
-          actions={
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-            >
-              <Filter size={16} />
-              Filters
-              {Object.values(filters).some(
-                (v) => v && (Array.isArray(v) ? v.length > 0 : true),
-              ) && (
-                <Badge
-                  variant="destructive"
-                  style={{ height: 20, width: 20 }}
-                  className="ml-1 p-0 text-xs"
-                >
-                  !
-                </Badge>
-              )}
-            </Button>
-          }
         >
-          {/* Enhanced Search Bar */}
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search
-                style={{
-                  left: 12,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: 16,
-                  height: 16,
-                }}
-                className="absolute text-muted-foreground"
-              />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Refine your search..."
+                placeholder={t('search.refine', 'Refine your search…')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                style={{ paddingLeft: 40 }}
+                onKeyDown={(e) => e.key === 'Enter' && submitSearch()}
+                className="pl-10"
               />
             </div>
-            <Button onClick={handleSearch}>Search</Button>
+            <Button onClick={submitSearch}>{t('search.button', 'Search')}</Button>
           </div>
         </PageHeader>
 
-        {/* Filters Panel — sticky card on desktop, bottom Sheet on mobile */}
+        {/* Filters panel — sticky card on desktop, bottom Sheet on mobile */}
         {showFilters && !isMobile && (
-          <Card style={{ top: 16, zIndex: 10 }} className="sticky mb-4">
+          <Card className="sticky mb-4" style={{ top: 16, zIndex: 10 }}>
             <SearchFiltersPanel
               filters={filters}
               onFiltersChange={handleFiltersChange}
@@ -689,7 +347,7 @@ export default function SearchResults() {
           <Sheet open={showFilters} onOpenChange={setShowFilters}>
             <SheetContent side="bottom" style={{ maxHeight: '85dvh', overflowY: 'auto' }}>
               <SheetHeader>
-                <SheetTitle>Filters</SheetTitle>
+                <SheetTitle>{t('search.filters', 'Filters')}</SheetTitle>
               </SheetHeader>
               <SearchFiltersPanel
                 filters={filters}
@@ -701,418 +359,308 @@ export default function SearchResults() {
           </Sheet>
         )}
 
-        {/* Active filter chips + saved-search menu */}
-        <div className="flex items-center justify-between gap-4" style={{ flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
-          </div>
-          <SavedSearchesMenu
-            currentQueryString={searchParams.toString()}
-            suggestedName={query}
-            onLoad={(qs) => {
-              const next = new URLSearchParams(qs);
-              setSearchParams(next);
-            }}
-          />
-        </div>
+        {hasQuery && (
+          <>
+            {/* Scope chips */}
+            <SearchScopeChips activeScope={activeScope} onScopeChange={handleScopeChange} />
 
-        {/* Results Controls */}
-        {!loading && results.length > 0 && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-muted mb-6 rounded-element gap-4 p-4">
-            <div className="flex items-center gap-4">
+            {/* Active filter chips + saved searches */}
+            <div className="flex flex-wrap items-center justify-between gap-3 py-3">
+              <div className="min-w-0 flex-1">
+                <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
+              </div>
+              <SavedSearchesMenu
+                currentQueryString={searchParams.toString()}
+                suggestedName={query}
+                onLoad={(qs) => setSearchParams(new URLSearchParams(qs))}
+              />
+            </div>
+
+            {/* Controls bar */}
+            <div className="mb-6 flex flex-col gap-3 rounded-element bg-muted p-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium">Sort by:</p>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger style={{ width: 160 }}>
+                <span className="text-sm font-medium">{t('search.sortBy', 'Sort')}</span>
+                <Select value={sortBy} onValueChange={handleSortChange}>
+                  <SelectTrigger className="w-[170px]">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent style={{ zIndex: 50 }}>
+                  <SelectContent className="z-50">
                     <SelectItem value="relevance">
                       <span className="inline-flex items-center gap-2">
-                        <TrendingUp size={12} />
-                        Relevance
+                        <TrendingUp className="h-3.5 w-3.5" />
+                        {t('search.sort.relevance', 'Relevance')}
                       </span>
                     </SelectItem>
+                    {geoActive && (
+                      <SelectItem value="distance">
+                        <span className="inline-flex items-center gap-2">
+                          <Navigation className="h-3.5 w-3.5" />
+                          {t('search.sort.distance', 'Distance')}
+                        </span>
+                      </SelectItem>
+                    )}
                     <SelectItem value="newest">
                       <span className="inline-flex items-center gap-2">
-                        <Clock size={12} />
-                        Newest
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="oldest">
-                      <span className="inline-flex items-center gap-2">
-                        <Clock size={12} style={{ transform: 'rotate(180deg)' }} />
-                        Oldest
+                        <Clock className="h-3.5 w-3.5" />
+                        {t('search.sort.newest', 'Newest')}
                       </span>
                     </SelectItem>
                     <SelectItem value="rating">
                       <span className="inline-flex items-center gap-2">
-                        <Star size={12} />
-                        Highest Rated
+                        <Star className="h-3.5 w-3.5" />
+                        {t('search.sort.rating', 'Highest rated')}
                       </span>
                     </SelectItem>
                     <SelectItem value="popular">
                       <span className="inline-flex items-center gap-2">
-                        <Eye size={12} />
-                        Most Popular
+                        <Eye className="h-3.5 w-3.5" />
+                        {t('search.sort.popular', 'Most popular')}
                       </span>
                     </SelectItem>
-                    {/* P2-11: only show price sort when every active type can have a price. */}
-                    {supportsPriceSort(activeTypes) && (
+                    {supportsPriceSort(filters.types) && (
                       <>
-                        <SelectItem value="price-low">Price: Low to High</SelectItem>
-                        <SelectItem value="price-high">Price: High to Low</SelectItem>
+                        <SelectItem value="price-low">
+                          {t('search.sort.priceLow', 'Price: Low to High')}
+                        </SelectItem>
+                        <SelectItem value="price-high">
+                          {t('search.sort.priceHigh', 'Price: High to Low')}
+                        </SelectItem>
                       </>
                     )}
                     <SelectItem value="alpha-asc">
                       <span className="inline-flex items-center gap-2">
-                        <ArrowUpDown size={12} />A - Z
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="alpha-desc">
-                      <span className="inline-flex items-center gap-2">
-                        <ArrowUpDown size={12} style={{ transform: 'rotate(180deg)' }} />Z - A
+                        <ArrowUpDown className="h-3.5 w-3.5" />
+                        {t('search.sort.az', 'A – Z')}
                       </span>
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-medium">View:</p>
-              <div className="flex items-center rounded-element">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-r-none"
+                    aria-label={t('search.view.list', 'List view')}
+                    aria-pressed={viewMode === 'list'}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="rounded-none"
+                    aria-label={t('search.view.grid', 'Grid view')}
+                    aria-pressed={viewMode === 'grid'}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'map' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('map')}
+                    className="rounded-l-none"
+                    aria-label={t('search.view.map', 'Map view')}
+                    aria-pressed={viewMode === 'map'}
+                  >
+                    <MapPin className="h-4 w-4" />
+                  </Button>
+                </div>
+                {askButton}
                 <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  variant="outline"
                   size="sm"
-                  onClick={() => setViewMode('list')}
-                  className="rounded-r-none"
-                  aria-label="List view"
-                  aria-pressed={viewMode === 'list'}
+                  onClick={() => setShowFilters((s) => !s)}
+                  className="gap-2"
                 >
-                  <List size={16} />
-                </Button>
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className="rounded-none"
-                  aria-label="Grid view"
-                  aria-pressed={viewMode === 'grid'}
-                >
-                  <Grid size={16} />
-                </Button>
-                <Button
-                  variant={viewMode === 'map' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('map')}
-                  className="rounded-l-none"
-                  aria-label="Map view"
-                  aria-pressed={viewMode === 'map'}
-                >
-                  <MapPin size={16} />
+                  <Filter className="h-4 w-4" />
+                  {t('search.filters', 'Filters')}
+                  {activeFilterCount > 0 && (
+                    <span className="text-muted-foreground">· {activeFilterCount}</span>
+                  )}
                 </Button>
               </div>
             </div>
-          </div>
+          </>
         )}
 
         {/* Results */}
-        {loading ? (
+        {showInitialSkeleton ? (
           <PageLoadingState count={6} variant={viewMode === 'grid' ? 'card' : 'list'} />
         ) : tooShort ? (
-          // P2-8: helpful guidance instead of "0 results" for sub-MIN_QUERY_LEN inputs.
-          <div className="flex flex-col items-center justify-center text-center pt-12 pb-12">
-            <Search size={48} className="text-muted-foreground mb-4" />
-            <h3 className="font-semibold mb-2 text-lg">Keep typing</h3>
-            <p className="text-muted-foreground">Enter at least 2 characters to start searching.</p>
+          <div className="flex flex-col items-center justify-center pb-12 pt-12 text-center">
+            <Search className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-semibold">{t('search.keepTyping', 'Keep typing')}</h3>
+            <p className="text-muted-foreground">
+              {t('search.minChars', 'Enter at least 2 characters to start searching.')}
+            </p>
           </div>
-        ) : results.length === 0 ? (
-          <>
-            {/* Search Suggestions -- shown when query is empty */}
-            {(!query || query.trim() === '') && (
-              <Card>
-                <CardContent>
-                  <h3 className="font-semibold mb-4 text-lg">Try searching for...</h3>
-                  <div className="flex flex-wrap mb-6 gap-2">
-                    {[
-                      'Berlin venues',
-                      'Pride events',
-                      'Drag shows',
-                      'LGBTQ+ history',
-                      'Queer artists',
-                      'Safe spaces',
-                    ].map((suggestion) => (
-                      <Button
-                        key={suggestion}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const params = new URLSearchParams(searchParams);
-                          params.set('q', suggestion);
-                          setSearchParams(params);
-                        }}
-                      >
-                        {suggestion}
-                      </Button>
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">Or browse by category:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { label: 'Venues', path: '/venues' },
-                      { label: 'Events', path: '/events' },
-                      { label: 'Personalities', path: '/personalities' },
-                      { label: 'News', path: '/news' },
-                      { label: 'Places', path: '/places' },
-                      { label: 'Resources', path: '/resources' },
-                    ].map((cat) => (
-                      <Button
-                        key={cat.label}
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(cat.path)}
-                      >
-                        {cat.label}
-                      </Button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {query && query.trim() !== '' && errorKind === 'unavailable' && (
-              <div
-                role="alert"
-                className="flex flex-col items-center justify-center text-center pt-12 pb-12"
-              >
-                <Search size={48} className="text-muted-foreground mb-4" />
-                <h3 className="font-semibold mb-2 text-lg">Search is temporarily unavailable</h3>
-                <p className="text-muted-foreground mb-4">
-                  {error ?? "We've been notified and are looking into it."}
-                </p>
-              </div>
-            )}
-            {query && query.trim() !== '' && errorKind !== 'unavailable' && (
-              <div className="flex flex-col items-center justify-center text-center pt-12 pb-12">
-                <Search size={48} className="text-muted-foreground mb-4" />
-                <h3 className="font-semibold mb-2 text-lg">
-                  {t('search.noResultsFor', 'No results found for "{{q}}"', { q: query })}
-                </h3>
-                {dymHit && (dymHit.title || dymHit.name) && (
-                  <p className="mb-4">
-                    <Button
-                      variant="link"
-                      onClick={() => {
-                        const params = new URLSearchParams(searchParams);
-                        params.set('q', (dymHit.title || dymHit.name) as string);
-                        params.delete('types');
-                        setSearchParams(params);
-                      }}
-                    >
-                      {t('search.didYouMean', 'Did you mean "{{q}}"?', {
-                        q: (dymHit.title || dymHit.name) as string,
-                      })}
-                    </Button>
-                  </p>
-                )}
-                <p className="text-muted-foreground mb-4">
-                  {t('search.tryDifferent', 'Try different keywords or adjust your filters')}
-                </p>
-                <div className="flex gap-4">
-                  <Button variant="outline" onClick={() => setShowFilters(true)}>
-                    Adjust Filters
-                  </Button>
-                </div>
-                <div className="mt-8">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Or try one of these searches:
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {[
-                      'Berlin venues',
-                      'Pride events',
-                      'Drag shows',
-                      'LGBTQ+ history',
-                      'Queer artists',
-                      'Safe spaces',
-                    ].map((suggestion) => (
-                      <Button
-                        key={suggestion}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const params = new URLSearchParams(searchParams);
-                          params.set('q', suggestion);
-                          setSearchParams(params);
-                        }}
-                      >
-                        {suggestion}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
+        ) : accumulated.length === 0 ? (
+          <ZeroState
+            query={query}
+            errorKind={errorKind}
+            error={error}
+            dymTitle={(dymHit?.title || dymHit?.name) as string | undefined}
+            onSuggest={(s) => {
+              const params = new URLSearchParams(searchParams);
+              params.set('q', s);
+              params.delete('types');
+              setSearchParams(params);
+            }}
+            onAsk={openAsk}
+            onAdjustFilters={() => setShowFilters(true)}
+            onBrowse={(p) => navigate(p)}
+          />
+        ) : viewMode === 'map' ? (
+          <ResultsMapView
+            results={sortedResults}
+            onSelect={navigateToResult}
+            onAreaSearch={(area) => handleFiltersChange({ ...filters, ...area })}
+          />
         ) : (
-          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-            <TabsList className="mb-6">
-              <TabsTrigger value="all">All ({totalResults})</TabsTrigger>
-              {Object.entries(resultsByType).map(([type, typeResults]) => {
-                const Icon = contentTypeIcons[type] || HelpCircle;
-                // P2-10/P3-12: never render `undefined (n)` — fall back to taxonomy
-                // label or a neutral "Other" bucket.
-                const canonicalId = resolveType(type);
-                const label =
-                  CONTENT_TYPES.find((t) => t.id === canonicalId)?.label ??
-                  (type && type !== 'undefined' ? type : 'Other');
-                return (
-                  <TabsTrigger
-                    key={type || 'other'}
-                    value={type}
-                    style={{ alignItems: 'center' }}
-                    className="flex gap-1"
-                  >
-                    <Icon style={{ width: 12, height: 12 }} />
-                    {label} ({typeResults.length})
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-
-            <TabsContent value="all">
-              {viewMode === 'map' ? (
-                <ResultsMapView
-                  results={sortedResults}
+          <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
+            <div className={viewMode === 'grid' ? gridClass : listClass}>
+              {sortedResults.map((r) => (
+                <SearchResultCard
+                  key={`${r.type}-${r.objectID}`}
+                  result={r}
+                  view={viewMode === 'grid' ? 'grid' : 'list'}
+                  query={query}
                   onSelect={navigateToResult}
-                  onAreaSearch={(area) => handleFiltersChange({ ...filters, ...area })}
                 />
-              ) : Object.keys(sortedResultsByType).length > 1 ? (
-                <div className="flex flex-col gap-8">
-                  {Object.entries(sortedResultsByType).map(([type, typeResults]) => {
-                    const Icon = contentTypeIcons[type] || HelpCircle;
-                    const canonicalId = resolveType(type);
-                    const label =
-                      CONTENT_TYPES.find((t) => t.id === canonicalId)?.label ??
-                      (type && type !== 'undefined' ? type : 'Other');
-                    const topN = typeResults.slice(0, 3);
-                    return (
-                      <section key={type || 'other'} aria-label={label}>
-                        <div className="flex items-center justify-between mb-4">
-                          <h2 className="font-semibold inline-flex items-center text-base gap-2">
-                            <Icon style={{ width: 16, height: 16 }} />
-                            {label}
-                            <span className="text-muted-foreground font-normal">
-                              ({typeResults.length})
-                            </span>
-                          </h2>
-                          {typeResults.length > topN.length && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-xs"
-                              onClick={() => setSelectedTab(type)}
-                            >
-                              See all {typeResults.length} →
-                            </Button>
-                          )}
-                        </div>
-                        <div className={viewMode === 'grid' ? gridClass : listClass}>
-                          {topN.map(renderResultCard)}
-                        </div>
-                      </section>
-                    );
-                  })}
-                  <LoadMoreSentinel
-                    hasMore={hasMore}
-                    loading={loading}
-                    onLoadMore={() => setPage((p) => p + 1)}
-                  />
-                </div>
-              ) : (
-                <>
-                  <div className={viewMode === 'grid' ? gridClass : listClass}>
-                    {sortedResults.map(renderResultCard)}
-                  </div>
-                  <LoadMoreSentinel
-                    hasMore={hasMore}
-                    loading={loading}
-                    onLoadMore={() => setPage((p) => p + 1)}
-                  />
-                </>
-              )}
-            </TabsContent>
-
-            {Object.entries(sortedResultsByType).map(([type, typeResults]) => (
-              <TabsContent key={type} value={type}>
-                {viewMode === 'map' ? (
-                  <ResultsMapView
-                    results={typeResults}
-                    onSelect={navigateToResult}
-                    onAreaSearch={(area) => handleFiltersChange({ ...filters, ...area })}
-                  />
-                ) : (
-                  <>
-                    <div className={viewMode === 'grid' ? gridClass : listClass}>
-                      {typeResults.map(renderResultCard)}
-                    </div>
-                    <LoadMoreSentinel
-                      hasMore={hasMore}
-                      loading={loading}
-                      onLoadMore={() => setPage((p) => p + 1)}
-                    />
-                  </>
-                )}
-              </TabsContent>
-            ))}
-          </Tabs>
+              ))}
+            </div>
+            <LoadMoreSentinel
+              hasMore={hasMore}
+              loading={loading}
+              onLoadMore={() => setPage((p) => p + 1)}
+            />
+          </div>
         )}
       </div>
+
       <BackToTopButton />
-      {isMobile && (
-        <button
-          type="button"
-          onClick={() => setShowFilters(true)}
-          aria-label="Open filters"
-          style={{
-            position: 'fixed',
-            left: 16,
-            bottom: 16,
-            zIndex: 40,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '10px 14px',
-            background: 'hsl(var(--foreground))',
-            color: 'hsl(var(--background))',
-            border: 0,
-            cursor: 'pointer',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-          }}
-        >
-          <Filter size={16} />
-          Filters
-          {Object.values(filters).some((v) => v && (Array.isArray(v) ? v.length > 0 : true)) && (
-            <Badge
-              variant="destructive"
-              style={{ height: 18, padding: '0 6px', fontSize: '0.7rem' }}
-              className="ml-1"
-            >
-              {(filters.types?.length || 0) +
-                (filters.location ? 1 : 0) +
-                (filters.categories?.length || 0) +
-                (filters.cluster_ids?.length || 0) +
-                (filters.priceRange ? 1 : 0) +
-                (filters.dateRange ? 1 : 0) +
-                (filters.rating ? 1 : 0) +
-                (filters.featured ? 1 : 0) +
-                (filters.verified ? 1 : 0)}
-            </Badge>
-          )}
-        </button>
+
+      {/* Inline AI — right-side sheet */}
+      <Sheet open={askOpen} onOpenChange={setAskOpen}>
+        <SheetContent side={isMobile ? 'bottom' : 'right'} className="w-full p-0 sm:max-w-md">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{t('search.ask.title', 'Ask the guide')}</SheetTitle>
+          </SheetHeader>
+          <SearchAskPanel
+            messages={assistant.messages}
+            pending={assistant.pending}
+            error={assistant.error}
+            onSend={(m) => void assistant.send(m)}
+            onBack={() => setAskOpen(false)}
+            onSelectCard={navigateToCard}
+          />
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function ZeroState({
+  query,
+  errorKind,
+  error,
+  dymTitle,
+  onSuggest,
+  onAsk,
+  onAdjustFilters,
+  onBrowse,
+}: {
+  query: string;
+  errorKind: 'unavailable' | 'client_error' | null;
+  error: string | null;
+  dymTitle?: string;
+  onSuggest: (s: string) => void;
+  onAsk: () => void;
+  onAdjustFilters: () => void;
+  onBrowse: (path: string) => void;
+}) {
+  const { t } = useTranslation();
+  const hasQuery = query.trim() !== '';
+
+  if (!hasQuery) {
+    return (
+      <Card className="p-6">
+        <h3 className="mb-4 text-lg font-semibold">{t('search.trySearching', 'Try searching for…')}</h3>
+        <div className="mb-6 flex flex-wrap gap-2">
+          {SUGGESTED_SEARCHES.map((s) => (
+            <Button key={s} variant="outline" size="sm" onClick={() => onSuggest(s)}>
+              {s}
+            </Button>
+          ))}
+        </div>
+        <p className="mb-3 text-sm text-muted-foreground">{t('search.orBrowse', 'Or browse by category:')}</p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: t('nav.venues', 'Venues'), path: '/venues' },
+            { label: t('nav.events', 'Events'), path: '/events' },
+            { label: t('nav.personalities', 'Personalities'), path: '/personalities' },
+            { label: t('nav.news', 'News'), path: '/news' },
+            { label: t('nav.places', 'Places'), path: '/places' },
+          ].map((c) => (
+            <Button key={c.label} variant="ghost" size="sm" onClick={() => onBrowse(c.path)}>
+              {c.label}
+            </Button>
+          ))}
+        </div>
+      </Card>
+    );
+  }
+
+  if (errorKind === 'unavailable') {
+    return (
+      <div role="alert" className="flex flex-col items-center justify-center pb-12 pt-12 text-center">
+        <Search className="mb-4 h-12 w-12 text-muted-foreground" />
+        <h3 className="mb-2 text-lg font-semibold">
+          {t('search.unavailableTitle', 'Search is temporarily unavailable')}
+        </h3>
+        <p className="text-muted-foreground">{error ?? t('search.unavailableBody', "We've been notified.")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center pb-12 pt-12 text-center">
+      <Search className="mb-4 h-12 w-12 text-muted-foreground" />
+      <h3 className="mb-2 text-lg font-semibold">
+        {t('search.noResultsFor', 'No results found for "{{q}}"', { q: query })}
+      </h3>
+      {dymTitle && (
+        <Button variant="link" onClick={() => onSuggest(dymTitle)} className="mb-2">
+          {t('search.didYouMean', 'Did you mean "{{q}}"?', { q: dymTitle })}
+        </Button>
       )}
+      <p className="mb-4 text-muted-foreground">
+        {t('search.tryDifferent', 'Try different keywords or ask the guide.')}
+      </p>
+      <div className="flex flex-wrap justify-center gap-3">
+        <Button onClick={onAsk} className="gap-2">
+          <Sparkles className="h-4 w-4" />
+          {t('search.ask.cta2', 'Ask the guide')}
+        </Button>
+        <Button variant="outline" onClick={onAdjustFilters}>
+          {t('search.adjustFilters', 'Adjust filters')}
+        </Button>
+      </div>
+      <div className="mt-8">
+        <p className="mb-3 text-sm text-muted-foreground">{t('search.orTry', 'Or try one of these:')}</p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {SUGGESTED_SEARCHES.map((s) => (
+            <Button key={s} variant="outline" size="sm" onClick={() => onSuggest(s)}>
+              {s}
+            </Button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
