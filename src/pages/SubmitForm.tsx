@@ -21,6 +21,7 @@ import { DuplicateWarning } from '@/components/submission/DuplicateWarning';
 import { useDuplicateCheck } from '@/hooks/submission/useDuplicateCheck';
 import { SeriesCarryover } from '@/components/submission/SeriesCarryover';
 import { useEventSeries, cloneFieldsFromEdition } from '@/hooks/submission/useEventSeries';
+import { EventSeriesFields } from '@/components/submission/EventSeriesFields';
 import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEventTypeOptions } from '@/lib/eventTypes';
@@ -394,6 +395,16 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 ),
               )}
 
+              {/* Event recurrence + festival grouping */}
+              {config.id === 'event' && (
+                <fieldset className="mb-8 border-0 p-0 m-0">
+                  <legend className="text-sm font-semibold mb-4 text-foreground">
+                    Series & recurrence
+                  </legend>
+                  <EventSeriesFields data={data} setFields={setFields} />
+                </fieldset>
+              )}
+
               <div className="flex justify-between mt-6 gap-4">
                 <Button
                   type="button"
@@ -538,6 +549,13 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 </div>
               ))}
             </div>
+
+            {/* Event recurrence + festival grouping (on the When & Where step) */}
+            {config.id === 'event' && currentStepConfig?.id === 'when-where' && (
+              <div className="mt-8 pt-6 border-t border-border">
+                <EventSeriesFields data={data} setFields={setFields} />
+              </div>
+            )}
 
             {/* Navigation buttons */}
             <div className="flex justify-between mt-6 gap-4">
