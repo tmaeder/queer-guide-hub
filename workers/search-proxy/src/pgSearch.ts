@@ -31,10 +31,19 @@ export interface PgSearchArgs {
 		category?: string;
 		is_featured?: boolean;
 		is_free?: boolean;
+		target_groups?: string[];
 	};
 	lat?: number | null;
 	lng?: number | null;
 	radiusKm?: number | null;
+	/** Date window (ISO 8601) — narrows dated entities (events/news). */
+	dateFrom?: string | null;
+	dateTo?: string | null;
+	/** Price window — narrows priced entities (marketplace/events). */
+	priceMin?: number | null;
+	priceMax?: number | null;
+	/** Server-side sort mode (p_sort); undefined/relevance = score order. */
+	sort?: string | null;
 	hitsPerPage: number;
 	page: number;
 }
@@ -118,6 +127,7 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 	if (args.filters?.category) pFilters.category = args.filters.category;
 	if (typeof args.filters?.is_featured === "boolean") pFilters.is_featured = args.filters.is_featured;
 	if (typeof args.filters?.is_free === "boolean") pFilters.is_free = args.filters.is_free;
+	if (args.filters?.target_groups && args.filters.target_groups.length) pFilters.target_groups = args.filters.target_groups;
 
 	const pContentTypes = args.contentTypes && args.contentTypes.length ? args.contentTypes : null;
 	const offset = Math.max(0, args.page) * args.hitsPerPage;
@@ -132,6 +142,11 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 		p_radius_km: args.radiusKm ?? null,
 		p_limit: args.hitsPerPage,
 		p_offset: offset,
+		p_date_from: args.dateFrom ?? null,
+		p_date_to: args.dateTo ?? null,
+		p_price_min: args.priceMin ?? null,
+		p_price_max: args.priceMax ?? null,
+		p_sort: args.sort && args.sort !== "relevance" ? args.sort : null,
 	};
 	const facetArgs = {
 		p_query: args.query,

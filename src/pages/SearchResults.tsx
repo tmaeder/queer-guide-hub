@@ -1,20 +1,7 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import {
-  Search,
-  Filter,
-  Star,
-  Eye,
-  Clock,
-  TrendingUp,
-  ArrowUpDown,
-  List,
-  Grid,
-  MapPin,
-  Navigation,
-  Sparkles,
-} from 'lucide-react';
+import { Search, Filter, Sparkles } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -38,14 +25,22 @@ import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
 import { ResultsMapView } from '@/components/search/ResultsMapView';
 import { SearchScopeChips } from '@/components/search/SearchScopeChips';
 import { SearchResultCard } from '@/components/search/SearchResultCard';
+import { SearchCalendarView } from '@/components/search/SearchCalendarView';
 import { SearchAskPanel } from '@/components/search/SearchAskPanel';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { trackSearchUx } from '@/lib/searchClient';
 import { useDidYouMean } from '@/hooks/useDidYouMean';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { supportsPriceSort } from '@/lib/searchTaxonomy';
 import { hrefForEntity } from '@/lib/searchRoutes';
+import {
+  getTypeConfig,
+  VIEW_META,
+  SORT_META,
+  workerSort,
+  type SearchViewMode,
+  type SearchSortId,
+} from '@/config/searchTypeConfig';
 import type { AssistantCard } from '@/lib/assistantClient';
 import { cn } from '@/lib/utils';
 
@@ -65,11 +60,11 @@ function countActiveFilters(f: SearchFilters): number {
     (f.location ? 1 : 0) +
     (f.categories?.length || 0) +
     (f.cluster_ids?.length || 0) +
+    (f.target_groups?.length || 0) +
     (f.priceRange ? 1 : 0) +
     (f.dateRange ? 1 : 0) +
-    (f.rating ? 1 : 0) +
+    (f.free ? 1 : 0) +
     (f.featured ? 1 : 0) +
-    (f.verified ? 1 : 0) +
     (f.lat != null && f.lng != null ? 1 : 0)
   );
 }
@@ -84,7 +79,6 @@ export default function SearchResults() {
   const query = searchParams.get('q') || '';
   const [searchQuery, setSearchQuery] = useState(query);
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('list');
   const [page, setPage] = useState(1);
   const [askOpen, setAskOpen] = useState(false);
 
@@ -100,11 +94,21 @@ export default function SearchResults() {
     radius: Number(searchParams.get('radius')) || undefined,
   });
   const geoActive = filters.lat != null && filters.lng != null;
-  const [sortBy, setSortBy] = useState(
-    searchParams.get('sort') || (geoActive ? 'distance' : 'relevance'),
-  );
-
   const activeScope = filters.types && filters.types.length === 1 ? filters.types[0] : null;
+  const config = getTypeConfig(activeScope);
+  const availableViews = config.views;
+  const availableSorts = config.sorts.filter((s) => s !== 'distance' || geoActive);
+
+  const [viewMode, setViewMode] = useState<SearchViewMode>(config.defaultView);
+  const [sortId, setSortId] = useState<SearchSortId>(() => {
+    const fromUrl = searchParams.get('sort') as SearchSortId | null;
+    if (fromUrl && config.sorts.includes(fromUrl)) return fromUrl;
+    return geoActive && config.sorts.includes('distance') ? 'distance' : 'relevance';
+  });
+
+  // Clamp to what the scope allows (defends against a stale URL/state).
+  const effectiveView = availableViews.includes(viewMode) ? viewMode : config.defaultView;
+  const effectiveSort = availableSorts.includes(sortId) ? sortId : (availableSorts[0] ?? 'relevance');
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sync input with URL query.
@@ -115,11 +119,12 @@ export default function SearchResults() {
     query,
     filters,
     page,
+    workerSort(effectiveSort),
   );
 
   // ── URL sync ───────────────────────────────────────────────────────────
-  const writeFilterParams = useCallback(
-    (next: SearchFilters, nextSort = sortBy) => {
+  const writeParams = useCallback(
+    (next: SearchFilters, nextSort: SearchSortId) => {
       const params = new URLSearchParams();
       if (query) params.set('q', query);
       if (next.types?.length) params.set('types', next.types.join(','));
@@ -134,45 +139,52 @@ export default function SearchResults() {
       if (nextSort && nextSort !== 'relevance') params.set('sort', nextSort);
       setSearchParams(params);
     },
-    [query, sortBy, setSearchParams],
+    [query, setSearchParams],
   );
 
   const handleFiltersChange = useCallback(
     (next: SearchFilters) => {
       setFilters(next);
       setPage(1);
-      writeFilterParams(next);
+      writeParams(next, sortId);
     },
-    [writeFilterParams],
+    [writeParams, sortId],
   );
 
   const handleScopeChange = useCallback(
     (scope: string | null) => {
-      handleFiltersChange({ ...filters, types: scope ? [scope] : [] });
+      const next = { ...filters, types: scope ? [scope] : [] };
+      const cfg = getTypeConfig(scope);
+      const nextSort: SearchSortId =
+        geoActive && cfg.sorts.includes('distance') ? 'distance' : (cfg.sorts[0] ?? 'relevance');
+      setFilters(next);
+      setPage(1);
+      setViewMode(cfg.defaultView);
+      setSortId(nextSort);
+      writeParams(next, nextSort);
     },
-    [filters, handleFiltersChange],
+    [filters, geoActive, writeParams],
   );
 
   const handleClearAll = useCallback(() => {
     setSearchQuery('');
     setFilters({});
     setPage(1);
-    const params = new URLSearchParams();
-    if (sortBy && sortBy !== 'relevance') params.set('sort', sortBy);
-    setSearchParams(params);
-  }, [sortBy, setSearchParams]);
+    setSortId('relevance');
+    setSearchParams(new URLSearchParams());
+  }, [setSearchParams]);
 
   const handleSortChange = useCallback(
     (next: string) => {
-      setSortBy(next);
+      const s = next as SearchSortId;
+      setSortId(s);
       setPage(1);
-      writeFilterParams(filters, next);
-      void trackSearchUx('facet_apply', { facet: 'sort', value: next, query });
+      writeParams(filters, s);
+      void trackSearchUx('facet_apply', { facet: 'sort', value: s, query });
     },
-    [filters, query, writeFilterParams],
+    [filters, query, writeParams],
   );
 
-  // Reset paging when the query string changes.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset paging on new query.
     setPage(1);
@@ -219,7 +231,7 @@ export default function SearchResults() {
   );
 
   // ── Accumulate pages (infinite scroll), keep previous during refetch ─────
-  const queryKey = `${query}|${JSON.stringify(filters)}`;
+  const queryKey = `${query}|${JSON.stringify(filters)}|${effectiveSort}`;
   const [accumulated, setAccumulated] = useState<SearchResult[]>([]);
   const lastKeyRef = useRef('');
   useEffect(() => {
@@ -235,37 +247,6 @@ export default function SearchResults() {
       return prev.length === results.length ? prev : results;
     });
   }, [results, loading, queryKey]);
-
-  const sortedResults = useMemo(() => {
-    const sorted = [...accumulated];
-    switch (sortBy) {
-      case 'distance':
-        return sorted.sort(
-          (a, b) => (a._distance_m ?? Infinity) - (b._distance_m ?? Infinity),
-        );
-      case 'newest':
-        return sorted.sort((a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime());
-      case 'oldest':
-        return sorted.sort((a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime());
-      case 'rating':
-        return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      case 'price-low':
-        return sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
-      case 'price-high':
-        return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
-      case 'popular':
-        return sorted.sort(
-          (a, b) =>
-            ((b.metadata?.viewsCount as number) || 0) - ((a.metadata?.viewsCount as number) || 0),
-        );
-      case 'alpha-asc':
-        return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-      case 'alpha-desc':
-        return sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
-      default:
-        return sorted;
-    }
-  }, [accumulated, sortBy]);
 
   const totalResults = accumulated.length;
   const hasMore = totalResults < totalHits;
@@ -289,13 +270,6 @@ export default function SearchResults() {
 
   const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
   const listClass = 'flex flex-col gap-3';
-
-  const askButton = (
-    <Button variant="outline" size="sm" onClick={openAsk} className="gap-2">
-      <Sparkles className="h-4 w-4" />
-      {t('search.ask.title', 'Ask the guide')}
-    </Button>
-  );
 
   return (
     <div className="relative">
@@ -340,6 +314,7 @@ export default function SearchResults() {
               onFiltersChange={handleFiltersChange}
               onClearAll={handleClearAll}
               facets={facets}
+              filterKeys={config.filters}
             />
           </Card>
         )}
@@ -354,6 +329,7 @@ export default function SearchResults() {
                 onFiltersChange={handleFiltersChange}
                 onClearAll={handleClearAll}
                 facets={facets}
+                filterKeys={config.filters}
               />
             </SheetContent>
           </Sheet>
@@ -361,10 +337,8 @@ export default function SearchResults() {
 
         {hasQuery && (
           <>
-            {/* Scope chips */}
             <SearchScopeChips activeScope={activeScope} onScopeChange={handleScopeChange} />
 
-            {/* Active filter chips + saved searches */}
             <div className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div className="min-w-0 flex-1">
                 <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
@@ -380,97 +354,55 @@ export default function SearchResults() {
             <div className="mb-6 flex flex-col gap-3 rounded-element bg-muted p-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">{t('search.sortBy', 'Sort')}</span>
-                <Select value={sortBy} onValueChange={handleSortChange}>
-                  <SelectTrigger className="w-[170px]">
+                <Select value={effectiveSort} onValueChange={handleSortChange}>
+                  <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
-                    <SelectItem value="relevance">
-                      <span className="inline-flex items-center gap-2">
-                        <TrendingUp className="h-3.5 w-3.5" />
-                        {t('search.sort.relevance', 'Relevance')}
-                      </span>
-                    </SelectItem>
-                    {geoActive && (
-                      <SelectItem value="distance">
-                        <span className="inline-flex items-center gap-2">
-                          <Navigation className="h-3.5 w-3.5" />
-                          {t('search.sort.distance', 'Distance')}
-                        </span>
-                      </SelectItem>
-                    )}
-                    <SelectItem value="newest">
-                      <span className="inline-flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5" />
-                        {t('search.sort.newest', 'Newest')}
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="rating">
-                      <span className="inline-flex items-center gap-2">
-                        <Star className="h-3.5 w-3.5" />
-                        {t('search.sort.rating', 'Highest rated')}
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="popular">
-                      <span className="inline-flex items-center gap-2">
-                        <Eye className="h-3.5 w-3.5" />
-                        {t('search.sort.popular', 'Most popular')}
-                      </span>
-                    </SelectItem>
-                    {supportsPriceSort(filters.types) && (
-                      <>
-                        <SelectItem value="price-low">
-                          {t('search.sort.priceLow', 'Price: Low to High')}
+                    {availableSorts.map((s) => {
+                      const meta = SORT_META[s];
+                      const Icon = meta.Icon;
+                      return (
+                        <SelectItem key={s} value={s}>
+                          <span className="inline-flex items-center gap-2">
+                            <Icon className="h-3.5 w-3.5" />
+                            {t(meta.labelKey, meta.label)}
+                          </span>
                         </SelectItem>
-                        <SelectItem value="price-high">
-                          {t('search.sort.priceHigh', 'Price: High to Low')}
-                        </SelectItem>
-                      </>
-                    )}
-                    <SelectItem value="alpha-asc">
-                      <span className="inline-flex items-center gap-2">
-                        <ArrowUpDown className="h-3.5 w-3.5" />
-                        {t('search.sort.az', 'A – Z')}
-                      </span>
-                    </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex items-center gap-2">
                 <div className="flex items-center">
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="rounded-r-none"
-                    aria-label={t('search.view.list', 'List view')}
-                    aria-pressed={viewMode === 'list'}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="rounded-none"
-                    aria-label={t('search.view.grid', 'Grid view')}
-                    aria-pressed={viewMode === 'grid'}
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'map' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('map')}
-                    className="rounded-l-none"
-                    aria-label={t('search.view.map', 'Map view')}
-                    aria-pressed={viewMode === 'map'}
-                  >
-                    <MapPin className="h-4 w-4" />
-                  </Button>
+                  {availableViews.map((v, i) => {
+                    const meta = VIEW_META[v];
+                    const Icon = meta.Icon;
+                    return (
+                      <Button
+                        key={v}
+                        variant={effectiveView === v ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode(v)}
+                        aria-label={t(meta.labelKey, meta.label)}
+                        aria-pressed={effectiveView === v}
+                        className={cn(
+                          i === 0 && 'rounded-r-none',
+                          i === availableViews.length - 1 && 'rounded-l-none',
+                          i > 0 && i < availableViews.length - 1 && 'rounded-none',
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </Button>
+                    );
+                  })}
                 </div>
-                {askButton}
+                <Button variant="outline" size="sm" onClick={openAsk} className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  {t('search.ask.title', 'Ask the guide')}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -490,7 +422,7 @@ export default function SearchResults() {
 
         {/* Results */}
         {showInitialSkeleton ? (
-          <PageLoadingState count={6} variant={viewMode === 'grid' ? 'card' : 'list'} />
+          <PageLoadingState count={6} variant={effectiveView === 'grid' ? 'card' : 'list'} />
         ) : tooShort ? (
           <div className="flex flex-col items-center justify-center pb-12 pt-12 text-center">
             <Search className="mb-4 h-12 w-12 text-muted-foreground" />
@@ -515,20 +447,29 @@ export default function SearchResults() {
             onAdjustFilters={() => setShowFilters(true)}
             onBrowse={(p) => navigate(p)}
           />
-        ) : viewMode === 'map' ? (
+        ) : effectiveView === 'map' ? (
           <ResultsMapView
-            results={sortedResults}
+            results={accumulated}
             onSelect={navigateToResult}
             onAreaSearch={(area) => handleFiltersChange({ ...filters, ...area })}
           />
+        ) : effectiveView === 'calendar' ? (
+          <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
+            <SearchCalendarView results={accumulated} query={query} onSelect={navigateToResult} />
+            <LoadMoreSentinel
+              hasMore={hasMore}
+              loading={loading}
+              onLoadMore={() => setPage((p) => p + 1)}
+            />
+          </div>
         ) : (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
-            <div className={viewMode === 'grid' ? gridClass : listClass}>
-              {sortedResults.map((r) => (
+            <div className={effectiveView === 'grid' ? gridClass : listClass}>
+              {accumulated.map((r) => (
                 <SearchResultCard
                   key={`${r.type}-${r.objectID}`}
                   result={r}
-                  view={viewMode === 'grid' ? 'grid' : 'list'}
+                  view={effectiveView === 'grid' ? 'grid' : 'list'}
                   query={query}
                   onSelect={navigateToResult}
                 />

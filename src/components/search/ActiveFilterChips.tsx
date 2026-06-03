@@ -58,6 +58,26 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
     });
   });
 
+  (filters.target_groups ?? []).forEach((g) => {
+    chips.push({
+      key: `tg:${g}`,
+      label: g.replace(/_/g, ' '),
+      onRemove: () =>
+        onFiltersChange({
+          ...filters,
+          target_groups: (filters.target_groups ?? []).filter((x) => x !== g),
+        }),
+    });
+  });
+
+  if (filters.free) {
+    chips.push({
+      key: 'free',
+      label: t('search.filter.freeOnly', 'Free only'),
+      onRemove: () => onFiltersChange({ ...filters, free: undefined }),
+    });
+  }
+
   if (filters.priceRange) {
     chips.push({
       key: 'price',

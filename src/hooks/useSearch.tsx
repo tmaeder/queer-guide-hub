@@ -41,15 +41,55 @@ export interface SearchFilters {
   categories?: string[];
   /** Topic-cluster UUIDs (#171 / #225). Meili `cluster_ids` filterable. */
   cluster_ids?: string[];
+  /** Audience tags (lesbian, trans, …) — search_hybrid any-of facet match. */
+  target_groups?: string[];
   priceRange?: [number, number];
   dateRange?: [Date, Date];
   rating?: number;
   featured?: boolean;
+  /** Free-entry only (events/marketplace) → worker is_free. */
+  free?: boolean;
   verified?: boolean;
   /** Geo radius — worker turns these into Meili _geoRadius(lat,lng,m). */
   lat?: number;
   lng?: number;
   radius?: number;
+}
+
+/**
+ * Translate the UI's camelCase SearchFilters into the worker's accepted filter
+ * keys (validation.ts FILTER_KEYS). Maps types→indexKeys, priceRange→
+ * price_min/max, dateRange→date_from/to (ISO), free→is_free; drops UI-only
+ * fields with no backend (rating, verified). `sort` is the worker p_sort.
+ */
+export function toWorkerFilters(
+  filters: SearchFilters,
+  sort?: string,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (filters.types?.length) {
+    const mapped = toIndexKeys(filters.types);
+    if (mapped.length) out.types = mapped;
+  }
+  if (filters.location) out.location = filters.location;
+  if (filters.categories?.length) out.categories = filters.categories;
+  if (filters.cluster_ids?.length) out.cluster_ids = filters.cluster_ids;
+  if (filters.target_groups?.length) out.target_groups = filters.target_groups;
+  if (filters.featured) out.featured = true;
+  if (filters.free) out.is_free = true;
+  if (filters.lat != null) out.lat = filters.lat;
+  if (filters.lng != null) out.lng = filters.lng;
+  if (filters.radius != null) out.radius = filters.radius;
+  if (filters.priceRange) {
+    out.price_min = filters.priceRange[0];
+    out.price_max = filters.priceRange[1];
+  }
+  if (filters.dateRange) {
+    out.date_from = filters.dateRange[0].toISOString();
+    out.date_to = filters.dateRange[1].toISOString();
+  }
+  if (sort && sort !== 'relevance') out.sort = sort;
+  return out;
 }
 
 export interface FacetDistribution {
@@ -146,7 +186,7 @@ export function sanitiseHits(
   return out;
 }
 
-export const useSearch = (query: string, filters: SearchFilters = {}, page = 1) => {
+export const useSearch = (query: string, filters: SearchFilters = {}, page = 1, sort?: string) => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
@@ -176,6 +216,11 @@ export const useSearch = (query: string, filters: SearchFilters = {}, page = 1) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtersKey]);
 
+  const sortRef = useRef(sort);
+  useEffect(() => {
+    sortRef.current = sort;
+  }, [sort]);
+
   const performSearch = async (searchQuery: string, searchPage = 1) => {
     if (searchQuery.trim().length < MIN_QUERY_LEN) {
       setResults([]);
@@ -194,16 +239,9 @@ export const useSearch = (query: string, filters: SearchFilters = {}, page = 1) 
     setError(null);
     setErrorKind(null);
     try {
-      const requestFilters = { ...filtersRef.current };
-      // P0-3: send worker the canonical indexKey, not the UI id.
-      if (requestFilters.types?.length) {
-        const mapped = toIndexKeys(requestFilters.types);
-        requestFilters.types = mapped.length ? mapped : undefined;
-      }
-
       const data = await searchFetch<SearchResponse>('/', {
         query: searchQuery,
-        filters: requestFilters,
+        filters: toWorkerFilters(filtersRef.current, sortRef.current),
         hitsPerPage: 20,
         page: searchPage,
       });
@@ -250,7 +288,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}, page = 1) 
       setTooShort(false);
     }
 
-  }, [debouncedQuery, filtersKey, page]);
+  }, [debouncedQuery, filtersKey, page, sort]);
 
   return {
     results,
