@@ -303,10 +303,17 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			country: mergedFilters.country || undefined,
 			category: mergedFilters.categories?.[0],
 			is_featured: mergedFilters.featured || undefined,
+			is_free: mergedFilters.is_free,
+			target_groups: mergedFilters.target_groups,
 		},
 		lat: mergedFilters.lat ?? null,
 		lng: mergedFilters.lng ?? null,
 		radiusKm: mergedFilters.radius ?? null,
+		dateFrom: mergedFilters.date_from ?? null,
+		dateTo: mergedFilters.date_to ?? null,
+		priceMin: mergedFilters.price_min ?? null,
+		priceMax: mergedFilters.price_max ?? null,
+		sort: mergedFilters.sort ?? null,
 		hitsPerPage,
 		page,
 	};
@@ -322,19 +329,25 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const totalHits = pg?.estimatedTotalHits ?? fused.length;
 	const dbg = { pgSize: fused.length, fusedSize: fused.length };
 
+	// An explicit sort (date/price/distance/trust) means the SQL already ordered
+	// AND paginated the result set. Personalization re-ranking, the cold-start
+	// top-up, and the semantic reranker all reorder hits — which would clobber the
+	// requested sort — so skip them and serve the SQL order verbatim.
+	const explicitSort = !!mergedFilters.sort && mergedFilters.sort !== "relevance";
+
 	// Personalization nudges (boost/decay) + worker-side exact-title boost
 	// for bug #4 (until the Meilisearch index ranking rules are reconfigured).
-	let ranked = personalizedRank(fused, signal, recent, q);
+	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
-	// Cold-start fallback if starved.
-	if (ranked.length < 5) {
+	// Cold-start fallback if starved (relevance order only).
+	if (!explicitSort && ranked.length < 5) {
 		const popular = await popularEntities(env, pgTypes, 30);
 		ranked = dedupeById([...ranked, ...popular.map((p) => ({ ...p, _source: "popular", _rankingScore: 0.1 }))]);
 	}
 
 	// Optional reranker on top-20.
 	let final = ranked.slice(0, hitsPerPage);
-	if (env.ENABLE_RERANKER === "1" && q.split(/\s+/).length >= 2) {
+	if (!explicitSort && env.ENABLE_RERANKER === "1" && q.split(/\s+/).length >= 2) {
 		const pool = ranked.slice(0, 20);
 		const hydrated = await hydrateTitles(env, pool);
 		const rrkd = await rerank(env, q, hydrated.map((h) => h._snippet || h.title || "")).catch(() => null);

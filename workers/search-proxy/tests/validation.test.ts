@@ -9,6 +9,7 @@ import {
 	rejectUnknown,
 	sanitiseStoredString,
 	validMetadata,
+	validFilters,
 } from "../src/validation";
 
 const jsonReq = (body: string) =>
@@ -99,5 +100,37 @@ describe("sanitiseStoredString / validMetadata (XSS/SQL guards)", () => {
 		expect(validMetadata({ evil: "x" }, ["name"]).ok).toBe(false);
 		expect(validMetadata({ name: "<x>" }, ["name"]).ok).toBe(false);
 		expect(validMetadata({ name: "Ok", n: 3, b: true }, ["name", "n", "b"]).ok).toBe(true);
+	});
+});
+
+describe("validFilters — new per-type filter keys", () => {
+	it("accepts target_groups, is_free, price_min/max, date_from/to and a valid sort", () => {
+		const r = validFilters({
+			types: ["event"],
+			target_groups: ["lesbian", "trans"],
+			is_free: true,
+			price_min: 0,
+			price_max: 50,
+			date_from: "2026-06-01",
+			date_to: "2026-06-30",
+			sort: "date_asc",
+		});
+		expect(r.ok).toBe(true);
+		if (r.ok) {
+			expect(r.value.target_groups).toEqual(["lesbian", "trans"]);
+			expect(r.value.is_free).toBe(true);
+			expect(r.value.price_min).toBe(0);
+			expect(r.value.price_max).toBe(50);
+			expect(r.value.sort).toBe("date_asc");
+		}
+	});
+
+	it("rejects an unknown sort mode", () => {
+		expect(validFilters({ sort: "cheapest" }).ok).toBe(false);
+	});
+
+	it("rejects a negative price and a non-boolean is_free", () => {
+		expect(validFilters({ price_min: -5 }).ok).toBe(false);
+		expect(validFilters({ is_free: "yes" }).ok).toBe(false);
 	});
 });
