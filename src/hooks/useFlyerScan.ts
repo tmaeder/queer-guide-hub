@@ -200,6 +200,61 @@ export function useFlyerScan() {
     [user],
   );
 
+  /** Scan a pasted web link: the edge function fetches the page and extracts from its text. */
+  const startUrlScan = useCallback(
+    async (rawUrl: string) => {
+      if (!user) {
+        setError(makeUploadError('UPLOAD_FAILED', 'sign in required'));
+        setScanState('error');
+        return;
+      }
+      const normalized = normalizeAndValidateUrl(rawUrl);
+      if (!normalized.ok) {
+        setError(makeUploadError('UNSUPPORTED_TYPE', 'enter a valid link'));
+        setScanState('error');
+        return;
+      }
+
+      setError(null);
+      setResults([]);
+      setTotalFiles(1);
+      setCurrentFileIndex(0);
+
+      try {
+        setScanState('analyzing');
+        const { data, error: fnError } = await supabase.functions.invoke('analyze-flyer', {
+          body: { page_url: normalized.value },
+        });
+        if (fnError) throw toUploadError(fnError, { phase: 'analyze' });
+        if (data?.error) throw toUploadError(new Error(data.error), { phase: 'analyze' });
+
+        const scanResult: FlyerScanResult = {
+          scan_id: data.scan_id,
+          items: data.items || [],
+          raw_text: data.raw_text || '',
+          language: data.language || 'en',
+          processing_time_ms: data.processing_time_ms,
+          source_file: normalized.value,
+          image_url: null,
+        };
+
+        if (scanResult.items.length === 0) {
+          setError(makeUploadError('EXTRACTION_EMPTY', 'no results'));
+          setScanState('error');
+          return;
+        }
+        setResults([scanResult]);
+        setScanState('results');
+      } catch (err: unknown) {
+        const ue = toUploadError(err, { phase: 'analyze' });
+        logUploadError(ue, { source: 'url', url: normalized.value });
+        setError(ue);
+        setScanState('error');
+      }
+    },
+    [user],
+  );
+
   /** Map a specific item's fields to the form schema */
   const applyToForm = useCallback(
     (resultIdx: number, itemIdx: number, selectedVenueId?: string): Record<string, unknown> => {
@@ -347,6 +402,7 @@ export function useFlyerScan() {
     currentFileIndex,
     totalFiles,
     startScan,
+    startUrlScan,
     reset,
     applyToForm,
   };

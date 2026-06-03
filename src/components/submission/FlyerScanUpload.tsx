@@ -9,7 +9,8 @@ import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Camera, Upload, AlertCircle, RotateCcw, FileText } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Camera, Upload, AlertCircle, RotateCcw, FileText, Link2 } from 'lucide-react';
 import { isAcceptedFile, MAX_FILE_SIZE_BYTES } from '@/lib/fileExtractors';
 import { useToast } from '@/hooks/use-toast';
 import type { ScanState } from '@/hooks/useFlyerScan';
@@ -24,6 +25,8 @@ interface FlyerScanUploadProps {
   currentFileIndex: number;
   totalFiles: number;
   onFilesSelected: (files: File[]) => void;
+  /** When provided, a link-paste field is shown above the dropzone. */
+  onUrlSubmit?: (url: string) => void;
   onReset: () => void;
   children?: React.ReactNode;
 }
@@ -34,6 +37,7 @@ export function FlyerScanUpload({
   currentFileIndex,
   totalFiles,
   onFilesSelected,
+  onUrlSubmit,
   onReset,
   children,
 }: FlyerScanUploadProps) {
@@ -41,7 +45,13 @@ export function FlyerScanUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setDragOver] = useState(false);
   const [rejectionMessage, setRejectionMessage] = useState<string | null>(null);
+  const [urlValue, setUrlValue] = useState('');
   const { toast } = useToast();
+
+  const submitUrl = useCallback(() => {
+    const v = urlValue.trim();
+    if (v && onUrlSubmit) onUrlSubmit(v);
+  }, [urlValue, onUrlSubmit]);
 
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
@@ -180,15 +190,52 @@ export function FlyerScanUpload({
   }
 
   return (
-    <Card
-      onClick={() => fileInputRef.current?.click()}
-      onDragOver={(e: React.DragEvent) => {
-        e.preventDefault();
-        setDragOver(true);
-      }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={handleDrop}
-    >
+    <div className="flex flex-col gap-4">
+      {onUrlSubmit && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Link2
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                aria-hidden="true"
+              />
+              <Input
+                type="url"
+                inputMode="url"
+                value={urlValue}
+                onChange={(e) => setUrlValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitUrl();
+                  }
+                }}
+                placeholder="Paste a link — event page, Instagram, venue site, news…"
+                aria-label="Paste a link to scan"
+                className="pl-10"
+              />
+            </div>
+            <Button type="button" onClick={submitUrl} disabled={!urlValue.trim()}>
+              Scan link
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+        </div>
+      )}
+      <Card
+        onClick={() => fileInputRef.current?.click()}
+        onDragOver={(e: React.DragEvent) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+      >
       <CardContent>
         <input
           ref={fileInputRef}
@@ -244,6 +291,7 @@ export function FlyerScanUpload({
           </div>
         )}
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   );
 }

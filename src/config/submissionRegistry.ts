@@ -15,6 +15,9 @@ export interface SubmissionStep {
   fields: string[];
 }
 
+/** 'primary' = front-and-centre directory content; 'more' = niche, behind a disclosure. */
+export type SubmissionGroup = 'primary' | 'more';
+
 export interface SubmissionTypeConfig {
   id: string;
   contentType: string; // key in contentTypeRegistry
@@ -23,6 +26,7 @@ export interface SubmissionTypeConfig {
   description: string;
   icon: LucideIcon;
   color: string;
+  group: SubmissionGroup;
   steps: SubmissionStep[];
   defaults?: Record<string, unknown>;
   titleField: string;
@@ -38,6 +42,7 @@ const venueSubmission: SubmissionTypeConfig = {
   description: 'Know a queer-friendly space? Share it with the community.',
   icon: Building,
   color: '#DB2777',
+  group: 'primary',
   titleField: 'name',
   defaults: { featured: false, verified: false },
   steps: [
@@ -57,6 +62,7 @@ const eventSubmission: SubmissionTypeConfig = {
   description: 'Got an upcoming LGBTQ+ event? Let the community know.',
   icon: Calendar,
   color: '#ec4899',
+  group: 'primary',
   titleField: 'title',
   defaults: { featured: false, is_free: false, status: 'active' },
   steps: [
@@ -84,6 +90,7 @@ const productSubmission: SubmissionTypeConfig = {
   description: 'Sell or promote queer-owned products and services.',
   icon: ShoppingBag,
   color: '#f97316',
+  group: 'primary',
   titleField: 'title',
   defaults: {
     status: 'active',
@@ -116,6 +123,7 @@ const personalitySubmission: SubmissionTypeConfig = {
   description: 'Nominate an LGBTQ+ personality to be featured.',
   icon: Users,
   color: '#f59e0b',
+  group: 'more',
   titleField: 'name',
   defaults: { is_living: true, visibility: 'public', verification_status: 'pending' },
   steps: [
@@ -138,6 +146,7 @@ const hotelSubmission: SubmissionTypeConfig = {
   description: 'Add a queer-friendly hotel, hostel, or BnB.',
   icon: Hotel,
   color: '#0ea5e9',
+  group: 'more',
   titleField: 'name',
   defaults: { featured: false, verified: false, category: 'hotel' },
   steps: [
@@ -161,6 +170,7 @@ const tagSubmission: SubmissionTypeConfig = {
   description: 'Suggest a new tag for the community database.',
   icon: Tag,
   color: '#14b8a6',
+  group: 'more',
   titleField: 'name',
   defaults: {},
   steps: [
@@ -182,6 +192,7 @@ const feedbackSubmission: SubmissionTypeConfig = {
   description: 'Report a bug, suggest a feature, or share an idea.',
   icon: MessageSquarePlus,
   color: '#DB2777',
+  group: 'more',
   titleField: 'title',
   defaults: {},
   steps: [
@@ -203,6 +214,7 @@ const newsSubmission: SubmissionTypeConfig = {
   description: 'Share a news piece relevant to the community.',
   icon: Newspaper,
   color: '#0f766e',
+  group: 'more',
   titleField: 'title',
   defaults: {},
   steps: [
@@ -224,6 +236,7 @@ const placeSubmission: SubmissionTypeConfig = {
   description: 'Add a neighbourhood, queer village, or other locality.',
   icon: MapPin,
   color: '#7c3aed',
+  group: 'more',
   titleField: 'name',
   defaults: {},
   steps: [
@@ -249,18 +262,31 @@ export const submissionRegistry: Record<string, SubmissionTypeConfig> = {
   place: placeSubmission,
 };
 
-/** Ordered array for hub page display */
+/**
+ * Ordered array for hub page display. Hotel/BnB is intentionally omitted — it folds into
+ * Venue via the venue `category` options (the `/submit/hotel` route still resolves via the
+ * registry map for back-compat and deep links).
+ */
 export const submissionTypes: SubmissionTypeConfig[] = [
-  venueSubmission,
   eventSubmission,
+  venueSubmission,
   productSubmission,
   personalitySubmission,
-  hotelSubmission,
-  newsSubmission,
   placeSubmission,
+  newsSubmission,
   tagSubmission,
   feedbackSubmission,
 ];
+
+/** Front-and-centre cards on the hub. */
+export const primarySubmissionTypes: SubmissionTypeConfig[] = submissionTypes.filter(
+  (t) => t.group === 'primary',
+);
+
+/** Niche types tucked behind the "More ways to contribute" disclosure. */
+export const moreSubmissionTypes: SubmissionTypeConfig[] = submissionTypes.filter(
+  (t) => t.group === 'more',
+);
 
 /** Get a submission config by ID */
 export function getSubmissionType(id: string): SubmissionTypeConfig | undefined {

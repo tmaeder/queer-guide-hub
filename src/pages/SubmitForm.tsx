@@ -5,7 +5,7 @@
 
 import { useParams, useLocation } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { Controller } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,12 +14,9 @@ import { submissionRegistry } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { useSubmission } from '@/hooks/useSubmission';
 import { useAuth } from '@/hooks/useAuth';
-import { useFlyerScan } from '@/hooks/useFlyerScan';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchCountryNameById } from '@/hooks/usePageFetchers';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
-import { FlyerScanUpload } from '@/components/submission/FlyerScanUpload';
-import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
 import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEventTypeOptions } from '@/lib/eventTypes';
@@ -78,35 +75,13 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
     control,
   } = useSubmission(config);
 
-  // Flyer scan (only for event/venue)
-  const supportsScan = config.id === 'event' || config.id === 'venue';
-  const flyerScan = useFlyerScan();
-  const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
+  // Arriving with prefill (e.g. from a hub scan) → render a single review screen instead
+  // of walking the multi-step wizard. Captured once on mount before the state is cleared.
+  const [reviewMode] = useState(
+    () => !!(location.state as { prefill?: Record<string, unknown> } | null)?.prefill,
+  );
 
-  const handleStartScan = (files: File[]) => {
-    setSelectedVenueId(null);
-    flyerScan.startScan(files);
-  };
-  const handleResetScan = () => {
-    setSelectedVenueId(null);
-    flyerScan.reset();
-  };
-
-  const handleApplyScan = (resultIdx: number, itemIdx: number, detectedType: 'event' | 'venue') => {
-    const formData = flyerScan.applyToForm(resultIdx, itemIdx, selectedVenueId ?? undefined);
-    setFields(formData);
-
-    // If detected type differs from current form, navigate to correct form
-    if (detectedType !== config.id) {
-      const imageUrl = flyerScan.results[resultIdx]?.image_url;
-      navigate(`/submit/${detectedType}`, {
-        state: { prefill: formData, imageUrl },
-      });
-      return;
-    }
-  };
-
-  // Apply prefill data from navigation state (e.g., type-switch from scan results)
+  // Apply prefill data from navigation state (scan results from the hub)
   useEffect(() => {
     const state = location.state as { prefill?: Record<string, unknown> } | null;
     if (state?.prefill) {
@@ -155,21 +130,36 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
   const eventTypeOptions = useEventTypeOptions();
 
-  // Resolve FieldConfig objects for the current step's fields
-  const stepFields = useMemo(() => {
-    if (!currentStepConfig || !contentConfig) return [];
-    return currentStepConfig.fields
-      .map((fieldName) => contentConfig.fields.find((f) => f.name === fieldName))
-      .filter((f): f is NonNullable<typeof f> => f !== undefined)
-      .map((f) => ({
-        ...f,
-        // Override CMS-specific flags — submission fields are always editable & visible
-        readOnly: false,
-        hidden: false,
-        // Inject translated labels for event_type (canonical 19-value list)
-        ...(f.name === 'event_type' ? { options: eventTypeOptions } : {}),
-      }));
-  }, [currentStepConfig, contentConfig, eventTypeOptions]);
+  // Resolve FieldConfig objects from a list of field names
+  const resolveFields = useCallback(
+    (fieldNames: string[]) => {
+      if (!contentConfig) return [];
+      return fieldNames
+        .map((fieldName) => contentConfig.fields.find((f) => f.name === fieldName))
+        .filter((f): f is NonNullable<typeof f> => f !== undefined)
+        .map((f) => ({
+          ...f,
+          // Override CMS-specific flags — submission fields are always editable & visible
+          readOnly: false,
+          hidden: false,
+          // Inject translated labels for event_type (canonical 19-value list)
+          ...(f.name === 'event_type' ? { options: eventTypeOptions } : {}),
+        }));
+    },
+    [contentConfig, eventTypeOptions],
+  );
+
+  // Current step's fields (wizard mode)
+  const stepFields = useMemo(
+    () => (currentStepConfig ? resolveFields(currentStepConfig.fields) : []),
+    [currentStepConfig, resolveFields],
+  );
+
+  // All fields grouped by step (review mode)
+  const reviewSections = useMemo(
+    () => config.steps.map((step) => ({ label: step.label, fields: resolveFields(step.fields) })),
+    [config.steps, resolveFields],
+  );
 
   // ── Success screen ─────────────────────────────────────────────
 
@@ -233,30 +223,8 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         </Card>
       )}
 
-      {/* Flyer scan (step 0 only, event/venue) */}
-      {supportsScan && currentStep === 0 && user && (
-        <FlyerScanUpload
-          scanState={flyerScan.scanState}
-          error={flyerScan.error}
-          currentFileIndex={flyerScan.currentFileIndex}
-          totalFiles={flyerScan.totalFiles}
-          onFilesSelected={handleStartScan}
-          onReset={handleResetScan}
-        >
-          {flyerScan.results.length > 0 && (
-            <FlyerScanResults
-              results={flyerScan.results}
-              selectedVenueId={selectedVenueId}
-              onSelectVenue={setSelectedVenueId}
-              onApply={handleApplyScan}
-              onDismiss={flyerScan.reset}
-            />
-          )}
-        </FlyerScanUpload>
-      )}
-
-      {/* Step indicator (only for multi-step forms) */}
-      {totalSteps > 1 && (
+      {/* Step indicator (only for multi-step forms, hidden in review mode) */}
+      {!reviewMode && totalSteps > 1 && (
         <div className="flex items-center gap-2 mb-6">
           {config.steps.map((step, i) => (
             <div
@@ -333,7 +301,96 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         {stepAnnouncement}
       </div>
 
-      {/* Form card */}
+      {/* Review mode — single screen, all sections, one Submit (arrives prefilled from scan) */}
+      {reviewMode && (
+        <Card>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-6">
+              We pre-filled this from your scan. Check the details, fix anything that looks off,
+              then submit.
+            </p>
+            <form
+              noValidate
+              onSubmit={(e) => {
+                e.preventDefault();
+                submit();
+              }}
+            >
+              {/* Honeypot — hidden from real users */}
+              <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden">
+                <Input
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+              </div>
+
+              {reviewSections.map((section) =>
+                section.fields.length === 0 ? null : (
+                  <fieldset key={section.label} className="mb-8 border-0 p-0 m-0">
+                    <legend className="text-sm font-semibold mb-4 text-foreground">
+                      {section.label}
+                    </legend>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {section.fields.map((fieldConfig) => (
+                        <div
+                          key={fieldConfig.name}
+                          style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
+                        >
+                          <Controller
+                            control={control}
+                            name={fieldConfig.name}
+                            render={({ field, fieldState }) => (
+                              <FieldRenderer
+                                field={fieldConfig}
+                                value={field.value ?? ''}
+                                onChange={(val) => field.onChange(val)}
+                                error={fieldState.error?.message ?? errors[fieldConfig.name]}
+                                setFields={setFields}
+                                allValues={data}
+                              />
+                            )}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </fieldset>
+                ),
+              )}
+
+              <div className="flex justify-between mt-6 gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/submit')}
+                  className="flex items-center gap-1.5"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  aria-describedby={!user ? 'submit-auth-hint' : undefined}
+                  className="flex items-center gap-1.5"
+                >
+                  {isSubmitting ? (
+                    'Submitting...'
+                  ) : (
+                    <>
+                      Submit <Send className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Form card (wizard mode) */}
+      {!reviewMode && (
       <Card>
         <CardContent>
           <form
@@ -485,6 +542,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
           </form>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }
