@@ -19,6 +19,8 @@ import { fetchCountryNameById } from '@/hooks/usePageFetchers';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { DuplicateWarning } from '@/components/submission/DuplicateWarning';
 import { useDuplicateCheck } from '@/hooks/submission/useDuplicateCheck';
+import { SeriesCarryover } from '@/components/submission/SeriesCarryover';
+import { useEventSeries, cloneFieldsFromEdition } from '@/hooks/submission/useEventSeries';
 import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEventTypeOptions } from '@/lib/eventTypes';
@@ -133,6 +135,13 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
   // Non-blocking "already exists?" lookup on the typed title/name.
   const { matches: duplicateMatches } = useDuplicateCheck(config.id, titleValue);
 
+  // "Eventreihen" carry-over — offer to clone a past edition (events only).
+  const { editions: previousEditions } = useEventSeries(
+    config.id === 'event',
+    titleValue,
+    String(data.city ?? ''),
+  );
+
   const eventTypeOptions = useEventTypeOptions();
 
   // Resolve FieldConfig objects from a list of field names
@@ -228,13 +237,19 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         </Card>
       )}
 
-      {/* Non-blocking duplicate warning on the first step */}
+      {/* Series carry-over (events) + non-blocking duplicate warning on the first step */}
       {!reviewMode && currentStep === 0 && (
-        <DuplicateWarning
-          submissionTypeId={config.id}
-          typeLabel={config.label}
-          matches={duplicateMatches}
-        />
+        <>
+          <SeriesCarryover
+            editions={previousEditions}
+            onClone={(edition) => setFields(cloneFieldsFromEdition(edition))}
+          />
+          <DuplicateWarning
+            submissionTypeId={config.id}
+            typeLabel={config.label}
+            matches={duplicateMatches}
+          />
+        </>
       )}
 
       {/* Step indicator (only for multi-step forms, hidden in review mode) */}
