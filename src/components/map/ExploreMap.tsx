@@ -15,6 +15,7 @@ import {
   type ExploreMapFilters,
   type MapMarker,
   LAYER_COLORS,
+  PRIDE_LAYER_COLORS,
 } from '@/hooks/useExploreMapData';
 import { useViewportPoints, POINT_LAYER_TYPES } from '@/hooks/useViewportPoints';
 import { ExploreMapLayers, LAYER_DEFS } from '@/components/map/ExploreMapLayers';
@@ -153,6 +154,9 @@ export interface ExploreMapProps {
   /** Rendering style for point data. `'pins'` (default) shows clusters + markers.
    *  `'heatmap'` swaps clusters/markers for a monochrome density layer. */
   renderMode?: 'pins' | 'heatmap';
+  /** Use the pride-spectrum canvas palette (markers, area circles, density
+   *  heat). Gated to MapShell; legacy/embedded maps stay on LAYER_COLORS. */
+  pridePalette?: boolean;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -171,6 +175,7 @@ export const ExploreMap = ({
   onViewportChange: onViewportChangeProp,
   onLayersChange: onLayersChangeProp,
   renderMode = 'pins',
+  pridePalette = false,
 }: ExploreMapProps) => {
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
@@ -228,7 +233,11 @@ export const ExploreMap = ({
     isFetching: pointsFetching,
     layerCounts: pointLayerCounts,
     onViewportChange,
-  } = useViewportPoints({ enabledLayers: pointEnabledLayers, filters });
+  } = useViewportPoints({
+    enabledLayers: pointEnabledLayers,
+    filters,
+    palette: pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS,
+  });
 
   // ── Data: boundary polygons ─────────────────────────────────────────────
   const countriesEnabled = enabledLayers.includes('countries');
@@ -610,7 +619,8 @@ export const ExploreMap = ({
 
       const style = AREA_STYLE[type] ?? AREA_STYLE.cities;
       const radii = AREA_RADIUS[type] ?? AREA_RADIUS.cities;
-      const color = LAYER_COLORS[type as LayerType] ?? '#888';
+      const palette = pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS;
+      const color = palette[type as LayerType] ?? '#888';
 
       const radiusExpr: unknown[] = ['interpolate', ['linear'], ['zoom']];
       for (const [z, r] of radii) radiusExpr.push(z, r);
@@ -711,7 +721,7 @@ export const ExploreMap = ({
         areaLayerIdsRef.current.delete(oldId);
       }
     }
-  }, [areaMarkers, mapReady, showPopup, countryBoundaries]);
+  }, [areaMarkers, mapReady, showPopup, countryBoundaries, pridePalette]);
 
   // ── Point layers: native MapLibre source with built-in clustering ──────
   useEffect(() => {
@@ -964,29 +974,49 @@ export const ExploreMap = ({
       paint: {
         'heatmap-weight': 1,
         'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 9, 2],
-        // Monochrome black-alpha ramp — design system: no hue, no shadow.
-        'heatmap-color': [
-          'interpolate',
-          ['linear'],
-          ['heatmap-density'],
-          0,
-          'rgba(0,0,0,0)',
-          0.2,
-          'rgba(0,0,0,0.15)',
-          0.4,
-          'rgba(0,0,0,0.30)',
-          0.6,
-          'rgba(0,0,0,0.50)',
-          0.8,
-          'rgba(0,0,0,0.70)',
-          1,
-          'rgba(0,0,0,0.85)',
-        ],
+        // Pride-spectrum density ramp (MapShell) reads "density of queer
+        // life" as a rainbow heat field; legacy maps keep the monochrome
+        // black-alpha ramp (design system: no hue, no shadow).
+        'heatmap-color': pridePalette
+          ? [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0,
+              'rgba(117,7,135,0)', // transparent violet
+              0.2,
+              'rgba(0,77,255,0.55)', // blue
+              0.4,
+              'rgba(0,128,38,0.65)', // green
+              0.6,
+              'rgba(255,237,0,0.75)', // yellow
+              0.8,
+              'rgba(255,140,0,0.85)', // orange
+              1,
+              'rgba(228,3,3,0.92)', // red
+            ]
+          : [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0,
+              'rgba(0,0,0,0)',
+              0.2,
+              'rgba(0,0,0,0.15)',
+              0.4,
+              'rgba(0,0,0,0.30)',
+              0.6,
+              'rgba(0,0,0,0.50)',
+              0.8,
+              'rgba(0,0,0,0.70)',
+              1,
+              'rgba(0,0,0,0.85)',
+            ],
         'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 28, 14, 60],
         'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.85, 14, 0.65, 16, 0],
       },
     });
-  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady]);
+  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, pridePalette]);
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -1060,6 +1090,21 @@ export const ExploreMap = ({
             : `${inBoundsCount.toLocaleString()} results in view`}
         </span>
       </div>
+
+      {/* Queer-voiced empty state (MapShell only). Shows when the area has no
+          points and we're not mid-fetch — warmer than a hidden zero pill. */}
+      {pridePalette &&
+        mapReady &&
+        !isFetching &&
+        !isCounterStale &&
+        inBoundsCount === 0 &&
+        pointEnabledLayers.length > 0 && (
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-center px-4 pointer-events-none">
+            <p className="max-w-xs text-center text-sm text-muted-foreground bg-background/85 border border-border rounded-element px-4 py-2">
+              No spots here yet — pan, zoom out, or put one on the map.
+            </p>
+          </div>
+        )}
 
       {/* "Open full map" link for embedded previews */}
       {linkToFullMap && (

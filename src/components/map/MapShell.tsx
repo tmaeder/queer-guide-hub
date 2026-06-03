@@ -210,6 +210,7 @@ export const MapShell = ({
         onViewportChange={handleViewportChange}
         onLayersChange={handleLayersChange}
         renderMode={state.lens === 'density' ? 'heatmap' : 'pins'}
+        pridePalette
       />
 
       {config.showCommandBar !== false && (
@@ -230,7 +231,11 @@ export const MapShell = ({
 
       {config.showCommandBar !== false && Object.keys(exposedFilters).length > 0 && (
         <div className="absolute top-[3.25rem] left-3 right-3 z-20">
-          <FilterChips filters={exposedFilters} onRemove={removeFilter} />
+          <FilterChips
+            filters={exposedFilters}
+            onRemove={removeFilter}
+            onClearAll={() => setFilters({})}
+          />
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Search,
   SlidersHorizontal,
@@ -16,27 +16,33 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
   useSearchSuggestions,
   type SearchSuggestion,
 } from '@/hooks/useSearchSuggestions';
 import { hapticTrigger } from '@/hooks/useHaptics';
-import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_DEFS } from './ExploreMapLayers';
 import { LensPicker } from './LensPicker';
-import { TimePopover, EraPopover } from './FilterPopovers';
+import { TimePopover } from './FilterPopovers';
+import { MapFiltersPanel } from './MapFiltersPanel';
 import {
-  FILTER_LABELS,
   type MapFilterKey,
   type MapLens,
   type MapShellFilters,
@@ -107,9 +113,8 @@ export const CommandBar = ({
   className,
 }: CommandBarProps) => {
   const navigate = useLocalizedNavigate();
-  const { toast } = useToast();
-  const { t } = useTranslation();
-  const [query, setQuery] = useState('');
+  const isMobile = useIsMobile();
+  const [query, setQuery] = useState(filters.search ?? '');
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [layerOpen, setLayerOpen] = useState(false);
@@ -118,20 +123,39 @@ export const CommandBar = ({
 
   const { suggestions, loading } = useSearchSuggestions(query);
 
+  // Keep the input mirrored to the active search filter. When the search
+  // chip is removed elsewhere, filters.search clears and the input empties
+  // with it. Typing doesn't touch filters.search until the user applies, so
+  // this never fights live keystrokes.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs local input with the external search filter; one-way mirror, never fights keystrokes.
+    setQuery(filters.search ?? '');
+  }, [filters.search]);
+
+  // Primary action: narrow what's on the map to the typed term. Secondary
+  // action (handleSelect) still jumps to a specific entity's detail page.
+  const applySearchFilter = (q: string) => {
+    const term = q.trim();
+    onFiltersChange({ ...filters, search: term || undefined });
+    setPopoverOpen(false);
+    inputRef.current?.blur();
+  };
+
   const handleSelect = (item: SearchSuggestion) => {
     const builder = TYPE_PATH[item.type];
     const slug = (item as unknown as { slug?: string }).slug ?? item.id;
     if (builder && slug) {
       setPopoverOpen(false);
-      setQuery('');
       navigate(builder(slug));
     }
   };
 
+  // Enter filters the map (the expected behaviour), rather than teleporting
+  // to the first suggestion.
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && suggestions.length > 0) {
+    if (e.key === 'Enter' && query.trim().length >= 2) {
       e.preventDefault();
-      handleSelect(suggestions[0]);
+      applySearchFilter(query);
     }
   };
 
@@ -143,96 +167,14 @@ export const CommandBar = ({
     onLayersChange(next);
   };
 
-  // time + era have inline popover triggers (rendered below); they're not
-  // listed in the generic Filter menu since the inline button is the entry point.
-  const genericFilters = availableFilters.filter((k) => k !== 'time' && k !== 'era');
+  // The Filters popover hosts the data-backed panel (category, tags,
+  // near-me). Time keeps its dedicated inline date-range popover.
+  const hasPanelFilters = availableFilters.some((k) =>
+    (['category', 'tags', 'near-me'] as MapFilterKey[]).includes(k),
+  );
 
-  const toggleFilter = (key: MapFilterKey) => {
-    hapticTrigger('nudge');
-    const next: MapShellFilters = { ...filters };
-    switch (key) {
-      case 'category':
-        if (next.category) delete next.category;
-        else next.category = '';
-        break;
-      case 'tags':
-        if (next.tags?.length) delete next.tags;
-        else next.tags = [];
-        break;
-      case 'near-me':
-        if (next.nearMe) {
-          delete next.nearMe;
-        } else if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              onFiltersChange({
-                ...filters,
-                nearMe: { lat: pos.coords.latitude, lng: pos.coords.longitude, radiusKm: 10 },
-              });
-            },
-            (err) => {
-              // Without an error callback the popup closed silently when the
-              // user denied permission — no signal that "Near me" requires
-              // location. Map the standard PositionError codes to plain
-              // English and show an informational toast so the user knows
-              // why nothing changed.
-              let title: string;
-              switch (err.code) {
-                case 1: // PERMISSION_DENIED
-                  title = t('map.geolocate.denied', {
-                    defaultValue: 'Location access is off — "Near me" needs your location',
-                  });
-                  break;
-                case 2: // POSITION_UNAVAILABLE
-                  title = t('map.geolocate.unavailable', {
-                    defaultValue: "Couldn't get your location — try again in a moment",
-                  });
-                  break;
-                case 3: // TIMEOUT
-                  title = t('map.geolocate.timeout', {
-                    defaultValue: 'Location lookup timed out — try again',
-                  });
-                  break;
-                default:
-                  title = t('map.geolocate.denied', {
-                    defaultValue: 'Location access is off — "Near me" needs your location',
-                  });
-              }
-              toast({ title });
-            },
-            { enableHighAccuracy: true, timeout: 8000 },
-          );
-          setFilterOpen(false);
-          return;
-        }
-        break;
-      case 'accessibility':
-        if (next.accessible) delete next.accessible;
-        else next.accessible = true;
-        break;
-      case 'queer-owned':
-        if (next.queerOwned) delete next.queerOwned;
-        else next.queerOwned = true;
-        break;
-      default:
-        break;
-    }
-    onFiltersChange(next);
-    setFilterOpen(false);
-  };
-
-  const isFilterActive = (key: MapFilterKey): boolean => {
-    switch (key) {
-      case 'category': return !!filters.category;
-      case 'tags': return !!filters.tags?.length;
-      case 'near-me': return !!filters.nearMe;
-      case 'time': return !!filters.dateRange;
-      case 'accessibility': return !!filters.accessible;
-      case 'queer-owned': return !!filters.queerOwned;
-      case 'era': return !!filters.era;
-      default: return false;
-    }
-  };
+  const activeFilterCount =
+    (filters.category ? 1 : 0) + (filters.tags?.length ?? 0) + (filters.nearMe ? 1 : 0);
 
   return (
     <div
@@ -282,6 +224,7 @@ export const CommandBar = ({
                 aria-label="Clear search"
                 onClick={() => {
                   setQuery('');
+                  if (filters.search) onFiltersChange({ ...filters, search: undefined });
                   setPopoverOpen(false);
                   inputRef.current?.focus();
                 }}
@@ -300,14 +243,25 @@ export const CommandBar = ({
         >
           <Command shouldFilter={false}>
             <CommandList>
-              {!loading && suggestions.length === 0 && query.length >= 2 && (
-                <CommandEmpty>No results</CommandEmpty>
-              )}
               {!loading && query.length < 2 && (
                 <CommandEmpty>Type at least 2 characters</CommandEmpty>
               )}
-              {suggestions.length > 0 && (
+              {query.trim().length >= 2 && (
                 <CommandGroup>
+                  <CommandItem
+                    value="__filter-map__"
+                    onSelect={() => applySearchFilter(query)}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Search size={14} aria-hidden="true" />
+                    <span className="flex-1 truncate text-sm">
+                      Filter map for &ldquo;{query.trim()}&rdquo;
+                    </span>
+                  </CommandItem>
+                </CommandGroup>
+              )}
+              {suggestions.length > 0 && (
+                <CommandGroup heading="Jump to a place">
                   {suggestions.map((s) => (
                     <CommandItem
                       key={`${s.type}-${s.id}`}
@@ -323,6 +277,11 @@ export const CommandBar = ({
                   ))}
                 </CommandGroup>
               )}
+              {!loading && suggestions.length === 0 && query.trim().length >= 2 && (
+                <p className="px-2 py-1.5 text-xs text-muted-foreground">
+                  No places match — Enter still filters the map.
+                </p>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>
@@ -332,39 +291,66 @@ export const CommandBar = ({
 
       <LensPicker lenses={lenses} value={lens} onChange={onLensChange} />
 
-      {genericFilters.length > 0 && (
-        <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="Filters"
-              className="h-8 w-8 p-0 border border-border"
+      {hasPanelFilters &&
+        (isMobile ? (
+          <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
+                className="relative h-8 w-8 p-0 border border-border"
+              >
+                <SlidersHorizontal size={14} aria-hidden="true" />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-foreground text-background text-3xs font-semibold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="bottom"
+              className="max-h-[85dvh] overflow-y-auto p-4 rounded-t-container"
             >
-              <SlidersHorizontal size={14} aria-hidden="true" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="p-2 w-56 border-border">
-            <div className="flex flex-col gap-1">
-              {genericFilters.map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  aria-pressed={isFilterActive(k)}
-                  onClick={() => toggleFilter(k)}
-                  className={cn(
-                    'inline-flex items-center justify-between h-8 px-2 text-sm border border-transparent hover:bg-muted text-left',
-                    isFilterActive(k) && 'border-border bg-muted',
-                  )}
-                >
-                  <span>{FILTER_LABELS[k]}</span>
-                  {isFilterActive(k) && <span aria-hidden="true">✓</span>}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-      )}
+              <SheetHeader className="text-left">
+                <SheetTitle>Filters</SheetTitle>
+              </SheetHeader>
+              <div className="pt-4">
+                <MapFiltersPanel
+                  availableFilters={availableFilters}
+                  filters={filters}
+                  onFiltersChange={onFiltersChange}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        ) : (
+          <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
+                className="relative h-8 w-8 p-0 border border-border"
+              >
+                <SlidersHorizontal size={14} aria-hidden="true" />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-foreground text-background text-3xs font-semibold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="p-4 w-80 border-border max-h-[70dvh] overflow-y-auto">
+              <MapFiltersPanel
+                availableFilters={availableFilters}
+                filters={filters}
+                onFiltersChange={onFiltersChange}
+              />
+            </PopoverContent>
+          </Popover>
+        ))}
 
       {availableLayers.length > 0 && (
         <Popover open={layerOpen} onOpenChange={setLayerOpen}>
@@ -405,12 +391,6 @@ export const CommandBar = ({
         <TimePopover
           value={filters.dateRange}
           onChange={(v) => onFiltersChange({ ...filters, dateRange: v })}
-        />
-      )}
-      {availableFilters.includes('era') && (
-        <EraPopover
-          value={filters.era}
-          onChange={(v) => onFiltersChange({ ...filters, era: v })}
         />
       )}
 

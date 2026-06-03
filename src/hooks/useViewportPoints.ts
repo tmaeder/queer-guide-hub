@@ -57,12 +57,26 @@ export interface ViewportPointsResult {
 interface UseViewportPointsOptions {
   enabledLayers: LayerType[];
   filters?: ExploreMapFilters;
+  /** Override marker colours per layer (e.g. the MapShell pride palette). */
+  palette?: Partial<Record<LayerType, string>>;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const DEBOUNCE_MS = 200;
 const EMPTY_FC: PointCollection = { type: 'FeatureCollection', features: [] };
+
+/** Great-circle distance in km between two [lng,lat] points. */
+function haversineKm(aLng: number, aLat: number, bLng: number, bLat: number): number {
+  const R = 6371;
+  const dLat = ((bLat - aLat) * Math.PI) / 180;
+  const dLng = ((bLng - aLng) * Math.PI) / 180;
+  const lat1 = (aLat * Math.PI) / 180;
+  const lat2 = (bLat * Math.PI) / 180;
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
 
 // Gated debug logger — matches ExploreMap's mapDebug. Opt in via
 // `localStorage.setItem('qg:debug:map', '1')` in prod to inspect the
@@ -278,6 +292,7 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
 export function useViewportPoints({
   enabledLayers,
   filters,
+  palette,
 }: UseViewportPointsOptions): ViewportPointsResult & {
   onViewportChange: (bbox: Bbox, zoom: number) => void;
 } {
@@ -297,6 +312,9 @@ export function useViewportPoints({
   const filtersRef = useRef(filters);
   // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; doFetch (defined below) reads .current.
   filtersRef.current = filters;
+  const paletteRef = useRef(palette);
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; doFetch (defined below) reads .current.
+  paletteRef.current = palette;
 
   const doFetch = useCallback(async (rawBbox: Bbox, zoom: number) => {
     const enabled = enabledRef.current.filter((l) => POINT_LAYER_TYPES.includes(l));
@@ -367,7 +385,37 @@ export function useViewportPoints({
         return;
       }
 
-      mapDebug('fetch:resolve', { gen, features: allFeatures.length, counts });
+      // Apply the active palette to every feature. The LRU cache is a shared
+      // module singleton, so a MapShell instance (pride palette) and a legacy
+      // ExploreMap (base palette) can read the same cached feature objects.
+      // Remap unconditionally — defaulting to LAYER_COLORS — so neither
+      // instance inherits the other's colours.
+      const pal = paletteRef.current ?? LAYER_COLORS;
+      for (const f of allFeatures) {
+        const c = pal[f.properties.pointType];
+        if (c) f.properties.color = c;
+      }
+
+      // "Near me" radius filter: applied client-side across all layers so a
+      // single control narrows every point type at once. Counts are
+      // recomputed from the kept features so the layer panel + result pill
+      // reflect the filtered set, not the pre-filter fetch.
+      let finalFeatures = allFeatures;
+      const nm = filtersRef.current?.nearMe;
+      if (nm) {
+        finalFeatures = allFeatures.filter(
+          (f) =>
+            haversineKm(nm.lng, nm.lat, f.geometry.coordinates[0], f.geometry.coordinates[1]) <=
+            nm.radiusKm,
+        );
+        for (const k of Object.keys(counts) as LayerType[]) counts[k] = 0;
+        for (const f of finalFeatures) {
+          const pt = f.properties.pointType;
+          counts[pt] = (counts[pt] ?? 0) + 1;
+        }
+      }
+
+      mapDebug('fetch:resolve', { gen, features: finalFeatures.length, counts });
       // Diagnostic breadcrumb. If pins ever silently stop rendering in
       // prod, the Sentry trail will show "fetch returned N venues" so
       // we know whether the bug is in the data path or the renderer.
@@ -375,9 +423,9 @@ export function useViewportPoints({
         category: 'venues-map',
         level: 'info',
         message: 'viewport-fetch',
-        data: { features: allFeatures.length, zoom, counts },
+        data: { features: finalFeatures.length, zoom, counts },
       });
-      setGeojson({ type: 'FeatureCollection', features: allFeatures });
+      setGeojson({ type: 'FeatureCollection', features: finalFeatures });
       setLayerCounts(counts);
       lastRawBboxRef.current = bbox;
     } catch (err: unknown) {
