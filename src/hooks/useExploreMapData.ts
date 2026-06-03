@@ -53,7 +53,7 @@ export const LAYER_COLORS: Record<LayerType, string> = {
   countries: '#dc2626', // red
   restrooms: '#10b981', // emerald
   hotels: '#f59e0b', // amber
-  neighbourhoods: 'hsl(var(--foreground))', // brand
+  neighbourhoods: 'hsl(0 0% 4%)', // foreground — concrete; MapLibre can't parse CSS var()
 };
 
 // Pride-spectrum palette for the MapShell canvas only (gated by the
