@@ -25,6 +25,11 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    # `secrets` is not a valid context in a step-level `if:` (it raises
+    # "Unrecognized named-value: 'secrets'" → startup_failure on every push).
+    # Surface the token as job-level env so the PR step can gate on it instead.
+    env:
+      HUB_PR_TOKEN: ${{ secrets.HUB_PR_TOKEN }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -48,9 +53,9 @@ jobs:
           retention-days: 30
 
       - name: Open PR in queer-guide-hub
-        if: ${{ secrets.HUB_PR_TOKEN != '' }}
+        if: ${{ env.HUB_PR_TOKEN != '' }}
         env:
-          GH_TOKEN: ${{ secrets.HUB_PR_TOKEN }}
+          GH_TOKEN: ${{ env.HUB_PR_TOKEN }}
           SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
