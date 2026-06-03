@@ -103,7 +103,7 @@ export const newsArticleFields: FieldConfig[] = [
     min: 0,
     max: 1,
   },
-  { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
+  { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'details' },
   {
     name: 'source_id',
     label: 'News Source',

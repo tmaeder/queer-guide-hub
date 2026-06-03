@@ -13,7 +13,7 @@ export const groupFields: FieldConfig[] = [
   },
   { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
   { name: 'rules', label: 'Group Rules', type: 'textarea', group: 'details', colSpan: 2 },
-  { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
+  { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'details' },
   { name: 'image_url', label: 'Group Image', type: 'image', group: 'media' },
   { name: 'is_private', label: 'Private Group', type: 'boolean', group: 'settings' },
   {

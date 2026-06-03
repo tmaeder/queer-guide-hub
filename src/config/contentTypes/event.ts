@@ -58,7 +58,23 @@ export const eventFields: FieldConfig[] = [
     ],
   },
   // Location
-  { name: 'venue_name', label: 'Venue Name', type: 'text', group: 'location' },
+  {
+    name: 'venue_name',
+    label: 'Venue Name',
+    type: 'venue_autocomplete',
+    group: 'location',
+    placeholder: 'Search the directory or type a venue…',
+    relatedFields: {
+      venue_id: 'venue_id',
+      venue_address: 'venue_address',
+      city: 'city',
+      country: 'country',
+      city_id: 'city_id',
+      country_id: 'country_id',
+      latitude: 'latitude',
+      longitude: 'longitude',
+    },
+  },
   { name: 'venue_address', label: 'Venue Address', type: 'text', group: 'location' },
   {
     name: 'address',
@@ -137,7 +153,7 @@ export const eventFields: FieldConfig[] = [
   { name: 'recurrence_pattern', label: 'Recurrence Pattern', type: 'text', group: 'details' },
   { name: 'accessibility_attributes', label: 'Accessibility', type: 'tags', group: 'details' },
   { name: 'target_groups', label: 'Target Groups', type: 'tags', group: 'details' },
-  { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
+  { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'details' },
   { name: 'accessibility_notes', label: 'Accessibility Notes', type: 'textarea', group: 'details', colSpan: 2 },
   // Media
   { name: 'images', label: 'Images', type: 'images', group: 'media' },

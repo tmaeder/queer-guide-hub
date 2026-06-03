@@ -17,6 +17,9 @@ import { JsonField } from './JsonField';
 import { SocialLinksField } from './SocialLinksField';
 import { CityAutocompleteField } from './CityAutocompleteField';
 import { CountryAutocompleteField } from './CountryAutocompleteField';
+import { UnifiedTagAutocompleteField } from './UnifiedTagAutocompleteField';
+import { VenueAutocompleteField } from './VenueAutocompleteField';
+import { ProfessionAutocompleteField } from './ProfessionAutocompleteField';
 
 export interface FieldProps {
   field: FieldConfig;
@@ -51,6 +54,9 @@ const FIELD_COMPONENTS: Record<string, React.ComponentType<FieldProps>> = {
   social_links: SocialLinksField,
   city_autocomplete: CityAutocompleteField,
   country_autocomplete: CountryAutocompleteField,
+  unified_tag: UnifiedTagAutocompleteField,
+  venue_autocomplete: VenueAutocompleteField,
+  profession_autocomplete: ProfessionAutocompleteField,
 };
 
 interface FieldRendererProps extends FieldProps {
