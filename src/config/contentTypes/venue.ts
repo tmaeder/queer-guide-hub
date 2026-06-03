@@ -147,7 +147,7 @@ export const venueFields: FieldConfig[] = [
   },
   { name: 'amenities', label: 'Amenities', type: 'tags', group: 'details' },
   { name: 'services', label: 'Services', type: 'tags', group: 'details' },
-  { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
+  { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'details' },
   { name: 'accessibility_attributes', label: 'Accessibility', type: 'tags', group: 'details' },
   { name: 'target_groups', label: 'Target Groups', type: 'tags', group: 'details' },
   { name: 'accessibility_notes', label: 'Accessibility Notes', type: 'textarea', group: 'details' },

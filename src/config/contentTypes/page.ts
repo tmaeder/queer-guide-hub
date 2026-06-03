@@ -35,7 +35,7 @@ export const pageFields: FieldConfig[] = [
     ],
   },
   { name: 'category', label: 'Category', type: 'text', group: 'basic', filterable: true },
-  { name: 'tags', label: 'Tags', type: 'tags', group: 'basic' },
+  { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'basic' },
   // SEO
   { name: 'meta_title', label: 'Meta Title', type: 'text', group: 'seo', maxLength: 70 },
   {

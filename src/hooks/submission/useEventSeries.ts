@@ -76,16 +76,14 @@ export function useEventSeries(enabled: boolean, title: string, city: string) {
           if (!cancelled) setEditions([]);
           return;
         }
-        // event_previous_editions isn't in the generated types yet — cast the RPC name.
-        const rpc = supabase.rpc as unknown as (
-          fn: string,
-          args: Record<string, unknown>,
-        ) => Promise<{ data: unknown; error: unknown }>;
-        const { data, error } = await rpc('event_previous_editions', {
+        // event_previous_editions isn't in the generated types yet — cast name/args.
+        // Call supabase.rpc as a *bound* member (not a detached const), or
+        // `this.rest` is undefined inside supabase-js and the call throws.
+        const { data, error } = (await supabase.rpc('event_previous_editions' as never, {
           p_title: trimmed,
           p_city: city.trim() || null,
           p_limit: 3,
-        });
+        } as never)) as { data: unknown; error: unknown };
         if (cancelled) return;
         setEditions(!error && Array.isArray(data) ? (data as PreviousEdition[]) : []);
       },

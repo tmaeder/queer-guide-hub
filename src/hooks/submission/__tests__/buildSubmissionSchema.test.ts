@@ -9,6 +9,10 @@ vi.mock('@/config/contentTypeRegistry', () => ({
         { name: 'count', label: 'Count', type: 'number', min: 1, max: 10 },
         { name: 'email', label: 'Email', type: 'email' },
         { name: 'phone', label: 'Phone', type: 'phone' },
+        { name: 'tags', label: 'Tags', type: 'unified_tag' },
+        { name: 'tags_req', label: 'Tags', type: 'unified_tag', required: true },
+        { name: 'venue_name', label: 'Venue', type: 'venue_autocomplete' },
+        { name: 'profession', label: 'Profession', type: 'profession_autocomplete' },
       ],
     },
   },
@@ -19,7 +23,20 @@ import { buildSubmissionSchema } from '../buildSubmissionSchema';
 function schemaFor() {
   return buildSubmissionSchema({
     contentType: 'test',
-    steps: [{ id: 's1', label: 'Step', fields: ['title', 'count', 'email', 'phone'] }],
+    steps: [
+      {
+        id: 's1',
+        label: 'Step',
+        fields: ['title', 'count', 'email', 'phone', 'tags', 'venue_name', 'profession'],
+      },
+    ],
+  } as never).fullSchema;
+}
+
+function schemaWith(fields: string[]) {
+  return buildSubmissionSchema({
+    contentType: 'test',
+    steps: [{ id: 's1', label: 'Step', fields }],
   } as never).fullSchema;
 }
 
@@ -54,5 +71,23 @@ describe('buildSubmissionSchema', () => {
     expect(schemaFor().safeParse({ title: 'abc', phone: 'abc' }).success).toBe(false);
     expect(schemaFor().safeParse({ title: 'abc', phone: '+41 44 123 45 67' }).success).toBe(true);
     expect(schemaFor().safeParse({ title: 'abc', phone: '' }).success).toBe(true);
+  });
+
+  it('treats unified_tag as an optional array', () => {
+    expect(schemaFor().safeParse({ title: 'abc', tags: ['a', 'b'] }).success).toBe(true);
+    expect(schemaFor().safeParse({ title: 'abc' }).success).toBe(true); // tags optional
+  });
+
+  it('enforces a required unified_tag (non-empty array)', () => {
+    const s = schemaWith(['title', 'tags_req']);
+    expect(s.safeParse({ title: 'abc', tags_req: [] }).success).toBe(false);
+    expect(s.safeParse({ title: 'abc', tags_req: ['x'] }).success).toBe(true);
+  });
+
+  it('treats venue_autocomplete and profession_autocomplete as optional strings', () => {
+    expect(schemaFor().safeParse({ title: 'abc', venue_name: 'Club X', profession: 'Artist' }).success).toBe(
+      true,
+    );
+    expect(schemaFor().safeParse({ title: 'abc', venue_name: '' }).success).toBe(true);
   });
 });

@@ -35,7 +35,10 @@ export type FieldType =
   | 'json'
   | 'social_links'
   | 'city_autocomplete'
-  | 'country_autocomplete';
+  | 'country_autocomplete'
+  | 'unified_tag'
+  | 'venue_autocomplete'
+  | 'profession_autocomplete';
 
 export type FieldGroup =
   | 'basic'

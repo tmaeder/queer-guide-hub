@@ -117,7 +117,7 @@ export const hotelFields: FieldConfig[] = [
   { name: 'featured_priority', label: 'Featured Priority', type: 'number', group: 'settings', min: 0, helpText: 'Higher = more prominent' },
   { name: 'verified', label: 'Verified', type: 'boolean', group: 'settings' },
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
-  { name: 'tags', label: 'Tags', type: 'tags', group: 'settings' },
+  { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'settings' },
   { name: 'data_source', label: 'Data Source', type: 'text', group: 'external', readOnly: true },
   { name: 'external_id', label: 'External ID', type: 'text', group: 'external', readOnly: true },
   { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },

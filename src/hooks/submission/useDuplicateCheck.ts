@@ -55,16 +55,14 @@ export function useDuplicateCheck(submissionTypeId: string, title: string) {
           return;
         }
         setLoading(true);
-        // find_duplicates isn't in the generated types yet — cast the RPC name.
-        const rpc = supabase.rpc as unknown as (
-          fn: string,
-          args: Record<string, unknown>,
-        ) => Promise<{ data: unknown; error: unknown }>;
-        const { data, error } = await rpc('find_duplicates', {
+        // find_duplicates isn't in the generated types yet — cast name/args.
+        // Call supabase.rpc as a *bound* member (not a detached const), or
+        // `this.rest` is undefined inside supabase-js and the call throws.
+        const { data, error } = (await supabase.rpc('find_duplicates' as never, {
           p_content_type: entityType,
           p_title: trimmed,
           p_limit: 5,
-        });
+        } as never)) as { data: unknown; error: unknown };
         if (cancelled) return;
         setLoading(false);
         setMatches(!error && Array.isArray(data) ? (data as DuplicateMatch[]) : []);

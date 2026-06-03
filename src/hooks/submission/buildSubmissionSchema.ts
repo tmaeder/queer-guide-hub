@@ -44,6 +44,8 @@ function schemaForField(field: FieldConfig): ZodTypeAny {
     case 'datetime':
     case 'city_autocomplete':
     case 'country_autocomplete':
+    case 'venue_autocomplete':
+    case 'profession_autocomplete':
     case 'location':
       return stringish();
 
@@ -84,6 +86,7 @@ function schemaForField(field: FieldConfig): ZodTypeAny {
 
     case 'multiselect':
     case 'tags':
+    case 'unified_tag':
     case 'images':
       return required
         ? z.array(z.any()).min(1, requiredMsg)
