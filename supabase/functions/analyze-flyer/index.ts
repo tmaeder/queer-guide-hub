@@ -387,15 +387,39 @@ async function matchVenues(
   return data || []
 }
 
+/** Shared duplicate matcher: trigram + vector over search_documents via find_duplicates RPC. */
+// deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function findDuplicates(entityType: string, title: string, supabase: SupabaseClient): Promise<any[]> {
+  const { data, error } = await supabase.rpc('find_duplicates', {
+    p_content_type: entityType,
+    p_title: title.trim(),
+    p_limit: 5,
+  })
+  if (error || !Array.isArray(data)) return []
+  return data
+}
+
 async function checkEventDuplicates(
   title: string | null | undefined,
   startDate: string | null | undefined,
   cityId: string | null,
   supabase: SupabaseClient,
 ): Promise<Array<{ id: string; title: string; start_date: string; score: number }>> {
-  if (!title || !startDate) return []
+  if (!title || title.trim().length < 2) return []
 
-  // Simple title + date proximity check
+  const dups = await findDuplicates('event', title, supabase)
+  if (dups.length > 0) {
+    return dups.map((d) => ({
+      id: d.id,
+      title: d.title,
+      start_date: d.start_date ?? '',
+      score: d.title_sim ?? d.vec_sim ?? 0.6,
+    }))
+  }
+
+  // Fallback: title + date proximity check
+  if (!startDate) return []
   const { data } = await supabase
     .from('events')
     .select('id, title, start_date')
@@ -417,8 +441,14 @@ async function checkVenueDuplicates(
   cityId: string | null,
   supabase: SupabaseClient,
 ): Promise<Array<{ id: string; name: string; score: number }>> {
-  if (!name) return []
+  if (!name || name.trim().length < 2) return []
 
+  const dups = await findDuplicates('venue', name, supabase)
+  if (dups.length > 0) {
+    return dups.map((d) => ({ id: d.id, name: d.title, score: d.title_sim ?? d.vec_sim ?? 0.9 }))
+  }
+
+  // Fallback: exact-ish name match
   let query = supabase
     .from('venues')
     .select('id, name, address, city')

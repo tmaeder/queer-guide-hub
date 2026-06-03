@@ -17,6 +17,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchCountryNameById } from '@/hooks/usePageFetchers';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
+import { DuplicateWarning } from '@/components/submission/DuplicateWarning';
+import { useDuplicateCheck } from '@/hooks/submission/useDuplicateCheck';
 import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEventTypeOptions } from '@/lib/eventTypes';
@@ -128,6 +130,9 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
   const currentStepConfig = config.steps[currentStep];
   const isLastStep = currentStep === totalSteps - 1;
 
+  // Non-blocking "already exists?" lookup on the typed title/name.
+  const { matches: duplicateMatches } = useDuplicateCheck(config.id, titleValue);
+
   const eventTypeOptions = useEventTypeOptions();
 
   // Resolve FieldConfig objects from a list of field names
@@ -223,6 +228,15 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         </Card>
       )}
 
+      {/* Non-blocking duplicate warning on the first step */}
+      {!reviewMode && currentStep === 0 && (
+        <DuplicateWarning
+          submissionTypeId={config.id}
+          typeLabel={config.label}
+          matches={duplicateMatches}
+        />
+      )}
+
       {/* Step indicator (only for multi-step forms, hidden in review mode) */}
       {!reviewMode && totalSteps > 1 && (
         <div className="flex items-center gap-2 mb-6">
@@ -303,6 +317,12 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
       {/* Review mode — single screen, all sections, one Submit (arrives prefilled from scan) */}
       {reviewMode && (
+        <>
+        <DuplicateWarning
+          submissionTypeId={config.id}
+          typeLabel={config.label}
+          matches={duplicateMatches}
+        />
         <Card>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-6">
@@ -387,6 +407,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
             </form>
           </CardContent>
         </Card>
+        </>
       )}
 
       {/* Form card (wizard mode) */}

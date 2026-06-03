@@ -10,25 +10,35 @@ import type { FieldConfig } from '@/types/cms';
 import { ensureProtocol, isValidHttpUrl } from '@/utils/url';
 
 function schemaForField(field: FieldConfig): ZodTypeAny {
-  const { type, required, label } = field;
+  const { type, required, label, minLength, maxLength, min, max } = field;
   const requiredMsg = `${label} is required`;
 
-  const stringish = (extra?: (s: z.ZodString) => ZodTypeAny): ZodTypeAny => {
+  // Apply declarative FieldConfig length constraints + an optional format refine
+  // (email/phone). minLength/maxLength were previously UI hints only.
+  const decorate = (s: z.ZodString, refine?: (s: z.ZodString) => z.ZodString): z.ZodString => {
+    let out = s;
+    if (typeof minLength === 'number') {
+      out = out.min(minLength, `${label} must be at least ${minLength} characters`);
+    }
+    if (typeof maxLength === 'number') {
+      out = out.max(maxLength, `${label} must be at most ${maxLength} characters`);
+    }
+    return refine ? refine(out) : out;
+  };
+
+  const stringish = (refine?: (s: z.ZodString) => z.ZodString): ZodTypeAny => {
     const base = z.string({ invalid_type_error: requiredMsg });
     if (required) {
-      const req = base.min(1, requiredMsg);
-      return extra ? extra(req as z.ZodString) : req;
+      return decorate(base.min(1, requiredMsg), refine);
     }
-    const opt = base.optional().or(z.literal(''));
-    return extra ? extra(base as z.ZodString).optional().or(z.literal('')) : opt;
+    // Optional: empty string passes; any actual value must satisfy the constraints.
+    return decorate(base, refine).optional().or(z.literal(''));
   };
 
   switch (type) {
     case 'text':
     case 'textarea':
     case 'richtext':
-    case 'email':
-    case 'phone':
     case 'select':
     case 'date':
     case 'datetime':
@@ -36,6 +46,14 @@ function schemaForField(field: FieldConfig): ZodTypeAny {
     case 'country_autocomplete':
     case 'location':
       return stringish();
+
+    case 'email':
+      return stringish((s) => s.email(`${label} must be a valid email address`));
+
+    case 'phone':
+      return stringish((s) =>
+        s.regex(/^[+()\d\s./-]{6,}$/, `${label} must be a valid phone number`),
+      );
 
     case 'url': {
       const urlCheck = (v: unknown) => {
@@ -47,12 +65,19 @@ function schemaForField(field: FieldConfig): ZodTypeAny {
         .refine(urlCheck, { message: 'Please enter a full valid URL like https://example.com' });
     }
 
-    case 'number':
+    case 'number': {
+      const withRange = (n: z.ZodNumber): z.ZodNumber => {
+        let out = n;
+        if (typeof min === 'number') out = out.min(min, `${label} must be at least ${min}`);
+        if (typeof max === 'number') out = out.max(max, `${label} must be at most ${max}`);
+        return out;
+      };
       return required
-        ? z.coerce.number({ invalid_type_error: requiredMsg })
+        ? withRange(z.coerce.number({ invalid_type_error: requiredMsg }))
         : z
-            .union([z.coerce.number(), z.literal(''), z.null(), z.undefined()])
+            .union([withRange(z.coerce.number()), z.literal(''), z.null(), z.undefined()])
             .optional();
+    }
 
     case 'boolean':
       return z.boolean().optional();
