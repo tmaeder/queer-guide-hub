@@ -218,7 +218,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
       {/* Header */}
       <div className="flex items-center gap-4 mb-2">
-        <Icon style={{ width: 28, height: 28, color: config.color }} />
+        <Icon className="text-foreground" style={{ width: 28, height: 28 }} />
         <h4 className="text-3xl font-bold">Submit {config.label}</h4>
       </div>
       <p className="text-muted-foreground mb-6">{config.description}</p>
@@ -283,9 +283,12 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 style={{
                   cursor: i < currentStep ? 'pointer' : 'default',
                   ...(i === currentStep
-                    ? { backgroundColor: config.color, color: 'hsl(var(--background))' }
+                    ? {
+                        backgroundColor: 'hsl(var(--foreground))',
+                        color: 'hsl(var(--background))',
+                      }
                     : i < currentStep
-                      ? { backgroundColor: `${config.color}25`, color: config.color }
+                      ? { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--foreground))' }
                       : {
                           backgroundColor: 'hsl(var(--muted))',
                           color: 'hsl(var(--muted-foreground))',
@@ -311,7 +314,9 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 <div
                   className="flex-1 h-0.5 rounded mx-1 min-w-4"
                   style={{
-                    backgroundColor: i < currentStep ? config.color : 'hsl(var(--border))',
+                    backgroundColor: i < currentStep
+                      ? 'hsl(var(--foreground))'
+                      : 'hsl(var(--border))',
                   }}
                 />
               )}
@@ -472,7 +477,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
             {/* Step label */}
             {totalSteps > 1 && (
-              <p className="text-sm font-semibold mb-4" style={{ color: config.color }}>
+              <p className="text-sm font-semibold mb-4 text-foreground">
                 Step {currentStep + 1}: {currentStepConfig?.label}
               </p>
             )}
@@ -574,11 +579,6 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 disabled={isSubmitting}
                 aria-describedby={!user && isLastStep ? 'submit-auth-hint' : undefined}
                 className="flex items-center gap-1.5"
-                style={
-                  isLastStep
-                    ? { backgroundColor: config.color, color: 'hsl(var(--background))' }
-                    : undefined
-                }
               >
                 {isSubmitting ? (
                   'Submitting...'
