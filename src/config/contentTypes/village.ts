@@ -56,7 +56,7 @@ export const queerVillageFields: FieldConfig[] = [
     filterable: true,
     sortable: true,
   },
-  { name: 'tags', label: 'Tags', type: 'tags', group: 'settings' },
+  { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'settings' },
   { name: 'image_url', label: 'Primary Image', type: 'image', group: 'media' },
   { name: 'images', label: 'Gallery', type: 'images', group: 'media' },
   // FK references — hidden in the editor but exposed as filters in the list view.

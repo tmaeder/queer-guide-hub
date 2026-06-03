@@ -719,7 +719,7 @@ export async function countRows(
 export async function listFromWhere<T = unknown>(
   table: string,
   select: string,
-  filters: Array<{ col: string; val: unknown; op?: 'eq' | 'neq' | 'in' | 'gte' | 'lte' }>,
+  filters: Array<{ col: string; val: unknown; op?: 'eq' | 'neq' | 'in' | 'gte' | 'lte' | 'ilike' }>,
   opts?: { order?: { col: string; ascending?: boolean }; limit?: number },
 ): Promise<T[]> {
   let q = supabase.from(table as never).select(select as never);

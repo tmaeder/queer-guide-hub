@@ -14,7 +14,7 @@ export const personalityFields: FieldConfig[] = [
   },
   { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
   { name: 'pronouns', label: 'Pronouns', type: 'text', group: 'basic' },
-  { name: 'profession', label: 'Profession', type: 'text', group: 'basic', searchable: true },
+  { name: 'profession', label: 'Profession', type: 'profession_autocomplete', group: 'basic', searchable: true },
   { name: 'description', label: 'Short Description', type: 'textarea', group: 'basic', colSpan: 2 },
   { name: 'bio', label: 'Biography', type: 'richtext', group: 'basic', colSpan: 2 },
   { name: 'birth_date', label: 'Birth Date', type: 'date', group: 'details' },
@@ -66,7 +66,7 @@ export const personalityFields: FieldConfig[] = [
   { name: 'social_links', label: 'Social Links', type: 'social_links', group: 'details', colSpan: 2 },
   { name: 'fields', label: 'Fields/Disciplines', type: 'json', group: 'details' },
   { name: 'achievements', label: 'Achievements', type: 'json', group: 'details' },
-  { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
+  { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'details' },
   { name: 'profile_url', label: 'Profile URL', type: 'url', group: 'details' },
   { name: 'wikidata_qid', label: 'Wikidata QID', type: 'text', group: 'details', placeholder: 'Q12345' },
   // LGBTQ
