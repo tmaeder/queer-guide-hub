@@ -65,6 +65,6 @@ jobs:
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file
         if: ${{ env.CODACY_PROJECT_TOKEN != '' }}
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif
