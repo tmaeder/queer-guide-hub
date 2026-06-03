@@ -1,25 +1,41 @@
 #!/usr/bin/env node
 // Sitemap freshness audit. Confirms each per-type sitemap returns 200, parses,
-// has at least N entries, and that lastmod values are recent (within MAX_AGE_DAYS).
-// Useful as a daily canary against stale or empty data-driven sitemaps.
+// and has at least N entries; for high-churn types it also asserts the freshest
+// <lastmod> is within that type's maxAgeDays. A daily canary against stale or
+// empty data-driven sitemaps.
+//
+// Default base is the Cloudflare Pages deployment, NOT the public queer.guide
+// custom domain: Cloudflare bot management blocks GitHub Actions egress IPs
+// (datacenter ASN) on the custom domain, so an Actions runner gets HTTP 403 for
+// every sitemap there even though they serve fine to real traffic. pages.dev
+// runs the identical Pages Functions against the same database, so it is a
+// faithful target for a data-freshness check. Override with an arg or
+// SITEMAP_BASE to audit a different origin.
 
-const BASE = process.argv[2] ?? process.env.SITEMAP_BASE ?? 'https://queer.guide';
+const BASE = process.argv[2] ?? process.env.SITEMAP_BASE ?? 'https://queer-guide.pages.dev';
+
+// maxAgeDays is only set for sitemaps fed by a continuous pipeline where a stale
+// freshest-lastmod is a real signal (events: hourly; landings: regenerated).
+// Evergreen / edit-driven types (venues, hotels, villages, personalities, tags,
+// blog, static) legitimately go weeks without a row changing, so asserting
+// freshness on them only produces false alarms — they are checked for presence
+// and non-emptiness instead.
 const SITEMAPS = [
   { path: '/sitemap.xml', minEntries: 5, kind: 'index' },
   { path: '/sitemap-static.xml', minEntries: 25, kind: 'urlset' },
   { path: '/sitemap-venues.xml', minEntries: 50, kind: 'urlset' },
-  { path: '/sitemap-events.xml', minEntries: 5, kind: 'urlset' },
-  { path: '/sitemap-news.xml', minEntries: 20, kind: 'urlset' },
+  { path: '/sitemap-events.xml', minEntries: 5, kind: 'urlset', maxAgeDays: 7 },
+  // /news/* is de-indexed (hard 410 Gone via public/_redirects, P1.2). The
+  // endpoint stays valid but intentionally lists nothing — expect 0 entries.
+  { path: '/sitemap-news.xml', minEntries: 0, kind: 'urlset' },
   { path: '/sitemap-blog.xml', minEntries: 0, kind: 'urlset' },
   { path: '/sitemap-personalities.xml', minEntries: 5, kind: 'urlset' },
   { path: '/sitemap-places.xml', minEntries: 5, kind: 'urlset' },
   { path: '/sitemap-hotels.xml', minEntries: 0, kind: 'urlset' },
   { path: '/sitemap-villages.xml', minEntries: 0, kind: 'urlset' },
   { path: '/sitemap-tags.xml', minEntries: 0, kind: 'urlset' },
-  { path: '/sitemap-landings.xml', minEntries: 5, kind: 'urlset' },
+  { path: '/sitemap-landings.xml', minEntries: 5, kind: 'urlset', maxAgeDays: 14 },
 ];
-
-const MAX_AGE_DAYS = 14;
 
 const fail = (m) => {
   console.error(`  X ${m}`);
@@ -36,7 +52,7 @@ const daysSince = (iso) => {
   return (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24);
 };
 
-async function audit({ path, minEntries, kind }) {
+async function audit({ path, minEntries, kind, maxAgeDays }) {
   const url = `${BASE.replace(/\/$/, '')}${path}`;
   console.log(`\n${path}`);
   let res;
@@ -54,12 +70,12 @@ async function audit({ path, minEntries, kind }) {
   if (entries < minEntries) return fail(`${entries} entries (expected ≥ ${minEntries})`);
   pass(`${entries} entries`);
 
-  if (kind === 'urlset' && entries > 0) {
+  if (kind === 'urlset' && entries > 0 && maxAgeDays != null) {
     const lastmods = [...xml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((m) => m[1]);
     if (lastmods.length === 0) return fail('no <lastmod> elements');
     const freshest = Math.min(...lastmods.map(daysSince));
-    if (freshest > MAX_AGE_DAYS) {
-      return fail(`freshest lastmod is ${freshest.toFixed(0)} days old (max ${MAX_AGE_DAYS})`);
+    if (freshest > maxAgeDays) {
+      return fail(`freshest lastmod is ${freshest.toFixed(0)} days old (max ${maxAgeDays})`);
     }
     pass(`freshest lastmod ${freshest.toFixed(0)}d ago`);
   }

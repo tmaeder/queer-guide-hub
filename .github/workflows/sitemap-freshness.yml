@@ -3,9 +3,10 @@ on:
   workflow_dispatch:
     inputs:
       base_url:
-        description: Base URL to audit
+        description: Base URL to audit (default = Pages deployment; the public
+          queer.guide domain 403s Actions IPs via Cloudflare bot management)
         required: false
-        default: https://queer.guide
+        default: https://queer-guide.pages.dev
   schedule:
     - cron: "0 5 * * *"
 concurrency:
@@ -25,4 +26,4 @@ jobs:
       - name: Audit sitemap freshness
         env:
           INPUT_BASE: ${{ github.event.inputs.base_url }}
-        run: node scripts/sitemap-freshness.mjs "${INPUT_BASE:-https://queer.guide}"
+        run: node scripts/sitemap-freshness.mjs "${INPUT_BASE:-https://queer-guide.pages.dev}"
