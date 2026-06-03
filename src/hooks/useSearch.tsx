@@ -6,7 +6,7 @@ import {
   SEARCH_UNAVAILABLE_MESSAGE,
   isSearchUnavailable,
 } from "@/lib/searchFetch";
-import { resolveType, toIndexKeys } from "@/lib/searchTaxonomy";
+import { resolveType } from "@/lib/searchTaxonomy";
 
 // P2-8: queries shorter than this never reach the network. The worker accepts
 // short queries (returns []) but a single-character query is overwhelmingly a
@@ -67,10 +67,10 @@ export function toWorkerFilters(
   sort?: string,
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
-  if (filters.types?.length) {
-    const mapped = toIndexKeys(filters.types);
-    if (mapped.length) out.types = mapped;
-  }
+  // The worker's filters.types enum is the singular entity type (venue, event,
+  // …) — which is exactly our scope id. (Do NOT map to plural index keys; the
+  // worker rejects "events"/"venues" as invalid_enum.)
+  if (filters.types?.length) out.types = filters.types;
   if (filters.location) out.location = filters.location;
   if (filters.categories?.length) out.categories = filters.categories;
   if (filters.cluster_ids?.length) out.cluster_ids = filters.cluster_ids;
