@@ -521,6 +521,14 @@ export const AppRoutes = () => {
                 <Route path="help" element={<HelpHotlines />} />
                 <Route path="help/:country" element={<HelpHotlines />} />
                 <Route path="submit" element={<SubmitHub />} />
+                {/* `news` and `feedback` are also top-level route names, so under the
+                    optional /:locale? segment, /submit/news matches :locale="submit" +
+                    the `news` route (a score tie the locale branch wins) → LocaleRouter
+                    404s on the unknown "submit" locale. These all-static routes outrank
+                    that and render the submission form (SubmitForm derives the type from
+                    the path since there's no :contentType param). */}
+                <Route path="submit/news" element={<SubmitForm />} />
+                <Route path="submit/feedback" element={<SubmitForm />} />
                 <Route path="submit/:contentType" element={<SubmitForm />} />
                 <Route path="p/:slug" element={<CMSPage />} />
                 <Route path="share-target" element={<ShareTarget />} />

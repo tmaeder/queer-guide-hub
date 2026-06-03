@@ -28,8 +28,15 @@ import { useEventTypeOptions } from '@/lib/eventTypes';
 
 const SubmitForm = () => {
   const { _t } = useTranslation();
-  const { contentType } = useParams<{ contentType: string }>();
+  const { contentType: paramContentType } = useParams<{ contentType: string }>();
+  const location = useLocation();
   const navigate = useLocalizedNavigate();
+
+  // The explicit `submit/news` / `submit/feedback` routes (see routes.tsx) carry
+  // no :contentType param — those ids collide with top-level routes under the
+  // optional /:locale? segment, so they need static routes. Fall back to the last
+  // path segment so the form still resolves its type.
+  const contentType = paramContentType ?? location.pathname.split('/').filter(Boolean).pop();
 
   const config = contentType ? submissionRegistry[contentType] : undefined;
 
