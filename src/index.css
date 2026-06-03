@@ -897,3 +897,14 @@ h1, h2, h3, h4, h5, h6 {
   padding-right: 0.12em;
   margin-top: 0.05em;
 }
+
+/* Mobile search overlay: Radix renders PopoverContent inside a translated
+   [data-radix-popper-content-wrapper]. A transformed ancestor becomes the
+   containing block for position:fixed, which shifted the full-screen mobile
+   search sheet off the viewport. Neutralize the wrapper so the sheet's
+   fixed inset:0 resolves against the viewport again. */
+[data-radix-popper-content-wrapper]:has(> .qg-mobile-search-overlay) {
+  transform: none !important;
+  inset: 0 !important;
+  min-width: 0 !important;
+}

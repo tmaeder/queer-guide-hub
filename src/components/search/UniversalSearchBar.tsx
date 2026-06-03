@@ -502,7 +502,13 @@ export const UniversalSearchBar = () => {
           </div>
         </PopoverAnchor>
         <PopoverContent
-          className="rounded-none border-border p-0 shadow-none"
+          // qg-mobile-search-overlay: a CSS hook (src/index.css) that neutralizes
+          // Radix's translated popper wrapper so the fixed full-screen mobile
+          // sheet anchors to the viewport, not the transformed wrapper.
+          className={cn(
+            'rounded-none border-border p-0 shadow-none',
+            isMobile && 'qg-mobile-search-overlay',
+          )}
           style={
             isMobile
               ? {
