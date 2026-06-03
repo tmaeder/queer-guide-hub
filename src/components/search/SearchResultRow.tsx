@@ -1,9 +1,10 @@
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 function sanitizeMeiliHighlight(html: string): string {
-  return html.replace(/<(?!\/?em\b)[^>]+>/gi, '').replace(/<em\b[^>]*>/gi, '<em>');
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['em'], ALLOWED_ATTR: [] });
 }
 
 /** Renders a result name with the query match emphasized (Meili HTML or client fallback). */

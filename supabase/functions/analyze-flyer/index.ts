@@ -534,17 +534,17 @@ function isBlockedHost(host: string): boolean {
 /** Strip an HTML document down to readable text for the structuring pass. */
 function htmlToText(html: string): string {
   return html
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script[^>]*>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style[^>]*>/gi, ' ')
+    .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript[^>]*>/gi, ' ')
     .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&#39;|&apos;/g, "'")
     .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim()
 }

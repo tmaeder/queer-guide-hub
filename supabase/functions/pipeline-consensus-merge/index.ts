@@ -28,20 +28,20 @@ type Json = Record<string, unknown>
 // flow through automatically per the lean auto-commit-high-confidence policy.
 const HIGH_RISK_FIELDS = new Set(['name', 'latitude', 'longitude', 'category'])
 
-const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+function isForbiddenKey(k: string): boolean {
+  return k === '__proto__' || k === 'constructor' || k === 'prototype'
+}
 
 function setPath(obj: Json, path: string, value: unknown): void {
   const keys = path.split('.')
+  if (keys.some(isForbiddenKey)) return
   let cur: Json = obj
   for (let i = 0; i < keys.length - 1; i++) {
     const k = keys[i]
-    if (FORBIDDEN_KEYS.has(k)) return
     if (typeof cur[k] !== 'object' || cur[k] === null) cur[k] = {}
     cur = cur[k] as Json
   }
-  const last = keys[keys.length - 1]
-  if (FORBIDDEN_KEYS.has(last)) return
-  cur[last] = value
+  cur[keys[keys.length - 1]] = value
 }
 
 Deno.serve(withErrorReporting('pipeline-consensus-merge', async (req) => {
