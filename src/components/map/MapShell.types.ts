@@ -16,7 +16,6 @@ export type MapFilterKey =
   | 'era';
 
 export interface MapShellFilters extends ExploreMapFilters {
-  nearMe?: { lat: number; lng: number; radiusKm: number };
   queerOwned?: boolean;
   era?: { decadeStart: number; decadeEnd: number };
 }
@@ -64,7 +63,10 @@ export const SURFACE_PRESETS: Record<MapSurface, MapShellConfig> = {
     lenses: ['pins', 'density', 'boundary'],
     defaultLens: 'pins',
     layers: ['venues', 'events', 'hotels', 'restrooms', 'neighbourhoods', 'cities', 'countries'],
-    filters: ['category', 'tags', 'near-me', 'time', 'queer-owned', 'era'],
+    // Only data-backed filters are exposed. accessibility_attributes (0 rows)
+    // and target_groups (~0.2% populated) would empty the map, so they're
+    // dropped until the data lands; era has no point layer to act on.
+    filters: ['category', 'tags', 'near-me', 'time'],
     showCommandBar: true,
     enableSearchThisArea: true,
     enableUrlState: true,
@@ -84,7 +86,7 @@ export const SURFACE_PRESETS: Record<MapSurface, MapShellConfig> = {
     lenses: ['pins', 'density', 'boundary'],
     defaultLens: 'pins',
     layers: ['venues', 'events', 'neighbourhoods'],
-    filters: ['category', 'time'],
+    filters: ['category', 'tags', 'time'],
     showCommandBar: true,
     enableSearchThisArea: false,
     enableUrlState: false,

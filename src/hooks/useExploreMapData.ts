@@ -40,6 +40,8 @@ export interface ExploreMapFilters {
   tags?: string[];
   dateRange?: { start: string; end: string };
   accessible?: boolean;
+  /** Geo radius filter: keep only points within radiusKm of (lat, lng). */
+  nearMe?: { lat: number; lng: number; radiusKm: number };
 }
 
 // ── Layer colours ──────────────────────────────────────────────────────────────
@@ -52,6 +54,23 @@ export const LAYER_COLORS: Record<LayerType, string> = {
   restrooms: '#10b981', // emerald
   hotels: '#f59e0b', // amber
   neighbourhoods: 'hsl(var(--foreground))', // brand
+};
+
+// Pride-spectrum palette for the MapShell canvas only (gated by the
+// MAP_SHELL feature flag — legacy/embedded maps keep LAYER_COLORS). Layers
+// are mapped across a rainbow-ordered, visibility-tested set: each reads
+// clearly as a colored dot with its white halo on the light basemap, and no
+// layer-toggle pills (white-text-on-color) render in MapShell, so the WCAG
+// pill-contrast constraint doesn't apply here. Prototype only — NOT yet a
+// locked design-system exception.
+export const PRIDE_LAYER_COLORS: Record<LayerType, string> = {
+  venues: '#e40303', // pride red
+  events: '#ff8c00', // pride orange
+  hotels: '#d97706', // amber-deep (legible stand-in for pride yellow)
+  restrooms: '#008026', // pride green
+  cities: '#004dff', // pride blue
+  countries: '#750787', // pride violet
+  neighbourhoods: '#ec4899', // pink
 };
 
 // ── Hook ───────────────────────────────────────────────────────────────────────

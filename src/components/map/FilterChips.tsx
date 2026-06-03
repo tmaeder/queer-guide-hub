@@ -6,6 +6,8 @@ import type { MapShellFilters } from './MapShell.types';
 interface FilterChipsProps {
   filters: MapShellFilters;
   onRemove: (key: keyof MapShellFilters) => void;
+  /** When provided, renders a trailing "Clear all" button. */
+  onClearAll?: () => void;
   className?: string;
 }
 
@@ -38,11 +40,11 @@ function buildChips(filters: MapShellFilters): Chip[] {
  * Filter chip row. Renders one chip per active filter; `X` removes that key.
  * Returns `null` when no chips so callers can avoid rendering an empty bar.
  */
-export const FilterChips = ({ filters, onRemove, className }: FilterChipsProps) => {
+export const FilterChips = ({ filters, onRemove, onClearAll, className }: FilterChipsProps) => {
   const chips = buildChips(filters);
   if (chips.length === 0) return null;
   return (
-    <div className={cn('flex flex-wrap gap-1.5', className)} aria-label="Active filters">
+    <div className={cn('flex flex-wrap items-center gap-1.5', className)} aria-label="Active filters">
       {chips.map((c) => (
         <button
           key={c.key}
@@ -55,6 +57,15 @@ export const FilterChips = ({ filters, onRemove, className }: FilterChipsProps) 
           <X size={12} aria-hidden="true" />
         </button>
       ))}
+      {onClearAll && chips.length > 1 && (
+        <button
+          type="button"
+          onClick={onClearAll}
+          className="h-8 inline-flex items-center px-2 text-xs text-muted-foreground underline hover:text-foreground focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          Clear all
+        </button>
+      )}
     </div>
   );
 };
