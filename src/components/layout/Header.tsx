@@ -1,4 +1,4 @@
-import { useState, useCallback, Suspense, lazy } from 'react';
+import { useState, useCallback, Suspense } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +24,13 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
-const NotificationList = lazy(() =>
+import { lazyOptional } from '@/utils/lazyRetry';
+// lazyOptional (not plain lazy): a failed chunk fetch retries once, then
+// renders nothing instead of bubbling a `vite:preloadError` that the
+// global handler in main.tsx would turn into a full-page reload. Opening
+// the menu must never reload the page just because the notifications
+// chunk is briefly unreachable.
+const NotificationList = lazyOptional(() =>
   import('@/components/notifications/NotificationList').then((m) => ({
     default: m.NotificationList,
   })),

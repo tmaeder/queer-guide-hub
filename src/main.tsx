@@ -20,11 +20,26 @@ initCloudflareOptimizations();
 // Recover from stale-chunk failures after a deploy. Vite emits
 // `vite:preloadError` when a `<link rel="modulepreload">` or a dynamic
 // `import()` rejects because the requested hashed chunk no longer
-// exists (typical post-deploy stale-HTML scenario). We try a one-time
-// hard reload — the new index.html will reference the current chunk
-// hashes. A sessionStorage gate prevents an infinite reload loop if
-// the file is genuinely broken rather than stale.
-window.addEventListener('vite:preloadError', () => {
+// exists (typical post-deploy stale-HTML scenario).
+//
+// We auto-reload ONLY for failures during initial boot (stale HTML
+// referencing chunks that no longer exist). Once the app is interactive,
+// a preload failure triggered by a user interaction — e.g. opening a menu
+// whose content is a lazy chunk — must NOT hard-reload the page: that
+// reloads the whole app out from under the user on every click and, since
+// the post-load gate-clear re-armed the reload each time, loops forever.
+// Post-boot, we `preventDefault()` so Vite doesn't rethrow, and let the
+// component's own lazyRetry/lazyOptional + ErrorBoundary recover quietly.
+let appBooted = false;
+window.addEventListener('vite:preloadError', (event) => {
+  if (appBooted) {
+    // Interactive failure — handled gracefully at the component level.
+    event.preventDefault();
+    return;
+  }
+  // Boot-time stale chunk: one-time hard reload to pick up the current
+  // index.html / chunk hashes. sessionStorage gate prevents a loop if the
+  // file is genuinely broken rather than stale.
   const key = 'preload-error-reload';
   try {
     if (!sessionStorage.getItem(key)) {
@@ -38,12 +53,13 @@ window.addEventListener('vite:preloadError', () => {
   }
 });
 
-// Clear the gate after a successful boot so a single transient preload
-// failure doesn't permanently disable the auto-reload recovery for the
-// rest of the session.
+// Mark the app as booted and clear the boot-reload gate after first load,
+// so a later transient preload failure doesn't permanently disable the
+// boot-time auto-reload recovery for the next cold start.
 window.addEventListener(
   'load',
   () => {
+    appBooted = true;
     try {
       sessionStorage.removeItem('preload-error-reload');
     } catch {
