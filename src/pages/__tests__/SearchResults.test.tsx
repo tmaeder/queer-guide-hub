@@ -7,7 +7,8 @@ import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useSearch', () => ({ useSearch: () => ({ results: [], loading: false, totalHits: 0, search: vi.fn() }) }));
-vi.mock('@/hooks/useSearchActions', () => ({ useTrackClick: () => vi.fn() }));
+vi.mock('@/hooks/useSearchActions', () => ({ useTrackClick: () => vi.fn(), useFeedbackVote: () => vi.fn() }));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 
 import SearchResults from '../SearchResults';
 
