@@ -25,6 +25,8 @@ export interface SearchResult {
   date?: string;
   rating?: number;
   imageUrl?: string;
+  /** URL slug for the detail route (worker returns this top-level). */
+  slug?: string;
   /** Geo coords when the entity has them (venues, events, places, villages). */
   _geoloc?: { lat: number; lng: number };
   /** Metres from the active geo filter centre (worker sets this when lat/lng given). */
@@ -144,12 +146,14 @@ function normaliseHit(h: SearchResult): SearchResult {
     image_url?: string;
     city?: string;
     country?: string;
+    slug?: string;
   };
   return {
     ...h,
     date: r.date ?? coerceDate(r.start_date),
     location: r.location ?? ([r.city, r.country].filter(Boolean).join(', ') || undefined),
     imageUrl: r.imageUrl ?? r.image_url,
+    slug: r.slug,
   };
 }
 
