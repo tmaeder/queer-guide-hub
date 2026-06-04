@@ -83,9 +83,14 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
       (prefs?.lens && config.lenses.includes(prefs.lens) ? prefs.lens : config.defaultLens)
     : inMemoryRef.current.lens;
 
+  // An empty saved layer set must fall back to the surface defaults, NOT
+  // persist as "no layers". `[] ?? config.layers` does not fall back (an empty
+  // array isn't nullish), so a once-saved `enabledLayers: []` would render zero
+  // layers — a blank map — on every bare /map visit. Guard on length.
+  const savedLayers = prefs?.enabledLayers?.filter((l) => config.layers.includes(l));
   const enabledLayers: LayerType[] = useUrl
     ? parseLayers(searchParams.get('layers'), config.layers) ??
-      (prefs?.enabledLayers?.filter((l) => config.layers.includes(l)) ?? config.layers)
+      (savedLayers && savedLayers.length > 0 ? savedLayers : config.layers)
     : inMemoryRef.current.enabledLayers;
 
   const filters: MapShellFilters = useMemo(() => {

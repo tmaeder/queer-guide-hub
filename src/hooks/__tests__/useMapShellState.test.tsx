@@ -93,6 +93,21 @@ describe('useMapShellState', () => {
     expect(result.current.state.enabledLayers).toEqual(discover.layers);
   });
 
+  it('falls back to surface defaults when saved layer prefs are empty', () => {
+    // Regression: a once-saved `enabledLayers: []` in localStorage used to
+    // stick — `[] ?? config.layers` does not fall back — leaving bare /map
+    // with zero layers and "0 results in view".
+    localStorage.setItem('map_shell_prefs', JSON.stringify({ enabledLayers: [] }));
+    try {
+      const { result } = renderHook(() => useMapShellState(discover), {
+        wrapper: wrapper('/map'),
+      });
+      expect(result.current.state.enabledLayers).toEqual(discover.layers);
+    } finally {
+      localStorage.removeItem('map_shell_prefs');
+    }
+  });
+
   it('ignores layer values not present in the surface preset', () => {
     const { result } = renderHook(() => useMapShellState(discover), {
       wrapper: wrapper('/map?layers=venues,fake_layer'),
