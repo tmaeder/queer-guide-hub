@@ -36,6 +36,10 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=4096
+          # Unified MapShell live on /map (search-filters-map, real filters,
+          # mobile sheet, pride canvas). Set to 'false' to roll back to the
+          # legacy ExploreMap chrome without a code change.
+          VITE_MAP_SHELL: 'true'
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
