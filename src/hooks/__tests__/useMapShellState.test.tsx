@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router';
 import type { ReactNode } from 'react';
 import { useMapShellState } from '@/hooks/useMapShellState';
 import { SURFACE_PRESETS } from '@/components/map/MapShell.types';
+import { LAYER_DEFS } from '@/components/map/ExploreMapLayers';
 
 function wrapper(initial: string) {
   return ({ children }: { children: ReactNode }) => (
@@ -13,13 +14,22 @@ function wrapper(initial: string) {
 
 const discover = SURFACE_PRESETS.discover;
 
+// Layers seeded on first load: the surface's available layers narrowed to
+// those flagged defaultOn (restrooms/cities/countries/villages stay off).
+const defaultOn = new Set(
+  LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
+);
+const seededLayers = discover.layers.filter((l) => defaultOn.has(l));
+
 describe('useMapShellState', () => {
   it('parses defaults when URL is empty', () => {
     const { result } = renderHook(() => useMapShellState(discover), {
       wrapper: wrapper('/map'),
     });
     expect(result.current.state.lens).toBe('pins');
-    expect(result.current.state.enabledLayers).toEqual(discover.layers);
+    expect(result.current.state.enabledLayers).toEqual(seededLayers);
+    // restrooms (external Refuge API) is available but off by default
+    expect(result.current.state.enabledLayers).not.toContain('restrooms');
     expect(result.current.state.filters).toEqual({});
   });
 
@@ -90,7 +100,7 @@ describe('useMapShellState', () => {
     });
     expect(result.current.state.enabledLayers).toEqual(['venues', 'events']);
     act(() => result.current.setLayers([]));
-    expect(result.current.state.enabledLayers).toEqual(discover.layers);
+    expect(result.current.state.enabledLayers).toEqual(seededLayers);
   });
 
   it('ignores layer values not present in the surface preset', () => {

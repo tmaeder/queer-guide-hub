@@ -2,6 +2,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { LayerType } from '@/hooks/useExploreMapData';
+import { LAYER_DEFS } from '@/components/map/ExploreMapLayers';
 import type {
   MapLens,
   MapShellConfig,
@@ -11,6 +12,20 @@ import type {
 
 const PREFS_KEY = 'map_shell_prefs';
 const LENS_KEYS: MapLens[] = ['pins', 'density', 'routes', 'boundary'];
+
+/**
+ * Layers enabled on first load: the surface's available layers narrowed to
+ * those flagged `defaultOn` (and not coming-soon). Keeps external/best-effort
+ * layers like `restrooms` (Refuge API) available in the picker but OFF until
+ * the user opts in, so we don't hit the external API on every pan/zoom.
+ */
+function seedEnabledLayers(available: LayerType[]): LayerType[] {
+  const defaultOn = new Set(
+    LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
+  );
+  const seeded = available.filter((l) => defaultOn.has(l));
+  return seeded.length > 0 ? seeded : available;
+}
 
 function readPrefs(): Partial<MapShellState> | null {
   try {
@@ -71,10 +86,11 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   const [searchParams, setSearchParams] = useSearchParams();
   const useUrl = config.enableUrlState !== false;
   const prefs = useMemo(() => readPrefs(), []);
+  const defaultLayers = useMemo(() => seedEnabledLayers(config.layers), [config.layers]);
 
   const inMemoryRef = useRef<MapShellState>({
     lens: config.defaultLens,
-    enabledLayers: config.layers,
+    enabledLayers: defaultLayers,
     filters: {},
   });
 
@@ -85,7 +101,7 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
 
   const enabledLayers: LayerType[] = useUrl
     ? parseLayers(searchParams.get('layers'), config.layers) ??
-      (prefs?.enabledLayers?.filter((l) => config.layers.includes(l)) ?? config.layers)
+      (prefs?.enabledLayers?.filter((l) => config.layers.includes(l)) ?? defaultLayers)
     : inMemoryRef.current.enabledLayers;
 
   const filters: MapShellFilters = useMemo(() => {

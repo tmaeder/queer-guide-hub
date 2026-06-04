@@ -258,8 +258,9 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
   const lat = (bbox.south + bbox.north) / 2;
   const lng = (bbox.west + bbox.east) / 2;
 
+  // Refuge API caps per_page at 100; higher values 400 (→ edge fn used to 500).
   const { data, error } = await supabase.functions.invoke('get-refuge-restrooms', {
-    body: { lat, lng, per_page: 500 },
+    body: { lat, lng, per_page: 100 },
   });
   if (error) throw error;
 
