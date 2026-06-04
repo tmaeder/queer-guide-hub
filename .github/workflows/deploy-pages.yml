@@ -46,4 +46,8 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=queer-guide --branch=main --commit-hash=${{ github.sha }}
+          # Pass an explicit ASCII commit message. Without it, wrangler derives
+          # the message from git, and the Cloudflare Pages API rejects any
+          # multibyte UTF-8 (e.g. — or →) with "Invalid commit message, it must
+          # be a valid UTF-8 string [code 8000111]", failing the whole deploy.
+          command: pages deploy dist --project-name=queer-guide --branch=main --commit-hash=${{ github.sha }} --commit-message="deploy ${{ github.sha }}" --commit-dirty=true
