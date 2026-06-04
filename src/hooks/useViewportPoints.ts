@@ -354,24 +354,37 @@ export function useViewportPoints({
         }
 
         const p = (async () => {
-          let features: PointFeature[] = [];
-          switch (type) {
-            case 'venues':
-              features = await withRetry(() => fetchVenuesInBbox(quantized, filtersRef.current));
-              break;
-            case 'events':
-              features = await withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));
-              break;
-            case 'restrooms':
-              features = await withRetry(() => fetchRestroomsInBbox(quantized));
-              break;
-            case 'hotels':
-              features = await withRetry(() => fetchHotelsInBbox(quantized));
-              break;
+          try {
+            let features: PointFeature[] = [];
+            switch (type) {
+              case 'venues':
+                features = await withRetry(() => fetchVenuesInBbox(quantized, filtersRef.current));
+                break;
+              case 'events':
+                features = await withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));
+                break;
+              case 'restrooms':
+                features = await withRetry(() => fetchRestroomsInBbox(quantized));
+                break;
+              case 'hotels':
+                features = await withRetry(() => fetchHotelsInBbox(quantized));
+                break;
+            }
+            featureCache.set(ck, features);
+            allFeatures.push(...features);
+            counts[type] = features.length;
+          } catch (layerErr) {
+            // Isolate per-layer failures. A single flaky source (e.g. the
+            // get-refuge-restrooms edge function returning 500) must NOT blank
+            // the whole map — previously one rejection failed the Promise.all
+            // and discarded every layer's results. Count it as 0 and let the
+            // other layers render.
+            counts[type] = 0;
+            console.error(
+              `[useViewportPoints] ${type} fetch failed:`,
+              layerErr instanceof Error ? layerErr.message : layerErr,
+            );
           }
-          featureCache.set(ck, features);
-          allFeatures.push(...features);
-          counts[type] = features.length;
         })();
 
         promises.push(p);
