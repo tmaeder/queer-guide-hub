@@ -188,7 +188,7 @@ export const CommandBar = ({
         // Content-width pill anchored top-left — NOT full-width, so wide screens
         // don't get a huge empty gap between the left controls and the right.
         // Caps at the viewport and scrolls horizontally if it ever overflows.
-        'absolute top-3 left-3 z-20 flex items-center gap-2 border border-border bg-background h-10 px-2 max-w-[calc(100%-1.5rem)] overflow-x-auto',
+        'absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-element border border-border bg-background h-11 px-2 max-w-[calc(100%-1.5rem)] overflow-x-auto',
         className,
       )}
     >
@@ -320,9 +320,9 @@ export const CommandBar = ({
         showTime={availableFilters.includes('time')}
       />
 
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="h-6 w-px bg-border" aria-hidden="true" />
+      <div className="mx-0.5 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
 
+      <div className="flex items-center gap-1 shrink-0">
         <LensPicker lenses={lenses} value={lens} onChange={onLensChange} />
 
       {hasPanelFilters &&
@@ -334,7 +334,7 @@ export const CommandBar = ({
                 size="sm"
                 aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
                 title="Filters"
-                className="relative h-8 w-8 p-0 border border-border"
+                className="relative h-8 w-8 p-0"
               >
                 <SlidersHorizontal size={14} aria-hidden="true" />
                 {activeFilterCount > 0 && (
@@ -368,7 +368,7 @@ export const CommandBar = ({
                 size="sm"
                 aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
                 title="Filters"
-                className="relative h-8 w-8 p-0 border border-border"
+                className="relative h-8 w-8 p-0"
               >
                 <SlidersHorizontal size={14} aria-hidden="true" />
                 {activeFilterCount > 0 && (
@@ -396,7 +396,7 @@ export const CommandBar = ({
               size="sm"
               aria-label="Layers"
               title="Layers"
-              className="h-8 w-8 p-0 border border-border"
+              className="h-8 w-8 p-0"
             >
               <Layers size={14} aria-hidden="true" />
             </Button>
@@ -438,7 +438,7 @@ export const CommandBar = ({
             size="sm"
             aria-label="More map options"
             title="More"
-            className="h-8 w-8 p-0 border border-border"
+            className="h-8 w-8 p-0"
           >
             <MoreHorizontal size={14} aria-hidden="true" />
           </Button>

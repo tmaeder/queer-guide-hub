@@ -34,7 +34,7 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {trigger ?? (
-          <Button variant="ghost" size="sm" aria-label="Time range" className="h-8 px-2 border border-border">
+          <Button variant="ghost" size="sm" aria-label="Time range" title="Time range" className="h-8 px-2">
             <CalendarRange size={14} className="mr-1.5" aria-hidden="true" />
             <span className="text-xs">
               {value ? `${value.start} → ${value.end}` : 'Any time'}
