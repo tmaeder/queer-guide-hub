@@ -53,7 +53,7 @@ export function SpotlightRail({
   // First-load skeleton — avoids a 0→data pop before the first fetch resolves.
   if (loading && total === 0) {
     return (
-      <div className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex justify-center px-3">
+      <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
         <div className="pointer-events-auto w-[min(960px,100%)] rounded-container border border-border bg-background/95 p-2 backdrop-blur">
           <div className="px-1 pb-1.5">
             <span className="inline-block h-4 w-28 animate-pulse rounded-badge bg-muted" />
@@ -74,7 +74,7 @@ export function SpotlightRail({
 
   if (collapsed) {
     return (
-      <div className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex justify-center px-3">
+      <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
         <button
           type="button"
           onClick={() => setCollapsed(false)}
@@ -89,7 +89,7 @@ export function SpotlightRail({
   }
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex justify-center px-3">
+    <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
       <div className="pointer-events-auto w-[min(960px,100%)] rounded-container border border-border bg-background/95 p-2 backdrop-blur">
         <div className="flex items-center justify-between px-1 pb-1.5">
           <span className="inline-flex items-center gap-1.5 text-13 font-medium text-foreground">

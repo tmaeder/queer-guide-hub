@@ -279,10 +279,13 @@ export const ExploreMap = ({
   // command bar's category / time / open-now / search controls never reach the
   // data layer — they only seeded the initial state. Legacy maps with the
   // built-in filter panel (showFilters=true) keep managing filters themselves.
-  useEffect(() => {
-    if (showFilters) return;
+  // Adjusting state during render (vs. an effect) on the memoized `defaultFilters`
+  // reference change avoids a cascading re-render.
+  const [syncedDefault, setSyncedDefault] = useState(defaultFilters);
+  if (!showFilters && defaultFilters !== syncedDefault) {
+    setSyncedDefault(defaultFilters);
     setFilters(defaultFilters ?? {});
-  }, [defaultFilters, showFilters]);
+  }
 
   // Time-of-day mode: after dark, open/live spots stay full strength while
   // everything else recedes — the map reflects "what's actually on right now."
