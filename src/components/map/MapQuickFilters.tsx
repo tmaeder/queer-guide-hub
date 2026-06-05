@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Clock, CalendarDays, CalendarRange } from 'lucide-react';
 import type { MapShellFilters } from './MapShell.types';
 
@@ -55,9 +55,8 @@ export function MapQuickFilters({ filters, onChange, showTime = true }: MapQuick
   const [activePreset, setActivePreset] = useState<PresetKey | null>(null);
 
   // Reset the active preset if the dateRange was cleared elsewhere (chip X).
-  useEffect(() => {
-    if (!filters.dateRange) setActivePreset(null);
-  }, [filters.dateRange]);
+  // Adjusting state during render (vs. an effect) avoids a cascading re-render.
+  if (!filters.dateRange && activePreset !== null) setActivePreset(null);
 
   const togglePreset = (key: PresetKey) => {
     if (activePreset === key) {

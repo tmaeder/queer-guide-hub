@@ -1,5 +1,14 @@
 import React from 'react';
-import { ExternalLink, Share2, Star, Clock, Radio, MapPin, TrendingUp } from 'lucide-react';
+import {
+  ExternalLink,
+  Share2,
+  Star,
+  Clock,
+  Radio,
+  MapPin,
+  TrendingUp,
+  type LucideIcon,
+} from 'lucide-react';
 import { Image } from '@/components/ui/Image';
 import type { FallbackTheme } from '@/utils/fallbackImages';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +40,15 @@ const FALLBACK_THEME: Record<string, FallbackTheme> = {
 function priceLabel(range?: number | null): string | null {
   if (!range || range < 1) return null;
   return '€'.repeat(Math.min(range, 4));
+}
+
+/**
+ * Renders a dynamically-selected marker icon. Receiving the icon as a prop (vs.
+ * rendering `iconForMarker(...)`'s return value as JSX inline) keeps the
+ * component reference stable per React's static-components rule.
+ */
+function MarkerGlyph({ icon: Icon, className }: { icon: LucideIcon; className?: string }) {
+  return <Icon className={className} aria-hidden />;
 }
 
 /** Small signal pills shared across variants. */
@@ -133,25 +151,12 @@ export function MapEntityCard({
   const isRail = variant === 'rail';
   const clickable = isRail && point.linkTo && onNavigate;
 
-  return (
-    <div
-      className={`flex w-full flex-col overflow-hidden ${
-        isRail ? 'rounded-container border border-border bg-background' : ''
-      } ${clickable ? 'cursor-pointer' : ''} ${className ?? ''}`}
-      onClick={clickable ? () => onNavigate!(point.linkTo!) : undefined}
-      role={clickable ? 'button' : undefined}
-      tabIndex={clickable ? 0 : undefined}
-      onKeyDown={
-        clickable
-          ? (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onNavigate!(point.linkTo!);
-              }
-            }
-          : undefined
-      }
-    >
+  const wrapperClass = `flex w-full flex-col overflow-hidden ${
+    isRail ? 'rounded-container border border-border bg-background' : ''
+  } ${clickable ? 'cursor-pointer text-left' : ''} ${className ?? ''}`;
+
+  const body = (
+    <>
       <div className={`relative w-full ${isRail ? 'h-24' : 'h-28'}`}>
         <Image
           imageUrl={point.image}
@@ -166,7 +171,7 @@ export function MapEntityCard({
         />
         <div className="absolute left-2 top-2">
           <span className="inline-flex h-6 w-6 items-center justify-center rounded-badge bg-background/90 text-foreground">
-            <Icon className="h-3.5 w-3.5" aria-hidden />
+            <MarkerGlyph icon={Icon} className="h-3.5 w-3.5" />
           </span>
         </div>
       </div>
@@ -203,8 +208,20 @@ export function MapEntityCard({
           </div>
         )}
       </div>
-    </div>
+    </>
   );
+
+  // A native <button> gives the clickable rail card real keyboard + role
+  // semantics (the popup block with nested buttons never renders when clickable).
+  if (clickable) {
+    return (
+      <button type="button" className={wrapperClass} onClick={() => onNavigate!(point.linkTo!)}>
+        {body}
+      </button>
+    );
+  }
+
+  return <div className={wrapperClass}>{body}</div>;
 }
 
 export default MapEntityCard;

@@ -303,9 +303,9 @@ export async function chatCompletion(
       // A timed-out model call almost never succeeds on retry and would stack to
       // ~75s (3×25s) — surface it immediately instead.
       if ((e as Error).name === 'AbortError') {
-        throw new Error(`${cf ? 'Workers AI' : 'OpenAI'} request timed out after ${PER_CALL_TIMEOUT_MS}ms`)
+        throw new Error(`${cf ? 'Workers AI' : 'OpenAI'} request timed out after ${PER_CALL_TIMEOUT_MS}ms`, { cause: e })
       }
-      lastError = new Error((e as Error).message)
+      lastError = new Error((e as Error).message, { cause: e })
       if (attempt < 2) { await new Promise(r => setTimeout(r, 500 * (attempt + 1))); continue }
       throw lastError
     }
