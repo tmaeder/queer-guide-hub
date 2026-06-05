@@ -55,3 +55,4 @@ test-results/
 
 # Bundle visualizer output (vite rollup-plugin-visualizer, enabled via BUNDLE_STATS=1)
 bundle-baselines/
+scripts/output/
