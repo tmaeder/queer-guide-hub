@@ -185,7 +185,10 @@ export const CommandBar = ({
     <div
       data-testid="map-command-bar"
       className={cn(
-        'absolute top-3 left-3 right-3 z-20 flex items-center gap-2 border border-border bg-background h-10 px-2',
+        // Content-width pill anchored top-left — NOT full-width, so wide screens
+        // don't get a huge empty gap between the left controls and the right.
+        // Caps at the viewport and scrolls horizontally if it ever overflows.
+        'absolute top-3 left-3 z-20 flex items-center gap-2 border border-border bg-background h-10 px-2 max-w-[calc(100%-1.5rem)] overflow-x-auto',
         className,
       )}
     >
@@ -309,15 +312,13 @@ export const CommandBar = ({
       </Popover>
       )}
 
-      {/* Quick filters fill the middle so the bar reads as one unit (no void)
-          and replaces the separate floating chip row. */}
-      <div className="flex flex-1 items-center gap-1.5 min-w-0 overflow-x-auto">
-        <MapQuickFilters
-          filters={filters}
-          onChange={onFiltersChange}
-          showTime={availableFilters.includes('time')}
-        />
-      </div>
+      {/* Quick filters sit inline next to the view controls (replaces the old
+          floating chip row); the bar stays content-width so there's no gap. */}
+      <MapQuickFilters
+        filters={filters}
+        onChange={onFiltersChange}
+        showTime={availableFilters.includes('time')}
+      />
 
       <div className="flex items-center gap-2 shrink-0">
         <div className="h-6 w-px bg-border" aria-hidden="true" />
