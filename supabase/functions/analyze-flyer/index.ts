@@ -208,9 +208,9 @@ async function structureExtraction(
 
   // Bound the structuring latency: the 70B model's runtime scales with input +
   // output size, and large pages (e.g. long articles) pushed a single call past
-  // the 45s ceiling → 500. Event/venue details sit near the top, so 9k chars is
-  // plenty and keeps the call ~12-25s.
-  const boundedContent = contentText.length > 9_000 ? contentText.slice(0, 9_000) : contentText
+  // the 45s ceiling → 500. Event/venue details sit near the top, so 6k chars is
+  // plenty and keeps the call comfortably under the ceiling (~12-25s) with margin.
+  const boundedContent = contentText.length > 6_000 ? contentText.slice(0, 6_000) : contentText
 
   const userMessage = isTextMode
     ? `Here is text extracted from a document:\n\n${boundedContent}${hintText}`
@@ -223,7 +223,7 @@ async function structureExtraction(
       { role: 'user', content: userMessage },
     ],
     temperature: 0.1,
-    max_tokens: 2500,
+    max_tokens: 2000,
     response_format: { type: 'json_object' },
   })
   const content = result.content
