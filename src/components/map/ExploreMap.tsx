@@ -67,13 +67,19 @@ const AREA_RADIUS: Record<string, [number, number][]> = {
   ],
 };
 
-/** Circle style per area type */
-const AREA_STYLE: Record<string, { opacity: number; strokeOpacity: number; minLabelZoom: number }> =
-  {
-    countries: { opacity: 0.2, strokeOpacity: 0.55, minLabelZoom: 1 },
-    cities: { opacity: 0.25, strokeOpacity: 0.6, minLabelZoom: 3 },
-    neighbourhoods: { opacity: 0.3, strokeOpacity: 0.7, minLabelZoom: 6 },
-  };
+/**
+ * Circle style per area type. Fills are deliberately light so the translucent
+ * discs read as gentle density hints, not solid blobs; `opacityHover` deepens
+ * the fill on hover for a responsive cue. Thin rings keep them refined.
+ */
+const AREA_STYLE: Record<
+  string,
+  { opacity: number; opacityHover: number; strokeOpacity: number; minLabelZoom: number }
+> = {
+  countries: { opacity: 0.12, opacityHover: 0.22, strokeOpacity: 0.5, minLabelZoom: 1 },
+  cities: { opacity: 0.13, opacityHover: 0.24, strokeOpacity: 0.55, minLabelZoom: 3 },
+  neighbourhoods: { opacity: 0.16, opacityHover: 0.28, strokeOpacity: 0.6, minLabelZoom: 6 },
+};
 
 // ── MapLibre layer IDs for point data ────────────────────────────────────────
 
@@ -631,7 +637,7 @@ export const ExploreMap = ({
       if (existingSource) {
         existingSource.setData(geojson);
       } else {
-        map.addSource(sourceId, { type: 'geojson', data: geojson });
+        map.addSource(sourceId, { type: 'geojson', data: geojson, promoteId: 'id' });
 
         map.addLayer({
           id: circleLayerId,
@@ -640,10 +646,16 @@ export const ExploreMap = ({
           paint: {
             'circle-radius': radiusExpr as maplibregl.ExpressionSpecification,
             'circle-color': color,
-            'circle-opacity': style.opacity,
+            'circle-opacity': [
+              'case',
+              ['boolean', ['feature-state', 'hovered'], false],
+              style.opacityHover,
+              style.opacity,
+            ],
             'circle-stroke-color': color,
-            'circle-stroke-width': 2,
+            'circle-stroke-width': 1.25,
             'circle-stroke-opacity': style.strokeOpacity,
+            'circle-opacity-transition': { duration: 200 },
           },
         });
 
@@ -661,9 +673,9 @@ export const ExploreMap = ({
             'text-anchor': 'center',
           },
           paint: {
-            'text-color': '#1e293b',
+            'text-color': '#18181b',
             'text-halo-color': '#ffffff',
-            'text-halo-width': 1.5,
+            'text-halo-width': 1.25,
             'text-opacity': [
               'interpolate',
               ['linear'],
@@ -676,11 +688,25 @@ export const ExploreMap = ({
           },
         });
 
-        map.on('mouseenter', circleLayerId, () => {
+        // Hover feature-state deepens the fill (mirrors the boundary-polygon
+        // hover). `promoteId: 'id'` above makes feat.id === properties.id.
+        let hoveredAreaId: string | number | null = null;
+        map.on('mousemove', circleLayerId, (e: MapLayerMouseEvent) => {
           map.getCanvas().style.cursor = 'pointer';
+          const id = e.features?.[0]?.id as string | number | undefined;
+          if (id == null || id === hoveredAreaId) return;
+          if (hoveredAreaId != null) {
+            map.setFeatureState({ source: sourceId, id: hoveredAreaId }, { hovered: false });
+          }
+          map.setFeatureState({ source: sourceId, id }, { hovered: true });
+          hoveredAreaId = id;
         });
         map.on('mouseleave', circleLayerId, () => {
           map.getCanvas().style.cursor = '';
+          if (hoveredAreaId != null) {
+            map.setFeatureState({ source: sourceId, id: hoveredAreaId }, { hovered: false });
+            hoveredAreaId = null;
+          }
         });
         map.on('click', circleLayerId, (e: MapLayerMouseEvent) => {
           const feat = e.features?.[0];
