@@ -83,12 +83,12 @@ export function MapQuickFilters({ filters, onChange, showTime = true }: MapQuick
   const off = 'border-border bg-background/90 text-foreground hover:bg-muted';
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 backdrop-blur" aria-label="Quick filters">
+    <div className="flex items-center gap-1.5" aria-label="Quick filters">
       <button
         type="button"
         onClick={toggleOpenNow}
         aria-pressed={!!filters.openNow}
-        className={`${chipBase} ${filters.openNow ? on : off}`}
+        className={`${chipBase} shrink-0 ${filters.openNow ? on : off}`}
       >
         <span
           className={`inline-block h-1.5 w-1.5 rounded-full ${
@@ -106,7 +106,7 @@ export function MapQuickFilters({ filters, onChange, showTime = true }: MapQuick
             type="button"
             onClick={() => togglePreset(key)}
             aria-pressed={activePreset === key}
-            className={`${chipBase} ${activePreset === key ? on : off}`}
+            className={`${chipBase} shrink-0 ${activePreset === key ? on : off}`}
           >
             <Icon className="h-3.5 w-3.5" aria-hidden />
             {label}
