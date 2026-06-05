@@ -1,6 +1,8 @@
 # Queer Guide
 
-![screenshot](docs/screenshot.png)
+**[🌐 Live → queer.guide](https://queer.guide)**
+
+![queer.guide](docs/screenshot.png)
 
 The global platform for LGBTQ+ travel, community, and safe spaces at [queer.guide](https://queer.guide).
 
