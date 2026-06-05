@@ -13,7 +13,7 @@ Live audit against prod (`xqeacpakadqfxjxjcewc`). Counts are real, not estimates
 | Venues | 32,756 / 23,188 (9,568 merged) | 🔴 58% no coords · 🔴 97% no images · 🟠 450 unresolved dup clusters + 743 dup→dup chains · 🟠 `verification_status` dead (all 'unverified') · 🟡 85% thin desc |
 | Events | 3,626 / 3,307 | 🔴 98% liveness unknown · 🟠 140 active-but-past · 93% no venue · 59% no coords · 🟡 3 end<start |
 | News | 17,130 / 16,703 | 🔴 99.8% no geo tags · 🟠 45% thin content · 🟡 29% no image, 23% qs null |
-| Personalities | 12,619 / 12,528 | 🔴 321 dead-but-`is_living` · 🟠 79% no birth, 67% no wikidata, 55% no nationality · 1 future birth |
+| Personalities | 12,619 / 12,528 | 🔴 321 dead-but-`is_living` · 🔴 ~15% of `wikidata_qid` links wrong (point to given-name/disambiguation items, `P31≠Q5`) · 🟠 79% no birth, 67% no wikidata, 55% no nationality · 1 future birth |
 | Marketplace | 6,532 | 🟠 58% thin desc, 30% no images · 🟡 17 no price, 3 price≤0 (cleanest type) |
 | Cities | 3,876 | 🟠 21% no coords, 47% no population · 🟡 89% thin desc |
 | Countries | 250 | 🟡 `description` empty for all (content in `editorial_long`); 11 no equality_score |
@@ -37,20 +37,25 @@ Live audit against prod (`xqeacpakadqfxjxjcewc`). Counts are real, not estimates
 6. Geo-linking (country-scoped to avoid cross-country mislinks): 36 venues country-linked, 5 city-linked. Remaining city gap needs reverse-geocoding (no matchable text).
 7. Reference-type quality scoring written to the search index: cities (avg 40), countries (avg 59), tags (avg 78) — no longer pinned at rank 0.
 
-## Remaining Phase B backfills (external/async — run as monitored jobs)
+## Phase B backfills — running / remaining
 
-These need rate-limited APIs / LLMs / deployed edge functions and span sessions. Sizes (live entities):
+**🟢 Running now (background, supervised, resumable):**
+- **Venue geocoding** — `scripts/backfill-venue-geocode-photon.mjs`. Country-validated Photon, ~25 venues/min, ~71% located, ~16% rejected as cross-country mislinks. ~10.2k queued, ETA ~6–7h.
+- **Personality Wikidata-by-QID enrichment** — `scripts/backfill-personality-wikidata.mjs`. `P31=Q5` human gate, day-precision dates only, fills nationality/birth/death for ~2,886 QID-having rows; flags the ~15% wrong QIDs as `needs_attention`. ETA ~1h.
+
+Both write per-row via the Management API (bulk venue/personality writes time out on the `search_documents_sync` reindex trigger) and self-restart on DNS/network blips.
+
+**⏭️ Remaining (need geocode to finish, or edge-fn / LLM budget):**
 
 | Job | Count | Driver |
 |-----|------|--------|
-| Venue geocoding | 10,260 | rate-limited Photon client (country-validated; client script, not pg_net bursts) |
-| Venue city-link (post-geocode) | 6,283 | reverse-geocode after coords land |
+| Venue city-link (post-geocode) | ~6,283 | reverse-geocode / city-text match after coords land |
 | Event geocoding | 1,855 | same Photon client |
-| Event liveness sweep | 3,238 | `event-liveness-checker` edge function |
+| Event liveness sweep | ~440 upcoming | **blocked**: only 3 upcoming-unknown events have a ticket/website URL to check |
 | News full-text backfill | 7,628 | shipped extraction over pre-2026-05-30 corpus |
-| News geo-tagging | 16,676 | `pipeline-enrich-news` geo step |
+| News geo-tagging | 16,676 | `pipeline-enrich-news` geo step (LLM) |
 | Real LGBTQ+ classification | all types | LLM classifier (cost) — replaces the default index score |
-| Personality enrichment (birth/wikidata/etc.) | 9,907 | wikidata/agentic enrich, traffic-weighted via `personality_data_health` |
+| Personality name-only enrichment (no QID) | ~7,500 | needs safe disambiguation — name matching alone is unsafe |
 | Images + descriptions | venues 97%, pers 79% | highest cost; queue via `venues_due_for_refresh` + agentic-enrich |
 
 **Operational guards:** prod DB is disk-constrained (~5.8 GB, read-only trips near ~6.7 GB) — size-check before bulk writes that add content/embeddings; respect Photon rate limits; verify on https://queer.guide after each batch.
