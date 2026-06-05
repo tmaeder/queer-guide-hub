@@ -975,12 +975,14 @@ export const ExploreMap = ({
     // Insert beneath the pin/cluster layers so markers stay on top in the
     // combined lens. `beforeId` is undefined when pins aren't mounted yet
     // (pure-density), which appends on top exactly as before.
-    // Cold-start note: on first paint the pins effect may not have created
-    // CLUSTERS_LAYER yet, so beforeId is undefined and the heatmap appends on
-    // top — but the pins effect runs after this one (declared earlier) and, on
-    // the commit where point data arrives, adds the cluster layers ABOVE this
-    // heatmap. Correct z-order therefore relies on the pins effect staying
-    // declared before this heatmap effect; don't reorder them.
+    // Z-order: the pins effect is declared *before* this heatmap effect, so it
+    // runs first within a commit — CLUSTERS_LAYER usually exists by now and
+    // beforeId slots the heatmap below the pins. Cold-start window (layers
+    // enabled but zero features → pins effect skips layer creation): beforeId
+    // is undefined and the heatmap appends on top, but once data arrives the
+    // pins effect adds the cluster layers ABOVE this heatmap (and this effect
+    // early-returns via setData without re-inserting). Pins end up on top in
+    // every path. Don't reorder the two effects.
     const beforeId = map.getLayer(CLUSTERS_LAYER) ? CLUSTERS_LAYER : undefined;
     map.addLayer({
       id: HEATMAP_LAYER,
