@@ -10,7 +10,6 @@ import type {
 } from '@/components/map/MapShell.types';
 
 const PREFS_KEY = 'map_shell_prefs';
-const LENS_KEYS: MapLens[] = ['pins', 'density', 'routes', 'boundary'];
 
 function readPrefs(): Partial<MapShellState> | null {
   try {
@@ -40,7 +39,6 @@ function parseNum(raw: string | null, min: number, max: number): number | undefi
 function parseLens(raw: string | null, allowed: MapLens[]): MapLens | undefined {
   if (!raw) return undefined;
   const candidate = raw as MapLens;
-  if (!LENS_KEYS.includes(candidate)) return undefined;
   return allowed.includes(candidate) ? candidate : undefined;
 }
 

@@ -31,6 +31,7 @@ import {
   useNeighbourhoodBoundaries,
 } from '@/hooks/useBoundaryData';
 import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
+import { heatmapRenderPlan, type RenderMode } from './mapShellAdapters';
 
 // ── Layer classification ─────────────────────────────────────────────────────
 
@@ -152,8 +153,9 @@ export interface ExploreMapProps {
   /** Fired when the enabled layer set changes. */
   onLayersChange?: (layers: LayerType[]) => void;
   /** Rendering style for point data. `'pins'` (default) shows clusters + markers.
-   *  `'heatmap'` swaps clusters/markers for a monochrome density layer. */
-  renderMode?: 'pins' | 'heatmap';
+   *  `'heatmap'` swaps clusters/markers for the density layer. `'combined'`
+   *  draws the heatmap beneath the pins (both visible). */
+  renderMode?: RenderMode;
   /** Use the pride-spectrum canvas palette (markers, area circles, density
    *  heat). Gated to MapShell; legacy/embedded maps stay on LAYER_COLORS. */
   pridePalette?: boolean;
@@ -935,7 +937,10 @@ export const ExploreMap = ({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    const wantHeatmap = renderMode === 'heatmap' && pointEnabledLayers.length > 0;
+    const { wantHeatmap, hidePins } = heatmapRenderPlan(
+      renderMode,
+      pointEnabledLayers.length > 0,
+    );
 
     if (!wantHeatmap) {
       if (map.getLayer(HEATMAP_LAYER)) map.removeLayer(HEATMAP_LAYER);
@@ -947,9 +952,10 @@ export const ExploreMap = ({
       return;
     }
 
-    // Hide pin/cluster layers while heatmap is active.
+    // Pure density (`heatmap`) hides the pins; `combined` keeps them on top.
+    const pinVisibility = hidePins ? 'none' : 'visible';
     for (const id of [CLUSTERS_LAYER, CLUSTER_COUNT_LAYER, UNCLUSTERED_LAYER]) {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', pinVisibility);
     }
 
     const filteredGeoJSON: GeoJSON.FeatureCollection = {
@@ -966,6 +972,18 @@ export const ExploreMap = ({
     }
 
     map.addSource(HEATMAP_SOURCE, { type: 'geojson', data: filteredGeoJSON });
+    // Insert beneath the pin/cluster layers so markers stay on top in the
+    // combined lens. `beforeId` is undefined when pins aren't mounted yet
+    // (pure-density), which appends on top exactly as before.
+    // Z-order: the pins effect is declared *before* this heatmap effect, so it
+    // runs first within a commit — CLUSTERS_LAYER usually exists by now and
+    // beforeId slots the heatmap below the pins. Cold-start window (layers
+    // enabled but zero features → pins effect skips layer creation): beforeId
+    // is undefined and the heatmap appends on top, but once data arrives the
+    // pins effect adds the cluster layers ABOVE this heatmap (and this effect
+    // early-returns via setData without re-inserting). Pins end up on top in
+    // every path. Don't reorder the two effects.
+    const beforeId = map.getLayer(CLUSTERS_LAYER) ? CLUSTERS_LAYER : undefined;
     map.addLayer({
       id: HEATMAP_LAYER,
       type: 'heatmap',
@@ -1015,7 +1033,7 @@ export const ExploreMap = ({
         'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 28, 14, 60],
         'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.85, 14, 0.65, 16, 0],
       },
-    });
+    }, beforeId);
   }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, pridePalette]);
 
   // ── Render ───────────────────────────────────────────────────────────────

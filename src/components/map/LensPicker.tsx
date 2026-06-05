@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Activity, Route, Hexagon } from 'lucide-react';
+import { MapPin, Activity, Route, Hexagon, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { hapticTrigger } from '@/hooks/useHaptics';
 import { LENS_LABELS, type MapLens } from './MapShell.types';
@@ -9,6 +9,7 @@ const LENS_ICONS: Record<MapLens, React.ElementType> = {
   density: Activity,
   routes: Route,
   boundary: Hexagon,
+  combined: Layers,
 };
 
 interface LensPickerProps {

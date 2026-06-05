@@ -5,8 +5,9 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 /**
  * Admin map view — geographic visualization of ingestion + content state.
  *
- * Uses the shared <MapShell surface="admin"> with Density lens by default so
- * editors can see where venue/event coverage is thin at a glance. Filters
+ * Uses the shared <MapShell surface="admin"> with the Combined lens by default
+ * (density heatmap beneath the pins) so editors can see where venue/event
+ * coverage is thin at a glance while still reading individual markers. Filters
  * (category, time) and the layer toggle expose the same data planes the
  * public map uses; URL state lets editors share a specific view.
  */
