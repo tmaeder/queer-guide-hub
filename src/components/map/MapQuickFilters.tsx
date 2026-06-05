@@ -83,7 +83,7 @@ export function MapQuickFilters({ filters, onChange, showTime = true }: MapQuick
   const off = 'border-border bg-background/90 text-foreground hover:bg-muted';
 
   return (
-    <div className="flex items-center gap-1.5" aria-label="Quick filters">
+    <div className="flex items-center gap-1.5 shrink-0" aria-label="Quick filters">
       <button
         type="button"
         onClick={toggleOpenNow}
