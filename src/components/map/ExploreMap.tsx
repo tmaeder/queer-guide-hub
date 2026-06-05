@@ -1418,12 +1418,12 @@ export const ExploreMap = ({
         type: 'circle',
         source: FOCUS_SOURCE,
         paint: {
-          'circle-radius': 16,
-          'circle-color': 'rgba(0,0,0,0)',
-          'circle-stroke-width': 3,
+          'circle-radius': 18,
+          'circle-color': 'rgba(10,10,10,0.06)',
+          'circle-stroke-width': 3.5,
           'circle-stroke-color': '#0a0a0a',
-          'circle-stroke-opacity': 0.85,
-          'circle-radius-transition': { duration: 200, delay: 0 },
+          'circle-stroke-opacity': 1,
+          'circle-radius-transition': { duration: 180, delay: 0 },
         },
       });
     }
@@ -1535,7 +1535,13 @@ export const ExploreMap = ({
         pointEnabledLayers.length > 0 && (
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-center px-4 pointer-events-none">
             <p className="max-w-xs text-center text-sm text-muted-foreground bg-background/85 border border-border rounded-element px-4 py-2">
-              No spots here yet — pan, zoom out, or put one on the map.
+              {filters.openNow
+                ? 'Nothing open right now in view — turn off Open now or try later.'
+                : filters.dateRange
+                  ? 'No events in this time range here — widen the dates or pan out.'
+                  : filters.search
+                    ? `No matches for "${filters.search}" here — clear search or pan out.`
+                    : 'No spots here yet — pan, zoom out, or put one on the map.'}
             </p>
           </div>
         )}
