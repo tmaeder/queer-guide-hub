@@ -30,6 +30,13 @@ describe('useMapShellState', () => {
     expect(result.current.state.lens).toBe('density');
   });
 
+  it('parses combined from the URL when allowed by the surface', () => {
+    const { result } = renderHook(() => useMapShellState(discover), {
+      wrapper: wrapper('/map?lens=combined'),
+    });
+    expect(result.current.state.lens).toBe('combined');
+  });
+
   it('ignores lens values not allowed by the surface', () => {
     const { result } = renderHook(() => useMapShellState(discover), {
       wrapper: wrapper('/map?lens=routes'),
