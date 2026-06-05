@@ -1,8 +1,9 @@
 // One-shot operator backfill: forward-geocode venues that have a real address +
 // known country but no coordinates. Photon, country-code-validated, rate-limited.
-// Processes a time-bounded batch per invocation; call repeatedly until processed=0.
-//   GET /functions/v1/backfill-venue-geocode?secret=<S>&limit=150
-// verify_jwt is disabled; access is gated by the shared secret below.
+// Marks geocode_attempted so the work set drains. Call repeatedly until processed=0.
+//   GET /functions/v1/backfill-venue-geocode?secret=<S>&limit=200
+// verify_jwt is ON (requires a valid Supabase JWT) + secret-gated. Dormant after
+// the initial backfill; safe to delete.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 const SECRET = 'qg-geo-backfill-7f3a91';
@@ -14,7 +15,7 @@ Deno.serve(async (req) => {
   if (url.searchParams.get('secret') !== SECRET) {
     return new Response('forbidden', { status: 403 });
   }
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '150', 10), 300);
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '200', 10), 300);
   const supa = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
