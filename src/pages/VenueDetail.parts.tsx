@@ -386,7 +386,7 @@ export function VenueHero({
               </a>
             </Button>
           )}
-          {venue.website && (
+          {venue.website && venue.url_status !== 'broken' && (
             <Button variant="outline" size="sm" asChild>
               <a href={venue.website} target="_blank" rel="noopener noreferrer nofollow">
                 <Globe size={16} className="mr-2" />
