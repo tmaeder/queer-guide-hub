@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ExploreMap } from './ExploreMap';
 import { CommandBar } from './CommandBar';
 import { FilterChips } from './FilterChips';
+import { MapQuickFilters } from './MapQuickFilters';
 import { MapLegend } from './MapLegend';
 import { SpotlightRail } from './SpotlightRail';
 import type { MapPointSummary } from './mapPoint';
@@ -61,6 +62,7 @@ export const MapShell = ({
   const [pointsInView, setPointsInView] = useState<MapPointSummary[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [fetching, setFetching] = useState(false);
   const showRail = config.showCommandBar !== false;
 
   // Drop filter keys we don't expose on this surface so they can't leak in via URL.
@@ -75,6 +77,10 @@ export const MapShell = ({
     if (config.filters.includes('queer-owned') && f.queerOwned) out.queerOwned = f.queerOwned;
     if (config.filters.includes('era') && f.era) out.era = f.era;
     if (f.search) out.search = f.search;
+    // Quick filters are available on every command-bar surface, independent of
+    // the preset's filter list, so pass them through unconditionally.
+    if (f.openNow) out.openNow = f.openNow;
+    if (f.dateRange) out.dateRange = f.dateRange;
     return out;
   }, [state.filters, config.filters]);
 
@@ -217,6 +223,8 @@ export const MapShell = ({
         selectedId={selectedId}
         highlightedId={hoveredId}
         showResultCount={!showRail}
+        onSelectPoint={showRail ? setSelectedId : undefined}
+        onFetchingChange={showRail ? setFetching : undefined}
       />
 
       {showRail && (
@@ -225,6 +233,7 @@ export const MapShell = ({
           <SpotlightRail
             points={pointsInView}
             selectedId={selectedId}
+            loading={fetching}
             onHover={setHoveredId}
             onSelect={(id) => setSelectedId(id)}
           />
@@ -247,13 +256,20 @@ export const MapShell = ({
         />
       )}
 
-      {config.showCommandBar !== false && Object.keys(exposedFilters).length > 0 && (
-        <div className="absolute top-[3.25rem] left-3 right-3 z-20">
-          <FilterChips
-            filters={exposedFilters}
-            onRemove={removeFilter}
-            onClearAll={() => setFilters({})}
+      {config.showCommandBar !== false && (
+        <div className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5">
+          <MapQuickFilters
+            filters={state.filters}
+            onChange={setFilters}
+            showTime={config.filters.includes('time')}
           />
+          {Object.keys(exposedFilters).length > 0 && (
+            <FilterChips
+              filters={exposedFilters}
+              onRemove={removeFilter}
+              onClearAll={() => setFilters({})}
+            />
+          )}
         </div>
       )}
     </div>
