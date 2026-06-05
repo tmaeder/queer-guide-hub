@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_DEFS } from './ExploreMapLayers';
 import { LensPicker } from './LensPicker';
+import { MapQuickFilters } from './MapQuickFilters';
 import { TimePopover } from './FilterPopovers';
 import { MapFiltersPanel } from './MapFiltersPanel';
 import {
@@ -131,9 +132,8 @@ export const CommandBar = ({
   // with it. Typing doesn't touch filters.search until the user applies, so
   // this never fights live keystrokes.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs local input with the external search filter; one-way mirror, never fights keystrokes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-way mirror of external search filter into local input + expanded state; never fights keystrokes.
     setQuery(filters.search ?? '');
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the field open while a search filter is active.
     if (filters.search) setSearchOpen(true);
   }, [filters.search]);
 
@@ -212,7 +212,7 @@ export const CommandBar = ({
       >
         <PopoverTrigger asChild>
           <div
-            className="relative flex-1 min-w-0"
+            className="relative w-56 shrink-0"
             role="combobox"
             aria-expanded={popoverOpen}
             aria-controls="map-shell-listbox"
@@ -309,7 +309,17 @@ export const CommandBar = ({
       </Popover>
       )}
 
-      <div className="ml-auto flex items-center gap-2">
+      {/* Quick filters fill the middle so the bar reads as one unit (no void)
+          and replaces the separate floating chip row. */}
+      <div className="flex flex-1 items-center gap-1.5 min-w-0 overflow-x-auto">
+        <MapQuickFilters
+          filters={filters}
+          onChange={onFiltersChange}
+          showTime={availableFilters.includes('time')}
+        />
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
         <div className="h-6 w-px bg-border" aria-hidden="true" />
 
         <LensPicker lenses={lenses} value={lens} onChange={onLensChange} />

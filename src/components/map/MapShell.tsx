@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { ExploreMap } from './ExploreMap';
 import { CommandBar } from './CommandBar';
 import { FilterChips } from './FilterChips';
-import { MapQuickFilters } from './MapQuickFilters';
 import { MapLegend } from './MapLegend';
 import { SpotlightRail } from './SpotlightRail';
 import type { MapPointSummary } from './mapPoint';
@@ -256,20 +255,15 @@ export const MapShell = ({
         />
       )}
 
-      {config.showCommandBar !== false && (
-        <div className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5">
-          <MapQuickFilters
-            filters={state.filters}
-            onChange={setFilters}
-            showTime={config.filters.includes('time')}
+      {/* Quick filters now live inside the command bar; only the active-filter
+          chips render below it, and only when something is applied. */}
+      {config.showCommandBar !== false && Object.keys(exposedFilters).length > 0 && (
+        <div className="absolute top-[3.25rem] left-3 right-3 z-20">
+          <FilterChips
+            filters={exposedFilters}
+            onRemove={removeFilter}
+            onClearAll={() => setFilters({})}
           />
-          {Object.keys(exposedFilters).length > 0 && (
-            <FilterChips
-              filters={exposedFilters}
-              onRemove={removeFilter}
-              onClearAll={() => setFilters({})}
-            />
-          )}
         </div>
       )}
     </div>
