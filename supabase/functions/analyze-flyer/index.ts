@@ -206,9 +206,15 @@ async function structureExtraction(
   if (hintCountry) hints.push(`User hint: country is likely "${hintCountry}"`)
   const hintText = hints.length > 0 ? '\n\n' + hints.join('\n') : ''
 
+  // Bound the structuring latency: the 70B model's runtime scales with input +
+  // output size, and large pages (e.g. long articles) pushed a single call past
+  // the 45s ceiling → 500. Event/venue details sit near the top, so 9k chars is
+  // plenty and keeps the call ~12-25s.
+  const boundedContent = contentText.length > 9_000 ? contentText.slice(0, 9_000) : contentText
+
   const userMessage = isTextMode
-    ? `Here is text extracted from a document:\n\n${contentText}${hintText}`
-    : `Here is a detailed description of a flyer/poster image:\n\n${contentText}${hintText}`
+    ? `Here is text extracted from a document:\n\n${boundedContent}${hintText}`
+    : `Here is a detailed description of a flyer/poster image:\n\n${boundedContent}${hintText}`
 
   const result = await chatCompletion(supabase, {
     model: 'gpt-4o-mini',
@@ -217,7 +223,7 @@ async function structureExtraction(
       { role: 'user', content: userMessage },
     ],
     temperature: 0.1,
-    max_tokens: 4000,
+    max_tokens: 2500,
     response_format: { type: 'json_object' },
   })
   const content = result.content
@@ -594,7 +600,8 @@ async function fetchPageText(pageUrl: string): Promise<string> {
   const html = new TextDecoder().decode(buffer)
   const text = htmlToText(html)
   if (text.length < 20) throw new Error('Page had no extractable text')
-  return text.slice(0, 16_000)
+  // structureExtraction caps to 9k before the LLM; cap here too to limit work.
+  return text.slice(0, 12_000)
 }
 
 // ── Main Handler ──────────────────────────────────────────────────────────
