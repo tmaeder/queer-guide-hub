@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 import { isOpenNow } from '@/utils/openingHours';
+import { glyphKeyFor } from '@/components/map/mapIcons';
 import {
   type Bbox,
   LRUCache,
@@ -47,6 +48,8 @@ export interface PointFeatureProps {
   featured: boolean;
   /** Open-now (venues) / happening-now or liveness=live (events) — drives the pulse. */
   live: boolean;
+  /** Map-image id for the category glyph drawn on the pin (see mapGlyphs). */
+  iconKey: string;
 }
 
 export type PointFeature = GeoJSON.Feature<GeoJSON.Point, PointFeatureProps>;
@@ -170,6 +173,7 @@ async function fetchVenuesInBbox(
         linkTo: v.slug ? `/venues/${v.slug}` : '',
         featured,
         live: openNow === true,
+        iconKey: glyphKeyFor('venues', v.category as string | undefined),
         meta: JSON.stringify({
           city: v.city,
           country: v.country,
@@ -249,6 +253,7 @@ async function fetchEventsInBbox(
           linkTo: e.slug ? `/events/${e.slug}` : '',
           featured,
           live: happeningNow,
+          iconKey: glyphKeyFor('events'),
           meta: JSON.stringify({
             startDate: e.start_date,
             eventType: e.event_type,
@@ -286,6 +291,7 @@ async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
       linkTo: h.slug ? `/hotels/${h.slug}` : '',
       featured: Boolean(h.featured),
       live: false,
+      iconKey: glyphKeyFor('hotels'),
       meta: JSON.stringify({ city: h.city, country: h.country, hotel_type: h.hotel_type, featured: h.featured }),
     },
   }));
@@ -321,6 +327,7 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
         linkTo: '',
         featured: false,
         live: false,
+        iconKey: glyphKeyFor('restrooms'),
         meta: JSON.stringify({ accessible: r.accessible, unisex: r.unisex }),
       },
     }));
@@ -460,6 +467,17 @@ export function useViewportPoints({
             haversineKm(nm.lng, nm.lat, f.geometry.coordinates[0], f.geometry.coordinates[1]) <=
             nm.radiusKm,
         );
+        for (const k of Object.keys(counts) as LayerType[]) counts[k] = 0;
+        for (const f of finalFeatures) {
+          const pt = f.properties.pointType;
+          counts[pt] = (counts[pt] ?? 0) + 1;
+        }
+      }
+
+      // "Open now" filter: keep only currently-open venues / happening-now
+      // events (the promoted `live` flag). Counts recomputed from the kept set.
+      if (filtersRef.current?.openNow) {
+        finalFeatures = finalFeatures.filter((f) => f.properties.live === true);
         for (const k of Object.keys(counts) as LayerType[]) counts[k] = 0;
         for (const f of finalFeatures) {
           const pt = f.properties.pointType;

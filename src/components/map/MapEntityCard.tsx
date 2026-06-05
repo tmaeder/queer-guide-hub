@@ -1,9 +1,10 @@
 import React from 'react';
-import { ExternalLink, Share2, Star, Clock, Radio, MapPin } from 'lucide-react';
+import { ExternalLink, Share2, Star, Clock, Radio, MapPin, TrendingUp } from 'lucide-react';
 import { Image } from '@/components/ui/Image';
 import type { FallbackTheme } from '@/utils/fallbackImages';
 import { Badge } from '@/components/ui/badge';
 import { formatDistance } from '@/lib/formatDistance';
+import { timeUntil } from '@/utils/relativeTime';
 import { iconForMarker, categoryLabel } from './mapIcons';
 import type { MapPointSummary } from './mapPoint';
 
@@ -36,13 +37,24 @@ function priceLabel(range?: number | null): string | null {
 function Signals({ point }: { point: MapPointSummary }) {
   const price = priceLabel(point.priceRange);
   const dist = point.distanceKm != null ? formatDistance(point.distanceKm * 1000) : null;
+  const countdown = point.type === 'events' && !point.live ? timeUntil(point.startDate) : null;
+  // "Trending" = editorially featured AND high trust. Honest proxy until a
+  // real engagement/check-in signal exists; otherwise just "Featured".
+  const trending = point.featured && (point.trustScore ?? 0) >= 80;
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {point.featured && (
+      {trending ? (
         <Badge variant="soft" className="gap-1">
-          <Star className="h-3 w-3" aria-hidden />
-          Featured
+          <TrendingUp className="h-3 w-3" aria-hidden />
+          Trending
         </Badge>
+      ) : (
+        point.featured && (
+          <Badge variant="soft" className="gap-1">
+            <Star className="h-3 w-3" aria-hidden />
+            Featured
+          </Badge>
+        )
       )}
       {point.type === 'venues' && point.openNow === true && (
         <Badge variant="soft" className="gap-1">
@@ -53,7 +65,13 @@ function Signals({ point }: { point: MapPointSummary }) {
       {point.type === 'events' && point.live && (
         <Badge variant="soft" className="gap-1">
           <Radio className="h-3 w-3" aria-hidden />
-          Live
+          On now
+        </Badge>
+      )}
+      {countdown && (
+        <Badge variant="outline" className="gap-1">
+          <Clock className="h-3 w-3" aria-hidden />
+          {countdown}
         </Badge>
       )}
       {price && <Badge variant="outline">{price}</Badge>}

@@ -108,6 +108,10 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
       }
     }
     if (searchParams.get('queer_owned') === '1') next.queerOwned = true;
+    if (searchParams.get('open') === '1') next.openNow = true;
+    const from = searchParams.get('from');
+    const to = searchParams.get('to');
+    if (from && to) next.dateRange = { start: from, end: to };
     const era = searchParams.get('era');
     if (era) {
       const [s, e] = era.split('-').map(Number);
@@ -191,6 +195,15 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
             }
             if (next.queerOwned) sp.set('queer_owned', '1');
             else sp.delete('queer_owned');
+            if (next.openNow) sp.set('open', '1');
+            else sp.delete('open');
+            if (next.dateRange) {
+              sp.set('from', next.dateRange.start);
+              sp.set('to', next.dateRange.end);
+            } else {
+              sp.delete('from');
+              sp.delete('to');
+            }
             if (next.era) sp.set('era', `${next.era.decadeStart}-${next.era.decadeEnd}`);
             else sp.delete('era');
             return sp;
