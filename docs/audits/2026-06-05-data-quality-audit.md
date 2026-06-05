@@ -65,3 +65,11 @@ Both write per-row via the Management API (bulk venue/personality writes time ou
 | Images + descriptions | venues 97%, pers 79% | highest cost; queue via `venues_due_for_refresh` + agentic-enrich |
 
 **Operational guards:** prod DB is disk-constrained (~5.8 GB, read-only trips near ~6.7 GB) — size-check before bulk writes that add content/embeddings; respect Photon rate limits; verify on https://queer.guide after each batch.
+
+## Phase B — second session (event + news), 2026-06-05
+
+**✅ Event geocoding — DONE.** `scripts/backfill-event-geocode.mjs`. **Live events with coords: 1,452/3,307 (44%) → 3,307/3,307 (100%)**, 0 remaining, 0 out-of-range/null-island.
+- Key finding that reshaped the approach: all 1,855 missing-coord events *already* carried a correct `city_id` (→ `country_id`), and every linked city had coords. Only **31** events had a street address or `venue_name` worth precise geocoding; **1,824 were city-level** (Pride, street fairs, NYE parties).
+- Pass A (Photon, country-validated, reject `countrycode ≠ event.country`): 31 → **30 precise**, 1 no-result, 0 rejected.
+- Pass B (city-coord inherit, country-safe by construction since `city_id` was already resolved): **1,825** events given city-center coords.
+- `trg_event_geocode` (pg_net→Nominatim reverse-geocode) was **not** triggered — its `WHEN (NEW.city_id IS NULL)` guard holds for all rows, so no external fan-out. `latitude IS NULL` is the natural resume cursor (every row has a city fallback → job is idempotent + terminating).
