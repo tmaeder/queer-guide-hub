@@ -1,0 +1,115 @@
+import { useState } from 'react';
+import { Info, X, Star, Radio } from 'lucide-react';
+import {
+  LAYER_COLORS,
+  PRIDE_LAYER_COLORS,
+  type LayerType,
+} from '@/hooks/useExploreMapData';
+import { iconForMarker } from './mapIcons';
+import { LAYER_DEFS } from './ExploreMapLayers';
+import type { MapLens } from './MapShell.types';
+
+interface MapLegendProps {
+  lens: MapLens;
+  layers: LayerType[];
+  pridePalette?: boolean;
+}
+
+const LABEL: Record<string, string> = Object.fromEntries(
+  LAYER_DEFS.map((d) => [d.type, d.label]),
+);
+
+/**
+ * Compact, collapsible key for the map. Explains what each colored pin means,
+ * the featured / live treatments, and (for the density + combined lenses) what
+ * the heat field encodes. Previously the map had no legend at all.
+ */
+export function MapLegend({ lens, layers, pridePalette }: MapLegendProps) {
+  const [open, setOpen] = useState(false);
+  const palette = pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS;
+  const showHeat = lens === 'density' || lens === 'combined';
+  const showPins = lens !== 'density' && lens !== 'boundary';
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Show map legend"
+        className="absolute bottom-10 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-border bg-background/90 px-4 py-1.5 text-13 text-foreground backdrop-blur hover:bg-background"
+      >
+        <Info className="h-3.5 w-3.5" aria-hidden />
+        Legend
+      </button>
+    );
+  }
+
+  return (
+    <div className="absolute bottom-10 left-3 z-10 w-56 rounded-container border border-border bg-background/95 p-4 backdrop-blur">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-13 font-semibold text-foreground">What you're seeing</span>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label="Hide map legend"
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <X className="h-4 w-4" aria-hidden />
+        </button>
+      </div>
+
+      {showPins && (
+        <ul className="flex flex-col gap-2">
+          {layers.map((type) => {
+            const Icon = iconForMarker(type);
+            return (
+              <li key={type} className="flex items-center gap-2 text-13 text-foreground">
+                <span
+                  className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
+                  style={{ backgroundColor: palette[type] ?? '#888' }}
+                  aria-hidden
+                />
+                <Icon className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+                <span className="truncate">{LABEL[type] ?? type}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {showPins && (
+        <div className="mt-2 flex flex-col gap-2 border-t border-border pt-2">
+          <div className="flex items-center gap-2 text-2xs text-muted-foreground">
+            <Star className="h-3.5 w-3.5" aria-hidden />
+            Ringed = featured spot
+          </div>
+          <div className="flex items-center gap-2 text-2xs text-muted-foreground">
+            <Radio className="h-3.5 w-3.5" aria-hidden />
+            Pulsing = open now / live
+          </div>
+        </div>
+      )}
+
+      {showHeat && (
+        <div className="mt-2 border-t border-border pt-2">
+          <div className="mb-1 text-2xs text-muted-foreground">Density of queer life</div>
+          <div
+            className="h-2 w-full rounded-full"
+            style={{
+              backgroundImage: pridePalette
+                ? 'linear-gradient(to right, rgba(0,77,255,0.3), rgba(0,128,38,0.4), rgba(255,237,0,0.5), rgba(255,140,0,0.55), rgba(228,3,3,0.6))'
+                : 'linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0.55))',
+            }}
+            aria-hidden
+          />
+          <div className="mt-1.5 flex justify-between text-3xs text-muted-foreground">
+            <span>Fewer</span>
+            <span>More</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default MapLegend;
