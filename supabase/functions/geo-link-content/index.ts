@@ -118,13 +118,16 @@ function resolveCity(text: string | null | undefined, countryId?: string | null)
   const candidates = citiesByName.get(normalized);
   if (!candidates || candidates.length === 0) return null;
 
-  // If country_id provided, prefer matching city in that country
+  // If a country is known, only accept a city in that country. Never adopt a
+  // same-named city from another country — that is the historic bug that linked
+  // "Berlin, US" venues to Berlin, Germany. A missing in-country city stays
+  // null (the country link is preserved; commit-time auto-create handles it).
   if (countryId) {
-    const inCountry = candidates.find(c => c.country_id === countryId);
-    if (inCountry) return inCountry;
+    return candidates.find(c => c.country_id === countryId) ?? null;
   }
 
-  // Return first match (highest population since cities are sorted by population desc)
+  // No country context: fall back to the highest-population match (cities are
+  // sorted by population desc).
   return candidates[0];
 }
 
