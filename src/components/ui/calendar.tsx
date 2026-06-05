@@ -89,6 +89,17 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
           font-size: 0.875rem;
           font-weight: 700;
         }
+        /* Lay multiple months side by side (range pickers) instead of stacked;
+           wraps on narrow containers so a single column still works on mobile. */
+        .rdp-months {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1.5rem;
+          justify-content: center;
+        }
+        .rdp-month {
+          flex: 0 0 auto;
+        }
       `}</style>
     </>
   );

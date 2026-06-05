@@ -188,7 +188,7 @@ export const CommandBar = ({
         // Content-width pill anchored top-left — NOT full-width, so wide screens
         // don't get a huge empty gap between the left controls and the right.
         // Caps at the viewport and scrolls horizontally if it ever overflows.
-        'absolute top-3 left-3 z-20 flex items-center gap-2 border border-border bg-background h-10 px-2 max-w-[calc(100%-1.5rem)] overflow-x-auto',
+        'absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-element border border-border bg-background h-11 px-2 max-w-[calc(100%-1.5rem)] overflow-x-auto',
         className,
       )}
     >
@@ -320,9 +320,9 @@ export const CommandBar = ({
         showTime={availableFilters.includes('time')}
       />
 
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="h-6 w-px bg-border" aria-hidden="true" />
+      <div className="mx-0.5 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
 
+      <div className="flex items-center gap-1 shrink-0">
         <LensPicker lenses={lenses} value={lens} onChange={onLensChange} />
 
       {hasPanelFilters &&
@@ -334,7 +334,7 @@ export const CommandBar = ({
                 size="sm"
                 aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
                 title="Filters"
-                className="relative h-8 w-8 p-0 border border-border"
+                className="relative h-8 w-8 p-0"
               >
                 <SlidersHorizontal size={14} aria-hidden="true" />
                 {activeFilterCount > 0 && (
@@ -368,7 +368,7 @@ export const CommandBar = ({
                 size="sm"
                 aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
                 title="Filters"
-                className="relative h-8 w-8 p-0 border border-border"
+                className="relative h-8 w-8 p-0"
               >
                 <SlidersHorizontal size={14} aria-hidden="true" />
                 {activeFilterCount > 0 && (
@@ -378,12 +378,32 @@ export const CommandBar = ({
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="p-4 w-80 border-border max-h-[70dvh] overflow-y-auto">
-              <MapFiltersPanel
-                availableFilters={availableFilters}
-                filters={filters}
-                onFiltersChange={onFiltersChange}
-              />
+            <PopoverContent align="end" className="p-0 w-80 max-h-[70dvh] overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
+                <span className="text-13 font-semibold text-foreground">Filters</span>
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = { ...filters };
+                      delete next.category;
+                      delete next.tags;
+                      delete next.nearMe;
+                      onFiltersChange(next);
+                    }}
+                    className="text-13 text-muted-foreground underline hover:text-foreground"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+              <div className="overflow-y-auto p-4">
+                <MapFiltersPanel
+                  availableFilters={availableFilters}
+                  filters={filters}
+                  onFiltersChange={onFiltersChange}
+                />
+              </div>
             </PopoverContent>
           </Popover>
         ))}
@@ -396,26 +416,29 @@ export const CommandBar = ({
               size="sm"
               aria-label="Layers"
               title="Layers"
-              className="h-8 w-8 p-0 border border-border"
+              className="h-8 w-8 p-0"
             >
               <Layers size={14} aria-hidden="true" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="p-2 w-56 border-border">
-            <div className="flex flex-col gap-1">
+          <PopoverContent align="end" className="p-1.5 w-56">
+            <p className="px-2 pt-1 pb-1.5 text-2xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Layers
+            </p>
+            <div className="flex flex-col gap-0.5">
               {LAYER_DEFS.filter((d) => availableLayers.includes(d.type) && !d.comingSoon).map((d) => {
                 const checked = enabledLayers.includes(d.type);
                 return (
                   <label
                     key={d.type}
-                    className="inline-flex items-center gap-2 h-8 px-2 text-sm hover:bg-muted cursor-pointer"
+                    className="flex items-center gap-2 h-9 px-2 rounded-element text-sm hover:bg-muted cursor-pointer"
                   >
                     <Checkbox
                       checked={checked}
                       onCheckedChange={() => toggleLayer(d.type)}
                       aria-label={d.label}
                     />
-                    <span>{d.label}</span>
+                    <span className="flex-1">{d.label}</span>
                   </label>
                 );
               })}
@@ -438,20 +461,23 @@ export const CommandBar = ({
             size="sm"
             aria-label="More map options"
             title="More"
-            className="h-8 w-8 p-0 border border-border"
+            className="h-8 w-8 p-0"
           >
             <MoreHorizontal size={14} aria-hidden="true" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="p-1 w-48 border-border">
-          <div className="flex flex-col">
+        <PopoverContent align="end" className="p-1.5 w-52">
+          <p className="px-2 pt-1 pb-1.5 text-2xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Map options
+          </p>
+          <div className="flex flex-col gap-0.5">
             {onGeolocate && (
               <button
                 type="button"
                 onClick={() => { onGeolocate(); setMoreOpen(false); }}
-                className="inline-flex items-center gap-2 h-8 px-2 text-sm hover:bg-muted text-left"
+                className="flex items-center gap-2.5 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
               >
-                <Locate size={14} aria-hidden="true" />
+                <Locate size={15} aria-hidden="true" className="text-muted-foreground" />
                 <span>My location</span>
               </button>
             )}
@@ -459,9 +485,9 @@ export const CommandBar = ({
               <button
                 type="button"
                 onClick={() => { onFitBounds(); setMoreOpen(false); }}
-                className="inline-flex items-center gap-2 h-8 px-2 text-sm hover:bg-muted text-left"
+                className="flex items-center gap-2.5 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
               >
-                <Maximize2 size={14} aria-hidden="true" />
+                <Maximize2 size={15} aria-hidden="true" className="text-muted-foreground" />
                 <span>Fit to results</span>
               </button>
             )}
@@ -469,9 +495,9 @@ export const CommandBar = ({
               <button
                 type="button"
                 onClick={() => { onShare(); setMoreOpen(false); }}
-                className="inline-flex items-center gap-2 h-8 px-2 text-sm hover:bg-muted text-left"
+                className="flex items-center gap-2.5 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
               >
-                <Share2 size={14} aria-hidden="true" />
+                <Share2 size={15} aria-hidden="true" className="text-muted-foreground" />
                 <span>Share view</span>
               </button>
             )}
