@@ -216,8 +216,14 @@ async function structureExtraction(
     ? `Here is text extracted from a document:\n\n${boundedContent}${hintText}`
     : `Here is a detailed description of a flyer/poster image:\n\n${boundedContent}${hintText}`
 
+  // Use a fast CF-hosted model for structuring. The default 70B is slow and
+  // highly variable on Workers AI (12s–45s+, frequently timing out under
+  // concurrency with the background pipelines) — this is field transcription
+  // from already-clean text, not a reasoning task, so Llama 4 Scout (fast MoE)
+  // handles it well at a fraction of the latency. Passing an explicit @cf/ model
+  // opts out of mapToCfModel's 70B default.
   const result = await chatCompletion(supabase, {
-    model: 'gpt-4o-mini',
+    model: '@cf/meta/llama-4-scout-17b-16e-instruct',
     messages: [
       { role: 'system', content: STRUCTURING_PROMPT },
       { role: 'user', content: userMessage },
