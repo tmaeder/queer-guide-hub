@@ -115,6 +115,9 @@ export const CommandBar = ({
   const navigate = useLocalizedNavigate();
   const isMobile = useIsMobile();
   const [query, setQuery] = useState(filters.search ?? '');
+  // Search starts collapsed to a single icon so it doesn't duplicate the global
+  // header search; it expands on click or whenever a search filter is active.
+  const [searchOpen, setSearchOpen] = useState(!!filters.search);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [layerOpen, setLayerOpen] = useState(false);
@@ -130,6 +133,8 @@ export const CommandBar = ({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs local input with the external search filter; one-way mirror, never fights keystrokes.
     setQuery(filters.search ?? '');
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the field open while a search filter is active.
+    if (filters.search) setSearchOpen(true);
   }, [filters.search]);
 
   // Primary action: narrow what's on the map to the typed term. Secondary
@@ -184,7 +189,23 @@ export const CommandBar = ({
         className,
       )}
     >
-      {/* Search */}
+      {/* Search — collapsed to an icon by default (no duplicate of the global
+          header search); expands inline on click or when a filter is active. */}
+      {!searchOpen ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Search this map"
+          title="Search this map"
+          onClick={() => {
+            setSearchOpen(true);
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }}
+          className="h-8 w-8 p-0 border border-border"
+        >
+          <Search size={14} aria-hidden="true" />
+        </Button>
+      ) : (
       <Popover
         open={popoverOpen && (loading || suggestions.length > 0 || query.length >= 2)}
         onOpenChange={setPopoverOpen}
@@ -226,7 +247,7 @@ export const CommandBar = ({
                   setQuery('');
                   if (filters.search) onFiltersChange({ ...filters, search: undefined });
                   setPopoverOpen(false);
-                  inputRef.current?.focus();
+                  setSearchOpen(false);
                 }}
                 className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
               >
@@ -286,10 +307,12 @@ export const CommandBar = ({
           </Command>
         </PopoverContent>
       </Popover>
+      )}
 
-      <div className="h-6 w-px bg-border" aria-hidden="true" />
+      <div className="ml-auto flex items-center gap-2">
+        <div className="h-6 w-px bg-border" aria-hidden="true" />
 
-      <LensPicker lenses={lenses} value={lens} onChange={onLensChange} />
+        <LensPicker lenses={lenses} value={lens} onChange={onLensChange} />
 
       {hasPanelFilters &&
         (isMobile ? (
@@ -299,6 +322,7 @@ export const CommandBar = ({
                 variant="ghost"
                 size="sm"
                 aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
+                title="Filters"
                 className="relative h-8 w-8 p-0 border border-border"
               >
                 <SlidersHorizontal size={14} aria-hidden="true" />
@@ -332,6 +356,7 @@ export const CommandBar = ({
                 variant="ghost"
                 size="sm"
                 aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
+                title="Filters"
                 className="relative h-8 w-8 p-0 border border-border"
               >
                 <SlidersHorizontal size={14} aria-hidden="true" />
@@ -359,6 +384,7 @@ export const CommandBar = ({
               variant="ghost"
               size="sm"
               aria-label="Layers"
+              title="Layers"
               className="h-8 w-8 p-0 border border-border"
             >
               <Layers size={14} aria-hidden="true" />
@@ -400,6 +426,7 @@ export const CommandBar = ({
             variant="ghost"
             size="sm"
             aria-label="More map options"
+            title="More"
             className="h-8 w-8 p-0 border border-border"
           >
             <MoreHorizontal size={14} aria-hidden="true" />
@@ -440,6 +467,7 @@ export const CommandBar = ({
           </div>
         </PopoverContent>
       </Popover>
+      </div>
     </div>
   );
 };

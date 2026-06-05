@@ -1,15 +1,18 @@
 import React from 'react';
-import { MapPin, Activity, Route, Hexagon, Layers } from 'lucide-react';
+import { MapPin, Flame, Route, Hexagon, Blend } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { hapticTrigger } from '@/hooks/useHaptics';
 import { LENS_LABELS, type MapLens } from './MapShell.types';
 
+// Distinct icons per lens. `combined` must NOT reuse the Layers icon — that's
+// the separate Layers control in the command bar and the two read as the same
+// button. Blend = pins + density blended; Flame = heat/density.
 const LENS_ICONS: Record<MapLens, React.ElementType> = {
   pins: MapPin,
-  density: Activity,
+  density: Flame,
   routes: Route,
   boundary: Hexagon,
-  combined: Layers,
+  combined: Blend,
 };
 
 interface LensPickerProps {
@@ -47,7 +50,7 @@ export const LensPicker = ({ lenses, value, onChange, className }: LensPickerPro
               onChange(lens);
             }}
             className={cn(
-              'inline-flex items-center justify-center h-9 w-9 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+              'inline-flex items-center justify-center h-8 w-8 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
               i > 0 && 'border-l border-border',
               active
                 ? 'bg-foreground text-background'

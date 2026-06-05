@@ -47,8 +47,16 @@ function priceLabel(range?: number | null): string | null {
  * rendering `iconForMarker(...)`'s return value as JSX inline) keeps the
  * component reference stable per React's static-components rule.
  */
-function MarkerGlyph({ icon: Icon, className }: { icon: LucideIcon; className?: string }) {
-  return <Icon className={className} aria-hidden />;
+function MarkerGlyph({
+  icon: Icon,
+  className,
+  style,
+}: {
+  icon: LucideIcon;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return <Icon className={className} style={style} aria-hidden />;
 }
 
 /** Small signal pills shared across variants. */
@@ -117,12 +125,15 @@ export function MapEntityCard({
 }: MapEntityCardProps) {
   const Icon = iconForMarker(point.type, point.category);
   const fallbackTheme = FALLBACK_THEME[point.type] ?? 'default';
+  // "other" is a non-informative catch-all category — drop it from the label.
+  const cat = point.category && point.category.toLowerCase() !== 'other' ? point.category : '';
   const metaLine =
     point.type === 'venues'
-      ? [categoryLabel(point.category), point.city].filter(Boolean).join(' · ')
+      ? [categoryLabel(cat), point.city].filter(Boolean).join(' · ')
       : point.type === 'events'
         ? [point.subtitle, point.venueName || point.city].filter(Boolean).join(' · ')
         : point.subtitle;
+  const hasImage = Boolean(point.image);
 
   if (variant === 'hover') {
     return (
@@ -157,24 +168,35 @@ export function MapEntityCard({
 
   const body = (
     <>
-      <div className={`relative w-full ${isRail ? 'h-24' : 'h-28'}`}>
-        <Image
-          imageUrl={point.image}
-          alt={point.name}
-          aspect={isRail ? 'auto' : 'card'}
-          heightPx={isRail ? 96 : 112}
-          imageRole="cover"
-          fallbackEntityType={fallbackTheme}
-          fallbackKey={point.id}
-          fallbackIcon={Icon}
-          rounded="none"
-        />
-        <div className="absolute left-2 top-2">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-badge bg-background/90 text-foreground">
-            <MarkerGlyph icon={Icon} className="h-3.5 w-3.5" />
-          </span>
+      {hasImage ? (
+        <div className={`relative w-full ${isRail ? 'h-24' : 'h-28'}`}>
+          <Image
+            imageUrl={point.image}
+            alt={point.name}
+            aspect={isRail ? 'auto' : 'card'}
+            heightPx={isRail ? 96 : 112}
+            imageRole="cover"
+            fallbackEntityType={fallbackTheme}
+            fallbackKey={point.id}
+            fallbackIcon={Icon}
+            rounded="none"
+          />
+          <div className="absolute left-2 top-2">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-badge bg-background/90 text-foreground">
+              <MarkerGlyph icon={Icon} className="h-3.5 w-3.5" />
+            </span>
+          </div>
         </div>
-      </div>
+      ) : (
+        // No photo (most venues): a compact, intentional band — muted ground
+        // with one category glyph in the entity's accent color. Beats a giant
+        // generic placeholder repeated down the whole rail.
+        <div
+          className={`flex w-full items-center justify-center bg-muted ${isRail ? 'h-14' : 'h-16'}`}
+        >
+          <MarkerGlyph icon={Icon} className="h-6 w-6" style={{ color: point.color }} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-1.5 p-2">
         <div className="truncate text-body-lg font-semibold leading-tight text-foreground">
