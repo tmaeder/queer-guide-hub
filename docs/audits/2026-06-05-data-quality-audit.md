@@ -37,6 +37,12 @@ Live audit against prod (`xqeacpakadqfxjxjcewc`). Counts are real, not estimates
 6. Geo-linking (country-scoped to avoid cross-country mislinks): 36 venues country-linked, 5 city-linked. Remaining city gap needs reverse-geocoding (no matchable text).
 7. Reference-type quality scoring written to the search index: cities (avg 40), countries (avg 59), tags (avg 78) — no longer pinned at rank 0.
 
+**Deeper integrity pass (read-only checks + safe fixes):**
+- Clean (0 issues): slug collisions (all tables), self-referential dups, coord range, event date/price order, recurring-without-rule, marketplace price sanity.
+- **Venue `website` field — 2,925 malformed, all fixed**: 2,279 valid domains missing scheme → prepended `https://` (incl. 14 IDN/invisible-char cases); 71 corrupted doubled URLs → recovered embedded `http://`; ~575 garbage (category strings like "Dining and Drinking") + 2 emails-in-website → nulled. 1 malformed email nulled.
+- **141 venues** where `country` text conflicts with `country_id` (e.g. text=US ↔ linked=Argentina) → flagged `needs_attention` (need coord-based disambiguation; not auto-guessed).
+- **3 personalities** born <18y ago but flagged `is_adult` → flagged `needs_attention`.
+
 ## Phase B backfills — running / remaining
 
 **🟢 Running now (background, supervised, resumable):**
