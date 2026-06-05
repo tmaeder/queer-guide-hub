@@ -1,8 +1,11 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExploreMap } from './ExploreMap';
 import { CommandBar } from './CommandBar';
 import { FilterChips } from './FilterChips';
+import { MapLegend } from './MapLegend';
+import { SpotlightRail } from './SpotlightRail';
+import type { MapPointSummary } from './mapPoint';
 import { useMapShellState } from '@/hooks/useMapShellState';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -53,6 +56,12 @@ export const MapShell = ({
   const { state, setLens, setLayers, setFilters, setViewport } = useMapShellState(config);
   const { toast } = useToast();
   const { t } = useTranslation();
+
+  // Spotlight rail state — the in-view point feed + hover/selection sync.
+  const [pointsInView, setPointsInView] = useState<MapPointSummary[]>([]);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const showRail = config.showCommandBar !== false;
 
   // Drop filter keys we don't expose on this surface so they can't leak in via URL.
   const exposedFilters: MapShellFilters = useMemo(() => {
@@ -204,7 +213,23 @@ export const MapShell = ({
         onLayersChange={handleLayersChange}
         renderMode={lensToRenderMode(state.lens)}
         pridePalette
+        onPointsInView={showRail ? setPointsInView : undefined}
+        selectedId={selectedId}
+        highlightedId={hoveredId}
+        showResultCount={!showRail}
       />
+
+      {showRail && (
+        <>
+          <MapLegend lens={state.lens} layers={exploreLayers} pridePalette />
+          <SpotlightRail
+            points={pointsInView}
+            selectedId={selectedId}
+            onHover={setHoveredId}
+            onSelect={(id) => setSelectedId(id)}
+          />
+        </>
+      )}
 
       {config.showCommandBar !== false && (
         <CommandBar
