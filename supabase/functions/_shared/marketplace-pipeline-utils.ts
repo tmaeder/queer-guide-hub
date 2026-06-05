@@ -44,13 +44,17 @@ export function validateMarketplaceNormalized(n: Record<string, unknown>): Marke
   const business = String(n.business_name ?? meta.merchant_name ?? meta.business_name ?? meta.brand_name ?? '').trim()
   if (!business) warnings.push('W_MISSING_BUSINESS_NAME')
 
+  const priceType = String(n.price_type ?? meta.price_type ?? '').trim().toLowerCase()
   const priceRaw = meta.price ?? n.price ?? meta.search_price
   if (priceRaw != null && String(priceRaw).trim() !== '') {
     const price = Number(priceRaw)
     if (!Number.isFinite(price)) errors.push('E_INVALID_PRICE')
     else if (price < 0) errors.push('E_NEGATIVE_PRICE')
     else if (price > 1_000_000) warnings.push('W_PRICE_SUSPICIOUS')
-    else if (price === 0) warnings.push('W_ZERO_PRICE')
+    // L-1 (audit 2026-06-05): a price <= 0 is only valid for a free listing.
+    // Otherwise it is a feed glitch (e.g. 0.00 placeholders) — reject so it
+    // can't surface a "€0" product.
+    else if (price <= 0 && priceType !== 'free') errors.push('E_ZERO_PRICE_NOT_FREE')
   } else {
     warnings.push('W_MISSING_PRICE')
   }

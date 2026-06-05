@@ -394,6 +394,10 @@ function cleanText(v: unknown): string {
   if (!v) return ''
 
   let s = String(v)
+    // L-2 (audit 2026-06-05): canonical Unicode form + strip invisible zero-width
+    // codepoints (ZWSP/ZWNJ/ZWJ/BOM) that defeat dedup/search and hide in text.
+    .normalize('NFKC')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&')
