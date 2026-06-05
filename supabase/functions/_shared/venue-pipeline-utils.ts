@@ -170,9 +170,11 @@ export function validateVenueNormalized(n: Record<string, unknown>): ValidationO
 
   const name = String(n.name ?? '').trim()
   if (name.length < 2) errors.push('E_MISSING_NAME')
-  // L-3 (audit 2026-06-05): mojibake (UTF-8 decoded as Latin-1) signatures in a
-  // name — flag for human re-decode rather than guessing the original bytes.
-  if (/Ã[\x80-\xbf©¶¤¨ ]|â€| Â|Ã¢â‚¬/.test(name)) { warnings.push('W_MOJIBAKE'); quality -= 5 }
+  // Mojibake = UTF-8 bytes wrongly decoded as Latin-1. Match the common
+  // double-encode lead bytes (\u00C3 'Ã', \u00E2\u20AC 'â€', \u00C2 'Â'
+  // followed by a Latin-1 supplement byte). Escapes only — no literal
+  // irregular whitespace.
+  if (/[\u00C3\u00C2][\u0080-\u00BF]|\u00E2\u20AC/.test(name)) { warnings.push('W_MOJIBAKE'); quality -= 5 }
 
   const loc = (n.location ?? {}) as Record<string, unknown>
   if (!loc.lat || !loc.lng) { warnings.push('W_NO_COORDS'); quality -= 15 }
