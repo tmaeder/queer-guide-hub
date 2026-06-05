@@ -224,7 +224,15 @@ async function structureExtraction(
   const source = isTextMode ? 'text+refinement' : 'vision+refinement'
 
   try {
-    const parsed = JSON.parse(content)
+    // Tolerate models that wrap JSON in ```json fences or surrounding prose.
+    const jsonText = (() => {
+      const fenced = content.match(/```(?:json)?\s*([\s\S]*?)```/i)
+      if (fenced) return fenced[1].trim()
+      const first = content.indexOf('{')
+      const last = content.lastIndexOf('}')
+      return first >= 0 && last > first ? content.slice(first, last + 1) : content
+    })()
+    const parsed = JSON.parse(jsonText)
     const rawItems = Array.isArray(parsed.items) ? parsed.items : [parsed]
     const items: ExtractedItem[] = rawItems.slice(0, 10).map((item: Record<string, unknown>) => {
       const detectedType = item.detected_type === 'venue' ? 'venue' : 'event'
