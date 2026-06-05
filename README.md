@@ -1,5 +1,7 @@
 # Queer Guide
 
+![screenshot](docs/screenshot.png)
+
 The global platform for LGBTQ+ travel, community, and safe spaces at [queer.guide](https://queer.guide).
 
 ## Tech Stack
