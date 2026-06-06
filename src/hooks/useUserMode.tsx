@@ -27,7 +27,7 @@ function isUserMode(v: string | null | undefined): v is UserMode {
   return !!v && (USER_MODE_VALUES as readonly string[]).includes(v);
 }
 
-export function useUserMode(): { mode: UserMode; setMode: (m: UserMode) => void } {
+export function useUserMode(): { mode: UserMode; setMode: (m: UserMode) => void; datingEnabled: boolean } {
   const { profile, updateProfile } = useProfile();
 
   const local = useSyncExternalStore(
@@ -60,5 +60,5 @@ export function useUserMode(): { mode: UserMode; setMode: (m: UserMode) => void 
     [updateProfile],
   );
 
-  return { mode, setMode };
+  return { mode, setMode, datingEnabled: mode === 'dating' };
 }

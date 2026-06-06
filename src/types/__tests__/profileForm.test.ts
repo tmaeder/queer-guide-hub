@@ -117,39 +117,57 @@ describe('calculateCompletion', () => {
     expect(calculateCompletion(emptyForm())).toBe(0);
   });
 
-  it('returns 60 when all core fields are filled', () => {
+  it('weights the "You" core at 50% (display_name, pronouns, location, languages, avatar)', () => {
     const data = emptyForm();
     data.display_name = 'Alice';
-    data.bio = 'queer dev';
-    data.location = 'Berlin';
     data.pronouns = 'they/them';
-    data.gender_identity = 'non-binary';
-    expect(calculateCompletion(data)).toBe(60);
+    data.location = 'Berlin';
+    data.languages = ['en', 'de'];
+    // avatar_url lives on the profile, not the form
+    expect(calculateCompletion(data, { avatar_url: 'https://x/a.png' } as never)).toBe(50);
   });
 
-  it('reaches 100 when core + extended + optional are filled', () => {
+  it('weights the personalization signal at 40% (interests, travel_preferences, accessibility_needs, bio)', () => {
+    const data = emptyForm();
+    data.bio = 'queer dev';
+    const profile = {
+      interests: ['leather', 'artsy'],
+      travel_preferences: { budget_level: 'mid' },
+      accessibility_needs: 'wheelchair',
+    } as never;
+    expect(calculateCompletion(data, profile)).toBe(40);
+  });
+
+  it('does NOT count dead identity fields (gender, orientation, relationship_style)', () => {
+    const data = emptyForm();
+    data.gender_identity = 'non-binary';
+    data.sexual_orientation = 'queer';
+    data.relationship_style = 'poly';
+    expect(calculateCompletion(data)).toBe(0);
+  });
+
+  it('reaches 100 when core + signal + extras are filled', () => {
     const data = emptyForm();
     data.display_name = 'a';
-    data.bio = 'b';
+    data.pronouns = 'b';
     data.location = 'c';
-    data.pronouns = 'd';
-    data.gender_identity = 'e';
-    data.first_name = 'f';
-    data.last_name = 'g';
-    data.age_range = 'h';
-    data.occupation = 'i';
-    data.education = 'j';
-    data.sexual_orientation = 'k';
-    data.romantic_orientation = 'l';
-    data.current_relationship_status = 'm';
-    data.relationship_style = 'n';
-    data.chosen_family_status = 'o';
-    expect(calculateCompletion(data)).toBe(100);
+    data.languages = ['en'];
+    data.bio = 'd';
+    data.first_name = 'e';
+    data.occupation = 'f';
+    const profile = {
+      avatar_url: 'https://x/a.png',
+      interests: ['leather'],
+      travel_preferences: { budget_level: 'mid' },
+      accessibility_needs: 'none',
+    } as never;
+    expect(calculateCompletion(data, profile)).toBe(100);
   });
 
-  it('ignores whitespace-only values', () => {
+  it('ignores whitespace-only and empty-array values', () => {
     const data = emptyForm();
     data.display_name = '   ';
+    data.languages = [];
     expect(calculateCompletion(data)).toBe(0);
   });
 });

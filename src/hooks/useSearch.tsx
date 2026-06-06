@@ -190,7 +190,24 @@ export function sanitiseHits(
   return out;
 }
 
-export const useSearch = (query: string, filters: SearchFilters = {}, page = 1, sort?: string) => {
+/**
+ * Identity passed by logged-in callers so the worker personalizes ranking from
+ * the user's profile (interests/home_city → rank.ts boosts, `_boostReason`).
+ * Anonymous callers omit it; the worker falls back to session bias. Passed in
+ * (not read from useAuth here) so the hook stays context-free and testable.
+ */
+export interface SearchIdentity {
+  userId?: string | null;
+  sessionId?: string | null;
+}
+
+export const useSearch = (
+  query: string,
+  filters: SearchFilters = {},
+  page = 1,
+  sort?: string,
+  identity: SearchIdentity = {},
+) => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
@@ -225,6 +242,12 @@ export const useSearch = (query: string, filters: SearchFilters = {}, page = 1, 
     sortRef.current = sort;
   }, [sort]);
 
+  const { userId, sessionId } = identity;
+  const identityRef = useRef(identity);
+  useEffect(() => {
+    identityRef.current = { userId, sessionId };
+  }, [userId, sessionId]);
+
   const performSearch = async (searchQuery: string, searchPage = 1) => {
     if (searchQuery.trim().length < MIN_QUERY_LEN) {
       setResults([]);
@@ -243,11 +266,14 @@ export const useSearch = (query: string, filters: SearchFilters = {}, page = 1, 
     setError(null);
     setErrorKind(null);
     try {
+      const { userId: uid, sessionId: sid } = identityRef.current;
       const data = await searchFetch<SearchResponse>('/', {
         query: searchQuery,
         filters: toWorkerFilters(filtersRef.current, sortRef.current),
         hitsPerPage: 20,
         page: searchPage,
+        ...(uid ? { user_id: uid } : {}),
+        ...(sid ? { session_id: sid } : {}),
       });
 
       const cleaned = sanitiseHits(data?.hits, filtersRef.current);
@@ -292,7 +318,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}, page = 1, 
       setTooShort(false);
     }
 
-  }, [debouncedQuery, filtersKey, page, sort]);
+  }, [debouncedQuery, filtersKey, page, sort, userId, sessionId]);
 
   return {
     results,

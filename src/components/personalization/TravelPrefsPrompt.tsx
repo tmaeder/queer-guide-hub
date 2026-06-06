@@ -39,7 +39,7 @@ export function TravelPrefsPrompt() {
           Set your budget, safety preferences, and interests for better recommendations.
         </p>
       </div>
-      <LocalizedLink to="/profile/settings?tab=travel">
+      <LocalizedLink to="/profile/settings?tab=preferences">
         <Button size="sm">Set up</Button>
       </LocalizedLink>
       <Button
