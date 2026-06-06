@@ -77,10 +77,22 @@ const isMcpTraffic = (p: string): boolean =>
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		currentEnv = env;
-		const { pathname } = new URL(request.url);
+		const url = new URL(request.url);
+		const { pathname, origin } = url;
+		const resourceMetadataUrl = `${origin}/.well-known/oauth-protected-resource`;
 
 		if (pathname === "/" ) return new Response(LANDING, { headers: { "content-type": "text/html; charset=utf-8" } });
 		if (pathname === "/health") return Response.json({ ok: true, ts: Date.now() });
+
+		// RFC 9728 protected-resource metadata for the /authed mount. The OAuth
+		// provider (v0.0.5) doesn't emit this; MCP clients fetch it (optionally
+		// path-suffixed) to discover the authorization server.
+		if (pathname === "/.well-known/oauth-protected-resource" || pathname.startsWith("/.well-known/oauth-protected-resource/")) {
+			return Response.json(
+				{ resource: `${origin}/authed`, authorization_servers: [origin] },
+				{ headers: { "access-control-allow-origin": "*" } },
+			);
+		}
 
 		// Per-IP rate limit on MCP traffic (skip CORS preflight). Fail-open: a
 		// limiter hiccup must never take the server down.
@@ -103,6 +115,16 @@ export default {
 		if (pathname === "/sse" || pathname.startsWith("/sse/")) return publicSSE.fetch(request, env, ctx);
 
 		// Everything else (authed MCP, OAuth endpoints, .well-known) → provider.
-		return oauth.fetch(request, env, ctx);
+		const res = await oauth.fetch(request, env, ctx);
+
+		// Point the 401 challenge at the protected-resource metadata (RFC 9728)
+		// so MCP clients can auto-discover the OAuth flow.
+		const wa = res.status === 401 ? res.headers.get("www-authenticate") : null;
+		if (wa && !wa.includes("resource_metadata")) {
+			const headers = new Headers(res.headers);
+			headers.set("www-authenticate", `${wa}, resource_metadata="${resourceMetadataUrl}"`);
+			return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+		}
+		return res;
 	},
 } satisfies ExportedHandler<Env>;
