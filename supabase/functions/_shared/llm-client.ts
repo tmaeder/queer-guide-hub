@@ -120,8 +120,13 @@ export async function llmChatCompletion(
     }
 
     const data = await response.json()
+    // CF Workers AI sometimes returns message.content already parsed (object)
+    // for JSON-shaped outputs. The contract here is `content: string`, so
+    // stringify anything non-string — callers that want JSON re-parse it.
+    const rawContent = data.choices?.[0]?.message?.content ?? ''
+    const content = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent)
     return {
-      content: data.choices?.[0]?.message?.content ?? '',
+      content,
       usage: data.usage,
       model: data.model ?? model,
     }
