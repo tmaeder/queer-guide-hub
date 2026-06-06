@@ -115,6 +115,13 @@ On top of the Phase B 504 deterministic + title-governance + tag-based tags, the
 ### Incident: circuit breaker tripped
 Ran 8 concurrent LLM shards (P1 news×4 + P2 venues×4) — tripped the shared `llm.openai.enrich-news` circuit breaker (threshold=5 failures, 120s cooldown). Also blocked the live news-ingestion pipeline. **Root cause:** CF Workers AI rate-limits burst requests across concurrent edge-fn invocations. **Fix:** manual `UPDATE api_circuit_breakers SET state='closed', failure_count=0 WHERE api_name='llm.openai.enrich-news'`; manually classified the poisoned half-open probe row (Sydney Mardi Gras). **Lesson:** max 4 concurrent LLM shards on this project's CF Workers AI allocation. Sequenced all subsequent targets solo at 4-shard load → 0 failures.
 
+### Venue city-linking (post-geocode, Phase C follow-up)
+After the other session's Photon geocode run completed (~88% venue coord coverage), an additional SQL city-text pass ran:
+- **1,322 venues** inherited coords + city_id from `cities` table by exact `lower(name)=lower(city)` + country code match. Country-scoped → no cross-country mislinks.
+- **14 more** linked by city text for venues that had Photon coords but Nominatim reverse-geocode returned no usable city.
+- **Final venue state:** **93.7% with coords** (21,726/23,188), **100% classified**, 1,462 genuinely ungeocodable (Photon found nothing + no city text match), 310 with coords but no city (city name doesn't match any `cities` table entry — foreign spellings, rural venues).
+
 ### Final DB state
-- **Disk:** 5,794 MB → **5,851 MB** (+57 MB for all Phase C float + text writes). DB headroom maintained (~450 MB to 6,300 MB guard).
-- **Descriptions/images (venues 97%, personalities 79% draft):** deferred — LLM-generation cost + disk risk (text + re-embeds). Out-of-scope for this remediation pass; queue via `venues_due_for_refresh` + `event-agentic-enrich` when budget allows.
+- **Disk:** 5,794 MB → **5,852 MB** (+58 MB total across all phases). Headroom ~450 MB to 6,300 MB guard.
+- **Descriptions/images (venues 97%, personalities 79% draft):** deferred — LLM-generation cost + disk risk. Queue via `venues_due_for_refresh` + `event-agentic-enrich` when budget allows.
+- **Open PRs:** #1468 (placeholder city map fix), #1469 (venue coord/city consistency), #1470, #1471 (this branch) — all MERGEABLE with auto-merge enabled and CI green.
