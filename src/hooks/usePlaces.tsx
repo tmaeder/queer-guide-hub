@@ -83,7 +83,9 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
 
 export function useOptimizedCities(filters?: PlacesFilters & { countryId?: string }) {
   const fetchCities = async (): Promise<City[]> => {
-    let query = supabase.from('cities').select('*').is('duplicate_of_id', null).order('population', { ascending: false });
+    // Exclude placeholder ("tmp-") cities — auto-created ingest stubs that must not
+    // surface on the explore map, listings, or search (see find_nearest_city migration).
+    let query = supabase.from('cities').select('*').is('duplicate_of_id', null).not('slug', 'like', 'tmp-%').order('population', { ascending: false });
 
     if (filters?.countryId) {
       query = query.eq('country_id', filters.countryId);
@@ -235,6 +237,7 @@ export async function fetchCitiesByCountry(countryId: string): Promise<CityWithC
     .select('*, countries (*)')
     .eq('country_id', countryId)
     .is('duplicate_of_id', null)
+    .not('slug', 'like', 'tmp-%')
     .order('population', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -243,7 +246,7 @@ export async function fetchCitiesByCountry(countryId: string): Promise<CityWithC
 export async function searchLocations(query: string) {
   const [countriesResult, citiesResult] = await Promise.all([
     supabase.from('countries').select('*, regions (*)').is('duplicate_of_id', null).ilike('name', `%${query}%`),
-    supabase.from('cities').select('*, countries (*)').is('duplicate_of_id', null).ilike('name', `%${query}%`).limit(20),
+    supabase.from('cities').select('*, countries (*)').is('duplicate_of_id', null).not('slug', 'like', 'tmp-%').ilike('name', `%${query}%`).limit(20),
   ]);
   return {
     countries: countriesResult.data || [],
@@ -259,6 +262,7 @@ export async function findNearbyCities(userLocation: {
     .from('cities')
     .select('*, countries (*)')
     .is('duplicate_of_id', null)
+    .not('slug', 'like', 'tmp-%')
     .not('latitude', 'is', null)
     .not('longitude', 'is', null);
   if (error) throw error;
