@@ -32,7 +32,7 @@ import {
 } from '@/hooks/useCMSContentMetadata';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
-import { AdminShellContext } from '@/components/admin/shell/AdminShell';
+import { AdminShellContext, type EditorQueue } from '@/components/admin/shell/AdminShell';
 import type { CMSContentMetadata, WorkflowState } from '@/types/cms';
 
 interface ReviewQueueItem {
@@ -46,7 +46,8 @@ interface ReviewQueueItem {
 }
 
 interface ReviewQueueProps {
-  onEdit?: (contentType: string, itemId: string) => void;
+  /** Opens the editor. Receives the ordered queue so the host can run cockpit mode. */
+  onEdit?: (contentType: string, itemId: string, queue?: EditorQueue) => void;
 }
 
 type SortOrder = 'newest' | 'oldest';
@@ -253,11 +254,12 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
       }));
       const target = queueItems[index];
       if (!target) return;
+      const queue = { items: queueItems, index };
       if (propOnEdit) {
-        propOnEdit(target.contentType, target.itemId);
+        propOnEdit(target.contentType, target.itemId, queue);
         return;
       }
-      shellCtx?.openEditor(target.contentType, target.itemId, { items: queueItems, index });
+      shellCtx?.openEditor(target.contentType, target.itemId, queue);
     },
     [displayItems, propOnEdit, shellCtx],
   );
