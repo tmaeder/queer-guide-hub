@@ -54,9 +54,22 @@ test.describe('Marketplace — discovery surface', () => {
     // Avoids hardcoding API credentials in the spec.
     await page.goto('/marketplace');
     const detailLinks = page.locator(
-      'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="merchants/"]):not([href*="share"]):not([href$="/submit"])',
+      'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="share"]):not([href$="/submit"])',
     );
+    // Curated rows hydrate progressively — poll until at least two distinct
+    // product detail links exist before reading them, so the spec doesn't race
+    // the lazy render (and burn CI retries) when only one row has mounted.
     await detailLinks.first().waitFor({ timeout: 30_000 });
+    await expect
+      .poll(
+        () =>
+          detailLinks.evaluateAll(
+            (nodes) =>
+              new Set(nodes.map((n) => (n as HTMLAnchorElement).getAttribute('href'))).size,
+          ),
+        { timeout: 30_000 },
+      )
+      .toBeGreaterThanOrEqual(2);
     const slugs = (await detailLinks.evaluateAll((nodes) =>
       Array.from(new Set(nodes.map((n) => (n as HTMLAnchorElement).getAttribute('href')))).slice(0, 2),
     )) as string[];
@@ -97,7 +110,7 @@ test.describe('Marketplace — discovery surface', () => {
   test('marketplace detail page emits Product JSON-LD with offers', async ({ page }) => {
     await page.goto('/marketplace');
     await page.waitForSelector('a[href^="/marketplace/"]', { timeout: 30_000 });
-    const detailLink = page.locator('a[href^="/marketplace/"]:not([href*="categor"]):not([href*="merchants/"]):not([href*="share"]):not([href$="/submit"])').first();
+    const detailLink = page.locator('a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="share"]):not([href$="/submit"])').first();
     const href = await detailLink.getAttribute('href');
     expect(href).toBeTruthy();
     await page.goto(href!);
