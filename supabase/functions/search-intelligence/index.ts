@@ -1,6 +1,7 @@
 // search-intelligence
 // Admin-gated router for search-intelligence operations: topic clusters, AI
-// suggestions, search-visibility scoring, and an install/health rollup.
+// suggestions, search-visibility scoring, search-query analytics, and an
+// install/health rollup.
 // Holds SUPABASE_SERVICE_ROLE_KEY; never returns it.
 //
 // The Meilisearch index-management routes (indexes, settings versioning,
@@ -111,6 +112,12 @@ function pickRoute(method: string, parts: string[]): Handler | null {
   if (parts[0] === 'suggestions' && parts.length === 2) {
     if (method === 'PATCH') return updateSuggestion
   }
+  // /analytics/* — read-only search-query analytics
+  if (method === 'GET' && parts[0] === 'analytics' && parts.length === 2) {
+    if (parts[1] === 'summary') return analyticsSummary
+    if (parts[1] === 'top-queries') return analyticsTopQueries
+    if (parts[1] === 'zero-results') return analyticsZeroResults
+  }
   return null
 }
 
@@ -212,6 +219,50 @@ async function listAudit(ctx: RouteContext): Promise<Response> {
   if (action) q = q.eq('action', action)
   if (resource) q = q.eq('resource_type', resource)
   const { data, error } = await q
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+// ── analytics (read-only over search_queries) ────────────────────────────────
+
+function analyticsSince(ctx: RouteContext): string {
+  // ?since accepts an ISO timestamp or a window shorthand (24h | 7d | 30d).
+  const raw = ctx.url.searchParams.get('since') ?? '7d'
+  const m = raw.match(/^(\d+)([hd])$/)
+  if (m) {
+    const hours = m[2] === 'h' ? Number(m[1]) : Number(m[1]) * 24
+    return new Date(Date.now() - hours * 3600_000).toISOString()
+  }
+  const parsed = Date.parse(raw)
+  return Number.isNaN(parsed)
+    ? new Date(Date.now() - 7 * 24 * 3600_000).toISOString()
+    : new Date(parsed).toISOString()
+}
+
+async function analyticsSummary(ctx: RouteContext): Promise<Response> {
+  const { data, error } = await ctx.service.rpc('search_analytics_summary', {
+    p_since: analyticsSince(ctx),
+  })
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function analyticsTopQueries(ctx: RouteContext): Promise<Response> {
+  const limit = Math.min(Number(ctx.url.searchParams.get('limit') ?? '50'), 200)
+  const { data, error } = await ctx.service.rpc('search_analytics_top_queries', {
+    p_since: analyticsSince(ctx),
+    p_limit: limit,
+  })
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function analyticsZeroResults(ctx: RouteContext): Promise<Response> {
+  const limit = Math.min(Number(ctx.url.searchParams.get('limit') ?? '50'), 200)
+  const { data, error } = await ctx.service.rpc('search_analytics_zero_results', {
+    p_since: analyticsSince(ctx),
+    p_limit: limit,
+  })
   if (error) return errorResponse(error.message, 500, ctx.req)
   return jsonResponse({ success: true, data }, 200, ctx.req)
 }

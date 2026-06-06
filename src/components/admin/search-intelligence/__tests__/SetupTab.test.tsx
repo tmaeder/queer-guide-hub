@@ -26,9 +26,9 @@ describe('SetupTab', () => {
         summary: { ok: 5, warn: 1, fail: 0, na: 0 },
         checks: [
           { category: 'extension', name: 'pg_trgm', status: 'ok', detail: 'installed' },
-          { category: 'cron', name: 'meilisearch-sync', status: 'warn', detail: 'not scheduled' },
+          { category: 'cron', name: 'wf-news-pipeline', status: 'warn', detail: 'not scheduled' },
         ],
-        runtime: { meili_configured: true, function_env: {} },
+        runtime: { function_env: {} },
       },
     });
     render(<SetupTab />);
@@ -36,7 +36,7 @@ describe('SetupTab', () => {
     expect(screen.getByText('extension')).toBeInTheDocument();
     expect(screen.getByText('pg_trgm')).toBeInTheDocument();
     expect(screen.getByText('cron')).toBeInTheDocument();
-    expect(screen.getByText('meilisearch-sync')).toBeInTheDocument();
+    expect(screen.getByText('wf-news-pipeline')).toBeInTheDocument();
   });
 
   it('shows failure alert when fail > 0', async () => {
@@ -45,7 +45,7 @@ describe('SetupTab', () => {
       data: {
         summary: { ok: 0, warn: 0, fail: 2, na: 0 },
         checks: [],
-        runtime: { meili_configured: false, function_env: {} },
+        runtime: { function_env: {} },
       },
     });
     render(<SetupTab />);

@@ -43,16 +43,35 @@ export async function callSearchIntelligence<T = unknown>(
 
 // ── Type definitions matching the edge function payloads ────────────────────
 
-export interface IndexesResponse {
-  managed: string[];
-  meili: Array<{ uid: string; primaryKey?: string }>;
-  db_counts: Record<string, number | null>;
+export interface AnalyticsSummary {
+  total: number;
+  distinct_q: number;
+  zero_result: number;
+  zero_pct: number;
+  clicked: number;
+  ctr_pct: number;
+  rewritten: number;
+  rewrite_pct: number;
+  p50_ms: number | null;
+  p95_ms: number | null;
+  langs: Array<{ lang: string; n: number }>;
 }
 
-export interface IndexStats {
-  numberOfDocuments: number;
-  isIndexing: boolean;
-  fieldDistribution: Record<string, number>;
+export interface AnalyticsTopQuery {
+  query_normalized: string;
+  n: number;
+  avg_results: number;
+  avg_ms: number;
+  zero_n: number;
+  ctr_pct: number;
+  lang: string | null;
+}
+
+export interface AnalyticsZeroResult {
+  query_normalized: string;
+  n: number;
+  lang: string | null;
+  last_seen: string;
 }
 
 export interface Synonym {
@@ -83,26 +102,3 @@ export interface AuditEntry {
   created_at: string;
 }
 
-export interface SearchDebugResult {
-  raw: {
-    hits: Array<Record<string, unknown>>;
-    estimatedTotalHits?: number;
-    processingTimeMs?: number;
-  };
-  summary: {
-    hits: number;
-    estimatedTotal: number | null;
-    processingTimeMs: number | null;
-    roundTripMs: number;
-    topMatches: Array<{ id: unknown; title: unknown; score: number | null }>;
-  };
-}
-
-export interface ConsistencyResult {
-  type: string;
-  db_rows: number;
-  meili_docs: number;
-  missing_in_meili: string[];
-  orphans_in_meili: string[];
-  truncated: boolean;
-}
