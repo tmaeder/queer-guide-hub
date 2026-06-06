@@ -45,8 +45,9 @@ Live audit against prod (`xqeacpakadqfxjxjcewc`). Counts are real, not estimates
 
 ## Phase B backfills — running / remaining
 
-**🟢 Running now (background, supervised, resumable):**
-- **Venue geocoding** — `scripts/backfill-venue-geocode-photon.mjs`. Country-validated Photon, ~25 venues/min, ~71% located, ~16% rejected as cross-country mislinks. ~10.2k queued, ETA ~6–7h.
+**✅ Venue geocoding + geo-linking — COMPLETE:**
+- **Geocoding** — `scripts/backfill-venue-geocode-photon.mjs`. Country-validated Photon, 9,688 processed: **6,946 located (72%)**, 824 rejected (cross-country mislinks correctly blocked), 1,918 no-result (name-only "addresses" like "Afghan Women's Network", not geocodable).
+- **City/country linking** — PostGIS nearest-city (country-scoped, then global ≤100km). Result for live venues: **coords 56%→88%, city_id 73%→95.4%, country_id →95.6%**. Remaining ~363 are >100km from any city in our table (remote / sparse city coverage).
 - **Personality Wikidata-by-QID enrichment** — `scripts/backfill-personality-wikidata.mjs`. ✅ **DONE** (2,886 processed): +491 nationalities; **~14% (~400) of QIDs are wrong** (point to given-name/disambiguation items, not humans) → flagged `needs_attention`; birth-date yield ~0 — Wikidata genuinely lacks day-precision births for this obscure cohort (finding: poor Wikidata coverage + bad QID linkage). Day-precision-only gate kept (no fake `YYYY-01-01`).
 
 Both write per-row via the Management API (bulk venue/personality writes time out on the `search_documents_sync` reindex trigger) and self-restart on DNS/network blips.
