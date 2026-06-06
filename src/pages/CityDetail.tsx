@@ -74,6 +74,27 @@ export default function CityDetail() {
     }
   }, [city?.id, city?.name, track]);
 
+  // Placeholder ("tmp-") cities are auto-created ingest stubs, excluded from maps,
+  // listings, and search. Keep the page reachable (e.g. personality-birthplace links)
+  // but mark it noindex so it never enters search results.
+  const isPlaceholderCity = !!city && (city.slug?.startsWith('tmp-') || city.seo_indexable === false);
+  useEffect(() => {
+    if (!isPlaceholderCity) return;
+    let el = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    const hadTag = !!el;
+    const prev = el?.getAttribute('content') ?? null;
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute('name', 'robots');
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', 'noindex,nofollow');
+    return () => {
+      if (!hadTag) document.querySelector('meta[name="robots"]')?.remove();
+      else if (prev !== null) el?.setAttribute('content', prev);
+    };
+  }, [isPlaceholderCity]);
+
   const hasAirport = !!(
     city?.major_airport_code ||
     (city?.airport_codes && city.airport_codes.length > 0)
