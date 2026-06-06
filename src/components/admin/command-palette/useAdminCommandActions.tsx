@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 export interface AdminCommandAction {
   id: string;
@@ -53,12 +53,34 @@ export function useAdminCommandActions(): Ctx {
   return useContext(AdminCommandActionsContext);
 }
 
-/** Register a page-local action while the component is mounted. */
+/**
+ * Register a page-local action while the component is mounted.
+ *
+ * Callers pass an inline object literal, so `action` has a fresh identity every
+ * render. Depending on the object directly would re-run the effect each render →
+ * register() → setMap → context re-render → loop ("Maximum update depth exceeded",
+ * React #185). Depend on the stable primitive fields instead, and read `perform`
+ * through a ref so the latest closure runs without re-registering.
+ */
 // eslint-disable-next-line react-refresh/only-export-components -- pure helper colocated with consumer; tests import it directly.
 export function useRegisterAdminCommandAction(action: AdminCommandAction | null | undefined) {
   const { register } = useAdminCommandActions();
+
+  const performRef = useRef(action?.perform);
   useEffect(() => {
-    if (!action) return;
-    return register(action);
-  }, [action, register]);
+    performRef.current = action?.perform;
+  });
+
+  const { id, label, shortcut, keywords } = action ?? {};
+
+  useEffect(() => {
+    if (!id || !label) return;
+    return register({
+      id,
+      label,
+      shortcut,
+      keywords,
+      perform: () => performRef.current?.(),
+    });
+  }, [id, label, shortcut, keywords, register]);
 }
