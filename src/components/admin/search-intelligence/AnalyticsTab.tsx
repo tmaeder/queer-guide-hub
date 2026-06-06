@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -53,7 +54,7 @@ function Kpi({
   );
 }
 
-export function AnalyticsTab() {
+export function AnalyticsTab({ onAddSynonym }: { onAddSynonym?: (term: string) => void }) {
   const [range, setRange] = useState('7d');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -164,6 +165,11 @@ export function AnalyticsTab() {
                   <span className="text-xs text-muted-foreground min-w-[60px] text-right" style={tnum}>
                     {z.n}×
                   </span>
+                  {onAddSynonym && (
+                    <Button variant="outline" size="sm" onClick={() => onAddSynonym(z.query_normalized)}>
+                      Add synonym
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
