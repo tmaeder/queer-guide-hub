@@ -17,7 +17,8 @@
 import { OAuthProvider } from "@cloudflare/workers-oauth-provider";
 import { QueerGuideMCP } from "./mcp";
 import { AuthApp } from "./auth-app";
-import type { Env } from "./types";
+import { refreshSession } from "./supabase";
+import type { Env, Props } from "./types";
 
 export { QueerGuideMCP };
 
@@ -26,6 +27,14 @@ const SERVE_OPTS = { binding: "MCP_OBJECT" } as const;
 const publicStreamable = QueerGuideMCP.serve("/mcp", SERVE_OPTS);
 const publicSSE = QueerGuideMCP.serveSSE("/sse", SERVE_OPTS);
 
+// The token-exchange callback runs inside a request but isn't handed `env`, so
+// stash the current request's env for it to read.
+let currentEnv: Env | undefined;
+
+// Keep our access-token TTL under Supabase's ~1h so the MCP client refreshes
+// (which refreshes the upstream Supabase session below) before it can expire.
+const ACCESS_TOKEN_TTL = 3000;
+
 const oauth = new OAuthProvider({
 	apiRoute: "/authed",
 	apiHandler: QueerGuideMCP.serve("/authed", SERVE_OPTS),
@@ -33,6 +42,21 @@ const oauth = new OAuthProvider({
 	authorizeEndpoint: "/authorize",
 	tokenEndpoint: "/token",
 	clientRegistrationEndpoint: "/register",
+	// On every OAuth token refresh, refresh the upstream Supabase session and
+	// persist it into the grant — so write tools keep working across reconnects.
+	tokenExchangeCallback: async ({ grantType, props }) => {
+		const p = props as Props;
+		if (grantType === "refresh_token" && p?.supabaseRefreshToken && currentEnv) {
+			const s = await refreshSession(currentEnv, p.supabaseRefreshToken);
+			if (s) {
+				return {
+					newProps: { ...p, supabaseAccessToken: s.access_token, supabaseRefreshToken: s.refresh_token },
+					accessTokenTTL: ACCESS_TOKEN_TTL,
+				};
+			}
+		}
+		return { accessTokenTTL: ACCESS_TOKEN_TTL };
+	},
 });
 
 const LANDING = `<!doctype html><meta charset="utf-8">
@@ -52,6 +76,7 @@ const isMcpTraffic = (p: string): boolean =>
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+		currentEnv = env;
 		const { pathname } = new URL(request.url);
 
 		if (pathname === "/" ) return new Response(LANDING, { headers: { "content-type": "text/html; charset=utf-8" } });

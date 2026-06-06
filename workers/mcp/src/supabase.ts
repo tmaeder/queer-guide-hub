@@ -45,35 +45,22 @@ export interface TokenHolder {
 }
 
 /**
- * Fetch with the user's Supabase JWT. Refreshes once on 401 and mutates
- * `holder.props` in place so later calls in the same session reuse the fresh
- * token (best-effort; not persisted back to the OAuth grant).
+ * Fetch with the user's Supabase JWT. The OAuth token-exchange callback keeps
+ * this token fresh (refreshes the upstream Supabase session on every OAuth
+ * token refresh and persists it to the grant), and our access-token TTL is set
+ * below Supabase's expiry — so by the time a tool runs, the token is valid.
  */
 async function authedFetch(holder: TokenHolder, path: string, init: RequestInit): Promise<Response> {
 	const { env, props } = holder;
-	const url = `${env.SUPABASE_URL}${path}`;
-	const call = (token: string) =>
-		fetch(url, {
-			...init,
-			headers: {
-				...(init.headers as Record<string, string> | undefined),
-				apikey: env.SUPABASE_ANON_KEY,
-				Authorization: `Bearer ${token}`,
-				"content-type": "application/json",
-			},
-		});
-
-	let token = props.supabaseAccessToken ?? "";
-	let res = await call(token);
-	if (res.status === 401 && props.supabaseRefreshToken) {
-		const refreshed = await refreshSession(env, props.supabaseRefreshToken);
-		if (refreshed) {
-			props.supabaseAccessToken = refreshed.access_token;
-			props.supabaseRefreshToken = refreshed.refresh_token;
-			res = await call(refreshed.access_token);
-		}
-	}
-	return res;
+	return fetch(`${env.SUPABASE_URL}${path}`, {
+		...init,
+		headers: {
+			...(init.headers as Record<string, string> | undefined),
+			apikey: env.SUPABASE_ANON_KEY,
+			Authorization: `Bearer ${props.supabaseAccessToken ?? ""}`,
+			"content-type": "application/json",
+		},
+	});
 }
 
 async function postRows<T>(holder: TokenHolder, table: string, rows: unknown): Promise<T> {
