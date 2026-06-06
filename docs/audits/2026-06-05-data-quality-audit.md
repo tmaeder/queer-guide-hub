@@ -86,3 +86,35 @@ Both write per-row via the Management API (bulk venue/personality writes time ou
 - **299 governance-gated** — title contains exactly **one** unambiguous country name (length ≥4; hard stoplist drops state/word collisions: Georgia, Turkey, Jordan, Chad, Guinea, Niger, Cuba, Chile, Hungary, …) **AND** a legislative/governmental cue (`pass|ban|repeal|decriminali|criminali|legali|parliament|lawmaker|senate|court|ruling|president|government|bill|constitution|referendum|crackdown|…`). Two systematic false-positive patterns patched out: "Northern Ireland"→Ireland, and publisher suffixes ("Free Malaysia **Today**"→Malaysia on a Hungary story). Sampled precision ~95%+; this slice is exactly the core anti/pro-LGBTQ legislation-by-country content. Verified: Ghana/Botswana/Senegal/India/Russia tagged correctly; NI + publisher cases correctly left empty.
 - **167 tag-based** (added after full-text run) — author-assigned `tags` containing exactly one unambiguous country name **or** a US-state name (→ US), single-distinct-country guard. Sampled 100% correct (state tags like `pennsylvania`/`idaho`/`florida` → US; `australia`/`brazil`/`canada`/`russia` tags → those countries). Tags are sparse though — only ~150 net.
 - **Tagged live news: 27 → 504.** All three safe signals (city_ids, governance-gated title, author tags) are now **exhausted**. Remaining **16,311** empty → **deferred to `pipeline-enrich-news` LLM geo step** (needs body comprehension + relevance, not keyword/tag matching). Reversal if ever needed: clear `country_ids` on rows where the single value matches a matcher and `updated_at` falls in the apply window.
+
+## Phase C — extended remediation (all types), 2026-06-06
+
+**Built:** `supabase/functions/backfill-llm-enrich` — config-driven webhook-gated edge function. targets: `news` (geo + relevance), `events` (relevance), `venues` (relevance, conservative prompt), `personalities` (relevance). Uses `chatCompletion()` → CF Workers AI Llama-8B under `llm.openai.enrich-news` circuit breaker. Disjoint id-range shards for safe parallelism. Per-row writes (trigger-timeout safe). Resumable: `classified_at IS NULL`.
+
+**`scripts/backfill-llm-enrich-drive.mjs`** — sharded driver, 4 id-range shards, sequential targets, circuit-aware backoff.
+
+**`scripts/backfill-images-drive.mjs`** — loops free-source image backfill edge functions (Wikipedia/Pexels).
+
+### Classification results (all live entities, 100% complete)
+
+| Entity | Before | After | High-relevance (≥0.7) | Notes |
+|--------|--------|-------|----------------------|-------|
+| news_articles | ~150 (0.9%) | **16,872 (100%)** | 7,802 (46%) | + geo (see below) |
+| events | 95 (2.9%) | **3,307 (100%)** | 2,695 (81%) | LGBTQ+ events catalogue = ~81% relevant |
+| venues | 0 | **23,188 (100%)** | 6,204 (27%) | Conservative prompt; generic venues score low |
+| personalities | 0 | **12,528 (100%)** | 7,584 (61%) | |
+
+**`lgbti_relevance_score` is now a real signal across all entity types** — replacing the audit finding of "near-constant defaults" (1.0 for marketplace/news, 0.5–1.0 for events/personalities, only 6 real values for venues).
+
+### LLM news geo-tagging (Phase C pass)
+On top of the Phase B 504 deterministic + title-governance + tag-based tags, the LLM classified **12,157/16,872 (72.1%)** news articles with a `country_id`. The ~28% without are globally-scoped or celebrity-only items (no country attribution — not a gap).
+
+### Cities images
+`scripts/backfill-images-drive.mjs` via `backfill-cities-images` (Pexels, free-source). Added 55 city images for the highest-population cities; remaining ~1,000 are flagged-unfindable by the function (no Pexels results or already exhausted). Personality images: all missing are `visibility='draft'` — skip correct. Country images: none missing.
+
+### Incident: circuit breaker tripped
+Ran 8 concurrent LLM shards (P1 news×4 + P2 venues×4) — tripped the shared `llm.openai.enrich-news` circuit breaker (threshold=5 failures, 120s cooldown). Also blocked the live news-ingestion pipeline. **Root cause:** CF Workers AI rate-limits burst requests across concurrent edge-fn invocations. **Fix:** manual `UPDATE api_circuit_breakers SET state='closed', failure_count=0 WHERE api_name='llm.openai.enrich-news'`; manually classified the poisoned half-open probe row (Sydney Mardi Gras). **Lesson:** max 4 concurrent LLM shards on this project's CF Workers AI allocation. Sequenced all subsequent targets solo at 4-shard load → 0 failures.
+
+### Final DB state
+- **Disk:** 5,794 MB → **5,851 MB** (+57 MB for all Phase C float + text writes). DB headroom maintained (~450 MB to 6,300 MB guard).
+- **Descriptions/images (venues 97%, personalities 79% draft):** deferred — LLM-generation cost + disk risk (text + re-embeds). Out-of-scope for this remediation pass; queue via `venues_due_for_refresh` + `event-agentic-enrich` when budget allows.
