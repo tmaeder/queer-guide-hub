@@ -70,8 +70,6 @@ export const countryFields: FieldConfig[] = [
     min: 0,
     max: 100,
   },
-  { name: 'lgbt_rights_status', label: 'LGBTQ+ Rights Status', type: 'text', group: 'lgbtq' },
-  { name: 'lgbt_legal_status', label: 'Legal Status', type: 'text', group: 'lgbtq' },
   { name: 'lgbti_same_sex_unions', label: 'Same-Sex Unions', type: 'text', group: 'lgbtq' },
   { name: 'lgbti_adoption_rights', label: 'Adoption Rights', type: 'text', group: 'lgbtq' },
   {
@@ -135,6 +133,6 @@ export const countryContentType: ContentTypeConfig = {
   color: 'hsl(var(--foreground))',
   fields: countryFields,
   fieldGroupOrder: ['basic', 'details', 'location', 'lgbtq', 'media'],
-  translatableFields: ['name', 'description', 'lgbt_rights_status'],
+  translatableFields: ['name', 'description'],
   commentable: true,
 };
