@@ -30,6 +30,11 @@ export interface LlmCompletionOptions {
   // Abort after this many milliseconds. Trip flows should pass a generous
   // value (e.g. 60_000); batch callers a tight one (e.g. 15_000).
   timeoutMs?: number
+  // Retry transient upstream failures (5xx / 429 / network errors) this many
+  // times. Default 0 to preserve tight-latency batch callers. CF Workers AI +
+  // AI Gateway intermittently return HTML 5xx error pages; one retry recovers
+  // them. Timeouts (AbortError) are never retried — they only compound latency.
+  retries?: number
 }
 
 export interface LlmCompletionResult {
@@ -91,6 +96,7 @@ export async function llmChatCompletion(
     temperature = 0.3,
     max_tokens = 2000,
     timeoutMs = 60_000,
+    retries = 0,
   } = options
 
   // NB: `response_format` is intentionally NOT forwarded. The sole backend is
@@ -99,40 +105,63 @@ export async function llmChatCompletion(
   // JSON via the prompt and parse defensively.
   const body: Record<string, unknown> = { model, messages, temperature, max_tokens }
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  // CF Workers AI / AI Gateway occasionally return a transient HTML 5xx error
+  // page (or drop the connection) on an otherwise-valid request. Retry those a
+  // bounded number of times with linear backoff; a single retry recovers the
+  // overwhelming majority. Non-retryable client errors (4xx) and our own
+  // timeout (AbortError) break out immediately.
+  const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504])
+  let lastErr: unknown
 
-  try {
-    const response = await fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        ...(gatewayed ? gatewayHeaders({ fn: 'llmChatCompletion', backend: 'workers-ai' }) : {}),
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    })
+  for (let attempt = 0; ; attempt++) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+    let retryable = false
 
-    if (!response.ok) {
+    try {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          ...(gatewayed ? gatewayHeaders({ fn: 'llmChatCompletion', backend: 'workers-ai' }) : {}),
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // CF Workers AI sometimes returns message.content already parsed (object)
+        // for JSON-shaped outputs. The contract here is `content: string`, so
+        // stringify anything non-string — callers that want JSON re-parse it.
+        const rawContent = data.choices?.[0]?.message?.content ?? ''
+        const content = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent)
+        return {
+          content,
+          usage: data.usage,
+          model: data.model ?? model,
+        }
+      }
+
       const errText = await response.text().catch(() => '<no body>')
-      throw new LlmRequestError(response.status, errText)
+      lastErr = new LlmRequestError(response.status, errText)
+      retryable = RETRYABLE_STATUS.has(response.status)
+    } catch (e) {
+      // Our own timeout fired — retrying would only compound latency. Surface it.
+      if ((e as Error)?.name === 'AbortError') throw e
+      // Network-level failure (connection reset, DNS, TLS) — transient, retry.
+      lastErr = e
+      retryable = true
+    } finally {
+      clearTimeout(timer)
     }
 
-    const data = await response.json()
-    // CF Workers AI sometimes returns message.content already parsed (object)
-    // for JSON-shaped outputs. The contract here is `content: string`, so
-    // stringify anything non-string — callers that want JSON re-parse it.
-    const rawContent = data.choices?.[0]?.message?.content ?? ''
-    const content = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent)
-    return {
-      content,
-      usage: data.usage,
-      model: data.model ?? model,
-    }
-  } finally {
-    clearTimeout(timer)
+    if (!retryable || attempt >= retries) break
+    await new Promise((r) => setTimeout(r, 300 * (attempt + 1)))
   }
+
+  throw lastErr ?? new LlmRequestError(0, 'LLM request failed')
 }
 
 /**

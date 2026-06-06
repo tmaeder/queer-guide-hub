@@ -219,6 +219,9 @@ async function handle(req: Request): Promise<Response> {
       // NB: intentionally no response_format — json_object hangs the CF
       // Workers AI /ai/v1 endpoint. Prompts request strict JSON instead.
       timeoutMs: 45_000,
+      // CF Workers AI intermittently returns a transient HTML 5xx page (the
+      // cockpit auto-run then shows "non-2xx status code"). Retry to ride it out.
+      retries: 2,
     });
   } catch (err) {
     return new Response(
