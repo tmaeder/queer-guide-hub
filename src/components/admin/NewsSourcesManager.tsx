@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +21,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tables } from '@/integrations/supabase/types';
-import { listFrom, insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
+import { insertInto, updateRow, deleteRow, useNewsSources } from '@/hooks/usePageFetchers';
 import { Plus, Edit2, Trash2, Rss, Globe, Tags, ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { validateNewsSource } from '@/utils/contentValidation';
@@ -29,8 +29,7 @@ import { validateNewsSource } from '@/utils/contentValidation';
 type NewsSource = Tables<'news_sources'>;
 
 export function NewsSourcesManager() {
-  const [sources, setSources] = useState<NewsSource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: sources = [], isLoading: loading, refetch: refetchSources } = useNewsSources();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [keywordsDialogOpen, setKeywordsDialogOpen] = useState(false);
   const [editingSource, setEditingSource] = useState<NewsSource | null>(null);
@@ -49,24 +48,7 @@ export function NewsSourcesManager() {
     keywords: [] as string[],
   });
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
-    fetchSources();
-  }, []);
-
-  const fetchSources = async () => {
-    try {
-      const data = await listFrom<NewsSource>('news_sources', '*', {
-        col: 'created_at',
-        ascending: false,
-      });
-      setSources(data);
-    } catch (_error) {
-      toast.error('Error: Failed to fetch news sources');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchSources = () => refetchSources();
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 

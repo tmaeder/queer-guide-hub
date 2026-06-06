@@ -5,6 +5,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAbortableQuery } from '@/hooks/useAbortableQuery';
+import type { Tables } from '@/integrations/supabase/types';
 
 const STALE = 5 * 60_000;
 const STALE_LONG = 30 * 60_000;
@@ -1072,4 +1074,23 @@ export function useReviewCount(table: string, filterCol?: string, filterVal?: st
     };
   }, [table, filterCol, filterVal]);
   return { count, loading };
+}
+
+/** NewsSourcesManager — abortable, retrying, cache-backed list of news sources.
+ * Replaces the component's manual useState/useEffect fetch (no retry, no abort,
+ * setState-after-unmount). Mutations call `refetch()` to refresh. */
+export function useNewsSources() {
+  return useAbortableQuery<Tables<'news_sources'>[]>(
+    ['news-sources', 'manager'],
+    async (signal) => {
+      const { data, error } = await supabase
+        .from('news_sources')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []) as Tables<'news_sources'>[];
+    },
+    { staleTime: STALE },
+  );
 }
