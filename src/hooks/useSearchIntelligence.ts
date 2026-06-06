@@ -93,6 +93,15 @@ export interface Synonym {
   archived_at?: string | null;
 }
 
+export interface VisibilityWorst {
+  entity_type: string;
+  entity_id: string;
+  title: string;
+  score: number;
+  computed_at: string;
+  suggestions: string[];
+}
+
 export interface SynonymList {
   total: number;
   rows: Synonym[];

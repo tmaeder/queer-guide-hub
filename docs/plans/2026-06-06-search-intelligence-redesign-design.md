@@ -31,7 +31,7 @@ Page also carries dead Meilisearch types (`IndexesResponse.meili`, `ConsistencyR
 
 Reorient the page around live data, phased so each phase ships independently.
 
-**Status:** P1 ✅ shipped (PR #1475) · P2 ✅ shipped (PR #1477) · P3 deferred.
+**Status:** P1 ✅ shipped (#1475) · P2 ✅ shipped (#1477) · P3 ✅ shipped (#1481).
 
 ---
 
@@ -66,9 +66,16 @@ Deferred (YAGNI):
 - **Cache-bust** — activated changes apply within the worker's ~5 min KV TTL (`synonyms:active:v1`), surfaced in the UI. A cross-service bust endpoint was not worth the complexity.
 - **Version snapshot/rollback** (`search_settings_versions`) — activation + editing deliver the value; revisit if churn warrants.
 
-## P3 — Revive-or-retire (deferred)
+## P3 — Revive-or-retire  ✅ shipped
 
-Investigate whether Topics / Ingestion Quality / Suggestions pipelines should run (populate their tables) or be retired with their ~960 LOC. Don't block P1/P2.
+Investigation corrected one Explore claim: `compute_visibility_score` is **not** a stub — it's a real weighted scorer (tags/geo/images/dates/text/synonyms/clusters). None of the three tabs were broken; all were working-but-unused. Per-tab decisions:
+
+- **Ingestion Quality → revived.** The scorer worked but only ran on-demand. Added `run_visibility_score_batch()` (incremental) + nightly cron `visibility_score_batch` (04:20 UTC) + `search_visibility_worst()` leaderboard RPC + `/visibility/{worst,batch}` routes. IngestionQualityTab gained a worst-scored leaderboard (click→inspect) + "Score next 2,000". Seeded ~9,300 scores (venues avg 0.36, news 0.62).
+  - **Bug fixed en route:** `compute_visibility_score` referenced `m.latitude`/`m.longitude` on `marketplace_listings` (no geo columns) — it errored for that type and would have crashed the batch. Marketplace geo is now not-applicable (1.0).
+- **Topics → retired.** 0 rows, no automation, no storefront consumer. Deleted TopicsTab + ClusterTagPicker (406 LOC) + tests + `/clusters` CRUD. `topic_clusters` tables kept (scorer's query axis reads them).
+- **Suggestions → left dormant.** Full review/apply machinery (493 LOC) kept; revisit when enabling the image-vision producer (separate cost/scope decision).
+
+Follow-up: batch only covers ~9.3k of ~72k entities so far; nightly cron fills the rest. Re-scoring of stale rows not yet implemented (unscored-first only).
 
 ## Cross-cutting
 

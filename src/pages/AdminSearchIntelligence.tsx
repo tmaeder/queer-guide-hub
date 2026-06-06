@@ -5,7 +5,6 @@ import { SynonymsTab } from '@/components/admin/search-intelligence/SynonymsTab'
 import { AuditTab } from '@/components/admin/search-intelligence/AuditTab';
 import { IngestionQualityTab } from '@/components/admin/search-intelligence/IngestionQualityTab';
 import { SuggestionsTab } from '@/components/admin/search-intelligence/SuggestionsTab';
-import { TopicsTab } from '@/components/admin/search-intelligence/TopicsTab';
 import { SetupTab } from '@/components/admin/search-intelligence/SetupTab';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
@@ -13,6 +12,9 @@ export default function AdminSearchIntelligence() {
   // The Meili Search-Debugger / Settings / Reindexing / Consistency tabs were
   // removed in the Meili → Postgres decommission; the Synonyms editor returns
   // here driving the Postgres search_synonyms table the search-proxy reads.
+  // Topics (manual topic-cluster editor) was retired in P3 — 0 rows, no
+  // automation, no storefront consumer. The topic_clusters tables remain for
+  // compute_visibility_score's query axis.
   const [tab, setTab] = useState('analytics');
   // Term carried from an Analytics zero-result row into the Synonyms add dialog.
   const [synonymPrefill, setSynonymPrefill] = useState<string | null>(null);
@@ -34,7 +36,6 @@ export default function AdminSearchIntelligence() {
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="synonyms">Synonyms</TabsTrigger>
           <TabsTrigger value="setup">Setup</TabsTrigger>
-          <TabsTrigger value="topics">Topics</TabsTrigger>
           <TabsTrigger value="quality">Ingestion Quality</TabsTrigger>
           <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
           <TabsTrigger value="audit">Audit</TabsTrigger>
@@ -48,9 +49,6 @@ export default function AdminSearchIntelligence() {
           </TabsContent>
           <TabsContent value="setup">
             <SetupTab />
-          </TabsContent>
-          <TabsContent value="topics">
-            <TopicsTab />
           </TabsContent>
           <TabsContent value="quality">
             <IngestionQualityTab />

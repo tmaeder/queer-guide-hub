@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
+import { callSearchIntelligence, VisibilityWorst } from '@/hooks/useSearchIntelligence';
 import {
   assertVisibilityResult,
   recomputeVisibilityScore,
@@ -64,6 +64,43 @@ export function IngestionQualityTab() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<VisibilityResult | null>(null);
   const [drift, setDrift] = useState<number | null>(null);
+
+  // Coverage leaderboard (worst-scored entities).
+  const [worst, setWorst] = useState<VisibilityWorst[]>([]);
+  const [worstType, setWorstType] = useState('all');
+  const [coverageBusy, setCoverageBusy] = useState(false);
+  const [batchBusy, setBatchBusy] = useState(false);
+  const [batchMsg, setBatchMsg] = useState<string | null>(null);
+
+  const loadWorst = useCallback(async () => {
+    setCoverageBusy(true);
+    const res = await callSearchIntelligence<VisibilityWorst[]>('visibility/worst', {
+      searchParams: { entity_type: worstType === 'all' ? undefined : worstType, limit: '50' },
+    });
+    if (res.success) setWorst(res.data ?? []);
+    setCoverageBusy(false);
+  }, [worstType]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+    void loadWorst();
+  }, [loadWorst]);
+
+  const runBatch = async () => {
+    setBatchBusy(true);
+    setBatchMsg(null);
+    const res = await callSearchIntelligence<{ scored: number }>('visibility/batch', {
+      method: 'POST',
+      body: { limit: 2000 },
+    });
+    setBatchBusy(false);
+    if (!res.success) {
+      setBatchMsg(res.error);
+      return;
+    }
+    setBatchMsg(`Scored ${res.data?.scored ?? 0} entities.`);
+    await loadWorst();
+  };
 
   const recompute = async () => {
     if (!entityId) {
@@ -138,8 +175,108 @@ export function IngestionQualityTab() {
     setBusy(false);
   };
 
+  // Load a specific entity into the detail panel (from a leaderboard row click).
+  const inspectEntity = async (type: string, id: string) => {
+    setEntityType(type);
+    setEntityId(id);
+    setBusy(true);
+    setError(null);
+    setResult(null);
+    setDrift(null);
+    const res = await callSearchIntelligence(`visibility/${type}/${id}`);
+    if (!res.success) {
+      setError(res.error);
+      setBusy(false);
+      return;
+    }
+    try {
+      const stored = res.data as {
+        score: number;
+        breakdown: Record<string, unknown>;
+        suggestions?: string[];
+        computed_at: string;
+      };
+      const validated = assertVisibilityResult({
+        entity_type: type,
+        entity_id: id,
+        score: stored.score,
+        breakdown: stored.breakdown,
+        suggestions: stored.suggestions ?? [],
+        computed_at: stored.computed_at,
+      });
+      setResult(validated);
+      setDrift(Math.abs(recomputeVisibilityScore(validated) - validated.score));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'unexpected response shape');
+    }
+    setBusy(false);
+  };
+
   return (
     <div className="flex flex-col gap-6">
+      <Card>
+        <CardContent>
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <div>
+              <h6 className="text-lg font-semibold">Coverage — worst-scored entities</h6>
+              <p className="text-sm text-muted-foreground">
+                Least findable entities by visibility score. Click one to inspect. A nightly job
+                scores the backlog; trigger a batch to score more now.
+              </p>
+            </div>
+            <Button onClick={runBatch} disabled={batchBusy} variant="outline">
+              {batchBusy ? 'Scoring…' : 'Score next 2,000'}
+            </Button>
+          </div>
+          {batchMsg && <p className="text-sm text-muted-foreground mb-2">{batchMsg}</p>}
+          <div className="flex items-center gap-2 mb-4 mt-2">
+            <Select value={worstType} onValueChange={setWorstType}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                {ENTITY_TYPES.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {coverageBusy && worst.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : worst.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No scores yet. Click "Score next 2,000" to populate.
+            </p>
+          ) : (
+            <div className="flex flex-col divide-y" style={{ borderColor: 'hsl(var(--border))' }}>
+              {worst.map((w) => (
+                <button
+                  key={`${w.entity_type}:${w.entity_id}`}
+                  type="button"
+                  onClick={() => inspectEntity(w.entity_type, w.entity_id)}
+                  className="flex items-center gap-3 py-2 text-left hover:bg-muted/50 rounded-element px-2 -mx-2"
+                >
+                  <span className="flex-1 truncate text-sm font-medium">{w.title}</span>
+                  <Badge variant="outline">{w.entity_type}</Badge>
+                  <span
+                    className="text-sm min-w-[44px] text-right"
+                    style={{
+                      fontFeatureSettings: '"tnum"',
+                      color: w.score < 0.4 ? 'hsl(var(--destructive))' : undefined,
+                    }}
+                  >
+                    {Math.round(w.score * 100)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent>
           <h6 className="text-lg font-semibold mb-2">Search Visibility Score</h6>
