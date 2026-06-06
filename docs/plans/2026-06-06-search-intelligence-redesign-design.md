@@ -83,9 +83,15 @@ Follow-up: batch only covers ~9.3k of ~72k entities so far; nightly cron fills t
 - Read-only analytics + tiny synonym writes — safe under DB disk constraint
 - No new auth surface (reuses edge-function admin gate)
 
-## Out of scope / follow-ups
+## Follow-ups
 
-- Frontend click-logging to populate `clicked_entity_id` → unlocks real CTR (small separate PR)
-- **Activate the dormant synonyms** — 15,130 staged `approved` rows are a product decision (bulk-activate vs curate-then-activate); the editor now makes this possible per-row
-- Synonyms cache-bust endpoint + version snapshot/rollback (deferred from P2)
-- P3 above
+**Done (#1486):**
+- ✅ **Click-logging → CTR.** `log_search_click()` RPC + search-proxy `/track` click handler back-fill `clicked_entity_id` on the most recent same-session search; Analytics shows real CTR. No frontend change (clicks already hit `/track`). Verified e2e on prod.
+- ✅ **Synonym expansion cap (40 terms)** in `expandWithPgSynonyms()` — bounds over-expansion so activating the staged set is safe.
+- ✅ **Visibility batch self-maintaining** — stale-rescore (>30d) after unscored exhausted + per-entity fault isolation.
+
+**Still open (deliberate):**
+- **Activate the 15,130 dormant synonyms** — left as an admin decision (relevance risk in safety-sensitive search, no A/B path). The editor makes it per-row; the worker cap makes bulk-activation safe when chosen.
+- Synonyms cache-bust endpoint + version snapshot/rollback (deferred from P2).
+- Visibility coverage: ~13.9k/72k scored; nightly cron fills the rest.
+- Suggestions tab: revive only if the image-vision producer is enabled.
