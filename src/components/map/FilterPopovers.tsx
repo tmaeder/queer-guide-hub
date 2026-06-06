@@ -53,7 +53,7 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
         )}
       </PopoverTrigger>
       <PopoverContent align="end" className="w-auto p-0 overflow-hidden">
-        <div className="flex items-center justify-between gap-6 border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between gap-6 border-b border-border px-4 py-2.5">
           <span className="text-13 font-semibold text-foreground">Choose dates</span>
           <span className="text-13 tabular-nums text-muted-foreground">{rangeSummary(range)}</span>
         </div>
@@ -62,9 +62,9 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
           numberOfMonths={2}
           selected={range}
           onSelect={setRange}
-          className="px-4 py-3"
+          className="px-4 py-2.5"
         />
-        <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2">
+        <div className="flex items-center justify-between gap-2 border-t border-border px-2.5 py-2">
           <Button
             variant="ghost"
             size="sm"

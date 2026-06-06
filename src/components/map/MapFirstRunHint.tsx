@@ -27,8 +27,8 @@ export function MapFirstRunHint({ count, ready }: { count: number; ready: boolea
   if (!show) return null;
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-16 z-30 -translate-x-1/2 px-3">
-      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-border bg-background/95 py-1.5 pl-3 pr-1.5 backdrop-blur">
+    <div className="pointer-events-none absolute left-1/2 top-16 z-30 -translate-x-1/2 px-2.5">
+      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-border bg-background/95 py-1.5 pl-2.5 pr-1.5 backdrop-blur">
         <Sparkles className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
         <span className="text-13 text-foreground">
           {count.toLocaleString()} queer spots in view
