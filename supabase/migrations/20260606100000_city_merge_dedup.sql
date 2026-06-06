@@ -1,4 +1,5 @@
 -- City-level dedup: reversible duplicate-city merge (analogue of merge_venues).
+-- Applied to prod 2026-06-06; file is replay-idempotent (see DO block guard).
 --
 -- The cities table accumulated name-variant duplicates of the same physical city
 -- (Cologne/Köln, Prague/Praha, Antwerp/Antwerpen, Brussels/Bruxelles/Bruessel,
