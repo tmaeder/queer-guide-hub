@@ -64,4 +64,4 @@ Add `https://mcp.queer.guide/mcp` to an MCP client and call `search`. For writes
 - Admin/pipeline tools (triage, dedup, workflow control).
 - Marketplace checkout.
 - Refreshed access tokens are not yet persisted back to the OAuth grant (refreshed in-memory per session).
-- Public MCP registry listing.
+- Public MCP registry listing — artifact + steps ready in [`server.json`](./server.json) + [`PUBLISHING.md`](./PUBLISHING.md); one human-gated auth step remains.

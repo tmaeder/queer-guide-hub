@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "guide.queer/queer-guide",
+  "description": "Search LGBTQ+ venues, events, cities, people and news on queer.guide, with travel-safety knowledge. Signed-in users can submit places/events, save favorites and plan trips.",
+  "title": "Queer Guide",
+  "repository": {
+    "url": "https://github.com/tmaeder/queer-guide-hub",
+    "source": "github",
+    "id": "R_kgDOPMdHXQ"
+  },
+  "version": "0.1.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.queer.guide/mcp"
+    }
+  ]
+}
