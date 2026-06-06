@@ -62,3 +62,26 @@ export function categoryLabel(category?: string | null): string {
     .replace(/[_-]+/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
+
+const normalize = (s: string) => s.toLowerCase().replace(/[\s-]+/g, '_');
+
+/**
+ * Stable image-id for a marker's canvas glyph. Venues key off their category
+ * (when known), everything else keys off its layer type. Matches the keys in
+ * GLYPH_DEFS below so the rasterized image exists.
+ */
+export function glyphKeyFor(type: LayerType, category?: string | null): string {
+  if (type === 'venues' && category && VENUE_CATEGORY_ICONS[normalize(category)]) {
+    return `cat:${normalize(category)}`;
+  }
+  return `type:${type}`;
+}
+
+/** Every (glyph-key → icon) pair the map needs to rasterize into map images. */
+export const GLYPH_DEFS: { key: string; Icon: LucideIcon }[] = [
+  ...Object.entries(VENUE_CATEGORY_ICONS).map(([cat, Icon]) => ({ key: `cat:${cat}`, Icon })),
+  ...(Object.entries(LAYER_FALLBACK_ICONS) as [LayerType, LucideIcon][]).map(([type, Icon]) => ({
+    key: `type:${type}`,
+    Icon,
+  })),
+];

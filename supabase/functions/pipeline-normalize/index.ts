@@ -9,6 +9,7 @@ import {
 import { computeIdempotencyKey } from '../_shared/idempotency.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { coerceLgbtiConnection } from '../_shared/lgbti-connection.ts'
 
 // ============================================================
 // Pipeline Normalize
@@ -361,9 +362,13 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
     }
     if (Object.keys(social).length) n.social_links = social
 
-    // LGBTI connection
-    n.lgbti_connection = cleanText(raw.lgbti_connection ?? raw.lgbtq_connection ?? '')
-    n.lgbti_details    = cleanText(raw.lgbti_details    ?? raw.lgbtq_details    ?? '')
+    // LGBTI connection — controlled vocab only (audit C-2/H-5). Never let an
+    // uncontrolled free-text identity label through; anything off-vocab is
+    // coerced to the non-asserting 'unclear' and the raw value is preserved in
+    // lgbti_details for the human-review trail. Empty stays null ("no claim").
+    const conn = coerceLgbtiConnection(raw.lgbti_connection ?? raw.lgbtq_connection)
+    n.lgbti_connection = conn.value
+    n.lgbti_details = cleanText(raw.lgbti_details ?? raw.lgbtq_details ?? conn.rawOffVocab ?? '')
 
     // Default visibility/verification (overridden by review-gate later)
     n.visibility          = raw.visibility ?? 'draft'
@@ -389,6 +394,10 @@ function cleanText(v: unknown): string {
   if (!v) return ''
 
   let s = String(v)
+    // L-2 (audit 2026-06-05): canonical Unicode form + strip invisible zero-width
+    // codepoints (ZWSP/ZWNJ/ZWJ/BOM) that defeat dedup/search and hide in text.
+    .normalize('NFKC')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&')

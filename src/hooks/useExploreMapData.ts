@@ -42,6 +42,8 @@ export interface ExploreMapFilters {
   accessible?: boolean;
   /** Geo radius filter: keep only points within radiusKm of (lat, lng). */
   nearMe?: { lat: number; lng: number; radiusKm: number };
+  /** Keep only open-now venues / happening-now events (the `live` flag). */
+  openNow?: boolean;
 }
 
 // ── Layer colours ──────────────────────────────────────────────────────────────

@@ -12,6 +12,16 @@ function fmt(d: Date | undefined): string {
   return d ? d.toISOString().slice(0, 10) : '';
 }
 
+function fmtShort(d: Date | undefined): string {
+  return d ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+}
+
+function rangeSummary(range: { from?: Date; to?: Date } | undefined): string {
+  if (range?.from && range?.to) return `${fmtShort(range.from)} – ${fmtShort(range.to)}`;
+  if (range?.from) return `${fmtShort(range.from)} – end date`;
+  return 'Pick a start & end';
+}
+
 interface TimePopoverProps {
   value?: { start: string; end: string };
   onChange: (next: { start: string; end: string } | undefined) => void;
@@ -34,7 +44,7 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {trigger ?? (
-          <Button variant="ghost" size="sm" aria-label="Time range" className="h-8 px-2 border border-border">
+          <Button variant="ghost" size="sm" aria-label="Time range" title="Time range" className="h-8 px-2">
             <CalendarRange size={14} className="mr-1.5" aria-hidden="true" />
             <span className="text-xs">
               {value ? `${value.start} → ${value.end}` : 'Any time'}
@@ -42,18 +52,23 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-auto p-0 border-border">
+      <PopoverContent align="end" className="w-auto p-0 overflow-hidden">
+        <div className="flex items-center justify-between gap-6 border-b border-border px-4 py-3">
+          <span className="text-13 font-semibold text-foreground">Choose dates</span>
+          <span className="text-13 tabular-nums text-muted-foreground">{rangeSummary(range)}</span>
+        </div>
         <Calendar
           mode="range"
           numberOfMonths={2}
           selected={range}
           onSelect={setRange}
-          className="p-4"
+          className="px-4 py-3"
         />
-        <div className="flex items-center justify-between gap-2 border-t border-border p-2">
+        <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2">
           <Button
             variant="ghost"
             size="sm"
+            disabled={!range?.from && !range?.to}
             onClick={() => {
               setRange(undefined);
               onChange(undefined);
@@ -72,7 +87,7 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
             }}
             disabled={!range?.from || !range?.to}
           >
-            Apply
+            Apply dates
           </Button>
         </div>
       </PopoverContent>
@@ -111,7 +126,7 @@ export const EraPopover = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {trigger ?? (
-          <Button variant="ghost" size="sm" aria-label="Era" className="h-8 px-2 border border-border">
+          <Button variant="ghost" size="sm" aria-label="Era" title="Era" className="h-8 px-2">
             <History size={14} className="mr-1.5" aria-hidden="true" />
             <span className="text-xs">
               {value ? `${value.decadeStart}s–${value.decadeEnd}s` : 'Any era'}

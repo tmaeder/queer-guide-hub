@@ -28,6 +28,7 @@
     "test:e2e:ui": "playwright test --ui",
     "bones": "boneyard build",
     "bones:force": "boneyard build --force",
+    "gates": "node scripts/check-data-quality-gates.mjs",
     "i18n:check": "tsx scripts/sync-translations.ts && tsx scripts/sync-public-locales.ts --check",
     "i18n:check:defaults": "node scripts/check-i18n-german-defaults.mjs",
     "i18n:fill": "tsx scripts/sync-translations.ts --fill",

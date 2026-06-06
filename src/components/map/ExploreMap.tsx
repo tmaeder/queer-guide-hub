@@ -12,6 +12,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { MapEntityCard } from './MapEntityCard';
 import { summaryFromFeature, type MapPointSummary } from './mapPoint';
+import { loadGlyphImages } from './mapGlyphs';
 import type { PointFeature } from '@/hooks/useViewportPoints';
 import { mapStyle } from '@/config/mapStyle';
 import {
@@ -92,6 +93,7 @@ const POINTS_SOURCE = 'points-source';
 const CLUSTERS_LAYER = 'clusters';
 const CLUSTER_COUNT_LAYER = 'cluster-count';
 const UNCLUSTERED_LAYER = 'unclustered-point';
+const GLYPH_LAYER = 'pin-glyph';
 const FEATURED_RING_LAYER = 'featured-ring';
 const PULSE_LAYER = 'live-pulse';
 const HEATMAP_SOURCE = 'heatmap-source';
@@ -107,6 +109,7 @@ const PIN_LAYER_IDS = [
   CLUSTERS_LAYER,
   CLUSTER_COUNT_LAYER,
   UNCLUSTERED_LAYER,
+  GLYPH_LAYER,
 ];
 
 // ── Boundary configs ─────────────────────────────────────────────────────────
@@ -141,6 +144,9 @@ const NEIGHBOURHOOD_BOUNDARY_CONFIG: BoundaryLayerConfig = {
 
 const DEFAULT_CENTER: [number, number] = [0, 20];
 const DEFAULT_ZOOM = 2.2;
+
+// Stable empty favorites set so effects don't churn when none are passed.
+const EMPTY_FAV: ReadonlySet<string> = new Set<string>();
 
 // Gated debug logger — env-flag or localStorage opt-in. Cheap insurance
 // against future regressions in the points-data → markers flow.
@@ -194,6 +200,15 @@ export interface ExploreMapProps {
   /** Show the bottom-right "N results in view" pill. MapShell turns this off
    *  because the spotlight rail already surfaces the count. */
   showResultCount?: boolean;
+  /** Fired when a pin is clicked on the map, so the parent can sync selection
+   *  (e.g. scroll the spotlight rail to the matching card). */
+  onSelectPoint?: (id: string) => void;
+  /** Fired when the point-fetch loading state flips (drives rail skeletons). */
+  onFetchingChange?: (fetching: boolean) => void;
+  /** Feature ids (`venue-<id>` / `event-<id>`) the viewer has saved. */
+  favoriteIds?: Set<string>;
+  /** When true, only saved points render (favorites layer). */
+  savedOnly?: boolean;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -217,6 +232,10 @@ export const ExploreMap = ({
   selectedId,
   highlightedId,
   showResultCount = true,
+  onSelectPoint,
+  onFetchingChange,
+  favoriteIds,
+  savedOnly = false,
 }: ExploreMapProps) => {
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
@@ -233,9 +252,13 @@ export const ExploreMap = ({
   const pointLayersAddedRef = useRef(false);
   const pulseRafRef = useRef<number | null>(null);
   const lastSelectedRef = useRef<string | null>(null);
+  // DOM markers for the spiderfied (fanned-out) leaves of a co-located cluster.
+  const spiderMarkersRef = useRef<maplibregl.Marker[]>([]);
   // Latest-value refs read inside imperative map callbacks / rAF loops.
   const onPointsInViewRef = useRef(onPointsInView);
   onPointsInViewRef.current = onPointsInView;
+  const onSelectPointRef = useRef(onSelectPoint);
+  onSelectPointRef.current = onSelectPoint;
 
   // ── State ────────────────────────────────────────────────────────────────
   const [mapReady, setMapReady] = useState(false);
@@ -261,6 +284,34 @@ export const ExploreMap = ({
   });
 
   const [filters, setFilters] = useState<ExploreMapFilters>(defaultFilters ?? {});
+
+  // When the parent owns filters (MapShell: showFilters=false passes a memoized
+  // `defaultFilters`), keep our filter state in sync with it. Without this the
+  // command bar's category / time / open-now / search controls never reach the
+  // data layer — they only seeded the initial state. Legacy maps with the
+  // built-in filter panel (showFilters=true) keep managing filters themselves.
+  // Adjusting state during render (vs. an effect) on the memoized `defaultFilters`
+  // reference change avoids a cascading re-render.
+  const [syncedDefault, setSyncedDefault] = useState(defaultFilters);
+  if (!showFilters && defaultFilters !== syncedDefault) {
+    setSyncedDefault(defaultFilters);
+    setFilters(defaultFilters ?? {});
+  }
+
+  // Time-of-day mode: after dark, open/live spots stay full strength while
+  // everything else recedes — the map reflects "what's actually on right now."
+  // Computed once at mount (a session rarely straddles the 19:00 boundary).
+  const isNight = useMemo(() => {
+    const h = new Date().getHours();
+    return h < 7 || h >= 19;
+  }, []);
+  const pinOpacityExpr = useMemo(
+    () =>
+      (isNight
+        ? ['case', ['==', ['get', 'live'], true], 1, 0.45]
+        : 1) as maplibregl.ExpressionSpecification | number,
+    [isNight],
+  );
 
   // ── Data: area layers (global fetch — small, static datasets) ──────────
   const areaEnabledLayers = enabledLayers.filter((l) => AREA_LAYERS.includes(l));
@@ -305,6 +356,13 @@ export const ExploreMap = ({
   };
 
   const isFetching = areaFetching || pointsFetching;
+
+  // Surface loading state to the parent (spotlight rail skeleton).
+  const onFetchingChangeRef = useRef(onFetchingChange);
+  onFetchingChangeRef.current = onFetchingChange;
+  useEffect(() => {
+    onFetchingChangeRef.current?.(isFetching);
+  }, [isFetching]);
 
   // ── Layer toggle ─────────────────────────────────────────────────────────
   const toggleLayer = useCallback(
@@ -392,31 +450,36 @@ export const ExploreMap = ({
       const s = b.getSouth();
       const n = b.getNorth();
       let count = 0;
-      const inView: PointFeature[] = [];
+      const inBounds: PointFeature[] = [];
       for (const f of pointsGeoJSON.features) {
         const [lng, lat] = (f.geometry as GeoJSON.Point).coordinates;
         if (lng >= w && lng <= e && lat >= s && lat <= n) {
           count++;
-          if (inView.length < 80) inView.push(f as unknown as PointFeature);
+          inBounds.push(f as unknown as PointFeature);
         }
       }
       setInBoundsCount(count);
       setIsCounterStale(false);
 
       // Lift the in-view set up to the parent (spotlight rail), enriched with
-      // distance from the viewer when we know their location.
+      // favorite tagging + distance from the viewer when we know their location.
       const cb = onPointsInViewRef.current;
       if (cb) {
+        const favSet = favoriteIds ?? EMPTY_FAV;
         const geo = visitorGeo;
-        const summaries = inView.map((f) => {
+        const feats = savedOnly
+          ? inBounds.filter((f) => favSet.has(String(f.properties.id)))
+          : inBounds;
+        const summaries = feats.slice(0, 80).map((f) => {
           const sum = summaryFromFeature(f);
+          sum.favorited = favSet.has(sum.id);
           if (geo) sum.distanceKm = calculateDistanceKm(geo.latitude, geo.longitude, sum.lat, sum.lng);
           return sum;
         });
         cb(summaries);
       }
     }, 100);
-  }, [pointsGeoJSON, visitorGeo]);
+  }, [pointsGeoJSON, visitorGeo, favoriteIds, savedOnly]);
 
   // The `moveend` listener is registered once (init effect) and would otherwise
   // capture the first-render recompute (empty data). Route it through a ref so
@@ -543,6 +606,46 @@ export const ExploreMap = ({
     [showPopup],
   );
 
+  // Remove any fanned-out spider markers.
+  const clearSpider = useCallback(() => {
+    if (spiderMarkersRef.current.length) {
+      spiderMarkersRef.current.forEach((m) => m.remove());
+      spiderMarkersRef.current = [];
+    }
+  }, []);
+
+  // Fan a co-located cluster's leaves out in a ring of DOM markers so each is
+  // individually clickable (zooming can't separate identical coordinates).
+  const spiderfy = useCallback(
+    (map: maplibregl.Map, center: [number, number], leaves: PointFeature[]) => {
+      if (!leaves.length) return;
+      const origin = map.project(center);
+      const n = leaves.length;
+      const radius = Math.min(140, 36 + n * 9);
+      leaves.forEach((leaf, i) => {
+        const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+        const lngLat = map.unproject([
+          origin.x + radius * Math.cos(angle),
+          origin.y + radius * Math.sin(angle),
+        ]);
+        const summary = summaryFromFeature(leaf);
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.setAttribute('aria-label', summary.name);
+        el.title = summary.name;
+        el.style.cssText = `width:22px;height:22px;border-radius:9999px;background:${summary.color};border:2.5px solid #fff;box-sizing:border-box;cursor:pointer;padding:0;`;
+        el.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          showPopup(map, lngLat, summary);
+          onSelectPointRef.current?.(summary.id);
+        });
+        const marker = new maplibregl.Marker({ element: el }).setLngLat(lngLat).addTo(map);
+        spiderMarkersRef.current.push(marker);
+      });
+    },
+    [showPopup],
+  );
+
   // ── Live pulse animation (Phase 4) ────────────────────────────────────────
   // Drives the PULSE_LAYER ring around live/open-now pins. rAF receives a
   // DOMHighResTimeStamp so we never call Date.now(). Reduced-motion → a static
@@ -613,6 +716,8 @@ export const ExploreMap = ({
 
     map.on('load', () => {
       setMapReady(true);
+      // Rasterize category glyphs into map images (safe no-op on failure).
+      void loadGlyphImages(map);
 
       const tryInitialFetch = () => {
         const canvas = map.getCanvas();
@@ -630,6 +735,11 @@ export const ExploreMap = ({
 
     map.on('movestart', () => {
       setIsCounterStale(true);
+      // Fanned-out spider markers are pixel-anchored; drop them on any move.
+      if (spiderMarkersRef.current.length) {
+        spiderMarkersRef.current.forEach((m) => m.remove());
+        spiderMarkersRef.current = [];
+      }
     });
 
     map.on('moveend', () => {
@@ -652,6 +762,8 @@ export const ExploreMap = ({
       const r = popupRootRef.current;
       popupRootRef.current = null;
       if (r) setTimeout(() => r.unmount(), 0);
+      spiderMarkersRef.current.forEach((m) => m.remove());
+      spiderMarkersRef.current = [];
       mapRef.current = null;
       pointLayersAddedRef.current = false;
       map.remove();
@@ -899,6 +1011,7 @@ export const ExploreMap = ({
         cancelAnimationFrame(pulseRafRef.current);
         pulseRafRef.current = null;
       }
+      clearSpider();
       for (const id of PIN_LAYER_IDS) {
         if (map.getLayer(id)) map.removeLayer(id);
       }
@@ -907,11 +1020,22 @@ export const ExploreMap = ({
       return;
     }
 
+    // Tag each feature with `favorited` (saved layer) and, when savedOnly is on,
+    // keep only saved points. Clone properties so the hook's cached features
+    // aren't mutated across map instances.
+    const favSet = favoriteIds ?? EMPTY_FAV;
+    const baseFeatures = pointsGeoJSON.features.filter((f) =>
+      pointEnabledLayers.includes(f.properties.pointType),
+    );
     const filteredGeoJSON: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
-      features: pointsGeoJSON.features.filter((f) =>
-        pointEnabledLayers.includes(f.properties.pointType),
-      ),
+      features: (savedOnly
+        ? baseFeatures.filter((f) => favSet.has(String(f.properties.id)))
+        : baseFeatures
+      ).map((f) => ({
+        ...f,
+        properties: { ...f.properties, favorited: favSet.has(String(f.properties.id)) },
+      })),
     };
 
     const existingSource = map.getSource(POINTS_SOURCE) as GeoJSONSource | undefined;
@@ -1024,38 +1148,56 @@ export const ExploreMap = ({
       source: POINTS_SOURCE,
       filter: ['!', ['has', 'point_count']],
       paint: {
-        // Featured pins sit a touch larger than the baseline dot.
-        'circle-radius': ['case', ['==', ['get', 'featured'], true], 8, 6],
+        // Larger dots host the category glyph; featured sit a touch larger.
+        'circle-radius': ['case', ['==', ['get', 'featured'], true], 11, 9],
         'circle-color': ['get', 'color'],
         // Thicker white halo so pins separate cleanly from the colored
         // basemap and the (now softened) density heat beneath them.
         'circle-stroke-width': 2.5,
         'circle-stroke-color': '#ffffff',
-        'circle-opacity': 1,
+        // Steady-state opacity = time-of-day expression (dims closed at night).
+        'circle-opacity': pinOpacityExpr,
         // Entrance fade — opacity transitions in on first paint / data swap.
         'circle-opacity-transition': { duration: 350, delay: 0 },
       },
     });
 
-    // Cluster click → zoom
+    // Category glyph on top of the dot. Falls back to the venue glyph, then to
+    // nothing (colored circle still shows) if an image failed to rasterize.
+    map.addLayer({
+      id: GLYPH_LAYER,
+      type: 'symbol',
+      source: POINTS_SOURCE,
+      filter: ['!', ['has', 'point_count']],
+      layout: {
+        'icon-image': ['coalesce', ['image', ['get', 'iconKey']], ['image', 'type:venues']],
+        'icon-size': ['case', ['==', ['get', 'featured'], true], 0.5, 0.42],
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+    });
+
+    // Cluster click → zoom to expand, OR spiderfy when zooming won't separate
+    // the points (they share ~identical coordinates).
     map.on('click', CLUSTERS_LAYER, async (e) => {
       const feat = e.features?.[0];
       if (!feat) return;
+      clearSpider();
       const clusterId = feat.properties.cluster_id;
+      const center = (feat.geometry as GeoJSON.Point).coordinates as [number, number];
       const src = map.getSource(POINTS_SOURCE) as GeoJSONSource;
       try {
         const zoom = await src.getClusterExpansionZoom(clusterId);
-        map.flyTo({
-          center: (feat.geometry as GeoJSON.Point).coordinates as [number, number],
-          zoom: zoom + 0.5,
-          speed: 1.5,
-        });
+        // If the breakpoint zoom is barely beyond where we are, zooming won't
+        // visually separate the pins — fan them out instead.
+        if (zoom - map.getZoom() <= 0.5 || zoom >= 18) {
+          const leaves = (await src.getClusterLeaves(clusterId, 24, 0)) as PointFeature[];
+          spiderfy(map, center, leaves);
+        } else {
+          map.flyTo({ center, zoom: zoom + 0.5, speed: 1.5 });
+        }
       } catch {
-        map.flyTo({
-          center: (feat.geometry as GeoJSON.Point).coordinates as [number, number],
-          zoom: map.getZoom() + 2,
-          speed: 1.5,
-        });
+        map.flyTo({ center, zoom: map.getZoom() + 2, speed: 1.5 });
       }
     });
 
@@ -1063,7 +1205,9 @@ export const ExploreMap = ({
     map.on('click', UNCLUSTERED_LAYER, (e: MapLayerMouseEvent) => {
       const feat = e.features?.[0];
       if (!feat || feat.geometry.type !== 'Point') return;
-      showPopup(map, e.lngLat, summaryFromFeature(feat as unknown as PointFeature));
+      const summary = summaryFromFeature(feat as unknown as PointFeature);
+      showPopup(map, e.lngLat, summary);
+      onSelectPointRef.current?.(summary.id);
     });
 
     map.on('mouseenter', CLUSTERS_LAYER, () => {
@@ -1071,6 +1215,36 @@ export const ExploreMap = ({
     });
     map.on('mouseleave', CLUSTERS_LAYER, () => {
       map.getCanvas().style.cursor = '';
+      hoverPopupRef.current?.remove();
+      hoverPopupRef.current = null;
+    });
+
+    // Cluster preview — break the aggregate down by type from clusterProperties
+    // so a dense blob reads as "12 venues · 3 events" instead of just a number.
+    map.on('mousemove', CLUSTERS_LAYER, (e: MapLayerMouseEvent) => {
+      const feat = e.features?.[0];
+      if (!feat) return;
+      const p = feat.properties as Record<string, number>;
+      const parts: string[] = [];
+      const add = (n: number, one: string, many: string) => {
+        if (n > 0) parts.push(`${n} ${n === 1 ? one : many}`);
+      };
+      add(Number(p.venue_count) || 0, 'venue', 'venues');
+      add(Number(p.event_count) || 0, 'event', 'events');
+      add(Number(p.restroom_count) || 0, 'restroom', 'restrooms');
+      const total = Number(p.point_count) || 0;
+      const label = parts.length ? parts.join(' · ') : `${total} places`;
+      const html = `<div style="font:13px system-ui;padding:2px 4px"><div style="font-weight:600">${label}</div><div style="color:rgba(0,0,0,.6);font-size:11px;margin-top:2px">Click to zoom in</div></div>`;
+      if (!hoverPopupRef.current) {
+        hoverPopupRef.current = new maplibregl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+          offset: 12,
+          maxWidth: '220px',
+          className: 'venue-hover-popup',
+        });
+      }
+      hoverPopupRef.current.setLngLat(e.lngLat).setHTML(html).addTo(map);
     });
     map.on('mouseenter', UNCLUSTERED_LAYER, () => {
       map.getCanvas().style.cursor = 'pointer';
@@ -1126,18 +1300,32 @@ export const ExploreMap = ({
       hoverPopupRef.current.setLngLat(e.lngLat).setHTML(html).addTo(map);
     });
 
-    // Entrance fade — pins ease in on first paint (skipped for reduced motion).
+    // Entrance fade — pins ease in on first paint (skipped for reduced motion),
+    // settling on the time-of-day opacity expression.
     if (!prefersReducedMotion && map.getLayer(UNCLUSTERED_LAYER)) {
       map.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', 0);
       requestAnimationFrame(() => {
         const m = mapRef.current;
-        if (m?.getLayer(UNCLUSTERED_LAYER)) m.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', 1);
+        if (m?.getLayer(UNCLUSTERED_LAYER))
+          m.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', pinOpacityExpr);
       });
     }
 
     startPulse();
     pointLayersAddedRef.current = true;
-  }, [pointsGeoJSON, pointEnabledLayers, mapReady, showPopup, startPulse, prefersReducedMotion]);
+  }, [
+    pointsGeoJSON,
+    pointEnabledLayers,
+    mapReady,
+    showPopup,
+    startPulse,
+    prefersReducedMotion,
+    pinOpacityExpr,
+    favoriteIds,
+    savedOnly,
+    spiderfy,
+    clearSpider,
+  ]);
 
   // Restart the pulse loop when the motion preference flips (the point effect
   // early-returns on data updates, so it can't catch this on its own).
@@ -1203,6 +1391,20 @@ export const ExploreMap = ({
     // early-returns via setData without re-inserting). Pins end up on top in
     // every path. Don't reorder the two effects.
     const beforeId = map.getLayer(CLUSTERS_LAYER) ? CLUSTERS_LAYER : undefined;
+    // Softened peak (was 0.85→0.65): the heat is an accent, not a blanket.
+    const heatOpacityExpr: maplibregl.ExpressionSpecification = [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      0,
+      0.5,
+      9,
+      0.4,
+      14,
+      0.32,
+      16,
+      0,
+    ];
     map.addLayer({
       id: HEATMAP_LAYER,
       type: 'heatmap',
@@ -1252,11 +1454,19 @@ export const ExploreMap = ({
               'rgba(0,0,0,0.55)',
             ],
         'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 26, 14, 52],
-        // Softened peak (was 0.85→0.65): the heat is an accent, not a blanket.
-        'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 9, 0.4, 14, 0.32, 16, 0],
+        // Start transparent and cross-fade in when switching into a heat lens.
+        'heatmap-opacity': prefersReducedMotion ? heatOpacityExpr : 0,
+        'heatmap-opacity-transition': { duration: 350, delay: 0 },
       },
     }, beforeId);
-  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, pridePalette]);
+
+    if (!prefersReducedMotion) {
+      requestAnimationFrame(() => {
+        const m = mapRef.current;
+        if (m?.getLayer(HEATMAP_LAYER)) m.setPaintProperty(HEATMAP_LAYER, 'heatmap-opacity', heatOpacityExpr);
+      });
+    }
+  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, pridePalette, prefersReducedMotion]);
 
   // ── Focus ring (rail hover / selection) ──────────────────────────────────
   useEffect(() => {
@@ -1289,12 +1499,12 @@ export const ExploreMap = ({
         type: 'circle',
         source: FOCUS_SOURCE,
         paint: {
-          'circle-radius': 16,
-          'circle-color': 'rgba(0,0,0,0)',
-          'circle-stroke-width': 3,
+          'circle-radius': 18,
+          'circle-color': 'rgba(10,10,10,0.06)',
+          'circle-stroke-width': 3.5,
           'circle-stroke-color': '#0a0a0a',
-          'circle-stroke-opacity': 0.85,
-          'circle-radius-transition': { duration: 200, delay: 0 },
+          'circle-stroke-opacity': 1,
+          'circle-radius-transition': { duration: 180, delay: 0 },
         },
       });
     }
@@ -1406,7 +1616,13 @@ export const ExploreMap = ({
         pointEnabledLayers.length > 0 && (
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-center px-4 pointer-events-none">
             <p className="max-w-xs text-center text-sm text-muted-foreground bg-background/85 border border-border rounded-element px-4 py-2">
-              No spots here yet — pan, zoom out, or put one on the map.
+              {filters.openNow
+                ? 'Nothing open right now in view — turn off Open now or try later.'
+                : filters.dateRange
+                  ? 'No events in this time range here — widen the dates or pan out.'
+                  : filters.search
+                    ? `No matches for "${filters.search}" here — clear search or pan out.`
+                    : 'No spots here yet — pan, zoom out, or put one on the map.'}
             </p>
           </div>
         )}

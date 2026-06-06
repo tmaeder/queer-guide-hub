@@ -1,0 +1,35 @@
+name: Data Quality Gates
+
+# Trust-&-safety release gates (audit 2026-06-05 §4). Blocks a PR if any CRITICAL
+# data-quality gate regresses (e.g. an unconsented identity label re-enters the
+# public corpus, a crisis hotline goes silently unverified, a criminalizing
+# country is shown "safe", or a duplicate pointer dangles/chains).
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    name: Critical data-quality gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run release_gate_checks()
+        if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-data-quality-gates.mjs
+
+      - name: Skip (missing secrets)
+        if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
+        run: echo "::warning::SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping data-quality gates. Configure repo secrets to enable."

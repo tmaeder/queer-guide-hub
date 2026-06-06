@@ -5,9 +5,12 @@ import { CommandBar } from './CommandBar';
 import { FilterChips } from './FilterChips';
 import { MapLegend } from './MapLegend';
 import { SpotlightRail } from './SpotlightRail';
+import { MapFirstRunHint } from './MapFirstRunHint';
 import type { MapPointSummary } from './mapPoint';
 import { useMapShellState } from '@/hooks/useMapShellState';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useFavorites } from '@/hooks/useFavorites';
 import {
   SURFACE_PRESETS,
   type MapShellConfig,
@@ -61,7 +64,26 @@ export const MapShell = ({
   const [pointsInView, setPointsInView] = useState<MapPointSummary[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [fetching, setFetching] = useState(false);
+  const [savedOnly, setSavedOnly] = useState(false);
   const showRail = config.showCommandBar !== false;
+
+  // Favorites layer — the viewer's saved venues + events, prefixed to match
+  // the map's feature ids (`venue-<id>` / `event-<id>`).
+  const { user } = useAuth();
+  const { favoriteIds: savedVenueIds } = useFavorites('venue');
+  const { favoriteIds: savedEventIds } = useFavorites('event');
+  const favoriteKey =
+    [...savedVenueIds].sort().join(',') + '|' + [...savedEventIds].sort().join(',');
+  const favoriteIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const id of savedVenueIds) set.add(`venue-${id}`);
+    for (const id of savedEventIds) set.add(`event-${id}`);
+    return set;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- favoriteKey captures Set contents
+  }, [favoriteKey]);
+  const canSave = !!user;
+  const savedActive = savedOnly && canSave;
 
   // Drop filter keys we don't expose on this surface so they can't leak in via URL.
   const exposedFilters: MapShellFilters = useMemo(() => {
@@ -75,6 +97,10 @@ export const MapShell = ({
     if (config.filters.includes('queer-owned') && f.queerOwned) out.queerOwned = f.queerOwned;
     if (config.filters.includes('era') && f.era) out.era = f.era;
     if (f.search) out.search = f.search;
+    // Quick filters are available on every command-bar surface, independent of
+    // the preset's filter list, so pass them through unconditionally.
+    if (f.openNow) out.openNow = f.openNow;
+    if (f.dateRange) out.dateRange = f.dateRange;
     return out;
   }, [state.filters, config.filters]);
 
@@ -217,6 +243,10 @@ export const MapShell = ({
         selectedId={selectedId}
         highlightedId={hoveredId}
         showResultCount={!showRail}
+        onSelectPoint={showRail ? setSelectedId : undefined}
+        onFetchingChange={showRail ? setFetching : undefined}
+        favoriteIds={favoriteIds}
+        savedOnly={savedActive}
       />
 
       {showRail && (
@@ -225,6 +255,7 @@ export const MapShell = ({
           <SpotlightRail
             points={pointsInView}
             selectedId={selectedId}
+            loading={fetching}
             onHover={setHoveredId}
             onSelect={(id) => setSelectedId(id)}
           />
@@ -244,9 +275,18 @@ export const MapShell = ({
           onFiltersChange={setFilters}
           onGeolocate={handleGeolocate}
           onShare={handleShare}
+          canSave={canSave}
+          savedOnly={savedActive}
+          onToggleSaved={() => setSavedOnly((v) => !v)}
         />
       )}
 
+      {showRail && (
+        <MapFirstRunHint count={pointsInView.length} ready={!fetching} />
+      )}
+
+      {/* Quick filters now live inside the command bar; only the active-filter
+          chips render below it, and only when something is applied. */}
       {config.showCommandBar !== false && Object.keys(exposedFilters).length > 0 && (
         <div className="absolute top-[3.25rem] left-3 right-3 z-20">
           <FilterChips
