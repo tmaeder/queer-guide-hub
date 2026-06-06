@@ -51,5 +51,11 @@ These are **not** safely finishable by SQL alone. Brute-forcing them (guessing a
 
 Re-run anytime: `SELECT * FROM trust_safety_gate_status();` or the CI job **Trust & Safety Gates**.
 
+## CI / merge-gate note (2026-06-06)
+
+Two infra issues surfaced while landing this PR (not data problems):
+- **`CLAUDE.md` count-sync treadmill** — a bot pushes `[skip ci]` count commits onto both main and feature branches, which collided on every merge. Fixed permanently with `.gitattributes` (`CLAUDE.md merge=union`).
+- **`[skip ci]` head deadlock** — when the bot's `[skip ci]` commit is the branch head, the required `Verify locales have all en.json keys` check never runs on it, so the PR stays `BLOCKED` (required check missing on head). Plus the `Nexploit`/NeuraLegion DAST scan sits perpetually `queued` (no runner), which GitHub auto-merge appears to wait on. Resolution needs a maintainer: re-run the required check on a non-skip head, and/or unblock/skip the stuck security scan.
+
 ## Bottom line
 All **safety-critical** harms are closed and now guarded against regression. Everything deferred is completeness/hygiene that depends on a worker run, an external data source, or a code refactor — none can be honestly completed from a SQL session without re-introducing risk.
