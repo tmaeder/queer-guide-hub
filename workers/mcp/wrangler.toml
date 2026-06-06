@@ -1,0 +1,48 @@
+name = "queer-guide-mcp"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers AI — query embeddings (bge-m3) for the search tool + AutoRAG knowledge.
+[ai]
+binding = "AI"
+
+# MCP session state lives in a Durable Object (SQLite-backed, hibernatable).
+[[durable_objects.bindings]]
+name = "MCP_OBJECT"
+class_name = "QueerGuideMCP"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["QueerGuideMCP"]
+
+# OAuth grants + access tokens (workers-oauth-provider). Create with:
+#   wrangler kv namespace create OAUTH_KV
+# then paste the id below.
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "55d72bd3618541eea163ec4cf8e0c5ec"
+
+# `agents` client bundle does a dynamic import("ai") (Vercel AI SDK) for a
+# helper this server never uses — alias it to a local stub so it isn't bundled.
+[alias]
+ai = "./src/ai-stub.ts"
+
+[vars]
+# Shared AI Gateway with search-proxy/assistant so embedding cache hits cross services.
+AI_GATEWAY_NAME = "qg-search"
+
+# Secrets (set via `wrangler secret put NAME`):
+#   SUPABASE_URL          - https://<project>.supabase.co
+#   SUPABASE_ANON_KEY     - publishable anon key
+# No service-role key: public read RPCs are all granted to `anon`, and
+# authenticated write tools forward the user's Supabase JWT (held in OAuth grant
+# props) so the platform's RLS authorizes the write.
+
+[observability]
+enabled = true
+
+# Custom domain — added via dashboard. Listed here for reproducibility.
+[[routes]]
+pattern = "mcp.queer.guide"
+custom_domain = true

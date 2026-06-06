@@ -1,0 +1,3 @@
+# Copy to .dev.vars for `wrangler dev`. In production set via `wrangler secret put`.
+SUPABASE_URL="https://xqeacpakadqfxjxjcewc.supabase.co"
+SUPABASE_ANON_KEY="<publishable anon key>"
