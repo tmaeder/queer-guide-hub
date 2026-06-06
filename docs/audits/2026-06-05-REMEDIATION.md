@@ -20,15 +20,23 @@ These are **not** safely finishable by SQL alone. Brute-forcing them (guessing a
 
 | Finding | Sev | Remaining | What it needs |
 |---|---|---|---|
-| H-3 — venue `closed_at` | High | 0 venues marked closed | Promote Venue Truth Engine closure consensus (`business_status` + `url_status` 404/410 votes) into `closed_at`. No reliable closure-signal data exists to write safely yet — run the consensus/closure sweep. |
-| H-4 — venue URL health | High | 22,267 (96%) never checked; 239 known broken | Run the venue URL-checker (HTTP at scale) to coverage; demote `url_status='broken'`. Cannot issue 22k requests from here. |
+| H-3 — venue `closed_at` | High | 0 venues marked closed | **Confirmed blocked:** FSQ `closed_bucket` only ever holds Open/Unsure (no closed signal); no `business_status='closed'` anywhere. There is genuinely no closure-signal data to promote — needs a fresh closure source (Google Places `business_status`). |
+| H-4 — venue URL health | High | ~4,690 real backlog (only venues *with* a website; ~17.5k have no URL). 1,025 now checked. | `venue-url-checker` runs daily via cron (jobid 197) and is draining; triggered a batch manually (150 → 27 ok / 65 redirect / 55 broken). **Label-only — does not hide venues.** Caveat below. |
 | M-8 remainder | Medium | 2,533 venues have coords but no city/country | Reverse-geocode coords→country via Photon/Nominatim, **rate-limited client-side** (see `queerguide_pgnet_bulk_geocode` — pg_net bursts trip 503s). |
-| M-2 — marketplace link health | Medium | 6,532 (100%) `unchecked` | Run the `marketplace-link-checker` worker (weekly cron). |
+| M-2 — marketplace link health | Medium | 46 verified live, 14 genuine 404s deactivated; rest unchecked | **Checker is buggy — cron PAUSED (jobid 198).** See incident below. Do not re-enable until fixed. |
 | M-1 — marketplace provenance | Medium | `community_owned_tags` 0% populated | Source queer-owned provenance from the merchant registry / relevance gate; until then surface "provenance unknown" rather than an unbacked claim. |
 | M-9 — venue accessibility | Medium | `accessibility_attributes` 100% empty | Source wheelchair / gender-neutral-restroom tags from Google/OSM in venue ingestion. Cannot be fabricated. |
 | M-4 — news geo | Medium | 10,726 (was 16,415) lack geo | **Auto-progressing** via `pipeline-enrich-news`; let the pipeline continue. |
 | M-5 — dead country columns | Medium | `lgbt_legal_status` / `lgbt_rights_status` 0% populated but **57 code refs** (incl. `src/lib/lgbtLegality.ts`, Admin pages) | Code refactor to remove read paths before dropping. Cosmetic — low priority. |
 | H-1 — hotline referral orgs | High→info | 3 entries (ILGA, IGLYO, du-bist-du) have no call channel | UI change: render "directories/resources" separately from call-now hotlines. Tracked by the `hotline_unreachable` HIGH gate (=3). |
+
+## ⚠ Incident & bug found while driving the checkers (2026-06-06)
+
+**Both link checkers misclassify soft failures (HTTP 429/403/405) as `broken`.** The HEAD-based `venue-url-checker` and `marketplace-link-checker` treat any non-2xx/3xx response as broken — but affiliate/e-commerce sites routinely rate-limit (429) or block HEAD/bots (403/405). This produces false "broken" verdicts.
+
+- **`marketplace-link-checker` also deactivates on a single failure** (`link_health='broken'` → `status='inactive'`), which *hides the listing*. A manual batch of 150 marked 100 "broken"; verification showed **86 were false** — all from `www.misterb.com`, which returns **429 (rate-limited)**, not dead (Mister B is a live, well-known queer retailer). Only 14 were genuinely gone (ohmyfantasy/supergay, confirmed 404 on GET).
+- **Action taken:** reverted the 86 false deactivations to `active`/`unchecked`; the 14 real 404s stay `inactive` (correct). **Paused the `marketplace-link-checker` cron (jobid 198, `active=false`)** to stop the nightly run from re-hiding legitimate queer-owned listings. Restore with `cron.alter_job(198, active := true)` **after** the fix.
+- **Fix required before re-enabling:** treat 429/403/405 (and timeouts) as `unknown`, not `broken`; require ≥2 consecutive hard failures (404/410/dead-host) before deactivating; back off per-domain on 429. The function source is not in this repo (deployed-only) — needs to be located/added and patched. `venue-url-checker` shares the misclassification flaw but only writes a *label* (doesn't hide venues), so its cron is left running.
 
 ## Current gate readout
 
