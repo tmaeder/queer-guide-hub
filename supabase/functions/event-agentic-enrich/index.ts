@@ -131,11 +131,19 @@ Deno.serve(async (req: Request) => {
       const pageText = target ? await fetchText(target) : null
       if (!pageText) { skipped++; results.push({ id: ev.id, status: 'no_page' }); await logStep(supabase, ev.id, status, started, dryRun); continue }
 
-      // Destination safety context.
+      // Destination safety context. Legality is derived from the canonical
+      // lgbti_criminalization jsonb (the legacy lgbt_legal_status text column was
+      // dropped — M-5); `legal: false` marks a criminalizing destination.
       let safetyContext: string | undefined
       if (ev.country_id) {
-        const { data: c } = await supabase.from('countries').select('name, equality_score, lgbt_legal_status').eq('id', ev.country_id).maybeSingle()
-        if (c) safetyContext = `${c.name}: equality_score=${c.equality_score ?? 'n/a'}, legal_status=${c.lgbt_legal_status ?? 'n/a'}`
+        const { data: c } = await supabase.from('countries').select('name, equality_score, lgbti_criminalization').eq('id', ev.country_id).maybeSingle()
+        if (c) {
+          const crim = (c.lgbti_criminalization ?? {}) as Record<string, unknown>
+          const legalStatus = crim.legal === false
+            ? `criminalized${typeof crim.penalty === 'string' && crim.penalty ? ` (${crim.penalty})` : ''}`
+            : crim.legal === true ? 'legal' : 'n/a'
+          safetyContext = `${c.name}: equality_score=${c.equality_score ?? 'n/a'}, legal_status=${legalStatus}`
+        }
       }
 
       let ai: EventMoatEnrichment | null = null

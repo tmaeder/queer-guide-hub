@@ -161,7 +161,7 @@ export interface ContentTypeConfig {
    * Postgres select string used by the list view (Supabase syntax). Defaults to
    * `'*'`. Override to fetch joined relations and aggregate counts that virtual
    * `listRender` columns can read from. Example:
-   * `'*,countries(name,lgbt_legal_status),venues(count)'`.
+   * `'*,countries(name,equality_score),venues(count)'`.
    */
   listSelect?: string;
   /** Default values for new items */

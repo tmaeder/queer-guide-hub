@@ -42,10 +42,12 @@ describe('getLegalityBadge', () => {
     expect(badge?.level).toBe('protected');
   });
 
-  it('returns restricted when legal status text mentions criminalization', () => {
+  it('flags restricted from criminalization JSON even at a high equality score', () => {
+    // Legality is derived from lgbti_criminalization + equality_score only — the
+    // legacy free-text lgbt_legal_status/lgbt_rights_status columns were dropped (M-5).
     const badge = getLegalityBadge({
-      equality_score: 25,
-      lgbt_legal_status: 'Same-sex relations are criminalized',
+      equality_score: 70,
+      lgbti_criminalization: { legal: false, death_penalty: 'Yes' },
     });
     expect(badge?.level).toBe('restricted');
   });

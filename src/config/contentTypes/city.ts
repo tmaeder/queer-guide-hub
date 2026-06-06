@@ -76,19 +76,6 @@ export const cityFields: FieldConfig[] = [
     },
   },
   {
-    name: 'lgbt_legal_status',
-    label: 'LGBT Legal',
-    type: 'text',
-    group: 'external',
-    hidden: true,
-    virtual: true,
-    listColumn: true,
-    listRender: (row) => {
-      const c = row.countries as { lgbt_legal_status?: string } | null | undefined;
-      return c?.lgbt_legal_status ?? null;
-    },
-  },
-  {
     name: 'equality_score',
     label: 'Equality Score',
     type: 'text',
@@ -140,7 +127,7 @@ export const cityContentType: ContentTypeConfig = {
   label: { singular: 'City', plural: 'Cities' },
   color: 'hsl(var(--foreground))',
   fields: cityFields,
-  listSelect: '*,countries(name,equality_score,lgbt_legal_status),venues(count),events(count)',
+  listSelect: '*,countries(name,equality_score),venues(count),events(count)',
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
   translatableFields: ['name', 'description'],
   commentable: true,
