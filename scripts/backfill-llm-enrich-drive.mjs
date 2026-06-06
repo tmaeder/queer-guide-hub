@@ -76,8 +76,8 @@ async function runTarget(target) {
 }
 
 async function main() {
-  await runTarget('news');
-  await runTarget('events');
+  const targets = (process.env.TARGETS || 'news,events').split(',').map((s) => s.trim()).filter(Boolean);
+  for (const t of targets) await runTarget(t);
   console.log(`[${ts()}] ALL DONE.`);
 }
 
