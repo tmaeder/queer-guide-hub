@@ -28,6 +28,13 @@ id = "55d72bd3618541eea163ec4cf8e0c5ec"
 [alias]
 ai = "./src/ai-stub.ts"
 
+# Per-IP rate limit on MCP traffic — the public read endpoint is anonymous and
+# hits the (disk-constrained) DB, so bound abuse. 240 requests / 60s / IP.
+[[ratelimits]]
+name = "MCP_RL"
+namespace_id = "7421"
+simple = { limit = 240, period = 60 }
+
 [vars]
 # Shared AI Gateway with search-proxy/assistant so embedding cache hits cross services.
 AI_GATEWAY_NAME = "qg-search"

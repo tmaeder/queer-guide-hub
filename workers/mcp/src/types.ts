@@ -5,6 +5,8 @@ export interface Env {
 	MCP_OBJECT: DurableObjectNamespace;
 	/** workers-oauth-provider storage. */
 	OAUTH_KV: KVNamespace;
+	/** Per-IP rate limiter for MCP traffic. */
+	MCP_RL: RateLimit;
 	/** Workers AI — query embeddings + AutoRAG. */
 	AI: Ai;
 	SUPABASE_URL: string;

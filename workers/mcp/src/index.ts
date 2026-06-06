@@ -47,17 +47,37 @@ const LANDING = `<!doctype html><meta charset="utf-8">
 </ul>
 </body>`;
 
+const isMcpTraffic = (p: string): boolean =>
+	p === "/mcp" || p.startsWith("/mcp/") || p === "/sse" || p.startsWith("/sse/") || p === "/authed" || p.startsWith("/authed/");
+
 export default {
-	fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> | Response {
+	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const { pathname } = new URL(request.url);
 
 		if (pathname === "/" ) return new Response(LANDING, { headers: { "content-type": "text/html; charset=utf-8" } });
 		if (pathname === "/health") return Response.json({ ok: true, ts: Date.now() });
 
+		// Per-IP rate limit on MCP traffic (skip CORS preflight). Fail-open: a
+		// limiter hiccup must never take the server down.
+		if (request.method !== "OPTIONS" && isMcpTraffic(pathname)) {
+			const ip = request.headers.get("CF-Connecting-IP") ?? "anon";
+			try {
+				const { success } = await env.MCP_RL.limit({ key: ip });
+				if (!success) {
+					return new Response(JSON.stringify({ error: "rate_limited" }), {
+						status: 429,
+						headers: { "content-type": "application/json", "retry-after": "60" },
+					});
+				}
+			} catch (e) {
+				console.warn("rate limit check failed (allowing):", (e as Error).message);
+			}
+		}
+
 		if (pathname === "/mcp" || pathname.startsWith("/mcp/")) return publicStreamable.fetch(request, env, ctx);
 		if (pathname === "/sse" || pathname.startsWith("/sse/")) return publicSSE.fetch(request, env, ctx);
 
-		// Everything else (/, authed MCP, OAuth endpoints, .well-known) → provider.
+		// Everything else (authed MCP, OAuth endpoints, .well-known) → provider.
 		return oauth.fetch(request, env, ctx);
 	},
 } satisfies ExportedHandler<Env>;
