@@ -1,0 +1,35 @@
+name: Trust & Safety Gates
+
+# Harm-anchored release gates from the 2026-06-05 trust-&-safety audit.
+# CRITICAL gates (dead/unverified crisis hotline, public-living person labeled
+# without provenance, criminalizing destination shown safe, broken dedup
+# pointers) must be 0 or the job fails. Runs on PRs as a release gate and daily
+# to catch drift.
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    name: Trust & safety gates
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run trust-&-safety gates
+        if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-trust-safety-gates.mjs
+
+      - name: Skip gates (missing secrets)
+        if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
+        run: echo "::warning::SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — skipping trust-&-safety gates. Configure repo secrets to enable."
