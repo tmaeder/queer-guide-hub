@@ -15,6 +15,7 @@ import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Env, Props } from "./types";
 import { registerTools, type Agent } from "./tools";
+import { registerResources } from "./resources";
 
 export class QueerGuideMCP extends McpAgent<Env, unknown, Props> {
 	server = new McpServer({
@@ -24,5 +25,6 @@ export class QueerGuideMCP extends McpAgent<Env, unknown, Props> {
 
 	async init(): Promise<void> {
 		registerTools(this as unknown as Agent);
+		registerResources(this as unknown as Agent);
 	}
 }
