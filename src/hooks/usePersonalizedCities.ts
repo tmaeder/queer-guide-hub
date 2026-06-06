@@ -38,7 +38,8 @@ export async function fetchTrendingCities(
   const { data: whitelisted } = await supabase
     .from('cities')
     .select('id, name, population, countries:country_id(name, equality_score)')
-    .in('name', FEATURED_CITY_WHITELIST);
+    .in('name', FEATURED_CITY_WHITELIST)
+    .not('slug', 'like', 'tmp-%');
 
   const byName = new Map<string, PersonalizedCityRow>();
   for (const row of (whitelisted ?? []) as unknown as PersonalizedCityRow[]) {
@@ -56,6 +57,7 @@ export async function fetchTrendingCities(
   const { data: filtered } = await supabase
     .from('cities')
     .select('id, name, population, countries:country_id!inner(name, equality_score)')
+    .not('slug', 'like', 'tmp-%')
     .gte('population', minPopulation)
     .gte('countries.equality_score', 60)
     .order('population', { ascending: false })
