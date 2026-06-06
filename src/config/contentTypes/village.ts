@@ -93,19 +93,6 @@ export const queerVillageFields: FieldConfig[] = [
     },
   },
   {
-    name: 'lgbt_legal_status',
-    label: 'LGBT legal status',
-    type: 'text',
-    group: 'external',
-    hidden: true,
-    virtual: true,
-    listColumn: true,
-    listRender: (row) => {
-      const c = row.countries as { lgbt_legal_status?: string } | null | undefined;
-      return c?.lgbt_legal_status ?? null;
-    },
-  },
-  {
     name: 'population',
     label: 'Population',
     type: 'text',
@@ -163,7 +150,7 @@ export const queerVillageContentType: ContentTypeConfig = {
   color: 'hsl(var(--foreground))',
   fields: queerVillageFields,
   listSelect:
-    '*,cities(name,population),countries(name,lgbt_legal_status,population),venues(count),events(count)',
+    '*,cities(name,population),countries(name,population),venues(count),events(count)',
   defaults: { featured: false },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
 };

@@ -16,6 +16,7 @@ import {
   type ClassifyInput,
 } from '../_shared/entity-classifier.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { isLgbtiConnectionVocab } from '../_shared/lgbti-connection.ts'
 
 // ============================================================
 // Pipeline Validate
@@ -186,7 +187,14 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
         if (!n.profession)             warnings.push('W_NO_PROFESSION')
         if (!n.nationality)            warnings.push('W_NO_NATIONALITY')
         if (!n.image_url)              warnings.push('W_NO_IMAGE')
-        if (!n.lgbti_connection)       errors.push('E_NO_LGBTI_CONNECTION')
+        // Outing guard (audit C-2/H-5): lgbti_connection is a controlled,
+        // consent-anchored vocab — never an uncontrolled free-text identity
+        // label. A missing value ("no claim") is allowed (warning only); a
+        // non-vocab value is a hard error so unconsented scrape labels cannot
+        // enter the public corpus.
+        const conn = n.lgbti_connection == null ? null : String(n.lgbti_connection).trim()
+        if (!conn) warnings.push('W_NO_LGBTI_CONNECTION')
+        else if (!isLgbtiConnectionVocab(conn)) errors.push('E_INVALID_LGBTI_CONNECTION')
         if (!n.wikidata_qid)           warnings.push('W_NO_WIKIDATA_QID')
 
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 40)

@@ -278,16 +278,15 @@ export default function HelpHotlines() {
     });
   }, [hotlines, countryFilter, topicFilter, intersectionFilter, searchQuery]);
 
-  // A crisis page must not mix call-now lines with reference directories that
-  // offer no immediate contact channel (audit finding H-1). Split them so a
-  // user in crisis sees reachable services first.
-  const isReachable = (h: Hotline) => Boolean(h.phone) || (h.channels?.length ?? 0) > 0;
-  const callableHotlines = useMemo(
-    () => visibleHotlines.filter(isReachable),
+  // Call-now hotlines vs referral directories. A user in crisis must never be
+  // shown a website where they expect a phone — directories are listed apart
+  // (audit H-1). Default kind is 'hotline'.
+  const callNowHotlines = useMemo(
+    () => visibleHotlines.filter((h) => (h.kind ?? 'hotline') !== 'directory'),
     [visibleHotlines],
   );
-  const referralHotlines = useMemo(
-    () => visibleHotlines.filter((h) => !isReachable(h)),
+  const directoryHotlines = useMemo(
+    () => visibleHotlines.filter((h) => h.kind === 'directory'),
     [visibleHotlines],
   );
 
@@ -391,8 +390,13 @@ export default function HelpHotlines() {
         <SelfHelpDrawer />
       </div>
 
-      {/* Country-aware hero CTA */}
-      {!loading && <HeroCTA hotlines={hotlines} country={countryFilter} />}
+      {/* Country-aware hero CTA — directories (no phone/channel) never qualify */}
+      {!loading && (
+        <HeroCTA
+          hotlines={hotlines.filter((h) => (h.kind ?? 'hotline') !== 'directory')}
+          country={countryFilter}
+        />
+      )}
 
       {/* "What to expect" reassurance */}
       <WhatToExpect />
@@ -532,7 +536,7 @@ export default function HelpHotlines() {
             </div>
           )}
 
-          {/* Main hotline grid */}
+          {/* Main hotline grid — call-now lines only */}
           {visibleHotlines.length === 0 ? (
             <EmptyState
               icon={Search}
@@ -548,9 +552,9 @@ export default function HelpHotlines() {
             />
           ) : (
             <>
-              {callableHotlines.length > 0 && (
+              {callNowHotlines.length > 0 && (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {callableHotlines.map((h) => (
+                  {callNowHotlines.map((h) => (
                     <HotlineCard
                       key={h.id}
                       hotline={h}
@@ -561,25 +565,22 @@ export default function HelpHotlines() {
                 </div>
               )}
 
-              {referralHotlines.length > 0 && (
-                <div className="mt-8">
-                  <h3 className="mb-2 text-sm font-bold">
-                    {t('help.directories_title', 'Directories & resources')}
+              {/* Referral directories — websites, not call-now lines (H-1) */}
+              {directoryHotlines.length > 0 && (
+                <div className="mt-10">
+                  <h3 className="mb-2 flex items-center gap-2 text-sm font-bold">
+                    <Globe size={16} />
+                    {t('help.directories_title', 'Directories & further support')}
                   </h3>
                   <p className="mb-4 text-sm text-muted-foreground">
                     {t(
                       'help.directories_subtitle',
-                      'Reference directories and resource sites — not direct call-now lines.',
+                      'These are referral organisations and directories — websites rather than direct phone lines.',
                     )}
                   </p>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    {referralHotlines.map((h) => (
-                      <HotlineCard
-                        key={`ref-${h.id}`}
-                        hotline={h}
-                        isBookmarked={isBookmarked(h.id)}
-                        toggleBookmark={toggleBookmark}
-                      />
+                    {directoryHotlines.map((h) => (
+                      <DirectoryCard key={h.id} hotline={h} />
                     ))}
                   </div>
                 </div>
@@ -823,7 +824,7 @@ function HotlineCard({
               </Button>
             );
           })}
-          {hotline.url && (
+          {hotline.url && hotline.link_status !== 'broken' && (
             <Button asChild variant="outline" size="lg" aria-label={`${hotline.name} — Website`}>
               <a href={hotline.url} target="_blank" rel="noopener noreferrer">
                 <ExternalLink size={18} />
@@ -834,6 +835,46 @@ function HotlineCard({
 
         <div className="flex items-center justify-end">
           <ReportHotline hotlineId={hotline.id} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * DirectoryCard — referral organisations and directories (no direct phone line).
+ * Rendered apart from call-now hotlines so a user in crisis is never sent to a
+ * website expecting to reach a person (audit H-1).
+ */
+function DirectoryCard({ hotline }: { hotline: Hotline }) {
+  const { t } = useTranslation();
+  const linkLive = hotline.url && hotline.link_status !== 'broken';
+  return (
+    <Card className="flex h-full flex-col">
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="text-lg leading-snug">{hotline.name}</CardTitle>
+          <Badge variant="outline" className="shrink-0">
+            {countryLabel(hotline.country)}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-1 flex-col gap-4">
+        <p className="text-sm leading-relaxed text-muted-foreground">{hotline.description}</p>
+        <div className="mt-auto">
+          {linkLive ? (
+            <Button asChild variant="outline" size="lg" className="w-full">
+              <a href={hotline.url} target="_blank" rel="noopener noreferrer">
+                <Globe size={18} className="mr-2" />
+                {t('help.visit_directory', 'Visit website')}
+                <ExternalLink size={14} className="ml-2 opacity-60" />
+              </a>
+            </Button>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {t('help.link_unavailable', 'Website currently unavailable — being re-checked.')}
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
