@@ -90,12 +90,14 @@ export async function llmChatCompletion(
     model = defaultModel,
     temperature = 0.3,
     max_tokens = 2000,
-    response_format,
     timeoutMs = 60_000,
   } = options
 
+  // NB: `response_format` is intentionally NOT forwarded. The sole backend is
+  // CF Workers AI (/ai/v1), and json_object guided generation hangs that
+  // endpoint (mirrors the same guard in openai-client.ts). Callers must request
+  // JSON via the prompt and parse defensively.
   const body: Record<string, unknown> = { model, messages, temperature, max_tokens }
-  if (response_format) body.response_format = response_format
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
