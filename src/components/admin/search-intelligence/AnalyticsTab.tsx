@@ -130,7 +130,7 @@ export function AnalyticsTab({ onAddSynonym }: { onAddSynonym?: (term: string) =
             tone={summary.p95_ms != null && summary.p95_ms > 1000 ? 'warn' : undefined}
           />
           <Kpi label="Rewritten" value={`${summary.rewrite_pct}%`} sub={`${summary.rewritten} via synonyms`} />
-          <Kpi label="CTR" value="—" sub="click-logging not wired" tone="muted" />
+          <Kpi label="CTR" value={`${summary.ctr_pct}%`} sub={`${summary.clicked} clicks logged`} />
           <Kpi
             label="Top language"
             value={summary.langs[0]?.lang ?? '—'}
