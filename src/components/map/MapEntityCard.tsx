@@ -7,6 +7,8 @@ import {
   Radio,
   MapPin,
   TrendingUp,
+  Users,
+  Heart,
   type LucideIcon,
 } from 'lucide-react';
 import { Image } from '@/components/ui/Image';
@@ -69,6 +71,12 @@ function Signals({ point }: { point: MapPointSummary }) {
   const trending = point.featured && (point.trustScore ?? 0) >= 80;
   return (
     <div className="flex flex-wrap items-center gap-1.5">
+      {point.favorited && (
+        <Badge variant="soft" className="gap-1">
+          <Heart className="h-3 w-3 fill-current" aria-hidden />
+          Saved
+        </Badge>
+      )}
       {trending ? (
         <Badge variant="soft" className="gap-1">
           <TrendingUp className="h-3 w-3" aria-hidden />
@@ -98,6 +106,12 @@ function Signals({ point }: { point: MapPointSummary }) {
         <Badge variant="outline" className="gap-1">
           <Clock className="h-3 w-3" aria-hidden />
           {countdown}
+        </Badge>
+      )}
+      {point.type === 'events' && (point.attendeeCount ?? 0) > 0 && (
+        <Badge variant="outline" className="gap-1">
+          <Users className="h-3 w-3" aria-hidden />
+          {point.attendeeCount} going
         </Badge>
       )}
       {price && <Badge variant="outline">{price}</Badge>}

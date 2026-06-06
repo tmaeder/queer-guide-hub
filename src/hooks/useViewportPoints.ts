@@ -50,6 +50,8 @@ export interface PointFeatureProps {
   live: boolean;
   /** Map-image id for the category glyph drawn on the pin (see mapGlyphs). */
   iconKey: string;
+  /** Tagged client-side in ExploreMap when the point is in the viewer's saved set. */
+  favorited?: boolean;
 }
 
 export type PointFeature = GeoJSON.Feature<GeoJSON.Point, PointFeatureProps>;
@@ -215,7 +217,8 @@ async function fetchEventsInBbox(
   const { data, error } = await query;
   if (error) throw error;
 
-  return (data ?? [])
+  // Keep only events with a usable location inside the bbox.
+  const rows = (data ?? [])
     .map((e: Record<string, unknown>) => {
       let lat = e.latitude;
       let lng = e.longitude;
@@ -225,7 +228,25 @@ async function fetchEventsInBbox(
       }
       if (lat == null || lng == null) return null;
       if (lat < bbox.south || lat > bbox.north || lng < bbox.west || lng > bbox.east) return null;
+      return { e, lat: Number(lat), lng: Number(lng) };
+    })
+    .filter(Boolean) as { e: Record<string, unknown>; lat: number; lng: number }[];
 
+  // Social-proof: going-count per event (best-effort; never blocks the map).
+  const goingById = new Map<string, number>();
+  const ids = rows.map((r) => String(r.e.id));
+  if (ids.length) {
+    try {
+      const { data: counts } = await supabase.rpc('event_attendee_counts', { event_ids: ids });
+      for (const c of (counts ?? []) as { event_id: string; going_count: number }[]) {
+        if (c.going_count > 0) goingById.set(c.event_id, c.going_count);
+      }
+    } catch {
+      /* attendee counts are optional — ignore failures */
+    }
+  }
+
+  return rows.map(({ e, lat, lng }) => {
       const dateStr = e.start_date ? new Date(e.start_date).toLocaleDateString() : '';
       const images = Array.isArray(e.images) ? (e.images as string[]) : [];
       const now = Date.now();
@@ -261,11 +282,11 @@ async function fetchEventsInBbox(
             city: e.city,
             image: images[0] ?? undefined,
             trustScore: typeof e.trust_score === 'number' ? e.trust_score : undefined,
+            attendeeCount: goingById.get(String(e.id)),
           }),
         },
       };
-    })
-    .filter(Boolean) as PointFeature[];
+    }) as PointFeature[];
 }
 
 async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {

@@ -145,6 +145,9 @@ const NEIGHBOURHOOD_BOUNDARY_CONFIG: BoundaryLayerConfig = {
 const DEFAULT_CENTER: [number, number] = [0, 20];
 const DEFAULT_ZOOM = 2.2;
 
+// Stable empty favorites set so effects don't churn when none are passed.
+const EMPTY_FAV: ReadonlySet<string> = new Set<string>();
+
 // Gated debug logger — env-flag or localStorage opt-in. Cheap insurance
 // against future regressions in the points-data → markers flow.
 const mapDebug = (...args: unknown[]): void => {
@@ -202,6 +205,10 @@ export interface ExploreMapProps {
   onSelectPoint?: (id: string) => void;
   /** Fired when the point-fetch loading state flips (drives rail skeletons). */
   onFetchingChange?: (fetching: boolean) => void;
+  /** Feature ids (`venue-<id>` / `event-<id>`) the viewer has saved. */
+  favoriteIds?: Set<string>;
+  /** When true, only saved points render (favorites layer). */
+  savedOnly?: boolean;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -227,6 +234,8 @@ export const ExploreMap = ({
   showResultCount = true,
   onSelectPoint,
   onFetchingChange,
+  favoriteIds,
+  savedOnly = false,
 }: ExploreMapProps) => {
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
@@ -243,6 +252,8 @@ export const ExploreMap = ({
   const pointLayersAddedRef = useRef(false);
   const pulseRafRef = useRef<number | null>(null);
   const lastSelectedRef = useRef<string | null>(null);
+  // DOM markers for the spiderfied (fanned-out) leaves of a co-located cluster.
+  const spiderMarkersRef = useRef<maplibregl.Marker[]>([]);
   // Latest-value refs read inside imperative map callbacks / rAF loops.
   const onPointsInViewRef = useRef(onPointsInView);
   onPointsInViewRef.current = onPointsInView;
@@ -439,31 +450,36 @@ export const ExploreMap = ({
       const s = b.getSouth();
       const n = b.getNorth();
       let count = 0;
-      const inView: PointFeature[] = [];
+      const inBounds: PointFeature[] = [];
       for (const f of pointsGeoJSON.features) {
         const [lng, lat] = (f.geometry as GeoJSON.Point).coordinates;
         if (lng >= w && lng <= e && lat >= s && lat <= n) {
           count++;
-          if (inView.length < 80) inView.push(f as unknown as PointFeature);
+          inBounds.push(f as unknown as PointFeature);
         }
       }
       setInBoundsCount(count);
       setIsCounterStale(false);
 
       // Lift the in-view set up to the parent (spotlight rail), enriched with
-      // distance from the viewer when we know their location.
+      // favorite tagging + distance from the viewer when we know their location.
       const cb = onPointsInViewRef.current;
       if (cb) {
+        const favSet = favoriteIds ?? EMPTY_FAV;
         const geo = visitorGeo;
-        const summaries = inView.map((f) => {
+        const feats = savedOnly
+          ? inBounds.filter((f) => favSet.has(String(f.properties.id)))
+          : inBounds;
+        const summaries = feats.slice(0, 80).map((f) => {
           const sum = summaryFromFeature(f);
+          sum.favorited = favSet.has(sum.id);
           if (geo) sum.distanceKm = calculateDistanceKm(geo.latitude, geo.longitude, sum.lat, sum.lng);
           return sum;
         });
         cb(summaries);
       }
     }, 100);
-  }, [pointsGeoJSON, visitorGeo]);
+  }, [pointsGeoJSON, visitorGeo, favoriteIds, savedOnly]);
 
   // The `moveend` listener is registered once (init effect) and would otherwise
   // capture the first-render recompute (empty data). Route it through a ref so
@@ -590,6 +606,46 @@ export const ExploreMap = ({
     [showPopup],
   );
 
+  // Remove any fanned-out spider markers.
+  const clearSpider = useCallback(() => {
+    if (spiderMarkersRef.current.length) {
+      spiderMarkersRef.current.forEach((m) => m.remove());
+      spiderMarkersRef.current = [];
+    }
+  }, []);
+
+  // Fan a co-located cluster's leaves out in a ring of DOM markers so each is
+  // individually clickable (zooming can't separate identical coordinates).
+  const spiderfy = useCallback(
+    (map: maplibregl.Map, center: [number, number], leaves: PointFeature[]) => {
+      if (!leaves.length) return;
+      const origin = map.project(center);
+      const n = leaves.length;
+      const radius = Math.min(140, 36 + n * 9);
+      leaves.forEach((leaf, i) => {
+        const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+        const lngLat = map.unproject([
+          origin.x + radius * Math.cos(angle),
+          origin.y + radius * Math.sin(angle),
+        ]);
+        const summary = summaryFromFeature(leaf);
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.setAttribute('aria-label', summary.name);
+        el.title = summary.name;
+        el.style.cssText = `width:22px;height:22px;border-radius:9999px;background:${summary.color};border:2.5px solid #fff;box-sizing:border-box;cursor:pointer;padding:0;`;
+        el.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          showPopup(map, lngLat, summary);
+          onSelectPointRef.current?.(summary.id);
+        });
+        const marker = new maplibregl.Marker({ element: el }).setLngLat(lngLat).addTo(map);
+        spiderMarkersRef.current.push(marker);
+      });
+    },
+    [showPopup],
+  );
+
   // ── Live pulse animation (Phase 4) ────────────────────────────────────────
   // Drives the PULSE_LAYER ring around live/open-now pins. rAF receives a
   // DOMHighResTimeStamp so we never call Date.now(). Reduced-motion → a static
@@ -679,6 +735,11 @@ export const ExploreMap = ({
 
     map.on('movestart', () => {
       setIsCounterStale(true);
+      // Fanned-out spider markers are pixel-anchored; drop them on any move.
+      if (spiderMarkersRef.current.length) {
+        spiderMarkersRef.current.forEach((m) => m.remove());
+        spiderMarkersRef.current = [];
+      }
     });
 
     map.on('moveend', () => {
@@ -701,6 +762,8 @@ export const ExploreMap = ({
       const r = popupRootRef.current;
       popupRootRef.current = null;
       if (r) setTimeout(() => r.unmount(), 0);
+      spiderMarkersRef.current.forEach((m) => m.remove());
+      spiderMarkersRef.current = [];
       mapRef.current = null;
       pointLayersAddedRef.current = false;
       map.remove();
@@ -948,6 +1011,7 @@ export const ExploreMap = ({
         cancelAnimationFrame(pulseRafRef.current);
         pulseRafRef.current = null;
       }
+      clearSpider();
       for (const id of PIN_LAYER_IDS) {
         if (map.getLayer(id)) map.removeLayer(id);
       }
@@ -956,11 +1020,22 @@ export const ExploreMap = ({
       return;
     }
 
+    // Tag each feature with `favorited` (saved layer) and, when savedOnly is on,
+    // keep only saved points. Clone properties so the hook's cached features
+    // aren't mutated across map instances.
+    const favSet = favoriteIds ?? EMPTY_FAV;
+    const baseFeatures = pointsGeoJSON.features.filter((f) =>
+      pointEnabledLayers.includes(f.properties.pointType),
+    );
     const filteredGeoJSON: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
-      features: pointsGeoJSON.features.filter((f) =>
-        pointEnabledLayers.includes(f.properties.pointType),
-      ),
+      features: (savedOnly
+        ? baseFeatures.filter((f) => favSet.has(String(f.properties.id)))
+        : baseFeatures
+      ).map((f) => ({
+        ...f,
+        properties: { ...f.properties, favorited: favSet.has(String(f.properties.id)) },
+      })),
     };
 
     const existingSource = map.getSource(POINTS_SOURCE) as GeoJSONSource | undefined;
@@ -1102,25 +1177,27 @@ export const ExploreMap = ({
       },
     });
 
-    // Cluster click → zoom
+    // Cluster click → zoom to expand, OR spiderfy when zooming won't separate
+    // the points (they share ~identical coordinates).
     map.on('click', CLUSTERS_LAYER, async (e) => {
       const feat = e.features?.[0];
       if (!feat) return;
+      clearSpider();
       const clusterId = feat.properties.cluster_id;
+      const center = (feat.geometry as GeoJSON.Point).coordinates as [number, number];
       const src = map.getSource(POINTS_SOURCE) as GeoJSONSource;
       try {
         const zoom = await src.getClusterExpansionZoom(clusterId);
-        map.flyTo({
-          center: (feat.geometry as GeoJSON.Point).coordinates as [number, number],
-          zoom: zoom + 0.5,
-          speed: 1.5,
-        });
+        // If the breakpoint zoom is barely beyond where we are, zooming won't
+        // visually separate the pins — fan them out instead.
+        if (zoom - map.getZoom() <= 0.5 || zoom >= 18) {
+          const leaves = (await src.getClusterLeaves(clusterId, 24, 0)) as PointFeature[];
+          spiderfy(map, center, leaves);
+        } else {
+          map.flyTo({ center, zoom: zoom + 0.5, speed: 1.5 });
+        }
       } catch {
-        map.flyTo({
-          center: (feat.geometry as GeoJSON.Point).coordinates as [number, number],
-          zoom: map.getZoom() + 2,
-          speed: 1.5,
-        });
+        map.flyTo({ center, zoom: map.getZoom() + 2, speed: 1.5 });
       }
     });
 
@@ -1244,6 +1321,10 @@ export const ExploreMap = ({
     startPulse,
     prefersReducedMotion,
     pinOpacityExpr,
+    favoriteIds,
+    savedOnly,
+    spiderfy,
+    clearSpider,
   ]);
 
   // Restart the pulse loop when the motion preference flips (the point effect
