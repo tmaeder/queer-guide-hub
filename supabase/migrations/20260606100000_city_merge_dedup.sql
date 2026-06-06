@@ -191,6 +191,9 @@ declare
   i int;
 begin
   for i in 1 .. array_length(pairs, 1) loop
-    perform public.merge_cities(pairs[i][1], pairs[i][2]);
+    -- idempotent: skip pairs already merged (safe to re-apply this migration)
+    if exists (select 1 from public.cities where id = pairs[i][2] and duplicate_of_id is null) then
+      perform public.merge_cities(pairs[i][1], pairs[i][2]);
+    end if;
   end loop;
 end $$;
