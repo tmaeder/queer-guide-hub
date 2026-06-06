@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { BentoGrid, BentoCell } from '@/components/ui/bento-grid';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminSection } from '@/components/admin/AdminSection';
 import {
   LayoutDashboard,
   Activity,
@@ -423,14 +424,16 @@ export default function AdminDashboard() {
       {isLoading || !data ? (
         <CockpitSkeleton />
       ) : (
-        <BentoGrid>
-          <SystemStatusCell data={data} />
-          <ReviewQueueCell data={data} />
-          <ImportStatusCell data={data} />
-          <AutomationCell data={data} />
-          <QualityCell data={data} />
-          <ContentOverviewCell stats={data.stats} />
-        </BentoGrid>
+        <AdminSection section="cockpit" label="Cockpit">
+          <BentoGrid>
+            <SystemStatusCell data={data} />
+            <ReviewQueueCell data={data} />
+            <ImportStatusCell data={data} />
+            <AutomationCell data={data} />
+            <QualityCell data={data} />
+            <ContentOverviewCell stats={data.stats} />
+          </BentoGrid>
+        </AdminSection>
       )}
     </div>
   );
