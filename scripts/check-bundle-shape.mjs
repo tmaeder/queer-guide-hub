@@ -23,7 +23,14 @@ const PUBLIC_ROUTE_LIMITS = {
   // bad import surfaces but normal growth doesn't.
   index: 1500,
   maplibre: 1200,
-  vendor: 200,
+  // `vendor` is react + react-dom only (see vite.config.ts manualChunks —
+  // react, react-dom, scheduler route here; nothing else does). react-dom 19
+  // is ~369 KB raw minified and indivisible, so that is the floor, not a
+  // grab-bag we can split. The old 200 limit predated React 19 and was
+  // impossible to meet — it red-lined every PR. Cap set ~15% above current
+  // (369 KB) so a React minor bump is fine but a foreign lib accidentally
+  // routing into `vendor` (e.g. via a manualChunks edit) still trips it.
+  vendor: 430,
   router: 80,
   exceljs: 1100,
   tiptap: 700,
