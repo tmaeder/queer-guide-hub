@@ -22,6 +22,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+import { CannedResponsePicker } from '@/components/admin/triage/CannedResponsePicker';
 import { Label } from '@/components/ui/label';
 import {
   fetchCMSReviewQueueMetadata,
@@ -70,7 +73,6 @@ function formatWaitingDuration(isoString: string | undefined): string {
 
 export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
   const shellCtx = useContext(AdminShellContext);
-  const onEdit = propOnEdit ?? ((ct: string, id: string) => shellCtx?.openEditor(ct, id));
   const [items, setItems] = useState<ReviewQueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -155,9 +157,8 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
   );
 
   const handleReject = useCallback(
-    async (item: ReviewQueueItem) => {
-      const comment = window.prompt('Please provide a reason for requesting changes:');
-      if (!comment?.trim()) return;
+    async (item: ReviewQueueItem, reason: string) => {
+      if (!reason.trim()) return;
 
       setActionLoading(item.metadata.id);
       setActionError(null);
@@ -165,7 +166,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
         item.metadata.source_table,
         item.metadata.source_id,
         'draft',
-        comment.trim(),
+        reason.trim(),
       );
       setActionLoading(null);
       if (success) {
@@ -241,6 +242,25 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     }
     return filtered;
   }, [items, filterContentType, sortOrder]);
+
+  // Open the editor in cockpit mode over the current filtered/sorted queue, so
+  // prev/next + approve/advance step through exactly what's on screen.
+  const handleOpenInQueue = useCallback(
+    (index: number) => {
+      const queueItems = displayItems.map((i) => ({
+        contentType: i.metadata.source_table,
+        itemId: i.metadata.source_id,
+      }));
+      const target = queueItems[index];
+      if (!target) return;
+      if (propOnEdit) {
+        propOnEdit(target.contentType, target.itemId);
+        return;
+      }
+      shellCtx?.openEditor(target.contentType, target.itemId, { items: queueItems, index });
+    },
+    [displayItems, propOnEdit, shellCtx],
+  );
 
   if (loading) {
     return (
@@ -394,11 +414,11 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                 {/* Card */}
                 <div
                   className={`p-2 rounded-element border bg-card transition-colors duration-150 cursor-pointer hover:border-primary ${selectedIds.has(item.metadata.id) ? 'border-primary' : 'border-border'}`}
-                  onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
+                  onClick={() => handleOpenInQueue(idx)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      onEdit(item.metadata.source_table, item.metadata.source_id);
+                      handleOpenInQueue(idx);
                     }
                   }}
                   role="button"
@@ -470,16 +490,10 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                       Approve
                     </Button>
 
-                    <Button
-                      size="sm"
-                      variant="outline"
+                    <RequestChangesButton
                       disabled={isActionLoading}
-                      onClick={() => handleReject(item)}
-                      className="font-medium text-13 py-0.5 border-destructive text-destructive hover:bg-destructive/10"
-                    >
-                      <ThumbsDown className="w-3.5 h-3.5 mr-1" />
-                      Request Changes
-                    </Button>
+                      onSubmit={(reason) => handleReject(item, reason)}
+                    />
 
                     <div className="flex-1" />
 
@@ -488,7 +502,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
+                          onClick={() => handleOpenInQueue(idx)}
                           className="font-medium text-13 text-muted-foreground"
                         >
                           <Edit className="w-3.5 h-3.5 mr-1" />
@@ -505,5 +519,71 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
         </div>
       )}
     </div>
+  );
+}
+
+// ── Request-changes button with reason popover ──────────────────────
+// Replaces the old window.prompt: pick a canned reason or type one.
+
+function RequestChangesButton({
+  disabled,
+  onSubmit,
+}: {
+  disabled?: boolean;
+  onSubmit: (reason: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+
+  const submit = () => {
+    if (!reason.trim()) return;
+    onSubmit(reason.trim());
+    setReason('');
+    setOpen(false);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={disabled}
+          className="font-medium text-13 py-0.5 border-destructive text-destructive hover:bg-destructive/10"
+        >
+          <ThumbsDown className="w-3.5 h-3.5 mr-1" />
+          Request Changes
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-80 p-3 flex flex-col gap-2">
+        <p className="text-sm font-semibold">Send back to draft</p>
+        <CannedResponsePicker value="" onSelect={(_slug, template) => setReason(template)} />
+        <Textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Reason for requesting changes…"
+          rows={3}
+          className="text-sm"
+        />
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setOpen(false)}
+            className="font-medium normal-case"
+          >
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            disabled={!reason.trim()}
+            onClick={submit}
+            className="font-semibold normal-case"
+          >
+            Send back
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
