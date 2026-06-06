@@ -48,13 +48,15 @@ const DEFAULT_TYPES = ['venue', 'event'];
 
 export function useSearchRecommendations(
   enabled: boolean,
-  opts: { limit?: number; types?: string[]; city?: string } = {},
+  opts: { limit?: number; types?: string[]; city?: string; userId?: string | null } = {},
 ): {
   recommendations: SearchHit[];
   loading: boolean;
 } {
-  const { limit = 6, types = DEFAULT_TYPES, city } = opts;
-  const key = `${types.join(',')}|${city ?? ''}`;
+  const { limit = 6, types = DEFAULT_TYPES, city, userId } = opts;
+  // userId in the key so a logged-in user's profile-biased recs cache apart
+  // from the anonymous popularity feed.
+  const key = `${types.join(',')}|${city ?? ''}|${userId ?? ''}`;
   const [recommendations, setRecommendations] = useState<SearchHit[]>(cache[key] ?? []);
   const [loading, setLoading] = useState(false);
 
@@ -69,7 +71,7 @@ export function useSearchRecommendations(
     setLoading(true);
     const p =
       inflight[key] ??
-      (inflight[key] = fetchRecommendations({ types, city, limit })
+      (inflight[key] = fetchRecommendations({ types, city, limit, userId })
         .then((hits) => normalize(hits as unknown as Array<Record<string, unknown>>))
         .catch(() => []));
     p.then((hits) => {
@@ -82,7 +84,7 @@ export function useSearchRecommendations(
     return () => {
       cancelled = true;
     };
-  }, [enabled, limit, key, city, types]);
+  }, [enabled, limit, key, city, types, userId]);
 
   return { recommendations, loading };
 }
