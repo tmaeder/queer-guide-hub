@@ -123,7 +123,7 @@ Deno.serve(withErrorReporting('pipeline-consensus-merge', async (req) => {
     for (const [venueId, members] of groups) {
       const { data: venue } = await supabase
         .from('venues')
-        .select('name, description, website, phone, email, latitude, longitude, address, city, country, category, hours, tags, images, lgbti_relevance_score, data_source')
+        .select('name, description, website, phone, email, latitude, longitude, address, city, country, category, hours, tags, images, lgbti_relevance_score, data_source, url_status')
         .eq('id', venueId)
         .maybeSingle()
 
@@ -145,6 +145,11 @@ Deno.serve(withErrorReporting('pipeline-consensus-merge', async (req) => {
             lgbti_relevance_score: venue.lgbti_relevance_score,
             location: { lat: venue.latitude, lng: venue.longitude, address: venue.address, city: venue.city, country: venue.country },
             contacts: { website: venue.website, phone: venue.phone, email: venue.email },
+            // Feed the venue's own link-health into the closure voter (H-3): a
+            // broken URL is one (weak) closure signal — never auto-closes alone
+            // (needs >=2 distinct sources), but combined with a source's CLOSED
+            // status it promotes to closed_at.
+            url_status: venue.url_status,
           },
         })
       }

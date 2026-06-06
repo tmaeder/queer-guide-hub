@@ -80,12 +80,17 @@ Deno.serve(async (req) => {
       }
 
       if (!dryRun) {
+        const update: Record<string, unknown> = {
+          url_status:     status,
+          url_checked_at: new Date().toISOString(),
+        }
+        // Demote broken links (H-4): surface for human triage / closure recheck.
+        // A dead website never auto-closes a venue alone (the consensus voter
+        // needs >=2 signals) but it must not sit silently.
+        if (status === 'broken') update.needs_attention = true
         await supabase
           .from('venues')
-          .update({
-            url_status:     status,
-            url_checked_at: new Date().toISOString(),
-          })
+          .update(update)
           .eq('id', venue.id)
       }
     }

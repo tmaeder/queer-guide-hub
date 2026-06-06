@@ -422,6 +422,9 @@ verify_jwt = false
 [functions.venue-url-checker]
 verify_jwt = false
 
+[functions.marketplace-link-checker]
+verify_jwt = false
+
 # Workflow/pipeline functions (invoked by dispatcher with service-role bearer)
 [functions.marketplace-image-mirror]
 verify_jwt = false
