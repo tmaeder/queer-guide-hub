@@ -125,6 +125,22 @@ Be strict. Penalize missing description, missing location, generic boilerplate, 
 }
 
 Deno.serve(async (req: Request) => {
+  try {
+    return await handle(req);
+  } catch (err) {
+    // Safety net: surface a structured error instead of an opaque platform 500.
+    console.error('cms-ai unhandled error:', err);
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: err instanceof Error ? err.message : 'Unhandled error',
+      }),
+      { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } },
+    );
+  }
+});
+
+async function handle(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ ok: false, error: 'Method not allowed' }), {
@@ -245,4 +261,4 @@ Deno.serve(async (req: Request) => {
     JSON.stringify({ ok: true, op: body.op, output, model: result.model }),
     { headers: { ...CORS, 'Content-Type': 'application/json' } },
   );
-});
+}
