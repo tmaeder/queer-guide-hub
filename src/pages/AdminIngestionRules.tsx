@@ -134,10 +134,7 @@ export default function AdminIngestionRules() {
       const { data, error } = await supabase.functions.invoke(conn.fn, { body: { url } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast({
-        title: `Imported via ${conn.label}`,
-        description: data?.submission_id ? `Submission ${data.submission_id.slice(0, 8)}…` : '',
-      });
+      toast.success(`Imported via ${conn.label}`, { description: data?.submission_id ? `Submission ${data.submission_id.slice(0, 8)}…` : '' });
       setImportUrl('');
     } catch (err) {
       toast.error(`Import failed: ${err}`);

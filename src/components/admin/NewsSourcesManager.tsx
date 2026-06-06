@@ -156,10 +156,7 @@ export function NewsSourcesManager() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: `News source ${!isActive ? 'activated' : 'deactivated'}`,
-      });
+      toast.success(`News source ${!isActive ? 'activated' : 'deactivated'}`);
 
       fetchSources();
     } catch (_error) {

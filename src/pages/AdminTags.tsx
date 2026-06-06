@@ -141,7 +141,7 @@ export default function AdminTags() {
       await Promise.all(
         Object.entries(bulkEditTags).map(([id, description]) => updateTag(id, { description })),
       );
-      toast({ title: 'Success', description: `Updated ${Object.keys(bulkEditTags).length} tags` });
+      toast.success(`Updated ${Object.keys(bulkEditTags).length} tags`);
       setIsBulkEditOpen(false);
       setBulkEditTags({});
     } catch {
@@ -324,7 +324,7 @@ export default function AdminTags() {
             if (!tag.image_url) return;
             try {
               await updateTag(tag.id, { image_url: null });
-              toast({ title: 'Image cleared', description: `Removed image from "${tag.name}"` });
+              toast.success('Image cleared', { description: `Removed image from "${tag.name}"` });
             } catch {
               toast.error('Error: Failed to clear image');
             }

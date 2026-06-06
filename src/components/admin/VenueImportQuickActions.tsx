@@ -249,10 +249,7 @@ export const VenueImportQuickActions = () => {
       try {
         const { error } = await supabase.functions.invoke(source.edge_function, { body: {} });
         if (error) throw error;
-        toast({
-          title: 'Scraper Started',
-          description: `${source.name} scraper has been triggered. Check the Pipeline tab for progress.`,
-        });
+        toast.success('Scraper Started', { description: `${source.name} scraper has been triggered. Check the Pipeline tab for progress.` });
       } catch (error) {
         toast.error(`Import Failed: ${error}`);
       } finally {

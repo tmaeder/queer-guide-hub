@@ -35,10 +35,7 @@ export function TagCategorizer() {
           message: data.message
         });
 
-        toast({
-          title: "Categorization Complete",
-          description: `Successfully categorized ${data.categorized_count} out of ${data.total_tags} tags`,
-        });
+        toast.success('Categorization Complete', { description: `Successfully categorized ${data.categorized_count} out of ${data.total_tags} tags` });
       } else {
         throw new Error(data.error || 'Categorization failed');
       }
