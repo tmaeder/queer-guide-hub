@@ -90,6 +90,10 @@ interface CommandBarProps {
   onGeolocate?: () => void;
   onFitBounds?: () => void;
   onShare?: () => void;
+  /** Saved (favorites) quick-toggle — only rendered when the viewer can save. */
+  canSave?: boolean;
+  savedOnly?: boolean;
+  onToggleSaved?: () => void;
   className?: string;
 }
 
@@ -111,6 +115,9 @@ export const CommandBar = ({
   onGeolocate,
   onFitBounds,
   onShare,
+  canSave,
+  savedOnly,
+  onToggleSaved,
   className,
 }: CommandBarProps) => {
   const navigate = useLocalizedNavigate();
@@ -318,6 +325,9 @@ export const CommandBar = ({
         filters={filters}
         onChange={onFiltersChange}
         showTime={availableFilters.includes('time')}
+        canSave={canSave}
+        savedOnly={savedOnly}
+        onToggleSaved={onToggleSaved}
       />
 
       <div className="mx-0.5 h-5 w-px shrink-0 bg-border" aria-hidden="true" />

@@ -25,8 +25,12 @@ export interface MapPointSummary {
   startDate?: string;
   venueName?: string;
   trustScore?: number;
+  /** Going-count for events (social proof). */
+  attendeeCount?: number;
   /** Distance from the viewer in km, filled in by the consumer when known. */
   distanceKm?: number;
+  /** True when this point is in the viewer's saved set (favorites layer). */
+  favorited?: boolean;
 }
 
 function parseMeta(raw: unknown): Record<string, unknown> {
@@ -62,5 +66,7 @@ export function summaryFromFeature(f: PointFeature): MapPointSummary {
     startDate: typeof meta.startDate === 'string' ? meta.startDate : undefined,
     venueName: typeof meta.venueName === 'string' ? meta.venueName : undefined,
     trustScore: typeof meta.trustScore === 'number' ? meta.trustScore : undefined,
+    attendeeCount: typeof meta.attendeeCount === 'number' ? meta.attendeeCount : undefined,
+    favorited: Boolean(p.favorited),
   };
 }
