@@ -4,6 +4,7 @@
  * Cluster 3 refactor (Cockpit) — see docs / plan refactoring-fr-cluster-3.
  */
 
+import { Fragment, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,8 @@ import {
 import { useAdminCockpit } from '@/hooks/useAdminCockpit';
 import type { CockpitData } from '@/hooks/useAdminCockpit';
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
+import { useGranularRoles } from '@/hooks/useGranularRoles';
+import { roleAtLeast, type AdminRole } from '@/config/adminRoles';
 
 // ── Cell heading helper ─────────────────────────────────────────────
 
@@ -381,6 +384,7 @@ function CockpitSkeleton() {
 
 export default function AdminDashboard() {
   const { data, isLoading, refetch } = useAdminCockpit();
+  const { effectiveRole } = useGranularRoles();
 
   useRegisterAdminCommandAction({
     id: 'dashboard.refresh',
@@ -426,12 +430,18 @@ export default function AdminDashboard() {
       ) : (
         <AdminSection section="cockpit" label="Cockpit">
           <BentoGrid>
-            <SystemStatusCell data={data} />
-            <ReviewQueueCell data={data} />
-            <ImportStatusCell data={data} />
-            <AutomationCell data={data} />
-            <QualityCell data={data} />
-            <ContentOverviewCell stats={data.stats} />
+            {(
+              [
+                { key: 'system', min: 'admin', node: <SystemStatusCell data={data} /> },
+                { key: 'review', min: 'editor', node: <ReviewQueueCell data={data} /> },
+                { key: 'imports', min: 'admin', node: <ImportStatusCell data={data} /> },
+                { key: 'automation', min: 'moderator', node: <AutomationCell data={data} /> },
+                { key: 'quality', min: 'moderator', node: <QualityCell data={data} /> },
+                { key: 'content', min: 'editor', node: <ContentOverviewCell stats={data.stats} /> },
+              ] as { key: string; min: AdminRole; node: ReactNode }[]
+            )
+              .filter((c) => roleAtLeast(effectiveRole, c.min))
+              .map((c) => <Fragment key={c.key}>{c.node}</Fragment>)}
           </BentoGrid>
         </AdminSection>
       )}

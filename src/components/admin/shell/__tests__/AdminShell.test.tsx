@@ -10,6 +10,10 @@ vi.mock('../AdminSidebar', () => ({ AdminSidebar: () => <nav data-testid="sideba
 vi.mock('@/config/adminNavigation', () => ({
   adminNavSections: [],
   getBreadcrumbsForRoute: () => [{ label: 'Admin' }, { label: 'Dashboard' }],
+  getRouteMinRole: () => 'editor',
+}));
+vi.mock('@/hooks/useGranularRoles', () => ({
+  useGranularRoles: () => ({ effectiveRole: 'admin', loading: false }),
 }));
 vi.mock('@/components/cms/editor/CMSEditorLayout', () => ({
   CMSEditorLayout: () => <div data-testid="editor" />,

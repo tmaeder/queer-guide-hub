@@ -19,11 +19,12 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-import { adminNavSections } from '@/config/adminNavigation';
-import type { AdminNavItem } from '@/config/adminNavigation';
+import { adminNavSections, resolveItemMinRole } from '@/config/adminNavigation';
+import type { AdminNavItem, AdminNavSection } from '@/config/adminNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { useGranularRoles } from '@/hooks/useGranularRoles';
+import { roleAtLeast } from '@/config/adminRoles';
 
 function IconBadge({ icon: Icon, size = 16 }: { icon: React.ComponentType<{ size?: number }>; size?: number }) {
   return (
@@ -66,7 +67,8 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { isAdmin } = useAdminRoles();
+  const { effectiveRole } = useGranularRoles();
+  const isAdmin = effectiveRole === 'admin';
 
   const [sectionOpen, setSectionOpen] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
@@ -134,11 +136,11 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
   );
 
   const filterItems = useCallback(
-    (items: AdminNavItem[]): AdminNavItem[] => {
+    (items: AdminNavItem[], section: AdminNavSection): AdminNavItem[] => {
       if (isAdmin) return items;
-      return items.filter((item) => !item.adminOnly);
+      return items.filter((item) => roleAtLeast(effectiveRole, resolveItemMinRole(item, section)));
     },
-    [isAdmin],
+    [isAdmin, effectiveRole],
   );
 
   const toggleSection = (sectionId: string) => {
@@ -182,7 +184,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
       {/* Scrollable nav area */}
       <div className="flex-1 overflow-auto py-1">
         {adminNavSections.map((section, sectionIdx) => {
-          const filteredItems = filterItems(section.items);
+          const filteredItems = filterItems(section.items, section);
           if (filteredItems.length === 0) return null;
           const isOpen = sectionOpen[section.id] ?? section.defaultExpanded ?? true;
 

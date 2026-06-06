@@ -19,7 +19,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, ChevronRight } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { getBreadcrumbsForRoute } from '@/config/adminNavigation';
+import { getBreadcrumbsForRoute, getRouteMinRole } from '@/config/adminNavigation';
+import { roleAtLeast } from '@/config/adminRoles';
+import { useGranularRoles } from '@/hooks/useGranularRoles';
+import { Lock } from 'lucide-react';
 import { AdminCommandPaletteHost } from '@/components/admin/command-palette/AdminCommandPalette';
 import { AdminCommandActionsProvider } from '@/components/admin/command-palette/useAdminCommandActions';
 import { GlobalAdminActions } from '@/components/admin/command-palette/useGlobalAdminActions';
@@ -116,6 +119,16 @@ export function AdminShell() {
   const handleEditorSaved = useCallback((_id: string) => {
     // Stay on editor after save -- child can navigate if desired
   }, []);
+
+  // Per-route role enforcement. AdminRouteGuard already gated console entry at
+  // 'editor'; here each route's minRole (system → admin, automation → moderator,
+  // content/import-review → editor) is enforced via the nav config so admin-only
+  // pages can't be reached by URL even though the sidebar hides them.
+  const { effectiveRole, loading: rolesLoading } = useGranularRoles();
+  const requiredRole = getRouteMinRole(location.pathname);
+  const routeDenied = !rolesLoading && !roleAtLeast(effectiveRole, requiredRole);
+  // Avoid flashing restricted content while roles resolve on elevated routes.
+  const routeGatingPending = rolesLoading && requiredRole !== 'editor';
 
   // Build breadcrumbs from current route
   const breadcrumbs = getBreadcrumbsForRoute(location.pathname);
@@ -221,7 +234,25 @@ export function AdminShell() {
             ) : (
               <ErrorBoundary>
                 <div key={location.pathname} className="content-enter">
-                  <Outlet />
+                  {routeDenied ? (
+                    <div
+                      className="flex flex-col items-center gap-2 rounded-container border border-border bg-muted/30 p-8 text-center"
+                      role="alert"
+                    >
+                      <Lock className="h-6 w-6 text-muted-foreground" aria-hidden />
+                      <p className="text-13 font-medium">You don't have access to this area</p>
+                      <p className="text-2xs text-muted-foreground">
+                        Requires {requiredRole} role. Ask an admin if you need it.
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
+                        Back to Cockpit
+                      </Button>
+                    </div>
+                  ) : routeGatingPending ? (
+                    <Skeleton className="h-64 w-full rounded-container" />
+                  ) : (
+                    <Outlet />
+                  )}
                 </div>
               </ErrorBoundary>
             )}
