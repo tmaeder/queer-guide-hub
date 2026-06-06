@@ -278,6 +278,19 @@ export default function HelpHotlines() {
     });
   }, [hotlines, countryFilter, topicFilter, intersectionFilter, searchQuery]);
 
+  // A crisis page must not mix call-now lines with reference directories that
+  // offer no immediate contact channel (audit finding H-1). Split them so a
+  // user in crisis sees reachable services first.
+  const isReachable = (h: Hotline) => Boolean(h.phone) || (h.channels?.length ?? 0) > 0;
+  const callableHotlines = useMemo(
+    () => visibleHotlines.filter(isReachable),
+    [visibleHotlines],
+  );
+  const referralHotlines = useMemo(
+    () => visibleHotlines.filter((h) => !isReachable(h)),
+    [visibleHotlines],
+  );
+
   const bookmarkedHotlines = useMemo(() => {
     if (bookmarkedIds.size === 0) return [];
     return hotlines.filter((h) => bookmarkedIds.has(h.id));
@@ -534,16 +547,44 @@ export default function HelpHotlines() {
               }}
             />
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {visibleHotlines.map((h) => (
-                <HotlineCard
-                  key={h.id}
-                  hotline={h}
-                  isBookmarked={isBookmarked(h.id)}
-                  toggleBookmark={toggleBookmark}
-                />
-              ))}
-            </div>
+            <>
+              {callableHotlines.length > 0 && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {callableHotlines.map((h) => (
+                    <HotlineCard
+                      key={h.id}
+                      hotline={h}
+                      isBookmarked={isBookmarked(h.id)}
+                      toggleBookmark={toggleBookmark}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {referralHotlines.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="mb-2 text-sm font-bold">
+                    {t('help.directories_title', 'Directories & resources')}
+                  </h3>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    {t(
+                      'help.directories_subtitle',
+                      'Reference directories and resource sites — not direct call-now lines.',
+                    )}
+                  </p>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {referralHotlines.map((h) => (
+                      <HotlineCard
+                        key={`ref-${h.id}`}
+                        hotline={h}
+                        isBookmarked={isBookmarked(h.id)}
+                        toggleBookmark={toggleBookmark}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Related resources */}
