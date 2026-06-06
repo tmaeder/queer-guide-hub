@@ -51,11 +51,8 @@ a quick remediation.
 - **M-4 (news geo/author).** Bulk LLM enrichment at scale; the P0 full-text path already
   shipped per the news closed-loop roadmap. Out of scope for a data-quality pass; run the
   enrichment pipeline rather than a one-shot backfill on a disk-constrained DB.
-- **M-5 (drop `lgbt_legal_status`/`lgbt_rights_status`).** **Unsafe to drop** — the read-path
-  audit found live consumers: the user-facing legality badge (`src/lib/lgbtLegality.ts`),
-  admin CRUD (`AdminCountries.tsx`), city/village configs, and `event-agentic-enrich` safety
-  context. Correct fix is a behaviour-preserving refactor to derive legality from the
-  canonical `lgbti_criminalization` jsonb, then drop — a dedicated change, not a column drop.
+- **M-5 (drop `lgbt_legal_status`/`lgbt_rights_status`).** Initially deferred as unsafe (live
+  read paths), then **completed** via a two-phase deploy — see the 2026-06-06 follow-up below.
 - **M-7 (cross-source news syndication dedup).** Referential integrity fixed (chains collapsed);
   syndication *detection* (125 cross-source title/day groups) is an admin discovery
   enhancement to `find_duplicate_clusters('news')` — lower harm, deferred to avoid risk in a
@@ -63,8 +60,56 @@ a quick remediation.
 - **M-9 (venue accessibility metadata).** Requires sourcing structured accessibility tags
   (Google/OSM) into `accessibility_attributes` — a sourcing project, no data to populate today.
 
+## Follow-up (2026-06-06)
+
+After PR #1463 merged and deployed (edge functions + frontend redeployed via
+workflow_dispatch — the auto-land merge used GITHUB_TOKEN, which does not re-trigger
+the deploy workflows):
+
+- **M-7 (news cross-source dedup) — DONE.** `find_duplicate_clusters('news')` now keys on
+  published day (every news `search_documents` row carries `start_date`), matching the
+  audit's "same-title-same-day" criterion. News clusters went 182 → 102 (same-title rows
+  on different days are no longer conflated; the same-day syndication signal is isolated).
+  Migration `20260606080000`. Event/festival/venue grouping unchanged. *Trigram near-dup
+  (reworded titles) remains a further enhancement — it needs a similarity join, not a
+  GROUP BY, and is higher-risk for this STABLE RPC.*
+
+- **M-5 (drop dead country columns) — DONE (two-phase, no downtime).** The read-path audit
+  confirmed `lgbt_legal_status`/`lgbt_rights_status` were still SELECTed by live code
+  (`getLegalityBadge`, AdminCountries CRUD, city/village configs, `event-agentic-enrich`)
+  even though they read empty; `getLegalityBadge` and the `cities_admin` view already derive
+  legality from `lgbti_criminalization` + `equality_score`. Removal was sequenced to avoid a
+  deploy-race 500: **phase 1** (#1464) stripped all references (behaviour-preserving) and was
+  deployed; **phase 2** (#1466, migration `20260606090000`) then redefined `cities_admin` to
+  derive both columns purely from the canonical sources (view output unchanged) and dropped
+  `countries.lgbt_legal_status` / `lgbt_rights_status`. Verified on prod: columns gone,
+  `cities_admin` still returns derived values, `/admin/countries` 200, gates all 0.
+
+- **Link-checker false positives — FIXED.** The venue + marketplace link checkers classified
+  every non-2xx/3xx as `broken` (bot walls 403, rate limits 429, HEAD-unsupported 405),
+  and the marketplace one set `status='inactive'` on those — false-deactivating live listings
+  (the team paused cron 198 over it). Shared, unit-tested `_shared/link-health.ts` now does a
+  HEAD→GET probe and treats only an explicit 404/410 as dead; 401/403/405/429 → `blocked`,
+  network errors → `timeout`. Deployed + verified on prod (a 40-listing dry-run preserved 13
+  alive-but-blocked listings the old logic would have deactivated). **Cron 198 (marketplace
+  link-checker) remains PAUSED — ready to re-enable, left as the team's operational call.**
+
+- **M-3 (event timezone) — DONE by the team** (migration `event_timezone_backfill_singlezone`,
+  tz coverage 16%→52%).
+
+- **M-4 / M-9 / M-1 — blocked on external inputs, not fabricated.** M-4 needs the news
+  LLM-enrichment pipeline run at scale
+  (operational, disk-constrained); M-9 needs sourced accessibility tags (Google/OSM);
+  M-1 needs merchant self-declaration of queer ownership (already honest by omission —
+  no listing falsely claims it). None can be completed by inventing data.
+
+- **Human-triage queue (surfaced, awaiting people, not code):** 3 dead hotline links
+  (`needs_review`) need correct numbers/URLs; the 5,096 demoted personalities await identity
+  review; 368 broken-URL + 1 mojibake venue carry `needs_attention`; 9 coord-only venues
+  need geocoding; `venue_url_freshness` (4,690) drains automatically via the now-daily checker.
+
 ## Operational notes
 
 - Batched DML scripts live in `scripts/data-quality/` (the per-row search re-index cascade
   exceeds the statement timeout in one transaction).
-- Migrations `20260605120000`–`20260605170000`.
+- Migrations `20260605120000`–`20260605170000`, plus `20260606080000` (M-7 follow-up).

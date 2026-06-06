@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Clock, CalendarDays, CalendarRange } from 'lucide-react';
+import { Clock, CalendarDays, CalendarRange, Heart } from 'lucide-react';
 import type { MapShellFilters } from './MapShell.types';
 
 interface MapQuickFiltersProps {
@@ -7,6 +7,10 @@ interface MapQuickFiltersProps {
   onChange: (next: MapShellFilters) => void;
   /** Show the Tonight/Weekend/Month chips (surfaces that expose the time filter). */
   showTime?: boolean;
+  /** Saved (favorites) toggle — only rendered when the viewer is signed in. */
+  canSave?: boolean;
+  savedOnly?: boolean;
+  onToggleSaved?: () => void;
 }
 
 type PresetKey = 'tonight' | 'weekend' | 'month';
@@ -51,7 +55,14 @@ const PRESETS: { key: PresetKey; label: string; Icon: typeof Clock }[] = [
  * This month) that drive the events dateRange, plus an Open-now toggle.
  * Highest-intent "what can I do right now" controls for travelers.
  */
-export function MapQuickFilters({ filters, onChange, showTime = true }: MapQuickFiltersProps) {
+export function MapQuickFilters({
+  filters,
+  onChange,
+  showTime = true,
+  canSave,
+  savedOnly,
+  onToggleSaved,
+}: MapQuickFiltersProps) {
   const [activePreset, setActivePreset] = useState<PresetKey | null>(null);
 
   // Reset the active preset if the dateRange was cleared elsewhere (chip X).
@@ -112,6 +123,18 @@ export function MapQuickFilters({ filters, onChange, showTime = true }: MapQuick
             {label}
           </button>
         ))}
+
+      {canSave && onToggleSaved && (
+        <button
+          type="button"
+          onClick={onToggleSaved}
+          aria-pressed={!!savedOnly}
+          className={`${chipBase} shrink-0 ${savedOnly ? on : off}`}
+        >
+          <Heart className={`h-3.5 w-3.5 ${savedOnly ? 'fill-current' : ''}`} aria-hidden />
+          Saved
+        </button>
+      )}
     </div>
   );
 }

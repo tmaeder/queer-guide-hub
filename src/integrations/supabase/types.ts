@@ -3604,8 +3604,6 @@ export type Database = {
           last_refreshed_at: string | null
           last_synced_at: string | null
           latitude: number | null
-          lgbt_legal_status: string | null
-          lgbt_rights_status: string | null
           lgbti_adoption_rights: string | null
           lgbti_association_restrictions: Json | null
           lgbti_bullying_protection: Json | null
@@ -3683,8 +3681,6 @@ export type Database = {
           last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null
-          lgbt_legal_status?: string | null
-          lgbt_rights_status?: string | null
           lgbti_adoption_rights?: string | null
           lgbti_association_restrictions?: Json | null
           lgbti_bullying_protection?: Json | null
@@ -3762,8 +3758,6 @@ export type Database = {
           last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null
-          lgbt_legal_status?: string | null
-          lgbt_rights_status?: string | null
           lgbti_adoption_rights?: string | null
           lgbti_association_restrictions?: Json | null
           lgbti_bullying_protection?: Json | null

@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { probeLink, isDeadLink } from '../_shared/link-health.ts'
 
 // ============================================================
 // Marketplace Link Checker (M-2, audit 2026-06-05)
@@ -47,34 +48,23 @@ Deno.serve(async (req) => {
       if (!raw) { skipped++; continue }
 
       const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
-      let health: 'ok' | 'broken' | 'redirect' | 'timeout' | 'unchecked' = 'unchecked'
 
-      try {
-        const controller = new AbortController()
-        const tid = setTimeout(() => controller.abort(), TIMEOUT_MS)
-        const resp = await fetch(url, {
-          method: 'HEAD',
-          redirect: 'manual',
-          signal: controller.signal,
-          headers: { 'User-Agent': 'QueerGuide-LinkChecker/1.0 (+https://queer.guide/about)' },
-        })
-        clearTimeout(tid)
-        if (resp.status >= 200 && resp.status < 300) { health = 'ok'; ok++ }
-        else if (resp.status >= 300 && resp.status < 400) { health = 'redirect'; redirect++ }
-        else { health = 'broken'; broken++ }
-      } catch (e) {
-        const msg = (e as Error).message || ''
-        if (msg.includes('abort') || msg.includes('signal')) { health = 'timeout'; timeout++ }
-        else { health = 'broken'; broken++ }
-      }
+      // HEAD→GET probe. Only an explicit 404/410 is 'broken'; 401/403/405/429 are
+      // 'blocked' (alive, bot-protected), network errors 'timeout'. A listing is
+      // deactivated ONLY on a confirmed-dead link — bot walls / rate limits must
+      // never deactivate a live product (the false-positive bug that paused this cron).
+      const health = await probeLink(url, { timeoutMs: TIMEOUT_MS })
+      if (health === 'ok') ok++
+      else if (health === 'redirect') redirect++
+      else if (health === 'broken') broken++
+      else if (health === 'timeout') timeout++
 
       if (!dryRun) {
         const update: Record<string, unknown> = {
           link_health:     health,
           link_checked_at: new Date().toISOString(),
         }
-        // Demote a dead listing so it stops surfacing in the marketplace.
-        if (health === 'broken') update.status = 'inactive'
+        if (isDeadLink(health)) update.status = 'inactive'
         await supabase.from('marketplace_listings').update(update).eq('id', listing.id)
       }
     }
