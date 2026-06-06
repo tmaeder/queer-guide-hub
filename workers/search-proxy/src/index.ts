@@ -491,6 +491,24 @@ async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promi
 		await appendRecentSeen(env, sessionKey, `${entity_type}:${entity_id}`);
 	}
 
+	// CTR: attach a click to the most recent search in this session so the
+	// admin Analytics tab can compute click-through. Fire-and-forget.
+	if (event_type === "click" && session_id) {
+		await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/log_search_click`, {
+			method: "POST",
+			headers: {
+				apikey: env.SUPABASE_SERVICE_KEY,
+				authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				p_session_id: session_id,
+				p_entity_type: entity_type,
+				p_entity_id: entity_id,
+			}),
+		}).catch(() => void 0);
+	}
+
 	const headers: Record<string, string> = { ...(cors as Record<string, string>) };
 	if (session.setCookie) headers["Set-Cookie"] = session.setCookie;
 	return json({ ok: true, id, session_verified: session.verified }, 200, headers);
