@@ -31,9 +31,11 @@ Page also carries dead Meilisearch types (`IndexesResponse.meili`, `ConsistencyR
 
 Reorient the page around live data, phased so each phase ships independently.
 
+**Status:** P1 ✅ shipped (PR #1475) · P2 ✅ shipped (PR #1477) · P3 deferred.
+
 ---
 
-## P1 — Cleanup + Analytics
+## P1 — Cleanup + Analytics  ✅ shipped
 
 **Cleanup (zero behavior risk):**
 - `src/hooks/useSearchIntelligence.ts`: drop `meili` from `IndexesResponse`, `meili_docs`/`orphans_in_meili` from `ConsistencyResult`
@@ -50,14 +52,19 @@ Reorient the page around live data, phased so each phase ships independently.
   4. Zero-result table — each row has **"Add synonym"** action deep-linking into P2 prefilled (closed loop)
   5. Slow-query view + language split
 
-## P2 — Synonyms editor
+## P2 — Synonyms editor  ✅ shipped
 
-Job: browse/search/fix a 15k static set + add new ones from failed queries (not a moderation queue — nothing pending).
+**Discovery that reframed the phase:** the search-proxy worker only loads synonyms with `status='active'`. Of the 15,136 rows, **only 6 are active** (hand-picked: gay→queer/lgbt, bar→pub…); the other **15,130 sit dormant at `status='approved'`** and never reach live search. So the editor's headline lever is **Activate/Deactivate**, not just editing — that wasn't in the original design.
 
-- RPCs via `search-intelligence` edge function `/synonyms/*`: paginated list/search (term ILIKE + locale + status), upsert, soft-archive, version-snapshot
-- UI: search + locale filter · row `terms → replacements` (↔ vs one-way) · Add/Edit dialog · soft-archive · version bar (snapshot + diff + rollback via existing `search_settings_versions`, `channel='synonyms'`)
-- Entry point from Analytics zero-result rows (prefilled add)
-- Verify: search-proxy reads synonyms live from Postgres → edits apply without worker redeploy; confirm cache TTL during build
+Shipped:
+- RPCs: `admin_synonyms_list` (substring match across terms+replacements, status/locale filter, paginated, returns `{total, rows}`) + `admin_synonyms_counts` (status rollup). SECURITY DEFINER, granted to authenticated.
+- `/synonyms` routes on the `search-intelligence` edge function: list / counts / create / update / archive, with `recordAudit` + rate-limit (`synonym.` prefix).
+- UI: status-count chips (surfaces the 15,130 dormant) · search + status filter · pagination · Add/Edit dialog (terms, replacements, one-way, locale, indexes, notes, status) · **Activate/Deactivate** · soft Archive.
+- P1 loop closed: Analytics zero-result rows → "Add synonym" opens the dialog prefilled.
+
+Deferred (YAGNI):
+- **Cache-bust** — activated changes apply within the worker's ~5 min KV TTL (`synonyms:active:v1`), surfaced in the UI. A cross-service bust endpoint was not worth the complexity.
+- **Version snapshot/rollback** (`search_settings_versions`) — activation + editing deliver the value; revisit if churn warrants.
 
 ## P3 — Revive-or-retire (deferred)
 
@@ -72,4 +79,6 @@ Investigate whether Topics / Ingestion Quality / Suggestions pipelines should ru
 ## Out of scope / follow-ups
 
 - Frontend click-logging to populate `clicked_entity_id` → unlocks real CTR (small separate PR)
+- **Activate the dormant synonyms** — 15,130 staged `approved` rows are a product decision (bulk-activate vs curate-then-activate); the editor now makes this possible per-row
+- Synonyms cache-bust endpoint + version snapshot/rollback (deferred from P2)
 - P3 above

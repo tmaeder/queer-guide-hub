@@ -74,6 +74,8 @@ export interface AnalyticsZeroResult {
   last_seen: string;
 }
 
+export type SynonymStatus = 'pending' | 'approved' | 'active' | 'rejected' | 'archived';
+
 export interface Synonym {
   id: string;
   terms: string[];
@@ -81,13 +83,28 @@ export interface Synonym {
   locale: string;
   indexes: string[];
   is_one_way: boolean;
-  status: 'pending' | 'approved' | 'active' | 'rejected' | 'archived';
-  source: 'manual' | 'imported' | 'ai-suggested';
+  status: SynonymStatus;
+  source: string;
   confidence_score: number | null;
   notes: string | null;
   tag_id: string | null;
   created_at: string;
   approved_at: string | null;
+  archived_at?: string | null;
+}
+
+export interface SynonymList {
+  total: number;
+  rows: Synonym[];
+}
+
+export interface SynonymCounts {
+  total: number;
+  active: number;
+  approved: number;
+  pending: number;
+  archived: number;
+  locales: Array<{ locale: string; n: number }>;
 }
 
 export interface AuditEntry {

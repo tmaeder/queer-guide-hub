@@ -1,7 +1,7 @@
 // search-intelligence
 // Admin-gated router for search-intelligence operations: topic clusters, AI
-// suggestions, search-visibility scoring, search-query analytics, and an
-// install/health rollup.
+// suggestions, search-visibility scoring, search-query analytics, the search
+// synonyms editor, and an install/health rollup.
 // Holds SUPABASE_SERVICE_ROLE_KEY; never returns it.
 //
 // The Meilisearch index-management routes (indexes, settings versioning,
@@ -118,6 +118,18 @@ function pickRoute(method: string, parts: string[]): Handler | null {
     if (parts[1] === 'top-queries') return analyticsTopQueries
     if (parts[1] === 'zero-results') return analyticsZeroResults
   }
+  // /synonyms — editor for search_synonyms
+  if (parts[0] === 'synonyms' && parts.length === 1) {
+    if (method === 'GET') return listSynonyms
+    if (method === 'POST') return createSynonym
+  }
+  if (parts[0] === 'synonyms' && parts.length === 2 && parts[1] === 'counts') {
+    if (method === 'GET') return synonymsCounts
+  }
+  if (parts[0] === 'synonyms' && parts.length === 2 && parts[1] !== 'counts') {
+    if (method === 'PATCH') return updateSynonym
+    if (method === 'DELETE') return archiveSynonym
+  }
   return null
 }
 
@@ -168,6 +180,7 @@ async function readJson<T = unknown>(req: Request): Promise<T> {
 const RATE_LIMIT_PER_MINUTE = 60
 const MUTATION_ACTION_PREFIXES = [
   'visibility.recompute',
+  'synonym.',
 ] as const
 
 async function checkRateLimit(ctx: RouteContext): Promise<Response | null> {
@@ -264,6 +277,142 @@ async function analyticsZeroResults(ctx: RouteContext): Promise<Response> {
     p_limit: limit,
   })
   if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+// ── synonyms editor (search_synonyms) ────────────────────────────────────────
+
+async function listSynonyms(ctx: RouteContext): Promise<Response> {
+  const p = ctx.url.searchParams
+  const { data, error } = await ctx.service.rpc('admin_synonyms_list', {
+    p_q: p.get('q') || null,
+    p_status: p.get('status') || null,
+    p_locale: p.get('locale') || null,
+    p_limit: Math.min(Number(p.get('limit') ?? '50'), 200),
+    p_offset: Math.max(Number(p.get('offset') ?? '0'), 0),
+  })
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function synonymsCounts(ctx: RouteContext): Promise<Response> {
+  const { data, error } = await ctx.service.rpc('admin_synonyms_counts')
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+function normalizeTermArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return []
+  return v
+    .map((x) => (typeof x === 'string' ? x.trim().toLowerCase() : ''))
+    .filter(Boolean)
+}
+
+async function createSynonym(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const body = await readJson<{
+    terms?: unknown
+    replacements?: unknown
+    is_one_way?: boolean
+    locale?: string
+    indexes?: unknown
+    notes?: string
+    status?: string
+  }>(ctx.req)
+  const terms = normalizeTermArray(body.terms)
+  const replacements = normalizeTermArray(body.replacements)
+  if (terms.length === 0 || replacements.length === 0) {
+    return errorResponse('terms and replacements are both required', 400, ctx.req)
+  }
+  const status = body.status === 'active' ? 'active' : 'approved'
+  const insert = {
+    terms,
+    replacements,
+    is_one_way: body.is_one_way ?? true,
+    locale: (body.locale || '*').trim(),
+    indexes: normalizeTermArray(body.indexes),
+    notes: body.notes?.trim() || null,
+    status,
+    source: 'manual',
+    created_by: ctx.actorId === 'service-role' ? null : ctx.actorId,
+    approved_at: status === 'active' ? new Date().toISOString() : null,
+    approved_by: status === 'active' && ctx.actorId !== 'service-role' ? ctx.actorId : null,
+  }
+  const { data, error } = await ctx.service
+    .from('search_synonyms')
+    .insert(insert)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'synonym.create', 'synonym', data.id, null, data)
+  return jsonResponse({ success: true, data }, 201, ctx.req)
+}
+
+async function updateSynonym(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const id = ctx.pathParts[1]
+  if (!id) return errorResponse('id required', 400, ctx.req)
+  const body = await readJson<Record<string, unknown>>(ctx.req)
+
+  const update: Record<string, unknown> = {}
+  if ('terms' in body) update.terms = normalizeTermArray(body.terms)
+  if ('replacements' in body) update.replacements = normalizeTermArray(body.replacements)
+  if ('is_one_way' in body) update.is_one_way = Boolean(body.is_one_way)
+  if ('locale' in body) update.locale = String(body.locale || '*').trim()
+  if ('indexes' in body) update.indexes = normalizeTermArray(body.indexes)
+  if ('notes' in body) update.notes = (body.notes as string)?.trim() || null
+  if ('status' in body) {
+    const next = String(body.status)
+    const allowed = ['active', 'approved', 'pending', 'archived']
+    if (!allowed.includes(next)) return errorResponse('invalid status', 400, ctx.req)
+    update.status = next
+    if (next === 'active') {
+      update.approved_at = new Date().toISOString()
+      update.approved_by = ctx.actorId === 'service-role' ? null : ctx.actorId
+      update.archived_at = null
+    }
+    if (next === 'archived') update.archived_at = new Date().toISOString()
+  }
+  if (Object.keys(update).length === 0) {
+    return errorResponse('no updatable fields provided', 400, ctx.req)
+  }
+
+  const { data: before } = await ctx.service
+    .from('search_synonyms')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  const { data, error } = await ctx.service
+    .from('search_synonyms')
+    .update(update)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'synonym.update', 'synonym', id, before, data)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function archiveSynonym(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const id = ctx.pathParts[1]
+  if (!id) return errorResponse('id required', 400, ctx.req)
+  const { data: before } = await ctx.service
+    .from('search_synonyms')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  const { data, error } = await ctx.service
+    .from('search_synonyms')
+    .update({ status: 'archived', archived_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'synonym.archive', 'synonym', id, before, data)
   return jsonResponse({ success: true, data }, 200, ctx.req)
 }
 

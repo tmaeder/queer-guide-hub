@@ -20,6 +20,7 @@ import { MediaLibrary } from './MediaLibrary';
 import { CommandPalette } from './CommandPalette';
 import { useCMSShortcuts } from '@/hooks/useCMSShortcuts';
 import { getContentType } from '@/config/contentTypeRegistry';
+import type { EditorQueue } from '@/components/admin/shell/AdminShell';
 
 // Lazy-load heavy panels
 const CMSEditorLayout = lazy(() =>
@@ -36,6 +37,8 @@ const ModerationQueue = lazy(() =>
 interface EditorContext {
   contentType: string;
   itemId: string | null;
+  /** When present, the editor opens in cockpit mode (N/M nav + approve/advance). */
+  queue?: EditorQueue;
 }
 
 /** Hook detecting mobile viewport (< 900px) */
@@ -147,8 +150,8 @@ export function CMSShell() {
   }, []);
 
   const handleEdit = useCallback(
-    (contentType: string, itemId: string | null) => {
-      setEditor({ contentType, itemId });
+    (contentType: string, itemId: string | null, queue?: EditorQueue) => {
+      setEditor({ contentType, itemId, queue });
       if (isMobile) setMobileOpen(false);
     },
     [isMobile],
@@ -156,6 +159,21 @@ export function CMSShell() {
 
   const handleCloseEditor = useCallback(() => {
     setEditor(null);
+  }, []);
+
+  // Step to a position in the queue (cockpit prev/next + auto-advance).
+  const navigateQueue = useCallback((index: number) => {
+    setEditor((prev) => {
+      if (!prev?.queue) return prev;
+      const clamped = Math.max(0, Math.min(index, prev.queue.items.length - 1));
+      const next = prev.queue.items[clamped];
+      if (!next) return prev;
+      return {
+        contentType: next.contentType,
+        itemId: next.itemId,
+        queue: { ...prev.queue, index: clamped },
+      };
+    });
   }, []);
 
   const handleEditorSaved = useCallback((_id: string) => {
@@ -224,6 +242,8 @@ export function CMSShell() {
           <CMSEditorLayout
             contentType={editor.contentType}
             itemId={editor.itemId}
+            queue={editor.queue}
+            onNavigate={navigateQueue}
             onClose={handleCloseEditor}
             onSaved={handleEditorSaved}
           />
