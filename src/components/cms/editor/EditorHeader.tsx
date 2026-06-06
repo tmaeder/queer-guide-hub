@@ -3,11 +3,24 @@
  */
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Save, X, RotateCcw, Eye, Pencil, Sparkles, Loader2 } from 'lucide-react';
+import {
+  Save,
+  X,
+  RotateCcw,
+  Eye,
+  Pencil,
+  Sparkles,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  ThumbsUp,
+  ThumbsDown,
+} from 'lucide-react';
 import type { ContentTypeConfig, EditorState } from '@/types/cms';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +28,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CannedResponsePicker } from '@/components/admin/triage/CannedResponsePicker';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +41,15 @@ interface EditorHeaderProps {
   onClose: () => void;
   onEnrich?: () => void;
   isEnriching?: boolean;
+  /** Cockpit mode: position in the review queue (0-based). */
+  queueInfo?: { index: number; total: number };
+  onPrev?: () => void;
+  onNext?: () => void;
+  canPrev?: boolean;
+  canNext?: boolean;
+  onApprove?: () => void;
+  onRequestChanges?: (reason: string) => void;
+  isTransitioning?: boolean;
 }
 
 export function EditorHeader({
@@ -36,6 +60,14 @@ export function EditorHeader({
   onClose,
   onEnrich,
   isEnriching,
+  queueInfo,
+  onPrev,
+  onNext,
+  canPrev,
+  canNext,
+  onApprove,
+  onRequestChanges,
+  isTransitioning,
 }: EditorHeaderProps) {
   const Icon = contentType.icon;
   const titleValue = (state.data[contentType.titleField] as string) ?? '';
@@ -47,6 +79,16 @@ export function EditorHeader({
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const [previewOpen, setPreviewOpen] = useState(false);
+
+  // Request-changes reasons popover (cockpit mode)
+  const [reasonOpen, setReasonOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const submitRequestChanges = useCallback(() => {
+    if (!reason.trim() || !onRequestChanges) return;
+    onRequestChanges(reason.trim());
+    setReason('');
+    setReasonOpen(false);
+  }, [reason, onRequestChanges]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
@@ -150,6 +192,34 @@ export function EditorHeader({
           )}
         </div>
 
+        {queueInfo && (
+          <div className="flex items-center gap-0.5 flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onPrev}
+              disabled={!canPrev}
+              aria-label="Previous in queue"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft size={18} />
+            </Button>
+            <span className="text-13 font-semibold tabular-nums text-muted-foreground min-w-[52px] text-center">
+              {queueInfo.index + 1} / {queueInfo.total}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onNext}
+              disabled={!canNext}
+              aria-label="Next in queue"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <ChevronRight size={18} />
+            </Button>
+          </div>
+        )}
+
         {state.isDirty && !state.isSaving && (
           <Badge
             className="text-xs font-medium h-6 flex-shrink-0 opacity-90"
@@ -173,6 +243,77 @@ export function EditorHeader({
       {/* Right side */}
       <div className="flex items-center gap-2 flex-shrink-0 ml-4">
         <TooltipProvider>
+          {queueInfo && onApprove && (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    disabled={isTransitioning || state.isSaving}
+                    onClick={onApprove}
+                    className="font-semibold normal-case bg-foreground hover:bg-foreground text-background"
+                  >
+                    {isTransitioning ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                    ) : (
+                      <ThumbsUp className="h-4 w-4 mr-1" />
+                    )}
+                    Approve
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Publish &amp; advance ({isMac ? '⌘↵' : 'Ctrl+↵'})</TooltipContent>
+              </Tooltip>
+
+              <Popover open={reasonOpen} onOpenChange={setReasonOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isTransitioning || state.isSaving}
+                    className="font-medium normal-case border-destructive text-destructive hover:bg-destructive/10"
+                  >
+                    <ThumbsDown className="h-4 w-4 mr-1" />
+                    Request changes
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80 p-3 flex flex-col gap-2">
+                  <p className="text-sm font-semibold">Send back to draft</p>
+                  <CannedResponsePicker
+                    value=""
+                    onSelect={(_slug, template) => setReason(template)}
+                  />
+                  <Textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="Reason for requesting changes…"
+                    rows={3}
+                    className="text-sm"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setReasonOpen(false)}
+                      className="font-medium normal-case"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={!reason.trim() || isTransitioning}
+                      onClick={submitRequestChanges}
+                      className="font-semibold normal-case"
+                    >
+                      Send back
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              <div className="hidden sm:block w-px h-6 bg-border mx-1" />
+            </>
+          )}
+
           {onEnrich && state.itemId && (
             <Tooltip>
               <TooltipTrigger asChild>
