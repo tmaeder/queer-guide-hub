@@ -51,11 +51,8 @@ a quick remediation.
 - **M-4 (news geo/author).** Bulk LLM enrichment at scale; the P0 full-text path already
   shipped per the news closed-loop roadmap. Out of scope for a data-quality pass; run the
   enrichment pipeline rather than a one-shot backfill on a disk-constrained DB.
-- **M-5 (drop `lgbt_legal_status`/`lgbt_rights_status`).** **Unsafe to drop** — the read-path
-  audit found live consumers: the user-facing legality badge (`src/lib/lgbtLegality.ts`),
-  admin CRUD (`AdminCountries.tsx`), city/village configs, and `event-agentic-enrich` safety
-  context. Correct fix is a behaviour-preserving refactor to derive legality from the
-  canonical `lgbti_criminalization` jsonb, then drop — a dedicated change, not a column drop.
+- **M-5 (drop `lgbt_legal_status`/`lgbt_rights_status`).** Initially deferred as unsafe (live
+  read paths), then **completed** via a two-phase deploy — see the 2026-06-06 follow-up below.
 - **M-7 (cross-source news syndication dedup).** Referential integrity fixed (chains collapsed);
   syndication *detection* (125 cross-source title/day groups) is an admin discovery
   enhancement to `find_duplicate_clusters('news')` — lower harm, deferred to avoid risk in a
@@ -77,19 +74,31 @@ the deploy workflows):
   (reworded titles) remains a further enhancement — it needs a similarity join, not a
   GROUP BY, and is higher-risk for this STABLE RPC.*
 
-- **M-5 (drop dead country columns) — intentionally NOT done.** The read-path audit
-  confirmed `lgbt_legal_status`/`lgbt_rights_status` are still SELECTed by live code
-  (`getLegalityBadge`, AdminCountries CRUD, city/village configs, `event-agentic-enrich`),
-  even though they read empty. `getLegalityBadge` already derives correctly from
-  `lgbti_criminalization` + `equality_score`, so the columns are dead *data* but live
-  *references*. Dropping them safely requires a two-phase deploy (remove all references and
-  deploy first, then drop), and on auto-deploy the `db push` (drop) races the Pages deploy —
-  a window where the still-live old code 500s on admin pages. The columns are empty and
-  harmless; forcing the drop is pure hygiene with real regression risk for zero user
-  benefit, so it is deferred to a deliberate two-PR sequence rather than rushed.
+- **M-5 (drop dead country columns) — DONE (two-phase, no downtime).** The read-path audit
+  confirmed `lgbt_legal_status`/`lgbt_rights_status` were still SELECTed by live code
+  (`getLegalityBadge`, AdminCountries CRUD, city/village configs, `event-agentic-enrich`)
+  even though they read empty; `getLegalityBadge` and the `cities_admin` view already derive
+  legality from `lgbti_criminalization` + `equality_score`. Removal was sequenced to avoid a
+  deploy-race 500: **phase 1** (#1464) stripped all references (behaviour-preserving) and was
+  deployed; **phase 2** (#1466, migration `20260606090000`) then redefined `cities_admin` to
+  derive both columns purely from the canonical sources (view output unchanged) and dropped
+  `countries.lgbt_legal_status` / `lgbt_rights_status`. Verified on prod: columns gone,
+  `cities_admin` still returns derived values, `/admin/countries` 200, gates all 0.
 
-- **M-3 / M-4 / M-9 / M-1 — blocked on external inputs, not fabricated.** M-3 needs a
-  timezone-boundary dataset; M-4 needs the news LLM-enrichment pipeline run at scale
+- **Link-checker false positives — FIXED.** The venue + marketplace link checkers classified
+  every non-2xx/3xx as `broken` (bot walls 403, rate limits 429, HEAD-unsupported 405),
+  and the marketplace one set `status='inactive'` on those — false-deactivating live listings
+  (the team paused cron 198 over it). Shared, unit-tested `_shared/link-health.ts` now does a
+  HEAD→GET probe and treats only an explicit 404/410 as dead; 401/403/405/429 → `blocked`,
+  network errors → `timeout`. Deployed + verified on prod (a 40-listing dry-run preserved 13
+  alive-but-blocked listings the old logic would have deactivated). **Cron 198 (marketplace
+  link-checker) remains PAUSED — ready to re-enable, left as the team's operational call.**
+
+- **M-3 (event timezone) — DONE by the team** (migration `event_timezone_backfill_singlezone`,
+  tz coverage 16%→52%).
+
+- **M-4 / M-9 / M-1 — blocked on external inputs, not fabricated.** M-4 needs the news
+  LLM-enrichment pipeline run at scale
   (operational, disk-constrained); M-9 needs sourced accessibility tags (Google/OSM);
   M-1 needs merchant self-declaration of queer ownership (already honest by omission —
   no listing falsely claims it). None can be completed by inventing data.
