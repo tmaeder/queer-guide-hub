@@ -194,7 +194,7 @@ export function useOptimizedCity(citySlug: string) {
       .maybeSingle();
 
     if (error) throw error;
-    if (data) return data;
+    if (data) return followMerged(data);
 
     // Fallback: try as ID (UUID or numeric)
     const { data: byId, error: idError } = await supabase
@@ -204,7 +204,21 @@ export function useOptimizedCity(citySlug: string) {
       .maybeSingle();
 
     if (idError) throw idError;
-    return byId;
+    return followMerged(byId);
+  };
+
+  // Merged duplicates (duplicate_of_id set) keep their old slug; resolve it to
+  // the canonical survivor so old city URLs land on the consolidated record.
+  const followMerged = async (city: City | null): Promise<City | null> => {
+    const canonicalId = (city as { duplicate_of_id?: string | null } | null)?.duplicate_of_id;
+    if (!city || !canonicalId) return city;
+    const { data: canonical, error } = await supabase
+      .from('cities')
+      .select('*')
+      .eq('id', canonicalId)
+      .maybeSingle();
+    if (error) throw error;
+    return canonical ?? city;
   };
 
   const {
