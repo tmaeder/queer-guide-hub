@@ -101,11 +101,11 @@ function formatIssueBody(data: FeedbackData, submissionId: string): string {
 
   const ctx = data.context || {};
   if (ctx.url) lines.push(`- **URL:** ${ctx.url}`);
+  // Viewport is useful for reproduction; not PII.
   if (ctx.viewport) lines.push(`- **Viewport:** ${ctx.viewport.width}×${ctx.viewport.height}`);
   if (ctx.color_scheme) lines.push(`- **Color scheme:** ${ctx.color_scheme}`);
-  if (ctx.user_agent) lines.push(`- **User agent:** \`${ctx.user_agent}\``);
+  // User-agent and contact_email omitted — PII not needed for issue triage.
   if (ctx.timestamp) lines.push(`- **Submitted:** ${ctx.timestamp}`);
-  if (data.contact_email) lines.push(`- **Contact:** ${data.contact_email}`);
   lines.push('');
 
   if (data.screenshot_url) {
@@ -137,7 +137,9 @@ function formatIssueBody(data: FeedbackData, submissionId: string): string {
     lines.push('');
     lines.push('```');
     for (const nf of ctx.network_failures) {
-      lines.push(`[${nf.ts}] ${nf.method} ${nf.url} → ${nf.status}`);
+      // Strip query params from URLs — may contain session tokens or auth codes.
+      const safeUrl = (() => { try { const u = new URL(nf.url); return u.origin + u.pathname; } catch { return nf.url?.split('?')[0] ?? nf.url; } })();
+      lines.push(`[${nf.ts}] ${nf.method} ${safeUrl} → ${nf.status}`);
     }
     lines.push('```');
     lines.push('');
