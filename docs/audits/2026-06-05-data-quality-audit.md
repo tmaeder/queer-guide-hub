@@ -54,17 +54,23 @@ Both write per-row via the Management API (bulk venue/personality writes time ou
 
 **✅ LGBTQ+ relevance classification — DONE (CF Workers AI):** new edge fn `classify-relevance-backfill` (self-contained, native `/ai/run`, UNKNOWN over false-0, **personalities excluded — outing risk**) + driver `scripts/backfill-relevance-classify.mjs`. Coverage: venue 85% scored (avg 0.32), event 100% (0.75), marketplace 98% (0.69), news 99% (0.44); rest UNKNOWN (thin data, honestly unscored). **Propagated to `search_documents.lgbtq_score`** (~33,500 docs) so search ranks on the real signal instead of the 0.5 default. Cleanup TODO: delete the one-off `classify-relevance-backfill` edge fn (`supabase functions delete`).
 
-**⏭️ Remaining (need admin UI / image budget):**
+**✅ Autonomous-finish pass (2026-06-07):**
+- **Country conflicts resolved by coords** — ~426 venues where `country` text ≠ `country_id` corrected to the coordinate's true country; 13 remote leftovers stay flagged.
+- **High-confidence dup merges** — 31 near-certain duplicates (same name+city + identical real domain/phone) merged via the real `merge_venues` RPC (full reparent + slug-redirect + audit; run in a tx with the admin JWT claim set). The ~300 uncorroborated same-name clusters left for human review at `/admin/duplicates`.
+- **Personality QID validation** — `scripts/validate-personality-qids.mjs`: re-checked all 3,614 QIDs against Wikidata P31; **425 confirmed non-human links nulled** + flagged `needs_attention` (kept ones with no P31 evidence).
+- **Venue images** — `scripts/backfill-venue-ogimage.mjs`: sources real `og:image`/`twitter:image` from each venue's own website (rejects favicons/svg/ico, forces https). ~28% hit rate over the 4,620 imageless venues that have a website → ~1,300 real images. Running.
+- One-off `classify-relevance-backfill` edge fn **deleted** (cleanup done).
 
-| Job | Count | Driver |
-|-----|------|--------|
-| Venue city-link (post-geocode) | ~6,283 | reverse-geocode / city-text match after coords land |
-| Event geocoding | 1,855 | same Photon client |
-| Event liveness sweep | ~440 upcoming | **blocked**: only 3 upcoming-unknown events have a ticket/website URL to check |
-| News full-text backfill | 7,628 | shipped extraction over pre-2026-05-30 corpus |
-| News geo-tagging | 16,676 | `pipeline-enrich-news` geo step (LLM) |
-| Real LGBTQ+ classification | all types | LLM classifier (cost) — replaces the default index score |
-| Personality name-only enrichment (no QID) | ~7,500 | needs safe disambiguation — name matching alone is unsafe |
-| Images + descriptions | venues 97%, pers 79% | highest cost; queue via `venues_due_for_refresh` + agentic-enrich |
+**⏭️ Genuinely remaining (needs human, budget, or data that doesn't exist):**
+
+| Item | Why it can't be auto-finished |
+|-----|------|
+| ~300 venue dup clusters (uncorroborated) | same-name/city but no shared domain/phone — could be distinct venues; human call at `/admin/duplicates` |
+| ~17k imageless venues with **no website** | need a photo API (Google Places/Foursquare) — no API key/budget |
+| 3 minors flagged `is_adult` | needs human judgment (wrong birth_date vs wrong flag) |
+| Personality/venue descriptions (thin) | content generation/sourcing — agentic-enrich budget |
+| Data floor | ~2,540 personalities Wikidata lacks; ~363 remote venues no nearby city; ~2,600 news paywalled/dead-URL; non-geographic news |
+
+Event geocoding, news full-text + geo-tagging were completed by the parallel session (events 100% geocoded; news thin 7.6k→2.7k, geo-missing 16.7k→4.9k).
 
 **Operational guards:** prod DB is disk-constrained (~5.8 GB, read-only trips near ~6.7 GB) — size-check before bulk writes that add content/embeddings; respect Photon rate limits; verify on https://queer.guide after each batch.
