@@ -229,6 +229,12 @@ verify_jwt = false
 [functions.pipeline-enrich-country]
 verify_jwt = false
 
+[functions.pipeline-enrich-country-editorial]
+verify_jwt = false
+
+[functions.enrich-wolfram]
+verify_jwt = false
+
 [functions.pipeline-enrich-events]
 verify_jwt = false
 
