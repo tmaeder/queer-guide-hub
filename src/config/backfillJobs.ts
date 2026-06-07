@@ -35,3 +35,58 @@ export const BACKFILL_JOBS: Record<string, BackfillJob[]> = {
 export function backfillJobsFor(table: string): BackfillJob[] {
   return BACKFILL_JOBS[table] ?? [];
 }
+
+/**
+ * Global (whole-corpus) backfill sweeps for the Data Ops "Backfills" panel.
+ * These run one batch per invoke (no per-id selection) and every one supports a
+ * dry-run, so the panel's dry-run toggle is honest. backfill-venue-cities is
+ * intentionally excluded — it has no dry_run mode.
+ */
+export interface GlobalBackfillJob {
+  key: string;
+  label: string;
+  description: string;
+  fn: string;
+  buildBody: (opts: { dryRun: boolean }) => Record<string, unknown>;
+}
+
+export const GLOBAL_BACKFILL_JOBS: GlobalBackfillJob[] = [
+  {
+    key: 'geocode',
+    label: 'Geocode staging rows',
+    description: 'Geocode pending ingestion rows missing coordinates. One batch of 50.',
+    fn: 'pipeline-geocode',
+    buildBody: ({ dryRun }) => ({ batch_size: 50, dry_run: dryRun }),
+  },
+  {
+    key: 'images-venues',
+    label: 'Fetch venue images',
+    description: 'Find cover images for venues that lack one. One batch of 25.',
+    fn: 'fetch-images',
+    buildBody: ({ dryRun }) => ({
+      entity_type: 'venue',
+      batchMode: true,
+      batchLimit: 25,
+      dry_run: dryRun,
+    }),
+  },
+  {
+    key: 'images-events',
+    label: 'Fetch event images',
+    description: 'Find cover images for upcoming events that lack one. One batch of 25.',
+    fn: 'fetch-images',
+    buildBody: ({ dryRun }) => ({
+      entity_type: 'event',
+      batchMode: true,
+      batchLimit: 25,
+      dry_run: dryRun,
+    }),
+  },
+  {
+    key: 'llm-news',
+    label: 'Enrich news (geo + relevance)',
+    description: 'LLM geo-tag and relevance-score news articles missing it. One batch of 20.',
+    fn: 'backfill-llm-enrich',
+    buildBody: ({ dryRun }) => ({ target: 'news', batch_size: 20, dry_run: dryRun }),
+  },
+];
