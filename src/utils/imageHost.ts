@@ -19,13 +19,16 @@ const TRUSTED_HOSTS = new Set([
 /**
  * Marketplace merchant image hosts that need the origin sent (hotlink protection).
  * Matched as the host itself or any subdomain. Extend as new merchants are onboarded.
+ *
+ * These are Shopify-on-own-domain stores (`/cdn/shop/...`): with `no-referrer` the
+ * browser drops their response via ORB. Sending the origin loads them. The shared
+ * `cdn.shopify.com` CDN and generic CMS hosts (e.g. cms.terminuscash.com) serve
+ * cross-origin freely and do NOT belong here — they load under the default policy.
  */
 const MERCHANT_HOSTS = [
   'misterb.com',
   'supergayunderwear.com',
   'ohmyfantasy.com',
-  'forttroff.com',
-  'cdn.shopify.com',
 ];
 
 function hostOf(src: string): string | null {

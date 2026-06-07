@@ -22,12 +22,14 @@ describe('isMerchantSrc', () => {
   it('matches merchant hosts and their subdomains', () => {
     expect(isMerchantSrc('https://supergayunderwear.com/cdn/x.jpg')).toBe(true);
     expect(isMerchantSrc('https://www.misterb.com/x.jpg')).toBe(true);
-    expect(isMerchantSrc('https://cdn.shopify.com/s/files/x.jpg')).toBe(true);
+    expect(isMerchantSrc('https://ohmyfantasy.com/cdn/shop/files/x.jpg')).toBe(true);
   });
 
-  it('does not match non-merchant hosts', () => {
+  it('does not match non-merchant hosts (shared CDNs serve cross-origin freely)', () => {
     expect(isMerchantSrc('https://i.guim.co.uk/x.jpg')).toBe(false);
     expect(isMerchantSrc('https://img.queer.guide/x.jpg')).toBe(false);
+    expect(isMerchantSrc('https://cdn.shopify.com/s/files/x.jpg')).toBe(false);
+    expect(isMerchantSrc('https://cms.terminuscash.com/api/media/file/x.jpg')).toBe(false);
   });
 
   it('does not match a host that merely contains a merchant string', () => {
