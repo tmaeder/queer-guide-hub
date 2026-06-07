@@ -20,6 +20,11 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 // Resumable + idempotent: driven off classified_at IS NULL (set after every attempt). Disjoint
 // id-range shards (id_gte/id_lt) let the driver parallelise safely. Per-row writes stay under
 // the search_documents_sync() reindex-trigger timeout.
+//
+// A successful LLM call that yields no parseable relevance writes a deterministic 0.0 floor
+// (never NULL) — leaving NULL with classified_at set would strand the row forever. Pass
+// {retry_relevance_null:true} (relevance-only targets) to re-scan rows already stamped
+// classified_at but stuck at NULL relevance (the one-time regression cleanup).
 
 const BAL = /\{[\s\S]*\}/
 
@@ -122,6 +127,9 @@ Deno.serve(async (req) => {
     const idGte = body.id_gte as string | undefined
     const idLt = body.id_lt as string | undefined
     const dryRun = body.dry_run === true
+    // Retry mode: re-process rows that were stamped classified_at but left with a NULL
+    // lgbti_relevance_score (the thin-venue regression — see below). Relevance-only targets.
+    const retryRelevanceNull = body.retry_relevance_null === true && !cfg.geo
 
     // ISO2 → country_id map (news geo only).
     let codeToId: Map<string, string> | null = null
@@ -132,7 +140,8 @@ Deno.serve(async (req) => {
     }
 
     let qb = supabase.from(cfg.table).select(cfg.cols)
-      .is('classified_at', null).is('duplicate_of_id', null)
+      .is('duplicate_of_id', null)
+      .is(retryRelevanceNull ? 'lgbti_relevance_score' : 'classified_at', null)
     if (idGte) qb = qb.gte('id', idGte)
     if (idLt) qb = qb.lt('id', idLt)
     const { data: rows, error } = await qb.order('id', { ascending: true }).limit(batchSize)
@@ -141,7 +150,7 @@ Deno.serve(async (req) => {
 
     let processed = 0, updated = 0, geo = 0, failed = 0, circuitOpen = false
 
-    for (const r of rows as Row[]) {
+    for (const r of rows as unknown as Row[]) {
       processed++
       let res
       try { res = await llm(supabase, cfg.sys, cfg.user(r), model) }
@@ -161,8 +170,14 @@ Deno.serve(async (req) => {
       }
       if (dryRun) { updated++; if (ids.length) geo++; continue }
 
-      const patch: Record<string, unknown> = { classified_at: new Date().toISOString() }
-      if (relevance !== null) patch.lgbti_relevance_score = relevance
+      // Deterministic floor: at this point the LLM call SUCCEEDED (failures `continue`d above).
+      // If the response had no parseable relevance, that means "no clear LGBTQ+ signal" → write
+      // 0.0, never NULL. Leaving it NULL with classified_at set strands the row forever (the
+      // classified_at cursor skips it) — the exact regression that left 7,854 venues unscored.
+      const patch: Record<string, unknown> = {
+        classified_at: new Date().toISOString(),
+        lgbti_relevance_score: relevance ?? 0,
+      }
       if (cfg.geo && ids.length) {
         const had = Array.isArray((r as Row).country_ids) && ((r as Row).country_ids as unknown[]).length > 0
         if (!had) { patch.country_ids = ids; geo++ }
