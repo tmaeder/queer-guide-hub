@@ -47,6 +47,20 @@ describe('classifyEntity', () => {
       expect(r.classified_as).toBe('venue');
     });
 
+    it('still matches a real venue with a whole-word place keyword', () => {
+      expect(classifyEntity({ name: 'Café Regenbogen' }).classified_as).toBe('venue');
+      expect(classifyEntity({ name: 'Basement Studios' }).classified_as).toBe('venue');
+    });
+
+    // Regression: substring matching wrongly flagged people as venues —
+    // "bar" in "Barbara", "inn" in "Quinn"/"McKinney", "spa" in "Spahn".
+    it('does NOT flag people whose surnames contain place substrings', () => {
+      for (const name of ['Barbara Grier', 'Barry Manilow', 'Natalie Clifford Barney',
+                          'Christine Quinn', 'Stewart McKinney', 'Jens Spahn']) {
+        expect(classifyEntity({ name }).classified_as, name).not.toBe('venue');
+      }
+    });
+
     it('flags "Eurovisex Sex Shop" as venue', () => {
       const r = classifyEntity({
         name: 'Eurovisex Sex Shop',

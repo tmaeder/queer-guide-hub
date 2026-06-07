@@ -114,6 +114,18 @@ function bumpSignal(scores: Record<EntityKind, number>, kind: EntityKind, weight
   signals.push(`${kind}:${reason} (+${weight})`)
 }
 
+// Whole-word place-keyword match (optional trailing plural). Substring matching
+// wrongly flagged people as venues — "bar" inside "Barbara", "inn" inside
+// "Quinn"/"McKinney", "spa" inside "Spahn". The [^a-z] guards work because the
+// match input is already lower-cased.
+function placeKeywordHit(nameLc: string): string | undefined {
+  for (const k of PLACE_KEYWORDS) {
+    const re = new RegExp('(^|[^a-z])' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 's?([^a-z]|$)')
+    if (re.test(nameLc)) return k
+  }
+  return undefined
+}
+
 export function classifyEntity(input: ClassifyInput): ClassifyResult {
   const scores: Record<EntityKind, number> = {
     person: 0, venue: 0, event: 0, glossary_term: 0, unknown: 0,
@@ -153,12 +165,12 @@ export function classifyEntity(input: ClassifyInput): ClassifyResult {
   }
   // Two-or-more capitalised words (e.g. "Lytton Strachey", "Davis Mac-Iyalla") —
   // weak signal, easily fooled by venue names ("Sauna Tres Chic"), so only +1.
-  if (/^[A-Z][\p{L}'’-]+(?:\s+[A-Z][\p{L}'’.-]+){1,3}$/u.test(name) && !PLACE_KEYWORDS.some(k => nameLc.includes(k))) {
+  if (/^[A-Z][\p{L}'’-]+(?:\s+[A-Z][\p{L}'’.-]+){1,3}$/u.test(name) && !placeKeywordHit(nameLc)) {
     bumpSignal(scores, 'person', 1, signals, 'name_looks_like_full_name')
   }
 
   // ---- venue signals ----
-  const placeHit = PLACE_KEYWORDS.find(k => nameLc.includes(k))
+  const placeHit = placeKeywordHit(nameLc)
   if (placeHit) bumpSignal(scores, 'venue', 4, signals, `name_contains_${placeHit}`)
   if (asString(input.address)) bumpSignal(scores, 'venue', 3, signals, 'has_address')
   if (asString(input.accommodation_type)) bumpSignal(scores, 'venue', 4, signals, 'has_accommodation_type')
