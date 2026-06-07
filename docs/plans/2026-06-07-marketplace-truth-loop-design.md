@@ -140,12 +140,29 @@ Batched ~300/run (search-trigger write load), idempotent on `payload_hash`.
 Per-merchant extractor map for the 4 site shapes.
 **Fixes:** 3,767 descriptions + 1,946 images + stale link-health. **Cost:** $0.
 
-### Phase 2 — Enforce trust gate + honest score
-- Re-run `marketplace-relevance` (Claude Haiku) on the 157 unscored + 1,074 below-0.5.
-  Below 0.5 → `status='inactive'` (reversible, not deleted); excluded from search.
-- Replace `quality_score` with a real composite (pure-SQL recompute, mirrors
-  `run_event_trust_recompute`):
-  `has_desc·0.30 + has_image·0.25 + has_price·0.15 + relevance·0.20 + link_ok·0.10`.
+### Phase 2 — Honest score + calibrated relevance (DONE 2026-06-07)
+
+**Honest quality_score (completeness, NOT relevance):**
+`marketplace_completeness_score(desc≥50·30 + image·30 + price·20 + brand·10 + link_ok·10)`
+— pure SQL (migration `20260607120000`), recomputed all rows (active avg **90.9**,
+inactive 59.9), nightly cron `marketplace_quality_recompute`, registered in
+`admin_automations`. The old score read a decorative 95.6 while 58% had no description.
+
+**Relevance — re-scored, NOT gate-purged as originally planned.** The existing
+`lgbti_relevance_score` was badly miscalibrated: it scored gay kink/fetish gear
+("Pig Snout", "COLT Wristband", jockstraps, hanky-code laces) at 0.00 for not being
+explicit pride themes. Enforcing the documented 0.5 gate would have deleted ~1,074
+legitimate items. Instead built `marketplace-relevance-rescore` (edge fn, batch-25
+LLM via `llmChatCompletion`, kink/brand-aware prompt in
+`_shared/prompts/marketplace-relevance.ts`) and re-scored all 3,510 active.
+
+Calibrated distribution: **2,477 high (≥0.8), 1,024 medium, only 9 below 0.4.** The
+real off-topic set was 9 items (Safety Scissors, Carabiners, Football Socks, a USB
+adapter), not 1,074 — those 9 were deactivated (`review_status='rejected_relevance'`).
+Validated: "Topped Toys Deep Space" 0.00→0.80.
+
+Deferred: the ingest-time relevance scorer still uses the old miscalibration; fix when
+sources resume (Phase 4). No cron on the re-score yet (catalog static; no new items).
 
 ### Phase 3 — Real categorization
 LLM classify (Haiku, batched) `title`+`description` → proper taxonomy (apparel, pride,
