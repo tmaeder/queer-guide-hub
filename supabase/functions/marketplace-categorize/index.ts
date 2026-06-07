@@ -46,9 +46,11 @@ Deno.serve(async (req) => {
       .order('updated_at', { ascending: true, nullsFirst: true })
       .limit(limit)
     if (!includeInactive) q = q.eq('status', 'active')
-    // Re-categorize the legacy source-derived slugs; leave already-migrated rows.
+    // Re-categorize the legacy source-derived subcategories; once a row is set to
+    // a new Title-Case label it no longer matches, so the sweep terminates.
+    // (subcategory_slug is a generated column and cannot be filtered/written.)
     if (onlyOldSlug) {
-      q = q.or('subcategory_slug.is.null,subcategory_slug.in.(fetish_gear,sex_toys,underwear)')
+      q = q.or('subcategory.is.null,subcategory.in.(fetish_gear,sex_toys,underwear)')
     }
 
     const { data: rows, error } = await q
@@ -95,9 +97,11 @@ Deno.serve(async (req) => {
         if (!slug) { failed++; continue }
         dist[slug] = (dist[slug] ?? 0) + 1
         if (!dryRun) {
-          await supabase.from('marketplace_listings')
-            .update({ subcategory: labelForSlug(slug), subcategory_slug: slug })
+          // Only write `subcategory`; subcategory_slug is a generated column.
+          const { error: upErr } = await supabase.from('marketplace_listings')
+            .update({ subcategory: labelForSlug(slug) })
             .eq('id', chunk[idx].id)
+          if (upErr) { failed++; continue }
         }
         categorized++
       }

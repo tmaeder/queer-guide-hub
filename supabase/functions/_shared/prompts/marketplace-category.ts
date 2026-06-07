@@ -14,20 +14,23 @@ export interface CategoryDef {
 }
 
 // Order matters only for the prompt listing. ~13 buckets covering the real catalog.
+// `label` is stored in subcategory; subcategory_slug is a generated column
+// (lower + [\s-]+ -> _), so labels avoid '&' to keep slugs clean. `slug` here is
+// the enum the LLM returns (hyphenated) — internal to the prompt/parser only.
 export const MARKETPLACE_TAXONOMY: CategoryDef[] = [
   { slug: 'sex-toys',            label: 'Sex Toys',            hint: 'dildos, vibrators, masturbators, prostate toys, wands' },
   { slug: 'anal-toys',           label: 'Anal Toys',           hint: 'butt plugs, anal beads, anal training kits, tunnel/hole plugs' },
-  { slug: 'cock-rings-stretchers', label: 'Cock Rings & Stretchers', hint: 'cock rings, ball stretchers, cock straps, glans rings' },
-  { slug: 'bdsm-bondage',        label: 'BDSM & Bondage',      hint: 'restraints, cuffs, slings, gags, paddles, whips, e-stim, collars, hoods/masks, electro' },
+  { slug: 'cock-rings-stretchers', label: 'Cock Rings and Stretchers', hint: 'cock rings, ball stretchers, cock straps, glans rings' },
+  { slug: 'bdsm-bondage',        label: 'BDSM and Bondage',    hint: 'restraints, cuffs, slings, gags, paddles, whips, e-stim, collars, hoods/masks, electro' },
   { slug: 'fetish-wear',         label: 'Fetish Wear',         hint: 'leather/rubber/latex/neoprene garments, harnesses worn on body, gasmasks, jockstraps-as-fetish' },
-  { slug: 'pup-pet-play',        label: 'Pup & Pet Play',      hint: 'puppy hoods, tails, mitts, pup gear' },
+  { slug: 'pup-pet-play',        label: 'Pup and Pet Play',    hint: 'puppy hoods, tails, mitts, pup gear' },
   { slug: 'chastity',            label: 'Chastity',            hint: 'chastity cages, devices, holy trainer' },
-  { slug: 'pumps-enlargement',   label: 'Pumps & Enlargement', hint: 'penis pumps, ball pumps, pump sleeves' },
-  { slug: 'underwear-swimwear',  label: 'Underwear & Swimwear', hint: 'briefs, jockstraps, thongs, swimwear, speedos' },
-  { slug: 'apparel-accessories', label: 'Apparel & Accessories', hint: 'shirts, tops, socks, footwear, caps, bags, keychains, sunglasses (non-fetish clothing)' },
-  { slug: 'hygiene-care',        label: 'Hygiene & Care',      hint: 'douches, enemas, lube, toy cleaner, grooming, sterile supplies, medical/health' },
-  { slug: 'jewelry-pins',        label: 'Jewelry & Pins',      hint: 'jewelry, pendants, pins, patches, bracelets' },
-  { slug: 'books-art',           label: 'Books & Art',         hint: 'books, zines, prints, posters, art' },
+  { slug: 'pumps-enlargement',   label: 'Pumps and Enlargement', hint: 'penis pumps, ball pumps, pump sleeves' },
+  { slug: 'underwear-swimwear',  label: 'Underwear and Swimwear', hint: 'briefs, jockstraps, thongs, swimwear, speedos' },
+  { slug: 'apparel-accessories', label: 'Apparel and Accessories', hint: 'shirts, tops, socks, footwear, caps, bags, keychains, sunglasses (non-fetish clothing)' },
+  { slug: 'hygiene-care',        label: 'Hygiene and Care',    hint: 'douches, enemas, lube, toy cleaner, grooming, sterile supplies, medical/health' },
+  { slug: 'jewelry-pins',        label: 'Jewelry and Pins',    hint: 'jewelry, pendants, pins, patches, bracelets' },
+  { slug: 'books-art',           label: 'Books and Art',       hint: 'books, zines, prints, posters, art' },
 ]
 
 const SLUGS = new Set(MARKETPLACE_TAXONOMY.map((c) => c.slug))
