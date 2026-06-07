@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 import { ArrowLeft, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
@@ -47,6 +48,7 @@ const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
   useTranslation();
+  const lang = useContentLang();
   const [weatherData, setWeatherData] = useState<WeatherDataType>(null);
 
   const { track } = useTrackEvent();
@@ -270,7 +272,7 @@ export default function CountryDetail() {
               <div className="flex flex-wrap gap-2">
                 <PlanTripFromHereButton label={`Plan a trip to ${country.name}`} />
               </div>
-              <IntroEssay text={country.description} />
+              <IntroEssay text={localizedField(country as unknown as Record<string, unknown>, 'description', lang)} />
               <KeyFactsStrip facts={facts} />
             </div>
           }

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
@@ -52,6 +53,7 @@ const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CityDetail() {
   useTranslation();
+  const lang = useContentLang();
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
@@ -314,7 +316,7 @@ export default function CityDetail() {
                   label={`Plan a trip to ${city.name}`}
                 />
               </div>
-              <IntroEssay text={city.description} />
+              <IntroEssay text={localizedField(city as unknown as Record<string, unknown>, 'description', lang)} />
               <KeyFactsStrip facts={facts} />
             </div>
           }
