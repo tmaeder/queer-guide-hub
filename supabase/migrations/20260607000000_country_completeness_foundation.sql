@@ -236,18 +236,14 @@ END $$;
 
 SELECT cron.schedule('country_completeness_recompute', '30 3 * * *', 'SELECT public.run_country_completeness_recompute();');
 
+-- Use enqueue_workflow (routes to the def's queue + idempotency key), matching
+-- the other single-function workflow crons (wf-import-ilga-data, marketplace-fx-sync).
 SELECT cron.schedule(
   'wf-enrich-wolfram-countries', '0 5 * * 0',
-  $cron$
-    SELECT pgmq.send('scheduled_jobs', jsonb_build_object(
-      'workflow','enrich-wolfram-countries','triggered_by','cron','scheduled_at',now()));
-  $cron$
+  $cron$SELECT public.enqueue_workflow('enrich-wolfram-countries', '{"content_type":"country","limit":20,"triggered_by":"cron"}'::jsonb)$cron$
 );
 
 SELECT cron.schedule(
   'wf-enrich-country-editorial', '0 6 * * 0',
-  $cron$
-    SELECT pgmq.send('scheduled_jobs', jsonb_build_object(
-      'workflow','enrich-country-editorial','triggered_by','cron','scheduled_at',now()));
-  $cron$
+  $cron$SELECT public.enqueue_workflow('enrich-country-editorial', '{"batch_size":8,"triggered_by":"cron"}'::jsonb)$cron$
 );

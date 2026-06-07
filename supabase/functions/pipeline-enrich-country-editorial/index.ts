@@ -87,11 +87,13 @@ Deno.serve(async (req: Request) => {
   const countryIds: string[] | null = Array.isArray(body.country_ids) ? body.country_ids : null
 
   // Candidates: countries missing the editorial hook, never already published/queued.
+  // Best-grounded first (richer countries auto-publish; sparse territories fall to review).
   let q = supabase
     .from('countries')
     .select('id, name, capital, population, currency, languages, equality_score, description, enrichment_status, lgbti_criminalization, lgbti_same_sex_unions, regions(name)')
     .is('duplicate_of_id', null)
     .is('editorial_hook', null)
+    .order('content_completeness_score', { ascending: false, nullsFirst: false })
     .limit(batchSize * 2)
   if (countryIds?.length) q = q.in('id', countryIds)
 
