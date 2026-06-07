@@ -23,6 +23,7 @@ import { Table, TableHeader, TableBody, TableRow, TableCell } from '@/components
 import { useAdminTableQuery } from '@/hooks/useAdminTableQuery';
 import { useAdminTableState } from '@/hooks/useAdminTableState';
 import { useFilterPresets } from '@/hooks/useFilterPresets';
+import { useListKeyboard } from '@/hooks/useListKeyboard';
 import { DataTableHeaderCell } from './DataTableHeader';
 import { DataTableToolbar } from './DataTableToolbar';
 import { DataTableFilters } from './DataTableFilters';
@@ -109,6 +110,8 @@ export function AdminDataTable<TData extends { id: string }>({
     clearSelection,
     toggleColumnVisibility,
     setGrouping,
+    focusedId,
+    setFocusedId,
   } = useAdminTableState({
     defaultSort: initialView?.sorting ?? defaultSort,
     defaultPageSize,
@@ -205,6 +208,28 @@ export function AdminDataTable<TData extends { id: string }>({
   const allSelected = allRowIds.length > 0 && allRowIds.every((id) => state.selectedIds.has(id));
   const someSelected = allRowIds.some((id) => state.selectedIds.has(id)) && !allSelected;
 
+  // Keyboard navigation: J/K (or arrows) move a row cursor, Enter opens the
+  // focused row, Space toggles its selection. Typing in inputs is ignored.
+  const keyboardActions = useMemo(
+    () => ({
+      Enter: () => {
+        const row = data.find((d) => d.id === focusedId);
+        if (row && onRowClick) onRowClick(row);
+      },
+      ' ': () => {
+        if (focusedId) toggleRow(focusedId);
+      },
+    }),
+    [data, focusedId, onRowClick, toggleRow],
+  );
+  useListKeyboard({
+    items: data,
+    activeId: focusedId,
+    onNavigate: setFocusedId,
+    actions: keyboardActions,
+    enabled: !isLoading && data.length > 0,
+  });
+
   const handleRefetch = () => {
     refetch();
     onBulkEditSuccess?.();
@@ -292,11 +317,12 @@ export function AdminDataTable<TData extends { id: string }>({
           <TableBody>
             {table.getRowModel().rows.map((row) => {
               const isSelected = state.selectedIds.has(row.original.id);
+              const isFocused = focusedId === row.original.id;
               const customRowClass = rowClassName?.(row.original);
               return (
                 <TableRow
                   key={row.id}
-                  className={`content-enter ${isSelected ? 'bg-muted' : ''} ${customRowClass ?? ''}`}
+                  className={`content-enter ${isSelected ? 'bg-muted' : ''} ${isFocused ? 'ring-1 ring-inset ring-foreground/40' : ''} ${customRowClass ?? ''}`}
                   style={{
                     transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
                     cursor: onRowClick ? 'pointer' : undefined,

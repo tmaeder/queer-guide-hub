@@ -22,6 +22,10 @@ export function useAdminTableState(options: UseAdminTableStateOptions = {}) {
     grouping: [],
   });
 
+  // Keyboard cursor (J/K row focus). Kept separate from the main state object
+  // so row navigation doesn't churn filters/selection/pagination.
+  const [focusedId, setFocusedId] = useState<string | null>(null);
+
   // Debounce search
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
   useEffect(() => {
@@ -144,5 +148,7 @@ export function useAdminTableState(options: UseAdminTableStateOptions = {}) {
     clearSelection,
     toggleColumnVisibility,
     setGrouping,
+    focusedId,
+    setFocusedId,
   };
 }
