@@ -3,8 +3,8 @@ import { getCorsHeaders, requireAdmin, errorResponse, getServiceClient } from '.
 
 const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '';
 const CF_EMBEDDINGS_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/v1/embeddings`;
-const CF_MODEL = '@cf/baai/bge-base-en-v1.5';
-const EMBEDDING_DIMENSION = 768;
+const CF_MODEL = '@cf/baai/bge-m3';
+const EMBEDDING_DIMENSION = 1024;
 const BATCH_SIZE = 50; // CF supports up to 100, use 50 for safety
 
 interface PopulateRequest {
