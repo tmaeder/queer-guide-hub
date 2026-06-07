@@ -334,6 +334,9 @@ verify_jwt = false
 [functions.source-shopify]
 verify_jwt = false
 
+[functions.source-shopify-public]
+verify_jwt = false
+
 [functions.source-personality-staging]
 verify_jwt = false
 
