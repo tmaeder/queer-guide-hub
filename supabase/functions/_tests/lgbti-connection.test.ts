@@ -5,6 +5,8 @@ import {
   coerceLgbtiConnection,
   deriveLgbtiConnection,
   shouldUpgradeConnection,
+  deriveConnectionFromCategories,
+  combineConnection,
 } from '../_shared/lgbti-connection.ts'
 
 Deno.test('vocab is exactly the six controlled values', () => {
@@ -75,4 +77,45 @@ Deno.test('shouldUpgrade: only the non-committal placeholders', () => {
   assertEquals(shouldUpgradeConnection('none_known'), true)
   assertEquals(shouldUpgradeConnection('activist'), false)     // curated — keep
   assertEquals(shouldUpgradeConnection('community_member'), false)
+})
+
+Deno.test('categories: activism wins over identity, negations skipped', () => {
+  // Marsha P. Johnson's real categories — activist takes precedence.
+  const r = deriveConnectionFromCategories([
+    'Category:American gay entertainers',
+    'Category:American transgender rights activists',
+    'Category:LGBTQ people from New Jersey',
+  ])
+  assertEquals(r.connection, 'activist')
+})
+
+Deno.test('categories: identity-only → community_member', () => {
+  assertEquals(deriveConnectionFromCategories(['Category:American gay writers']).connection, 'community_member')
+  assertEquals(deriveConnectionFromCategories(['Category:Lesbian musicians']).connection, 'community_member')
+  assertEquals(deriveConnectionFromCategories(['Category:Transgender women']).connection, 'community_member')
+})
+
+Deno.test('categories: allies / opponents / icons are not assertions about the person', () => {
+  assertEquals(deriveConnectionFromCategories(['Category:LGBT rights allies']).connection, null)
+  assertEquals(deriveConnectionFromCategories(['Category:Opponents of LGBT rights']).connection, null)
+  assertEquals(deriveConnectionFromCategories(['Category:American novelists']).connection, null)
+  assertEquals(deriveConnectionFromCategories(['Category:Gay icons']).connection, null) // celebrated by, not member
+})
+
+Deno.test('categories: broadened identity terms (adult + bare forms)', () => {
+  assertEquals(deriveConnectionFromCategories(['Category:Gay pornographic film actors']).connection, 'community_member')
+  assertEquals(deriveConnectionFromCategories(['Category:Transgender models']).connection, 'community_member')
+  assertEquals(deriveConnectionFromCategories(['Category:Bisexual sportspeople']).connection, 'community_member')
+})
+
+Deno.test('combine: activist from categories beats community_member from Wikidata', () => {
+  const cat = deriveConnectionFromCategories(['Category:Gay rights activists'])
+  const wd = deriveLgbtiConnection(['Q6636'], [])
+  assertEquals(combineConnection(cat, wd).connection, 'activist')
+})
+
+Deno.test('combine: falls back to Wikidata community_member when categories are silent', () => {
+  const cat = deriveConnectionFromCategories(['Category:American novelists'])
+  const wd = deriveLgbtiConnection(['Q43200'], []) // bisexual
+  assertEquals(combineConnection(cat, wd).connection, 'community_member')
 })

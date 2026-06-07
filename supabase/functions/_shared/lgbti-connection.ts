@@ -107,3 +107,53 @@ export function deriveLgbtiConnection(
 export function shouldUpgradeConnection(current: string | null | undefined): boolean {
   return current == null || current === 'unclear' || current === 'none_known'
 }
+
+// ---- Wikipedia-category derivation (higher coverage than Wikidata P91/P21) ----
+//
+// Wikipedia categories are editorially maintained and, for living people, the
+// identity ones (WP:BLPCAT) require the subject to have publicly self-identified —
+// a stronger sourcing bar than Wikidata. We prefer the public-role 'activist' over
+// the private-identity 'community_member' (it is both more informative and the
+// less sensitive claim), and we skip ally / opponent / critic categories.
+
+const CAT_ACTIVIST = /(lgbtq?\+?|gay|lesbian|transgender|trans|queer|bisexual|intersex)\b[^,]{0,24}\bactiv/i
+const CAT_IDENTITY = /\b(lgbtq?\+?|gay|lesbian|sapphic|bisexual|pansexual|transgender|transsexual|trans\s+(?:man|woman|men|women)|non[-\s]?binary|genderqueer|genderfluid|agender|intersex|queer|two[-\s]spirit)\b/i
+// "icon"/"icons" excluded: a "gay icon" is celebrated BY the community, not
+// necessarily a member. ally/opponent/critic/straight/cis are not the person.
+const CAT_NEGATE = /\b(anti|opponents?|critics?|allies|ally|heterosexual|cisgender|straight|icons?)\b/i
+
+export interface CategoryDerivation {
+  connection: 'activist' | 'community_member' | null
+  evidence: string[]
+}
+
+/** Derive a connection from a person's Wikipedia category titles. */
+export function deriveConnectionFromCategories(categories: string[]): CategoryDerivation {
+  const evidence: string[] = []
+  let activist = false
+  let member = false
+  for (const c of categories) {
+    const name = c.replace(/^Category:/, '')
+    if (CAT_NEGATE.test(name)) continue
+    if (CAT_ACTIVIST.test(name)) { activist = true; evidence.push(`cat:${name}`); continue }
+    if (CAT_IDENTITY.test(name)) { member = true; evidence.push(`cat:${name}`) }
+  }
+  const connection = activist ? 'activist' : member ? 'community_member' : null
+  return { connection, evidence: evidence.slice(0, 6) }
+}
+
+/**
+ * Combine Wikipedia-category and Wikidata P91/P21 signals into one connection.
+ * Precedence: public-role 'activist' (categories) > identity 'community_member'
+ * (either source) > null.
+ */
+export function combineConnection(
+  cat: CategoryDerivation,
+  wd: LgbtiDerivation,
+): { connection: 'activist' | 'community_member' | null; evidence: string[] } {
+  if (cat.connection === 'activist') return { connection: 'activist', evidence: cat.evidence }
+  if (cat.connection === 'community_member' || wd.connection === 'community_member') {
+    return { connection: 'community_member', evidence: [...cat.evidence, ...wd.evidence].slice(0, 8) }
+  }
+  return { connection: null, evidence: [] }
+}

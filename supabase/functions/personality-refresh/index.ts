@@ -9,7 +9,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { fillBlanks, parseWikipediaSummary } from '../_shared/personality-enrich-core.ts'
 import { personalityQualityScore } from '../_shared/personality-quality.ts'
 import { resolvePersonality } from '../_shared/wikidata-resolve.ts'
-import { deriveLgbtiConnection, shouldUpgradeConnection } from '../_shared/lgbti-connection.ts'
+import { deriveLgbtiConnection, deriveConnectionFromCategories, combineConnection, shouldUpgradeConnection, type LgbtiDerivation } from '../_shared/lgbti-connection.ts'
 
 const UA = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -76,6 +76,21 @@ async function fetchWikipedia(title: string) {
     return parseWikipediaSummary(await res.json())
   } catch { return parseWikipediaSummary({}) }
 }
+// Wikipedia category titles for an article — editorially maintained and, for
+// living people, governed by WP:BLPCAT (self-identification required), so a
+// sound provenance for an lgbti_connection.
+async function fetchWikipediaCategories(title: string): Promise<string[]> {
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&prop=categories&titles=${encodeURIComponent(title)}&cllimit=max&clshow=!hidden&format=json`
+    const res = await fetch(url, { headers: { 'User-Agent': UA } })
+    if (!res.ok) return []
+    const data = await res.json()
+    const pages = (data?.query?.pages ?? {}) as Record<string, { categories?: Array<{ title: string }> }>
+    const cats: string[] = []
+    for (const p of Object.values(pages)) for (const c of p.categories ?? []) if (c.title) cats.push(c.title)
+    return cats
+  } catch { return [] }
+}
 
 type Row = Record<string, unknown>
 
@@ -112,6 +127,7 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       let matchConfidence: 'high' | 'medium' | 'low' | null = null
       let matchReasons: string[] = []
       let connectionEvidence: string[] = []
+      let wdConnection: LgbtiDerivation = { connection: null, evidence: [] }
 
       // Evidence-based resolution (multilingual search + birth-year / nationality /
       // occupation disambiguation). Refuses on ambiguity or contradiction, and
@@ -153,15 +169,9 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
           }
           if (extChanged) incoming.external_ids = ext
 
-          // Derive a SOURCED lgbti_connection from Wikidata orientation (P91) /
-          // gender identity (P21). Upgrades the non-committal "unclear" placeholder
-          // only; the QID is the provenance the outing guard requires. Never
-          // clobbers a curated value.
-          const derived = deriveLgbtiConnection(claimQids(entity, 'P91'), claimQids(entity, 'P21'))
-          if (derived.connection && shouldUpgradeConnection(p.lgbti_connection as string | null)) {
-            incoming.lgbti_connection = derived.connection
-            connectionEvidence = derived.evidence
-          }
+          // Wikidata orientation (P91) / gender identity (P21) — combined with
+          // Wikipedia categories below into one SOURCED lgbti_connection.
+          wdConnection = deriveLgbtiConnection(claimQids(entity, 'P91'), claimQids(entity, 'P21'))
         }
       }
 
@@ -177,6 +187,19 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
           incoming.bio = wiki.extract.slice(0, 4000)
         }
         if (wiki.image_url && !incoming.image_url) incoming.image_url = wiki.image_url
+      }
+
+      // Combine Wikipedia categories (high coverage, BLPCAT-sourced) with the
+      // Wikidata P91/P21 signal into one SOURCED lgbti_connection. Upgrades the
+      // non-committal "unclear" placeholder only; the QID/Wikipedia article are the
+      // provenance the outing guard requires; never clobbers a curated value.
+      if (qid && shouldUpgradeConnection(p.lgbti_connection as string | null)) {
+        const cats = title ? await fetchWikipediaCategories(title) : []
+        const combined = combineConnection(deriveConnectionFromCategories(cats), wdConnection)
+        if (combined.connection) {
+          incoming.lgbti_connection = combined.connection
+          connectionEvidence = combined.evidence
+        }
       }
 
       // Validate any candidate image before it lands.
