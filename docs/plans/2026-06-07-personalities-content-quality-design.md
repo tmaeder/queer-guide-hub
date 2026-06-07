@@ -1,6 +1,6 @@
 # Personalities Content-Quality Remediation — Design
 
-**Date:** 2026-06-07 · **Status:** Phases 0–3 SHIPPED; Phase 4 pending · **Owner:** tmaeder
+**Date:** 2026-06-07 · **Status:** Phases 0–4 SHIPPED · **Owner:** tmaeder
 
 ## Progress (2026-06-07)
 
@@ -12,6 +12,9 @@
   - **3a — `personality-extract-from-bio`** edge function (deployed, daily cron `15 4 * * *`): extracts *factual* fields (birth/death year, profession, nationality) **strictly from a row's own bio** — grounded, never invented, never `lgbti_connection` — fills blanks, writes `self-bio` provenance, re-queues for a Wikidata pass. Verified faithful (Jiří Karásek 1871–1951; 0 fabrication; living thin-bio rows yield nothing). Migration `20260607003000`.
   - **3b — honest triage:** 4,408 bare-name rows flagged `enrichment_status.triage='insufficient_data'` for human review (queryable bucket; not auto-enriched).
   - **New finding (own follow-up):** non-person pollution of the personalities table needs a reclassify/remove pass (the resolver's P31=Q5 filter already refuses them, which is why they're the unmatchable residue).
+- **Phase 4 — SHIPPED (partial, with a deliberate non-action).**
+  - **Observability:** `personality_quality_overview()` RPC (`20260607004000`) + `PersonalityQualityPanel` on `/admin/content/personalities` — shows anchored %/count, re-queue drain, archived cohort, the `insufficient_data` triage bucket, bio-extractable, and low-confidence matches. Build + tests green.
+  - **`lgbti_relevance_score` default — investigated, deliberately NOT bulk-nulled.** Evidence: the 0.8 is a blanket import default **only for the adult cohort** (5,310 "Gay adult performer" + 1,676 null-src, all `is_adult`); the **non-adult scores are genuinely varied** (0.0/0.2/0.6/0.9… across 74 distinct classify-times) — i.e. real classifier output. A bulk null would destroy real signal and risk search-ranking regressions. The only blanket-0.8 rows still surfacing are the 4,155 kept-anchored adult, where 0.8 is not unreasonable. Per the standing "don't back-write it" caution, left as-is. A *proper* re-classification (not a null) would be the real fix — separate, larger effort.
 
 ---
 
