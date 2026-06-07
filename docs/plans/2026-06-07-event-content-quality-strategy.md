@@ -89,9 +89,12 @@ Truth Loop is **input-starved**: `event_sources` covers only 796/3,626; corrobor
   Derive official URLs via web search (title+city), validate with
   `_shared/link-health.ts` `probeLink`, then run `researchEnrichEventFromPage()`
   for the moat fields. Big-spend, highest-moat.
-- **P4 — Prevention.** Per-source completeness validators in
-  `pipeline-review-gate` + per-source coverage panel wired to
-  `event_field_coverage()` in `EventQualityPanel`.
+- **P4 — Visibility. ✅ SHIPPED (panel); prevention still open.** `EventQualityPanel`
+  now renders `event_field_coverage()`: per-field completeness bars, corpus
+  completeness/trust averages, and a **leakiest-sources** breakdown (which source
+  leaks which field) so operators fix gaps upstream. **Still open:** per-source
+  completeness *validators* in `pipeline-review-gate` to flag a regressing source
+  at ingest time (prevent re-opening the gaps).
 
 ## Open / deferred
 
