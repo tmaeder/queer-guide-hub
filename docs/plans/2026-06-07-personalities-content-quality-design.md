@@ -1,6 +1,17 @@
 # Personalities Content-Quality Remediation — Design
 
-**Date:** 2026-06-07 · **Status:** Approved (brainstorming) · **Owner:** tmaeder
+**Date:** 2026-06-07 · **Status:** Phases 0–2 SHIPPED; Phases 3–4 pending · **Owner:** tmaeder
+
+## Progress (2026-06-07)
+
+- **Phase 0 — SHIPPED.** `20260607000000_personality_outing_guard_strengthen.sql`. The shipped `person_outing_guard` was tautologically zero; redefined to the real harm (committed identity claim + living + public/indexable + no provenance anchor). BEFORE trigger demotes violators to draft instead of raising. Verified live (gate=0; insert test demoted).
+- **Phase 1 — SHIPPED.** `20260607001000_personality_archive_unanchored_adult.sql`. Soft-archived 2,857 unanchored adult rows; kept 4,155 Wikidata-anchored. Reversible via `unarchive_personality(uuid)`. Verified: 0 publicly exposed, 0 left in search.
+- **Phase 2 — SHIPPED.** Rewrote `_shared/wikidata-resolve.ts` into a precision-first, recall-improved resolver (multilingual + birth-year/death-year/nationality disambiguation, profession optional, living stricter bar); 16 unit tests. Wired into `personality-refresh` (replaced inline top-1 pick), deployed. `personality_data_health` view now excludes archived (`20260607002000`). Re-queued 4,855 unanchored rows (`last_refreshed_at=NULL`) so the 30-min cron re-attempts them with the new resolver. **Live verification: 75/75 manual-batch matches correct, all high-confidence** (Freddie Mercury, Lana Wachowski, Marsha P. Johnson, Lili Elbe, Patricia Highsmith, …). Active-anchored rose to 50.6%; ~4,780 still draining via cron.
+  - **Honest ceiling:** of the 4,855 re-queued, only 432 carry a corroborating signal (birth/profession/nationality); the other ~4,400 are name-only and will mostly *not* match (correctly — name-only living people must not be force-matched). That residue is Phase 3 / human-curation work.
+
+---
+
+**Date:** 2026-06-07 · **Owner:** tmaeder
 **Supersedes context:** `docs/audits/2026-06-05-trust-safety-audit.md` findings C-2, H-5, M-6 (people)
 
 ---
