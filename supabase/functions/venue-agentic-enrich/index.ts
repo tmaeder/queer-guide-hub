@@ -193,9 +193,11 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) })
 
   const supabase = getServiceClient()
-  const secret = Deno.env.get('EVENT_QUALITY_WEBHOOK_SECRET')
+  // Accept the dedicated event-quality secret OR the generic backfill webhook secret (this is a
+  // low-risk, fill-empty-only job, same auth posture as backfill-llm-enrich); else admin/service.
+  const secrets = [Deno.env.get('EVENT_QUALITY_WEBHOOK_SECRET'), Deno.env.get('WEBHOOK_SECRET') || 'meilisearch-sync-webhook-2026']
   const provided = req.headers.get('X-Webhook-Secret')
-  if (!(secret && provided && provided === secret)) {
+  if (!(provided && secrets.some((s) => s && provided === s))) {
     const auth = await requireInternalOrAdmin(req, supabase)
     if (auth instanceof Response) return auth
   }
