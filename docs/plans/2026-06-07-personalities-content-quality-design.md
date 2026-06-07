@@ -61,6 +61,13 @@ Three open judgment calls were delegated. Resolutions:
 
 ---
 
+## Deferred decisions — RESOLVED with evidence (2026-06-07, delegated authority)
+
+1. **`lgbti_relevance_score` "0.8 artifact" → NO ACTION (verified harmless).** The column is a **read-only admin display field** (`src/config/contentTypes/personality.ts:111`, `readOnly:true`); it is NOT a search-ranking input — personalities rank via `search_documents.lgbtq_score`, and `search_hybrid` treats non-venue entities as fully queer-relevant regardless. The blanket-0.8 affects nothing user-facing; nulling it would only blank an admin number. Verified, not assumed.
+2. **4,408 bare-name rows → NO ACTION (correct disposition).** Already `triage='insufficient_data'` (the "needs human research" marker) + de-indexed + draft + loop-excluded. Bulk-archiving would conflate "needs research" with "removed" and lose recoverability. The flagged state is strictly more informative.
+
+Net: the automated data-fill is exhausted (bio-extract verified 0-yield); no safe automated work remains.
+
 ## Decisions (locked)
 
 1. **Scope:** Both populations, in sequence — de-risk the adult cohort first, then enrich the icons.
