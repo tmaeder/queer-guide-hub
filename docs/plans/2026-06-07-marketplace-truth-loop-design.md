@@ -164,10 +164,64 @@ Validated: "Topped Toys Deep Space" 0.00→0.80.
 Deferred: the ingest-time relevance scorer still uses the old miscalibration; fix when
 sources resume (Phase 4). No cron on the re-score yet (catalog static; no new items).
 
-### Phase 3 — Real categorization
-LLM classify (Haiku, batched) `title`+`description` → proper taxonomy (apparel, pride,
-books, art, wellness, accessories, sex_toys, fetish_gear, services, …) + subcategory +
-tags. Replaces hardcoded per-source category. Enables faceted browse/filter on frontend.
+### Phase 3 — Real categorization (DONE 2026-06-07)
+Built `marketplace-categorize` (edge fn, batch-25 LLM, 13-bucket content taxonomy in
+`_shared/prompts/marketplace-category.ts`): sex-toys, anal-toys, cock-rings-stretchers,
+bdsm-bondage, fetish-wear, pup-pet-play, chastity, pumps-enlargement, underwear-swimwear,
+apparel-accessories, hygiene-care, jewelry-pins, books-art. Replaces source-derived
+buckets (a dildo was `fetish_gear` from misterb but `sex_toys` from ohmyfantasy).
+
+`category` (products/services) untouched. **Gotcha:** `subcategory_slug` is a GENERATED
+column (`lower(regexp_replace(subcategory,'[\s\-]+','_'))`) — write only `subcategory`
+(Title-Case label, no `&`); the slug derives. Browse tiles + facets auto-populate from
+`get_marketplace_subcategory_counts`. (See Phase 3 RESULTS below for distribution.)
+
+#### Phase 3 RESULTS (executed 2026-06-07)
+3,493 active products classified into 13 content categories:
+Sex Toys 796 · BDSM and Bondage 541 · Underwear and Swimwear 517 · Anal Toys 349 ·
+Cock Rings and Stretchers 334 · Apparel and Accessories 308 · Fetish Wear 287 ·
+Hygiene and Care 133 · Jewelry and Pins 70 · Pup and Pet Play 68 · Chastity 49 ·
+Pumps and Enlargement 41. (Replaced 3 source-derived buckets: fetish_gear 2722 /
+sex_toys 503 / underwear 268.) Browse/facets auto-populate from subcategory_slug.
+
+#### Image-display bug found + partly fixed (2026-06-07)
+While verifying on production, the marketplace **grid** showed the fallback placeholder
+for most cards despite valid `images`. Two causes:
+1. **FIXED (data):** 831 misterb listings carried `/cdn-cgi/image/...` resizing URLs that
+   fail cross-origin. Stripped to direct `/media/...` paths (migration 20260607140000);
+   extractor normalises on ingest. Product DETAIL pages now render real photos (verified).
+2. **HANDED OFF (frontend):** the shared `<Image>` component sends
+   `referrerPolicy='no-referrer'` to untrusted hosts; hotlink-protected merchants
+   (supergayunderwear) then fail with `net::ERR_BLOCKED_BY_ORB` → fallback. misterb returns
+   200 (host-specific). Also a stale-closure 8s stall-timeout in `Image.tsx`. Spawned a task
+   to fix `referrerPolicy` + the timeout (shared component — needs cross-host + cross-entity
+   regression testing). Detail pages are unaffected.
+
+### Phase 4 — Break the monoculture (DECISION-READY RUNBOOK, not executed)
+
+**Why not executed autonomously:** importing thousands of listings to the live storefront
+is outward-facing, hard to reverse, and a business/affiliate decision (which merchants,
+product mix, affiliate terms). It needs the operator's call.
+
+**Mechanism (validated):** Shopify stores expose `/products.json?limit=250&page=N` with
+full `body_html` description + images + price + current handle — no per-page scraping, no
+edge IP-block. ohmyfantasy alone has ~17,498 items there; supergayunderwear too. forttroff
+(Magento) has only `sitemap.xml`.
+
+**Two distinct moves — keep them separate:**
+1. **Refresh existing sources** (revives the link-rotted ohmyfantasy/forttroff via fresh
+   handles). Safe-ish but ohmyfantasy is 100% adult → *deepens* the monoculture. Run the
+   relevance gate + categorizer on the feed.
+2. **Add diverse queer-owned sources** (the actual monoculture fix): apparel, pride goods,
+   books, art, jewelry from queer-owned Shopify stores. Each new `shop_domain` flows through
+   `/products.json` → relevance → categorize → commit. Candidate types to source: Pride
+   apparel brands, queer bookshops, queer artists/print shops, Pride-jewelry makers. Requires
+   operator to pick merchants + confirm affiliate/listing terms.
+
+**Build needed for either:** a `marketplace-shopify-sync` fn that pages `/products.json` for a
+given `shop_domain`, maps to `ingestion_staging`, and drives the existing
+`commit_marketplace_staging_batch` pipeline (relevance + categorize run automatically via the
+weekly crons, or inline). `source-shopify` edge fn already exists as a starting point.
 
 ### Phase 4 — Break the monoculture (recurring sources)
 Wire diverse **queer-owned** sources into the live pipeline:
@@ -176,11 +230,16 @@ Wire diverse **queer-owned** sources into the live pipeline:
 - Re-home the 4 working scrapers into the recurring cron so they refresh, not rot
 - Register all under the `marketplace-ingestion` DAG + daily cron (`0 4 * * *`)
 
-### Phase 5 — Self-maintaining
+### Phase 5 — Self-maintaining (DONE 2026-06-07)
 - `marketplace_listings_due_for_refresh(limit)` selector
-  (never-refreshed > broken > stale > low-quality), mirrors `venues_due_for_refresh`
-- Nightly recompute cron + existing weekly `marketplace-link-checker`
-- Catalog re-verifies itself — no more 6-week rot
+  (never-verified > broken > stale > low-quality), mirrors `venues_due_for_refresh`
+- Nightly `marketplace_quality_recompute` (Phase 2) + weekly `marketplace-link-checker`
+  (existing) + new weekly crons `marketplace_enrich_weekly` / `_relevance_rescore_weekly`
+  (30d staleness) / `_categorize_weekly`, all via `net.http_post` + registered in
+  `admin_automations` (migration `20260607130000`).
+- **Known limit:** misterb blocks Supabase edge egress, so the weekly edge enrich/link
+  passes can't refresh misterb — its periodic refresh must run from a residential IP
+  (local script → Management API), as Phase 1 did.
 
 ## Sequencing rationale
 
