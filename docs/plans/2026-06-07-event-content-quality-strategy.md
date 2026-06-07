@@ -1,6 +1,11 @@
 # Event Content Quality — Diagnosis & Improvement Strategy
 
-_2026-06-07. P0 shipped (migration `20260607150000`); P1–P4 are the roadmap._
+_2026-06-07. **Complete.** P0–P4 shipped; P3b rejected as a non-goal. avg
+completeness 33.8→82.1, image gap 48→19%, geo→0%. The remaining gaps
+(accessibility, target_groups, deep venue) are sourcing problems, not backfill
+problems — addressed by the admin capture UI (P2.5b) + venue ingestion, not
+automation. Deferred: venue-inheritance for accessibility (P2.5a), pride-subtype
+persistence (separate task), `cities.timezone` backfill for 349 events._
 
 ## Diagnosis (live, 2026-06-07)
 
@@ -71,12 +76,15 @@ Truth Loop is **input-starved**: `event_sources` covers only 796/3,626; corrobor
     audience, and grounded extraction (correctly) won't invent them. Scaling LLM
     spend here is a dead end. Enrichment's real residual value is
     description/safety_notes/lineup, so the cap stays modest.
-- **P2.5 (NEW) — real path to accessibility / target_groups** (since pages can't
+- **P2.5 — real path to accessibility / target_groups** (since pages can't
   supply them): (a) **inherit accessibility from the linked venue** once
-  venue-linking improves (blocked today by 94% null `venue_id`); (b) a
-  **community/admin capture** affordance on `/admin/events`; (c) a *careful,
-  reviewed* rule-based `target_groups` pass from `event_type` + title keywords
-  (sensitivity risk — mislabeling audience — so human-gated, not auto-applied).
+  venue-linking improves (blocked today by 94% null `venue_id`) — *deferred*;
+  (b) **admin capture affordance** ✅ **SHIPPED** — Accessibility + Target-groups
+  inputs on the `/admin/events` form (also fixed a latent bug: the form sent a
+  non-existent `tags` column, which had been making *all* event saves fail);
+  (c) rule-based `target_groups` inference — **rejected**: the live vocab is
+  inconsistent (`queer`/`gay` umbrellas mixed with `women`/`bears` segments) and
+  auto-labelling audience carries a mislabeling risk, so it stays human-gated via (b).
 - **P3a — Venue proximity-linking. ✅ SHIPPED.** Migration `20260607200000`
   links each unlinked event with a *precise* coord (not a P0 city-centroid) to
   its nearest same-city venue within 50m. **+137 links** (all ≤48.5m, reversible).
@@ -85,16 +93,19 @@ Truth Loop is **input-starved**: `event_sources` covers only 796/3,626; corrobor
   are genuinely not at a venue we catalogue: parks, one-offs, online, or no
   precise coord). Deeper venue coverage needs venue *ingestion*, not event
   backfill.
-- **P3b — URL recovery + accessibility/target_groups LLM waves (whole corpus).**
-  Derive official URLs via web search (title+city), validate with
-  `_shared/link-health.ts` `probeLink`, then run `researchEnrichEventFromPage()`
-  for the moat fields. Big-spend, highest-moat.
-- **P4 — Visibility. ✅ SHIPPED (panel); prevention still open.** `EventQualityPanel`
-  now renders `event_field_coverage()`: per-field completeness bars, corpus
-  completeness/trust averages, and a **leakiest-sources** breakdown (which source
-  leaks which field) so operators fix gaps upstream. **Still open:** per-source
-  completeness *validators* in `pipeline-review-gate` to flag a regressing source
-  at ingest time (prevent re-opening the gaps).
+- **P3b — URL recovery + LLM moat waves. ✗ Rejected (non-goal).** Web-searching
+  URLs for the no-URL events is high-spend, and the events are low-quality; worse,
+  the moat fields it would target *aren't on the pages anyway* (see P2 finding). Not
+  worth the cost. The no-URL image gap is likewise left rather than filled with
+  generic stock art (against the "content is the hero" ethos).
+- **P4 — Visibility ✅ SHIPPED; prevention gate ✗ resolved-as-redundant.**
+  `EventQualityPanel` renders `event_field_coverage()`: per-field completeness
+  bars, corpus completeness/trust averages, and a **leakiest-sources** breakdown
+  so operators fix gaps upstream. A *separate* ingest-time per-source validator
+  was considered and **declined**: the loop is already closed by the existing
+  `quality_score → source_reliability` path (weight <0.40 forces review) plus this
+  panel; a parallel field-completeness gate would be redundant and add triage
+  burden without fixing the root cause (which lives in the source adapters).
 
 ## Open / deferred
 
