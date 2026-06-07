@@ -85,17 +85,19 @@ async function fetchWikipedia(title: string) {
 // Wikipedia category titles for an article — editorially maintained and, for
 // living people, governed by WP:BLPCAT (self-identification required), so a
 // sound provenance for an lgbti_connection.
-async function fetchWikipediaCategories(title: string): Promise<string[]> {
+// Returns null on a FETCH FAILURE (so the caller can retry instead of locking in
+// a miss), [] only when the article genuinely has no categories.
+async function fetchWikipediaCategories(title: string): Promise<string[] | null> {
   try {
     const url = `https://en.wikipedia.org/w/api.php?action=query&prop=categories&titles=${encodeURIComponent(title)}&cllimit=max&clshow=!hidden&format=json`
     const res = await fetch(url, { headers: { 'User-Agent': UA } })
-    if (!res.ok) return []
+    if (!res.ok) return null
     const data = await res.json()
     const pages = (data?.query?.pages ?? {}) as Record<string, { categories?: Array<{ title: string }> }>
     const cats: string[] = []
     for (const p of Object.values(pages)) for (const c of p.categories ?? []) if (c.title) cats.push(c.title)
     return cats
-  } catch { return [] }
+  } catch { return null }
 }
 
 type Row = Record<string, unknown>
@@ -137,6 +139,10 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       let matchReasons: string[] = []
       let connectionEvidence: string[] = []
       let wdConnection: LgbtiDerivation = { connection: null, evidence: [] }
+      // Set when a Wikidata/Wikipedia fetch FAILS (vs. genuinely-absent data). We
+      // then skip stamping the row as refreshed so the next, gentler pass retries
+      // instead of locking in a miss (a heavy drain rate-limits the source APIs).
+      let enrichFailed = false
 
       // Evidence-based resolution (multilingual search + birth-year / nationality /
       // occupation disambiguation). Refuses on ambiguity or contradiction, and
@@ -163,6 +169,7 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
         incoming.wikidata_qid = qid
         wdUrl = `https://www.wikidata.org/wiki/${qid}`
         entity = entity ?? await wdEntity(qid)
+        if (!entity) enrichFailed = true // real QID but the entity fetch failed
         if (entity) {
           const birth = formatDate(claimValue(entity, 'P569'))
           const death = formatDate(claimValue(entity, 'P570'))
@@ -202,9 +209,10 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       // Wikidata P91/P21 signal into one SOURCED lgbti_connection. Upgrades the
       // non-committal "unclear" placeholder only; the QID/Wikipedia article are the
       // provenance the outing guard requires; never clobbers a curated value.
-      if (qid && shouldUpgradeConnection(p.lgbti_connection as string | null)) {
+      if (qid && entity && shouldUpgradeConnection(p.lgbti_connection as string | null)) {
         const cats = title ? await fetchWikipediaCategories(title) : []
-        const combined = combineConnection(deriveConnectionFromCategories(cats), wdConnection)
+        if (cats === null) enrichFailed = true // Wikipedia category fetch failed
+        const combined = combineConnection(deriveConnectionFromCategories(cats ?? []), wdConnection)
         if (combined.connection) {
           incoming.lgbti_connection = combined.connection
           connectionEvidence = combined.evidence
@@ -227,9 +235,15 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       // derived rubric value, NOT curated data, so it does not go through fillBlanks.
       const newScore = personalityQualityScore(merged as Row)
 
-      results.push({ id, name: p.name, changed_keys: Object.keys(patch), new_quality: newScore })
+      results.push({ id, name: p.name, changed_keys: Object.keys(patch), new_quality: newScore, enrich_failed: enrichFailed })
       await sleep(120)
       if (dryRun) continue
+
+      // Transient source-API failure on an anchored row: leave it stale (don't
+      // stamp last_refreshed_at) so a later, gentler pass retries it. Prevents a
+      // rate-limited drain from permanently locking 'unclear' onto real LGBTQ+
+      // figures (e.g. Larry Kramer) until their TTL.
+      if (enrichFailed && !incoming.lgbti_connection) continue
 
       // A fresh low-confidence match still cleared the resolver's bar (it has a
       // real corroborator) but is worth a human glance before it carries weight.
