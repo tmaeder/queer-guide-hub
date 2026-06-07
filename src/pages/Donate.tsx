@@ -143,7 +143,7 @@ export default function Donate() {
 }
 
 interface ImpactImageTileProps {
-  image: { src: string; alt: string; fallback?: string };
+  image: { src: string; alt: string; fallback?: string; credit?: string };
   Icon: typeof Heart;
   title: string;
   description: string;
@@ -151,6 +151,7 @@ interface ImpactImageTileProps {
 
 function ImpactImageTile({ image, Icon, title, description }: ImpactImageTileProps) {
   const [src, setSrc] = useState(image.src);
+  const [errored, setErrored] = useState(false);
   return (
     <div className="relative h-full min-h-[260px] overflow-hidden">
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
@@ -159,9 +160,20 @@ function ImpactImageTile({ image, Icon, title, description }: ImpactImageTilePro
         alt={image.alt}
         loading="lazy"
         decoding="async"
-        onError={() => image.fallback && setSrc(image.fallback)}
+        onError={() => {
+          if (image.fallback) setSrc(image.fallback);
+          setErrored(true);
+        }}
         className="absolute inset-0 h-full w-full object-cover"
       />
+      {!errored && image.credit && (
+        <span
+          className="absolute top-1.5 right-2 z-[2] max-w-[60%] truncate text-2xs leading-tight text-white/55"
+          title={image.credit}
+        >
+          {image.credit}
+        </span>
+      )}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/15 to-black/65 dark:from-black/35 dark:to-black/[0.78]"

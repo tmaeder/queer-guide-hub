@@ -107,7 +107,7 @@ export default function Welcome() {
         showSkip={step < steps.length - 1}
         nextLabel={
           step === steps.length - 1
-            ? t('onboarding.finish', 'Enter The Queer Guide')
+            ? t('onboarding.finish', 'Enter Queer Guide')
             : t('onboarding.continue', 'Continue')
         }
         variant="celebrate"
@@ -121,7 +121,7 @@ export default function Welcome() {
                 style={{ fill: 'currentcolor' }}
               />
               <h1 className="text-3xl font-bold tracking-tight mb-2">
-                {t('onboarding.welcome', 'Welcome to The Queer Guide')}
+                {t('onboarding.welcome', 'Welcome to Queer Guide')}
               </h1>
               <p className="text-muted-foreground leading-relaxed">
                 {t(
@@ -226,7 +226,7 @@ export default function Welcome() {
         tierName={t('onboarding.tierVisitor', 'Visitor')}
         tagline={t(
           'onboarding.tierVisitorTagline',
-          "You've joined The Queer Guide. Welcome to the community.",
+          "You've joined Queer Guide. Welcome to the community.",
         )}
         icon={<Heart size={42} style={{ fill: 'currentcolor' }} />}
         onDismiss={() => finish(false)}

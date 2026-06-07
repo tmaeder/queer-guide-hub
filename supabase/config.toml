@@ -456,6 +456,9 @@ verify_jwt = false
 [functions.event-agentic-enrich]
 verify_jwt = false
 
+[functions.pipeline-classify-personhood]
+verify_jwt = false
+
 [functions.city-factual-backfill]
 verify_jwt = false
 
