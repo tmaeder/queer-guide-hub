@@ -25,7 +25,9 @@
 
 DO $$
 DECLARE
-  v_locales text[] := ARRAY['de','fr','es','it','pt','nl','pl','ru','tr','uk','sv'];
+  -- Mirrors the frontend's non-English SUPPORTED_LOCALES (src/i18n/languages.ts):
+  -- only translate into locales the UI can display, and cover all of them.
+  v_locales text[] := ARRAY['es','fr','de','pt','it','ru','zh','ja','ko','ar'];
   v_pairs text[][] := ARRAY[
     ['unified_tags','name'], ['unified_tags','description'],
     ['countries','name'], ['cities','name'],

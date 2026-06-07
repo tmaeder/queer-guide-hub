@@ -100,8 +100,11 @@ const TABLE_FIELDS: Record<
   },
 }
 
+// Must match the frontend's non-English SUPPORTED_LOCALES (src/i18n/languages.ts)
+// so we only translate into locales the UI can actually display, and cover all
+// of them. English is the base column, never a translation target.
 const ALLOWED_LOCALES = new Set([
-  'de', 'fr', 'es', 'it', 'pt', 'nl', 'pl', 'ru', 'tr', 'uk', 'sv',
+  'es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ja', 'ko', 'ar',
 ])
 
 const SYSTEM_PROMPT = `You translate UI strings for queer.guide, an LGBTQ+ travel and community platform. Source language is English. Translations must:
