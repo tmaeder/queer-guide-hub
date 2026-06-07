@@ -10,7 +10,6 @@
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { researchEnrichEventFromPage, type EventMoatEnrichment } from '../_shared/ai-enrichment.ts'
-import { isSafetySensitiveCountry } from '../_shared/editorial-confidence.ts'
 
 const DEFAULT_BATCH_LIMIT = 5
 const DEFAULT_DAILY_CAP = 50
@@ -140,7 +139,7 @@ Deno.serve(async (req: Request) => {
         const { data: c } = await supabase.from('countries').select('name, equality_score, lgbti_criminalization').eq('id', ev.country_id).maybeSingle()
         if (c) {
           const crim = (c.lgbti_criminalization ?? {}) as Record<string, unknown>
-          const legalStatus = isSafetySensitiveCountry(crim)
+          const legalStatus = crim.legal === false
             ? `criminalized${typeof crim.penalty === 'string' && crim.penalty ? ` (${crim.penalty})` : ''}`
             : crim.legal === true ? 'legal' : 'n/a'
           safetyContext = `${c.name}: equality_score=${c.equality_score ?? 'n/a'}, legal_status=${legalStatus}`

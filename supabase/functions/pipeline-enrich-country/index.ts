@@ -44,10 +44,25 @@ async function fetchIlgaData(alpha2: string): Promise<Record<string, unknown> | 
   } catch { return null }
 }
 
-// Equality score is owned exclusively by the canonical shared formula
-// (_shared/equality-score.ts, written by import-ilga-data over the canonical
-// countries.lgbti_* columns). This staging-time enricher no longer computes a
-// divergent score — it only attaches Wikipedia description + raw ILGA signals.
+function ilgaToEqualityScore(data: Record<string, unknown>): number {
+  let score = 50
+  const criminalization = (data.cspiSexualActss as Array<Record<string, unknown>>)?.[0]
+  if (criminalization) {
+    if (criminalization.death_penalty) score -= 40
+    else if (criminalization.max_prison) score -= 20
+    else score += 10 // decriminalized
+  } else {
+    score += 10
+  }
+  const unions = (data.samesexUnions as Array<Record<string, unknown>>) ?? []
+  for (const u of unions) {
+    if (u.type === 'marriage') { score += 30; break }
+    if (u.type === 'civil_union') { score += 15; break }
+  }
+  const protections = (data.constitutionalProtections as Array<Record<string, unknown>>) ?? []
+  if (protections.length > 0) score += 10
+  return Math.max(0, Math.min(100, score))
+}
 
 Deno.serve(withErrorReporting('pipeline-enrich-country', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -108,6 +123,7 @@ Deno.serve(withErrorReporting('pipeline-enrich-country', async (req) => {
             .eq('id', item.id)
         }
 
+        const equalityScore = ilga ? ilgaToEqualityScore(ilga) : null
         const criminalization = (ilga?.cspiSexualActss as Array<Record<string, unknown>>)?.[0] ?? null
         const unions = (ilga?.samesexUnions as Array<Record<string, unknown>>) ?? []
 
@@ -121,6 +137,7 @@ Deno.serve(withErrorReporting('pipeline-enrich-country', async (req) => {
             year_decriminalized: criminalization.year_decriminalized,
           } : null,
           ilga_same_sex_unions:     unions.map(u => ({ type: u.type, year: u.year_enacted })),
+          ilga_equality_score:      equalityScore,
           ilga_raw:                 ilga,
           enriched_at:              new Date().toISOString(),
         }

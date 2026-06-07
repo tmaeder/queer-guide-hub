@@ -36,7 +36,6 @@ interface CountryRow {
   gdp_usd: number | null;
   currency: string | null;
   equality_score: number | null;
-  content_completeness_score: number | null;
   flag_emoji: string | null;
   languages: string[] | null;
   driving_side: string | null;
@@ -217,21 +216,6 @@ export default function AdminCountries() {
         },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
-      columnHelper.accessor('content_completeness_score', {
-        header: 'Completeness',
-        cell: (info) => {
-          const v = info.getValue();
-          if (v == null) return '-';
-          const tone =
-            v >= 80
-              ? { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }
-              : v >= 50
-                ? { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }
-                : { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--destructive))' };
-          return <Badge style={tone}>{v}%</Badge>;
-        },
-        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
-      }),
       columnHelper.accessor('population', {
         header: 'Population',
         cell: (info) => fmtNum(info.getValue()),
@@ -295,7 +279,7 @@ export default function AdminCountries() {
     () => ({
       tableName: 'countries',
       select:
-        'id,name,code,capital,population,area_km2,gdp_usd,currency,equality_score,content_completeness_score,flag_emoji,languages,driving_side,continent_id,region_id,created_at,continents(name),regions(name),venues(count),events(count)',
+        'id,name,code,capital,population,area_km2,gdp_usd,currency,equality_score,flag_emoji,languages,driving_side,continent_id,region_id,created_at,continents(name),regions(name),venues(count),events(count)',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 50,
