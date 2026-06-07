@@ -56,10 +56,27 @@ Truth Loop is **input-starved**: `event_sources` covers only 796/3,626; corrobor
   `fetch-images` Wikimedia search) + **~560 events with no URL** (`fetch-images`
   entity_type=event stock/wiki art). This replaces the stock-image intent of the
   retired `enrich-event-images` cron.
-- **P2 — Reactivate + scale the Truth Loop.** Re-enable the two paused SQL jobs;
-  raise `event-agentic-enrich` cap + broaden target to "missing accessibility OR
-  target_groups"; run liveness against `website` too; emit a single-source
-  corroboration floor for legacy events.
+- **P2 — Truth Loop enrichment. ✅ SHIPPED (with a hard finding).**
+  - All five Truth Loop crons were **already active** (the "paused" note was
+    stale) — nothing to re-enable.
+  - `event-agentic-enrich` retargeted: selector RPC `events_needing_moat_enrich`
+    (migration `20260607190000`) replaces the `trust_score<40` filter (which my
+    P1 quality recompute had starved, and which re-ran the same ~62 events 314×).
+    Now targets events missing a moat field with a per-event URL, **excludes
+    recently-attempted** (no more spin), excludes the WNBR homepage. Cap 50→60,
+    self-terminating across the ~551 untouched URL-events.
+  - **Hard finding — moat fields are NOT page-extractable.** Even `done`
+    enrichments leave `accessibility_attributes` at **0%** and `target_groups`
+    unchanged: LGBTQ+ event source pages essentially never state accessibility or
+    audience, and grounded extraction (correctly) won't invent them. Scaling LLM
+    spend here is a dead end. Enrichment's real residual value is
+    description/safety_notes/lineup, so the cap stays modest.
+- **P2.5 (NEW) — real path to accessibility / target_groups** (since pages can't
+  supply them): (a) **inherit accessibility from the linked venue** once
+  venue-linking improves (blocked today by 94% null `venue_id`); (b) a
+  **community/admin capture** affordance on `/admin/events`; (c) a *careful,
+  reviewed* rule-based `target_groups` pass from `event_type` + title keywords
+  (sensitivity risk — mislabeling audience — so human-gated, not auto-applied).
 - **P3 — URL recovery + accessibility/target_groups LLM waves (whole corpus).**
   Derive official URLs via web search (title+city), validate with
   `_shared/link-health.ts` `probeLink`, then run `researchEnrichEventFromPage()`
