@@ -28,6 +28,7 @@ import { DataTableToolbar } from './DataTableToolbar';
 import { DataTableFilters } from './DataTableFilters';
 import { DataTablePagination } from './DataTablePagination';
 import { DataTableBulkActions } from './DataTableBulkActions';
+import { DataTableBackfillActions } from './DataTableBackfillActions';
 import { DataTableEmptyState } from './DataTableEmptyState';
 import type { AdminTableConfig, AdminColumnMeta } from './types';
 
@@ -45,6 +46,7 @@ export function AdminDataTable<TData extends { id: string }>({
     columns,
     entityFilters = [],
     bulkEditFields,
+    backfillJobs,
     rowActions,
     toolbarActions,
     defaultSort,
@@ -223,6 +225,15 @@ export function AdminDataTable<TData extends { id: string }>({
           onClearSelection={clearSelection}
           onSuccess={handleRefetch}
           bulkEditFields={bulkEditFields}
+          extraActions={
+            backfillJobs && backfillJobs.length > 0 ? (
+              <DataTableBackfillActions
+                jobs={backfillJobs}
+                selectedIds={state.selectedIds}
+                onDone={handleRefetch}
+              />
+            ) : undefined
+          }
         />
       )}
 
