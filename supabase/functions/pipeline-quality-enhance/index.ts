@@ -112,7 +112,9 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
       const startedAt = Date.now()
       try {
         const n = (item.normalized_data ?? {}) as Record<string, unknown>
-        const title = String(n.title ?? '').trim()
+        // Some sources land the headline under `name` (not `title`) — mirror the
+        // fallback enrich-news uses, else ~45% of enriched rows fail with no title.
+        const title = String(n.title ?? n.name ?? '').trim()
         const content = String(n.content ?? n.body ?? '')
         if (!title) { failed++; continue }
 
