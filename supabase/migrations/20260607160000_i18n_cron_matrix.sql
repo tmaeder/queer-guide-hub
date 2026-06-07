@@ -54,7 +54,10 @@ BEGIN
             'Content-Type','application/json',
             'X-Webhook-Secret', %s
           ),
-          body := jsonb_build_object('table',%L,'locale',%L,'field',%L,'batch_limit',50)
+          body := jsonb_build_object('table',%L,'locale',%L,'field',%L,'batch_limit',50),
+          timeout_milliseconds := 30000  -- LLM batch needs >5s; without this pg_net
+          -- disconnects at 5s and the edge function is killed mid-batch (partial
+          -- writes land, the rest of the 50 are re-translated next run = 3x waste).
         ) as request_id;
       $cmd$, v_vault, tbl, loc, fld));
       idx := idx + 1;
