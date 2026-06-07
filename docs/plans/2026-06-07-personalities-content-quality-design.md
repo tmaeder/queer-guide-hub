@@ -1,6 +1,6 @@
 # Personalities Content-Quality Remediation — Design
 
-**Date:** 2026-06-07 · **Status:** Phases 0–2 SHIPPED; Phases 3–4 pending · **Owner:** tmaeder
+**Date:** 2026-06-07 · **Status:** Phases 0–3 SHIPPED; Phase 4 pending · **Owner:** tmaeder
 
 ## Progress (2026-06-07)
 
@@ -8,6 +8,10 @@
 - **Phase 1 — SHIPPED.** `20260607001000_personality_archive_unanchored_adult.sql`. Soft-archived 2,857 unanchored adult rows; kept 4,155 Wikidata-anchored. Reversible via `unarchive_personality(uuid)`. Verified: 0 publicly exposed, 0 left in search.
 - **Phase 2 — SHIPPED.** Rewrote `_shared/wikidata-resolve.ts` into a precision-first, recall-improved resolver (multilingual + birth-year/death-year/nationality disambiguation, profession optional, living stricter bar); 16 unit tests. Wired into `personality-refresh` (replaced inline top-1 pick), deployed. `personality_data_health` view now excludes archived (`20260607002000`). Re-queued 4,855 unanchored rows (`last_refreshed_at=NULL`) so the 30-min cron re-attempts them with the new resolver. **Live verification: 75/75 manual-batch matches correct, all high-confidence** (Freddie Mercury, Lana Wachowski, Marsha P. Johnson, Lili Elbe, Patricia Highsmith, …). Active-anchored rose to 50.6%; ~4,780 still draining via cron.
   - **Honest ceiling:** of the 4,855 re-queued, only 432 carry a corroborating signal (birth/profession/nationality); the other ~4,400 are name-only and will mostly *not* match (correctly — name-only living people must not be force-matched). That residue is Phase 3 / human-curation work.
+- **Phase 3 — SHIPPED (reframed for safety).** The Wikidata-absent residue turned out to be ~94% bare names, a meaningful share of which are **organizations / venues / teams misfiled as personalities** (e.g. "The Sisters of Perpetual Indulgence", "La Montaña" restaurant, "SF Tsunami Water Polo"). A web-research LLM over bare names = fabrication of identity claims, so Phase 3 was split:
+  - **3a — `personality-extract-from-bio`** edge function (deployed, daily cron `15 4 * * *`): extracts *factual* fields (birth/death year, profession, nationality) **strictly from a row's own bio** — grounded, never invented, never `lgbti_connection` — fills blanks, writes `self-bio` provenance, re-queues for a Wikidata pass. Verified faithful (Jiří Karásek 1871–1951; 0 fabrication; living thin-bio rows yield nothing). Migration `20260607003000`.
+  - **3b — honest triage:** 4,408 bare-name rows flagged `enrichment_status.triage='insufficient_data'` for human review (queryable bucket; not auto-enriched).
+  - **New finding (own follow-up):** non-person pollution of the personalities table needs a reclassify/remove pass (the resolver's P31=Q5 filter already refuses them, which is why they're the unmatchable residue).
 
 ---
 
