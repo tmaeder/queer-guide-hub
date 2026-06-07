@@ -410,7 +410,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           <div className="flex flex-col gap-2">
             <Label>Post Visibility</Label>
             <Select value={visibility} onValueChange={(value: string) => setVisibility(value)}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Post visibility">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
