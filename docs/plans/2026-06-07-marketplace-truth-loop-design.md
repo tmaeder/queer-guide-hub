@@ -212,10 +212,16 @@ for most cards despite valid `images`. Two causes:
    concurrency 2 + 150ms); the `/run` selector's small random offset couldn't reach
    marketplace rows behind ~4,700 non-marketplace dead-image pending rows, so those were
    temporarily paused (tracked in a temp table) during the marketplace drive, then restored.
-   Worker secret `ADMIN_SECRET` set; endpoints `/run`, `/run-all`, `/stats`. **Follow-up:**
-   `marketplace-enrich` writes `listings.images` but does not create `image_assets` rows, so
-   newly-enriched images won't auto-mirror unless a trigger backfills assets — wire that for
-   full self-maintenance.
+   Worker secret `ADMIN_SECRET` set; endpoints `/run`, `/run-all`, `/stats`.
+
+   **Self-maintaining loop is closed (verified):** the `marketplace_listings_sync_image_assets`
+   trigger fires whenever `images` changes → `_image_assets_upsert_link` inserts an
+   `image_assets` row (`optimization_status` defaults to `'pending'`, `status` `'active'`) →
+   the image-ingest worker's 15-min cron (browser UA) mirrors it to R2 → `resolveImageUrl`
+   serves the first-party `optimized_url`. So enrich/categorize image updates auto-mirror and
+   render with no manual step. (Only the cover image `images[1]` is synced, which is what the
+   cards use. Caveat: misterb blocks the Supabase *edge* enrich, so misterb images only change
+   via a misterb re-scrape — but mirroring itself works from the CF worker.)
 
 ### Phase 4 — Break the monoculture (DECISION-READY RUNBOOK, not executed)
 
