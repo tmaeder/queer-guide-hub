@@ -3,6 +3,8 @@ import {
   LGBTI_CONNECTION_VOCAB,
   isLgbtiConnectionVocab,
   coerceLgbtiConnection,
+  deriveLgbtiConnection,
+  shouldUpgradeConnection,
 } from '../_shared/lgbti-connection.ts'
 
 Deno.test('vocab is exactly the six controlled values', () => {
@@ -42,4 +44,35 @@ Deno.test('coerce: off-vocab → unclear, raw preserved (no identity assertion)'
     value: 'unclear',
     rawOffVocab: 'lgbtq_listed_source',
   })
+})
+
+Deno.test('derive: LGBTQ+ orientation (P91) → community_member with evidence', () => {
+  const r = deriveLgbtiConnection(['Q6636'], []) // homosexuality
+  assertEquals(r.connection, 'community_member')
+  assertEquals(r.evidence, ['P91:Q6636'])
+})
+
+Deno.test('derive: trans/non-binary gender (P21) → community_member', () => {
+  assertEquals(deriveLgbtiConnection([], ['Q1052281']).connection, 'community_member') // trans woman
+  assertEquals(deriveLgbtiConnection([], ['Q48270']).connection, 'community_member')   // non-binary
+})
+
+Deno.test('derive: heterosexual / cisgender → null (no claim)', () => {
+  assertEquals(deriveLgbtiConnection(['Q1035954'], ['Q6581097']).connection, null) // hetero + cis male
+  assertEquals(deriveLgbtiConnection([], []).connection, null)
+  assertEquals(deriveLgbtiConnection(['Q999999'], []).connection, null) // unrecognised QID
+})
+
+Deno.test('derive: multiple signals accumulate evidence', () => {
+  const r = deriveLgbtiConnection(['Q43200'], ['Q189125']) // bisexual + transgender
+  assertEquals(r.connection, 'community_member')
+  assertEquals(r.evidence.sort(), ['P21:Q189125', 'P91:Q43200'])
+})
+
+Deno.test('shouldUpgrade: only the non-committal placeholders', () => {
+  assertEquals(shouldUpgradeConnection(null), true)
+  assertEquals(shouldUpgradeConnection('unclear'), true)
+  assertEquals(shouldUpgradeConnection('none_known'), true)
+  assertEquals(shouldUpgradeConnection('activist'), false)     // curated — keep
+  assertEquals(shouldUpgradeConnection('community_member'), false)
 })

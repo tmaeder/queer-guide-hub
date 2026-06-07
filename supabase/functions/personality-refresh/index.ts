@@ -9,6 +9,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { fillBlanks, parseWikipediaSummary } from '../_shared/personality-enrich-core.ts'
 import { personalityQualityScore } from '../_shared/personality-quality.ts'
 import { resolvePersonality } from '../_shared/wikidata-resolve.ts'
+import { deriveLgbtiConnection, shouldUpgradeConnection } from '../_shared/lgbti-connection.ts'
 
 const UA = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -36,6 +37,18 @@ function claimValue(entity: Record<string, unknown>, prop: string): string | nul
     return (vv.id as string) ?? (vv.time as string) ?? (vv.text as string) ?? null
   }
   return null
+}
+// All QID values for a (possibly multi-valued) entity property — e.g. P91, P21.
+function claimQids(entity: Record<string, unknown>, prop: string): string[] {
+  const claims = (entity.claims as Record<string, unknown>)?.[prop] as Array<Record<string, unknown>> | undefined
+  if (!claims?.length) return []
+  const ids: string[] = []
+  for (const c of claims) {
+    const v = (c.mainsnak as Record<string, unknown>)?.datavalue as Record<string, unknown> | undefined
+    const id = (v?.value as Record<string, unknown>)?.id as string | undefined
+    if (id) ids.push(id)
+  }
+  return ids
 }
 function formatDate(v: string | null): string | null {
   if (!v) return null
@@ -98,6 +111,7 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       let wdUrl: string | null = null
       let matchConfidence: 'high' | 'medium' | 'low' | null = null
       let matchReasons: string[] = []
+      let connectionEvidence: string[] = []
 
       // Evidence-based resolution (multilingual search + birth-year / nationality /
       // occupation disambiguation). Refuses on ambiguity or contradiction, and
@@ -138,6 +152,16 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
             if (v && !ext[key]) { ext[key] = v; extChanged = true }
           }
           if (extChanged) incoming.external_ids = ext
+
+          // Derive a SOURCED lgbti_connection from Wikidata orientation (P91) /
+          // gender identity (P21). Upgrades the non-committal "unclear" placeholder
+          // only; the QID is the provenance the outing guard requires. Never
+          // clobbers a curated value.
+          const derived = deriveLgbtiConnection(claimQids(entity, 'P91'), claimQids(entity, 'P21'))
+          if (derived.connection && shouldUpgradeConnection(p.lgbti_connection as string | null)) {
+            incoming.lgbti_connection = derived.connection
+            connectionEvidence = derived.evidence
+          }
         }
       }
 
@@ -162,6 +186,9 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       // Fill ONLY blank columns on the live record; external_ids is an additive merge.
       const patch = fillBlanks(p as Row, incoming)
       if (incoming.external_ids) patch.external_ids = incoming.external_ids
+      // lgbti_connection is an intentional UPGRADE of the 'unclear' placeholder, so
+      // it bypasses fillBlanks (which only fills truly-blank columns).
+      if (incoming.lgbti_connection) patch.lgbti_connection = incoming.lgbti_connection
 
       const merged = { ...p, ...patch }
       // quality_score is intentionally recomputed and overwritten every run — it is a
@@ -195,7 +222,7 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
         await supabase.from('personality_sources').upsert({
           personality_id: id, source_slug: 'wikidata', source_entity_id: qid,
           source_url: wdUrl, confidence: wdConfidence, is_primary: true, last_seen_at: new Date().toISOString(),
-          raw: { refreshed_keys: Object.keys(patch), match_confidence: matchConfidence, match_reasons: matchReasons },
+          raw: { refreshed_keys: Object.keys(patch), match_confidence: matchConfidence, match_reasons: matchReasons, connection_evidence: connectionEvidence },
         }, { onConflict: 'source_slug,source_entity_id' })
       }
       if (wikiUrl) {
