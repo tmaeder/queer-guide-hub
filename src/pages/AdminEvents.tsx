@@ -78,6 +78,8 @@ interface EventRow {
   ticket_url: string | null;
   tags: string[] | null;
   images: string[] | null;
+  accessibility_attributes: string[] | null;
+  target_groups: string[] | null;
   created_at: string;
   trust_score: number | null;
   liveness_status: string | null;
@@ -125,6 +127,8 @@ const emptyForm = {
   is_featured: false,
   tags: [] as string[],
   images: [] as string[],
+  accessibility_attributes: [] as string[],
+  target_groups: [] as string[],
 };
 
 export default function AdminEvents() {
@@ -247,8 +251,12 @@ export default function AdminEvents() {
     }
 
     try {
+      // events has no `tags` column — sending it makes PostgREST reject the whole
+      // insert/update. Strip it from the DB payload (pride subtypes in formData.tags
+      // have no column to persist to on this schema — tracked separately).
+      const { tags: _omitTags, ...formRest } = formData;
       const eventData = {
-        ...formData,
+        ...formRest,
         venue_id: formData.venue_id || null,
         organizer_id: formData.organizer_id || null,
         latitude: formData.latitude,
@@ -308,6 +316,8 @@ export default function AdminEvents() {
       is_featured: event.is_featured,
       tags: event.tags || [],
       images: event.images || [],
+      accessibility_attributes: event.accessibility_attributes || [],
+      target_groups: event.target_groups || [],
     });
     setStartDate(new Date(event.start_date));
     setEndDate(event.end_date ? new Date(event.end_date) : undefined);
@@ -939,6 +949,46 @@ export default function AdminEvents() {
                             setFormData((p) => ({ ...p, ticket_url: e.target.value }))
                           }
                         />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Accessibility</Label>
+                        <Input
+                          value={formData.accessibility_attributes.join(', ')}
+                          onChange={(e) =>
+                            setFormData((p) => ({
+                              ...p,
+                              accessibility_attributes: e.target.value
+                                .split(',')
+                                .map((s) => s.trim())
+                                .filter(Boolean),
+                            }))
+                          }
+                          placeholder="wheelchair-accessible, gender-neutral-restrooms"
+                        />
+                        <p className="mt-1 text-2xs text-muted-foreground">
+                          Comma-separated. Source pages rarely state these — capture manually.
+                        </p>
+                      </div>
+                      <div>
+                        <Label>Target groups</Label>
+                        <Input
+                          value={formData.target_groups.join(', ')}
+                          onChange={(e) =>
+                            setFormData((p) => ({
+                              ...p,
+                              target_groups: e.target.value
+                                .split(',')
+                                .map((s) => s.trim())
+                                .filter(Boolean),
+                            }))
+                          }
+                          placeholder="trans, women, youth, all-ages"
+                        />
+                        <p className="mt-1 text-2xs text-muted-foreground">
+                          Comma-separated audience segments.
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
