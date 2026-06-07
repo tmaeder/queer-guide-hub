@@ -66,10 +66,12 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
-    // Each item triggers an LLM call that can take 8-15s. With the 150s
-    // edge-function wall clock, 5 items is the safe ceiling. The executor
-    // re-enqueues remaining rows on the next tick.
-    const batchSize     = Math.min(50, body.batch_size ?? 5)
+    // Each item triggers an LLM call (~8-15s). Processed concurrently (pool
+    // below) so a 24-item batch fits the 150s wall clock — the old sequential
+    // batch of 5 was far slower than the commit node (500/run), so most
+    // articles committed before ever getting a quality verdict.
+    const batchSize     = Math.min(60, body.batch_size ?? 24)
+    const concurrency   = Math.min(6, Math.max(1, body.concurrency ?? 4))
     const dryRun        = body.dry_run === true
 
     let q = supabase
@@ -78,6 +80,10 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
       .in('target_table', ['news_articles'])
       // apply_enrichment() writes 'enriched' on success — not 'success'.
       .eq('enrichment_status', 'enriched')
+      // Skip rows already quality-enhanced. apply_enrichment re-stamps
+      // enrichment_status='enriched' on our own write, so without this filter the
+      // node re-selects the oldest rows every tick and the backlog never drains.
+      .filter('enriched_data->>quality_status', 'is', null)
       .order('created_at', { ascending: true })
       .limit(batchSize)
     if (pipelineRunId) q = q.eq('pipeline_run_id', pipelineRunId)
@@ -108,7 +114,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
 
     let processed = 0, passed = 0, review = 0, rejected = 0, failed = 0
 
-    for (const item of items) {
+    const processItem = async (item: (typeof items)[number]) => {
       const startedAt = Date.now()
       try {
         const n = (item.normalized_data ?? {}) as Record<string, unknown>
@@ -116,7 +122,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
         // fallback enrich-news uses, else ~45% of enriched rows fail with no title.
         const title = String(n.title ?? n.name ?? '').trim()
         const content = String(n.content ?? n.body ?? '')
-        if (!title) { failed++; continue }
+        if (!title) { failed++; return }
 
         // Re-run sanitizer locally so we know criticalPaywall/truncated state without
         // requiring pipeline-sanitize-news to have run (defensive).
@@ -261,7 +267,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
             p_error_message:   null,
             p_duration_ms:     Date.now() - startedAt,
           })
-          if (applyErr) { failed++; console.error(`apply_enrichment ${item.id}: ${applyErr.message}`); continue }
+          if (applyErr) { failed++; console.error(`apply_enrichment ${item.id}: ${applyErr.message}`); return }
         }
 
         processed++
@@ -272,6 +278,11 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
         failed++
         console.error(`quality-enhance item failed: ${(e as Error).message}`)
       }
+    }
+
+    // Bounded-concurrency pool — keeps a 24-item batch under the 150s wall clock.
+    for (let i = 0; i < items.length; i += concurrency) {
+      await Promise.all(items.slice(i, i + concurrency).map(processItem))
     }
 
     return jsonResponse({
