@@ -16,7 +16,7 @@ import { extractProduct } from '../_shared/marketplace-extract.ts'
 // ============================================================
 
 const TIMEOUT_MS    = 12_000
-const DEFAULT_BATCH = 200
+const DEFAULT_BATCH = 40  // live GET per row → keep under the edge wall-clock limit
 const MIN_DESC_LEN  = 50
 const UA = 'QueerGuide-MarketplaceEnrich/1.0 (+https://queer.guide/about)'
 
@@ -71,7 +71,8 @@ Deno.serve(async (req) => {
       .from('marketplace_listings')
       .select('id, external_url, affiliate_url, description, images')
       .not('external_url', 'is', null)
-      .or(`description.is.null,description.eq.,images.is.null`)
+      // images may be NULL *or* an empty array '{}' — both mean "no image".
+      .or(`description.is.null,description.eq.,images.is.null,images.eq.{}`)
       .or(`link_checked_at.is.null,link_checked_at.lt.${staleThreshold}`)
       .order('link_checked_at', { ascending: true, nullsFirst: true })
       .limit(batchSize)
