@@ -35,6 +35,7 @@ import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -241,6 +242,7 @@ export function VenueHero({
   onContentUpdated,
   t,
 }: VenueHeroProps) {
+  const lang = useContentLang();
   return (
     <>
       {/* Hero Image */}
@@ -304,7 +306,7 @@ export function VenueHero({
                 value={venue.name}
                 onSaved={onContentUpdated}
               >
-                {venue.name}
+                {localizedField(venue, 'name', lang)}
               </Editable>
             </h1>
             {venue.verified && (

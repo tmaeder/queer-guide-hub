@@ -23,6 +23,7 @@ import { EntityMap } from '@/components/map/EntityMap';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import type { ReactNode } from 'react';
 import type { Database } from '@/integrations/supabase/types';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
@@ -79,6 +80,7 @@ interface VillageHeroProps {
 }
 
 export function VillageHero({ village, isFavorited, onFavoriteToggle, onContentUpdated }: VillageHeroProps) {
+  const lang = useContentLang();
   return (
     <div>
       {village.image_url && (
@@ -114,7 +116,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle, onContentU
               value={village.name}
               onSaved={onContentUpdated}
             >
-              {village.name}
+              {localizedField(village as unknown as Record<string, unknown>, 'name', lang)}
             </Editable>
           </h1>
           <div className="flex items-center gap-1 text-muted-foreground">
@@ -200,6 +202,7 @@ export const villageTabIcons = {
 };
 
 export function VillageOverviewTab({ village, onContentUpdated }: { village: VillageWithRelations; onContentUpdated?: () => void }) {
+  const lang = useContentLang();
   return (
     <ScrollReveal direction="up">
       <div className="mt-6 flex flex-col gap-6">
@@ -222,7 +225,7 @@ export function VillageOverviewTab({ village, onContentUpdated }: { village: Vil
                 as="div"
               >
                 <p className="leading-relaxed text-muted-foreground">
-                  {village.description ||
+                  {localizedField(village as unknown as Record<string, unknown>, 'description', lang) ||
                     `Discover ${village.name}, a vibrant LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
                 </p>
               </Editable>

@@ -34,6 +34,7 @@ import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosur
 import { MarketplacePriceHistory } from '@/components/marketplace/MarketplacePriceHistory';
 import { MarketplaceSimilarItems } from '@/components/marketplace/MarketplaceSimilarItems';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 export type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {
@@ -97,6 +98,7 @@ export function MarketplaceHero({
   heroImage,
   onContentUpdated,
 }: HeroProps) {
+  const lang = useContentLang();
   return (
     <>
       {heroImage && (
@@ -125,7 +127,7 @@ export function MarketplaceHero({
                   value={listing.title}
                   onSaved={onContentUpdated}
                 >
-                  {listing.title}
+                  {localizedField(listing, 'title', lang)}
                 </Editable>
               </h4>
               {listing.featured && <Badge>Featured</Badge>}
@@ -201,6 +203,7 @@ interface OverviewProps {
 }
 
 export function MarketplaceOverview({ listing, reviews, t, onContentUpdated }: OverviewProps) {
+  const lang = useContentLang();
   const remainingImages =
     listing.images && listing.images.length > 1 ? listing.images.slice(1) : [];
 
@@ -266,7 +269,7 @@ export function MarketplaceOverview({ listing, reviews, t, onContentUpdated }: O
                 fieldOverride={{ type: 'textarea' }}
                 as="div"
               >
-                <p className="text-muted-foreground whitespace-pre-wrap">{listing.description}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{localizedField(listing, 'description', lang)}</p>
               </Editable>
             </CardContent>
           </Card>

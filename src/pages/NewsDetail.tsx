@@ -46,6 +46,7 @@ import { useUserNewsReads } from '@/hooks/useUserNewsReads';
 import { ReadingProgressBar } from '@/components/news/editorial/ReadingProgressBar';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { EditorsPickToggle } from '@/components/admin/news/EditorsPickToggle';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 interface NewsArticle {
   id: string;
@@ -87,6 +88,7 @@ interface RelatedArticle {
 
 export default function NewsDetail() {
   const { t } = useTranslation();
+  const lang = useContentLang();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const [article, setArticle] = useState<NewsArticle | null>(null);
@@ -376,7 +378,7 @@ export default function NewsDetail() {
                   setArticle((prev) => (prev ? { ...prev, title: String(next ?? '') } : prev))
                 }
               >
-                {decodeHtmlEntities(article.title)}
+                {decodeHtmlEntities(localizedField(article, 'title', lang))}
               </Editable>
             </h1>
             {article.is_featured && (

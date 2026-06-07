@@ -39,6 +39,7 @@ import { formatEventTime } from '@/lib/event-time';
 import { formatCurrency } from '@/lib/currency';
 import { isMeaningfulTag } from '@/utils/eventText';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -200,6 +201,7 @@ export function EventHero({
   onContentUpdated,
 }: HeroProps) {
   const { t } = useTranslation();
+  const lang = useContentLang();
   return (
     <>
       <ParallaxHero className="w-full h-40 md:h-48 rounded-container mb-6">
@@ -256,7 +258,7 @@ export function EventHero({
                 value={event.title}
                 onSaved={onContentUpdated}
               >
-                {event.title}
+                {localizedField(event, 'title', lang)}
               </Editable>
             </h1>
             {event.is_featured && (
@@ -462,6 +464,7 @@ export function EventOverview({
   onAttendanceUpdate,
   onContentUpdated,
 }: OverviewProps) {
+  const lang = useContentLang();
   const goingCount = event.attendee_counts?.going ?? 0;
   const interestedCount = event.attendee_counts?.interested ?? 0;
 
@@ -484,7 +487,7 @@ export function EventOverview({
                 as="div"
               >
                 <p className="text-muted-foreground whitespace-pre-wrap" style={{ lineHeight: 1.7 }}>
-                  {event.description}
+                  {localizedField(event, 'description', lang)}
                 </p>
               </Editable>
             </CardContent>

@@ -29,6 +29,7 @@ import {
   type HistoricalNameEntry,
 } from '@/lib/historicalPlace';
 import { codeToFlagEmoji } from '@/lib/countryFlag';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 export interface PersonalityBirthCity {
   id: string;
@@ -149,6 +150,7 @@ export function PersonalityHero({
   onProfessionClick,
   onContentUpdated,
 }: PersonalityHeroProps) {
+  const lang = useContentLang();
   return (
     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
       <div className="flex items-start gap-4">
@@ -174,7 +176,7 @@ export function PersonalityHero({
                 value={personality.name}
                 onSaved={onContentUpdated}
               >
-                {personality.name}
+                {localizedField(personality as unknown as Record<string, unknown>, 'name', lang)}
               </Editable>
             </h1>
             {personality.is_featured && (

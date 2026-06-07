@@ -22,6 +22,7 @@ import { EntityMap } from '@/components/map/EntityMap';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
 import type { Database } from '@/integrations/supabase/types';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 export type HotelWithRelations = Hotel & {
@@ -50,6 +51,7 @@ interface HeroProps {
 }
 
 export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, onAddToTrip, onContentUpdated }: HeroProps) {
+  const lang = useContentLang();
   const heroImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
   // Website is only useful when it points somewhere different than the
   // booking URL — otherwise it's a duplicate of "Book Now".
@@ -78,7 +80,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
                 value={hotel.name}
                 onSaved={onContentUpdated}
               >
-                {hotel.name}
+                {localizedField(hotel, 'name', lang)}
               </Editable>
             </h4>
             {hotel.verified && <Shield className="w-5 h-5" />}
@@ -151,6 +153,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
 }
 
 export function HotelOverview({ hotel, t, onContentUpdated }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string; onContentUpdated?: () => void }) {
+  const lang = useContentLang();
   const hasMap = typeof hotel.latitude === 'number' && typeof hotel.longitude === 'number';
   return (
     <ScrollReveal direction="up">
@@ -168,7 +171,7 @@ export function HotelOverview({ hotel, t, onContentUpdated }: { hotel: HotelWith
               fieldOverride={{ type: 'textarea' }}
               as="div"
             >
-              <p className="whitespace-pre-wrap">{hotel.description}</p>
+              <p className="whitespace-pre-wrap">{localizedField(hotel, 'description', lang)}</p>
             </Editable>
           </CardContent>
         </Card>
