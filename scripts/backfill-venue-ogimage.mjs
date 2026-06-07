@@ -46,6 +46,10 @@ function extractImage(html, baseUrl) {
     else if (!/^https?:\/\//i.test(img)) img = new URL(img, baseUrl).href;
     const u = new URL(img);
     if (!/^https?:$/.test(u.protocol)) return null;
+    u.protocol = 'https:'; // force https to avoid mixed-content blocks
+    const low = u.pathname.toLowerCase();
+    if (/favicon|sprite|placeholder|logo-?default|blank/.test(u.href.toLowerCase())) return null;
+    if (low.endsWith('.svg') || low.endsWith('.ico')) return null;
     return u.href.slice(0, 1000);
   } catch { return null; }
 }
