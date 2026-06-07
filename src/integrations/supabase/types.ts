@@ -5106,6 +5106,7 @@ export type Database = {
           start_date: string
           state: string | null
           status: string | null
+          tags: string[] | null
           target_groups: string[] | null
           ticket_url: string | null
           timezone: string | null
@@ -5175,6 +5176,7 @@ export type Database = {
           start_date: string
           state?: string | null
           status?: string | null
+          tags?: string[] | null
           target_groups?: string[] | null
           ticket_url?: string | null
           timezone?: string | null
@@ -5244,6 +5246,7 @@ export type Database = {
           start_date?: string
           state?: string | null
           status?: string | null
+          tags?: string[] | null
           target_groups?: string[] | null
           ticket_url?: string | null
           timezone?: string | null
