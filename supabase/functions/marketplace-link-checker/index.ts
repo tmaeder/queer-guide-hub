@@ -8,6 +8,13 @@ import { probeLink, isDeadLink } from '../_shared/link-health.ts'
 // link_health + link_checked_at. Demotes broken listings to status='inactive'.
 // Runs daily via pg_cron. Mirrors venue-url-checker.
 //
+// Also probes images[1]: a card whose product page is alive but whose stored
+// image URL 404s renders the on-brand placeholder while masking stale data
+// (the ohmyfantasy/forttroff re-platform rot, audit 2026-06-07). When an image
+// is confirmed-dead but the product still exists, we clear images to '{}' so the
+// card honestly shows "no image" and the next source re-ingest can repopulate it
+// — never on a bot-wall/transient, only on an explicit 404/410.
+//
 // link_health: ok | redirect | broken | timeout | unchecked
 // ============================================================
 
@@ -30,7 +37,7 @@ Deno.serve(async (req) => {
     // Pick listings whose link hasn't been checked for staleDays, or never.
     const { data: listings, error: fetchErr } = await supabase
       .from('marketplace_listings')
-      .select('id, external_url, affiliate_url, link_health')
+      .select('id, external_url, affiliate_url, link_health, images')
       .or(`link_checked_at.is.null,link_checked_at.lt.${staleThreshold}`)
       .order('link_checked_at', { ascending: true, nullsFirst: true })
       .limit(batchSize)
@@ -40,7 +47,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, items: 0, message: 'nothing to check' }, 200, req)
     }
 
-    let ok = 0, broken = 0, redirect = 0, timeout = 0, skipped = 0
+    let ok = 0, broken = 0, redirect = 0, timeout = 0, skipped = 0, imageCleared = 0
 
     for (const listing of listings) {
       const raw = (listing.external_url as string | null)?.trim()
@@ -59,12 +66,25 @@ Deno.serve(async (req) => {
       else if (health === 'broken') broken++
       else if (health === 'timeout') timeout++
 
-      if (!dryRun) {
-        const update: Record<string, unknown> = {
-          link_health:     health,
-          link_checked_at: new Date().toISOString(),
+      const update: Record<string, unknown> = {
+        link_health:     health,
+        link_checked_at: new Date().toISOString(),
+      }
+
+      if (isDeadLink(health)) {
+        update.status = 'inactive'
+      } else {
+        // Product page is alive — also probe the stored image. A confirmed-dead
+        // image on a live product is stale data: clear it to the '{}' convention
+        // so the card honestly falls back to the placeholder. Only on 404/410.
+        const firstImg = (listing.images as string[] | null)?.[0]?.trim()
+        if (firstImg && /^https?:\/\//i.test(firstImg)) {
+          const imgHealth = await probeLink(firstImg, { timeoutMs: TIMEOUT_MS })
+          if (isDeadLink(imgHealth)) { update.images = []; imageCleared++ }
         }
-        if (isDeadLink(health)) update.status = 'inactive'
+      }
+
+      if (!dryRun) {
         await supabase.from('marketplace_listings').update(update).eq('id', listing.id)
       }
     }
@@ -72,7 +92,7 @@ Deno.serve(async (req) => {
     return jsonResponse({
       success: true,
       items:   listings.length,
-      ok, broken, redirect, timeout, skipped,
+      ok, broken, redirect, timeout, skipped, image_cleared: imageCleared,
       dry_run: dryRun,
     }, 200, req)
   } catch (error) {
