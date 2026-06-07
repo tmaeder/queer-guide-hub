@@ -23,6 +23,7 @@ import { getBreadcrumbsForRoute, getRouteMinRole } from '@/config/adminNavigatio
 import { roleAtLeast } from '@/config/adminRoles';
 import { useGranularRoles } from '@/hooks/useGranularRoles';
 import { Lock } from 'lucide-react';
+import { AdminAreaHint } from '@/components/admin/AdminAreaHint';
 import { AdminCommandPaletteHost } from '@/components/admin/command-palette/AdminCommandPalette';
 import { AdminCommandActionsProvider } from '@/components/admin/command-palette/useAdminCommandActions';
 import { GlobalAdminActions } from '@/components/admin/command-palette/useGlobalAdminActions';
@@ -218,6 +219,9 @@ export function AdminShell() {
               </nav>
             </div>
           )}
+
+          {/* Area hint — one-line "what is this area" under the breadcrumb */}
+          {!editor && <AdminAreaHint />}
 
           {/* Content area */}
           <main id="admin-main-content" tabIndex={-1} className="flex-1 overflow-auto p-4 sm:p-6">
