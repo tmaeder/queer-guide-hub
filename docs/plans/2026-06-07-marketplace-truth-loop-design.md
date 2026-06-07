@@ -91,6 +91,42 @@ Implementation: `supabase/functions/marketplace-enrich/index.ts` +
 `_shared/marketplace-extract.ts` (pure, unit-tested). Staleness-gated on
 `link_checked_at` so reruns sweep forward and terminate.
 
+#### Phase 1 RESULTS (executed 2026-06-07)
+
+| metric | before | after |
+|---|---|---|
+| active listings | 6,454 | **3,510** |
+| dead links quarantined | 0 | **3,022** (reversible `status='inactive'`) |
+| active with description ≥50 | 42% | **84%** |
+| active with image | 70% | **86%** |
+| fully complete (desc+image) | — | **70%** |
+
+What filled: **1,389 misterb images** + ~155 supergayunderwear desc/images +
+supergayunderwear descriptions. What was quarantined: 2,685 ohmyfantasy + 271
+forttroff + 26 supergay dead-URL listings.
+
+**Operational findings (carry into Phase 4):**
+- **misterb blocks Supabase edge egress (IP-based).** The edge function gets
+  fetch failures; a residential IP gets HTTP 200. misterb backfill was run locally
+  (Deno, concurrency 8, 0 failures) and written via the Management API query
+  endpoint in 200-row chunks. Any future misterb refresh must NOT run from the edge.
+- **misterb serves a `no-picture` placeholder as og:image** for imageless products
+  — filtered out (`/placeholder|no-picture/`) so we never store fake images.
+- **ohmyfantasy is NOT dead** — it had ~84% link-rot (handles changed) but ~526
+  live products remain, and the store exposes a Shopify **`/products.json` feed with
+  ~17,498 items** (full `body_html` descriptions, images, prices, current handles).
+  supergayunderwear is also Shopify with `products.json`. forttroff has no feed but
+  a `sitemap.xml`. → **Phase 4 should re-sync these from `products.json` rather than
+  page-scrape**: it recovers fresh descriptions/images/URLs AND massively expands
+  coverage. (Caveat: 17k more adult products worsens the monoculture — must run the
+  relevance gate + categorization, Phases 2–3, on the feed.)
+- **`images` is stored as empty array `'{}'`, not NULL** — selection filters must
+  match both.
+
+Remaining Phase 1 gaps (small, deferred): 464 misterb variant/bundle pages with no
+JSON-LD image; 526 live-but-description-less ohmyfantasy (best fixed via products.json);
+8 manual listings without images.
+
 #### Original plan (mechanics, retained)
 New `marketplace-enrich` worker. Selects listings where `description<50` OR
 `images IS NULL`, re-fetches `external_url`, extracts:
