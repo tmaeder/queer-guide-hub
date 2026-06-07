@@ -52,7 +52,9 @@ Live audit against prod (`xqeacpakadqfxjxjcewc`). Counts are real, not estimates
 
 Both write per-row via the Management API (bulk venue/personality writes time out on the `search_documents_sync` reindex trigger) and self-restart on DNS/network blips.
 
-**⏭️ Remaining (need geocode to finish, or edge-fn / LLM budget):**
+**✅ LGBTQ+ relevance classification — DONE (CF Workers AI):** new edge fn `classify-relevance-backfill` (self-contained, native `/ai/run`, UNKNOWN over false-0, **personalities excluded — outing risk**) + driver `scripts/backfill-relevance-classify.mjs`. Coverage: venue 85% scored (avg 0.32), event 100% (0.75), marketplace 98% (0.69), news 99% (0.44); rest UNKNOWN (thin data, honestly unscored). **Propagated to `search_documents.lgbtq_score`** (~33,500 docs) so search ranks on the real signal instead of the 0.5 default. Cleanup TODO: delete the one-off `classify-relevance-backfill` edge fn (`supabase functions delete`).
+
+**⏭️ Remaining (need admin UI / image budget):**
 
 | Job | Count | Driver |
 |-----|------|--------|
