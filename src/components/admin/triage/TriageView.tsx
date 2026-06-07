@@ -188,6 +188,10 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         <kbd className="px-1 border">r</kbd> reject
         {' · '}
         <kbd className="px-1 border">s</kbd> skip
+        {' · '}
+        <kbd className="px-1 border">f</kbd> flag
+        {' · '}
+        <kbd className="px-1 border">?</kbd> help
       </p>
     </div>
   );
