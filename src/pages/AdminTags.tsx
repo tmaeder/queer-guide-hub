@@ -30,6 +30,7 @@ import {
   type ExportColumnDef,
 } from '@/utils/excelExport';
 import { TagCategorizer } from '@/components/admin/TagCategorizer';
+import { TagQualityPanel } from '@/components/admin/TagQualityPanel';
 import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
 import TagMergeCandidates from '@/components/admin/TagMergeCandidates';
 import { TagImageUpload } from '@/components/admin/TagImageUpload';
@@ -447,6 +448,7 @@ export default function AdminTags() {
       config={tableConfig}
       beforeTable={
         <>
+          <TagQualityPanel />
           <div className="mb-6">
             <TagCategorizer />
           </div>
