@@ -77,8 +77,13 @@ Truth Loop is **input-starved**: `event_sources` covers only 796/3,626; corrobor
     spend here is a dead end. Enrichment's real residual value is
     description/safety_notes/lineup, so the cap stays modest.
 - **P2.5 — real path to accessibility / target_groups** (since pages can't
-  supply them): (a) **inherit accessibility from the linked venue** once
-  venue-linking improves (blocked today by 94% null `venue_id`) — *deferred*;
+  supply them): (a) **inherit from the linked venue** ✅ **SHIPPED as infra**
+  (`run_event_inherit_moat_from_venue()` + weekly cron, migration `20260607210000`):
+  copies a venue's `target_groups`/`accessibility` to its linked events when the
+  event's are empty. **Yield today = 0** — accessibility is empty across *all*
+  22.7k venues (it genuinely has no source in the system), and the 65 events at a
+  `target_groups`-bearing venue already had their own. It's correct plumbing that
+  activates as the venue-consensus engine enriches venues and more events link;
   (b) **admin capture affordance** ✅ **SHIPPED** — Accessibility + Target-groups
   inputs on the `/admin/events` form (also fixed a latent bug: the form sent a
   non-existent `tags` column, which had been making *all* event saves fail);
