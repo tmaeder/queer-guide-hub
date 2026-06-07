@@ -48,5 +48,20 @@ export function useFilterPresets(tableName: string) {
 
   const get = useCallback((id: string) => presets.find((p) => p.id === id) ?? null, [presets]);
 
-  return { presets, save, remove, get };
+  /** Mark one preset as the table's default view (clears the flag on the rest).
+   *  Passing the already-default id toggles it off. */
+  const setDefault = useCallback(
+    (id: string) => {
+      const next = presets.map((p) => ({
+        ...p,
+        isDefault: p.id === id ? !p.isDefault : false,
+      }));
+      persist(next);
+    },
+    [presets, persist],
+  );
+
+  const getDefault = useCallback(() => presets.find((p) => p.isDefault) ?? null, [presets]);
+
+  return { presets, save, remove, get, setDefault, getDefault };
 }

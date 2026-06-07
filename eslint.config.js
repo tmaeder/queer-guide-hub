@@ -9,6 +9,7 @@ import unusedImports from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
 import noSupabaseFromInPages from "./eslint-rules/no-supabase-from-in-pages.js";
+import noSonnerToastObject from "./eslint-rules/no-sonner-toast-object.js";
 
 // typescript-eslint v8 throws when its project-service auto-detect sees
 // multiple candidate root dirs (here: repo root + scraper/). Pin it via
@@ -65,7 +66,7 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
       "jsx-a11y": jsxA11y,
       "unused-imports": unusedImports,
-      "queerguide": { rules: { "no-supabase-from-in-pages": noSupabaseFromInPages } },
+      "queerguide": { rules: { "no-supabase-from-in-pages": noSupabaseFromInPages, "no-sonner-toast-object": noSonnerToastObject } },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -107,6 +108,9 @@ export default tseslint.config(
       // supabase.from(). Co-located use*Controller.{ts,tsx} files are
       // exempted in the rule itself.
       "queerguide/no-supabase-from-in-pages": "error",
+      // Catch the sonner toast({...}) object-arg bug class (renders blank
+      // toasts). Use toast.success(msg, { description }) / toast.error(...).
+      "queerguide/no-sonner-toast-object": "error",
       // Accessibility rules (WCAG 2.2 AA)
       "jsx-a11y/alt-text": "error",
       "jsx-a11y/anchor-has-content": "error",
@@ -448,6 +452,21 @@ export default tseslint.config(
           ],
         },
       ],
+    },
+  },
+
+  // Cluster 4 — render-loop guard for the admin tree. The React #185
+  // ("Maximum update depth exceeded") family comes from unstable effect deps
+  // and setState-in-effect. These rules are global "warn" during the
+  // react-hooks v7 adoption, but src/components/admin/** is already clean of
+  // both, so ratchet them to "error" there to stop the bug class from
+  // re-entering the admin UI. Intentional exceptions still use
+  // // eslint-disable-next-line, which error-level rules continue to honor.
+  {
+    files: ["src/components/admin/**/*.{ts,tsx}"],
+    rules: {
+      "react-hooks/exhaustive-deps": "error",
+      "react-hooks/set-state-in-effect": "error",
     },
   },
 );

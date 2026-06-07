@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,16 +21,17 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tables } from '@/integrations/supabase/types';
-import { listFrom, insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
+import { insertInto, updateRow, deleteRow, useNewsSources } from '@/hooks/usePageFetchers';
 import { Plus, Edit2, Trash2, Rss, Globe, Tags, ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { validateNewsSource } from '@/utils/contentValidation';
+import { useFieldValidation } from '@/hooks/useFieldValidation';
+import { FormFieldError } from '@/components/admin/FormFieldError';
 
 type NewsSource = Tables<'news_sources'>;
 
 export function NewsSourcesManager() {
-  const [sources, setSources] = useState<NewsSource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: sources = [], isLoading: loading, refetch: refetchSources } = useNewsSources();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [keywordsDialogOpen, setKeywordsDialogOpen] = useState(false);
   const [editingSource, setEditingSource] = useState<NewsSource | null>(null);
@@ -49,42 +50,18 @@ export function NewsSourcesManager() {
     keywords: [] as string[],
   });
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability -- function declared below; effect/callback fires after render so the binding is initialized when called.
-    fetchSources();
-  }, []);
+  const fetchSources = () => refetchSources();
 
-  const fetchSources = async () => {
-    try {
-      const data = await listFrom<NewsSource>('news_sources', '*', {
-        col: 'created_at',
-        ascending: false,
-      });
-      setSources(data);
-    } catch (_error) {
-      toast.error('Error: Failed to fetch news sources');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const { errors: validationErrors, validate, clearField } = useFieldValidation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate before submitting
-    const result = validateNewsSource(formData as Record<string, unknown>);
-    if (!result.isValid) {
-      const fieldErrors: Record<string, string> = {};
-      result.errors.forEach((err) => {
-        fieldErrors[err.field] = err.message;
-      });
-      setValidationErrors(fieldErrors);
-      toast.error(`Validation Error: ${result.errors}`);
+    // Validate before submitting — errors render inline next to each field.
+    if (!validate(validateNewsSource(formData as Record<string, unknown>))) {
+      toast.error('Please fix the highlighted fields.');
       return;
     }
-    setValidationErrors({});
 
     try {
       if (editingSource) {
@@ -156,10 +133,7 @@ export function NewsSourcesManager() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: `News source ${!isActive ? 'activated' : 'deactivated'}`,
-      });
+      toast.success(`News source ${!isActive ? 'activated' : 'deactivated'}`);
 
       fetchSources();
     } catch (_error) {
@@ -255,14 +229,13 @@ export function NewsSourcesManager() {
                     value={formData.name}
                     onChange={(e) => {
                       setFormData({ ...formData, name: e.target.value });
-                      setValidationErrors((prev) => ({ ...prev, name: '' }));
+                      clearField('name');
                     }}
                     required
                     aria-invalid={!!validationErrors.name}
+                    aria-errormessage={validationErrors.name ? 'name-error' : undefined}
                   />
-                  {validationErrors.name && (
-                    <p className="text-xs text-destructive mt-1">{validationErrors.name}</p>
-                  )}
+                  <FormFieldError id="name-error" message={validationErrors.name} />
                 </div>
 
                 <div>
@@ -291,15 +264,14 @@ export function NewsSourcesManager() {
                   value={formData.category}
                   onChange={(e) => {
                     setFormData({ ...formData, category: e.target.value });
-                    setValidationErrors((prev) => ({ ...prev, category: '' }));
+                    clearField('category');
                   }}
                   placeholder="e.g., LGBTQ+, General News, Politics"
                   required
                   aria-invalid={!!validationErrors.category}
+                  aria-errormessage={validationErrors.category ? 'category-error' : undefined}
                 />
-                {validationErrors.category && (
-                  <p className="text-xs text-destructive mt-1">{validationErrors.category}</p>
-                )}
+                <FormFieldError id="category-error" message={validationErrors.category} />
               </div>
 
               <div>
@@ -310,15 +282,14 @@ export function NewsSourcesManager() {
                   value={formData.url}
                   onChange={(e) => {
                     setFormData({ ...formData, url: e.target.value });
-                    setValidationErrors((prev) => ({ ...prev, url: '' }));
+                    clearField('url');
                   }}
                   placeholder="https://example.com/feed.xml or API endpoint"
                   required
                   aria-invalid={!!validationErrors.url}
+                  aria-errormessage={validationErrors.url ? 'url-error' : undefined}
                 />
-                {validationErrors.url && (
-                  <p className="text-xs text-destructive mt-1">{validationErrors.url}</p>
-                )}
+                <FormFieldError id="url-error" message={validationErrors.url} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

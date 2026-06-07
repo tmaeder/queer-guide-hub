@@ -12,6 +12,7 @@ export function useAdminRoles() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
+  const [isEditor, setIsEditor] = useState(false);
 
   useEffect(() => {
     // Don't resolve roles until auth has finished loading
@@ -27,6 +28,7 @@ export function useAdminRoles() {
       setUserRoles([]);
       setIsAdmin(false);
       setIsModerator(false);
+      setIsEditor(false);
       setLoading(false);
     }
     // Depend on user.id, not the user object — Supabase emits a fresh user
@@ -54,6 +56,7 @@ export function useAdminRoles() {
       const roles = (data || []).map(r => r.role);
       setIsAdmin(roles.includes('admin'));
       setIsModerator(roles.includes('moderator'));
+      setIsEditor(roles.includes('editor'));
     } catch (error) {
       console.error('Error fetching user roles:', error);
     } finally {
@@ -74,6 +77,7 @@ export function useAdminRoles() {
     loading,
     isAdmin,
     isModerator,
+    isEditor,
     hasRole,
     canManageContent,
     refetch: fetchUserRoles

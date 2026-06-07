@@ -95,7 +95,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
     onApply(t);
     await untypedSupabase.rpc('increment_template_use_count', { p_template_id: t.id });
     qc.invalidateQueries({ queryKey: ['pipeline-node-templates'] });
-    toast({ title: `Applied: ${t.name}`, description: `${t.nodes.length} nodes added` });
+    toast.success(`Applied: ${t.name}`, { description: `${t.nodes.length} nodes added` });
     setOpen(false);
   };
 

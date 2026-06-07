@@ -4,6 +4,7 @@
  * Cluster 3 refactor (Cockpit) — see docs / plan refactoring-fr-cluster-3.
  */
 
+import { Fragment, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { BentoGrid, BentoCell } from '@/components/ui/bento-grid';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminSection } from '@/components/admin/AdminSection';
 import {
   LayoutDashboard,
   Activity,
@@ -44,6 +46,8 @@ import {
 import { useAdminCockpit } from '@/hooks/useAdminCockpit';
 import type { CockpitData } from '@/hooks/useAdminCockpit';
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
+import { useGranularRoles } from '@/hooks/useGranularRoles';
+import { roleAtLeast, type AdminRole } from '@/config/adminRoles';
 
 // ── Cell heading helper ─────────────────────────────────────────────
 
@@ -378,8 +382,27 @@ function CockpitSkeleton() {
 
 // ── Main Component ──────────────────────────────────────────────────
 
+const FIRST_RUN_KEY = 'admin.cockpit.firstrun';
+
 export default function AdminDashboard() {
   const { data, isLoading, refetch } = useAdminCockpit();
+  const { effectiveRole } = useGranularRoles();
+
+  const [showFirstRun, setShowFirstRun] = useState(() => {
+    try {
+      return localStorage.getItem(FIRST_RUN_KEY) !== 'dismissed';
+    } catch {
+      return false;
+    }
+  });
+  const dismissFirstRun = () => {
+    try {
+      localStorage.setItem(FIRST_RUN_KEY, 'dismissed');
+    } catch {
+      // ignore
+    }
+    setShowFirstRun(false);
+  };
 
   useRegisterAdminCommandAction({
     id: 'dashboard.refresh',
@@ -423,14 +446,38 @@ export default function AdminDashboard() {
       {isLoading || !data ? (
         <CockpitSkeleton />
       ) : (
-        <BentoGrid>
-          <SystemStatusCell data={data} />
-          <ReviewQueueCell data={data} />
-          <ImportStatusCell data={data} />
-          <AutomationCell data={data} />
-          <QualityCell data={data} />
-          <ContentOverviewCell stats={data.stats} />
-        </BentoGrid>
+        <>
+          {showFirstRun && effectiveRole !== 'none' && (
+            <div className="mb-4 flex items-center justify-between gap-4 rounded-element border border-border bg-muted/30 px-4 py-2">
+              <p className="text-2xs text-muted-foreground">
+                Press ⌘K to jump to any page or run an action. Your role: {effectiveRole}.
+              </p>
+              <button
+                type="button"
+                onClick={dismissFirstRun}
+                className="flex-shrink-0 text-2xs font-medium text-muted-foreground hover:text-foreground"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+          <AdminSection section="cockpit" label="Cockpit">
+          <BentoGrid>
+            {(
+              [
+                { key: 'system', min: 'admin', node: <SystemStatusCell data={data} /> },
+                { key: 'review', min: 'editor', node: <ReviewQueueCell data={data} /> },
+                { key: 'imports', min: 'admin', node: <ImportStatusCell data={data} /> },
+                { key: 'automation', min: 'moderator', node: <AutomationCell data={data} /> },
+                { key: 'quality', min: 'moderator', node: <QualityCell data={data} /> },
+                { key: 'content', min: 'editor', node: <ContentOverviewCell stats={data.stats} /> },
+              ] as { key: string; min: AdminRole; node: ReactNode }[]
+            )
+              .filter((c) => roleAtLeast(effectiveRole, c.min))
+              .map((c) => <Fragment key={c.key}>{c.node}</Fragment>)}
+          </BentoGrid>
+          </AdminSection>
+        </>
       )}
     </div>
   );

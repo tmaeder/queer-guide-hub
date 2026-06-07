@@ -136,10 +136,7 @@ export function ImageOptimizationManager() {
       );
 
       setImages(foundImages);
-      toast({
-        title: 'Scan Complete',
-        description: `Found ${foundImages.length} images ready for optimization`,
-      });
+      toast.success('Scan Complete', { description: `Found ${foundImages.length} images ready for optimization` });
     } catch (error) {
       console.error('Scan error:', error);
       toast.error('Scan Failed: Failed to scan for images');
@@ -173,17 +170,10 @@ export function ImageOptimizationManager() {
       setCurrentJob(job);
       setSelectedTab('jobs');
 
-      toast({
-        title: 'Optimization Started!',
-        description: `Background optimization job started for ${data.totalImages} images. You can close this page and it will continue processing.`,
-      });
+      toast.success('Optimization Started!', { description: `Background optimization job started for ${data.totalImages} images. You can close this page and it will continue processing.` });
     } catch (error) {
       console.error('Failed to start optimization job:', error);
-      toast({
-        title: 'Failed to Start Optimization',
-        description: `Could not start the optimization job: ${error.message}`,
-        variant: 'destructive',
-      });
+      toast.error('Failed to Start Optimization', { description: `Could not start the optimization job: ${error.message}` });
     }
   };
 

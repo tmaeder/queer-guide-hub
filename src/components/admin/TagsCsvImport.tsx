@@ -58,10 +58,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
       setImportResult(data);
 
       if (data.success) {
-        toast({
-          title: "Import successful",
-          description: `Successfully imported ${data.imported} tags`,
-        });
+        toast.success('Import successful', { description: `Successfully imported ${data.imported} tags` });
         onImportComplete?.();
       } else {
         toast.error(`Import failed: ${data.error}`);

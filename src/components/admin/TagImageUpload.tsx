@@ -32,11 +32,7 @@ export const TagImageUpload = ({
     }
 
     if (file.size > MAX_UPLOAD_BYTES) {
-      toast({
-        title: 'File too large',
-        description: `${file.name} is ${(file.size / (1024 * 1024)).toFixed(1)} MB. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`,
-        variant: 'destructive',
-      });
+      toast.error('File too large', { description: `${file.name} is ${(file.size / (1024 * 1024)).toFixed(1)} MB. Maximum allowed size is ${MAX_UPLOAD_MB} MB.` });
       return;
     }
 

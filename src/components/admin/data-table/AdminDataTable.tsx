@@ -23,11 +23,13 @@ import { Table, TableHeader, TableBody, TableRow, TableCell } from '@/components
 import { useAdminTableQuery } from '@/hooks/useAdminTableQuery';
 import { useAdminTableState } from '@/hooks/useAdminTableState';
 import { useFilterPresets } from '@/hooks/useFilterPresets';
+import { useListKeyboard } from '@/hooks/useListKeyboard';
 import { DataTableHeaderCell } from './DataTableHeader';
 import { DataTableToolbar } from './DataTableToolbar';
 import { DataTableFilters } from './DataTableFilters';
 import { DataTablePagination } from './DataTablePagination';
 import { DataTableBulkActions } from './DataTableBulkActions';
+import { DataTableBackfillActions } from './DataTableBackfillActions';
 import { DataTableEmptyState } from './DataTableEmptyState';
 import type { AdminTableConfig, AdminColumnMeta } from './types';
 
@@ -45,6 +47,7 @@ export function AdminDataTable<TData extends { id: string }>({
     columns,
     entityFilters = [],
     bulkEditFields,
+    backfillJobs,
     rowActions,
     toolbarActions,
     defaultSort,
@@ -77,6 +80,24 @@ export function AdminDataTable<TData extends { id: string }>({
   }, [columns]);
 
   const {
+    presets,
+    save: savePreset,
+    remove: removePreset,
+    get: getPreset,
+    setDefault: setDefaultPreset,
+    getDefault: getDefaultPreset,
+  } = useFilterPresets(tableName);
+
+  // Resolve the view to apply on first load: ?view=<id> wins, else the saved
+  // default. Applied via initial table state (not an effect) so there's no
+  // setState-in-effect / render-loop risk.
+  const initialView = useMemo(() => {
+    const viewId = new URLSearchParams(window.location.search).get('view');
+    return (viewId ? getPreset(viewId) : getDefaultPreset()) ?? null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- resolve once at mount from localStorage + URL
+  }, []);
+
+  const {
     state,
     setSearch,
     setFilter,
@@ -89,19 +110,14 @@ export function AdminDataTable<TData extends { id: string }>({
     clearSelection,
     toggleColumnVisibility,
     setGrouping,
+    focusedId,
+    setFocusedId,
   } = useAdminTableState({
-    defaultSort,
+    defaultSort: initialView?.sorting ?? defaultSort,
     defaultPageSize,
     defaultColumnVisibility,
-    defaultFilters,
+    defaultFilters: initialView ? initialView.filters : defaultFilters,
   });
-
-  const {
-    presets,
-    save: savePreset,
-    remove: removePreset,
-    get: getPreset,
-  } = useFilterPresets(tableName);
 
   const { data, totalCount, isLoading, isFetching, refetch } = useAdminTableQuery<TData>({
     tableName,
@@ -174,6 +190,14 @@ export function AdminDataTable<TData extends { id: string }>({
     }
     if (preset.search) setSearch(preset.search);
     if (preset.sorting) toggleSort(preset.sorting.column);
+    // Reflect the active view in the URL so it's shareable and sticky on reload.
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', id);
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // ignore — URL sync is best-effort
+    }
   };
 
   const handleSavePreset = (name: string) => {
@@ -183,6 +207,28 @@ export function AdminDataTable<TData extends { id: string }>({
   const allRowIds = data.map((row) => row.id);
   const allSelected = allRowIds.length > 0 && allRowIds.every((id) => state.selectedIds.has(id));
   const someSelected = allRowIds.some((id) => state.selectedIds.has(id)) && !allSelected;
+
+  // Keyboard navigation: J/K (or arrows) move a row cursor, Enter opens the
+  // focused row, Space toggles its selection. Typing in inputs is ignored.
+  const keyboardActions = useMemo(
+    () => ({
+      Enter: () => {
+        const row = data.find((d) => d.id === focusedId);
+        if (row && onRowClick) onRowClick(row);
+      },
+      ' ': () => {
+        if (focusedId) toggleRow(focusedId);
+      },
+    }),
+    [data, focusedId, onRowClick, toggleRow],
+  );
+  useListKeyboard({
+    items: data,
+    activeId: focusedId,
+    onNavigate: setFocusedId,
+    actions: keyboardActions,
+    enabled: !isLoading && data.length > 0,
+  });
 
   const handleRefetch = () => {
     refetch();
@@ -205,6 +251,8 @@ export function AdminDataTable<TData extends { id: string }>({
         onSavePreset={handleSavePreset}
         onApplyPreset={handleApplyPreset}
         onDeletePreset={removePreset}
+        onSetDefaultPreset={setDefaultPreset}
+        defaultPresetId={getDefaultPreset()?.id}
         groupableColumns={groupableColumns}
         grouping={state.grouping}
         onGroupingChange={setGrouping}
@@ -223,6 +271,15 @@ export function AdminDataTable<TData extends { id: string }>({
           onClearSelection={clearSelection}
           onSuccess={handleRefetch}
           bulkEditFields={bulkEditFields}
+          extraActions={
+            backfillJobs && backfillJobs.length > 0 ? (
+              <DataTableBackfillActions
+                jobs={backfillJobs}
+                selectedIds={state.selectedIds}
+                onDone={handleRefetch}
+              />
+            ) : undefined
+          }
         />
       )}
 
@@ -260,11 +317,12 @@ export function AdminDataTable<TData extends { id: string }>({
           <TableBody>
             {table.getRowModel().rows.map((row) => {
               const isSelected = state.selectedIds.has(row.original.id);
+              const isFocused = focusedId === row.original.id;
               const customRowClass = rowClassName?.(row.original);
               return (
                 <TableRow
                   key={row.id}
-                  className={`content-enter ${isSelected ? 'bg-muted' : ''} ${customRowClass ?? ''}`}
+                  className={`content-enter ${isSelected ? 'bg-muted' : ''} ${isFocused ? 'ring-1 ring-inset ring-foreground/40' : ''} ${customRowClass ?? ''}`}
                   style={{
                     transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
                     cursor: onRowClick ? 'pointer' : undefined,
