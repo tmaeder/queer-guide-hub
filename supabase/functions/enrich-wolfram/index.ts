@@ -9,7 +9,7 @@
 // Auth: X-Internal-Secret (dispatcher/cron) or admin (requireInternalOrAdmin).
 // Body: { content_type?: 'country', limit?: number, dry_run?: boolean, country_ids?: string[] }
 
-import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, requireInternalOrAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { queryWolfram, parseNumber, type WolframResult } from '../_shared/wolfram-client.ts'
 
