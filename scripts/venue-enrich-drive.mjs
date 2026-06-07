@@ -26,8 +26,9 @@ const FN = `https://${PROJECT}.supabase.co/functions/v1/venue-agentic-enrich`;
 const TOKEN = process.env.GEOCODE_TOKEN;                 // Supabase Management API (keychain)
 const SERVICE_KEY = process.env.SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const WEBHOOK_SECRET = process.env.EVENT_QUALITY_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET || 'meilisearch-sync-webhook-2026';
-// Public anon key — required by the functions gateway (front of the function's own auth check).
-const ANON = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
+// Public anon key from env — the functions gateway needs an apikey/Authorization header in
+// front of the function's own auth check. Not hardcoded (keeps secret scanners quiet).
+const ANON = process.env.SUPABASE_ANON_KEY || '';
 const UA_MGMT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) QueerGuide/1.0';
 const PER_SHARD = Number(process.env.BATCH || 5);        // venues per shard per round
 const SHARDS = 4;
@@ -70,11 +71,11 @@ async function mgmt(sql, tries = 6) {
 
 async function callFn(venueIds) {
   // Gateway needs an apikey/Authorization (anon is enough); the function then checks X-Webhook-Secret.
+  const key = SERVICE_KEY || ANON;
   const headers = {
     'Content-Type': 'application/json',
     'X-Webhook-Secret': WEBHOOK_SECRET,
-    apikey: ANON,
-    Authorization: `Bearer ${SERVICE_KEY || ANON}`,
+    ...(key ? { apikey: key, Authorization: `Bearer ${key}` } : {}),
   };
   const res = await fetchT(FN, {
     method: 'POST', headers,

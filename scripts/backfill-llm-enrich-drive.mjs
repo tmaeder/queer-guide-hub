@@ -15,8 +15,9 @@
 
 const FN = 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/backfill-llm-enrich';
 const SECRET = process.env.WEBHOOK_SECRET || 'meilisearch-sync-webhook-2026';
-// Public anon key — required by the functions gateway (sits in front of the x-webhook-secret check).
-const ANON = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
+// Public anon key from env — the functions gateway needs an apikey/Authorization header in
+// front of the x-webhook-secret check. Not hardcoded (keeps secret scanners quiet).
+const ANON = process.env.SUPABASE_ANON_KEY || '';
 const BATCH = Number(process.env.BATCH || 15);
 // One-time regression cleanup: re-scan rows stamped classified_at but stuck at NULL relevance.
 const RETRY_RELEVANCE_NULL = process.env.RETRY_RELEVANCE_NULL === '1';
@@ -40,7 +41,7 @@ async function fetchT(url, opts, timeoutMs) {
 async function call(target, idGte, idLt) {
   const res = await fetchT(FN, {
     method: 'POST',
-    headers: { 'x-webhook-secret': SECRET, 'Content-Type': 'application/json', apikey: ANON, Authorization: `Bearer ${ANON}` },
+    headers: { 'x-webhook-secret': SECRET, 'Content-Type': 'application/json', ...(ANON ? { apikey: ANON, Authorization: `Bearer ${ANON}` } : {}) },
     body: JSON.stringify({ target, batch_size: BATCH, id_gte: idGte, id_lt: idLt, retry_relevance_null: RETRY_RELEVANCE_NULL }),
   }, 120000);
   const body = await res.text();
