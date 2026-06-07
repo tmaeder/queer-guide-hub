@@ -59,7 +59,7 @@ BEGIN
       -- but ~15 long strings (description) already ≈ 30s. So descriptions need a
       -- small batch + higher frequency; names/titles tolerate a larger batch.
       IF is_desc THEN
-        blimit := 8;  m := idx % 10;                              -- 6 runs/hour
+        blimit := 6;  m := idx % 10;                              -- 6 runs/hour
         sched := format('%s,%s,%s,%s,%s,%s * * * *', m, m+10, m+20, m+30, m+40, m+50);
       ELSE
         blimit := 20; m := idx % 15;                             -- 4 runs/hour

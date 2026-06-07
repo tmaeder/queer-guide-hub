@@ -111,10 +111,9 @@ const SYSTEM_PROMPT = `You translate UI strings for queer.guide, an LGBTQ+ trave
 - Match the source register: tag names are short, headlines are punchy, descriptions are neutral-informative.
 - Output ONLY the JSON object specified. No commentary.
 
-Output format:
-{ "<source_string>": "<translated_string>", ... }
+Output format: a JSON ARRAY of translated strings, in the SAME ORDER and with the SAME COUNT as the input array. Do NOT echo the source text as keys and do NOT return an object — return only the array of translations, e.g. ["Übersetzung eins","Übersetzung zwei"].
 
-If a source string can't be translated meaningfully (e.g. it is already in the target locale, or is a proper noun that should not change), return the source unchanged.`
+If a source string can't be translated meaningfully (e.g. it is already in the target locale, or is a proper noun that should not change), return the source unchanged in its position.`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -212,11 +211,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Build the JSON-array prompt.
+    // Build the prompt. The LLM returns a JSON ARRAY of translations matched
+    // back to inputs BY INDEX — never by source-string key, which is fragile
+    // for long multi-sentence descriptions the model can't echo verbatim.
     const sources = pending.map((r: Row) => String(r[field]))
-    const userMsg = `Locale target: ${body.locale}\n\nTranslate each of the following ${cfg.sources.includes('title') ? 'titles' : 'names'} (one per line, deduplicated):\n\n${JSON.stringify(sources)}`
+    const userMsg = `Locale target: ${body.locale}\n\nTranslate each string in the following JSON array into ${body.locale}. Return a JSON array of exactly ${sources.length} translated strings, in the SAME ORDER as the input. Output ONLY the array.\n\n${JSON.stringify(sources)}`
 
-    let translated: Record<string, string> = {}
+    // translatedByIndex[i] is the translation for pending[i].
+    let translatedByIndex: string[] = []
     let llmError: string | null = null
     if (!dryRun) {
       try {
@@ -230,8 +232,12 @@ Deno.serve(async (req) => {
         })
         const text = resp.content?.[0]?.text ?? ''
         const json = extractJson(text)
-        if (json && typeof json === 'object') {
-          translated = json as Record<string, string>
+        if (Array.isArray(json)) {
+          translatedByIndex = json.map((x) => (typeof x === 'string' ? x : ''))
+        } else if (json && typeof json === 'object') {
+          // Back-compat: model returned an object keyed by source string.
+          const obj = json as Record<string, unknown>
+          translatedByIndex = sources.map((s) => (typeof obj[s] === 'string' ? (obj[s] as string) : ''))
         } else {
           llmError = 'LLM returned non-JSON output'
         }
@@ -247,10 +253,11 @@ Deno.serve(async (req) => {
     let written = 0
     const errors: Array<{ id: string; error: string }> = []
     const sourceRunId = crypto.randomUUID()
-    for (const row of pending as Row[]) {
+    for (let i = 0; i < (pending as Row[]).length; i++) {
+      const row = (pending as Row[])[i]
       const id = row[cfg.id_field] as string
       const source = String(row[field])
-      const t = translated[source]
+      const t = (translatedByIndex[i] ?? '').trim()
       if (!t) {
         errors.push({ id, error: 'no translation in LLM response' })
         continue
@@ -347,19 +354,33 @@ function extractJson(text: string): unknown | null {
   } catch {
     // fall through
   }
-  // Find first '{' and matching '}' via brace counting.
-  const start = text.indexOf('{')
+  // Find the first '[' or '{' and its matching closer via depth counting
+  // (string-aware, so brackets inside string values don't throw it off).
+  const objStart = text.indexOf('{')
+  const arrStart = text.indexOf('[')
+  const start =
+    arrStart >= 0 && (objStart < 0 || arrStart < objStart) ? arrStart : objStart
   if (start < 0) return null
+  const open = text[start]
+  const close = open === '[' ? ']' : '}'
   let depth = 0
+  let inStr = false
+  let esc = false
   for (let i = start; i < text.length; i++) {
     const c = text[i]
-    if (c === '{') depth++
-    else if (c === '}') {
+    if (inStr) {
+      if (esc) esc = false
+      else if (c === '\\') esc = true
+      else if (c === '"') inStr = false
+      continue
+    }
+    if (c === '"') inStr = true
+    else if (c === open) depth++
+    else if (c === close) {
       depth--
       if (depth === 0) {
-        const slice = text.slice(start, i + 1)
         try {
-          return JSON.parse(slice)
+          return JSON.parse(text.slice(start, i + 1))
         } catch {
           return null
         }
