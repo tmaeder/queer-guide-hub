@@ -8,6 +8,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { fillBlanks, parseWikipediaSummary } from '../_shared/personality-enrich-core.ts'
 import { personalityQualityScore } from '../_shared/personality-quality.ts'
+import { resolvePersonality } from '../_shared/wikidata-resolve.ts'
 
 const UA = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -16,14 +17,6 @@ const WD_EXT: Record<string, string> = {
   P646: 'freebase_id', P2002: 'twitter', P2003: 'instagram', P2013: 'facebook',
 }
 
-async function wdSearch(name: string): Promise<{ id: string; description?: string } | null> {
-  try {
-    const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=en&format=json&limit=1`
-    const res = await fetch(url, { headers: { 'User-Agent': UA } })
-    const data = await res.json()
-    return data.search?.[0] ?? null
-  } catch { return null }
-}
 async function wdEntity(qid: string): Promise<Record<string, unknown> | null> {
   try {
     const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`, { headers: { 'User-Agent': UA } })
@@ -103,15 +96,34 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       let qid = p.wikidata_qid as string | null
       let entity: Record<string, unknown> | null = null
       let wdUrl: string | null = null
+      let matchConfidence: 'high' | 'medium' | 'low' | null = null
+      let matchReasons: string[] = []
 
+      // Evidence-based resolution (multilingual search + birth-year / nationality /
+      // occupation disambiguation). Refuses on ambiguity or contradiction, and
+      // applies a stricter bar to living people, so we never blind-pick the top
+      // English search hit the way the old loop did.
       if (!qid && p.name) {
-        const hit = await wdSearch(String(p.name))
-        if (hit?.id) { qid = hit.id; if (hit.description) incoming.description = hit.description }
+        const res = await resolvePersonality({
+          name: String(p.name),
+          profession: p.profession as string | null,
+          birthDate: p.birth_date as string | null,
+          deathDate: p.death_date as string | null,
+          nationality: p.nationality as string | null,
+          isLiving: p.is_living as boolean | null,
+        })
+        if (res) {
+          qid = res.qid
+          entity = res.entity
+          matchConfidence = res.confidence
+          matchReasons = res.reasons
+          if (res.description) incoming.description = res.description
+        }
       }
       if (qid) {
         incoming.wikidata_qid = qid
         wdUrl = `https://www.wikidata.org/wiki/${qid}`
-        entity = await wdEntity(qid)
+        entity = entity ?? await wdEntity(qid)
         if (entity) {
           const birth = formatDate(claimValue(entity, 'P569'))
           const death = formatDate(claimValue(entity, 'P570'))
@@ -160,9 +172,13 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       await sleep(120)
       if (dryRun) continue
 
+      // A fresh low-confidence match still cleared the resolver's bar (it has a
+      // real corroborator) but is worth a human glance before it carries weight.
+      const flagReview = matchConfidence === 'low'
       const { error: uErr } = await supabase.from('personalities').update({
         ...patch,
         quality_score: newScore,
+        ...(flagReview ? { needs_attention: true } : {}),
         last_refreshed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }).eq('id', id)
@@ -175,10 +191,11 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       // sharing one enwiki article (i.e. likely duplicates) — accepted Phase-1 limitation for
       // an audit row; hardened in a later phase.
       if (qid) {
+        const wdConfidence = matchConfidence === 'low' ? 0.6 : matchConfidence === 'medium' ? 0.8 : 1.0
         await supabase.from('personality_sources').upsert({
           personality_id: id, source_slug: 'wikidata', source_entity_id: qid,
-          source_url: wdUrl, confidence: 1.0, is_primary: true, last_seen_at: new Date().toISOString(),
-          raw: { refreshed_keys: Object.keys(patch) },
+          source_url: wdUrl, confidence: wdConfidence, is_primary: true, last_seen_at: new Date().toISOString(),
+          raw: { refreshed_keys: Object.keys(patch), match_confidence: matchConfidence, match_reasons: matchReasons },
         }, { onConflict: 'source_slug,source_entity_id' })
       }
       if (wikiUrl) {
