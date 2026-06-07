@@ -43,11 +43,12 @@ Deno.serve(async (req) => {
 
     const { data: rows, error } = await q
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
-    // Filter in-app: only rows with German chars in title and no de-translation yet.
+    // Only rows not yet translated. German has many umlaut-free words ("Slip mit
+    // Vibrator"), so don't gate on umlauts — translate all; the prompt returns
+    // already-English titles unchanged. The title_i18n.de marker makes it idempotent.
     const todo = (rows ?? []).filter((r) => {
-      const t = (r.title as string) ?? ''
       const i18n = (r.title_i18n as Record<string, unknown> | null) ?? {}
-      return /[äöüÄÖÜß]/.test(t) && !('de' in i18n)
+      return !('de' in i18n)
     })
     if (todo.length === 0) {
       return jsonResponse({ success: true, items: 0, message: 'nothing to translate' }, 200, req)
