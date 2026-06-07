@@ -103,6 +103,27 @@ Deno.test('closure: two independent signals auto-close, one only flags', () => {
   assertEquals(v.needsAttention, true)
 })
 
+Deno.test('closure: url_status broken is a signal (H-3) — weak alone, auto-closes with a second source', () => {
+  // Our url-checker stores 'broken' (no code); it must register as a signal.
+  const brokenAlone = [
+    closureSignal('existing', { url_status: 'broken' }),
+  ].filter(Boolean) as { source: string; reason: string }[]
+  assertEquals(brokenAlone.length, 1)
+  const v1 = evaluateClosure(brokenAlone)
+  assertEquals(v1.closed, false) // never auto-closes on link-rot alone
+  assertEquals(v1.needsAttention, true)
+
+  const brokenPlusClosed = [
+    closureSignal('existing', { url_status: 'broken' }),
+    closureSignal('google', { metadata: { business_status: 'CLOSED_PERMANENTLY' } }),
+  ].filter(Boolean) as { source: string; reason: string }[]
+  assertEquals(evaluateClosure(brokenPlusClosed).closed, true)
+
+  // A healthy / transient status is not a closure signal.
+  assertEquals(closureSignal('existing', { url_status: 'ok' }), null)
+  assertEquals(closureSignal('existing', { url_status: 'timeout' }), null)
+})
+
 Deno.test('source weights: admin outranks discovery sources', () => {
   assertEquals(sourceWeight('admin') > sourceWeight('google'), true)
   assertEquals(sourceWeight('google') > sourceWeight('osm'), true)

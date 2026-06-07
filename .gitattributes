@@ -1,0 +1,5 @@
+# CLAUDE.md's "Repo stats" section is append-only count-sync output written by
+# a bot on both main and feature branches. Those auto-generated lines collided
+# on every merge, leaving long-lived PRs perpetually BLOCKED/DIRTY. `union`
+# auto-resolves by keeping both sides' lines instead of conflicting.
+CLAUDE.md merge=union

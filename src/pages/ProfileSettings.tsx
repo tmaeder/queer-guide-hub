@@ -13,13 +13,13 @@ import {
   Loader2,
   Heart,
   Lock,
-  Plane,
   Check,
-  IdCard,
-  Bell,
+  SlidersHorizontal,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useUserMode } from '@/hooks/useUserMode';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileData } from '@/hooks/useProfileData';
 import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
@@ -116,21 +116,27 @@ interface ContentProps {
 
 function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPasskey, user }: ContentProps) {
   const [searchParams] = useSearchParams();
-  // Tab slugs reorganized 2026-05-25 (milestone "merry-plotting-beacon" Phase 3c):
-  //   account / identity / dating / privacy / notifications / travel
-  // Legacy slugs (basic, relationships, intimate) remap below.
-  const rawTab = searchParams.get('tab') || 'account';
+  const { setMode, datingEnabled } = useUserMode();
+  // Mode-driven IA (2026-06-06): a lean core everyone fills —
+  //   profile (You) / preferences / privacy / account — plus a dating section
+  //   whose depth only mounts when dating mode is on. Old slugs remap below so
+  //   existing deep links keep resolving.
+  const rawTab = searchParams.get('tab') || 'profile';
   const LEGACY_TAB_MAP: Record<string, string> = {
-    basic: 'identity',
+    account: 'account',
+    basic: 'profile',
+    identity: 'profile',
     relationships: 'dating',
     intimate: 'dating',
+    notifications: 'account',
+    travel: 'preferences',
   };
   const [activeTab, setActiveTab] = useState(LEGACY_TAB_MAP[rawTab] ?? rawTab);
   const [formData, setFormData] = useState<ProfileFormData>(() => initFormData(profile));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error'>('saved');
 
-  const profileCompletion = calculateCompletion(formData);
+  const profileCompletion = calculateCompletion(formData, profile);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -256,90 +262,125 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         </div>
       </PageHeader>
 
-      {/* Tabs — line style */}
+      {/* Tabs — line style. Dating depth only mounts in dating mode. */}
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
           <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
-            <TabsTrigger value="account" className={lineTab}>
-              <span className="flex items-center gap-2"><User size={16} /> Account</span>
+            <TabsTrigger value="profile" className={lineTab}>
+              <span className="flex items-center gap-2"><User size={16} /> You</span>
             </TabsTrigger>
-            <TabsTrigger value="identity" className={lineTab}>
-              <span className="flex items-center gap-2"><IdCard size={16} /> Identity</span>
-            </TabsTrigger>
-            <TabsTrigger value="dating" className={lineTab}>
-              <span className="flex items-center gap-2"><Heart size={16} /> Dating</span>
+            <TabsTrigger value="preferences" className={lineTab}>
+              <span className="flex items-center gap-2"><SlidersHorizontal size={16} /> Preferences</span>
             </TabsTrigger>
             <TabsTrigger value="privacy" className={lineTab}>
               <span className="flex items-center gap-2"><Lock size={16} /> Privacy</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className={lineTab}>
-              <span className="flex items-center gap-2"><Bell size={16} /> Notifications</span>
+            <TabsTrigger value="account" className={lineTab}>
+              <span className="flex items-center gap-2"><Settings size={16} /> Account</span>
             </TabsTrigger>
-            <TabsTrigger value="travel" className={lineTab}>
-              <span className="flex items-center gap-2"><Plane size={16} /> Travel</span>
+            <TabsTrigger value="dating" className={lineTab}>
+              <span className="flex items-center gap-2"><Heart size={16} /> Dating</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="account">
-            <Card className="mb-6">
-              <CardContent className="pt-6 flex flex-col gap-4">
-                <div>
-                  <p className="font-semibold">Username</p>
+          {/* You — identity that shows everywhere */}
+          <TabsContent value="profile">
+            <BasicInfoTab formData={formData} profile={profile} user={user} onChange={handleInputChange} onAvatarSave={handleAvatarSave} />
+          </TabsContent>
+
+          {/* Preferences — the signal that drives search/trips/recs */}
+          <TabsContent value="preferences">
+            <div className="flex flex-col gap-6">
+              <Card>
+                <CardContent className="pt-6 flex flex-col gap-2">
+                  <p className="font-semibold">Personalize your search</p>
                   <p className="text-sm text-muted-foreground">
-                    Your unique queer.guide handle.
+                    Pick vibes, home city, and languages so search and recommendations learn what you like.
                   </p>
-                </div>
-                <UsernameSelector
-                  value={(profile as Profile & { username?: string | null })?.username ?? null}
-                  onChange={(username) => updateProfile({ username } as Partial<Profile>)}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="identity">
-            <div className="flex flex-col gap-6">
-              <BasicInfoTab formData={formData} profile={profile} user={user} onChange={handleInputChange} onAvatarSave={handleAvatarSave} />
-              <IdentityTab formData={formData} onChange={handleInputChange} onComingOutChange={handleComingOutChange} />
+                  <LocalizedLink to="/onboarding/search" className="text-sm underline underline-offset-4 mt-1">
+                    Set your vibes →
+                  </LocalizedLink>
+                </CardContent>
+              </Card>
+              <TravelPreferencesEditor />
+              <DocumentsList tripId={null} />
             </div>
           </TabsContent>
 
-          <TabsContent value="dating">
-            <div className="flex flex-col gap-6">
-              <RelationshipsTab formData={formData} onChange={handleInputChange} />
-              <IntimateTab />
-            </div>
-          </TabsContent>
-
+          {/* Privacy & visibility */}
           <TabsContent value="privacy">
             <PrivacyTab formData={formData} hasPasskey={hasPasskey} onPrivacyChange={handlePrivacyChange} />
           </TabsContent>
 
-          <TabsContent value="notifications">
+          {/* Account & security */}
+          <TabsContent value="account">
             <div className="flex flex-col gap-6">
+              <Card>
+                <CardContent className="pt-6 flex flex-col gap-4">
+                  <div>
+                    <p className="font-semibold">Username</p>
+                    <p className="text-sm text-muted-foreground">
+                      Your unique queer.guide handle.
+                    </p>
+                  </div>
+                  <UsernameSelector
+                    value={(profile as Profile & { username?: string | null })?.username ?? null}
+                    onChange={(username) => updateProfile({ username } as Partial<Profile>)}
+                  />
+                </CardContent>
+              </Card>
               <EmailForwardingSettings />
               <PushNotificationSettings />
             </div>
           </TabsContent>
 
-          <TabsContent value="travel">
-            <div className="flex flex-col gap-6">
-              <TravelPreferencesEditor />
-              <DocumentsList tripId={null} />
-            </div>
+          {/* Dating — full depth, only when dating mode is on */}
+          <TabsContent value="dating">
+            {datingEnabled ? (
+              <div className="flex flex-col gap-6">
+                <IdentityTab formData={formData} onChange={handleInputChange} onComingOutChange={handleComingOutChange} />
+                <RelationshipsTab formData={formData} onChange={handleInputChange} />
+                <IntimateTab />
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="pt-6 flex flex-col gap-4">
+                  <div>
+                    <p className="font-semibold">Dating is off</p>
+                    <p className="text-sm text-muted-foreground">
+                      Turn on dating mode to set up your dating and identity profile — relationship
+                      style, intimacy, and what you're looking for. Nothing here is shown until you
+                      opt in, and you can turn it off again any time.
+                    </p>
+                  </div>
+                  <Button
+                    className="rounded-element self-start"
+                    onClick={() => setMode('dating')}
+                  >
+                    <Heart size={16} className="mr-2" />
+                    Turn on dating mode
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
 
-        {/* Search personalization entry point */}
-        <section className="mt-10 border-t border-border pt-6">
-          <p className="font-semibold mb-1">Personalize your search</p>
-          <p className="text-sm mb-4 text-muted-foreground">
-            Pick vibes, home city, and languages so search results learn what you like.
-          </p>
-          <LocalizedLink to="/onboarding/search" className="text-sm underline underline-offset-4">
-            Personalize →
-          </LocalizedLink>
-        </section>
+        {datingEnabled && (
+          <section className="mt-10 border-t border-border pt-6">
+            <p className="text-sm text-muted-foreground">
+              Dating mode is on.{' '}
+              <button
+                type="button"
+                className="underline underline-offset-4"
+                onClick={() => setMode('community')}
+              >
+                Turn it off
+              </button>{' '}
+              — your dating profile stays saved, just hidden.
+            </p>
+          </section>
+        )}
       </div>
 
       {/* Sticky auto-save status bar */}

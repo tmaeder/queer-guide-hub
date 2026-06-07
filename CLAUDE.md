@@ -52,6 +52,10 @@ queer-guide-hub/
 
 **Venue Truth Engine (consensus enrichment, 2026-05-30):** The `venue-ingestion-unified` DAG (daily cron `pipeline-venue-ingestion`, `0 3 * * *`, 7 sources) gained a `pipeline-consensus-merge` node between `dedupe` and `quality`. It groups staging rows that dedup linked to the same existing venue (`dedup_match_id`), votes each field across sources + the venue's current value (`source='existing'`), and writes per-field provenance + confidence. Logic is pure + unit-tested in `_shared/venue-consensus.ts` (source trust weights, noisy-OR confidence, comparator per field kind: identity/url/phone/email/coords/text/number/array). Agreement ≥2 sources → high confidence → auto-commit; conflict on a HIGH-RISK field (name/lat/lng/category) → `review_status='pending_review'` → existing triage. Per-(venue,field,source) candidates in `venue_field_provenance` (`is_winning` flag); merge decisions audited in `venue_consensus_audit`. Closure is a voted signal (Google `business_status`, `url_status` 404/410, `permanently_closed`): ≥2 signals auto-set `venues.closed_at`, 1 signal sets `needs_attention`. Every consensus pass stamps `venues.last_refreshed_at`; selector RPC `venues_due_for_refresh(limit)` ranks never-refreshed > broken-url > low-quality > stale. Admin sees sources + per-field confidence + closure flags in the triage detail panel (`src/components/admin/triage/TriageDetailPanel.tsx`). Follow-ups (deferred): free `source-wikidata-venue` to add a cheap voter; per-venue targeted detail re-fetch driven by `venues_due_for_refresh`.
 
+**Country Completeness Engine (data quality, 2026-06-07):** Per-country `content_completeness_score` (0-100, distinct from `equality_score` which is legal status) + `enrichment_status` jsonb (per-field state map; `data_unavailable` is terminal → credited by the scorer, skipped by the selector, so uninhabited territories aren't flagged forever). Pure-SQL `run_country_completeness_recompute()` (nightly `30 3 * * *`, registered in `admin_automations`) scores a uniform bar across editorial 25 / core facts 25 / stats 20 / legal coverage 20 / media+geo 10. Selector RPC `countries_due_for_enrichment(limit, phase)` ranks never-scored > low-score > stale. Three fillers: **`pipeline-enrich-country-editorial`** (LLM hook+paragraph grounded in facts + LGBTI legal context; hybrid-by-confidence via `_shared/editorial-confidence.ts` — high-conf safe → auto-publish to `description`/`editorial_hook`/`editorial_long`, criminalizing destinations + low-confidence → `editorial_drafts` review at `/admin/places-editorial`); **`enrich-wolfram`** (fills `gdp_usd`/`gdp_per_capita_usd`/`human_development_index`/`life_expectancy`/`literacy_rate` from Wolfram, terminal `data_unavailable` after 3 misses; needs `WOLFRAM_APP_ID`); equality_score reconciled to one shared formula in `_shared/equality-score.ts` (re-applied nightly by the existing `wf-import-ilga-data` cron). Weekly fill crons `wf-enrich-wolfram-countries` (`0 5 * * 0`) + `wf-enrich-country-editorial` (`0 6 * * 0`) via `enqueue_workflow`. Admin completeness column on `/admin/countries`; `editorial_hook` rendered on the country About card.
+
+**Personhood Disposition (data quality, 2026-06-07):** Detects organizations / venues / teams misfiled in `personalities` (the bare-name residue the Wikidata resolver refuses because of its `P31=Q5` human filter — e.g. *Sisters of Perpetual Indulgence*, *SF Tsunami Water Polo*, *La Montaña*) and **reversibly soft-archives** confirmed non-persons (`visibility→draft` + `review_status='archived'` + `seo_indexable=false`, the Phase-1 adult-cohort convention; never hard-deletes, never reclassifies — no org table exists). Classifier `_shared/personhood-classifier.ts` fuses name/bio heuristics (reusing `entity-type-classifier.ts`) + Wikidata `P31` (`classifyWikidataPersonhood` in `_shared/wikidata-resolve.ts`) + LLM grounded in the bio, hybrid-by-confidence: a confident Wikidata-human match **vetoes** archiving; only `non_person` ≥0.8 archives, `uncertain` → `needs_attention`, `person` recorded + excluded from future runs. RPCs (migration `20260607400000`): `archive_personality_as_nonperson(id,reason,signals)`, `unarchive_personality(id)` (existing admin restore, extended to also restore visibility/seo from `enrichment_status.personhood.archived` snapshot), `set_personhood_verdict(id,verdict,payload)`, `personalities_nonperson_candidates(limit)`. Edge fn `pipeline-classify-personhood` (circuit-broken, daily-capped, internal-secret gated) on weekly cron `wf-classify-personhood` (`30 6 * * 1`). New critical `person_nonperson_public` gate in `release_gate_checks()`. Backfill driver `scripts/data-quality/classify-personhood.mjs`. First pass (2026-06-07): 12 archived, 6 flagged for triage, 62 confirmed persons, 0 public non-persons. Audit: `docs/audits/2026-06-07-personhood-disposition.md`.
+
 **Payments:** Stripe via `create-checkout-session` + `stripe-webhook` edge functions.
 
 **User submissions (Chrome extension):** `extension/` (MV3, React 19) extracts venues/events/hotels/marketplace/news from any webpage via JSON-LD/microdata/OpenGraph/DOM heuristics. `workers/submit/` (CF Worker) verifies user Supabase JWTs and stages into the same `ingestion_staging` table the scraper uses, with `source_type='user_submission'` — submissions flow through the existing normalize → dedupe → quality-score → review-gate → commit pipeline. Submitter columns + RLS added via migration `002_user_submissions`.
@@ -60,8 +64,21 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 190
-- **Migrations:** 465
+- **Edge functions:** 192
+- **Migrations:** 493
+- **Edge functions:** 196
+- **Migrations:** 509
+- **Edge functions:** 194
+- **Migrations:** 495
+- **Edge functions:** 195
+- **Migrations:** 507
+- **Edge functions:** 193
+- **Migrations:** 497
+- **Edge functions:** 195
+- **Migrations:** 496
+- **Edge functions:** 192
+- **Migrations:** 500
+- **Migrations:** 485
 - **Edge functions:** 190
 - **Migrations:** 458
 - **Migrations:** 438
@@ -103,7 +120,7 @@ queer-guide-hub/
   - **CF Worker:** `search-proxy` — `SEARCH_BACKEND` flag (`meili` default | `pg` | `shadow`). `pg` serves `/search` + `/autocomplete` from the Postgres RPCs; `shadow` serves Meili but logs a `search_shadow` comparison for cutover validation (analyze with `scripts/search-eval/shadow-analyze.mjs`). Rollout runbook: `docs/deploy/search-rollout.md`.
   - **Sync:** `meilisearch-sync` edge function (Meili); Postgres `search_documents` stays fresh via entity + `content_embeddings` triggers.
   - **Indexes (Meili):** venues, events, cities, countries, news, marketplace, personalities, tags, queer_villages
-  - **Decommission (in progress):** the worker now serves Postgres directly; the DB sync triggers/crons and the `meilisearch-sync` edge function are gone; the `meilisearch/` ops dir + `configure-meili.sh`/`meili-direct-resync.sh` are removed. Remaining: the `INDEX_MAP`/`ALL_INDEXES` lookup in `workers/search-proxy/src/meili.ts`, the admin search-intelligence UI, dangling `meilisearch-sync` refs (`backfill-venue-cities`, `search-intelligence`, `workers/ingest`), and the Infomaniak node shutdown.
+  - **Decommission (code-side complete, 2026-06-07):** the worker serves Postgres directly; the DB sync triggers/crons and the `meilisearch-sync` edge function are gone; `workers/search-proxy/src/meili.ts`, the `meilisearch/` ops dir, and `configure-meili.sh`/`meili-direct-resync.sh` are removed; the admin search-intelligence UI is Meili-free (dead `Index*`/`Consistency*` types dropped). `INDEX_MAP`/`ALL_INDEXES` live in `workers/search-proxy/src/entityIndex.ts` and are **active Postgres-side** entity-type→pg-type normalization (not Meili code, despite the name) — keep. Verified no live Meili cron/trigger/function/env ref remains; residual `meili` strings are only a shared `x-webhook-secret` default (`meilisearch-sync-webhook-2026`) in geocode/backfill functions — cosmetic, leave. **Only remaining task: the Infomaniak Meili node shutdown (external infra).**
   - **Legacy:** PostgreSQL FTS `universal_search()` and `algolia-sync` are deprecated
 - **Dedup:** `find_duplicate_clusters(content_type)` groups near-duplicate live entities (date-aware for events/festivals). Admins review + merge venues at `/admin/duplicates` — a soft, reversible merge via `merge_venues`/`unmerge_venues` (sets `duplicate_of_id`, reparents children, slug redirect via `venue_slug_redirects`, audited in `venue_merge_audit`).
 

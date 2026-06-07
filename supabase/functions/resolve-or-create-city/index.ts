@@ -183,23 +183,39 @@ async function createCity(
     // Geocode if no coordinates provided
     let lat = latitude
     let lng = longitude
+    let regionName: string | null = null
 
-    if (!lat || !lng) {
+    if (lat == null || lng == null) {
+      // Resolve the expected ISO-2 country code so we can reject a geocode hit
+      // that landed in the wrong country. A country-constrained query like
+      // "Lucerne, Germany" otherwise returns Berlin and mislocates the city.
+      let expectedCode: string | null = null
       try {
-        const geocodeUrl = `https://photon.komoot.io/api?q=${encodeURIComponent(`${cityName}, ${countryName}`)}&limit=1&lang=en`
+        const { data: co } = await supabase.from('countries').select('code').eq('id', countryId).single()
+        expectedCode = co?.code ? String(co.code).toUpperCase() : null
+      } catch { /* fall through — validate against name only */ }
+
+      try {
+        const geocodeUrl = `https://photon.komoot.io/api?q=${encodeURIComponent(`${cityName}, ${countryName}`)}&limit=5&lang=en`
         const geoRes = await fetch(geocodeUrl)
         if (geoRes.ok) {
           const geoData = await geoRes.json()
-          if (geoData.features?.length > 0) {
-            const coords = geoData.features[0].geometry?.coordinates
-            if (coords) {
+          const features = Array.isArray(geoData.features) ? geoData.features : []
+          // Accept only a result whose country matches the expected one.
+          const match = features.find((f: { properties?: { countrycode?: string } }) => {
+            const cc = (f?.properties?.countrycode || '').toUpperCase()
+            return !expectedCode || cc === expectedCode
+          })
+          if (match) {
+            const coords = match.geometry?.coordinates
+            if (Array.isArray(coords) && coords.length === 2) {
               lng = coords[0]
               lat = coords[1]
             }
-            // Also get region_name from Photon properties
-            const props = geoData.features[0].properties || {}
-            const _regionName = props.state || null
+            regionName = match.properties?.state || null
           }
+          // No same-country match → leave coords null rather than snap to a
+          // wrong-country capital.
         }
       } catch (geoErr) {
         console.warn('Geocoding failed for new city, inserting without coordinates:', geoErr)

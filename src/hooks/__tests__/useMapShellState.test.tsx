@@ -26,7 +26,7 @@ describe('useMapShellState', () => {
     const { result } = renderHook(() => useMapShellState(discover), {
       wrapper: wrapper('/map'),
     });
-    expect(result.current.state.lens).toBe('pins');
+    expect(result.current.state.lens).toBe('combined');
     expect(result.current.state.enabledLayers).toEqual(seededLayers);
     // restrooms (external Refuge API) is available but off by default
     expect(result.current.state.enabledLayers).not.toContain('restrooms');
@@ -40,11 +40,18 @@ describe('useMapShellState', () => {
     expect(result.current.state.lens).toBe('density');
   });
 
+  it('parses combined from the URL when allowed by the surface', () => {
+    const { result } = renderHook(() => useMapShellState(discover), {
+      wrapper: wrapper('/map?lens=combined'),
+    });
+    expect(result.current.state.lens).toBe('combined');
+  });
+
   it('ignores lens values not allowed by the surface', () => {
     const { result } = renderHook(() => useMapShellState(discover), {
       wrapper: wrapper('/map?lens=routes'),
     });
-    expect(result.current.state.lens).toBe('pins');
+    expect(result.current.state.lens).toBe('combined');
   });
 
   it('parses filters (q, category, tags, near, queer_owned, era) from URL', () => {
@@ -79,7 +86,27 @@ describe('useMapShellState', () => {
     const { result } = renderHook(() => useMapShellState(discover), {
       wrapper: wrapper('/map?lens=density'),
     });
-    act(() => result.current.setLens('pins'));
+    act(() => result.current.setLens('combined'));
+    expect(result.current.state.lens).toBe('combined');
+  });
+
+  it('defaults city and admin surfaces to combined', () => {
+    const city = SURFACE_PRESETS.city;
+    const admin = SURFACE_PRESETS.admin;
+    const cityHook = renderHook(() => useMapShellState(city), {
+      wrapper: wrapper('/city'),
+    });
+    const adminHook = renderHook(() => useMapShellState(admin), {
+      wrapper: wrapper('/admin'),
+    });
+    expect(cityHook.result.current.state.lens).toBe('combined');
+    expect(adminHook.result.current.state.lens).toBe('combined');
+  });
+
+  it('still honors an explicit ?lens=pins over the combined default', () => {
+    const { result } = renderHook(() => useMapShellState(discover), {
+      wrapper: wrapper('/map?lens=pins'),
+    });
     expect(result.current.state.lens).toBe('pins');
   });
 
@@ -101,6 +128,21 @@ describe('useMapShellState', () => {
     expect(result.current.state.enabledLayers).toEqual(['venues', 'events']);
     act(() => result.current.setLayers([]));
     expect(result.current.state.enabledLayers).toEqual(seededLayers);
+  });
+
+  it('falls back to surface defaults when saved layer prefs are empty', () => {
+    // Regression: a once-saved `enabledLayers: []` in localStorage used to
+    // stick — `[] ?? config.layers` does not fall back — leaving bare /map
+    // with zero layers and "0 results in view".
+    localStorage.setItem('map_shell_prefs', JSON.stringify({ enabledLayers: [] }));
+    try {
+      const { result } = renderHook(() => useMapShellState(discover), {
+        wrapper: wrapper('/map'),
+      });
+      expect(result.current.state.enabledLayers).toEqual(seededLayers);
+    } finally {
+      localStorage.removeItem('map_shell_prefs');
+    }
   });
 
   it('ignores layer values not present in the surface preset', () => {

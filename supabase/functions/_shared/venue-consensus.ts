@@ -271,8 +271,14 @@ export function closureSignal(source: string, data: Record<string, unknown>): Cl
   if (meta.permanently_closed === true || data.permanently_closed === true) {
     return { source, reason: 'permanently_closed=true' }
   }
+  // Link-rot is a (weak) closure signal. Our url-checker stores 'broken' (no
+  // status code); HTTP 404/410 are also accepted from sources that pass codes.
+  // One signal only flags needs_attention — auto-close still needs >=2 distinct
+  // sources (see evaluateClosure).
   const urlStatus = String(meta.url_status ?? data.url_status ?? '')
-  if (urlStatus === '404' || urlStatus === '410') return { source, reason: `url_status=${urlStatus}` }
+  if (urlStatus === '404' || urlStatus === '410' || urlStatus === 'broken') {
+    return { source, reason: `url_status=${urlStatus}` }
+  }
   return null
 }
 

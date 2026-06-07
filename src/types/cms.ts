@@ -161,7 +161,7 @@ export interface ContentTypeConfig {
    * Postgres select string used by the list view (Supabase syntax). Defaults to
    * `'*'`. Override to fetch joined relations and aggregate counts that virtual
    * `listRender` columns can read from. Example:
-   * `'*,countries(name,lgbt_legal_status),venues(count)'`.
+   * `'*,countries(name,equality_score),venues(count)'`.
    */
   listSelect?: string;
   /** Default values for new items */
@@ -430,9 +430,24 @@ export interface Hotline {
   reports_to_police?: boolean;
   operator?: string;
   affiliation?: HotlineAffiliation;
+  /**
+   * Distinguishes a call-now crisis line from a referral/umbrella org that only
+   * offers a website (no phone/channel). Directories are rendered separately so
+   * a user in crisis is never shown a website where they expect a hotline.
+   * Defaults to 'hotline' when absent.
+   */
+  kind?: 'hotline' | 'directory';
   /** ISO date — required for any newly-edited entry */
   verified_at?: string;
   verified_by?: string;
+  /** How verified_at was established (e.g. URL-liveness + phone format). Phones cannot be auto-dialed. */
+  verified_method?: string;
+  /** Result of the last automated URL-liveness check. */
+  link_status?: 'live' | 'broken' | 'bot_blocked';
+  /** ISO date of the last URL-liveness check. */
+  link_checked_at?: string;
+  /** Set when the entry needs a human to re-check a dead/changed link or number. */
+  needs_review?: boolean;
   source_url?: string;
   url?: string;
 }

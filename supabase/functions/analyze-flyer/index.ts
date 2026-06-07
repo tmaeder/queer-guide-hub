@@ -206,25 +206,45 @@ async function structureExtraction(
   if (hintCountry) hints.push(`User hint: country is likely "${hintCountry}"`)
   const hintText = hints.length > 0 ? '\n\n' + hints.join('\n') : ''
 
-  const userMessage = isTextMode
-    ? `Here is text extracted from a document:\n\n${contentText}${hintText}`
-    : `Here is a detailed description of a flyer/poster image:\n\n${contentText}${hintText}`
+  // Bound the structuring latency: the 70B model's runtime scales with input +
+  // output size, and large pages (e.g. long articles) pushed a single call past
+  // the 45s ceiling → 500. Event/venue details sit near the top, so 6k chars is
+  // plenty and keeps the call comfortably under the ceiling (~12-25s) with margin.
+  const boundedContent = contentText.length > 6_000 ? contentText.slice(0, 6_000) : contentText
 
+  const userMessage = isTextMode
+    ? `Here is text extracted from a document:\n\n${boundedContent}${hintText}`
+    : `Here is a detailed description of a flyer/poster image:\n\n${boundedContent}${hintText}`
+
+  // Use a fast CF-hosted model for structuring. The default 70B is slow and
+  // highly variable on Workers AI (12s–45s+, frequently timing out under
+  // concurrency with the background pipelines) — this is field transcription
+  // from already-clean text, not a reasoning task, so Llama 4 Scout (fast MoE)
+  // handles it well at a fraction of the latency. Passing an explicit @cf/ model
+  // opts out of mapToCfModel's 70B default.
   const result = await chatCompletion(supabase, {
-    model: 'gpt-4o-mini',
+    model: '@cf/meta/llama-4-scout-17b-16e-instruct',
     messages: [
       { role: 'system', content: STRUCTURING_PROMPT },
       { role: 'user', content: userMessage },
     ],
     temperature: 0.1,
-    max_tokens: 4000,
+    max_tokens: 2000,
     response_format: { type: 'json_object' },
   })
   const content = result.content
   const source = isTextMode ? 'text+refinement' : 'vision+refinement'
 
   try {
-    const parsed = JSON.parse(content)
+    // Tolerate models that wrap JSON in ```json fences or surrounding prose.
+    const jsonText = (() => {
+      const fenced = content.match(/```(?:json)?\s*([\s\S]*?)```/i)
+      if (fenced) return fenced[1].trim()
+      const first = content.indexOf('{')
+      const last = content.lastIndexOf('}')
+      return first >= 0 && last > first ? content.slice(first, last + 1) : content
+    })()
+    const parsed = JSON.parse(jsonText)
     const rawItems = Array.isArray(parsed.items) ? parsed.items : [parsed]
     const items: ExtractedItem[] = rawItems.slice(0, 10).map((item: Record<string, unknown>) => {
       const detectedType = item.detected_type === 'venue' ? 'venue' : 'event'
@@ -586,7 +606,8 @@ async function fetchPageText(pageUrl: string): Promise<string> {
   const html = new TextDecoder().decode(buffer)
   const text = htmlToText(html)
   if (text.length < 20) throw new Error('Page had no extractable text')
-  return text.slice(0, 16_000)
+  // structureExtraction caps to 9k before the LLM; cap here too to limit work.
+  return text.slice(0, 12_000)
 }
 
 // ── Main Handler ──────────────────────────────────────────────────────────

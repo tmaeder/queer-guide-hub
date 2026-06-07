@@ -1025,7 +1025,7 @@
       "resendIn": "Reenviar em {{seconds}}s",
       "resent": "E-mail de verificação enviado. Confira sua caixa de entrada.",
       "backToLogin": "Voltar para login",
-      "continue": "Continue to The Queer Guide",
+      "continue": "Continue to Queer Guide",
       "banner": "Verify your email to unlock contributions and messaging.",
       "bannerSent": "Verification email sent. Check your inbox.",
       "resendShort": "Resend",
@@ -1038,14 +1038,14 @@
     }
   },
   "onboarding": {
-    "welcome": "Bem-vindo ao The Queer Guide",
+    "welcome": "Bem-vindo ao Queer Guide",
     "welcomeBlurb": "Você está dentro. Alguns passos rápidos e opcionais para deixar do seu jeito.",
     "passkeyTitle": "Configurar uma passkey",
     "passkeyBlurb": "Entre de forma mais rápida e segura com seu dispositivo. Sem senhas para lembrar.",
     "passkeyEnable": "Ativar passkey",
     "passkeyAlreadyEnrolled": "Passkey já ativada",
     "passkeyEnrolled": "Passkey ativada",
-    "continue": "Continuar para o The Queer Guide",
+    "continue": "Continuar para o Queer Guide",
     "skip": "Pular por agora"
   },
   "events": {

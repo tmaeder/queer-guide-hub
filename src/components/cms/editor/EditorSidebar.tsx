@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { WorkflowPanel } from './WorkflowPanel';
 import { SEOPanel } from './SEOPanel';
+import { QualityPanel } from './QualityPanel';
 import { useCMSRevisions } from '@/hooks/useCMSRevisions';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { getContentType } from '@/config/contentTypeRegistry';
@@ -25,6 +26,14 @@ interface EditorSidebarProps {
   itemId: string | null;
   metadata: CMSContentMetadata | null;
   onUpdateMetadata: (updates: Partial<CMSContentMetadata>) => Promise<void>;
+  /** Current field values, for the proactive QualityPanel. */
+  qualitySource?: Record<string, unknown>;
+  /** Apply an AI-suggested field value to the editor. */
+  onApplyField?: (field: string, value: unknown) => void;
+  /** Switch the editor to the field group that owns `field`. */
+  onJumpToField?: (field: string) => void;
+  /** Auto-run quality review on open (cockpit mode). */
+  autoRunQuality?: boolean;
 }
 
 interface PanelProps {
@@ -70,11 +79,17 @@ export function EditorSidebar({
   itemId,
   metadata,
   onUpdateMetadata,
+  qualitySource,
+  onApplyField,
+  onJumpToField,
+  autoRunQuality,
 }: EditorSidebarProps) {
   const config = getContentType(contentType);
+  const showQuality = Boolean(onApplyField && onJumpToField);
 
   // Accordion expanded states
   const [expandedPanels, setExpandedPanels] = useState<Record<string, boolean>>({
+    quality: Boolean(autoRunQuality),
     workflow: true,
     seo: false,
     media: false,
@@ -115,6 +130,20 @@ export function EditorSidebar({
 
   return (
     <div className="p-4 flex flex-col gap-4">
+      {/* Quality Panel (AI review) */}
+      {showQuality && (
+        <Panel title="Quality" open={expandedPanels.quality} onOpenChange={setPanel('quality')}>
+          <QualityPanel
+            contentType={contentType}
+            recordId={itemId}
+            source={qualitySource ?? {}}
+            onApplyField={onApplyField!}
+            onJumpToField={onJumpToField!}
+            autoRun={autoRunQuality}
+          />
+        </Panel>
+      )}
+
       {/* Workflow Panel */}
       <Panel title="Workflow" open={expandedPanels.workflow} onOpenChange={setPanel('workflow')}>
         <WorkflowPanel contentType={contentType} itemId={itemId} />

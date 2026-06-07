@@ -11,7 +11,6 @@ import type {
 } from '@/components/map/MapShell.types';
 
 const PREFS_KEY = 'map_shell_prefs';
-const LENS_KEYS: MapLens[] = ['pins', 'density', 'routes', 'boundary'];
 
 /**
  * Layers enabled on first load: the surface's available layers narrowed to
@@ -55,7 +54,6 @@ function parseNum(raw: string | null, min: number, max: number): number | undefi
 function parseLens(raw: string | null, allowed: MapLens[]): MapLens | undefined {
   if (!raw) return undefined;
   const candidate = raw as MapLens;
-  if (!LENS_KEYS.includes(candidate)) return undefined;
   return allowed.includes(candidate) ? candidate : undefined;
 }
 
@@ -99,9 +97,14 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
       (prefs?.lens && config.lenses.includes(prefs.lens) ? prefs.lens : config.defaultLens)
     : inMemoryRef.current.lens;
 
+  // An empty saved layer set must fall back to the surface defaults, NOT
+  // persist as "no layers". `[] ?? config.layers` does not fall back (an empty
+  // array isn't nullish), so a once-saved `enabledLayers: []` would render zero
+  // layers — a blank map — on every bare /map visit. Guard on length.
+  const savedLayers = prefs?.enabledLayers?.filter((l) => config.layers.includes(l));
   const enabledLayers: LayerType[] = useUrl
     ? parseLayers(searchParams.get('layers'), config.layers) ??
-      (prefs?.enabledLayers?.filter((l) => config.layers.includes(l)) ?? defaultLayers)
+      (savedLayers && savedLayers.length > 0 ? savedLayers : defaultLayers)
     : inMemoryRef.current.enabledLayers;
 
   const filters: MapShellFilters = useMemo(() => {
@@ -121,6 +124,10 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
       }
     }
     if (searchParams.get('queer_owned') === '1') next.queerOwned = true;
+    if (searchParams.get('open') === '1') next.openNow = true;
+    const from = searchParams.get('from');
+    const to = searchParams.get('to');
+    if (from && to) next.dateRange = { start: from, end: to };
     const era = searchParams.get('era');
     if (era) {
       const [s, e] = era.split('-').map(Number);
@@ -204,6 +211,15 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
             }
             if (next.queerOwned) sp.set('queer_owned', '1');
             else sp.delete('queer_owned');
+            if (next.openNow) sp.set('open', '1');
+            else sp.delete('open');
+            if (next.dateRange) {
+              sp.set('from', next.dateRange.start);
+              sp.set('to', next.dateRange.end);
+            } else {
+              sp.delete('from');
+              sp.delete('to');
+            }
             if (next.era) sp.set('era', `${next.era.decadeStart}-${next.era.decadeEnd}`);
             else sp.delete('era');
             return sp;

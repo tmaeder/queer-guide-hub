@@ -422,6 +422,9 @@ verify_jwt = false
 [functions.venue-url-checker]
 verify_jwt = false
 
+[functions.marketplace-link-checker]
+verify_jwt = false
+
 # Workflow/pipeline functions (invoked by dispatcher with service-role bearer)
 [functions.marketplace-image-mirror]
 verify_jwt = false
@@ -451,6 +454,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.event-agentic-enrich]
+verify_jwt = false
+
+[functions.pipeline-classify-personhood]
 verify_jwt = false
 
 # Passkey ops: enroll/verify-enrollment do a manual JWT check in code; the

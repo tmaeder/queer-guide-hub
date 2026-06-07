@@ -7,7 +7,6 @@ export interface LocalPersonality {
   name: string;
   profession: string | null;
   image_url: string | null;
-  lgbti_connection: string | null;
   slug: string | null;
   city?: { id: string; name: string } | null;
 }
@@ -52,7 +51,7 @@ export function useTripLocalContext(trip: TripWithDetails | undefined) {
       const [personalitiesRes, villagesRes] = await Promise.all([
         supabase
           .from('personalities')
-          .select('id, name, profession, image_url, lgbti_connection, slug, city:city_id(id, name)')
+          .select('id, name, profession, image_url, slug, city:city_id(id, name)')
           .in('city_id', cityIds)
           .eq('visibility', 'public')
           .order('view_count', { ascending: false, nullsFirst: false })

@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile, type Profile } from "@/hooks/useProfile";
 import { submitOnboarding, fetchAutocomplete } from "@/lib/searchClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,7 @@ const LANGS: { code: string; label: string }[] = [
 
 export default function SearchPersonalization() {
 	const { user } = useAuth();
+	const { updateProfile } = useProfile();
 	const navigate = useNavigate();
 	const [step, setStep] = useState(1);
 	const [vibes, setVibes] = useState<string[]>([]);
@@ -76,11 +78,19 @@ export default function SearchPersonalization() {
 		}
 		setSubmitting(true);
 		try {
+			// Canonical store is the profile. Vibes live in `interests`; home city in
+			// `location`; languages in `languages`. Search reads these at query time.
+			await updateProfile({
+				interests: vibes,
+				languages: langs,
+				...(cityChoice?.title ? { location: cityChoice.title } : {}),
+			} as Partial<Profile>);
+			// Still feed the search worker's bias vector (best-effort).
 			await submitOnboarding(user.id, {
 				vibes,
 				home_city: cityChoice?.title,
 				languages: langs,
-			});
+			}).catch(() => { /* worker bias is non-critical */ });
 			navigate("/");
 		} finally {
 			setSubmitting(false);

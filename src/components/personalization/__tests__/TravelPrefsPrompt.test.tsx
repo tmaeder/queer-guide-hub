@@ -54,7 +54,7 @@ describe('TravelPrefsPrompt', () => {
     fetchPrefsMock.mockResolvedValue({});
     render(<TravelPrefsPrompt />, { wrapper });
     await waitFor(() => expect(screen.getByText(/Personalize your travel/i)).toBeInTheDocument());
-    expect(screen.getByRole('link', { name: /Set up/i })).toHaveAttribute('href', '/profile/settings?tab=travel');
+    expect(screen.getByRole('link', { name: /Set up/i })).toHaveAttribute('href', '/profile/settings?tab=preferences');
   });
 
   it('Dismiss persists to sessionStorage and hides the prompt', async () => {

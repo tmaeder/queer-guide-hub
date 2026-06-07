@@ -16,6 +16,8 @@ import * as Sentry from '@sentry/react';
 import { supabase } from '@/integrations/supabase/client';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
+import { isOpenNow } from '@/utils/openingHours';
+import { glyphKeyFor } from '@/components/map/mapIcons';
 import {
   type Bbox,
   LRUCache,
@@ -42,9 +44,17 @@ export interface PointFeatureProps {
   color: string;
   linkTo: string;
   meta: string;
+  /** Promoted from is_featured — drives the larger, ringed pin treatment. */
+  featured: boolean;
+  /** Open-now (venues) / happening-now or liveness=live (events) — drives the pulse. */
+  live: boolean;
+  /** Map-image id for the category glyph drawn on the pin (see mapGlyphs). */
+  iconKey: string;
+  /** Tagged client-side in ExploreMap when the point is in the viewer's saved set. */
+  favorited?: boolean;
 }
 
-type PointFeature = GeoJSON.Feature<GeoJSON.Point, PointFeatureProps>;
+export type PointFeature = GeoJSON.Feature<GeoJSON.Point, PointFeatureProps>;
 type PointCollection = GeoJSON.FeatureCollection<GeoJSON.Point, PointFeatureProps>;
 
 export interface ViewportPointsResult {
@@ -125,7 +135,9 @@ async function fetchVenuesInBbox(
 ): Promise<PointFeature[]> {
   let query = supabase
     .from('venues')
-    .select('id, slug, name, category, latitude, longitude, city, country, is_featured')
+    .select(
+      'id, slug, name, category, latitude, longitude, city, country, is_featured, images, hours, price_range',
+    )
     .neq('data_source', 'refuge-restrooms')
     .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
@@ -147,24 +159,35 @@ async function fetchVenuesInBbox(
   const { data, error } = await query;
   if (error) throw error;
 
-  return (data ?? []).map((v: Record<string, unknown>) => ({
-    type: 'Feature' as const,
-    geometry: { type: 'Point' as const, coordinates: [Number(v.longitude), Number(v.latitude)] },
-    properties: {
-      id: `venue-${v.id}`,
-      pointType: 'venues' as const,
-      name: v.name ?? 'Venue',
-      subtitle: v.category ?? '',
-      color: LAYER_COLORS.venues,
-      linkTo: v.slug ? `/venues/${v.slug}` : '',
-      meta: JSON.stringify({
-        city: v.city,
-        country: v.country,
-        category: v.category,
-        featured: v.is_featured,
-      }),
-    },
-  }));
+  return (data ?? []).map((v: Record<string, unknown>) => {
+    const images = Array.isArray(v.images) ? (v.images as string[]) : [];
+    const openNow = isOpenNow(v.hours);
+    const featured = Boolean(v.is_featured);
+    return {
+      type: 'Feature' as const,
+      geometry: { type: 'Point' as const, coordinates: [Number(v.longitude), Number(v.latitude)] },
+      properties: {
+        id: `venue-${v.id}`,
+        pointType: 'venues' as const,
+        name: v.name ?? 'Venue',
+        subtitle: v.category ?? '',
+        color: LAYER_COLORS.venues,
+        linkTo: v.slug ? `/venues/${v.slug}` : '',
+        featured,
+        live: openNow === true,
+        iconKey: glyphKeyFor('venues', v.category as string | undefined),
+        meta: JSON.stringify({
+          city: v.city,
+          country: v.country,
+          category: v.category,
+          featured,
+          image: images[0] ?? undefined,
+          openNow,
+          priceRange: typeof v.price_range === 'number' ? v.price_range : undefined,
+        }),
+      },
+    };
+  });
 }
 
 async function fetchEventsInBbox(
@@ -174,7 +197,7 @@ async function fetchEventsInBbox(
   let query = supabase
     .from('events')
     .select(
-      'id, slug, title, start_date, event_type, latitude, longitude, city, venue_id, venues!events_venue_id_fkey(name, latitude, longitude)',
+      'id, slug, title, start_date, end_date, event_type, is_featured, images, liveness_status, trust_score, latitude, longitude, city, venue_id, venues!events_venue_id_fkey(name, latitude, longitude)',
     )
     .eq('status', 'active')
     .is('duplicate_of_id', null)
@@ -194,7 +217,8 @@ async function fetchEventsInBbox(
   const { data, error } = await query;
   if (error) throw error;
 
-  return (data ?? [])
+  // Keep only events with a usable location inside the bbox.
+  const rows = (data ?? [])
     .map((e: Record<string, unknown>) => {
       let lat = e.latitude;
       let lng = e.longitude;
@@ -204,8 +228,40 @@ async function fetchEventsInBbox(
       }
       if (lat == null || lng == null) return null;
       if (lat < bbox.south || lat > bbox.north || lng < bbox.west || lng > bbox.east) return null;
+      return { e, lat: Number(lat), lng: Number(lng) };
+    })
+    .filter(Boolean) as { e: Record<string, unknown>; lat: number; lng: number }[];
 
+  // Social-proof: going-count per event (best-effort; never blocks the map).
+  const goingById = new Map<string, number>();
+  const ids = rows.map((r) => String(r.e.id));
+  if (ids.length) {
+    try {
+      const { data: counts } = await supabase.rpc('event_attendee_counts', { event_ids: ids });
+      for (const c of (counts ?? []) as { event_id: string; going_count: number }[]) {
+        if (c.going_count > 0) goingById.set(c.event_id, c.going_count);
+      }
+    } catch {
+      /* attendee counts are optional — ignore failures */
+    }
+  }
+
+  return rows.map(({ e, lat, lng }) => {
       const dateStr = e.start_date ? new Date(e.start_date).toLocaleDateString() : '';
+      const images = Array.isArray(e.images) ? (e.images as string[]) : [];
+      const now = Date.now();
+      const startMs = e.start_date ? Date.parse(e.start_date as string) : NaN;
+      const endMs = e.end_date ? Date.parse(e.end_date as string) : NaN;
+      // "Happening now": within the start/end window, or flagged live, or
+      // starting within the next 24h (a near-term event reads as alive).
+      const happeningNow =
+        e.liveness_status === 'live' ||
+        (!Number.isNaN(startMs) &&
+          !Number.isNaN(endMs) &&
+          startMs <= now &&
+          endMs >= now) ||
+        (!Number.isNaN(startMs) && startMs >= now && startMs - now < 24 * 60 * 60 * 1000);
+      const featured = Boolean(e.is_featured);
       return {
         type: 'Feature' as const,
         geometry: { type: 'Point' as const, coordinates: [Number(lng), Number(lat)] },
@@ -216,16 +272,21 @@ async function fetchEventsInBbox(
           subtitle: dateStr,
           color: LAYER_COLORS.events,
           linkTo: e.slug ? `/events/${e.slug}` : '',
+          featured,
+          live: happeningNow,
+          iconKey: glyphKeyFor('events'),
           meta: JSON.stringify({
             startDate: e.start_date,
             eventType: e.event_type,
             venueName: e.venues?.name,
             city: e.city,
+            image: images[0] ?? undefined,
+            trustScore: typeof e.trust_score === 'number' ? e.trust_score : undefined,
+            attendeeCount: goingById.get(String(e.id)),
           }),
         },
       };
-    })
-    .filter(Boolean) as PointFeature[];
+    }) as PointFeature[];
 }
 
 async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
@@ -249,6 +310,9 @@ async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
       subtitle: (h.hotel_type as string) ?? '',
       color: LAYER_COLORS.hotels,
       linkTo: h.slug ? `/hotels/${h.slug}` : '',
+      featured: Boolean(h.featured),
+      live: false,
+      iconKey: glyphKeyFor('hotels'),
       meta: JSON.stringify({ city: h.city, country: h.country, hotel_type: h.hotel_type, featured: h.featured }),
     },
   }));
@@ -283,6 +347,9 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
         subtitle: [r.city, r.state].filter(Boolean).join(', '),
         color: LAYER_COLORS.restrooms,
         linkTo: '',
+        featured: false,
+        live: false,
+        iconKey: glyphKeyFor('restrooms'),
         meta: JSON.stringify({ accessible: r.accessible, unisex: r.unisex }),
       },
     }));
@@ -355,24 +422,37 @@ export function useViewportPoints({
         }
 
         const p = (async () => {
-          let features: PointFeature[] = [];
-          switch (type) {
-            case 'venues':
-              features = await withRetry(() => fetchVenuesInBbox(quantized, filtersRef.current));
-              break;
-            case 'events':
-              features = await withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));
-              break;
-            case 'restrooms':
-              features = await withRetry(() => fetchRestroomsInBbox(quantized));
-              break;
-            case 'hotels':
-              features = await withRetry(() => fetchHotelsInBbox(quantized));
-              break;
+          try {
+            let features: PointFeature[] = [];
+            switch (type) {
+              case 'venues':
+                features = await withRetry(() => fetchVenuesInBbox(quantized, filtersRef.current));
+                break;
+              case 'events':
+                features = await withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));
+                break;
+              case 'restrooms':
+                features = await withRetry(() => fetchRestroomsInBbox(quantized));
+                break;
+              case 'hotels':
+                features = await withRetry(() => fetchHotelsInBbox(quantized));
+                break;
+            }
+            featureCache.set(ck, features);
+            allFeatures.push(...features);
+            counts[type] = features.length;
+          } catch (layerErr) {
+            // Isolate per-layer failures. A single flaky source (e.g. the
+            // get-refuge-restrooms edge function returning 500) must NOT blank
+            // the whole map — previously one rejection failed the Promise.all
+            // and discarded every layer's results. Count it as 0 and let the
+            // other layers render.
+            counts[type] = 0;
+            console.error(
+              `[useViewportPoints] ${type} fetch failed:`,
+              layerErr instanceof Error ? layerErr.message : layerErr,
+            );
           }
-          featureCache.set(ck, features);
-          allFeatures.push(...features);
-          counts[type] = features.length;
         })();
 
         promises.push(p);
@@ -409,6 +489,17 @@ export function useViewportPoints({
             haversineKm(nm.lng, nm.lat, f.geometry.coordinates[0], f.geometry.coordinates[1]) <=
             nm.radiusKm,
         );
+        for (const k of Object.keys(counts) as LayerType[]) counts[k] = 0;
+        for (const f of finalFeatures) {
+          const pt = f.properties.pointType;
+          counts[pt] = (counts[pt] ?? 0) + 1;
+        }
+      }
+
+      // "Open now" filter: keep only currently-open venues / happening-now
+      // events (the promoted `live` flag). Counts recomputed from the kept set.
+      if (filtersRef.current?.openNow) {
+        finalFeatures = finalFeatures.filter((f) => f.properties.live === true);
         for (const k of Object.keys(counts) as LayerType[]) counts[k] = 0;
         for (const f of finalFeatures) {
           const pt = f.properties.pointType;

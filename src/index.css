@@ -846,6 +846,13 @@ h1, h2, h3, h4, h5, h6 {
   padding-block: 6px;
 }
 
+/* Map command bar (top-3, h-10) lives at z-20 across the full width. Push the
+   top-right MapLibre controls (zoom, geolocate) below it so they don't overlap.
+   Scoped to map-shell surfaces — admin/standalone maps without a bar are untouched. */
+[data-map-surface] .maplibregl-ctrl-top-right {
+  top: 3.5rem;
+}
+
 /* WCAG 2.5.5 AAA — icon-only header / map controls expand to 44×44 on touch
    (coarse pointer) and narrow viewports. Desktop sizing is untouched. */
 @media (pointer: coarse), (max-width: 640px) {

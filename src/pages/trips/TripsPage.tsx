@@ -18,6 +18,7 @@ import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { NextTripStrip } from '@/components/trips/NextTripStrip';
 import { InspiredByYourTrips } from '@/components/trips/InspiredByYourTrips';
 import { EmptyTripsCleanupBanner } from '@/components/trips/EmptyTripsCleanupBanner';
+import { TravelPrefsPrompt } from '@/components/personalization/TravelPrefsPrompt';
 import {
   TripsToolbar,
   type TripSortKey,
@@ -131,6 +132,10 @@ export default function TripsPage() {
           </Button>
         </div>
       </div>
+
+      {/* Contextual capture: nudge travel prefs (feeds packing, safety, recs).
+          Self-hides when prefs are already set or dismissed for the session. */}
+      <TravelPrefsPrompt />
 
       {hasAnyTrips && !isFiltered && <NextTripStrip trips={trips ?? []} />}
 

@@ -58,6 +58,7 @@ async function fetchCitiesDirectory(): Promise<CitiesDirectoryFetch> {
     `,
     )
     .is('duplicate_of_id', null)
+    .not('slug', 'like', 'tmp-%')
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
     .order('population', { ascending: false })

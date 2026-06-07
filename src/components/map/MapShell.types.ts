@@ -2,7 +2,7 @@ import type { LayerType, ExploreMapFilters } from '@/hooks/useExploreMapData';
 
 export type MapSurface = 'discover' | 'search' | 'city' | 'country' | 'trip' | 'admin';
 
-export type MapLens = 'pins' | 'density' | 'routes' | 'boundary';
+export type MapLens = 'pins' | 'density' | 'routes' | 'boundary' | 'combined';
 
 export type MapFilterKey =
   | 'category'
@@ -55,13 +55,14 @@ export const LENS_LABELS: Record<MapLens, string> = {
   density: 'Density',
   routes: 'Routes',
   boundary: 'Boundary',
+  combined: 'Combined',
 };
 
 export const SURFACE_PRESETS: Record<MapSurface, MapShellConfig> = {
   discover: {
     surface: 'discover',
-    lenses: ['pins', 'density', 'boundary'],
-    defaultLens: 'pins',
+    lenses: ['combined', 'pins', 'density', 'boundary'],
+    defaultLens: 'combined',
     layers: ['venues', 'events', 'hotels', 'restrooms', 'neighbourhoods', 'cities', 'countries'],
     // Only data-backed filters are exposed. accessibility_attributes (0 rows)
     // and target_groups (~0.2% populated) would empty the map, so they're
@@ -83,8 +84,8 @@ export const SURFACE_PRESETS: Record<MapSurface, MapShellConfig> = {
   },
   city: {
     surface: 'city',
-    lenses: ['pins', 'density', 'boundary'],
-    defaultLens: 'pins',
+    lenses: ['combined', 'pins', 'density', 'boundary'],
+    defaultLens: 'combined',
     layers: ['venues', 'events', 'neighbourhoods'],
     filters: ['category', 'tags', 'time'],
     showCommandBar: true,
@@ -113,8 +114,8 @@ export const SURFACE_PRESETS: Record<MapSurface, MapShellConfig> = {
   },
   admin: {
     surface: 'admin',
-    lenses: ['pins', 'density', 'boundary'],
-    defaultLens: 'density',
+    lenses: ['combined', 'pins', 'density', 'boundary'],
+    defaultLens: 'combined',
     layers: ['venues', 'events', 'hotels'],
     filters: ['category', 'time'],
     showCommandBar: true,

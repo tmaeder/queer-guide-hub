@@ -1,6 +1,8 @@
 // search-intelligence
-// Admin-gated router for search-intelligence operations: topic clusters, AI
-// suggestions, search-visibility scoring, and an install/health rollup.
+// Admin-gated router for search-intelligence operations: AI suggestions,
+// search-visibility scoring (per-entity + batch + worst-scored leaderboard),
+// search-query analytics, the search synonyms editor, and an install/health
+// rollup. (Topic-cluster CRUD was retired in P3.)
 // Holds SUPABASE_SERVICE_ROLE_KEY; never returns it.
 //
 // The Meilisearch index-management routes (indexes, settings versioning,
@@ -67,25 +69,13 @@ Deno.serve(async (req) => {
 })
 
 function pickRoute(method: string, parts: string[]): Handler | null {
-  // /clusters
-  if (parts[0] === 'clusters' && parts.length === 1) {
-    if (method === 'GET') return listClusters
-    if (method === 'POST') return createCluster
-  }
-  if (parts[0] === 'clusters' && parts.length === 2) {
-    if (method === 'GET') return getCluster
-    if (method === 'PATCH') return updateCluster
-    if (method === 'DELETE') return archiveCluster
-  }
-  // /clusters/:id/tags  (link / unlink)
-  if (parts[0] === 'clusters' && parts[2] === 'tags' && parts.length === 3) {
-    if (method === 'POST') return linkClusterTag
-  }
-  if (parts[0] === 'clusters' && parts[2] === 'tags' && parts.length === 4) {
-    if (method === 'DELETE') return unlinkClusterTag
-  }
   // /audit
   if (method === 'GET' && parts[0] === 'audit' && parts.length === 1) return listAudit
+  // /visibility/worst — leaderboard; /visibility/batch — trigger a scoring run
+  if (parts[0] === 'visibility' && parts.length === 2) {
+    if (method === 'GET' && parts[1] === 'worst') return visibilityWorst
+    if (method === 'POST' && parts[1] === 'batch') return visibilityBatch
+  }
   // /visibility/:type/:id (GET, recompute via POST)
   if (parts[0] === 'visibility' && parts.length === 3) {
     if (method === 'GET') return getVisibility
@@ -110,6 +100,24 @@ function pickRoute(method: string, parts: string[]): Handler | null {
   }
   if (parts[0] === 'suggestions' && parts.length === 2) {
     if (method === 'PATCH') return updateSuggestion
+  }
+  // /analytics/* — read-only search-query analytics
+  if (method === 'GET' && parts[0] === 'analytics' && parts.length === 2) {
+    if (parts[1] === 'summary') return analyticsSummary
+    if (parts[1] === 'top-queries') return analyticsTopQueries
+    if (parts[1] === 'zero-results') return analyticsZeroResults
+  }
+  // /synonyms — editor for search_synonyms
+  if (parts[0] === 'synonyms' && parts.length === 1) {
+    if (method === 'GET') return listSynonyms
+    if (method === 'POST') return createSynonym
+  }
+  if (parts[0] === 'synonyms' && parts.length === 2 && parts[1] === 'counts') {
+    if (method === 'GET') return synonymsCounts
+  }
+  if (parts[0] === 'synonyms' && parts.length === 2 && parts[1] !== 'counts') {
+    if (method === 'PATCH') return updateSynonym
+    if (method === 'DELETE') return archiveSynonym
   }
   return null
 }
@@ -161,6 +169,8 @@ async function readJson<T = unknown>(req: Request): Promise<T> {
 const RATE_LIMIT_PER_MINUTE = 60
 const MUTATION_ACTION_PREFIXES = [
   'visibility.recompute',
+  'visibility.batch',
+  'synonym.',
 ] as const
 
 async function checkRateLimit(ctx: RouteContext): Promise<Response | null> {
@@ -213,6 +223,208 @@ async function listAudit(ctx: RouteContext): Promise<Response> {
   if (resource) q = q.eq('resource_type', resource)
   const { data, error } = await q
   if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+// ── analytics (read-only over search_queries) ────────────────────────────────
+
+function analyticsSince(ctx: RouteContext): string {
+  // ?since accepts an ISO timestamp or a window shorthand (24h | 7d | 30d).
+  const raw = ctx.url.searchParams.get('since') ?? '7d'
+  const m = raw.match(/^(\d+)([hd])$/)
+  if (m) {
+    const hours = m[2] === 'h' ? Number(m[1]) : Number(m[1]) * 24
+    return new Date(Date.now() - hours * 3600_000).toISOString()
+  }
+  const parsed = Date.parse(raw)
+  return Number.isNaN(parsed)
+    ? new Date(Date.now() - 7 * 24 * 3600_000).toISOString()
+    : new Date(parsed).toISOString()
+}
+
+async function analyticsSummary(ctx: RouteContext): Promise<Response> {
+  const { data, error } = await ctx.service.rpc('search_analytics_summary', {
+    p_since: analyticsSince(ctx),
+  })
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function analyticsTopQueries(ctx: RouteContext): Promise<Response> {
+  const limit = Math.min(Number(ctx.url.searchParams.get('limit') ?? '50'), 200)
+  const { data, error } = await ctx.service.rpc('search_analytics_top_queries', {
+    p_since: analyticsSince(ctx),
+    p_limit: limit,
+  })
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function analyticsZeroResults(ctx: RouteContext): Promise<Response> {
+  const limit = Math.min(Number(ctx.url.searchParams.get('limit') ?? '50'), 200)
+  const { data, error } = await ctx.service.rpc('search_analytics_zero_results', {
+    p_since: analyticsSince(ctx),
+    p_limit: limit,
+  })
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+// ── synonyms editor (search_synonyms) ────────────────────────────────────────
+
+async function listSynonyms(ctx: RouteContext): Promise<Response> {
+  const p = ctx.url.searchParams
+  const { data, error } = await ctx.service.rpc('admin_synonyms_list', {
+    p_q: p.get('q') || null,
+    p_status: p.get('status') || null,
+    p_locale: p.get('locale') || null,
+    p_limit: Math.min(Number(p.get('limit') ?? '50'), 200),
+    p_offset: Math.max(Number(p.get('offset') ?? '0'), 0),
+  })
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function synonymsCounts(ctx: RouteContext): Promise<Response> {
+  const { data, error } = await ctx.service.rpc('admin_synonyms_counts')
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+function normalizeTermArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return []
+  return v
+    .map((x) => (typeof x === 'string' ? x.trim().toLowerCase() : ''))
+    .filter(Boolean)
+}
+
+async function createSynonym(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const body = await readJson<{
+    terms?: unknown
+    replacements?: unknown
+    is_one_way?: boolean
+    locale?: string
+    indexes?: unknown
+    notes?: string
+    status?: string
+  }>(ctx.req)
+  const terms = normalizeTermArray(body.terms)
+  const replacements = normalizeTermArray(body.replacements)
+  if (terms.length === 0 || replacements.length === 0) {
+    return errorResponse('terms and replacements are both required', 400, ctx.req)
+  }
+  const status = body.status === 'active' ? 'active' : 'approved'
+  const insert = {
+    terms,
+    replacements,
+    is_one_way: body.is_one_way ?? true,
+    locale: (body.locale || '*').trim(),
+    indexes: normalizeTermArray(body.indexes),
+    notes: body.notes?.trim() || null,
+    status,
+    source: 'manual',
+    created_by: ctx.actorId === 'service-role' ? null : ctx.actorId,
+    approved_at: status === 'active' ? new Date().toISOString() : null,
+    approved_by: status === 'active' && ctx.actorId !== 'service-role' ? ctx.actorId : null,
+  }
+  const { data, error } = await ctx.service
+    .from('search_synonyms')
+    .insert(insert)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'synonym.create', 'synonym', data.id, null, data)
+  return jsonResponse({ success: true, data }, 201, ctx.req)
+}
+
+async function updateSynonym(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const id = ctx.pathParts[1]
+  if (!id) return errorResponse('id required', 400, ctx.req)
+  const body = await readJson<Record<string, unknown>>(ctx.req)
+
+  const update: Record<string, unknown> = {}
+  if ('terms' in body) update.terms = normalizeTermArray(body.terms)
+  if ('replacements' in body) update.replacements = normalizeTermArray(body.replacements)
+  if ('is_one_way' in body) update.is_one_way = Boolean(body.is_one_way)
+  if ('locale' in body) update.locale = String(body.locale || '*').trim()
+  if ('indexes' in body) update.indexes = normalizeTermArray(body.indexes)
+  if ('notes' in body) update.notes = (body.notes as string)?.trim() || null
+  if ('status' in body) {
+    const next = String(body.status)
+    const allowed = ['active', 'approved', 'pending', 'archived']
+    if (!allowed.includes(next)) return errorResponse('invalid status', 400, ctx.req)
+    update.status = next
+    if (next === 'active') {
+      update.approved_at = new Date().toISOString()
+      update.approved_by = ctx.actorId === 'service-role' ? null : ctx.actorId
+      update.archived_at = null
+    }
+    if (next === 'archived') update.archived_at = new Date().toISOString()
+  }
+  if (Object.keys(update).length === 0) {
+    return errorResponse('no updatable fields provided', 400, ctx.req)
+  }
+
+  const { data: before } = await ctx.service
+    .from('search_synonyms')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  const { data, error } = await ctx.service
+    .from('search_synonyms')
+    .update(update)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'synonym.update', 'synonym', id, before, data)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function archiveSynonym(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const id = ctx.pathParts[1]
+  if (!id) return errorResponse('id required', 400, ctx.req)
+  const { data: before } = await ctx.service
+    .from('search_synonyms')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  const { data, error } = await ctx.service
+    .from('search_synonyms')
+    .update({ status: 'archived', archived_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'synonym.archive', 'synonym', id, before, data)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function visibilityWorst(ctx: RouteContext): Promise<Response> {
+  const entityType = ctx.url.searchParams.get('entity_type')
+  const limit = Math.min(Number(ctx.url.searchParams.get('limit') ?? '50'), 200)
+  const { data, error } = await ctx.service.rpc('search_visibility_worst', {
+    p_entity_type: entityType || null,
+    p_limit: limit,
+  })
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function visibilityBatch(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const body = await readJson<{ limit?: number }>(ctx.req)
+  const limit = Math.min(Math.max(Number(body.limit ?? 2000), 1), 5000)
+  const { data, error } = await ctx.service.rpc('run_visibility_score_batch', { p_limit: limit })
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'visibility.batch', 'visibility', null, null, data)
   return jsonResponse({ success: true, data }, 200, ctx.req)
 }
 
@@ -395,211 +607,6 @@ async function updateSuggestion(ctx: RouteContext): Promise<Response> {
     apply_error: applyError,
   })
   return jsonResponse({ success: true, data, auto_applied: applied, apply_error: applyError }, 200, ctx.req)
-}
-
-// ── topic_clusters CRUD ──────────────────────────────────────────────────────
-
-async function listClusters(ctx: RouteContext): Promise<Response> {
-  const status = ctx.url.searchParams.get('status')
-  const limit = Math.min(Number(ctx.url.searchParams.get('limit') ?? '100'), 500)
-  let q = ctx.service
-    .from('topic_clusters')
-    .select(
-      'id, slug, name, description, parent_cluster_id, is_featured, status, starts_at, ends_at, cover_image_url, cover_image_alt, metadata, created_at, updated_at',
-    )
-    .order('created_at', { ascending: false })
-    .limit(limit)
-  if (status) q = q.eq('status', status)
-  const { data: clusters, error } = await q
-  if (error) return errorResponse(error.message, 500, ctx.req)
-
-  // Attach tag counts in one query.
-  const { data: tagCounts } = await ctx.service
-    .from('topic_cluster_tags')
-    .select('cluster_id')
-  const counts = new Map<string, number>()
-  for (const r of tagCounts ?? []) {
-    const id = (r as { cluster_id: string }).cluster_id
-    counts.set(id, (counts.get(id) ?? 0) + 1)
-  }
-  const enriched = (clusters ?? []).map((c: { id: string }) => ({
-    ...c,
-    tag_count: counts.get(c.id) ?? 0,
-  }))
-  return jsonResponse({ success: true, data: enriched }, 200, ctx.req)
-}
-
-async function getCluster(ctx: RouteContext): Promise<Response> {
-  const id = ctx.pathParts[1]
-  if (!id) return errorResponse('id required', 400, ctx.req)
-  const { data: cluster, error } = await ctx.service
-    .from('topic_clusters')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle()
-  if (error) return errorResponse(error.message, 500, ctx.req)
-  if (!cluster) return errorResponse('not found', 404, ctx.req)
-  // Tags + entity counts
-  const { data: tags } = await ctx.service
-    .from('topic_cluster_tags')
-    .select('tag_id, weight, added_at, unified_tags(id, name, slug)')
-    .eq('cluster_id', id)
-  const { data: entityCounts } = await ctx.service
-    .from('cluster_entity_counts')
-    .select('entity_type, entity_count')
-    .eq('cluster_id', id)
-  return jsonResponse(
-    { success: true, data: { cluster, tags: tags ?? [], entity_counts: entityCounts ?? [] } },
-    200,
-    ctx.req,
-  )
-}
-
-async function createCluster(ctx: RouteContext): Promise<Response> {
-  const rl = await checkRateLimit(ctx)
-  if (rl) return rl
-  const body = await readJson<{
-    slug: string
-    name: string
-    description?: string
-    parent_cluster_id?: string | null
-    is_featured?: boolean
-    starts_at?: string | null
-    ends_at?: string | null
-    cover_image_url?: string | null
-    cover_image_alt?: string | null
-    metadata?: Record<string, unknown>
-  }>(ctx.req)
-  if (!body.slug || !body.name) {
-    return errorResponse('slug and name required', 400, ctx.req)
-  }
-  const insert = {
-    slug: body.slug.toLowerCase().trim(),
-    name: body.name.trim(),
-    description: body.description ?? null,
-    parent_cluster_id: body.parent_cluster_id ?? null,
-    is_featured: Boolean(body.is_featured),
-    starts_at: body.starts_at ?? null,
-    ends_at: body.ends_at ?? null,
-    cover_image_url: body.cover_image_url ?? null,
-    cover_image_alt: body.cover_image_alt ?? null,
-    metadata: body.metadata ?? {},
-    curator_user_id: ctx.actorId === 'service-role' ? null : ctx.actorId,
-    status: 'active' as const,
-  }
-  const { data, error } = await ctx.service
-    .from('topic_clusters')
-    .insert(insert)
-    .select()
-    .single()
-  if (error) return errorResponse(error.message, 500, ctx.req)
-  await recordAudit(ctx, 'cluster.create', 'cluster', data.id, null, data)
-  return jsonResponse({ success: true, data }, 201, ctx.req)
-}
-
-async function updateCluster(ctx: RouteContext): Promise<Response> {
-  const rl = await checkRateLimit(ctx)
-  if (rl) return rl
-  const id = ctx.pathParts[1]
-  if (!id) return errorResponse('id required', 400, ctx.req)
-  const body = await readJson<Record<string, unknown>>(ctx.req)
-  const allowed = [
-    'slug',
-    'name',
-    'description',
-    'parent_cluster_id',
-    'is_featured',
-    'status',
-    'starts_at',
-    'ends_at',
-    'cover_image_url',
-    'cover_image_alt',
-    'metadata',
-  ] as const
-  const update: Record<string, unknown> = {}
-  for (const k of allowed) {
-    if (k in body) update[k] = body[k]
-  }
-  if (typeof update.status === 'string' && !['draft', 'active', 'archived'].includes(update.status)) {
-    return errorResponse('invalid status', 400, ctx.req)
-  }
-  if (Object.keys(update).length === 0) {
-    return errorResponse('no updatable fields provided', 400, ctx.req)
-  }
-  const { data: before } = await ctx.service
-    .from('topic_clusters')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle()
-  const { data, error } = await ctx.service
-    .from('topic_clusters')
-    .update(update)
-    .eq('id', id)
-    .select()
-    .single()
-  if (error) return errorResponse(error.message, 500, ctx.req)
-  await recordAudit(ctx, 'cluster.update', 'cluster', id, before, data)
-  return jsonResponse({ success: true, data }, 200, ctx.req)
-}
-
-async function archiveCluster(ctx: RouteContext): Promise<Response> {
-  const rl = await checkRateLimit(ctx)
-  if (rl) return rl
-  const id = ctx.pathParts[1]
-  if (!id) return errorResponse('id required', 400, ctx.req)
-  const { data: before } = await ctx.service
-    .from('topic_clusters')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle()
-  const { data, error } = await ctx.service
-    .from('topic_clusters')
-    .update({ status: 'archived' })
-    .eq('id', id)
-    .select()
-    .single()
-  if (error) return errorResponse(error.message, 500, ctx.req)
-  await recordAudit(ctx, 'cluster.archive', 'cluster', id, before, data)
-  return jsonResponse({ success: true, data }, 200, ctx.req)
-}
-
-async function linkClusterTag(ctx: RouteContext): Promise<Response> {
-  const rl = await checkRateLimit(ctx)
-  if (rl) return rl
-  const clusterId = ctx.pathParts[1]
-  if (!clusterId) return errorResponse('cluster id required', 400, ctx.req)
-  const body = await readJson<{ tag_id: string; weight?: number }>(ctx.req)
-  if (!body.tag_id) return errorResponse('tag_id required', 400, ctx.req)
-  const insert = {
-    cluster_id: clusterId,
-    tag_id: body.tag_id,
-    weight: body.weight ?? 1.0,
-    added_by: ctx.actorId === 'service-role' ? null : ctx.actorId,
-  }
-  const { data, error } = await ctx.service
-    .from('topic_cluster_tags')
-    .upsert(insert, { onConflict: 'cluster_id,tag_id' })
-    .select()
-    .single()
-  if (error) return errorResponse(error.message, 500, ctx.req)
-  await recordAudit(ctx, 'cluster.tag.link', 'cluster', clusterId, null, data)
-  return jsonResponse({ success: true, data }, 201, ctx.req)
-}
-
-async function unlinkClusterTag(ctx: RouteContext): Promise<Response> {
-  const rl = await checkRateLimit(ctx)
-  if (rl) return rl
-  const clusterId = ctx.pathParts[1]
-  const tagId = ctx.pathParts[3]
-  if (!clusterId || !tagId) return errorResponse('cluster id and tag id required', 400, ctx.req)
-  const { error } = await ctx.service
-    .from('topic_cluster_tags')
-    .delete()
-    .eq('cluster_id', clusterId)
-    .eq('tag_id', tagId)
-  if (error) return errorResponse(error.message, 500, ctx.req)
-  await recordAudit(ctx, 'cluster.tag.unlink', 'cluster', clusterId, { tag_id: tagId }, null)
-  return jsonResponse({ success: true, data: { cluster_id: clusterId, tag_id: tagId } }, 200, ctx.req)
 }
 
 // ── /setup-status ───────────────────────────────────────────────────────────

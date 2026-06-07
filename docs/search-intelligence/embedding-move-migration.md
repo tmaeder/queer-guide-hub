@@ -1,8 +1,16 @@
 # Migration: move `search_documents.embedding` → `search_embeddings` sibling table
 
-**Status:** designed + core-validated on prod (2026-06-02), **NOT yet applied.** Apply via the
-deploy-supabase-functions pipeline after staged parity validation. Reviewed PR required — this rewrites
-the live search / discovery / dedup core.
+**Status:** **Phase 1 (perf) SHIPPED on prod 2026-06-07** — migrations `20260606190000` (sibling table +
+mirror trigger + HNSW) and `20260606190100` (4 readers). The vector read path now uses the
+`search_embeddings` sibling via the validated lateral-gated join; old `search_documents` HNSW dropped.
+Parity-validated live before commit (keyword exact, related/recs 10/10, find_duplicates byte-identical,
+sibling HNSW confirmed used). search_documents.embedding column **kept** (mirror trigger keeps the sibling
+synced from the 9 unchanged writers) → trivial rollback (`embedding-move-phase1-rollback.sql`).
+
+**Phase 2 (disk reclaim, NOT done):** rewrite the 9 `search_documents_index_*` + `search_documents_sync_embedding`
+to stop writing `search_documents.embedding`, then `ALTER TABLE search_documents DROP COLUMN embedding`
+(~448 MB TOAST reclaim, search_documents 634 MB → ~192 MB) + drop the mirror trigger. Deferred — disk is no
+longer constrained (the perf win is fully delivered by Phase 1; Phase 2 is pure cleanup).
 
 ## Why
 

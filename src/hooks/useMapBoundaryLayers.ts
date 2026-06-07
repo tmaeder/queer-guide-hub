@@ -10,9 +10,51 @@ import { useCallback, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import type { LayerType, MapMarker } from '@/hooks/useExploreMapData';
-import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 import { enrichBoundaryFeatures } from '@/utils/boundaryUtils';
 import type { MatchMode } from '@/utils/boundaryUtils';
+
+/**
+ * Refined per-entity boundary styling. Defaults are deliberately quiet —
+ * desaturated hairlines on a near-invisible wash so administrative borders read
+ * as context, not a cage. Hover deepens slightly; `selected` lights up to the
+ * vivid identity hue (matching the entity's pin/legend colour) so the active
+ * area is unmistakable. Each tuple is [default, hovered, selected].
+ */
+const INK = '#18181b'; // true-neutral near-black for labels
+interface BoundaryPaint {
+  line: string; // desaturated default stroke
+  lineSelected: string; // vivid identity hue on selection
+  fill: string;
+  fillOpacity: [number, number, number];
+  lineWidth: [number, number, number];
+  lineOpacity: [number, number, number];
+}
+const BOUNDARY_PAINT: Record<string, BoundaryPaint> = {
+  countries: {
+    line: '#a85e54', // muted terracotta (desaturated from the red identity hue)
+    lineSelected: '#dc2626',
+    fill: '#a85e54',
+    fillOpacity: [0.035, 0.09, 0.16],
+    lineWidth: [0.7, 1.2, 2.0],
+    lineOpacity: [0.32, 0.6, 0.85],
+  },
+  cities: {
+    line: '#5b82b0', // muted steel (desaturated from the blue identity hue)
+    lineSelected: '#3b82f6',
+    fill: '#5b82b0',
+    fillOpacity: [0.05, 0.12, 0.2],
+    lineWidth: [0.8, 1.4, 2.2],
+    lineOpacity: [0.4, 0.62, 0.85],
+  },
+  neighbourhoods: {
+    line: 'hsl(0 0% 4%)', // foreground ink (concrete — MapLibre can't parse var())
+    lineSelected: 'hsl(0 0% 4%)',
+    fill: 'hsl(0 0% 4%)',
+    fillOpacity: [0.06, 0.14, 0.22],
+    lineWidth: [0.8, 1.4, 2.2],
+    lineOpacity: [0.4, 0.62, 0.8],
+  },
+};
 
 export interface BoundaryLayerConfig {
   /** Unique prefix for source/layer IDs, e.g. 'countries' */
@@ -88,7 +130,7 @@ export function useMapBoundaryLayers({
     const enriched = enrichBoundaryFeatures(boundaries, markers, matchKey, matchMode);
     if (enriched.features.length === 0) return;
 
-    const color = LAYER_COLORS[entityType] ?? '#888';
+    const paint = BOUNDARY_PAINT[entityType] ?? BOUNDARY_PAINT.cities;
 
     // Update existing source
     const existingSource = map.getSource(src) as GeoJSONSource | undefined;
@@ -110,12 +152,12 @@ export function useMapBoundaryLayers({
       source: src,
       ...(minLayerZoom != null && { minzoom: minLayerZoom }),
       paint: {
-        'fill-color': color,
+        'fill-color': paint.fill,
         'fill-opacity': [
           'case',
-          ['boolean', ['feature-state', 'selected'], false], 0.35,
-          ['boolean', ['feature-state', 'hovered'], false], 0.22,
-          0.1,
+          ['boolean', ['feature-state', 'selected'], false], paint.fillOpacity[2],
+          ['boolean', ['feature-state', 'hovered'], false], paint.fillOpacity[1],
+          paint.fillOpacity[0],
         ],
         'fill-opacity-transition': { duration: 250 },
       },
@@ -127,20 +169,25 @@ export function useMapBoundaryLayers({
       source: src,
       ...(minLayerZoom != null && { minzoom: minLayerZoom }),
       paint: {
-        'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#1e293b', color],
+        'line-color': [
+          'case',
+          ['boolean', ['feature-state', 'selected'], false], paint.lineSelected,
+          paint.line,
+        ],
         'line-width': [
           'case',
-          ['boolean', ['feature-state', 'selected'], false], 2.5,
-          ['boolean', ['feature-state', 'hovered'], false], 1.8,
-          0.8,
+          ['boolean', ['feature-state', 'selected'], false], paint.lineWidth[2],
+          ['boolean', ['feature-state', 'hovered'], false], paint.lineWidth[1],
+          paint.lineWidth[0],
         ],
         'line-opacity': [
           'case',
-          ['boolean', ['feature-state', 'selected'], false], 0.8,
-          ['boolean', ['feature-state', 'hovered'], false], 0.7,
-          0.5,
+          ['boolean', ['feature-state', 'selected'], false], paint.lineOpacity[2],
+          ['boolean', ['feature-state', 'hovered'], false], paint.lineOpacity[1],
+          paint.lineOpacity[0],
         ],
         'line-width-transition': { duration: 200 },
+        'line-opacity-transition': { duration: 200 },
       },
     });
 
@@ -158,9 +205,9 @@ export function useMapBoundaryLayers({
         'text-anchor': 'center',
       },
       paint: {
-        'text-color': '#1e293b',
+        'text-color': INK,
         'text-halo-color': '#ffffff',
-        'text-halo-width': 1.5,
+        'text-halo-width': 1.25,
       },
     });
 
