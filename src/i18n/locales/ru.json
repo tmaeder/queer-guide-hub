@@ -1053,7 +1053,7 @@
       "resendIn": "Повторная отправка через {{seconds}} с",
       "resent": "Письмо отправлено. Проверьте входящие.",
       "backToLogin": "Назад ко входу",
-      "continue": "Continue to The Queer Guide",
+      "continue": "Continue to Queer Guide",
       "banner": "Verify your email to unlock contributions and messaging.",
       "bannerSent": "Verification email sent. Check your inbox.",
       "resendShort": "Resend",
@@ -1066,14 +1066,14 @@
     }
   },
   "onboarding": {
-    "welcome": "Добро пожаловать в The Queer Guide",
+    "welcome": "Добро пожаловать в Queer Guide",
     "welcomeBlurb": "Вы вошли. Несколько быстрых шагов, чтобы настроить всё под себя.",
     "passkeyTitle": "Настроить passkey",
     "passkeyBlurb": "Входите быстрее и безопаснее с помощью устройства. Никаких паролей.",
     "passkeyEnable": "Включить passkey",
     "passkeyAlreadyEnrolled": "Passkey уже включён",
     "passkeyEnrolled": "Passkey включён",
-    "continue": "Перейти к The Queer Guide",
+    "continue": "Перейти к Queer Guide",
     "skip": "Пропустить"
   },
   "events": {

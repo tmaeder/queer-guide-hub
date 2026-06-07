@@ -101,7 +101,7 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
 
           {user ? (
             <Button type="button" onClick={() => navigate('/')}>
-              {t('auth.verifyEmail.continue', 'Continue to The Queer Guide')}
+              {t('auth.verifyEmail.continue', 'Continue to Queer Guide')}
             </Button>
           ) : (
             <Button type="button" variant="ghost" onClick={onBackToLogin}>

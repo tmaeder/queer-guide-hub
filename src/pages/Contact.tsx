@@ -73,7 +73,7 @@ const categories = [
 
 const faqs = [
   {
-    question: 'How do I add my business to The Queer Guide?',
+    question: 'How do I add my business to Queer Guide?',
     answer:
       "Create an account and navigate to the Venues section. Click 'Add Venue' and fill out the required information. All submissions are reviewed before being published.",
   },
