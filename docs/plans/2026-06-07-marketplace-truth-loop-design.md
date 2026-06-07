@@ -205,6 +205,18 @@ for most cards despite valid `images`. Two causes:
    stall-timeout in `Image.tsx` remains a minor latent bug — left for the spawned frontend
    task; R2 mirroring makes it moot for marketplace since first-party images load fast.)
 
+   **DONE + VERIFIED (2026-06-07):** 3,306 active marketplace images mirrored to R2. The
+   grid went from 1→18 first-party images loaded (of 30 visible; remaining fallbacks are
+   genuinely image-less manual items). Real product photos now render. Operational notes:
+   high fetch concurrency got the worker egress IP rate-limited by merchants (reverted to
+   concurrency 2 + 150ms); the `/run` selector's small random offset couldn't reach
+   marketplace rows behind ~4,700 non-marketplace dead-image pending rows, so those were
+   temporarily paused (tracked in a temp table) during the marketplace drive, then restored.
+   Worker secret `ADMIN_SECRET` set; endpoints `/run`, `/run-all`, `/stats`. **Follow-up:**
+   `marketplace-enrich` writes `listings.images` but does not create `image_assets` rows, so
+   newly-enriched images won't auto-mirror unless a trigger backfills assets — wire that for
+   full self-maintenance.
+
 ### Phase 4 — Break the monoculture (DECISION-READY RUNBOOK, not executed)
 
 **Why not executed autonomously:** importing thousands of listings to the live storefront
