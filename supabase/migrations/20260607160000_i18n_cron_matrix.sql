@@ -42,7 +42,7 @@ DECLARE
   -- check regardless of the function's verify_jwt setting.
   v_anon text := 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
   j record; tbl text; fld text; loc text; m int; idx int := 0; jobname text; sched text;
-  blimit int; is_desc bool;
+  blimit int; is_desc bool; ptimeout int;
 BEGIN
   -- Clean slate: drop every existing translate-i18n cron job.
   FOR j IN SELECT cron.job.jobname AS jn FROM cron.job
@@ -60,12 +60,16 @@ BEGIN
       -- small batch + higher frequency; names/titles tolerate a larger batch.
       IF is_desc THEN
         -- marketplace descriptions average ~1000 chars (2-3x the others), so a
-        -- batch of 6 would always blow the fn's 30s LLM timeout and never land.
+        -- batch of 6 would blow the limit; keep it tiny.
         blimit := CASE WHEN tbl = 'marketplace_listings' THEN 2 ELSE 6 END;
+        -- The fn gives description LLM calls a 50s self-abort budget; let pg_net
+        -- wait 55s so the request is logged as a 200 instead of a premature
+        -- timeout (the fn writes regardless, but this keeps observability clean).
+        ptimeout := 55000;
         m := idx % 10;                                            -- 6 runs/hour
         sched := format('%s,%s,%s,%s,%s,%s * * * *', m, m+10, m+20, m+30, m+40, m+50);
       ELSE
-        blimit := 20; m := idx % 15;                             -- 4 runs/hour
+        blimit := 20; ptimeout := 30000; m := idx % 15;          -- 4 runs/hour
         sched := format('%s,%s,%s,%s * * * *', m, m+15, m+30, m+45);
       END IF;
       jobname := format('i18n_%s_%s_%s', tbl, fld, loc);
@@ -78,10 +82,10 @@ BEGIN
             'X-Webhook-Secret', %s
           ),
           body := jsonb_build_object('table',%L,'locale',%L,'field',%L,'batch_limit',%s),
-          timeout_milliseconds := 30000  -- LLM batch needs >5s; without this pg_net
-          -- disconnects at 5s and the edge function is killed mid-batch.
+          timeout_milliseconds := %s  -- 30s short fields / 55s long descriptions;
+          -- without this pg_net disconnects at its 5s default and kills the fn.
         ) as request_id;
-      $cmd$, v_anon, v_vault, tbl, loc, fld, blimit));
+      $cmd$, v_anon, v_vault, tbl, loc, fld, blimit, ptimeout));
       idx := idx + 1;
     END LOOP;
   END LOOP;

@@ -159,6 +159,10 @@ Deno.serve(async (req) => {
     const i18nCol = cfg.i18n_map[field]
     const batchLimit = Math.min(body.batch_limit ?? 25, 50)
     const dryRun = body.dry_run === true
+    // Long-text (description) batches can need >30s on CF Workers AI under load;
+    // give them more headroom before the LLM call self-aborts. Short name/title
+    // batches stay tight so a stuck call fails fast and retries next run.
+    const llmTimeoutMs = field === 'description' ? 50000 : 30000
 
     // Optional quality gate (unified_tags only): translate good content first.
     const qualityGated = body.table === 'unified_tags' && typeof body.min_quality === 'number'
@@ -228,7 +232,7 @@ Deno.serve(async (req) => {
           system: SYSTEM_PROMPT,
           messages: [{ role: 'user', content: userMsg }],
           temperature: 0.2,
-          timeoutMs: 30000,
+          timeoutMs: llmTimeoutMs,
         })
         const text = resp.content?.[0]?.text ?? ''
         const json = extractJson(text)
