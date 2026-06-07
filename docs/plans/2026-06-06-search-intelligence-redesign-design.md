@@ -90,8 +90,15 @@ Follow-up: batch only covers ~9.3k of ~72k entities so far; nightly cron fills t
 - ✅ **Synonym expansion cap (40 terms)** in `expandWithPgSynonyms()` — bounds over-expansion so activating the staged set is safe.
 - ✅ **Visibility batch self-maintaining** — stale-rescore (>30d) after unscored exhausted + per-entity fault isolation.
 
+**Resolved — do NOT bulk-activate the 15,130 dormant synonyms.**
+Investigated the dormant set directly (not just deferred it). Evidence:
+- `notes` = `"auto-bridged from tag_aliases on 2026-04-29"` — they're auto-generated cross-language tag-alias translations, not curated search synonyms.
+- Sampling shows mostly off-domain / generic vocabulary: `kohl→cabbage`, `krokiet→croquettes`, `lunettes correctrices→glasses`, `conductor de televisión→host`, `ethanolvergiftung→alcohol poisoning`. A minority are LGBTQ-relevant (`panromantisch→omniromantic`).
+- Each row has exactly **1 replacement** (avg 1.0, max 1); 98.7% have terms ≥4 chars (193 short-term rows are the substring-overmatch hazard).
+- They were left at `status='approved'` (never `active`) on purpose — activating would inject translation noise into the vector leg of safety-sensitive search.
+Conclusion: the dormant set is an auto-bridged tag-alias dump, not a curated synonym layer. Search did **not** regress by ignoring them. Synonyms should be added deliberately via the editor (e.g. from Analytics zero-result queries); if a multilingual layer is wanted later, re-scope the import to LGBTQ/travel-relevant aliases. The 6 hand-curated active rows stay.
+
 **Still open (deliberate):**
-- **Activate the 15,130 dormant synonyms** — left as an admin decision (relevance risk in safety-sensitive search, no A/B path). The editor makes it per-row; the worker cap makes bulk-activation safe when chosen.
 - Synonyms cache-bust endpoint + version snapshot/rollback (deferred from P2).
-- Visibility coverage: ~13.9k/72k scored; nightly cron fills the rest.
+- Visibility coverage: ~13.9k/72k scored; nightly cron fills the rest (self-maintaining).
 - Suggestions tab: revive only if the image-vision producer is enabled.
