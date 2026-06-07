@@ -50,6 +50,15 @@ The failure is **reconciliation recall**: among the 5,516 icons, 5,514 were refr
 
 ---
 
+## Autonomous decisions (user delegated, 2026-06-07)
+
+Three open judgment calls were delegated. Resolutions:
+1. **Connection sourcing → keep Wikidata-only.** Will not fabricate or mass-assign identity from scrape labels onto living people (the platform's core harm). "unclear" is the honest value when unsourceable. No action.
+2. **`lgbti_relevance_score` → leave as-is.** Real non-adult signal is intact; the blanket-0.8 adult rows are mostly archived/out of search. A re-classification is cost without meaningful benefit. No action.
+3. **Thin/triaged rows → content hygiene (ACTION).** Not bulk-archived. Instead: ~4,316 name-only profiles (no bio, no image, no description) that were `seo_indexable=true` were demoted to non-indexable + a durable before-trigger (`20260607007000`) prevents thin rows from being indexed until enriched. Rows stay in the DB for curation; `visibility` untouched. Indexable dropped ~9,557 → 5,241.
+
+---
+
 ## Decisions (locked)
 
 1. **Scope:** Both populations, in sequence — de-risk the adult cohort first, then enrich the icons.
