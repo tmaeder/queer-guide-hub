@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
-import { isTrustedSrc } from '@/utils/imageHost';
+import { imageReferrerPolicy } from '@/utils/imageHost';
 import { getFallbackImage, type FallbackTheme } from '@/utils/fallbackImages';
 
 /**
@@ -129,18 +129,23 @@ export const Image = ({
 
   const [error, setError] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
+  // Read in the stall-timer without re-arming it; the effect closure captures
+  // `loaded === false` at creation, so a state read there is always stale.
+  const loadedRef = React.useRef(false);
 
   // Reset on src change, and guard against Pexels-style 200-then-stall URLs
-  // that never fire onLoad/onError (8s → treat as failed).
+  // that never fire onLoad/onError (8s → treat as failed). Only armed for
+  // priority (above-fold) images — lazy grid images legitimately stay unloaded
+  // while off-screen and must not be force-failed.
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state with external src prop
     setError(false);
     setLoaded(false);
-    if (!resolved) return;
-    const timer = setTimeout(() => setError((prev) => prev || !loaded), 8000);
+    loadedRef.current = false;
+    if (!resolved || !priority) return;
+    const timer = setTimeout(() => setError((prev) => prev || !loadedRef.current), 8000);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolved]);
+  }, [resolved, priority]);
 
   const fallback = React.useMemo(
     () => getFallbackImage(fallbackEntityType, fallbackKey),
@@ -159,7 +164,7 @@ export const Image = ({
       ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w`
       : undefined;
   const srcSet = cfSrcSet ?? externalSrcSet;
-  const referrerPolicy = effectiveSrc && !isTrustedSrc(effectiveSrc) ? 'no-referrer' : undefined;
+  const referrerPolicy = effectiveSrc ? imageReferrerPolicy(effectiveSrc) : undefined;
 
   const scrimClass = SCRIM_CLASS[scrim];
 
@@ -183,7 +188,7 @@ export const Image = ({
           decoding={priority ? 'sync' : 'async'}
           fetchPriority={priority ? 'high' : 'auto'}
           referrerPolicy={referrerPolicy}
-          onLoad={() => setLoaded(true)}
+          onLoad={() => { loadedRef.current = true; setLoaded(true); }}
           onError={() => { if (!error) setError(true); }}
           style={objectPosition ? { objectPosition } : undefined}
           className={cn(
