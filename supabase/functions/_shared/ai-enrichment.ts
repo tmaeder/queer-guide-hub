@@ -334,7 +334,7 @@ Title: ${ud(article.title)}
 Content: ${ud(textContent.slice(0, 800))}
 URL: ${ud(article.url || 'N/A')}
 
-Respond with JSON:
+Keep "summary" under 40 words. Respond with ONLY this JSON, nothing before or after:
 {"summary": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "sentiment": "neutral", "topics": [...]}`
 
   try {
@@ -344,7 +344,10 @@ Respond with JSON:
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.2,
-      max_tokens: 500,
+      // 500 truncated the JSON once full-text extraction (2026-05-30) grew the
+      // input: the 70B model's summary ran long and the closing braces were cut,
+      // making every response unparseable. Headroom + a summary word-cap fixes it.
+      max_tokens: 1200,
       response_format: { type: 'json_object' },
     })
 

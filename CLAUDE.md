@@ -89,6 +89,8 @@ queer-guide-hub/
 - **Edge functions:** 192
 - **Migrations:** 500
 - **Migrations:** 488
+- **Edge functions:** 193
+- **Migrations:** 499
 - **Migrations:** 485
 - **Edge functions:** 190
 - **Migrations:** 458
@@ -201,6 +203,7 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - **Inline links underlined.** `p a, li a, td a, span a, label a` get `text-decoration: underline` in `src/index.css`. Without color difference from body text, the underline is the only cue that distinguishes a link (WCAG 1.4.1, axe `link-in-text-block`). Standalone links — nav, buttons, cards — stay un-underlined.
 - **Crisis & safety pages are animation-free.** `src/pages/HelpHotlines.tsx` and any future route under `/help`, `/safety`, `/report-*` must not consume Aceternity components, scroll-reveal effects, or decorative motion. Functional motion only (focus rings, dialog transitions, accordions). Protects users in crisis from cognitive overload and respects `prefers-reduced-motion` (WCAG 2.3.3). The Aceternity Showcase (`/aceternity` → §A11y exemption) documents the canonical static pattern.
 - **Semantic radius tokens.** Always pick from the trio `rounded-container` (16px — cards, sheets, dialogs, hero blocks), `rounded-element` (8px — buttons, inputs, list rows, nested cards, image frames), `rounded-badge` (4px — chips, pills, status tags) over raw `rounded-(sm|md|lg|xl|2xl|3xl)` literals. The trio is a single point of change for the entire visual rhythm. `rounded-full` permitted for avatars/dots only; `rounded-none` for explicit flat overrides.
+- **Pride map canvas.** The `/map` MapShell renders a deliberate pride-spectrum palette **on the map canvas only** — `PRIDE_LAYER_COLORS` (`src/hooks/useExploreMapData.ts`) for markers + area circles, and a rainbow density-heat ramp in `src/components/map/ExploreMap.tsx` (gated by the `pridePalette` prop, passed by MapShell). Chrome (command bar, filter sheet, chips, popovers) stays strictly monochrome; legacy/embedded `ExploreMap` instances keep the neutral `LAYER_COLORS`. This is the one place the product expresses queer identity through color, on the same functional map-color exception already allowlisted for vector tiles. Markers are dots with a white halo (no text-on-color), so the WCAG pill-contrast rule doesn't apply; the layer-toggle pills (which would) are not rendered in MapShell. User-locked 2026-06-04 — live in production. Tune colors in `PRIDE_LAYER_COLORS` + the `pridePalette` heat ramp; do not bleed canvas color into chrome.
 
 ### Design System Files
 - Tokens: `src/index.css` (Tailwind v4 `@theme` block — CSS variables; no `tailwind.config.ts`)

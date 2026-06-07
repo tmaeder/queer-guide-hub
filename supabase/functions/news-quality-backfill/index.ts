@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts'
 import { sanitizeArticle } from '../_shared/news-quality/sanitize.ts'
@@ -7,6 +7,22 @@ import { QUALITY_SYSTEM_PROMPT, buildQualityUserPrompt } from '../_shared/news-q
 import { evaluatePublishGate } from '../_shared/news-quality/decision.ts'
 import { probeImage } from '../_shared/news-quality/image-check.ts'
 import { hashImageUrl } from '../_shared/news-quality/image-hash.ts'
+import { resolveEntities } from '../_shared/news-quality/entity-link.ts'
+
+interface CandidatePools { countries: string[]; cities: string[]; tags: string[] }
+
+async function loadCandidatePools(supabase: ReturnType<typeof getServiceClient>): Promise<CandidatePools> {
+  const [countries, cities, tags] = await Promise.all([
+    supabase.from('countries').select('name').limit(300),
+    supabase.from('cities').select('name').order('population', { ascending: false, nullsFirst: false }).limit(500),
+    supabase.from('unified_tags').select('slug').limit(200),
+  ])
+  return {
+    countries: (countries.data ?? []).map((r: { name: string }) => r.name).filter(Boolean),
+    cities: (cities.data ?? []).map((r: { name: string }) => r.name).filter(Boolean),
+    tags: (tags.data ?? []).map((r: { slug: string }) => r.slug).filter(Boolean),
+  }
+}
 
 // News quality backfill — re-runs the quality pipeline over published / archived
 // news_articles rows. Two modes:
@@ -42,6 +58,7 @@ async function callQualityLLM(
 async function processJob(
   supabase: ReturnType<typeof getServiceClient>,
   job: { id: string; article_id: string; dry_run: boolean },
+  pools: CandidatePools,
 ): Promise<{ status: 'completed' | 'failed' | 'skipped'; decision?: QualityDecision; error?: string; mutated?: boolean }> {
   const { data: article, error: artErr } = await supabase
     .from('news_articles')
@@ -61,6 +78,9 @@ async function processJob(
     url: article.url ?? undefined,
     imageUrl: article.image_url ?? undefined,
     imageProbe: imageProbe.url ? imageProbe : undefined,
+    existingTags: pools.tags.slice(0, 80),
+    candidateCountries: pools.countries.slice(0, 60),
+    candidateCities: pools.cities.slice(0, 60),
     alreadyRemoved: sani.removedArtifacts,
   })
 
@@ -87,30 +107,56 @@ async function processJob(
     return { status: 'completed', decision, mutated: false }
   }
 
+  // Resolve geo entities (disambiguation-guarded) so the backfill heals the
+  // country_ids/city_ids gap on live rows, not just the verdict.
+  const [countryRes, cityRes] = await Promise.all([
+    resolveEntities(supabase, 'countries', 'country', decision.linkedCountries ?? [], sani.content),
+    resolveEntities(supabase, 'cities', 'city', decision.linkedCities ?? [], sani.content),
+  ])
+  const countryIds = countryRes.linked.map((c) => c.id)
+  const cityIds = cityRes.linked.map((c) => c.id)
+  const tags = Array.isArray(decision.tags) ? decision.tags.slice(0, 12) : []
+
   // Snapshot original (idempotent — onConflict do nothing).
   await supabase.rpc('snapshot_news_article_original', {
     p_article_id: article.id,
     p_pipeline_version: QUALITY_PIPELINE_VERSION,
   })
 
-  const { error: upErr } = await supabase
-    .from('news_articles')
-    .update({
-      title: decision.title || article.title,
-      content: decision.cleanedBody || article.content,
-      quality_score: decision.qualityScoreAfter,
-      quality_score_before: decision.qualityScoreBefore,
-      relevance_score: decision.relevanceScore,
-      sentiment: decision.sentiment,
-      quality_decision: decision,
-      quality_pipeline_version: QUALITY_PIPELINE_VERSION,
-      quality_status: gate.status,
-      last_quality_run_at: new Date().toISOString(),
-      auto_publish_blocked_reasons: gate.blockedReasons,
-      image_hash: article.image_url ? await hashImageUrl(article.image_url) : null,
-    })
-    .eq('id', article.id)
+  const update: Record<string, unknown> = {
+    title: decision.title || article.title,
+    content: decision.cleanedBody || article.content,
+    // NB: news_articles.quality_score is smallint (0-100 completeness) owned by
+    // run_news_quality_recompute — do NOT write the 0-1 qualityScoreAfter here
+    // (it errors on smallint). The 0-1 assessment lives in quality_decision.
+    quality_score_before: decision.qualityScoreBefore,
+    relevance_score: decision.relevanceScore,
+    sentiment: decision.sentiment,
+    quality_decision: decision,
+    quality_pipeline_version: QUALITY_PIPELINE_VERSION,
+    quality_status: gate.status,
+    last_quality_run_at: new Date().toISOString(),
+    auto_publish_blocked_reasons: gate.blockedReasons,
+    image_hash: article.image_url ? await hashImageUrl(article.image_url) : null,
+  }
+  if (tags.length) update.tags = tags
+  // Merge (don't clobber) any geo we resolved; only set when we found something.
+  if (countryIds.length) update.country_ids = countryIds
+  if (cityIds.length) update.city_ids = cityIds
+
+  const { error: upErr } = await supabase.from('news_articles').update(update).eq('id', article.id)
   if (upErr) return { status: 'failed', error: upErr.message }
+
+  if (countryIds.length) {
+    await supabase.from('news_article_countries')
+      .upsert(countryIds.map((cid) => ({ article_id: article.id, country_id: cid })),
+        { onConflict: 'article_id,country_id', ignoreDuplicates: true })
+  }
+  if (cityIds.length) {
+    await supabase.from('news_article_cities')
+      .upsert(cityIds.map((cid) => ({ article_id: article.id, city_id: cid })),
+        { onConflict: 'article_id,city_id', ignoreDuplicates: true })
+  }
 
   return { status: 'completed', decision, mutated: true }
 }
@@ -119,8 +165,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
-  // Service-role calls (cron / workflow-dispatcher) and admins only.
-  const auth = await requireAdmin(req, supabase)
+  // Service-role / internal-secret (cron) and admins only.
+  const auth = await requireInternalOrAdmin(req, supabase)
   if (auth instanceof Response) return auth
 
   try {
@@ -139,9 +185,10 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'enqueue') {
-      const limit = Math.min(2000, body.limit ?? DEFAULT_ENQUEUE_BATCH)
+      const limit = Math.min(20000, body.limit ?? DEFAULT_ENQUEUE_BATCH)
       const onlyMissing = body.only_missing !== false
-      let q = supabase.from('news_articles').select('id').limit(limit).order('published_at', { ascending: true })
+      // Newest-first: heal the most-visible recent articles before the long tail.
+      let q = supabase.from('news_articles').select('id').limit(limit).order('published_at', { ascending: false })
       if (onlyMissing) q = q.is('quality_pipeline_version', null)
       const { data: rows, error } = await q
       if (error) return errorResponse(`enqueue load: ${error.message}`, 500, req)
@@ -174,6 +221,7 @@ Deno.serve(async (req) => {
     }
 
     const summary: RunSummary = { processed: 0, passed: 0, review: 0, rejected: 0, failed: 0, mutated: 0 }
+    const pools = await loadCandidatePools(supabase)
 
     for (const j of jobs) {
       // Mark running (best-effort optimistic claim)
@@ -182,7 +230,7 @@ Deno.serve(async (req) => {
         .eq('id', j.id)
         .eq('status', 'pending')
 
-      const result = await processJob(supabase, j)
+      const result = await processJob(supabase, j, pools)
 
       const updates: Record<string, unknown> = {
         status: result.status,
