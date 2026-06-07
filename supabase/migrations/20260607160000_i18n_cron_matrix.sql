@@ -14,8 +14,13 @@
 -- description fields ARE translated. cities.name / countries.name are kept
 -- (city/country names do have localized forms, e.g. München, Deutschland).
 --
--- Auth: every job reads the shared Vault secret 'translate_i18n_webhook_secret'
--- (see 20260607150000); the function is verify_jwt=false (config.toml).
+-- Auth: every job sends BOTH a public anon-key Bearer token AND the shared Vault
+-- secret 'translate_i18n_webhook_secret' (see 20260607150000). The anon JWT
+-- satisfies the API gateway whether the function is verify_jwt true OR false
+-- (bulk function redeploys from CI periodically reset verify_jwt back to true,
+-- which would otherwise 401 every cron); the webhook secret does the real auth
+-- inside the function. The anon key is public (it ships in the frontend bundle),
+-- so embedding it here is safe.
 -- ============================================================================
 
 DO $$
@@ -33,7 +38,11 @@ DECLARE
     ['queer_villages','name'], ['queer_villages','description']
   ];
   v_vault text := '(SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name=''translate_i18n_webhook_secret'')';
+  -- Public anon key (also in the frontend bundle) — satisfies the gateway JWT
+  -- check regardless of the function's verify_jwt setting.
+  v_anon text := 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
   j record; tbl text; fld text; loc text; m int; idx int := 0; jobname text; sched text;
+  blimit int; is_desc bool;
 BEGIN
   -- Clean slate: drop every existing translate-i18n cron job.
   FOR j IN SELECT cron.job.jobname AS jn FROM cron.job
@@ -43,24 +52,33 @@ BEGIN
 
   FOR i IN 1 .. array_length(v_pairs,1) LOOP
     tbl := v_pairs[i][1]; fld := v_pairs[i][2];
+    is_desc := (fld = 'description');
     FOREACH loc IN ARRAY v_locales LOOP
-      m := idx % 30;  -- 2 runs/hour, staggered across 30 minute-buckets
-      sched := format('%s,%s * * * *', m, m+30);  -- keeps peak concurrency ~5-6
-      -- (165 jobs / 30 buckets) so CF Workers AI isn't saturated.
+      -- Batch size is governed by TEXT LENGTH, not row count: the edge fn aborts
+      -- its own LLM call at 30s. Measured: ~25 short strings (name/title) ≈ 10s,
+      -- but ~15 long strings (description) already ≈ 30s. So descriptions need a
+      -- small batch + higher frequency; names/titles tolerate a larger batch.
+      IF is_desc THEN
+        blimit := 8;  m := idx % 10;                              -- 6 runs/hour
+        sched := format('%s,%s,%s,%s,%s,%s * * * *', m, m+10, m+20, m+30, m+40, m+50);
+      ELSE
+        blimit := 20; m := idx % 15;                             -- 4 runs/hour
+        sched := format('%s,%s,%s,%s * * * *', m, m+15, m+30, m+45);
+      END IF;
       jobname := format('i18n_%s_%s_%s', tbl, fld, loc);
       PERFORM cron.schedule(jobname, sched, format($cmd$
         select net.http_post(
           url := 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/translate-i18n-batch',
           headers := jsonb_build_object(
             'Content-Type','application/json',
+            'Authorization','Bearer %s',
             'X-Webhook-Secret', %s
           ),
-          body := jsonb_build_object('table',%L,'locale',%L,'field',%L,'batch_limit',50),
+          body := jsonb_build_object('table',%L,'locale',%L,'field',%L,'batch_limit',%s),
           timeout_milliseconds := 30000  -- LLM batch needs >5s; without this pg_net
-          -- disconnects at 5s and the edge function is killed mid-batch (partial
-          -- writes land, the rest of the 50 are re-translated next run = 3x waste).
+          -- disconnects at 5s and the edge function is killed mid-batch.
         ) as request_id;
-      $cmd$, v_vault, tbl, loc, fld));
+      $cmd$, v_anon, v_vault, tbl, loc, fld, blimit));
       idx := idx + 1;
     END LOOP;
   END LOOP;
