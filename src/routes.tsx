@@ -87,6 +87,7 @@ const AdminAccessibilityAttributes = lazy(() => import('./pages/AdminAccessibili
 const AdminTargetGroups = lazy(() => import('./pages/AdminTargetGroups'));
 const AdminProfessions = lazy(() => import('./pages/AdminProfessions'));
 const AdminEvents = lazy(() => import('./pages/AdminEvents'));
+const AdminCityQuality = lazy(() => import('./pages/AdminCityQuality'));
 const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
 const AdminMarketplaceGuides = lazy(() => import('./pages/AdminMarketplaceGuides'));
 const AdminVenueGuides = lazy(() => import('./pages/AdminVenueGuides'));
@@ -351,7 +352,7 @@ export const AppRoutes = () => {
                 <Route path="duplicates" element={<AdminDuplicates />} />
                 <Route path="events" element={<AdminEvents />} />
                 <Route path="tags" element={<AdminTags />} />
-                <Route path="cities" element={<Navigate to="/admin/content/cities" replace />} />
+                <Route path="cities" element={<AdminCityQuality />} />
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
                 <Route path="quests" element={<AdminQuests />} />
