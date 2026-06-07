@@ -38,6 +38,12 @@ function claimValue(entity: Record<string, unknown>, prop: string): string | nul
   }
   return null
 }
+// A real Wikidata item id, not a 'SKIP_<uuid>' sentinel (written to mark "no
+// Wikidata match, don't retry"). SKIP rows are not anchored and must not drive
+// entity fetches, connection derivation, or provenance.
+function isRealQid(q: unknown): q is string {
+  return typeof q === 'string' && /^Q[0-9]+$/.test(q)
+}
 // All QID values for a (possibly multi-valued) entity property — e.g. P91, P21.
 function claimQids(entity: Record<string, unknown>, prop: string): string[] {
   const claims = (entity.claims as Record<string, unknown>)?.[prop] as Array<Record<string, unknown>> | undefined
@@ -121,7 +127,10 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       if (!p) continue
 
       const incoming: Row = {}
-      let qid = p.wikidata_qid as string | null
+      // SKIP_ sentinels mean "no Wikidata match, don't retry" — respect them: no
+      // resolve, no entity fetch, no fake provenance. A real Q anchors normally.
+      const skipped = typeof p.wikidata_qid === 'string' && (p.wikidata_qid as string).startsWith('SKIP_')
+      let qid: string | null = isRealQid(p.wikidata_qid) ? (p.wikidata_qid as string) : null
       let entity: Record<string, unknown> | null = null
       let wdUrl: string | null = null
       let matchConfidence: 'high' | 'medium' | 'low' | null = null
@@ -133,7 +142,7 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       // occupation disambiguation). Refuses on ambiguity or contradiction, and
       // applies a stricter bar to living people, so we never blind-pick the top
       // English search hit the way the old loop did.
-      if (!qid && p.name) {
+      if (!qid && !skipped && p.name) {
         const res = await resolvePersonality({
           name: String(p.name),
           profession: p.profession as string | null,

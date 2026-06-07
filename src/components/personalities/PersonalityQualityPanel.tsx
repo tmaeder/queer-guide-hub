@@ -28,6 +28,7 @@ export function PersonalityQualityPanel() {
           <Stat label="Wikidata-anchored" value={`${data.anchored.toLocaleString()} · ${pct}%`} />
           <Stat label="Active records" value={data.active.toLocaleString()} />
           <Stat label="Re-queued (draining)" value={data.pending_requeue.toLocaleString()} />
+          <Stat label="No Wikidata match (skip)" value={data.skip_sentinel.toLocaleString()} />
           <Stat label="Archived (unanchored adult)" value={data.archived.toLocaleString()} />
         </div>
         <div className="flex flex-wrap gap-2">

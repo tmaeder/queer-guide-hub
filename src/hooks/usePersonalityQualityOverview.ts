@@ -6,6 +6,7 @@ export interface PersonalityQualityOverview {
   anchored: number;
   anchored_pct: number | null;
   archived: number;
+  skip_sentinel: number;
   triage_insufficient: number;
   pending_requeue: number;
   needs_attention: number;
