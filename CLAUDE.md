@@ -54,6 +54,8 @@ queer-guide-hub/
 
 **Country Completeness Engine (data quality, 2026-06-07):** Per-country `content_completeness_score` (0-100, distinct from `equality_score` which is legal status) + `enrichment_status` jsonb (per-field state map; `data_unavailable` is terminal → credited by the scorer, skipped by the selector, so uninhabited territories aren't flagged forever). Pure-SQL `run_country_completeness_recompute()` (nightly `30 3 * * *`, registered in `admin_automations`) scores a uniform bar across editorial 25 / core facts 25 / stats 20 / legal coverage 20 / media+geo 10. Selector RPC `countries_due_for_enrichment(limit, phase)` ranks never-scored > low-score > stale. Three fillers: **`pipeline-enrich-country-editorial`** (LLM hook+paragraph grounded in facts + LGBTI legal context; hybrid-by-confidence via `_shared/editorial-confidence.ts` — high-conf safe → auto-publish to `description`/`editorial_hook`/`editorial_long`, criminalizing destinations + low-confidence → `editorial_drafts` review at `/admin/places-editorial`); **`enrich-wolfram`** (fills `gdp_usd`/`gdp_per_capita_usd`/`human_development_index`/`life_expectancy`/`literacy_rate` from Wolfram, terminal `data_unavailable` after 3 misses; needs `WOLFRAM_APP_ID`); equality_score reconciled to one shared formula in `_shared/equality-score.ts` (re-applied nightly by the existing `wf-import-ilga-data` cron). Weekly fill crons `wf-enrich-wolfram-countries` (`0 5 * * 0`) + `wf-enrich-country-editorial` (`0 6 * * 0`) via `enqueue_workflow`. Admin completeness column on `/admin/countries`; `editorial_hook` rendered on the country About card.
 
+**Personhood Disposition (data quality, 2026-06-07):** Detects organizations / venues / teams misfiled in `personalities` (the bare-name residue the Wikidata resolver refuses because of its `P31=Q5` human filter — e.g. *Sisters of Perpetual Indulgence*, *SF Tsunami Water Polo*, *La Montaña*) and **reversibly soft-archives** confirmed non-persons (`visibility→draft` + `review_status='archived'` + `seo_indexable=false`, the Phase-1 adult-cohort convention; never hard-deletes, never reclassifies — no org table exists). Classifier `_shared/personhood-classifier.ts` fuses name/bio heuristics (reusing `entity-type-classifier.ts`) + Wikidata `P31` (`classifyWikidataPersonhood` in `_shared/wikidata-resolve.ts`) + LLM grounded in the bio, hybrid-by-confidence: a confident Wikidata-human match **vetoes** archiving; only `non_person` ≥0.8 archives, `uncertain` → `needs_attention`, `person` recorded + excluded from future runs. RPCs (migration `20260607400000`): `archive_personality_as_nonperson(id,reason,signals)`, `unarchive_personality(id)` (existing admin restore, extended to also restore visibility/seo from `enrichment_status.personhood.archived` snapshot), `set_personhood_verdict(id,verdict,payload)`, `personalities_nonperson_candidates(limit)`. Edge fn `pipeline-classify-personhood` (circuit-broken, daily-capped, internal-secret gated) on weekly cron `wf-classify-personhood` (`30 6 * * 1`). New critical `person_nonperson_public` gate in `release_gate_checks()`. Backfill driver `scripts/data-quality/classify-personhood.mjs`. First pass (2026-06-07): 12 archived, 6 flagged for triage, 62 confirmed persons, 0 public non-persons. Audit: `docs/audits/2026-06-07-personhood-disposition.md`.
+
 **Payments:** Stripe via `create-checkout-session` + `stripe-webhook` edge functions.
 
 **User submissions (Chrome extension):** `extension/` (MV3, React 19) extracts venues/events/hotels/marketplace/news from any webpage via JSON-LD/microdata/OpenGraph/DOM heuristics. `workers/submit/` (CF Worker) verifies user Supabase JWTs and stages into the same `ingestion_staging` table the scraper uses, with `source_type='user_submission'` — submissions flow through the existing normalize → dedupe → quality-score → review-gate → commit pipeline. Submitter columns + RLS added via migration `002_user_submissions`.
@@ -62,14 +64,16 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 192
-- **Migrations:** 494
+- **Edge functions:** 196
+- **Migrations:** 509
 - **Edge functions:** 194
 - **Migrations:** 495
 - **Edge functions:** 195
 - **Migrations:** 507
 - **Edge functions:** 193
 - **Migrations:** 497
+- **Edge functions:** 195
+- **Migrations:** 496
 - **Edge functions:** 192
 - **Migrations:** 500
 - **Migrations:** 485

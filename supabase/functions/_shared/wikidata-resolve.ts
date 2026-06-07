@@ -182,6 +182,82 @@ export async function readEntityLabel(qid: string): Promise<string | null> {
   return entityLabel(qid);
 }
 
+// ---------------------------------------------------------------------------
+// Personhood lookup (inverse of resolveByNameAndProfession): given a name,
+// decide whether the best-matching Wikidata entity is a human (P31=Q5) or a
+// non-person (organization / venue / team / work). Used by the personhood
+// classifier to authoritatively confirm misfiled non-people.
+// ---------------------------------------------------------------------------
+
+export type NonPersonType = 'organization' | 'venue' | 'team' | 'event' | 'work' | 'other';
+
+export interface WikidataPersonhood {
+  found: boolean;
+  qid?: string;
+  label?: string;
+  description?: string;
+  isHuman: boolean;
+  /** Non-person bucket inferred from the entity description (null when human/unknown). */
+  nonPersonType: NonPersonType | null;
+  /** Confidence the candidate is the right entity (exact label match → high). */
+  matchConfidence: number;
+}
+
+// Map a Wikidata English description to a coarse non-person bucket.
+function nonPersonTypeFromDescription(desc: string): NonPersonType | null {
+  const d = desc.toLowerCase();
+  if (/\b(team|club|squad|fc\b|sports? side|football|water polo|rugby|softball|volleyball|basketball)\b/.test(d)
+      && !/\bplayer|footballer|coach\b/.test(d)) return 'team';
+  if (/\b(organization|organisation|ngo|non-?profit|nonprofit|charity|charitable|association|foundation|society|collective|cooperative|network|institute|federation|coalition|alliance|union|ministry|congregation|church|company|corporation|agency|community group)\b/.test(d)) return 'organization';
+  if (/\b(band|musical group|music group|duo|trio|quartet|ensemble|orchestra|choir|chorus|chorale)\b/.test(d)) return 'organization';
+  if (/\b(restaurant|bar\b|caf[eé]|coffeehouse|pub\b|nightclub|venue|hotel|hostel|sauna|bathhouse|museum|gallery|theatre|theater|shop|store|bookshop|building|landmark|neighborhood|neighbourhood|district|street)\b/.test(d)) return 'venue';
+  if (/\b(festival|parade|pride|conference|convention|ceremony|tournament|championship|gala|event)\b/.test(d)) return 'event';
+  if (/\b(album|song|single|film|movie|book|novel|magazine|newspaper|website|video game|tv series|television series|painting|sculpture|periodical|comic)\b/.test(d)) return 'work';
+  return null;
+}
+
+/**
+ * Look up `name` on Wikidata and classify the best match as human vs non-person.
+ *
+ * Strategy: search candidates, prefer an exact (case-insensitive) label match,
+ * else the top-ranked result. Fetch that entity and read P31 — P31=Q5 ⇒ human.
+ * For non-humans, bucket the type from the entity's English description.
+ * Returns found=false when Wikidata has no candidate (an absent entity is NOT
+ * evidence of non-personhood — obscure real people are simply not in Wikidata).
+ */
+export async function classifyWikidataPersonhood(name: string): Promise<WikidataPersonhood> {
+  const miss: WikidataPersonhood = { found: false, isHuman: false, nonPersonType: null, matchConfidence: 0 };
+  if (!name || !name.trim()) return miss;
+
+  const candidates = await wdSearch(name, 7);
+  if (!candidates.length) return miss;
+
+  const target = name.trim().toLowerCase();
+  const exact = candidates.find(c => (c.label ?? '').trim().toLowerCase() === target);
+  const pick = exact ?? candidates[0];
+  const matchConfidence = exact ? 0.95 : 0.6;
+
+  const entity = await wdEntity(pick.id);
+  const description = pick.description
+    ?? (entity ? readEntityDescription(entity) ?? undefined : undefined);
+
+  if (entity && isHuman(entity)) {
+    return { found: true, qid: pick.id, label: pick.label, description,
+             isHuman: true, nonPersonType: null, matchConfidence };
+  }
+
+  // Non-human (or entity fetch failed). Bucket from description when available.
+  const nonPersonType = description ? nonPersonTypeFromDescription(description) : null;
+  return {
+    found: true, qid: pick.id, label: pick.label, description,
+    isHuman: false,
+    // Only assert non-person when P31 was actually readable (entity present) or
+    // the description clearly names a non-person bucket.
+    nonPersonType: entity ? (nonPersonType ?? 'other') : nonPersonType,
+    matchConfidence,
+  };
+}
+
 export function readEntityDescription(entity: Record<string, unknown>): string | null {
   const desc = (entity.descriptions as Record<string, { value: string }>)?.en?.value;
   return desc ?? null;
