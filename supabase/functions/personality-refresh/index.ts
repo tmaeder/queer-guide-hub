@@ -255,7 +255,31 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
         last_refreshed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }).eq('id', id)
-      if (uErr) { results[results.length - 1].error = uErr.message; continue }
+      if (uErr) {
+        // wikidata_qid is UNIQUE. A collision means this row duplicates an
+        // already-anchored one — typically the same person under a birth name vs
+        // stage name (e.g. "Farrokh Bulsara" → Freddie Mercury). Link it as a
+        // duplicate so it leaves the active corpus + queue, instead of failing
+        // every pass and clogging the top of the priority list forever.
+        if (incoming.wikidata_qid && /duplicate key|23505|unique/i.test(uErr.message)) {
+          const { data: owner } = await supabase.from('personalities')
+            .select('id').eq('wikidata_qid', incoming.wikidata_qid as string)
+            .is('duplicate_of_id', null).neq('id', id).limit(1).maybeSingle()
+          if (owner?.id) {
+            await supabase.from('personalities').update({
+              duplicate_of_id: owner.id, needs_attention: true,
+              last_refreshed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+            }).eq('id', id)
+            results[results.length - 1].deduped_into = owner.id
+            updated++
+            continue
+          }
+        }
+        // Any other persistent update failure: stamp so it does not infinite-loop.
+        results[results.length - 1].error = uErr.message
+        await supabase.from('personalities').update({ last_refreshed_at: new Date().toISOString() }).eq('id', id)
+        continue
+      }
 
       // Provenance. personality_sources is UNIQUE on (source_slug, source_entity_id).
       // wikidata path is collision-safe: personalities.wikidata_qid is itself UNIQUE, so a

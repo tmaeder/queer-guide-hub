@@ -31,7 +31,11 @@ SELECT
       END
     ))                                                       AS is_stale,
   d.debt_score,
-  (d.debt_score + ln(COALESCE(p.view_count, 0) + 2))         AS priority,
+  -- Non-adult (the genuine icons) before the adult-performer cohort; debt drives
+  -- order within each; view_count a minor tiebreak. (The old multiplicative
+  -- debt × ln(views) form let high-traffic but well-populated adult rows starve
+  -- the thin high-debt icons.)
+  (d.debt_score + (CASE WHEN p.is_adult THEN 0 ELSE 40 END) + ln(COALESCE(p.view_count, 0) + 2)) AS priority,
   (p.lgbti_connection IS NULL OR p.lgbti_connection IN ('unclear','none_known')) AS connection_missing
 FROM public.personalities p
 CROSS JOIN LATERAL (
