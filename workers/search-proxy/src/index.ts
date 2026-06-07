@@ -205,9 +205,10 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// pipeline takes ~6s for an essentially random ranking. Route it to
 	// the popular-entities path (sub-200ms) instead.
 	if (isBareLgbtqQuery(tokens)) {
-		// First try the precomputed popular entities (fast path).
+		// First try the precomputed popular entities (fast path). Hydrate display
+		// fields so they don't render as empty cards.
 		const popular = await popularEntities(env, ["venue", "event"], hitsPerPage * (page + 1));
-		let hits: Array<Record<string, unknown>> = popular as Array<Record<string, unknown>>;
+		let hits: Array<Record<string, unknown>> = await hydratePopular(env, popular);
 
 		// Fallback: if the popular view returns nothing, browse featured docs
 		// from Postgres (search_hybrid with an empty query + is_featured filter
@@ -223,11 +224,6 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				page: 0,
 			}).catch(() => null);
 			hits = (browse?.hits ?? []) as Array<Record<string, unknown>>;
-		} else {
-			// v_popular_entities only carries {content_type, content_id, score} —
-			// hydrate to full hits (type/objectID/title/…) so they don't render as
-			// empty cards. Drops rows that can't be hydrated.
-			hits = await hydratePopular(env, hits as PopularRow[]);
 		}
 
 		const slice = hits.slice(page * hitsPerPage, (page + 1) * hitsPerPage);
@@ -349,8 +345,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// full hits so they don't render as empty (type/title/objectID null) cards.
 	if (!explicitSort && ranked.length < 5) {
 		const popular = await popularEntities(env, pgTypes, 30);
-		const hydrated = await hydratePopular(env, popular);
-		ranked = dedupeById([...ranked, ...hydrated]);
+		ranked = dedupeById([...ranked, ...(await hydratePopular(env, popular))]);
 	}
 
 	// Optional reranker on top-20.
@@ -720,9 +715,9 @@ type FuseItem = {
 };
 
 function itemId(h: FuseItem): string | null {
-	if (h.id) return `${h.type || h.content_type || "x"}:${h.id}`;
-	if (h.content_id) return `${h.content_type}:${h.content_id}`;
-	return null;
+	const id = h.id ?? h.content_id ?? h.objectID;
+	if (!id) return null;
+	return `${h.type ?? h.content_type ?? "x"}:${id}`;
 }
 
 type PopularRow = { content_type: string; content_id: string; score?: number };
