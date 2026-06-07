@@ -39,6 +39,9 @@ interface BatchInput {
   field?: 'name' | 'title' | 'description'
   batch_limit?: number
   dry_run?: boolean
+  /** Only translate unified_tags whose quality_score >= this (avoids spending
+   *  LLM budget on stub/low-value glossary entries). Ignored for other tables. */
+  min_quality?: number
 }
 
 const TABLE_FIELDS: Record<
@@ -158,18 +161,25 @@ Deno.serve(async (req) => {
     const batchLimit = Math.min(body.batch_limit ?? 25, 50)
     const dryRun = body.dry_run === true
 
-    // Fetch rows missing this locale.
-    const { data: rows, error: fetchErr } = await supabase
-      .from(body.table)
-      .select(`${cfg.id_field}, ${field}, ${i18nCol}`)
-      .order('updated_at', { ascending: true, nullsFirst: false })
-      .limit(batchLimit * 4) // overscan; we filter in JS for "missing locale"
+    // Optional quality gate (unified_tags only): translate good content first.
+    const qualityGated = body.table === 'unified_tags' && typeof body.min_quality === 'number'
+    const selectCols = qualityGated
+      ? `${cfg.id_field}, ${field}, ${i18nCol}, quality_score`
+      : `${cfg.id_field}, ${field}, ${i18nCol}`
+
+    // Fetch rows missing this locale. When quality-gated, prefer the best tags.
+    let query = supabase.from(body.table).select(selectCols)
+    query = qualityGated
+      ? query.order('quality_score', { ascending: false, nullsFirst: false })
+      : query.order('updated_at', { ascending: true, nullsFirst: false })
+    const { data: rows, error: fetchErr } = await query.limit(batchLimit * 4) // overscan; filter in JS
     if (fetchErr) return errorResponse(fetchErr.message, 500, req)
 
     type Row = Record<string, unknown>
     const candidates = (rows ?? []).filter((r: Row) => {
       const source = r[field]
       if (!source || typeof source !== 'string' || source.trim() === '') return false
+      if (qualityGated && Number(r['quality_score'] ?? 0) < (body.min_quality as number)) return false
       const i18n = (r[i18nCol] as Record<string, unknown> | null) ?? {}
       return !i18n[body.locale]
     })

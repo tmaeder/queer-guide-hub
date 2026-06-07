@@ -23,7 +23,12 @@ const PUBLIC_ROUTE_LIMITS = {
   // bad import surfaces but normal growth doesn't.
   index: 1500,
   maplibre: 1200,
-  vendor: 200,
+  // `vendor` is React core only (react + react-dom + scheduler — see the
+  // manualChunks rule in vite.config.ts). react-dom 19 is ~360KB raw and can't
+  // be split, so the old 200KB cap was unreachable and failed every PR. Capped
+  // ~15% above current real size to still catch a stray heavy import landing in
+  // React core. Verified contents are React-only (no admin/heavy libs leaked).
+  vendor: 420,
   router: 80,
   exceljs: 1100,
   tiptap: 700,

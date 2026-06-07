@@ -25,6 +25,7 @@ import DOMPurify from 'dompurify';
 import { useMeta } from '@/hooks/useMeta';
 import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
+import { AccessibilityControls } from '@/components/accessibility/AccessibilityControls';
 import { EDITORIAL_IMAGES, type EditorialImage } from '@/lib/editorialImages';
 import type { CMSPage } from '@/types/cms';
 import type { LucideIcon } from 'lucide-react';
@@ -325,6 +326,14 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           className={editorialHero ? 'qg-cms-body qg-cms-body--no-title' : 'qg-cms-body'}
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
+      )}
+
+      {/* Accessibility page embeds the live settings panel so it isn't a dead end. */}
+      {slug === 'accessibility' && (
+        <section className="mt-10" aria-label="Accessibility settings">
+          <h2 className="mb-6 text-2xl font-bold">Your accessibility settings</h2>
+          <AccessibilityControls />
+        </section>
       )}
 
       {childPages.length > 0 && (

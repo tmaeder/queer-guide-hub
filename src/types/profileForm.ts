@@ -170,17 +170,29 @@ export function isValidDob(dateStr: string): boolean {
   return date <= getMinAgeDate() && date >= new Date('1900-01-01');
 }
 
-/** Weighted profile completion (0-100) */
-export function calculateCompletion(data: ProfileFormData): number {
-  const core = [data.display_name, data.bio, data.location, data.pronouns, data.gender_identity];
-  const extended = [data.first_name, data.last_name, data.age_range, data.occupation, data.education, data.sexual_orientation];
-  const optional = [data.romantic_orientation, data.current_relationship_status, data.relationship_style, data.chosen_family_status];
+/**
+ * Weighted profile completion (0-100). Counts only fields that drive a visible
+ * feature — identity that shows everywhere (You) plus the personalization signal
+ * that powers search/trips/recs. Dead identity fields (gender, orientation,
+ * relationship_style) deliberately do NOT count, so nudges point users at data
+ * that actually improves their experience. (2026-06-06 profile rethink.)
+ */
+export function calculateCompletion(data: ProfileFormData, profile?: Profile | null): number {
+  const p = (profile ?? {}) as Record<string, unknown>;
 
-  const filled = (fields: string[]) => fields.filter(f => f?.trim()).length;
+  const has = (v: unknown): boolean => {
+    if (Array.isArray(v)) return v.length > 0;
+    if (v && typeof v === 'object') return Object.keys(v).length > 0;
+    return typeof v === 'string' ? v.trim().length > 0 : !!v;
+  };
+  const ratio = (items: unknown[]) => items.filter(has).length / items.length;
 
-  const coreScore = (filled(core) / core.length) * 60;
-  const extScore = (filled(extended) / extended.length) * 30;
-  const optScore = (filled(optional) / optional.length) * 10;
+  // Core (50%): the "You" surface shown across the app.
+  const core = [data.display_name, data.pronouns, data.location, data.languages, p.avatar_url];
+  // Signal (40%): personalization that powers search / trips / recommendations.
+  const signal = [p.interests, p.travel_preferences, p.accessibility_needs, data.bio];
+  // Extras (10%): nice-to-have context.
+  const extras = [data.first_name, data.occupation];
 
-  return Math.round(coreScore + extScore + optScore);
+  return Math.round(ratio(core) * 50 + ratio(signal) * 40 + ratio(extras) * 10);
 }

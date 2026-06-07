@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { fieldToZod } from '@/lib/cms/zodFromFields';
+import { applyAIResult } from '@/lib/cms/applyAIResult';
 import type { ContentTypeConfig, AIAssistOp } from '@/types/cms';
 
 const OP_META: Record<
@@ -128,52 +128,8 @@ export function AIAssistDrawer({
 
   const apply = useCallback(
     (op: AIAssistOp, output: unknown) => {
-      const writable = config.aiAssist?.writableFields ?? [];
-      if (op === 'summarize') {
-        const field = OP_META.summarize.targetField ?? 'excerpt';
-        if (writable.length && !writable.includes(field)) {
-          setError(`Field "${field}" is not in writableFields for this type.`);
-          return;
-        }
-        const target = config.fields.find((f) => f.name === field);
-        if (target) {
-          const parsed = fieldToZod(target).safeParse(output);
-          if (!parsed.success) {
-            setError(`Validation failed for ${field}: ${parsed.error.message}`);
-            return;
-          }
-        }
-        onApply(field, output);
-      } else if (op === 'alt_text') {
-        const field = OP_META.alt_text.targetField ?? 'image_alt';
-        onApply(field, output);
-      } else if (op === 'seo_draft' && output && typeof output === 'object') {
-        const o = output as { meta_title?: string; meta_description?: string };
-        if (o.meta_title) onApply('meta_title', o.meta_title);
-        if (o.meta_description) onApply('meta_description', o.meta_description);
-      } else if (op === 'auto_tag' && output && typeof output === 'object') {
-        const tags = (output as { tags?: string[] }).tags ?? [];
-        onApply('tags', tags);
-      } else if (op === 'quality_review' && output && typeof output === 'object') {
-        const writable = config.aiAssist?.writableFields ?? [];
-        const suggestions = (output as { suggestions?: Array<{ field: string; value: unknown }> })
-          .suggestions ?? [];
-        let applied = 0;
-        for (const s of suggestions) {
-          if (!s.field) continue;
-          if (writable.length && !writable.includes(s.field)) continue;
-          const fld = config.fields.find((f) => f.name === s.field);
-          if (fld) {
-            const parsed = fieldToZod(fld).safeParse(s.value);
-            if (!parsed.success) continue;
-            onApply(s.field, s.value);
-            applied++;
-          }
-        }
-        if (applied === 0) {
-          setError('No suggestions were applicable to writable fields.');
-        }
-      }
+      const result = applyAIResult(config, op, output, onApply);
+      if (result.error) setError(result.error);
     },
     [config, onApply],
   );

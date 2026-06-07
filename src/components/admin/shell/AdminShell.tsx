@@ -30,13 +30,28 @@ import { GlobalAdminActions } from '@/components/admin/command-palette/useGlobal
 
 // ── Editor Context ────────────────────────────────────────────────────────────
 
+/** One entry in a review/edit queue (cockpit mode). */
+export interface EditorQueueItem {
+  contentType: string;
+  itemId: string;
+}
+
+/** Ordered queue the editor steps through, with the active position. */
+export interface EditorQueue {
+  items: EditorQueueItem[];
+  index: number;
+}
+
 interface EditorContext {
   contentType: string;
   itemId: string | null;
+  queue?: EditorQueue;
 }
 
 interface AdminShellContextValue {
-  openEditor: (contentType: string, itemId: string | null) => void;
+  /** Open the editor for one record, or — when `queue` is passed — over an ordered
+   *  queue starting at `queue.index` (cockpit mode: N/M nav + auto-advance). */
+  openEditor: (contentType: string, itemId: string | null, queue?: EditorQueue) => void;
   closeEditor: () => void;
 }
 
@@ -109,12 +124,30 @@ export function AdminShell() {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  const openEditor = useCallback((contentType: string, itemId: string | null) => {
-    setEditor({ contentType, itemId });
-  }, []);
+  const openEditor = useCallback(
+    (contentType: string, itemId: string | null, queue?: EditorQueue) => {
+      setEditor({ contentType, itemId, queue });
+    },
+    [],
+  );
 
   const closeEditor = useCallback(() => {
     setEditor(null);
+  }, []);
+
+  // Move to a different position in the queue (cockpit prev/next + auto-advance).
+  const navigateQueue = useCallback((index: number) => {
+    setEditor((prev) => {
+      if (!prev?.queue) return prev;
+      const clamped = Math.max(0, Math.min(index, prev.queue.items.length - 1));
+      const next = prev.queue.items[clamped];
+      if (!next) return prev;
+      return {
+        contentType: next.contentType,
+        itemId: next.itemId,
+        queue: { ...prev.queue, index: clamped },
+      };
+    });
   }, []);
 
   const handleEditorSaved = useCallback((_id: string) => {
@@ -231,6 +264,8 @@ export function AdminShell() {
                 <CMSEditorLayout
                   contentType={editor.contentType}
                   itemId={editor.itemId}
+                  queue={editor.queue}
+                  onNavigate={navigateQueue}
                   onClose={closeEditor}
                   onSaved={handleEditorSaved}
                 />
