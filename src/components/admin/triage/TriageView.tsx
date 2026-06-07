@@ -35,6 +35,12 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Last approve/reject, for one-step undo (U) — reopens the item in its queue.
+  const [lastActed, setLastActed] = useState<{
+    id: string;
+    queueType: string;
+    title: string;
+  } | null>(null);
 
   const { data, isLoading, error } = useUnifiedTriageQueue(filters);
   const { data: counts } = useReviewCounts();
@@ -95,6 +101,14 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         {
           onSuccess: () => {
             toast.success(`${action}d: ${activeItem.title.slice(0, 40)}`);
+            // Only approve/reject remove the item from the queue → undoable.
+            if (action === 'approve' || action === 'reject') {
+              setLastActed({
+                id: activeItem.id,
+                queueType: activeItem.queue_type,
+                title: activeItem.title,
+              });
+            }
             advanceToNext();
           },
           onError: (err) => {
@@ -105,6 +119,27 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
     },
     [activeItem, triageAction, advanceToNext],
   );
+
+  const handleUndo = useCallback(() => {
+    if (!lastActed) {
+      toast.message('Nothing to undo');
+      return;
+    }
+    const target = lastActed;
+    triageAction.mutate(
+      { itemId: target.id, queueType: target.queueType, action: 'reopen' },
+      {
+        onSuccess: () => {
+          toast.success(`Reopened: ${target.title.slice(0, 40)}`);
+          setLastActed(null);
+          setActiveId(target.id);
+        },
+        onError: (err) => {
+          toast.error(`Undo failed: ${(err as Error).message}`);
+        },
+      },
+    );
+  }, [lastActed, triageAction]);
 
   const [bulkLoading, setBulkLoading] = useState(false);
 
@@ -146,6 +181,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
     onToggleCheck: () => {
       if (activeId) handleToggleCheck(activeId);
     },
+    onUndo: handleUndo,
     enabled: !isMobile,
   });
 
@@ -188,6 +224,12 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         <kbd className="px-1 border">r</kbd> reject
         {' · '}
         <kbd className="px-1 border">s</kbd> skip
+        {' · '}
+        <kbd className="px-1 border">f</kbd> flag
+        {' · '}
+        <kbd className="px-1 border">u</kbd> undo
+        {' · '}
+        <kbd className="px-1 border">?</kbd> help
       </p>
     </div>
   );

@@ -10,11 +10,12 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: { auth: { signOut: vi.fn() } },
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { email: 'a@b' } }) }));
-vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: () => ({ isAdmin: true }) }));
+vi.mock('@/hooks/useGranularRoles', () => ({ useGranularRoles: () => ({ effectiveRole: 'admin' }) }));
 vi.mock('@/config/adminNavigation', () => ({
   adminNavSections: [
-    { id: 's1', label: 'Section', defaultExpanded: true, items: [{ id: 'i1', label: 'Item', path: '/admin/x', icon: Box }] },
+    { id: 's1', label: 'Section', defaultExpanded: true, minRole: 'editor', items: [{ id: 'i1', label: 'Item', route: '/admin/x', icon: Box }] },
   ],
+  resolveItemMinRole: () => 'editor',
 }));
 
 import { AdminSidebar } from '../AdminSidebar';

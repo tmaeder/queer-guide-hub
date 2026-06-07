@@ -44,7 +44,7 @@ export function usePipelineActions(a: Args) {
     undoRedo.commitNow();
     setNodes(autoLayout(nodes, edges));
     setIsDirty(true);
-    toast({ title: 'Layout applied', description: `${nodes.length} nodes arranged` });
+    toast.success('Layout applied', { description: `${nodes.length} nodes arranged` });
   }, [nodes, edges, setNodes, setIsDirty, undoRedo]);
 
   const duplicateNode = useCallback((nodeId: string) => {
@@ -81,7 +81,7 @@ export function usePipelineActions(a: Args) {
     const cfg = (n?.data as { config?: Record<string, unknown> } | undefined)?.config;
     if (cfg && Object.keys(cfg).length > 0) {
       configClipboardRef.current = JSON.parse(JSON.stringify(cfg));
-      toast({ title: 'Config copied', description: `${Object.keys(cfg).length} fields` });
+      toast.success('Config copied', { description: `${Object.keys(cfg).length} fields` });
     } else {
       toast.error('No config to copy');
     }
@@ -192,7 +192,7 @@ export function usePipelineActions(a: Args) {
     setEdges(eds => eds.filter(e => !selectedIds.has(e.source) && !selectedIds.has(e.target)));
     setSelectedNodeId(null);
     setIsDirty(true);
-    toast({ title: `Deleted ${selectedIds.size} nodes` });
+    toast.success(`Deleted ${selectedIds.size} nodes`);
   }, [nodes, setNodes, setEdges, setSelectedNodeId, setIsDirty, undoRedo]);
 
   const handleBulkDuplicate = useCallback(() => {
@@ -225,7 +225,7 @@ export function usePipelineActions(a: Args) {
     setNodes(nds => [...nds.map(n => ({ ...n, selected: false })), ...clones]);
     setEdges(eds => [...eds, ...cloneEdges]);
     setIsDirty(true);
-    toast({ title: `Duplicated ${selected.length} nodes` });
+    toast.success(`Duplicated ${selected.length} nodes`);
   }, [nodes, edges, setNodes, setEdges, setIsDirty, undoRedo]);
 
   const handleLayoutSelection = useCallback(() => {
@@ -244,7 +244,7 @@ export function usePipelineActions(a: Args) {
     const posMap = new Map(laidOut.map(n => [n.id, { x: n.position.x + dx, y: n.position.y + dy }]));
     setNodes(nds => nds.map(n => posMap.has(n.id) ? { ...n, position: posMap.get(n.id)! } : n));
     setIsDirty(true);
-    toast({ title: 'Selection arranged', description: `${selected.length} nodes` });
+    toast.success('Selection arranged', { description: `${selected.length} nodes` });
   }, [nodes, edges, setNodes, setIsDirty, undoRedo]);
 
   const handleDeselectAll = useCallback(() => {

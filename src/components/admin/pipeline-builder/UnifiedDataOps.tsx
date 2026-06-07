@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, Component, type ReactNode } from 'react';
 import { useSearchParams, Link } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, MapPin, GitMerge, Plug, Bug, Bell, Merge, Activity, History, Webhook } from 'lucide-react';
+import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, MapPin, GitMerge, Plug, Bug, Bell, Merge, Activity, History, Webhook, Wrench } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
@@ -20,12 +20,13 @@ const DedupDecisionsTab = lazy(() => import('./tabs/DedupDecisionsTab'));
 const ScraperHealthTab  = lazy(() => import('./tabs/ScraperHealthTab'));
 const AuditTab          = lazy(() => import('./tabs/AuditTab'));
 const IntegrationsTab   = lazy(() => import('./tabs/IntegrationsTab'));
+const BackfillsTab      = lazy(() => import('./tabs/BackfillsTab'));
 
 type Tab =
   | 'overview' | 'builder' | 'monitor' | 'sources' | 'dlq'
   | 'errors' | 'alerts' | 'coverage' | 'news' | 'health' | 'geo-review'
   | 'geo-mismatch'
-  | 'dedup' | 'scraper-health' | 'audit' | 'integrations';
+  | 'dedup' | 'scraper-health' | 'audit' | 'integrations' | 'backfills';
 
 const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: 'overview',       label: 'Overview',   icon: LayoutDashboard },
@@ -44,6 +45,7 @@ const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: s
   { key: 'scraper-health', label: 'Scraper',    icon: Activity },
   { key: 'audit',          label: 'Audit',      icon: History },
   { key: 'integrations',   label: 'Integrations', icon: Webhook },
+  { key: 'backfills',      label: 'Backfills',  icon: Wrench },
 ];
 
 const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>> = {
@@ -63,6 +65,7 @@ const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>
   'scraper-health': ScraperHealthTab,
   audit: AuditTab,
   integrations: IntegrationsTab,
+  backfills: BackfillsTab,
 };
 
 function TabSkeleton() {

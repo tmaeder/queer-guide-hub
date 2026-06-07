@@ -103,10 +103,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast({
-        title: 'User created',
-        description: `${data.user?.email ?? form.email} has been created.`,
-      });
+      toast.success('User created', { description: `${data.user?.email ?? form.email} has been created.` });
       queryClient.invalidateQueries({ queryKey: ['admin-table', 'profiles'] });
       queryClient.invalidateQueries({ queryKey: ['admin-user-stats'] });
       reset();

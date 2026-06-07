@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, X, RotateCcw, Columns3, Save, BookmarkCheck, Layers } from 'lucide-react';
+import { Search, X, RotateCcw, Columns3, Save, BookmarkCheck, Layers, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +42,8 @@ interface DataTableToolbarProps {
   onSavePreset?: (name: string) => void;
   onApplyPreset?: (id: string) => void;
   onDeletePreset?: (id: string) => void;
+  onSetDefaultPreset?: (id: string) => void;
+  defaultPresetId?: string;
   groupableColumns?: GroupableColumn[];
   grouping?: string[];
   onGroupingChange?: (grouping: string[]) => void;
@@ -63,6 +65,8 @@ export function DataTableToolbar({
   onSavePreset,
   onApplyPreset,
   onDeletePreset,
+  onSetDefaultPreset,
+  defaultPresetId,
   groupableColumns = [],
   grouping = [],
   onGroupingChange,
@@ -169,23 +173,40 @@ export function DataTableToolbar({
                   tabIndex={0}
                 >
                   <p className="text-sm">{p.name}</p>
-                  {onDeletePreset && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeletePreset(p.id);
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 2,
-                        color: 'var(--muted-foreground)',
-                      }}
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {onSetDefaultPreset && (
+                      <button
+                        type="button"
+                        aria-label={
+                          p.id === defaultPresetId ? 'Unset default view' : 'Set as default view'
+                        }
+                        title={p.id === defaultPresetId ? 'Default view' : 'Set as default'}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSetDefaultPreset(p.id);
+                        }}
+                        className="p-0.5 text-muted-foreground hover:text-foreground"
+                      >
+                        <Star
+                          size={12}
+                          className={p.id === defaultPresetId ? 'fill-foreground text-foreground' : ''}
+                        />
+                      </button>
+                    )}
+                    {onDeletePreset && (
+                      <button
+                        type="button"
+                        aria-label="Delete preset"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeletePreset(p.id);
+                        }}
+                        className="p-0.5 text-muted-foreground hover:text-foreground"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </DropdownMenuContent>

@@ -21,6 +21,11 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 
 export type Permission = 'view' | 'edit' | 'create' | 'delete' | 'publish' | 'review' | 'import';
 
+/** Baseline permissions every `editor` app_role holder gets across all content
+ * types, even without explicit user_role_permissions rows. Higher-trust actions
+ * (delete/publish/import) require granular grants. */
+const EDITOR_BASE_PERMISSIONS: Permission[] = ['view', 'edit', 'create', 'review'];
+
 export interface RolePermission {
   id: string;
   user_id: string;
@@ -45,7 +50,7 @@ export interface GranularRolesReturn {
 
 export function useGranularRoles(): GranularRolesReturn {
   const { user } = useAuth();
-  const { isAdmin, isModerator, loading: rolesLoading } = useAdminRoles();
+  const { isAdmin, isModerator, isEditor, loading: rolesLoading } = useAdminRoles();
   const [permissions, setPermissions] = useState<RolePermission[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -74,16 +79,22 @@ export function useGranularRoles(): GranularRolesReturn {
     }
 
     fetchPermissions();
-  }, [user, rolesLoading]);
+    // Depend on user.id, not the user object — Supabase emits a fresh user
+    // reference on every TOKEN_REFRESHED (tab visibility / window focus).
+    // Keying on the object ref re-runs this effect every render → setState →
+    // re-render → "Maximum update depth" loop (React #185). Mirrors the same
+    // fix in useAdminRoles.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed on user?.id
+  }, [user?.id, rolesLoading]);
 
   // Effective role
   const effectiveRole = useMemo((): GranularRolesReturn['effectiveRole'] => {
     if (isAdmin) return 'admin';
     if (isModerator) return 'moderator';
-    if (permissions.length > 0) return 'editor';
+    if (isEditor || permissions.length > 0) return 'editor';
     if (user) return 'viewer';
     return 'none';
-  }, [isAdmin, isModerator, permissions, user]);
+  }, [isAdmin, isModerator, isEditor, permissions, user]);
 
   // Permission check
   const can = useCallback(
@@ -96,16 +107,19 @@ export function useGranularRoles(): GranularRolesReturn {
         return !['delete'].includes(permission); // mods can't delete, only archive
       }
 
-      // Check granular permissions
+      // Editors get baseline content permissions on any type; granular rows
+      // can grant the higher-trust actions (delete/publish/import).
+      const editorAllows = isEditor && EDITOR_BASE_PERMISSIONS.includes(permission);
+
       if (!contentType) {
         // Without a content type, check if user has the permission for any content type
-        return permissions.some((p) => p.permissions.includes(permission));
+        return editorAllows || permissions.some((p) => p.permissions.includes(permission));
       }
 
       const ct = permissions.find((p) => p.content_type === contentType || p.content_type === '*');
-      return ct?.permissions.includes(permission) ?? false;
+      return editorAllows || (ct?.permissions.includes(permission) ?? false);
     },
-    [isAdmin, isModerator, permissions],
+    [isAdmin, isModerator, isEditor, permissions],
   );
 
   // Section access check
@@ -115,13 +129,15 @@ export function useGranularRoles(): GranularRolesReturn {
 
       switch (section) {
         case 'cockpit':
-          return isAdmin || isModerator || permissions.length > 0;
+          return isModerator || isEditor || permissions.length > 0;
         case 'content':
-          return isAdmin || isModerator || permissions.some((p) => p.permissions.includes('view'));
+          return (
+            isModerator || isEditor || permissions.some((p) => p.permissions.includes('view'))
+          );
         case 'import-review':
           return (
-            isAdmin ||
             isModerator ||
+            isEditor ||
             permissions.some(
               (p) => p.permissions.includes('review') || p.permissions.includes('import'),
             )
@@ -132,18 +148,20 @@ export function useGranularRoles(): GranularRolesReturn {
           return false;
       }
     },
-    [isAdmin, isModerator, permissions],
+    [isAdmin, isModerator, isEditor, permissions],
   );
 
   // Allowed content types
   const allowedContentTypes = useMemo(() => {
     if (isAdmin || isModerator) return ['*']; // All content types
+    // A bare editor (no granular rows) can touch all content types.
+    if (isEditor && permissions.length === 0) return ['*'];
     const types = new Set<string>();
     for (const p of permissions) {
       types.add(p.content_type);
     }
     return Array.from(types);
-  }, [isAdmin, isModerator, permissions]);
+  }, [isAdmin, isModerator, isEditor, permissions]);
 
   return {
     can,
