@@ -124,6 +124,12 @@ verify_jwt = false
 [functions.compute-tag-relationships]
 verify_jwt = false
 
+[functions.translate-i18n-batch]
+# Driven by pg_cron (tag_i18n_* / translate_i18n_* jobs) which POST only an
+# X-Webhook-Secret header (no JWT). Gateway JWT verification must stay off; the
+# function gates on TRANSLATE_I18N_WEBHOOK_SECRET / admin auth internally.
+verify_jwt = false
+
 [functions.import-awin-products]
 verify_jwt = false
 
