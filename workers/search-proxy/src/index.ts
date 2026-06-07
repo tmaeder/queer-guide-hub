@@ -26,7 +26,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 		tracesSampleRate: 0.1,
 	});
 }
-import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities } from "./supabase";
+import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities, fetchDisplayMap } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
@@ -223,6 +223,11 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				page: 0,
 			}).catch(() => null);
 			hits = (browse?.hits ?? []) as Array<Record<string, unknown>>;
+		} else {
+			// v_popular_entities only carries {content_type, content_id, score} —
+			// hydrate to full hits (type/objectID/title/…) so they don't render as
+			// empty cards. Drops rows that can't be hydrated.
+			hits = await hydratePopular(env, hits as PopularRow[]);
 		}
 
 		const slice = hits.slice(page * hitsPerPage, (page + 1) * hitsPerPage);
@@ -339,10 +344,13 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// for bug #4 (until the Meilisearch index ranking rules are reconfigured).
 	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
-	// Cold-start fallback if starved (relevance order only).
+	// Cold-start fallback if starved (relevance order only). v_popular_entities
+	// rows are under-hydrated ({content_type, content_id, score}); hydrate them to
+	// full hits so they don't render as empty (type/title/objectID null) cards.
 	if (!explicitSort && ranked.length < 5) {
 		const popular = await popularEntities(env, pgTypes, 30);
-		ranked = dedupeById([...ranked, ...popular.map((p) => ({ ...p, _source: "popular", _rankingScore: 0.1 }))]);
+		const hydrated = await hydratePopular(env, popular);
+		ranked = dedupeById([...ranked, ...hydrated]);
 	}
 
 	// Optional reranker on top-20.
@@ -715,6 +723,45 @@ function itemId(h: FuseItem): string | null {
 	if (h.id) return `${h.type || h.content_type || "x"}:${h.id}`;
 	if (h.content_id) return `${h.content_type}:${h.content_id}`;
 	return null;
+}
+
+type PopularRow = { content_type: string; content_id: string; score?: number };
+
+// v_popular_entities only carries {content_type, content_id, score} — no
+// type/objectID/title — so dropping these rows straight into the result set
+// renders empty cards (type/title/objectID null). Batch-fetch display fields and
+// project into the same hit shape pgSearch.mapHit emits. Rows that can't be
+// hydrated (no title) are dropped — better a shorter list than a blank card.
+async function hydratePopular(env: Env, popular: PopularRow[]): Promise<FuseItem[]> {
+	if (!popular.length) return [];
+	const display = await fetchDisplayMap(
+		env,
+		popular.map((p) => ({ content_type: p.content_type, content_id: p.content_id })),
+	).catch(() => null);
+	if (!display) return [];
+	const out: FuseItem[] = [];
+	for (const p of popular) {
+		const d = display.get(`${p.content_type}:${p.content_id}`);
+		if (!d?.title) continue;
+		out.push({
+			id: p.content_id,
+			objectID: p.content_id,
+			type: p.content_type,
+			content_type: p.content_type,
+			content_id: p.content_id,
+			title: d.title,
+			name: d.title,
+			slug: d.slug,
+			image_url: d.image_url ?? null,
+			city: d.city,
+			country: d.country,
+			start_date: d.date,
+			_source: "popular",
+			_rankingScore: 0.1,
+			_fused: 0.1,
+		});
+	}
+	return out;
 }
 
 function dedupeById(list: FuseItem[]): FuseItem[] {
