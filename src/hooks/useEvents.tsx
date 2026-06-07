@@ -90,6 +90,7 @@ export function useEvents(autoFetch: boolean = true) {
         !filters?.languages?.length &&
         !filters?.ageRestriction &&
         !filters?.organizerId &&
+        !filters?.tags?.length &&
         (Boolean(filters?.city) || Boolean(filters?.dateRange));
 
       let data: Event[] | null = null;
@@ -215,7 +216,8 @@ export function useEvents(autoFetch: boolean = true) {
         }
 
         if (filters?.tags && filters.tags.length > 0) {
-          query = query.overlaps('tags', filters.tags);
+          // Pride sub-kinds live in events.pride_subtypes (events has no `tags` column).
+          query = query.overlaps('pride_subtypes', filters.tags);
         }
 
         if (filters?.accessibilityAttributes?.length) {
