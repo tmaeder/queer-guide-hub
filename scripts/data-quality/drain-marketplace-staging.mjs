@@ -11,24 +11,40 @@
 // the dispatcher tick cadence, so we run a few waves concurrently.
 //
 // Usage: node scripts/data-quality/drain-marketplace-staging.mjs [source_type] [batch] [waves_concurrency]
-//   default: ohmyfantasy 1000 3
+//   default: ohmyfantasy 250 2
+//
+// Batch sizing (load-bearing): the dedup node OOMs (HTTP 546) and the commit RPC
+// hits statement-timeout above a few hundred rows/run (per-row search_documents
+// re-index), and concurrent commits contend on its advisory lock. Keep batch
+// ≤300 and concurrency low. For a backlog that is already review-approved, the
+// fastest path is to drive the committer directly in a loop, bypassing the
+// per-node dispatcher cadence:
+//   select commit_marketplace_staging_batch(150, null);   -- commits dedup='unique' rows
+// (repeat until it returns no 'inserted' rows). dedup can likewise be driven
+// globally: POST {batch_size:250} to /functions/v1/pipeline-deduplicate.
 
 import { execFileSync } from 'node:child_process'
 const PROJECT='xqeacpakadqfxjxjcewc'
 const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8'
 const SOURCE = process.argv[2] || 'ohmyfantasy'
-const BATCH  = Number(process.argv[3] || 1000)
-const CONC   = Number(process.argv[4] || 3)
+const BATCH  = Number(process.argv[3] || 250)
+const CONC   = Number(process.argv[4] || 2)
 
 function token(){ if(process.env.SUPABASE_PAT) return process.env.SUPABASE_PAT
   const raw=execFileSync('security',['find-generic-password','-s','Supabase CLI','-w'],{encoding:'utf8'}).trim()
   return Buffer.from(raw.replace(/^go-keyring-base64:/,''),'base64').toString('utf8') }
 const TOKEN=token()
-async function sql(query){
-  const res=await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`,{method:'POST',
-    headers:{Authorization:`Bearer ${TOKEN}`,'Content-Type':'application/json','User-Agent':'Mozilla/5.0'},body:JSON.stringify({query})})
-  if(!res.ok) throw new Error(`mgmt ${res.status}: ${(await res.text()).slice(0,400)}`)
-  return res.json() }
+async function sql(query, tries=5){
+  for(let i=0;i<tries;i++){
+    try{
+      const res=await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`,{method:'POST',
+        headers:{Authorization:`Bearer ${TOKEN}`,'Content-Type':'application/json','User-Agent':'Mozilla/5.0'},body:JSON.stringify({query})})
+      if(res.status>=500||res.status===429) throw new Error(`transient ${res.status}`)
+      if(!res.ok) throw new Error(`mgmt ${res.status}: ${(await res.text()).slice(0,400)}`)
+      return res.json()
+    }catch(e){ if(i===tries-1) throw e; await new Promise(r=>setTimeout(r,2000*(i+1))) }
+  }
+}
 const J=(o)=>`'${JSON.stringify(o).replace(/'/g,"''")}'::jsonb`
 const sleep=(ms)=>new Promise(r=>setTimeout(r,ms))
 const ts=()=>new Date().toISOString().slice(11,19)
