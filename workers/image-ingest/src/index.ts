@@ -289,12 +289,14 @@ async function processBatch(env: Env, batchSize: number): Promise<{
   let ok = 0;
   let failed = 0;
 
-  for (const row of rows) {
-    const success = await ingestImage(env, row);
-    if (success) ok++;
-    else failed++;
-    // Small delay to avoid rate-limiting from external hosts
-    await new Promise(r => setTimeout(r, 200));
+  // Process the batch in concurrent sub-chunks for throughput (each image is a
+  // fetch + R2 put + DB update; sequential was the mirroring bottleneck). Cap
+  // concurrency to stay polite to merchant hosts and under subrequest limits.
+  const CONCURRENCY = 8;
+  for (let i = 0; i < rows.length; i += CONCURRENCY) {
+    const slice = rows.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(slice.map((row) => ingestImage(env, row).catch(() => false)));
+    for (const success of results) success ? ok++ : failed++;
   }
 
   return { processed: rows.length, ok, failed, remaining: remaining - rows.length };

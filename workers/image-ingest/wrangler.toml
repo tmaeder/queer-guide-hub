@@ -10,7 +10,7 @@ bucket_name = "queer-guide-images"
 [vars]
 SUPABASE_URL = "https://xqeacpakadqfxjxjcewc.supabase.co"
 IMAGE_CDN_HOST = "img.queer.guide"
-BATCH_SIZE = "20"
+BATCH_SIZE = "60"
 
 # Secrets (set via wrangler secret put):
 #   SUPABASE_SERVICE_ROLE_KEY
