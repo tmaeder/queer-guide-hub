@@ -609,6 +609,7 @@ function AtlasView({
                     id={id}
                     slug={(c.slug as string | null) ?? null}
                     name={c.name as string}
+                    nameI18n={(c.name_i18n as Record<string, unknown> | null) ?? null}
                     imageUrl={(c.image_url as string | null) ?? null}
                     editorialHook={(c.editorial_hook as string | null) ?? null}
                     capital={(c.capital as string | null) ?? null}
@@ -667,9 +668,11 @@ function AtlasView({
                     id={id}
                     slug={(v.slug as string | null) ?? null}
                     name={v.name as string}
+                    nameI18n={(v.name_i18n as Record<string, unknown> | null) ?? null}
                     imageUrl={(v.image_url as string | null) ?? null}
                     editorialHook={(v.editorial_hook as string | null) ?? null}
                     description={(v.description as string | null) ?? null}
+                    descriptionI18n={(v.description_i18n as Record<string, unknown> | null) ?? null}
                     visited={!!passport?.visitedVillageIds.has(id)}
                     priority={idx < 4}
                   />

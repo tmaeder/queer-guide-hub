@@ -12,6 +12,7 @@ import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -78,6 +79,7 @@ const VenueCardFixture = () => (
 );
 
 function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
+  const lang = useContentLang();
   const venueImage = venue?.images?.[0] ?? venue?.logo_url ?? null;
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
@@ -163,7 +165,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
               <div className="p-4">
                 <div className="flex items-baseline gap-2 min-w-0">
                   <p className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
-                    {venue.name}
+                    {localizedField(venue, 'name', lang)}
                     {isVerified && (
                       <BadgeCheck
                         aria-label="Verified"
@@ -190,7 +192,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                   )}
                 </p>
                 {(() => {
-                  const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
+                  const blurb = localizedField(venue, 'description', lang).split(/(?<=[.!?])\s+/)[0]?.trim();
                   if (!blurb || blurb.length < 12) return null;
                   return (
                     <p className="mt-2 text-13 text-muted-foreground line-clamp-2">
@@ -199,7 +201,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                   );
                 })()}
                 {(() => {
-                  const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
+                  const blurb = localizedField(venue, 'description', lang).split(/(?<=[.!?])\s+/)[0]?.trim();
                   if (!blurb || blurb.length < 12) return null;
                   return (
                     <p className="mt-2 text-13 text-muted-foreground line-clamp-2">

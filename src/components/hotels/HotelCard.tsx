@@ -7,6 +7,7 @@ import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { safeText } from '@/utils/safeDisplay';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 interface HotelCardProps {
   hotel?: Hotel;
@@ -61,6 +62,7 @@ const HotelCardFixture = () => (
 );
 
 export function HotelCard({ hotel, loading = false }: HotelCardProps) {
+  const lang = useContentLang();
   if (loading || !hotel) {
     return (
       <Skeleton
@@ -76,6 +78,9 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
 
   const imageUrl = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
   const hotelName = safeText(hotel.name);
+  const localizedHotelName = safeText(
+    localizedField(hotel as unknown as Record<string, unknown>, 'name', lang),
+  );
   const city = safeText(hotel.city);
   const country = safeText(hotel.country);
   const location = [city, country].filter(Boolean).join(', ');
@@ -141,8 +146,8 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
             {/* Content */}
             <div className="p-4 flex-1 flex flex-col gap-1">
               {hotelName && (
-                <p className="font-semibold truncate" style={{ lineHeight: 1.3 }} title={hotelName}>
-                  {hotelName}
+                <p className="font-semibold truncate" style={{ lineHeight: 1.3 }} title={localizedHotelName}>
+                  {localizedHotelName}
                 </p>
               )}
 

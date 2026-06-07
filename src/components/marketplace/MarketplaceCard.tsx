@@ -13,6 +13,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
 import { isAdultListing } from '@/hooks/useAdultContent';
 import { formatListingPrice, getOutboundLink, highlightMatches } from './marketplaceHelpers';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -59,6 +60,7 @@ function MarketplaceCardImpl({
 }: MarketplaceCardProps) {
   const { currency } = useCurrency();
   const { data: rates } = useFxRates();
+  const lang = useContentLang();
 
   if (loading || !listing) {
     return (
@@ -126,7 +128,7 @@ function MarketplaceCardImpl({
               onClick={(e) => e.stopPropagation()}
               className="hover:underline underline-offset-2"
             >
-              <HighlightedText text={listing.title} query={searchQuery} />
+              <HighlightedText text={localizedField(listing, 'title', lang)} query={searchQuery} />
             </LocalizedLink>
           </h2>
 
@@ -135,7 +137,7 @@ function MarketplaceCardImpl({
               className="text-sm text-muted-foreground overflow-hidden leading-normal"
               style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
             >
-              <HighlightedText text={listing.description} query={searchQuery} />
+              <HighlightedText text={localizedField(listing, 'description', lang)} query={searchQuery} />
             </p>
           )}
 

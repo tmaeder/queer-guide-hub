@@ -7,6 +7,7 @@ import { getLegalityBadge } from '@/lib/lgbtLegality';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { useContentLang, pickLocalized } from '@/lib/localizeContent';
 
 export type GeoCardVariant = 'country' | 'city' | 'village';
 
@@ -15,6 +16,8 @@ interface GeoCardProps {
   id: string;
   slug?: string | null;
   name: string;
+  /** Optional per-locale name translations (`name_i18n` JSONB on the source row). */
+  nameI18n?: Record<string, unknown> | null;
   imageUrl?: string | null;
   editorialHook?: string | null;
   // Country-only
@@ -24,6 +27,8 @@ interface GeoCardProps {
   isCapital?: boolean;
   // Village-only
   description?: string | null;
+  /** Optional per-locale description translations (`description_i18n` JSONB). */
+  descriptionI18n?: Record<string, unknown> | null;
   // Legality data for getLegalityBadge (country only)
   legalityData?: Parameters<typeof getLegalityBadge>[0];
   // Visited stamp
@@ -56,26 +61,31 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
     id,
     slug,
     name,
+    nameI18n,
     imageUrl,
     editorialHook,
     capital,
     countryName,
     isCapital,
     description,
+    descriptionI18n,
     legalityData,
     visited,
     priority,
   } = props;
 
   const { user } = useAuth();
+  const lang = useContentLang();
   const { isFavorited, toggleFavorite } = useFavorites(FAVORITE_TYPE[variant]);
   const saved = isFavorited(id);
   const FallbackIcon = VARIANT_ICON[variant];
 
+  const localizedName = pickLocalized(nameI18n, name, lang);
+  const localizedDescription = pickLocalized(descriptionI18n, description, lang);
   const subtitleFallback =
     variant === 'country' ? capital
     : variant === 'city' ? countryName
-    : description?.slice(0, 80);
+    : localizedDescription.slice(0, 80);
 
   const subtitle = (editorialHook ?? subtitleFallback ?? '').trim();
   const legality = variant === 'country' && legalityData ? getLegalityBadge(legalityData) : null;
@@ -126,7 +136,7 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
 
         <div className="flex flex-col gap-2 p-4 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-headline font-semibold leading-tight truncate">{name}</h3>
+            <h3 className="text-headline font-semibold leading-tight truncate">{localizedName}</h3>
             {variant === 'city' && isCapital && (
               <Crown className="h-4 w-4 mt-1 shrink-0 text-muted-foreground" aria-label="Capital city" />
             )}

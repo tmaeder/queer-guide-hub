@@ -5,12 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardImage } from '@/components/ui/card';
 import type { QueerVillageWithRelations } from '@/hooks/useQueerVillages';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 interface VillageCardProps {
   village: QueerVillageWithRelations;
 }
 
 export const VillageCard = memo(function VillageCard({ village }: VillageCardProps) {
+  const lang = useContentLang();
   const imageUrl = village.image_url;
   const cityName = village.cities?.name;
   const countryName = village.countries?.name;
@@ -41,7 +43,7 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
         </CardImage>
 
         <div className="p-4 flex-1 flex flex-col gap-1">
-          <p className="text-base font-semibold leading-tight truncate">{village.name}</p>
+          <p className="text-base font-semibold leading-tight truncate">{localizedField(village, 'name', lang)}</p>
 
           {(cityName || countryName) && (
             <div className="flex items-center gap-1 text-muted-foreground">
@@ -62,7 +64,7 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
                 WebkitBoxOrient: 'vertical',
               }}
             >
-              {village.description}
+              {localizedField(village, 'description', lang)}
             </p>
           )}
         </div>

@@ -16,6 +16,7 @@ import { safeText } from '@/utils/safeDisplay';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import type { NewsCategory } from '@/hooks/useNews';
+import { useContentLang, pickLocalized } from '@/lib/localizeContent';
 
 type NewsArticle = Tables<'news_articles'> & {
   news_sources?: Tables<'news_sources'>;
@@ -102,6 +103,7 @@ export const NewsCard = ({
   imageAsset,
 }: NewsCardProps) => {
   const navigate = useLocalizedNavigate();
+  const lang = useContentLang();
   const [imgFailed, setImgFailed] = useState(false);
   const fallbackSrc = useMemo(() => getRandomFallbackImage(), []);
 
@@ -131,8 +133,14 @@ export const NewsCard = ({
   };
 
   const authorName = safeText(cleanAuthor(safeText(article.author)));
-  const excerptText = safeText(cleanExcerpt(safeText(article.excerpt)));
   const safeTitle = safeText(decodeHtmlEntities(safeText(article.title)));
+  // Visible-text localization (alt/aria/share keep the base safeTitle).
+  const localizedTitle = safeText(
+    decodeHtmlEntities(safeText(pickLocalized(article.title_i18n, article.title, lang))),
+  );
+  const localizedExcerpt = safeText(
+    cleanExcerpt(safeText(pickLocalized(article.description_i18n, article.excerpt, lang))),
+  );
   const articleAny = article as Record<string, unknown>;
   const canonical =
     typeof articleAny.category_canonical === 'string'
@@ -168,7 +176,7 @@ export const NewsCard = ({
       ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true })
       : null;
   const fresh = isFreshArticle(article.published_at);
-  const dek = excerptText ? extractDek(excerptText) : '';
+  const dek = localizedExcerpt ? extractDek(localizedExcerpt) : '';
 
   const eyebrowParts = [
     categoryDisplay,
@@ -220,7 +228,7 @@ export const NewsCard = ({
             </p>
           )}
           <h2 className="m-0 mt-2 text-display md:text-hero font-bold leading-[0.95] tracking-tight max-w-4xl">
-            {safeTitle}
+            {localizedTitle}
           </h2>
           {dek && (
             <p className="news-lead-dek mt-4 max-w-2xl text-base md:text-lg italic leading-snug opacity-95">
@@ -263,7 +271,7 @@ export const NewsCard = ({
             </p>
           )}
           <h3 className="m-0 text-headline md:text-headline-lg font-bold leading-[1.05] tracking-tight">
-            {safeTitle}
+            {localizedTitle}
           </h3>
           {dek && (
             <p className="text-15 italic text-muted-foreground leading-relaxed">{dek}</p>
@@ -305,7 +313,7 @@ export const NewsCard = ({
         className="flex items-center gap-4 py-4 px-4 transition-colors hover:bg-muted border-b border-border no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold truncate m-0">{safeTitle}</h3>
+          <h3 className="text-sm font-semibold truncate m-0">{localizedTitle}</h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 text-2xs uppercase tracking-wider text-muted-foreground">
           {eyebrowParts.map((part, i) => (
@@ -349,13 +357,13 @@ export const NewsCard = ({
               {eyebrowParts.join(' · ')}
             </p>
           )}
-          <h3 className="text-2xl font-bold leading-tight m-0">{safeTitle}</h3>
-          {excerptText && (
+          <h3 className="text-2xl font-bold leading-tight m-0">{localizedTitle}</h3>
+          {localizedExcerpt && (
             <p
               className="text-sm text-muted-foreground overflow-hidden"
               style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
             >
-              {excerptText}
+              {localizedExcerpt}
             </p>
           )}
           <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground">
@@ -411,14 +419,14 @@ export const NewsCard = ({
             className="text-base font-semibold leading-snug m-0 overflow-hidden"
             style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
           >
-            {safeTitle}
+            {localizedTitle}
           </h3>
-          {excerptText && (
+          {localizedExcerpt && (
             <p
               className="text-sm text-muted-foreground overflow-hidden"
               style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
             >
-              {excerptText}
+              {localizedExcerpt}
             </p>
           )}
           <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground mt-auto">
@@ -480,15 +488,15 @@ export const NewsCard = ({
             className="font-semibold m-0 text-base leading-tight overflow-hidden"
             style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
           >
-            {safeTitle}
+            {localizedTitle}
           </h3>
 
-          {excerptText && (
+          {localizedExcerpt && (
             <p
               className="text-sm text-muted-foreground overflow-hidden"
               style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
             >
-              {excerptText}
+              {localizedExcerpt}
             </p>
           )}
 

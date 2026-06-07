@@ -92,6 +92,7 @@ function RailCardForEntity({
       id={id}
       slug={(entity.slug as string | null) ?? null}
       name={(entity.name as string) ?? ''}
+      nameI18n={(entity.name_i18n as Record<string, unknown> | null) ?? null}
       imageUrl={(entity.image_url as string | null) ?? null}
       editorialHook={(entity.editorial_hook as string | null) ?? null}
       capital={variant === 'country' ? ((entity.capital as string | null) ?? null) : null}
@@ -102,6 +103,11 @@ function RailCardForEntity({
       }
       isCapital={variant === 'city' ? !!entity.is_capital : false}
       description={variant === 'village' ? ((entity.description as string | null) ?? null) : null}
+      descriptionI18n={
+        variant === 'village'
+          ? ((entity.description_i18n as Record<string, unknown> | null) ?? null)
+          : null
+      }
       legalityData={variant === 'country' ? (entity as never) : undefined}
       visited={!!visited}
     />

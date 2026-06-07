@@ -20,6 +20,7 @@ import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import type { EventSocialSignal } from '@/hooks/useEventSocialSignals';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -76,6 +77,7 @@ function formatEventDate(startDate: string, endDate?: string | null) {
 
 export const EventCard = memo(function EventCard({ event, loading = false, socialSignal }: EventCardProps) {
   const { t } = useTranslation();
+  const lang = useContentLang();
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   const { activeTrip } = useActiveTrip();
   const overlapsActiveTrip =
@@ -188,7 +190,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
               <div className="p-4">
                 <div className="flex items-baseline gap-2 min-w-0">
                   <p className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
-                    {event.title}
+                    {localizedField(event, 'title', lang)}
                   </p>
                   {priceDisplay && (
                     <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">

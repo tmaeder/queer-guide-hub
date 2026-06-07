@@ -74,6 +74,7 @@ export function ContinentSection({
             id={country.id}
             slug={country.slug ?? null}
             name={country.name}
+            nameI18n={(country.name_i18n as Record<string, unknown> | null) ?? null}
             imageUrl={country.image_url ?? null}
             editorialHook={country.editorial_hook ?? null}
             capital={country.capital ?? null}
@@ -132,6 +133,7 @@ export function ContinentSection({
                       id={country.id}
                       slug={country.slug ?? null}
                       name={country.name}
+                      nameI18n={(country.name_i18n as Record<string, unknown> | null) ?? null}
                       imageUrl={country.image_url ?? null}
                       editorialHook={country.editorial_hook ?? null}
                       capital={country.capital ?? null}

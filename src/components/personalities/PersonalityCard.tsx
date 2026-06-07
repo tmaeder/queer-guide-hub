@@ -7,6 +7,7 @@ import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Personality } from '@/hooks/usePersonalities';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
+import { useContentLang, localizedField } from '@/lib/localizeContent';
 
 const HOVER_OPEN_MS = 350;
 const HOVER_CLOSE_MS = 120;
@@ -59,6 +60,7 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
   const [previewOpen, setPreviewOpen] = useState(false);
   const openTimerRef = useRef<number | null>(null);
   const closeTimerRef = useRef<number | null>(null);
+  const lang = useContentLang();
 
   useEffect(() => {
     return () => {
@@ -110,7 +112,7 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
     closeTimerRef.current = window.setTimeout(() => setPreviewOpen(false), HOVER_CLOSE_MS);
   };
 
-  const previewText = personality.description || personality.bio;
+  const previewText = localizedField(personality, 'description', lang) || personality.bio;
   // Mouse-only preview: pointer:fine excludes touch, where the long-press
   // alternative would interfere with native link tap. Touch users still get
   // the inline snippet on the card body.
@@ -185,7 +187,7 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
             className="text-foreground overflow-hidden text-ellipsis whitespace-nowrap font-semibold"
             style={{ fontSize: '0.95rem', lineHeight: 1.3 }}
           >
-            {personality.name}
+            {localizedField(personality, 'name', lang)}
           </h3>
           {personality.profession && (
             <p className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13">
@@ -210,7 +212,7 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
                 WebkitBoxOrient: 'vertical',
               }}
             >
-              {personality.description || personality.bio}
+              {localizedField(personality, 'description', lang) || personality.bio}
             </p>
           )}
         </div>
@@ -253,7 +255,7 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
           </div>
         )}
         <div className="p-4 space-y-1.5">
-          <div className="text-sm font-semibold leading-snug">{personality.name}</div>
+          <div className="text-sm font-semibold leading-snug">{localizedField(personality, 'name', lang)}</div>
           {personality.profession && (
             <div className="text-xs text-muted-foreground">{personality.profession}</div>
           )}
