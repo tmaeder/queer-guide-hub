@@ -20,6 +20,7 @@ import {
   type ExportColumnDef,
 } from '@/utils/excelExport';
 import { AdminEntityTable } from '@/components/admin/data-table';
+import { VenueQualityPanel } from '@/components/admin/VenueQualityPanel';
 import type { AdminTableConfig } from '@/components/admin/data-table/types';
 import { Edit, Trash2, Plus, Search, ExternalLink } from 'lucide-react';
 
@@ -302,6 +303,7 @@ export default function AdminVenues() {
       subtitle={`Manage venues and locations (${venueCategories.length} categories)`}
       backHref={null}
       config={tableConfig}
+      beforeTable={<VenueQualityPanel />}
       afterTable={
         <>
           <VenueEditDialog
