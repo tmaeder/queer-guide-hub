@@ -38,7 +38,11 @@ function absolutize(src: string | null | undefined, baseUrl: string): string | n
   if (!s) return null
   if (s.startsWith('data:')) return null
   try {
-    return new URL(s, baseUrl).toString()
+    // Strip on-origin Cloudflare image-resizing segments (e.g. misterb's
+    // `/cdn-cgi/image/format=auto,onerror=redirect/`). These resized URLs fail
+    // to load cross-origin (hotlink/redirect), while the underlying direct path
+    // loads fine — so normalise to the direct asset path.
+    return new URL(s, baseUrl).toString().replace(/\/cdn-cgi\/image\/[^/]+\//, '/')
   } catch {
     return null
   }

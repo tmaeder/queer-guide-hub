@@ -61,6 +61,16 @@ Deno.test('de-dupes images and ignores data URIs', () => {
   assertEquals(r.images, ['https://cdn.example.com/x.jpg'])
 })
 
+Deno.test('strips on-origin cdn-cgi image-resizing segments', () => {
+  const html = `<!doctype html><html><head>
+    <script type="application/ld+json">${JSON.stringify({
+      '@type': 'Product',
+      image: 'https://shop.example.com/cdn-cgi/image/format=auto,onerror=redirect/media/p/1.jpg',
+    })}</script></head><body></body></html>`
+  const r = extractProduct(html, BASE)
+  assertEquals(r.images, ['https://shop.example.com/media/p/1.jpg'])
+})
+
 Deno.test('returns none when nothing extractable', () => {
   const r = extractProduct('<html><head></head><body><p>hi</p></body></html>', BASE)
   assertEquals(r.descMethod, 'none')
