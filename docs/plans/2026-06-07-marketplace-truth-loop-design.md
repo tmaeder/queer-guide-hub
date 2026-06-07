@@ -64,7 +64,34 @@ Rejected alternatives:
 
 ## Phases
 
-### Phase 1 — Deterministic backfill (free, biggest win)
+### Phase 1 — Deterministic backfill + dead-source quarantine (free, biggest win)
+
+**Execution finding (2026-06-07, live sampling 20/source):** the catalog is not
+mostly "missing data" — **~54% is dead at the source**:
+
+| source | live | dead at source | backfillable |
+|---|---|---|---|
+| ohmyfantasy | 3,211 | **100% hard 404** (store gone) | none |
+| forttroff | 329 | **~85% soft-404** (site rebuilt) | none |
+| misterb | 2,693 | 0 | ~60% images via JSON-LD |
+| supergayunderwear | 291 | 0 | ~85% descriptions + ~40% images |
+
+So `marketplace-enrich` does two jobs: **backfill survivors** (misterb images,
+supergayunderwear desc+images from JSON-LD `Product`) and **quarantine the dead**
+(hard 404 + soft-404 → `status='inactive'`, reversible). Live marketplace drops
+6,454 → ~2,960 honest listings. Hard precision rules learned from live pages:
+- description **only** from JSON-LD `Product.description` — og/meta on these stores
+  is the store tagline ("Mister B is your one stop store…") or a soft-404 message;
+  filling it would clone identical junk across thousands of rows.
+- images filled only when a `Product` JSON-LD node proves a live product page
+  (guards against soft-404 logo/placeholder images).
+- soft-404 detection: HTTP 200 + "page does not exist" copy + no `Product` schema.
+
+Implementation: `supabase/functions/marketplace-enrich/index.ts` +
+`_shared/marketplace-extract.ts` (pure, unit-tested). Staleness-gated on
+`link_checked_at` so reruns sweep forward and terminate.
+
+#### Original plan (mechanics, retained)
 New `marketplace-enrich` worker. Selects listings where `description<50` OR
 `images IS NULL`, re-fetches `external_url`, extracts:
 - **description** ← JSON-LD `Product.description` → `og:description` → meta description
