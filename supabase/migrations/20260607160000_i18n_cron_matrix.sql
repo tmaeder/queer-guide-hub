@@ -59,7 +59,10 @@ BEGIN
       -- but ~15 long strings (description) already ≈ 30s. So descriptions need a
       -- small batch + higher frequency; names/titles tolerate a larger batch.
       IF is_desc THEN
-        blimit := 6;  m := idx % 10;                              -- 6 runs/hour
+        -- marketplace descriptions average ~1000 chars (2-3x the others), so a
+        -- batch of 6 would always blow the fn's 30s LLM timeout and never land.
+        blimit := CASE WHEN tbl = 'marketplace_listings' THEN 2 ELSE 6 END;
+        m := idx % 10;                                            -- 6 runs/hour
         sched := format('%s,%s,%s,%s,%s,%s * * * *', m, m+10, m+20, m+30, m+40, m+50);
       ELSE
         blimit := 20; m := idx % 15;                             -- 4 runs/hour
