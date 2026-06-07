@@ -59,13 +59,7 @@ async function fetchQid(title: string): Promise<string | null> {
 
 interface WdFacts { population?: number; area_km2?: number; elevation_m?: number; founded_year?: number; official_website?: string }
 
-async function fetchWikidata(qid: string): Promise<WdFacts | null> {
-  const d = await fetchJson(
-    `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${encodeURIComponent(qid)}&props=claims&format=json`,
-    { 'User-Agent': WP_UA, Accept: 'application/json' },
-  )
-  const claims = d?.entities?.[qid]?.claims
-  if (!claims) return null
+function parseWdFacts(claims: Record<string, any>): WdFacts {
   const qty = (p: string): number | undefined => {
     const v = claims[p]?.[0]?.mainsnak?.datavalue?.value?.amount
     if (v == null) return undefined
@@ -81,6 +75,61 @@ async function fetchWikidata(qid: string): Promise<WdFacts | null> {
   const site = claims['P856']?.[0]?.mainsnak?.datavalue?.value
   if (typeof site === 'string' && /^https?:\/\//i.test(site)) out.official_website = site
   return out
+}
+
+async function fetchWikidata(qid: string): Promise<WdFacts | null> {
+  const d = await fetchJson(
+    `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${encodeURIComponent(qid)}&props=claims&format=json`,
+    { 'User-Agent': WP_UA, Accept: 'application/json' },
+  )
+  const claims = d?.entities?.[qid]?.claims
+  return claims ? parseWdFacts(claims) : null
+}
+
+// Fallback for cities whose name doesn't match an English Wikipedia title
+// (non-English / ambiguous / disambiguated names). Resolve the Wikidata QID by
+// entity search, preferring a settlement-type result that matches the country.
+const PLACE_RE = /(capital|city|town|municipality|commune|village|settlement|prefecture|district|county|borough|locality|metropolis|urban)/i
+async function fetchWikidataQidBySearch(name: string, country?: string): Promise<string | null> {
+  const d = await fetchJson(
+    `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=en&uselang=en&type=item&limit=7&format=json`,
+    { 'User-Agent': WP_UA, Accept: 'application/json' },
+  )
+  const hits = (d?.search ?? []) as Array<{ id: string; description?: string }>
+  let placeFallback: string | null = null
+  for (const h of hits) {
+    const desc = h.description ?? ''
+    if (!PLACE_RE.test(desc)) continue
+    if (country && desc.toLowerCase().includes(country.toLowerCase())) return h.id  // strong country match
+    if (!placeFallback) placeFallback = h.id
+  }
+  return placeFallback
+}
+
+// Given a QID, get the English Wikipedia sitelink title + parsed facts in one call.
+async function fetchWdSitelinkAndFacts(qid: string): Promise<{ enwikiTitle?: string; facts: WdFacts } | null> {
+  const d = await fetchJson(
+    `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${encodeURIComponent(qid)}&props=sitelinks|claims&sitefilter=enwiki&format=json`,
+    { 'User-Agent': WP_UA, Accept: 'application/json' },
+  )
+  const ent = d?.entities?.[qid]
+  if (!ent) return null
+  return { enwikiTitle: ent.sitelinks?.enwiki?.title, facts: ent.claims ? parseWdFacts(ent.claims) : {} }
+}
+
+// Full plaintext article extract by exact title (richer than the REST summary).
+async function fetchWikipediaFullExtract(title: string): Promise<string | null> {
+  const d = await fetchJson(
+    `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&redirects=1&format=json&titles=${encodeURIComponent(title)}`,
+    { 'User-Agent': WP_UA, Accept: 'application/json' },
+  )
+  const pages = d?.query?.pages
+  if (!pages) return null
+  for (const k of Object.keys(pages)) {
+    const ex = pages[k]?.extract
+    if (typeof ex === 'string' && ex.trim().length > 80) return ex.slice(0, 1200)
+  }
+  return null
 }
 
 async function fetchOsmCoords(name: string, country?: string): Promise<{ lat: number; lon: number } | null> {
@@ -169,23 +218,56 @@ Deno.serve(async (req: Request) => {
         if (c.latitude == null || c.longitude == null) { update.latitude = wp.lat; update.longitude = wp.lon }
       }
 
-      // --- Wikidata (population, area, elevation, founded, website) ---
       let qid = wp?.qid ?? null
+      let wd: WdFacts | null = null
+      const co = () => jsonResponse({ processed, updated, circuit_open: true, results }, 200, req)
+
+      // --- Wikidata-search fallback when the English-title path found no description ---
+      // (non-English / ambiguous / disambiguated city names).
+      const haveDesc = !!update.description || (c.description != null && String(c.description).trim().length >= 40)
+      if (!haveDesc) {
+        if (!qid) {
+          try { qid = await withCircuitBreaker(supabase, 'wikidata.api', () => fetchWikidataQidBySearch(c.name, country)) }
+          catch (e) { if (e instanceof CircuitOpenError) return co(); throw e }
+        }
+        if (qid) {
+          let sl: { enwikiTitle?: string; facts: WdFacts } | null = null
+          try { sl = await withCircuitBreaker(supabase, 'wikidata.api', () => fetchWdSitelinkAndFacts(qid!)) }
+          catch (e) { if (e instanceof CircuitOpenError) return co(); throw e }
+          if (sl) {
+            wd = sl.facts
+            if (sl.enwikiTitle) {
+              let rich: string | null = null
+              try { rich = await withCircuitBreaker(supabase, 'wikipedia.api', () => fetchWikipediaFullExtract(sl!.enwikiTitle!)) }
+              catch (e) { if (e instanceof CircuitOpenError) return co(); throw e }
+              if (rich) { addCandidate(prov, 'description', 'wikipedia', rich); update.description = rich }
+              let sum: WpSummary | null = null
+              try { sum = await fetchWikipedia(sl.enwikiTitle) } catch { /* best-effort */ }
+              if (sum?.thumbnail) { addCandidate(prov, 'image_url', 'wikipedia', sum.thumbnail); if (!c.image_url && !c.curated_image_url && !update.image_url) update.image_url = sum.thumbnail }
+              if (typeof sum?.lat === 'number' && typeof sum?.lon === 'number') {
+                addCandidate(prov, 'coords', 'wikipedia', { lat: sum.lat, lng: sum.lon })
+                if ((c.latitude == null || c.longitude == null) && update.latitude == null) { update.latitude = sum.lat; update.longitude = sum.lon }
+              }
+            }
+          }
+        }
+      }
+
+      // --- Wikidata facts (population, area, elevation, founded, website) ---
       if (!qid) {
         try { qid = await withCircuitBreaker(supabase, 'wikipedia.api', () => fetchQid(country ? `${c.name}, ${country}` : c.name)) }
-        catch (e) { if (e instanceof CircuitOpenError) return jsonResponse({ processed, updated, circuit_open: 'wikipedia.api', results }, 200, req); throw e }
+        catch (e) { if (e instanceof CircuitOpenError) return co(); throw e }
       }
-      if (qid) {
-        let wd: WdFacts | null = null
+      if (qid && !wd) {
         try { wd = await withCircuitBreaker(supabase, 'wikidata.api', () => fetchWikidata(qid!)) }
-        catch (e) { if (e instanceof CircuitOpenError) return jsonResponse({ processed, updated, circuit_open: 'wikidata.api', results }, 200, req); throw e }
-        if (wd) {
-          if (wd.population != null) { addCandidate(prov, 'population', 'wikidata', wd.population); if (c.population == null) update.population = wd.population }
-          if (wd.area_km2 != null) { addCandidate(prov, 'area_km2', 'wikidata', wd.area_km2); if (c.area_km2 == null) update.area_km2 = wd.area_km2 }
-          if (wd.elevation_m != null) { addCandidate(prov, 'elevation_m', 'wikidata', wd.elevation_m); if (c.elevation_m == null) update.elevation_m = wd.elevation_m }
-          if (wd.founded_year != null) { addCandidate(prov, 'founded_year', 'wikidata', wd.founded_year); if (c.founded_year == null) update.founded_year = wd.founded_year }
-          if (wd.official_website) { addCandidate(prov, 'official_website', 'wikidata', wd.official_website); if (!c.official_website) update.official_website = wd.official_website }
-        }
+        catch (e) { if (e instanceof CircuitOpenError) return co(); throw e }
+      }
+      if (wd) {
+        if (wd.population != null) { addCandidate(prov, 'population', 'wikidata', wd.population); if (c.population == null) update.population = wd.population }
+        if (wd.area_km2 != null) { addCandidate(prov, 'area_km2', 'wikidata', wd.area_km2); if (c.area_km2 == null) update.area_km2 = wd.area_km2 }
+        if (wd.elevation_m != null) { addCandidate(prov, 'elevation_m', 'wikidata', wd.elevation_m); if (c.elevation_m == null) update.elevation_m = wd.elevation_m }
+        if (wd.founded_year != null) { addCandidate(prov, 'founded_year', 'wikidata', wd.founded_year); if (c.founded_year == null) update.founded_year = wd.founded_year }
+        if (wd.official_website) { addCandidate(prov, 'official_website', 'wikidata', wd.official_website); if (!c.official_website) update.official_website = wd.official_website }
       }
 
       // --- OSM coords fallback (only if still missing) ---
