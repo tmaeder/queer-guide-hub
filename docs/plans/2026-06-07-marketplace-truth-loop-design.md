@@ -190,12 +190,20 @@ for most cards despite valid `images`. Two causes:
 1. **FIXED (data):** 831 misterb listings carried `/cdn-cgi/image/...` resizing URLs that
    fail cross-origin. Stripped to direct `/media/...` paths (migration 20260607140000);
    extractor normalises on ingest. Product DETAIL pages now render real photos (verified).
-2. **HANDED OFF (frontend):** the shared `<Image>` component sends
-   `referrerPolicy='no-referrer'` to untrusted hosts; hotlink-protected merchants
-   (supergayunderwear) then fail with `net::ERR_BLOCKED_BY_ORB` → fallback. misterb returns
-   200 (host-specific). Also a stale-closure 8s stall-timeout in `Image.tsx`. Spawned a task
-   to fix `referrerPolicy` + the timeout (shared component — needs cross-host + cross-entity
-   regression testing). Detail pages are unaffected.
+2. **FIXED (R2 mirroring — the proper fix):** the grid falls back because the shared
+   `<Image>` sends `referrerPolicy='no-referrer'` to untrusted hosts; hotlink-protected
+   merchants (supergayunderwear → `ERR_BLOCKED_BY_ORB`) then fail. Rather than weaken the
+   deliberate `no-referrer` privacy choice, the fix is to serve images **first-party** from
+   R2 (`img.queer.guide`), which `<Image>` treats as trusted (no no-referrer, CF srcset).
+   The `image-ingest` worker already does this but had stalled for marketplace: its bot UA
+   (`QueerGuide/1.0`) was 403'd by misterb + Shopify stores (0 misterb mirrored). Fixed the
+   worker UA → real browser UA; verified misterb mirrors from CF egress (54+ optimized, 0
+   failed). Reset marketplace `failed`→`pending` (skipped dead-listing images), stripped
+   cdn-cgi from asset source URLs, and drove `/run-all` to mirror the ~3,659 active-listing
+   images. The 15-min worker cron keeps new images mirrored. Once `optimized_url` populates,
+   `resolveImageUrl` returns the first-party URL and the grid renders. (A stale-closure 8s
+   stall-timeout in `Image.tsx` remains a minor latent bug — left for the spawned frontend
+   task; R2 mirroring makes it moot for marketplace since first-party images load fast.)
 
 ### Phase 4 — Break the monoculture (DECISION-READY RUNBOOK, not executed)
 
