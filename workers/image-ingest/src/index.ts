@@ -317,7 +317,13 @@ async function ingestImage(env: Env, row: ImageAssetRow): Promise<boolean> {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; QueerGuide/1.0)' },
+          // A real browser UA — several merchant CDNs (misterb, shopify stores)
+          // 403 a bot-style UA, which was failing marketplace image mirroring.
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            Accept: 'image/avif,image/webp,image/jpeg,image/png,*/*',
+          },
           signal: AbortSignal.timeout(20000),
           redirect: 'follow',
         });
