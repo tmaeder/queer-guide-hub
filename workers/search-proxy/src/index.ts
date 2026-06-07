@@ -340,7 +340,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// for bug #4 (until the Meilisearch index ranking rules are reconfigured).
 	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
-	// Cold-start fallback if starved (relevance order only).
+	// Cold-start fallback if starved (relevance order only). v_popular_entities
+	// rows are under-hydrated ({content_type, content_id, score}); hydrate them to
+	// full hits so they don't render as empty (type/title/objectID null) cards.
 	if (!explicitSort && ranked.length < 5) {
 		const popular = await popularEntities(env, pgTypes, 30);
 		ranked = dedupeById([...ranked, ...(await hydratePopular(env, popular))]);
@@ -718,30 +720,40 @@ function itemId(h: FuseItem): string | null {
 	return `${h.type ?? h.content_type ?? "x"}:${id}`;
 }
 
-// Popular-entity rows from v_popular_entities are just {content_type, content_id,
-// score} — using them as hits directly renders empty cards. Hydrate display
-// fields and drop any that can't be resolved.
-async function hydratePopular(
-	env: Env,
-	popular: Array<{ content_type: string; content_id: string; score?: number }>,
-): Promise<FuseItem[]> {
+type PopularRow = { content_type: string; content_id: string; score?: number };
+
+// v_popular_entities only carries {content_type, content_id, score} — no
+// type/objectID/title — so dropping these rows straight into the result set
+// renders empty cards (type/title/objectID null). Batch-fetch display fields and
+// project into the same hit shape pgSearch.mapHit emits. Rows that can't be
+// hydrated (no title) are dropped — better a shorter list than a blank card.
+async function hydratePopular(env: Env, popular: PopularRow[]): Promise<FuseItem[]> {
 	if (!popular.length) return [];
-	const display = await fetchDisplayMap(env, popular);
+	const display = await fetchDisplayMap(
+		env,
+		popular.map((p) => ({ content_type: p.content_type, content_id: p.content_id })),
+	).catch(() => null);
+	if (!display) return [];
 	const out: FuseItem[] = [];
 	for (const p of popular) {
 		const d = display.get(`${p.content_type}:${p.content_id}`);
-		if (!d?.title) continue; // skip un-hydratable rows instead of emitting null cards
+		if (!d?.title) continue;
 		out.push({
+			id: p.content_id,
 			objectID: p.content_id,
 			type: p.content_type,
+			content_type: p.content_type,
+			content_id: p.content_id,
 			title: d.title,
+			name: d.title,
 			slug: d.slug,
-			imageUrl: d.image_url,
+			image_url: d.image_url ?? null,
 			city: d.city,
 			country: d.country,
-			location: [d.city, d.country].filter(Boolean).join(", ") || undefined,
+			start_date: d.date,
 			_source: "popular",
 			_rankingScore: 0.1,
+			_fused: 0.1,
 		});
 	}
 	return out;
