@@ -47,6 +47,9 @@ export interface CentralizedTag {
   image_url?: string;
   slug: string;
   status?: string;
+  seo_indexable?: boolean;
+  is_sensitive?: boolean;
+  is_adult?: boolean;
   created_at: string;
   updated_at: string;
 }
