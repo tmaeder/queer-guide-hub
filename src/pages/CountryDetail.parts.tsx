@@ -203,14 +203,10 @@ export function CountryOverviewTab({ country, worldBankData, sdgData }: CountryO
                 About {country.name}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              {country.editorial_hook && (
-                <p className="text-body-lg font-medium text-foreground" style={{ lineHeight: 1.5 }}>
-                  {country.editorial_hook}
-                </p>
-              )}
+            <CardContent>
               <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
-                {country.description || country.editorial_long || `No overview yet for ${country.name}.`}
+                {country.description ||
+                  `Discover everything about ${country.name} – from major cities and cultural landmarks to local venues and upcoming events.`}
               </p>
             </CardContent>
           </Card>
