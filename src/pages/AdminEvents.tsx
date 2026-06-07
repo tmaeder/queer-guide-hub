@@ -251,12 +251,8 @@ export default function AdminEvents() {
     }
 
     try {
-      // events has no `tags` column — sending it makes PostgREST reject the whole
-      // insert/update. Strip it from the DB payload (pride subtypes in formData.tags
-      // have no column to persist to on this schema — tracked separately).
-      const { tags: _omitTags, ...formRest } = formData;
       const eventData = {
-        ...formRest,
+        ...formData,
         venue_id: formData.venue_id || null,
         organizer_id: formData.organizer_id || null,
         latitude: formData.latitude,
