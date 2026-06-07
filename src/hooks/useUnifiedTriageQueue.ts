@@ -58,7 +58,7 @@ export function useUnifiedTriageQueue(filters: TriageFilters) {
   });
 }
 
-export type TriageActionType = 'approve' | 'reject' | 'skip' | 'flag';
+export type TriageActionType = 'approve' | 'reject' | 'skip' | 'flag' | 'reopen';
 
 export function useTriageAction() {
   const qc = useQueryClient();

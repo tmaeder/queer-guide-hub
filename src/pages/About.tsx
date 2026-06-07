@@ -34,7 +34,7 @@ interface FeatureItem {
   title: string;
   description: string;
   link: string;
-  image?: { src: string; alt: string; fallback?: string };
+  image?: { src: string; alt: string; fallback?: string; credit?: string };
   colSpan?: 1 | 2;
 }
 
@@ -162,7 +162,7 @@ export default function About() {
         <EditorialHero
           eyebrow="About us"
           title="Built by queers, for everyone."
-          subtitle="The Queer Guide connects LGBTQ+ people and allies with safe venues, vibrant events, and communities that get you — wherever you are in the world."
+          subtitle="Queer Guide connects LGBTQ+ people and allies with safe venues, vibrant events, and communities that get you — wherever you are in the world."
           image={EDITORIAL_IMAGES.about.hero}
           imagePosition="cover"
           decoration="grid"
@@ -207,7 +207,7 @@ export default function About() {
             <div className="flex flex-col gap-6">
               <p className="text-muted-foreground leading-[1.8] text-body-lg">
                 Finding a queer-friendly bar shouldn't require a group chat, three Reddit threads,
-                and a leap of faith. We started The Queer Guide because we were tired of guessing
+                and a leap of faith. We started Queer Guide because we were tired of guessing
                 which spaces were actually safe — and which just slapped a rainbow on their logo in
                 June.
               </p>
@@ -330,7 +330,7 @@ export default function About() {
         >
           <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">The People Behind It</h2>
           <p className="text-muted-foreground mb-8 md:mb-10 text-body-lg leading-[1.7] max-w-[600px]">
-            The Queer Guide isn't run by a corporation — it's powered by passionate community
+            Queer Guide isn't run by a corporation — it's powered by passionate community
             members who volunteer their time and energy.
           </p>
 
@@ -497,11 +497,12 @@ interface FeatureImageTileProps {
   title: string;
   description: string;
   Icon: typeof MapPin;
-  image: { src: string; alt: string; fallback?: string };
+  image: { src: string; alt: string; fallback?: string; credit?: string };
 }
 
 function FeatureImageTile({ title, description, Icon, image }: FeatureImageTileProps) {
   const [src, setSrc] = useState(image.src);
+  const [errored, setErrored] = useState(false);
   return (
     <div className="relative h-full min-h-[240px] md:min-h-[260px] overflow-hidden">
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
@@ -510,9 +511,20 @@ function FeatureImageTile({ title, description, Icon, image }: FeatureImageTileP
         alt={image.alt}
         loading="lazy"
         decoding="async"
-        onError={() => image.fallback && setSrc(image.fallback)}
+        onError={() => {
+          if (image.fallback) setSrc(image.fallback);
+          setErrored(true);
+        }}
         className="absolute inset-0 h-full w-full object-cover"
       />
+      {!errored && image.credit && (
+        <span
+          className="absolute top-1.5 right-2 z-[2] max-w-[60%] truncate text-2xs leading-tight text-white/55"
+          title={image.credit}
+        >
+          {image.credit}
+        </span>
+      )}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/15 to-black/65 dark:from-black/35 dark:to-black/[0.78]"

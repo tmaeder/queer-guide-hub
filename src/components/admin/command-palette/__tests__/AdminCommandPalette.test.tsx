@@ -27,6 +27,10 @@ vi.mock('@/config/adminNavigation', () => ({
       items: [{ id: 'venues', label: 'Venues', icon: Box, route: '/admin/content/venues' }],
     },
   ],
+  resolveItemMinRole: () => 'editor',
+}));
+vi.mock('@/hooks/useGranularRoles', () => ({
+  useGranularRoles: () => ({ effectiveRole: 'admin' }),
 }));
 
 import { AdminCommandPalette } from '../AdminCommandPalette';

@@ -10,7 +10,10 @@ import {
   CommandShortcut,
   CommandSeparator,
 } from '@/components/ui/command';
-import { adminNavSections } from '@/config/adminNavigation';
+import { adminNavSections, resolveItemMinRole } from '@/config/adminNavigation';
+import { roleAtLeast } from '@/config/adminRoles';
+import { useGranularRoles } from '@/hooks/useGranularRoles';
+import { OPEN_COMMAND_PALETTE_EVENT } from './commandPaletteBus';
 import { useAdminCommandActions } from './useAdminCommandActions';
 
 const RECENT_KEY = 'admin.cmdk.recent';
@@ -58,15 +61,19 @@ export function AdminCommandPalette({ open, onOpenChange }: Props) {
     }
   }, [open]);
 
+  const { effectiveRole } = useGranularRoles();
+
   const navItems = useMemo(() => {
     const items: { id: string; label: string; route: string; section: string }[] = [];
     for (const section of adminNavSections) {
       for (const item of section.items) {
+        // Don't list routes the user can't reach (they'd 403 / hit access-denied).
+        if (!roleAtLeast(effectiveRole, resolveItemMinRole(item, section))) continue;
         items.push({ id: item.id, label: item.label, route: item.route, section: section.label });
       }
     }
     return items;
-  }, []);
+  }, [effectiveRole]);
 
   const go = useCallback(
     (route: string, label: string) => {
@@ -163,8 +170,15 @@ export function AdminCommandPaletteHost() {
         setOpen((v) => !v);
       }
     }
+    function onOpen() {
+      setOpen(true);
+    }
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener(OPEN_COMMAND_PALETTE_EVENT, onOpen);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener(OPEN_COMMAND_PALETTE_EVENT, onOpen);
+    };
   }, []);
 
   return <AdminCommandPalette open={open} onOpenChange={setOpen} />;

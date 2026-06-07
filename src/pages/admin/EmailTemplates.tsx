@@ -148,10 +148,7 @@ export default function EmailTemplates() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Test Email Sent',
-        description: `Test email sent to ${testEmail}`,
-      });
+      toast.success('Test Email Sent', { description: `Test email sent to ${testEmail}` });
       setShowTestDialog(false);
       setTestEmail('');
     } catch (error) {

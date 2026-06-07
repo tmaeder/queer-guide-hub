@@ -276,7 +276,7 @@ export function usePipelineBuilder(pipelineId?: string) {
       }
     },
     onSuccess: (data) => {
-      toast({ title: data?.dry_run ? 'Dry run started' : 'Pipeline started', description: `Run ID: ${data?.pipeline_run_id}` });
+      toast.success(data?.dry_run ? 'Dry run started' : 'Pipeline started', { description: `Run ID: ${data?.pipeline_run_id}` });
     },
     onError: (error: Error) => {
       toast.error(`Run failed: ${error.message}`);

@@ -331,7 +331,7 @@ export default function AdminRedirects() {
         onImport={async (items) => {
           const result = await bulkImport(items);
           if (result.success > 0) {
-            toast({ title: `Imported ${result.success} redirect(s)` });
+            toast.success(`Imported ${result.success} redirect(s)`);
             doRefresh();
           }
           return result;

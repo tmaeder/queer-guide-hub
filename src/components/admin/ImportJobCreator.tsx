@@ -273,11 +273,7 @@ export const ImportJobCreator = () => {
     // the whole batch with one target_table, so mismatches today silently
     // ingest as the wrong entity type.
     if (detectionSummary && detectionSummary.mismatches > 0 && !routingAcknowledged) {
-      toast({
-        title: 'Mixed entity types detected',
-        description: `${detectionSummary.mismatches} row(s) look like a different entity type. Review the preview and check the acknowledgement box to continue.`,
-        variant: 'destructive',
-      });
+      toast.error('Mixed entity types detected', { description: `${detectionSummary.mismatches} row(s) look like a different entity type. Review the preview and check the acknowledgement box to continue.` });
       return;
     }
 

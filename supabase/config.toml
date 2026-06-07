@@ -456,6 +456,21 @@ verify_jwt = false
 [functions.event-agentic-enrich]
 verify_jwt = false
 
+[functions.event-image-backfill]
+verify_jwt = false
+
+[functions.pipeline-classify-personhood]
+verify_jwt = false
+
+[functions.city-factual-backfill]
+verify_jwt = false
+
+[functions.city-corroboration]
+verify_jwt = false
+
+[functions.city-agentic-enrich]
+verify_jwt = false
+
 # Passkey ops: enroll/verify-enrollment do a manual JWT check in code; the
 # authenticate/verify-authentication actions run for logged-out users, so
 # platform JWT verification must be off.

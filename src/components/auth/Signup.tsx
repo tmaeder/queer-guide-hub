@@ -160,7 +160,7 @@ export default function Signup({ onBack }: Props) {
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-center gap-2">
             <Heart className="w-8 h-8 fill-current text-foreground" />
-            <h5 className="text-xl font-bold tracking-tight">The Queer Guide</h5>
+            <h5 className="text-xl font-bold tracking-tight">Queer Guide</h5>
           </div>
           <CardTitle className="text-2xl md:text-3xl font-bold tracking-tight text-center text-balance">
             {t('auth.signup.title', 'Create your account')}
