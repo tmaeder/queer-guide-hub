@@ -26,11 +26,12 @@ export function useDonorWall(limit = 20) {
   return useQuery({
     queryKey: ['donor-wall', limit],
     queryFn: async (): Promise<DonorWallEntry[]> => {
+      // Reads the public `donor_wall` view (completed, non-anonymous only).
+      // The base `donations` table is RLS-locked to owner/admin — querying it
+      // anonymously 401s. The view exposes only safe, non-PII columns.
       const { data, error } = await supabase
-        .from('donations')
+        .from('donor_wall')
         .select('id, donor_name, message, amount, currency, created_at, donation_type')
-        .eq('status', 'completed')
-        .eq('is_anonymous', false)
         .order('created_at', { ascending: false })
         .limit(limit);
 

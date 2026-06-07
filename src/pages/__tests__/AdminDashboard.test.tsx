@@ -9,6 +9,9 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 vi.mock('@/hooks/useAdminCockpit', () => ({
   useAdminCockpit: () => ({ data: null, isLoading: false, refetch: vi.fn() }),
 }));
+vi.mock('@/hooks/useGranularRoles', () => ({
+  useGranularRoles: () => ({ effectiveRole: 'admin' }),
+}));
 
 import AdminDashboard from '../AdminDashboard';
 

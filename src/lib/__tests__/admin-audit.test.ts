@@ -37,7 +37,8 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
-import { logAdminGeoEdit } from '../admin-audit';
+import { logAdminGeoEdit, logCmsAudit } from '../admin-audit';
+import { formatAction, formatRelativeTime } from '../audit-format';
 
 beforeEach(() => {
   state.calls.length = 0;
@@ -81,5 +82,52 @@ describe('logAdminGeoEdit', () => {
     await expect(
       logAdminGeoEdit('venues', 'update', 'v1', null, null),
     ).resolves.toBeUndefined();
+  });
+});
+
+describe('logCmsAudit', () => {
+  it('writes one cms_audit_log row per id with the actor', async () => {
+    state.authUser = { id: 'u-9' };
+    await logCmsAudit('venues', ['a', 'b'], 'bulk_update');
+    expect(state.calls[0].table).toBe('cms_audit_log');
+    const rows = state.calls[0].chain.find((s) => s.method === 'insert')?.args[0] as Array<
+      Record<string, unknown>
+    >;
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({
+      source_table: 'venues',
+      source_id: 'a',
+      action: 'bulk_update',
+      actor_id: 'u-9',
+    });
+  });
+
+  it('is a no-op for an empty id list', async () => {
+    await logCmsAudit('venues', [], 'bulk_update');
+    expect(state.calls).toHaveLength(0);
+  });
+
+  it('caps at 200 rows', async () => {
+    const ids = Array.from({ length: 300 }, (_, i) => `id-${i}`);
+    await logCmsAudit('events', ids, 'bulk_delete');
+    const rows = state.calls[0].chain.find((s) => s.method === 'insert')?.args[0] as unknown[];
+    expect(rows).toHaveLength(200);
+  });
+
+  it('never throws on auth failure', async () => {
+    state.authError = new Error('auth down');
+    await expect(logCmsAudit('venues', ['x'], 'bulk_update')).resolves.toBeUndefined();
+  });
+});
+
+describe('audit-format', () => {
+  it('humanizes snake_case actions', () => {
+    expect(formatAction('workflow_draft_to_review')).toBe('Workflow Draft To Review');
+    expect(formatAction('bulk_update')).toBe('Bulk Update');
+  });
+
+  it('formats relative time', () => {
+    expect(formatRelativeTime(new Date().toISOString())).toBe('just now');
+    expect(formatRelativeTime(new Date(Date.now() - 2 * 3600 * 1000).toISOString())).toBe('2h ago');
   });
 });

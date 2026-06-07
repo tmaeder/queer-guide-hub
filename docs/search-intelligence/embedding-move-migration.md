@@ -1,8 +1,20 @@
 # Migration: move `search_documents.embedding` → `search_embeddings` sibling table
 
-**Status:** designed + core-validated on prod (2026-06-02), **NOT yet applied.** Apply via the
-deploy-supabase-functions pipeline after staged parity validation. Reviewed PR required — this rewrites
-the live search / discovery / dedup core.
+**Status:** **Phase 1 (perf) SHIPPED on prod 2026-06-07** — migrations `20260606190000` (sibling table +
+mirror trigger + HNSW) and `20260606190100` (4 readers). The vector read path now uses the
+`search_embeddings` sibling via the validated lateral-gated join; old `search_documents` HNSW dropped.
+Parity-validated live before commit (keyword exact, related/recs 10/10, find_duplicates byte-identical,
+sibling HNSW confirmed used). search_documents.embedding column **kept** (mirror trigger keeps the sibling
+synced from the 9 unchanged writers) → trivial rollback (`embedding-move-phase1-rollback.sql`).
+
+**Phase 2 (disk reclaim) SHIPPED on prod 2026-06-07** — migration `20260606200000`. The 9
+`search_documents_index_*` writers no longer write `embedding` (programmatic transform: drop the column from
+the INSERT, the `ce.embedding` value, and the on-conflict SET — `content_embeddings` join kept);
+`search_documents_sync_embedding` now upserts the sibling directly; the Phase-1 mirror trigger dropped;
+`ALTER TABLE search_documents DROP COLUMN embedding` + `VACUUM FULL`. Result: **search_documents 634 MB → 88 MB**
+(better than the 192 MB estimate — VACUUM FULL also cleared GIN bloat), embeddings live solely in the 695 MB
+sibling, **DB 5.09 GB → 4.54 GB**. Writers re-index cleanly, all 4 readers + prod search verified green.
+The embedding move is now **fully complete**.
 
 ## Why
 

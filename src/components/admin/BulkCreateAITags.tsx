@@ -58,10 +58,7 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
 
       setResults(data.results);
 
-      toast({
-        title: "Bulk Creation Complete",
-        description: `Created ${data.summary.created} tags, ${data.summary.exists} already existed, ${data.summary.errors} errors`,
-      });
+      toast.success('Bulk Creation Complete', { description: `Created ${data.summary.created} tags, ${data.summary.exists} already existed, ${data.summary.errors} errors` });
 
       if (onComplete) {
         onComplete();

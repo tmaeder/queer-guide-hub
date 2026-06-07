@@ -31,6 +31,7 @@ import {
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { EditorHeader } from './EditorHeader';
 import { EditorSidebar } from './EditorSidebar';
+import { EntityAuditHistory } from '@/components/cms/EntityAuditHistory';
 import { AIAssistDrawer } from '@/components/cms/AIAssistDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -520,6 +521,11 @@ export function CMSEditorLayout({
             onJumpToField={handleJumpToField}
             autoRunQuality={inQueue}
           />
+          {config && state.itemId && (
+            <div className="p-4 pt-0">
+              <EntityAuditHistory sourceTable={config.tableName} sourceId={state.itemId} />
+            </div>
+          )}
         </div>
       </div>
 

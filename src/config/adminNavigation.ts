@@ -42,6 +42,7 @@ import {
   CopyCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import type { AdminRole } from '@/config/adminRoles';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -54,8 +55,13 @@ export interface AdminNavItem {
   countTable?: string;
   /** Direct key from get_admin_counts RPC for review-queue-style counts */
   reviewCountKey?: string;
-  /** Whether this item requires admin role (not just moderator) */
+  /** Whether this item requires admin role (not just moderator).
+   *  Shorthand for `minRole: 'admin'`. */
   adminOnly?: boolean;
+  /** Minimum role to see/access this item. Overrides the section default and
+   *  `adminOnly`. Resolution order: minRole → adminOnly?'admin' → section.minRole
+   *  → 'editor'. See resolveItemMinRole / getRouteMinRole. */
+  minRole?: AdminRole;
 }
 
 export interface AdminNavSection {
@@ -65,6 +71,8 @@ export interface AdminNavSection {
   /** If true, this section is collapsible and starts expanded */
   collapsible?: boolean;
   defaultExpanded?: boolean;
+  /** Default minimum role for items in this section (item-level wins). */
+  minRole?: AdminRole;
   items: AdminNavItem[];
 }
 
@@ -76,6 +84,7 @@ export const adminNavSections: AdminNavSection[] = [
     id: 'cockpit',
     label: 'Cockpit',
     icon: LayoutDashboard,
+    minRole: 'editor',
     items: [
       {
         id: 'overview',
@@ -99,6 +108,7 @@ export const adminNavSections: AdminNavSection[] = [
     icon: Layers,
     collapsible: true,
     defaultExpanded: true,
+    minRole: 'editor',
     items: [
       {
         id: 'all-content',
@@ -233,6 +243,7 @@ export const adminNavSections: AdminNavSection[] = [
     icon: Download,
     collapsible: true,
     defaultExpanded: true,
+    minRole: 'editor',
     items: [
       {
         id: 'review-queue',
@@ -264,6 +275,7 @@ export const adminNavSections: AdminNavSection[] = [
     icon: Workflow,
     collapsible: true,
     defaultExpanded: false,
+    minRole: 'moderator',
     items: [
       {
         id: 'automation',
@@ -302,6 +314,7 @@ export const adminNavSections: AdminNavSection[] = [
     icon: Settings,
     collapsible: true,
     defaultExpanded: false,
+    minRole: 'moderator',
     items: [
       {
         id: 'users',
@@ -395,6 +408,34 @@ export function getNavItemByRoute(route: string): AdminNavItem | undefined {
     if (item) return item;
   }
   return undefined;
+}
+
+/**
+ * Resolve the minimum role required for a nav item, given its section.
+ * Order: item.minRole → adminOnly?'admin' → section.minRole → 'editor'.
+ */
+export function resolveItemMinRole(item: AdminNavItem, section?: AdminNavSection): AdminRole {
+  return item.minRole ?? (item.adminOnly ? 'admin' : section?.minRole ?? 'editor');
+}
+
+/**
+ * Minimum role to access a pathname, for AdminShell's per-route enforcement.
+ * Uses longest-prefix matching so sub-routes (e.g. /admin/settings/venue-categories)
+ * inherit the tier of their nearest configured nav item (/admin/settings).
+ * Unknown admin routes default to 'editor' (the console entry floor).
+ */
+export function getRouteMinRole(pathname: string): AdminRole {
+  let best: { item: AdminNavItem; section: AdminNavSection; len: number } | null = null;
+  for (const section of adminNavSections) {
+    for (const item of section.items) {
+      const exact = pathname === item.route;
+      const prefix = item.route !== '/admin' && pathname.startsWith(item.route + '/');
+      if ((exact || prefix) && (!best || item.route.length > best.len)) {
+        best = { item, section, len: item.route.length };
+      }
+    }
+  }
+  return best ? resolveItemMinRole(best.item, best.section) : 'editor';
 }
 
 /**

@@ -196,9 +196,13 @@ Deno.test('applySuggestion: cluster_membership — throws when cluster_id missin
 
 // ── unsupported types ───────────────────────────────────────────────────────
 
-Deno.test('applySuggestion: unsupported types return false (no apply)', async () => {
+Deno.test('applySuggestion: unsupported types return false for non-tag entities', async () => {
   const client = makeClient()
-  for (const t of ['alt_text', 'description', 'title', 'image_replacement', 'translation', 'other']) {
+  // description/image_replacement/category only apply for entity_type='unified_tags';
+  // for other entity types they remain manual (false).
+  // 'translation' is supported (needs a locale) so it's excluded here — it throws
+  // rather than returning false. These all short-circuit to false for non-tag entities.
+  for (const t of ['alt_text', 'description', 'title', 'image_replacement', 'category', 'other']) {
     const ok = await applySuggestion(client, {
       suggestion_type: t,
       entity_type: 'venues',
@@ -209,4 +213,134 @@ Deno.test('applySuggestion: unsupported types return false (no apply)', async ()
     assertEquals(ok, false, `expected ${t} to return false`)
   }
   assertEquals(client._calls.length, 0)
+})
+
+// ── tag enrichment suggestions (entity_type='unified_tags') ──────────────────
+// Extended stub: also records .update(patch).eq(col,val) calls.
+
+function makeTagClient(opts: { error?: { message: string } } = {}) {
+  const calls: { table: string; op: string; values: Record<string, unknown>; options?: Record<string, unknown> }[] = []
+  const error = opts.error ?? null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const builder = (table: string): any => ({
+    update(values: Record<string, unknown>) {
+      return {
+        eq(_col: string, _val: unknown) {
+          calls.push({ table, op: 'update', values })
+          return Promise.resolve({ data: null, error })
+        },
+      }
+    },
+    upsert(values: Record<string, unknown>, options?: Record<string, unknown>) {
+      calls.push({ table, op: 'upsert', values, options })
+      return Promise.resolve({ data: null, error })
+    },
+  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const client: any = { from: builder, _calls: calls }
+  return client
+}
+
+Deno.test('applySuggestion: description — updates unified_tags field', async () => {
+  const client = makeTagClient()
+  const ok = await applySuggestion(client, {
+    suggestion_type: 'description',
+    entity_type: 'unified_tags',
+    entity_id: 'tag-1',
+    locale: null,
+    proposed_value: { field: 'short_description', value: 'A short blurb.' },
+  })
+  assertEquals(ok, true)
+  assertEquals(client._calls[0].table, 'unified_tags')
+  assertEquals(client._calls[0].op, 'update')
+  assertEquals(client._calls[0].values.short_description, 'A short blurb.')
+})
+
+Deno.test('applySuggestion: description — defaults field to description', async () => {
+  const client = makeTagClient()
+  await applySuggestion(client, {
+    suggestion_type: 'description',
+    entity_type: 'unified_tags',
+    entity_id: 'tag-1',
+    locale: null,
+    proposed_value: { value: 'Default field blurb.' },
+  })
+  assertEquals(client._calls[0].values.description, 'Default field blurb.')
+})
+
+Deno.test('applySuggestion: description — throws on invalid field', async () => {
+  await assertRejects(
+    () =>
+      applySuggestion(makeTagClient(), {
+        suggestion_type: 'description',
+        entity_type: 'unified_tags',
+        entity_id: 'tag-1',
+        locale: null,
+        proposed_value: { field: 'name', value: 'x' },
+      }),
+    Error,
+    'description needs proposed_value.field',
+  )
+})
+
+Deno.test('applySuggestion: image_replacement — updates image fields', async () => {
+  const client = makeTagClient()
+  const ok = await applySuggestion(client, {
+    suggestion_type: 'image_replacement',
+    entity_type: 'unified_tags',
+    entity_id: 'tag-1',
+    locale: null,
+    proposed_value: { image_url: 'https://x/i.jpg', image_alt: 'alt', image_source: 'pexels' },
+  })
+  assertEquals(ok, true)
+  assertEquals(client._calls[0].table, 'unified_tags')
+  assertEquals(client._calls[0].values.image_url, 'https://x/i.jpg')
+  assertEquals(client._calls[0].values.image_alt, 'alt')
+  assertEquals(client._calls[0].values.image_source, 'pexels')
+})
+
+Deno.test('applySuggestion: image_replacement — throws without image_url', async () => {
+  await assertRejects(
+    () =>
+      applySuggestion(makeTagClient(), {
+        suggestion_type: 'image_replacement',
+        entity_type: 'unified_tags',
+        entity_id: 'tag-1',
+        locale: null,
+        proposed_value: {},
+      }),
+    Error,
+    'image_replacement needs proposed_value.image_url',
+  )
+})
+
+Deno.test('applySuggestion: category — upserts primary assignment', async () => {
+  const client = makeTagClient()
+  const ok = await applySuggestion(client, {
+    suggestion_type: 'category',
+    entity_type: 'unified_tags',
+    entity_id: 'tag-1',
+    locale: null,
+    proposed_value: { category_id: 'cat-1' },
+  })
+  assertEquals(ok, true)
+  assertEquals(client._calls[0].table, 'tag_category_assignments')
+  assertEquals(client._calls[0].op, 'upsert')
+  assertEquals(client._calls[0].values, { tag_id: 'tag-1', category_id: 'cat-1', is_primary: true })
+  assertEquals(client._calls[0].options, { onConflict: 'tag_id,category_id' })
+})
+
+Deno.test('applySuggestion: category — propagates DB error', async () => {
+  await assertRejects(
+    () =>
+      applySuggestion(makeTagClient({ error: { message: 'kaboom' } }), {
+        suggestion_type: 'category',
+        entity_type: 'unified_tags',
+        entity_id: 'tag-1',
+        locale: null,
+        proposed_value: { category_id: 'cat-1' },
+      }),
+    Error,
+    'kaboom',
+  )
 })

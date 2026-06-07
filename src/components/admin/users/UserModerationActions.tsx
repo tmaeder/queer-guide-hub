@@ -74,7 +74,7 @@ export function UserModerationActions({
         p_severity: pendingAction === 'banned' ? 'high' : 'medium',
       });
 
-      toast({ title: 'Status updated', description: `User has been ${pendingAction}.` });
+      toast.success('Status updated', { description: `User has been ${pendingAction}.` });
       onStatusChanged();
     } catch (err: unknown) {
       toast.error(`Error: ${err}`);

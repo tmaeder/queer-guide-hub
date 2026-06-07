@@ -160,7 +160,7 @@ export default function AdminMarketplace() {
         body: importParams,
       });
       if (error) throw error;
-      toast({ title: 'Import Successful', description: `Imported ${data.imported} products` });
+      toast.success('Import Successful', { description: `Imported ${data.imported} products` });
       setIsAwinImportOpen(false);
     } catch (err: unknown) {
       toast.error(`Import Failed: ${err}`);

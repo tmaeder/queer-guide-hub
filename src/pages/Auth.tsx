@@ -151,7 +151,7 @@ export default function Auth() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-center gap-2">
                   <Heart className="w-8 h-8 fill-current text-primary" />
-                  <h5 className="text-xl font-bold">The Queer Guide</h5>
+                  <h5 className="text-xl font-bold">Queer Guide</h5>
                 </div>
                 <CardTitle>
                   {mode === 'forgot' ? t('auth.resetPassword', 'Reset password') : t('auth.welcomeBack', 'Welcome back')}

@@ -119,7 +119,7 @@ function PipelineBuilderInner() {
         setIsDirty(false);
         setLastSavedAt(Date.now());
         draftAutosave.clearDraft();
-        toast({ title: 'Pipeline saved', description: `${nodes.length} nodes, ${edges.length} edges` });
+        toast.success('Pipeline saved', { description: `${nodes.length} nodes, ${edges.length} edges` });
       },
       onError: (e: Error) => toast.error(`Save failed: ${e.message}`),
     } as Record<string, unknown>);
@@ -335,7 +335,7 @@ function PipelineBuilderInner() {
                 schedule: v.schedule, is_enabled: true, is_template: false, version: v.version,
               } as Parameters<typeof loadPipeline>[0], nodeTypeList);
               setIsDirty(true);
-              toast({ title: `Reverted to v${v.version}`, description: 'Click Save to persist' });
+              toast.success(`Reverted to v${v.version}`, { description: 'Click Save to persist' });
             }}
             activeRunId={activeRunId}
             runStatus={runStatus}

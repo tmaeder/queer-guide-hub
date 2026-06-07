@@ -3,22 +3,35 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useToast } from '@/hooks/use-toast';
+import { roleAtLeast, type AdminRole, type EffectiveRole } from '@/config/adminRoles';
 
 interface AdminRouteGuardProps {
   children: React.ReactNode;
-  requiredRole?: 'admin' | 'moderator';
+  requiredRole?: AdminRole;
   fallbackPath?: string;
 }
 
 export function AdminRouteGuard({
   children,
-  requiredRole = 'moderator',
+  // Editors and up may enter the admin console; per-route admin/moderator
+  // gating is enforced inside AdminShell via each nav item's minRole.
+  requiredRole = 'editor',
   fallbackPath = '/',
 }: AdminRouteGuardProps) {
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, isModerator, loading: rolesLoading } = useAdminRoles();
+  const { isAdmin, isModerator, isEditor, loading: rolesLoading } = useAdminRoles();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const effectiveRole: EffectiveRole = isAdmin
+    ? 'admin'
+    : isModerator
+      ? 'moderator'
+      : isEditor
+        ? 'editor'
+        : user
+          ? 'viewer'
+          : 'none';
 
   // Once we've validated access we keep rendering children even if a
   // background refresh re-flips loading flags (e.g. Supabase fires
@@ -42,7 +55,7 @@ export function AdminRouteGuard({
     }
 
     // Check role permissions
-    const hasPermission = requiredRole === 'admin' ? isAdmin : isAdmin || isModerator;
+    const hasPermission = roleAtLeast(effectiveRole, requiredRole);
 
     if (!hasPermission) {
       toast({
@@ -55,8 +68,7 @@ export function AdminRouteGuard({
     }
   }, [
     user,
-    isAdmin,
-    isModerator,
+    effectiveRole,
     authLoading,
     rolesLoading,
     requiredRole,
@@ -65,7 +77,7 @@ export function AdminRouteGuard({
     toast,
   ]);
 
-  const hasPermission = requiredRole === 'admin' ? isAdmin : isAdmin || isModerator;
+  const hasPermission = roleAtLeast(effectiveRole, requiredRole);
   const stillResolving = authLoading || rolesLoading;
   const accessGranted = !!user && hasPermission;
 

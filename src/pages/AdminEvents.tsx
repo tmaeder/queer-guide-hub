@@ -41,6 +41,7 @@ import {
   type ExportColumnDef,
 } from '@/utils/excelExport';
 import { AdminEntityTable } from '@/components/admin/data-table';
+import { backfillJobsFor } from '@/config/backfillJobs';
 import { EventQualityPanel } from '@/components/admin/EventQualityPanel';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -524,6 +525,7 @@ export default function AdminEvents() {
       enableSelection: true,
       enableSearch: true,
       searchColumns: ['title', 'description', 'city', 'venue_name'],
+      backfillJobs: backfillJobsFor('events'),
       entityFilters: [
         {
           key: 'event_type',

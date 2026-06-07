@@ -103,7 +103,7 @@ export default function AdminCountries() {
       const { error } = await deleteCountry(country.id);
       if (error) throw error;
       void logAdminGeoEdit('countries', 'delete', country.id, country as unknown as Record<string, unknown>, null);
-      toast({ title: 'Success', description: `${country.name} deleted` });
+      toast.success(`${country.name} deleted`);
       invalidateTable();
     } catch {
       toast.error('Error: Failed to delete country');
@@ -127,7 +127,7 @@ export default function AdminCountries() {
       const { error } = await updateCountry(editingCountry.id, update);
       if (error) throw error;
       void logAdminGeoEdit('countries', 'update', editingCountry.id, editingCountry as unknown as Record<string, unknown>, update);
-      toast({ title: 'Success', description: `${formData.name} updated` });
+      toast.success(`${formData.name} updated`);
       setEditDialogOpen(false);
       setEditingCountry(null);
       invalidateTable();
