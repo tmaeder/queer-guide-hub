@@ -194,10 +194,63 @@ export async function applySuggestion(
       if (writeErr) throw new Error(`translation write failed: ${writeErr.message}`)
       return true
     }
+    case 'description': {
+      // Tag glossary copy backfill. Other entity types are out of scope here.
+      if (s.entity_type !== 'unified_tags') return false
+      if (!s.entity_id) throw new Error('description suggestion needs entity_id')
+      const field = (v?.field as string) ?? 'description'
+      const value = v?.value
+      if (!TAG_DESCRIPTION_FIELDS.has(field) || typeof value !== 'string') {
+        throw new Error(
+          'description needs proposed_value.field in {description,short_description,long_description} and string proposed_value.value',
+        )
+      }
+      const { error } = await client
+        .from('unified_tags')
+        .update({ [field]: value, updated_at: new Date().toISOString() })
+        .eq('id', s.entity_id)
+      if (error) throw new Error(error.message)
+      return true
+    }
+    case 'image_replacement': {
+      if (s.entity_type !== 'unified_tags') return false
+      if (!s.entity_id) throw new Error('image_replacement suggestion needs entity_id')
+      const url = v?.image_url
+      if (typeof url !== 'string' || !url) {
+        throw new Error('image_replacement needs proposed_value.image_url')
+      }
+      const patch: Record<string, unknown> = { image_url: url, updated_at: new Date().toISOString() }
+      for (const k of ['image_alt', 'image_source', 'image_attribution', 'image_license']) {
+        if (typeof v?.[k] === 'string') patch[k] = v[k]
+      }
+      const { error } = await client.from('unified_tags').update(patch).eq('id', s.entity_id)
+      if (error) throw new Error(error.message)
+      return true
+    }
+    case 'category': {
+      // Insert directly into the assignment table (source of truth). We do NOT
+      // touch unified_tags.category_id: that fires sync_tag_category_assignment
+      // -> unified_tags_recompute_is_adult, which re-enters the same row.
+      if (s.entity_type !== 'unified_tags') return false
+      if (!s.entity_id || !v?.category_id) {
+        throw new Error('category suggestion needs entity_id and proposed_value.category_id')
+      }
+      const { error } = await client
+        .from('tag_category_assignments')
+        .upsert(
+          { tag_id: s.entity_id, category_id: v.category_id, is_primary: true },
+          { onConflict: 'tag_id,category_id' },
+        )
+      if (error) throw new Error(error.message)
+      return true
+    }
     default:
       return false
   }
 }
+
+/** Plain (non-i18n) tag copy fields a 'description' suggestion may target. */
+const TAG_DESCRIPTION_FIELDS = new Set(['description', 'short_description', 'long_description'])
 
 /**
  * Per-entity allowlist of i18n source fields. The corresponding JSONB column
