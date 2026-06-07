@@ -249,6 +249,41 @@ given `shop_domain`, maps to `ingestion_staging`, and drives the existing
 `commit_marketplace_staging_batch` pipeline (relevance + categorize run automatically via the
 weekly crons, or inline). `source-shopify` edge fn already exists as a starting point.
 
+#### Phase 4 EXECUTED (2026-06-07)
+
+Implemented as direct `products.json` → INSERT → trigger pipeline (reusable scripts:
+`scripts/marketplace-shopify-import.mjs`, `scripts/marketplace-darklands-import.mjs`).
+Listings go in `status='active'`, `review_status='auto'`, source-trusted
+`lgbti_relevance_score=0.8` (curated queer brands are NOT per-item relevance-gated — same
+lesson as Phase 2). Triggers handle slug / price_usd (fx per currency) / image_assets→R2 /
+search. Categorized via `marketplace-categorize`.
+
+- **Diverse queer-owned (breaks monoculture):** Automic Gold (760, jewelry), TomboyX (573,
+  apparel), Ash + Chess (396, art), Wildfang (173), Kirrin Finch (62) — **1,964 non-adult
+  products**. Verified live (e.g. Gemstone Claddagh Ring → Jewelry and Pins, real photos).
+- **Darklands vendor-market (deepens fetish w/ clean data):** 13 of 46 vendors were Shopify;
+  imported the quality ones — Nothosaur, WeGan, Spitfire Leather, Cuffed, Strapp Metal,
+  Provocateur, Lor & Lajos, Cream Team Berlin, RubberTwunk, ABUniverse, Vilain Garçon,
+  Untitled Rubber, Kinkstar — **1,570 fetish products** with correct EUR/GBP/USD pricing
+  (Shopify Markets masks base currency behind viewer CHF presentment; resolved via
+  `Shopify.currency rate==1`). Excluded toro-leather (template) + mr-riegillio (misterb dupe).
+- **Folsom Europe / Folsom Street:** scanned. Folsom Europe had ~5 importable Shopify shops
+  (regulation.store 1500/GBP, gearberlin 382, kink3d 165, tysk 46, folsomeurope merch 36);
+  Folsom Street exhibitors load via an Eventeny widget (not scrapable). **HELD per operator
+  decision** — catalog was already tilting fetish-heavy.
+
+**Currency gotcha (important):** Shopify `products.json` prices are in the store BASE currency,
+but Shopify Markets serves the *viewer's* presentment currency (CHF from a Swiss IP) in og/JSON-LD/
+cart.js — masking the base. Resolve base via homepage `Shopify.currency={"active":X,"rate":1.0}`
+(rate==1 → active is base); rate≠1 + active=CHF means converted (reverse via known CHF rates:
+~0.94→EUR, ~1.08→GBP, ~0.81→USD). fx_rates covers EUR/GBP/USD for price_usd.
+
+**Note — concurrent ohmyfantasy re-sync (not part of this work):** a background process
+(created_by NULL, review_status='approved') re-imported ohmyfantasy's full ~17k products.json
+catalog (7,306 active rows) at 16:00–17:00 on 2026-06-07, likely acting on this doc's "re-sync
+ohmyfantasy 17k" note. Operator chose to KEEP it. It makes the catalog ~53% ohmyfantasy adult —
+counter to the diversify goal, but the data is fresh + complete.
+
 ### Phase 4 — Break the monoculture (recurring sources)
 Wire diverse **queer-owned** sources into the live pipeline:
 - Revive dead `source-shopify`/`source-etsy`/`source-awin` with real queer-brand
