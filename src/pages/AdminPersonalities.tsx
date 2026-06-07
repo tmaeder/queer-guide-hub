@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { PersonalitiesCsvImport } from '@/components/personalities/PersonalitiesCsvImport';
 import { AdultModelsCsvImport } from '@/components/personalities/AdultModelsCsvImport';
 import { BulkCreatePersonalities } from '@/components/personalities/BulkCreatePersonalities';
+import { PersonalityQualityPanel } from '@/components/personalities/PersonalityQualityPanel';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -576,9 +577,12 @@ export default function AdminPersonalities() {
       backHref={null}
       config={tableConfig}
       beforeTable={
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <BulkCreatePersonalities />
-        </div>
+        <>
+          <PersonalityQualityPanel />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <BulkCreatePersonalities />
+          </div>
+        </>
       }
       afterTable={
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
