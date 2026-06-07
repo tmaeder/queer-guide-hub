@@ -4,8 +4,12 @@ _2026-06-07. **Complete.** P0–P4 shipped; P3b rejected as a non-goal. avg
 completeness 33.8→82.1, image gap 48→19%, geo→0%. The remaining gaps
 (accessibility, target_groups, deep venue) are sourcing problems, not backfill
 problems — addressed by the admin capture UI (P2.5b) + venue ingestion, not
-automation. Deferred: venue-inheritance for accessibility (P2.5a), pride-subtype
-persistence (separate task), `cities.timezone` backfill for 349 events._
+automation. Also fixed end-to-end: **event tagging** — the whole frontend
+assumed an `events.tags` column that never existed (so saves 500'd and the public
+"Pride type" filter was dead at every layer); added the column, wired
+`search_events.p_tags`, and restored the pride-subtype selector. Deferred:
+venue-inheritance for accessibility (P2.5a, infra shipped, 0 yield today),
+`cities.timezone` backfill for 349 events (cities task, ~1 event of value)._
 
 ## Diagnosis (live, 2026-06-07)
 
