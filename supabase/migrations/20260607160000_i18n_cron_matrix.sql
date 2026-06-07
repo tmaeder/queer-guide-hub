@@ -44,8 +44,9 @@ BEGIN
   FOR i IN 1 .. array_length(v_pairs,1) LOOP
     tbl := v_pairs[i][1]; fld := v_pairs[i][2];
     FOREACH loc IN ARRAY v_locales LOOP
-      m := idx % 10;  -- 6 runs/hour, staggered across 10 minute-buckets
-      sched := format('%s,%s,%s,%s,%s,%s * * * *', m, m+10, m+20, m+30, m+40, m+50);
+      m := idx % 30;  -- 2 runs/hour, staggered across 30 minute-buckets
+      sched := format('%s,%s * * * *', m, m+30);  -- keeps peak concurrency ~5-6
+      -- (165 jobs / 30 buckets) so CF Workers AI isn't saturated.
       jobname := format('i18n_%s_%s_%s', tbl, fld, loc);
       PERFORM cron.schedule(jobname, sched, format($cmd$
         select net.http_post(
