@@ -101,7 +101,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
               className="w-7 h-7 fill-current animate-pulse text-primary"
             />
             <h6 className="text-base font-bold gradient-text">
-              The Queer Guide
+              Queer Guide
             </h6>
           </div>
           <DialogTitle>Welcome Back</DialogTitle>
@@ -175,7 +175,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
               </div>
               <div className="relative flex justify-center">
                 <span className="text-xs bg-background px-4 text-muted-foreground font-medium uppercase">
-                  New to The Queer Guide?
+                  New to Queer Guide?
                 </span>
               </div>
             </div>
