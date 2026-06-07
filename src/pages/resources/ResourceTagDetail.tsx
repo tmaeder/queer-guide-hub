@@ -32,6 +32,28 @@ export function ResourceTagDetail({
   const safeMode = useSafeMode();
   const ageAffirmation = useAgeAffirmation();
 
+  // Honour the SEO sensitivity gate: sensitive/adult tags not yet human-reviewed
+  // carry seo_indexable=false (enforce_tag_seo_sensitivity_gate). Keep the page
+  // reachable but inject noindex so unreviewed sensitive terms never enter search
+  // results (outing/mislabel-risk protection). Mirrors CityDetail's pattern.
+  const noIndex = selectedTag.seo_indexable === false;
+  React.useEffect(() => {
+    if (!noIndex) return;
+    let el = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    const hadTag = !!el;
+    const prev = el?.getAttribute('content') ?? null;
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute('name', 'robots');
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', 'noindex,nofollow');
+    return () => {
+      if (!hadTag) document.querySelector('meta[name="robots"]')?.remove();
+      else if (prev !== null) el?.setAttribute('content', prev);
+    };
+  }, [noIndex]);
+
   const primary =
     selectedTag.categories?.find((c) => c.is_primary) ?? selectedTag.categories?.[0];
   const parentName = primary?.parent_name ?? undefined;

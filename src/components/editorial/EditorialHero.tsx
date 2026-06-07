@@ -101,6 +101,7 @@ export function EditorialHero({
               className="absolute inset-0 h-full w-full object-cover"
             />
             {decoration === 'grid' && <GridDecor side />}
+            {!errored && <CreditTag credit={image.credit} />}
           </div>
         </div>
       </section>
@@ -133,6 +134,7 @@ export function EditorialHero({
         />
       )}
       {decoration === 'grid' && <GridDecor />}
+      {!errored && <CreditTag credit={image.credit} onDark />}
       <div className="relative z-[1] flex h-full flex-col justify-end gap-4 p-8 md:p-12 text-white">
         {eyebrow && (
           <p className="text-xs2 font-semibold uppercase tracking-wider text-white/80">
@@ -153,6 +155,26 @@ export function EditorialHero({
         {children && <div className="mt-2">{children}</div>}
       </div>
     </section>
+  );
+}
+
+/**
+ * CreditTag — small image attribution caption. Required for the CC-licensed
+ * Wikimedia Commons photography (author + licence + source). Sits in the
+ * bottom-right corner so it never competes with the overlaid headline.
+ */
+function CreditTag({ credit, onDark = false }: { credit?: string; onDark?: boolean }) {
+  if (!credit) return null;
+  return (
+    <span
+      className={cn(
+        'absolute bottom-1.5 right-2 z-[2] max-w-[60%] truncate text-2xs leading-tight',
+        onDark ? 'text-white/55' : 'text-muted-foreground/70',
+      )}
+      title={credit}
+    >
+      {credit}
+    </span>
   );
 }
 

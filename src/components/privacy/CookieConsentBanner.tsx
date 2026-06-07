@@ -27,8 +27,9 @@ export function CookieConsentBanner() {
               <div>
                 <p className="text-base font-semibold mb-2">Cookie Settings</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  We use cookies to enhance your experience, analyze site traffic, and personalize
-                  content. You can manage your preferences or learn more in our{' '}
+                  We use cookies to keep you signed in and remember your preferences — and, only if
+                  you allow it, to measure basic, anonymous usage so we can improve. No ad trackers.
+                  No data selling. You can manage your choices or read more in our{' '}
                   <LocalizedLink to="/legal" className="underline hover:text-foreground">
                     Legal Hub
                   </LocalizedLink>

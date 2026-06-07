@@ -232,12 +232,6 @@ verify_jwt = false
 [functions.pipeline-enrich-country]
 verify_jwt = false
 
-[functions.pipeline-enrich-country-editorial]
-verify_jwt = false
-
-[functions.enrich-wolfram]
-verify_jwt = false
-
 [functions.pipeline-enrich-events]
 verify_jwt = false
 
@@ -463,6 +457,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.event-agentic-enrich]
+verify_jwt = false
+
+[functions.pipeline-classify-personhood]
 verify_jwt = false
 
 # Passkey ops: enroll/verify-enrollment do a manual JWT check in code; the

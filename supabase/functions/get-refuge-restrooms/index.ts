@@ -2,6 +2,9 @@ import { getCorsHeaders } from '../_shared/supabase-client.ts'
 
 const REFUGE_API = 'https://www.refugerestrooms.org/api/v1/restrooms'
 
+// The Refuge Restrooms API rejects per_page > 100 with a 400. Clamp to its max.
+const MAX_PER_PAGE = 100
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
 
@@ -37,7 +40,13 @@ Deno.serve(async (req) => {
     const hasLocation = lat && lng
     const basePath = hasLocation ? `${REFUGE_API}/by_location` : REFUGE_API
 
-    const params = new URLSearchParams({ page, per_page: perPage })
+    // Clamp per_page to the upstream max; values > 100 return a 400.
+    const perPageNum = Number(perPage)
+    const clampedPerPage = String(
+      Number.isFinite(perPageNum) ? Math.min(Math.max(perPageNum, 1), MAX_PER_PAGE) : 100,
+    )
+
+    const params = new URLSearchParams({ page, per_page: clampedPerPage })
     if (hasLocation) {
       params.append('lat', lat!)
       params.append('lng', lng!)
@@ -50,11 +59,24 @@ Deno.serve(async (req) => {
       headers: { 'User-Agent': 'Queer Guide App' },
     })
 
+    // Refuge is an external, best-effort source. If it errors (4xx/5xx) or
+    // returns a non-array body, degrade gracefully to an empty list so the
+    // map layer simply shows no restrooms instead of spamming 500s on pan/zoom.
     if (!response.ok) {
-      throw new Error(`Refuge API error: ${response.status}`)
+      console.warn(`Refuge API error: ${response.status} for ${apiUrl}`)
+      return new Response('[]', {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     const data = await response.json()
+
+    if (!Array.isArray(data)) {
+      console.warn('Refuge API returned non-array body')
+      return new Response('[]', {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     const restrooms = data.map((r: Record<string, unknown>) => ({
       id: r.id,
@@ -80,10 +102,11 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error('Error fetching restrooms:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-    )
+    // Network failure / timeout reaching the external Refuge API. Degrade to an
+    // empty list rather than surfacing a 500 to every map pan/zoom.
+    console.error('Error fetching restrooms:', error instanceof Error ? error.message : error)
+    return new Response('[]', {
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+    })
   }
 })
