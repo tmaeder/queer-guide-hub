@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Newspaper, AlertCircle, GitMerge } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { NewsQualityPanel } from '@/components/admin/news/NewsQualityPanel';
 
 // News pipeline observability — sources health, staging, dedup audit.
 
@@ -74,6 +75,9 @@ export default function NewsTab() {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Content-quality coverage scorecard */}
+      <NewsQualityPanel />
+
       {/* Staging stats */}
       <div className="border border-border rounded-element bg-background overflow-hidden">
         <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2">
