@@ -15,6 +15,8 @@ interface UseTriageKeyboardOptions {
   onSkip: () => void;
   onFlag: () => void;
   onToggleCheck: () => void;
+  /** Optional: undo the last approve/reject (U key). */
+  onUndo?: () => void;
   enabled: boolean;
 }
 
@@ -27,6 +29,7 @@ export function useTriageKeyboard({
   onSkip,
   onFlag,
   onToggleCheck,
+  onUndo,
   enabled,
 }: UseTriageKeyboardOptions) {
   const actions = useMemo(
@@ -36,8 +39,9 @@ export function useTriageKeyboard({
       s: onSkip,
       f: onFlag,
       ' ': onToggleCheck,
+      ...(onUndo ? { u: onUndo } : {}),
     }),
-    [onApprove, onReject, onSkip, onFlag, onToggleCheck],
+    [onApprove, onReject, onSkip, onFlag, onToggleCheck, onUndo],
   );
 
   useListKeyboard({ items, activeId, onNavigate, actions, enabled });

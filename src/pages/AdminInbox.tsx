@@ -17,6 +17,7 @@ const SHORTCUTS: { keys: string; label: string }[] = [
   { keys: 'R', label: 'Reject' },
   { keys: 'S', label: 'Skip' },
   { keys: 'F', label: 'Flag' },
+  { keys: 'U', label: 'Undo last approve / reject' },
   { keys: 'Space', label: 'Select / deselect' },
   { keys: '?', label: 'Show this help' },
 ];
