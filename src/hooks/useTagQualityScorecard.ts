@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface TagQualityScorecard {
   active_total: number;
   mean_score: number | null;
+  mean_confidence: number | null;
   scored: number;
   gaps: {
     description: number;
@@ -20,6 +21,12 @@ export interface TagQualityScorecard {
     p40_60: number;
     p60_80: number;
     p80_100: number;
+  };
+  review?: {
+    human_reviewed: number;
+    reviewed: number;
+    auto: number;
+    unverified: number;
   };
   sensitive_unreviewed: number;
 }

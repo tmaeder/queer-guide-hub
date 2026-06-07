@@ -29,7 +29,7 @@ export function TagQualityPanel() {
   const { data } = useTagQualityScorecard();
   if (!data || !data.scored) return null;
 
-  const { mean_score, scored, active_total, gaps, buckets, sensitive_unreviewed } = data;
+  const { mean_score, mean_confidence, scored, active_total, gaps, buckets, sensitive_unreviewed } = data;
   const maxBucket = Math.max(1, ...BUCKETS.map((b) => buckets[b.key] ?? 0));
 
   return (
@@ -43,6 +43,9 @@ export function TagQualityPanel() {
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Stat label={`Mean score (${scored}/${active_total} scored)`} value={mean_score ?? 0} />
+          {mean_confidence != null && (
+            <Stat label="Mean confidence" value={mean_confidence} />
+          )}
           {sensitive_unreviewed > 0 && (
             <Stat label="Sensitive · unreviewed" value={sensitive_unreviewed} hardFail />
           )}
