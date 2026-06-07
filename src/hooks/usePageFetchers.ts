@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAbortableQuery } from '@/hooks/useAbortableQuery';
 import type { Tables } from '@/integrations/supabase/types';
+import { logCmsAudit } from '@/lib/admin-audit';
 
 const STALE = 5 * 60_000;
 const STALE_LONG = 30 * 60_000;
@@ -755,6 +756,7 @@ export async function updateRowsByIds(
     .from(table as never)
     .update(update as never)
     .in('id', ids);
+  if (!error) void logCmsAudit(table, ids, 'bulk_update');
   return { error: error as Error | null };
 }
 
@@ -982,6 +984,7 @@ export async function deleteRowsByIds(
     .from(table as never)
     .delete()
     .in('id', ids);
+  if (!error) void logCmsAudit(table, ids, 'bulk_delete');
   return { error: error ? { message: error.message } : null };
 }
 
