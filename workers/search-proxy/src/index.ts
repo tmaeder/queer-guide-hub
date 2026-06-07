@@ -26,7 +26,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 		tracesSampleRate: 0.1,
 	});
 }
-import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities } from "./supabase";
+import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities, fetchDisplayMap } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
@@ -205,9 +205,10 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// pipeline takes ~6s for an essentially random ranking. Route it to
 	// the popular-entities path (sub-200ms) instead.
 	if (isBareLgbtqQuery(tokens)) {
-		// First try the precomputed popular entities (fast path).
+		// First try the precomputed popular entities (fast path). Hydrate display
+		// fields so they don't render as empty cards.
 		const popular = await popularEntities(env, ["venue", "event"], hitsPerPage * (page + 1));
-		let hits: Array<Record<string, unknown>> = popular as Array<Record<string, unknown>>;
+		let hits: Array<Record<string, unknown>> = await hydratePopular(env, popular);
 
 		// Fallback: if the popular view returns nothing, browse featured docs
 		// from Postgres (search_hybrid with an empty query + is_featured filter
@@ -342,7 +343,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// Cold-start fallback if starved (relevance order only).
 	if (!explicitSort && ranked.length < 5) {
 		const popular = await popularEntities(env, pgTypes, 30);
-		ranked = dedupeById([...ranked, ...popular.map((p) => ({ ...p, _source: "popular", _rankingScore: 0.1 }))]);
+		ranked = dedupeById([...ranked, ...(await hydratePopular(env, popular))]);
 	}
 
 	// Optional reranker on top-20.
@@ -712,9 +713,38 @@ type FuseItem = {
 };
 
 function itemId(h: FuseItem): string | null {
-	if (h.id) return `${h.type || h.content_type || "x"}:${h.id}`;
-	if (h.content_id) return `${h.content_type}:${h.content_id}`;
-	return null;
+	const id = h.id ?? h.content_id ?? h.objectID;
+	if (!id) return null;
+	return `${h.type ?? h.content_type ?? "x"}:${id}`;
+}
+
+// Popular-entity rows from v_popular_entities are just {content_type, content_id,
+// score} — using them as hits directly renders empty cards. Hydrate display
+// fields and drop any that can't be resolved.
+async function hydratePopular(
+	env: Env,
+	popular: Array<{ content_type: string; content_id: string; score?: number }>,
+): Promise<FuseItem[]> {
+	if (!popular.length) return [];
+	const display = await fetchDisplayMap(env, popular);
+	const out: FuseItem[] = [];
+	for (const p of popular) {
+		const d = display.get(`${p.content_type}:${p.content_id}`);
+		if (!d?.title) continue; // skip un-hydratable rows instead of emitting null cards
+		out.push({
+			objectID: p.content_id,
+			type: p.content_type,
+			title: d.title,
+			slug: d.slug,
+			imageUrl: d.image_url,
+			city: d.city,
+			country: d.country,
+			location: [d.city, d.country].filter(Boolean).join(", ") || undefined,
+			_source: "popular",
+			_rankingScore: 0.1,
+		});
+	}
+	return out;
 }
 
 function dedupeById(list: FuseItem[]): FuseItem[] {
