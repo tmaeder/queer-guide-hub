@@ -133,7 +133,7 @@ async function fetchWikipediaFullExtract(title: string): Promise<string | null> 
 }
 
 async function fetchOsmCoords(name: string, country?: string): Promise<{ lat: number; lon: number } | null> {
-  const q = country ? `${name}, ${country}` : name
+  const _q = country ? `${name}, ${country}` : name
   const d = await fetchJson(
     `https://nominatim.openstreetmap.org/search?format=json&limit=1&city=${encodeURIComponent(name)}${country ? `&country=${encodeURIComponent(country)}` : ''}`,
     { 'User-Agent': WP_UA, Accept: 'application/json' },

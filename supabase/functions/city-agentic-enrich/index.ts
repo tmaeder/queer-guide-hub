@@ -19,7 +19,7 @@ const AUTO_APPLY_CONFIDENCE = 0.8
 const GET_TIMEOUT = 10_000
 const MAX_BODY_BYTES = 400_000
 const WP_UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
-const GATED_FIELDS = ['lgbt_friendly_rating', 'safety_notes', 'editorial_hook'] as const
+const _GATED_FIELDS = ['lgbt_friendly_rating', 'safety_notes', 'editorial_hook'] as const
 
 function normalizeUrl(u: string): string { const t = (u ?? '').trim(); return t && !/^https?:\/\//i.test(t) ? `https://${t}` : t }
 
