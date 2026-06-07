@@ -79,6 +79,24 @@ export function AdminDataTable<TData extends { id: string }>({
   }, [columns]);
 
   const {
+    presets,
+    save: savePreset,
+    remove: removePreset,
+    get: getPreset,
+    setDefault: setDefaultPreset,
+    getDefault: getDefaultPreset,
+  } = useFilterPresets(tableName);
+
+  // Resolve the view to apply on first load: ?view=<id> wins, else the saved
+  // default. Applied via initial table state (not an effect) so there's no
+  // setState-in-effect / render-loop risk.
+  const initialView = useMemo(() => {
+    const viewId = new URLSearchParams(window.location.search).get('view');
+    return (viewId ? getPreset(viewId) : getDefaultPreset()) ?? null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- resolve once at mount from localStorage + URL
+  }, []);
+
+  const {
     state,
     setSearch,
     setFilter,
@@ -92,18 +110,11 @@ export function AdminDataTable<TData extends { id: string }>({
     toggleColumnVisibility,
     setGrouping,
   } = useAdminTableState({
-    defaultSort,
+    defaultSort: initialView?.sorting ?? defaultSort,
     defaultPageSize,
     defaultColumnVisibility,
-    defaultFilters,
+    defaultFilters: initialView ? initialView.filters : defaultFilters,
   });
-
-  const {
-    presets,
-    save: savePreset,
-    remove: removePreset,
-    get: getPreset,
-  } = useFilterPresets(tableName);
 
   const { data, totalCount, isLoading, isFetching, refetch } = useAdminTableQuery<TData>({
     tableName,
@@ -176,6 +187,14 @@ export function AdminDataTable<TData extends { id: string }>({
     }
     if (preset.search) setSearch(preset.search);
     if (preset.sorting) toggleSort(preset.sorting.column);
+    // Reflect the active view in the URL so it's shareable and sticky on reload.
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', id);
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // ignore — URL sync is best-effort
+    }
   };
 
   const handleSavePreset = (name: string) => {
@@ -207,6 +226,8 @@ export function AdminDataTable<TData extends { id: string }>({
         onSavePreset={handleSavePreset}
         onApplyPreset={handleApplyPreset}
         onDeletePreset={removePreset}
+        onSetDefaultPreset={setDefaultPreset}
+        defaultPresetId={getDefaultPreset()?.id}
         groupableColumns={groupableColumns}
         grouping={state.grouping}
         onGroupingChange={setGrouping}

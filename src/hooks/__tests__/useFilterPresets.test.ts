@@ -64,6 +64,27 @@ describe('useFilterPresets', () => {
     expect(result.current.get('nope')).toBeNull();
   });
 
+  it('marks one preset as default and clears it on the rest', () => {
+    let counter = 0;
+    vi.mocked(crypto.randomUUID).mockImplementation(
+      () => `uuid-${counter++}` as unknown as `${string}-${string}-${string}-${string}-${string}`,
+    );
+    const { result } = renderHook(() => useFilterPresets('def'));
+    act(() => {
+      result.current.save('A', { filters: [], debouncedSearch: '', sorting: [] });
+      result.current.save('B', { filters: [], debouncedSearch: '', sorting: [] });
+    });
+    const [first, second] = result.current.presets.map((p) => p.id);
+    act(() => result.current.setDefault(first));
+    expect(result.current.getDefault()?.id).toBe(first);
+    // setting another default moves the flag
+    act(() => result.current.setDefault(second));
+    expect(result.current.getDefault()?.id).toBe(second);
+    // toggling the current default off leaves no default
+    act(() => result.current.setDefault(second));
+    expect(result.current.getDefault()).toBeNull();
+  });
+
   it('should limit to 10 presets', () => {
     let counter = 0;
     vi.mocked(crypto.randomUUID).mockImplementation(() => `uuid-${counter++}` as unknown as `${string}-${string}-${string}-${string}-${string}`);

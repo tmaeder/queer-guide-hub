@@ -106,4 +106,6 @@ export interface FilterPreset {
   filters: Record<string, unknown>;
   search: string;
   sorting: AdminTableState['sorting'];
+  /** When true, this view is applied on page load (one default per table). */
+  isDefault?: boolean;
 }
