@@ -31,7 +31,9 @@ export function PersonalityQualityPanel() {
           <Stat label="Archived (unanchored adult)" value={data.archived.toLocaleString()} />
         </div>
         <div className="flex flex-wrap gap-2">
+          <Stat label="Sourced connection" value={data.has_connection.toLocaleString()} />
           <Stat label="Needs human review (thin)" value={data.triage_insufficient.toLocaleString()} />
+          <Stat label="Flagged non-person" value={data.flagged_nonperson.toLocaleString()} />
           <Stat label="Needs attention" value={data.needs_attention.toLocaleString()} />
           <Stat label="Bio-extractable" value={data.bio_extractable.toLocaleString()} />
           <Stat

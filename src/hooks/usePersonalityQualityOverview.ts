@@ -10,6 +10,8 @@ export interface PersonalityQualityOverview {
   pending_requeue: number;
   needs_attention: number;
   bio_extractable: number;
+  has_connection: number;
+  flagged_nonperson: number;
   low_confidence_matches: number;
   computed_at: string;
 }
