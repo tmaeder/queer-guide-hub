@@ -59,7 +59,8 @@ Both write per-row via the Management API (bulk venue/personality writes time ou
 - **High-confidence dup merges** — 31 near-certain duplicates (same name+city + identical real domain/phone) merged via the real `merge_venues` RPC (full reparent + slug-redirect + audit; run in a tx with the admin JWT claim set). The ~300 uncorroborated same-name clusters left for human review at `/admin/duplicates`.
 - **Personality QID validation** — `scripts/validate-personality-qids.mjs`: re-checked all 3,614 QIDs against Wikidata P31; **425 confirmed non-human links nulled** + flagged `needs_attention` (kept ones with no P31 evidence).
 - **Venue images** — `scripts/backfill-venue-ogimage.mjs`: sourced real `og:image`/`twitter:image` from venues' own websites (rejects favicons/svg/ico, forces https). ✅ DONE: 4,470 processed, **1,099 real images** (25%). Foursquare/TomTom stored data holds no photos for imageless venues; the remaining ~16k imageless venues have no website → need a paid photo API (Google Places).
-- **Coordinate-proximity dup merges** — 62 same-name venues within 75m of each other merged (certain same-place, even without shared domain/phone).
+- **Coordinate-proximity dup merges** — 62 same-name venues within 75m of each other merged (certain same-place, even without shared domain/phone). Platform-ID dedup checked (foursquare/tripadvisor/external) — 0 genuine dupes (collisions were cross-source coincidental).
+- **Minor/adult contradictions resolved** — the 4 personalities born <18y ago yet `is_adult` were all bad birth-dates on adult performers (e.g. "born 2100/2017") → birth_date nulled, `is_adult` kept, flagged. Full sweep: 0 future births/deaths, 0 death-before-birth remain.
 - One-off `classify-relevance-backfill` edge fn **deleted** (cleanup done).
 
 **⏭️ Genuinely remaining (needs human, budget, or data that doesn't exist):**
