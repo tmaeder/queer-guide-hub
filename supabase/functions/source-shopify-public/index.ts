@@ -36,26 +36,22 @@ function defaultSlug(shopDomain: string): string {
 function makeAdapter(shopDomain: string, sourceSlug: string): SourceAdapter {
   return {
     name: sourceSlug, entityType: 'marketplace',
+    // Single page (config.offset = page number). The handler streams page-by-page
+    // so memory stays bounded — fetching the whole 7k+ catalog at once OOMs the
+    // worker (HTTP 546). Returns [] past the last page.
     async fetch(config: AdapterConfig): Promise<RawItem[]> {
-      const maxPages = Number(config.filters?.maxPages ?? 40)
-      const out: RawItem[] = []
-      for (let page = 1; page <= maxPages; page++) {
-        const url = `https://${shopDomain}/products.json?limit=${PER_PAGE}&page=${page}`
-        const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
-        if (!res.ok) {
-          if (page === 1) throw new Error(`products.json ${res.status} for ${shopDomain}`)
-          break // ran past the last page
-        }
-        const data = await res.json() as { products?: PublicProduct[] }
-        const products = data.products || []
-        if (products.length === 0) break
-        for (const p of products) {
-          if (!p.handle) continue
-          out.push({ sourceId: `${sourceSlug}:${p.handle}`, data: p as unknown as Record<string, unknown> })
-        }
-        if (products.length < PER_PAGE) break // last page
+      const page = Number(config.offset ?? 1)
+      const url = `https://${shopDomain}/products.json?limit=${PER_PAGE}&page=${page}`
+      const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
+      if (!res.ok) {
+        if (page === 1) throw new Error(`products.json ${res.status} for ${shopDomain}`)
+        return []
       }
-      return out
+      const data = await res.json() as { products?: PublicProduct[] }
+      const products = data.products || []
+      return products
+        .filter(p => p.handle)
+        .map(p => ({ sourceId: `${sourceSlug}:${p.handle}`, data: p as unknown as Record<string, unknown> }))
     },
     normalize(raw: RawItem): NormalizedItem {
       const p = raw.data as unknown as PublicProduct
@@ -94,15 +90,30 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
     if (!shopDomain) return jsonResponse(skippedResponse('missing_config', ['shop_domain']), 200, req)
     const sourceSlug = body.source_slug || defaultSlug(shopDomain)
     const adapter = makeAdapter(shopDomain, sourceSlug)
-    const config: AdapterConfig = {
-      batchSize: body.batch_size || PER_PAGE,
-      filters: { maxPages: body.max_pages },
-      dryRun: body.dry_run || false, pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
+    const maxPages = Number(body.max_pages ?? 40)
+    const dryRun = body.dry_run || false
+
+    // Stream page-by-page: fetch one page, stage it, release it. Bounds memory so
+    // a 7k+ catalog doesn't OOM the worker. writeToStaging is idempotent on
+    // source_entity_id, so already-seen products are skipped cheaply.
+    let total = 0, written = 0, page = 0
+    for (page = 1; page <= maxPages; page++) {
+      const items = await adapter.fetch({ batchSize: PER_PAGE, offset: page })
+      if (items.length === 0) break
+      total += items.length
+      if (!dryRun) {
+        written += await writeToStaging(supabase, adapter, items, {
+          batchSize: PER_PAGE, offset: page, pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
+          targetTable: 'marketplace_listings',
+        })
+      }
+      if (items.length < PER_PAGE) break // last page
     }
-    const rawItems = await adapter.fetch(config)
-    if (config.dryRun) return jsonResponse({ success: true, items: rawItems.length, dry_run: true }, 200, req)
-    const written = await writeToStaging(supabase, adapter, rawItems, { ...config, targetTable: 'marketplace_listings' })
-    return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
+    return jsonResponse({
+      success: true, items: dryRun ? total : written, items_total: total,
+      items_processed: dryRun ? total : written, items_succeeded: dryRun ? total : written,
+      items_failed: 0, pages_fetched: page,
+    }, 200, req)
   } catch (error) {
     return errorResponse((error as Error).message, 500, req)
   }
