@@ -5093,6 +5093,7 @@ export type Database = {
           organizer_contact: string | null
           organizer_id: string | null
           organizer_name: string | null
+          pride_subtypes: string[] | null
           price_max: number | null
           price_min: number | null
           quality_score: number | null
@@ -5163,6 +5164,7 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
+          pride_subtypes?: string[] | null
           price_max?: number | null
           price_min?: number | null
           quality_score?: number | null
@@ -5233,6 +5235,7 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
+          pride_subtypes?: string[] | null
           price_max?: number | null
           price_min?: number | null
           quality_score?: number | null
