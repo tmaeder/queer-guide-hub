@@ -11,7 +11,7 @@ import { useEventQualitySummary } from '@/hooks/useEventQualitySummary';
 export function EventQualityPanel() {
   const { data } = useEventQualitySummary();
   if (!data) return null;
-  const { gaps, needsAttention, livenessFail, lowTrust, coverage, avgQuality, avgTrust, total } = data;
+  const { gaps, needsAttention, livenessFail, lowTrust, coverage, sourceGaps, avgQuality, avgTrust, total } = data;
   if (!gaps.length && !needsAttention && !livenessFail && !lowTrust && !coverage.length) return null;
 
   return (
@@ -41,6 +41,23 @@ export function EventQualityPanel() {
             <div className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2">
               {coverage.map((c) => (
                 <CoverageBar key={c.field} label={c.field} pct={c.pctComplete} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {sourceGaps.length > 0 && (
+          <div>
+            <div className="mb-2 text-13 text-muted-foreground">Leakiest sources — fix upstream</div>
+            <div className="flex flex-col gap-1.5">
+              {sourceGaps.map((s) => (
+                <div key={s.source} className="flex items-center gap-2 text-13">
+                  <span className="truncate font-medium">{s.source}</span>
+                  <span className="text-muted-foreground">· {s.total.toLocaleString()}</span>
+                  <span className="ml-auto shrink-0 text-muted-foreground tabular-nums">
+                    {s.pctMissing}% no {s.field}
+                  </span>
+                </div>
               ))}
             </div>
           </div>
