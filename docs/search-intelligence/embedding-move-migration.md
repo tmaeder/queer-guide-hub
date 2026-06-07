@@ -7,10 +7,14 @@ Parity-validated live before commit (keyword exact, related/recs 10/10, find_dup
 sibling HNSW confirmed used). search_documents.embedding column **kept** (mirror trigger keeps the sibling
 synced from the 9 unchanged writers) → trivial rollback (`embedding-move-phase1-rollback.sql`).
 
-**Phase 2 (disk reclaim, NOT done):** rewrite the 9 `search_documents_index_*` + `search_documents_sync_embedding`
-to stop writing `search_documents.embedding`, then `ALTER TABLE search_documents DROP COLUMN embedding`
-(~448 MB TOAST reclaim, search_documents 634 MB → ~192 MB) + drop the mirror trigger. Deferred — disk is no
-longer constrained (the perf win is fully delivered by Phase 1; Phase 2 is pure cleanup).
+**Phase 2 (disk reclaim) SHIPPED on prod 2026-06-07** — migration `20260606200000`. The 9
+`search_documents_index_*` writers no longer write `embedding` (programmatic transform: drop the column from
+the INSERT, the `ce.embedding` value, and the on-conflict SET — `content_embeddings` join kept);
+`search_documents_sync_embedding` now upserts the sibling directly; the Phase-1 mirror trigger dropped;
+`ALTER TABLE search_documents DROP COLUMN embedding` + `VACUUM FULL`. Result: **search_documents 634 MB → 88 MB**
+(better than the 192 MB estimate — VACUUM FULL also cleared GIN bloat), embeddings live solely in the 695 MB
+sibling, **DB 5.09 GB → 4.54 GB**. Writers re-index cleanly, all 4 readers + prod search verified green.
+The embedding move is now **fully complete**.
 
 ## Why
 
