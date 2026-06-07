@@ -77,7 +77,15 @@ Truth Loop is **input-starved**: `event_sources` covers only 796/3,626; corrobor
   **community/admin capture** affordance on `/admin/events`; (c) a *careful,
   reviewed* rule-based `target_groups` pass from `event_type` + title keywords
   (sensitivity risk — mislabeling audience — so human-gated, not auto-applied).
-- **P3 — URL recovery + accessibility/target_groups LLM waves (whole corpus).**
+- **P3a — Venue proximity-linking. ✅ SHIPPED.** Migration `20260607200000`
+  links each unlinked event with a *precise* coord (not a P0 city-centroid) to
+  its nearest same-city venue within 50m. **+137 links** (all ≤48.5m, reversible).
+  Finding: only 644 unlinked events even have precise coords and just 148 sit near
+  a catalogued venue — so venue coverage is structurally capped (~90% of events
+  are genuinely not at a venue we catalogue: parks, one-offs, online, or no
+  precise coord). Deeper venue coverage needs venue *ingestion*, not event
+  backfill.
+- **P3b — URL recovery + accessibility/target_groups LLM waves (whole corpus).**
   Derive official URLs via web search (title+city), validate with
   `_shared/link-health.ts` `probeLink`, then run `researchEnrichEventFromPage()`
   for the moat fields. Big-spend, highest-moat.
