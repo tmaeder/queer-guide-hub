@@ -407,6 +407,7 @@ export const UniversalSearchBar = () => {
                   aria-expanded={isOpen}
                   aria-controls="qg-search-listbox"
                   aria-haspopup="listbox"
+                  aria-activedescendant={resultsFocused !== null ? `result-${resultsFocused}` : undefined}
                   placeholder={placeholder}
                   value={query}
                   onChange={(e) => {
