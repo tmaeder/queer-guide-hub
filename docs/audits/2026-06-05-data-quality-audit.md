@@ -68,7 +68,8 @@ Both write per-row via the Management API (bulk venue/personality writes time ou
 | Item | Why it can't be auto-finished |
 |-----|------|
 | ~~venue dup clusters~~ → **DONE (reviewed 2026-06-07)** | reviewed every remaining same-name/same-city cluster: merged by ≤75m proximity, ≤2km, matching-address (missing coords), and ≤25km intra-metro (geocoder variance, not real branches for this domain). **~167 merged; 1 cluster left** (a lone pair 70km apart — genuinely possibly-distinct, left for human). All via the audited reversible `merge_venues` RPC. |
-| ~17k imageless venues with **no website** | need a photo API (Google Places/Foursquare) — no API key/budget |
+| ~16k imageless venues with **no website** | **Built + deployed** `venue-photo-foursquare` (Foursquare 2025 Places API, coords-validated within 400m → real venue photos) + driver `scripts/backfill-venue-photos.mjs`. **Blocked on provider billing:** Foursquare account returns 429 "no API credits remaining"; `GOOGLE_PLACES_API_KEY` unset. → add Foursquare credits (or set a Google key) then run the driver — ready. |
+| Venue descriptions (85% thin) | **Not auto-filled — deliberate.** No external source provides venue prose; deterministic templates surfaced bad geo data ("St. Gallen, Germany") + read as filler; LLM prose makes unverifiable claims about real safe-spaces (trust/safety risk). Needs editorial input. Side-fix: 41 venues with wrong `country_id` vs their city corrected. |
 | 3 minors flagged `is_adult` | needs human judgment (wrong birth_date vs wrong flag) |
 | Personality/venue descriptions (thin) | content generation/sourcing — agentic-enrich budget |
 | Data floor | ~2,540 personalities Wikidata lacks; ~363 remote venues no nearby city; ~2,600 news paywalled/dead-URL; non-geographic news |
