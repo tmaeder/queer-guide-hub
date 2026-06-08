@@ -58,7 +58,7 @@ Deno.serve(async (req: Request) => {
   const remaining = ids ? batchLimit : Math.min(batchLimit, dailyCap - (doneToday ?? 0))
 
   // Select candidates.
-  let candidates: CandidateRow[] = []
+  let candidates: CandidateRow[]
   if (ids) {
     const { data, error } = await supabase
       .from('personalities')

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Sparkles, X } from 'lucide-react';
 
 const HINT_KEY = 'qg_map_hint_v1';
@@ -10,25 +10,27 @@ const HINT_KEY = 'qg_map_hint_v1';
  */
 export function MapFirstRunHint({ count, ready }: { count: number; ready: boolean }) {
   const [show, setShow] = useState(false);
+  const triggered = useRef(false);
 
   useEffect(() => {
-    if (show || !ready || count <= 0) return;
+    if (triggered.current || !ready || count <= 0) return;
     try {
       if (localStorage.getItem(HINT_KEY)) return;
       localStorage.setItem(HINT_KEY, '1');
     } catch {
       return; // storage blocked → don't nag every load
     }
-    setShow(true);
-    const timer = setTimeout(() => setShow(false), 7000);
-    return () => clearTimeout(timer);
-  }, [ready, count, show]);
+    triggered.current = true;
+    const showTimer = setTimeout(() => setShow(true), 0);
+    const hideTimer = setTimeout(() => setShow(false), 7000);
+    return () => { clearTimeout(showTimer); clearTimeout(hideTimer); };
+  }, [ready, count]);
 
   if (!show) return null;
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-16 z-30 -translate-x-1/2 px-3">
-      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-border bg-background/95 py-1.5 pl-3 pr-1.5 backdrop-blur">
+    <div className="pointer-events-none absolute left-1/2 top-16 z-30 -translate-x-1/2 px-4">
+      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-border bg-background/95 py-1.5 pl-4 pr-1.5 backdrop-blur">
         <Sparkles className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
         <span className="text-13 text-foreground">
           {count.toLocaleString()} queer spots in view
