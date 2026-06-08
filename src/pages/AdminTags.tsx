@@ -31,6 +31,7 @@ import {
 } from '@/utils/excelExport';
 import { TagCategorizer } from '@/components/admin/TagCategorizer';
 import { TagQualityPanel } from '@/components/admin/TagQualityPanel';
+import { TagSuggestionsReviewPanel } from '@/components/admin/TagSuggestionsReviewPanel';
 import { SensitiveTagReviewPanel } from '@/components/admin/SensitiveTagReviewPanel';
 import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
 import TagMergeCandidates from '@/components/admin/TagMergeCandidates';
@@ -451,6 +452,7 @@ export default function AdminTags() {
         <>
           <TagQualityPanel />
           <SensitiveTagReviewPanel />
+          <TagSuggestionsReviewPanel />
           <div className="mb-6">
             <TagCategorizer />
           </div>

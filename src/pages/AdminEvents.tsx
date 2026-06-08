@@ -78,6 +78,7 @@ interface EventRow {
   website: string | null;
   ticket_url: string | null;
   tags: string[] | null;
+  pride_subtypes: string[] | null;
   images: string[] | null;
   accessibility_attributes: string[] | null;
   target_groups: string[] | null;
@@ -252,8 +253,13 @@ export default function AdminEvents() {
     }
 
     try {
+      // `tags` is a UI-only holder for pride sub-kinds — `events` has no `tags`
+      // column. Strip it from the payload and persist into `pride_subtypes`.
+      const { tags: prideTags, ...formRest } = formData;
       const eventData = {
-        ...formData,
+        ...formRest,
+        pride_subtypes:
+          formData.event_type === 'pride' && prideTags.length > 0 ? prideTags : null,
         venue_id: formData.venue_id || null,
         organizer_id: formData.organizer_id || null,
         latitude: formData.latitude,
@@ -311,7 +317,7 @@ export default function AdminEvents() {
       organizer_name: event.organizer_name || '',
       organizer_contact: event.organizer_contact || '',
       is_featured: event.is_featured,
-      tags: event.tags || [],
+      tags: event.pride_subtypes || [],
       images: event.images || [],
       accessibility_attributes: event.accessibility_attributes || [],
       target_groups: event.target_groups || [],
@@ -346,7 +352,7 @@ export default function AdminEvents() {
       { header: 'Organizer', accessor: (r) => r.organizer_name },
       { header: 'Is Free', accessor: (r) => formatBoolean(r.is_free) },
       { header: 'Featured', accessor: (r) => formatBoolean(r.is_featured) },
-      { header: 'Tags', accessor: (r) => formatArray(r.tags) },
+      { header: 'Pride subtypes', accessor: (r) => formatArray(r.pride_subtypes) },
       { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
     ];
     const allData = await fetchAllRows('events', '*', { column: 'title', ascending: true });
@@ -518,7 +524,7 @@ export default function AdminEvents() {
     () => ({
       tableName: 'events',
       select:
-        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_id,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at,trust_score,liveness_status',
+        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_id,organizer_name,organizer_contact,website,ticket_url,pride_subtypes,images,created_at,trust_score,liveness_status',
       columns,
       defaultSort: { column: 'start_date', direction: 'desc' },
       defaultPageSize: 50,
