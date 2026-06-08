@@ -18,7 +18,7 @@ import { GuidesStream } from '@/components/marketplace/GuidesStream';
 import { ContinueReadingRail } from '@/components/marketplace/ContinueReadingRail';
 import { ReadingStreakCaption } from '@/components/marketplace/ReadingStreakCaption';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
-import { isAdultListing } from '@/hooks/useAdultContent';
+import { isAdultListing, useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityChips';
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
 import { SavedSearchesButton } from '@/components/marketplace/SavedSearchesButton';
@@ -158,6 +158,7 @@ const LEGACY_SORT_MAP: Record<string, MarketplaceSort> = {
   za: 'newest',
 };
 const VIEW_MODE_KEY = 'qg.marketplace.viewMode';
+const SHOW_ADULT_KEY = 'qg.marketplace.showAdult';
 
 const Marketplace = () => {
   const { t } = useTranslation();
@@ -208,6 +209,23 @@ const Marketplace = () => {
     return init;
   });
 
+  // Default-SFW browse: adult/explicit hidden until an explicit 18+ opt-in.
+  // Persisted per-device; turning it on also records the age acknowledgement
+  // so the route-level AdultContentGate stays consistent.
+  const { acknowledge } = useAdultAcknowledgement();
+  const [includeAdult, setIncludeAdult] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(SHOW_ADULT_KEY) === '1';
+  });
+  const handleIncludeAdultChange = (next: boolean) => {
+    setIncludeAdult(next);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(SHOW_ADULT_KEY, next ? '1' : '0');
+    }
+    if (next) acknowledge();
+    setUrlParams({ page: undefined });
+  };
+
   const [_selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     if (typeof window === 'undefined') return 'grid';
@@ -250,8 +268,9 @@ const Marketplace = () => {
   const combinedFilters = useMemo<MarketplaceFiltersInput>(() => {
     const merged = { ...filters };
     if (activeTab !== 'all') merged.category = activeTab;
+    merged.includeAdult = includeAdult;
     return merged;
-  }, [filters, activeTab]);
+  }, [filters, activeTab, includeAdult]);
 
   const hasActiveFilters = useMemo(() => {
     const f = combinedFilters;
@@ -415,7 +434,12 @@ const Marketplace = () => {
           <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
             <div className="sticky top-0 z-20 border border-border rounded-element p-4 mb-6 bg-surface-container-low/95 backdrop-blur supports-[backdrop-filter]:bg-surface-container-low/80">
               <div className="mb-4">
-                <MarketplaceFilters initialSearch={qParam} onFiltersChange={handleFiltersChange} />
+                <MarketplaceFilters
+                  initialSearch={qParam}
+                  onFiltersChange={handleFiltersChange}
+                  includeAdult={includeAdult}
+                  onIncludeAdultChange={handleIncludeAdultChange}
+                />
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-4">
