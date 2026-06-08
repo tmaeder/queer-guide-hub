@@ -154,7 +154,7 @@ export function HotelSearchForm({
       <div className="flex flex-col gap-1" style={{ flex: '0 0 170px' }}>
         <Label className="text-xs">Type</Label>
         <Select value={hotelType} onValueChange={(v) => setHotelType(v as HotelTypeOption)}>
-          <SelectTrigger className="h-9">
+          <SelectTrigger className="h-9" aria-label="Accommodation type">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
