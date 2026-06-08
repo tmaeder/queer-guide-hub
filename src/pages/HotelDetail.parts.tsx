@@ -8,7 +8,6 @@ import {
   Mail,
   DollarSign,
   ExternalLink,
-  Wifi,
   Shield,
   Luggage,
 } from 'lucide-react';
@@ -17,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { Editable } from '@/components/admin/inline/Editable';
 import { EntityMap } from '@/components/map/EntityMap';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
@@ -179,21 +179,7 @@ export function HotelOverview({ hotel, t, onContentUpdated }: { hotel: HotelWith
           <CardContent><p className="text-sm">{hotel.queer_safety_notes}</p></CardContent>
         </Card>
       )}
-      {hotel.amenities && hotel.amenities.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle>{t('pages.hotelDetail.amenities', 'Amenities')}</CardTitle></CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {hotel.amenities.map((amenity, i) => (
-                <Badge key={i} variant="outline" className="gap-1">
-                  <Wifi className="w-3.5 h-3.5" />
-                  {amenity}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <AmenityDisplay amenities={hotel.amenities} />
       {hasMap && (
         <Card>
           <CardHeader><CardTitle>{t('pages.hotelDetail.location', 'Location')}</CardTitle></CardHeader>

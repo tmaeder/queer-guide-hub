@@ -559,3 +559,86 @@ Respond with JSON using these keys (null where unknown):
     return null
   }
 }
+
+// ---------------------------------------------------------------------------
+// Venue amenity extraction (Amenity Truth Engine)
+// ---------------------------------------------------------------------------
+
+export interface VenueAmenityExtraction {
+  amenities?: string[]                // MUST be slugs from the supplied canonical list
+  accessibility_attributes?: string[] // MUST be slugs from the supplied list  [REVIEW-GATED]
+  accessibility_notes?: string        // free text  [REVIEW-GATED]
+  citations?: { field: string; quote: string }[]
+  confidence?: number                 // 0.0-1.0 how well the text supported the extraction
+}
+
+const VENUE_AMENITY_KEYS = ['amenities', 'accessibility_attributes', 'accessibility_notes', 'citations', 'confidence']
+
+const VENUE_AMENITY_SYSTEM_PROMPT = `${BASE_CONTEXT}
+
+You extract AMENITIES and ACCESSIBILITY features for a venue from its PROVIDED description/tags. This is GROUNDED EXTRACTION, not creative writing.
+
+Hard rules:
+- Use ONLY facts stated in the PROVIDED TEXT. NEVER invent amenities or accessibility features.
+- amenities: array of slugs, chosen ONLY from the ALLOWED AMENITIES list. Omit anything not clearly stated. Do not output slugs outside the list.
+- accessibility_attributes [SENSITIVE]: array of slugs chosen ONLY from the ALLOWED ACCESSIBILITY list, and ONLY when the text explicitly states the feature. A wrong accessibility claim causes real-world harm — when in doubt, omit.
+- accessibility_notes [SENSITIVE]: one short factual sentence about access, only if the text supports it, else null.
+- citations: array of {field, quote} with the EXACT supporting phrase from the text for each accessibility claim.
+- confidence: 0.0-1.0 how well the text supported the amenity extraction.
+
+Respond ONLY with valid JSON. No markdown code blocks.`
+
+/**
+ * Extract venue amenities + accessibility from existing description/tags, constrained
+ * to the controlled vocabulary. Caller circuit-breaks, auto-applies amenities by
+ * confidence, and ALWAYS review-gates accessibility (attributes + notes).
+ */
+export async function extractVenueAmenitiesFromText(
+  supabase: SupabaseClient,
+  input: { name: string; category?: string | null; description?: string | null; tags?: string[] | null; canonicalAmenities: string[]; canonicalAccessibility: string[] },
+): Promise<VenueAmenityExtraction | null> {
+  if (!(await isOpenAIAvailable(supabase))) return null
+  const text = String(input.description ?? '').trim()
+  if (text.length < 80) return null   // not enough material to ground on
+
+  const tagLine = Array.isArray(input.tags) && input.tags.length ? `Tags: ${ud(input.tags.slice(0, 20).join(', '))}` : ''
+  const userPrompt = `Venue: ${ud(input.name)} | Category: ${ud(input.category || 'N/A')}
+ALLOWED AMENITIES (slugs): ${input.canonicalAmenities.join(', ')}
+ALLOWED ACCESSIBILITY (slugs): ${input.canonicalAccessibility.join(', ')}
+${tagLine}
+
+PROVIDED TEXT:
+${ud(text.slice(0, 4000))}
+
+Respond with JSON (empty arrays / null where unknown):
+{"amenities":[],"accessibility_attributes":[],"accessibility_notes":null,"citations":[{"field":"...","quote":"..."}],"confidence":0.0}`
+
+  try {
+    const result = await chatCompletion(supabase, {
+      messages: [
+        { role: 'system', content: VENUE_AMENITY_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.1,
+      max_tokens: 500,
+      response_format: { type: 'json_object' },
+    })
+    // CF Workers AI may return `content` already parsed as an object; coerce to string.
+    const raw = typeof result.content === 'string' ? result.content : JSON.stringify(result.content ?? '')
+    const parsed = parseAIResponse<VenueAmenityExtraction>(raw, VENUE_AMENITY_KEYS)
+    if (!parsed) return null
+    // Defense-in-depth: clamp model output to the allowed vocabulary even if it strays.
+    const amSet = new Set(input.canonicalAmenities)
+    const acSet = new Set(input.canonicalAccessibility)
+    return {
+      amenities: (parsed.amenities ?? []).filter((s) => amSet.has(s)),
+      accessibility_attributes: (parsed.accessibility_attributes ?? []).filter((s) => acSet.has(s)),
+      accessibility_notes: parsed.accessibility_notes,
+      citations: Array.isArray(parsed.citations) ? parsed.citations : [],
+      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
+    }
+  } catch (err) {
+    console.error('Venue amenity extraction failed:', (err as Error).message)
+    return null
+  }
+}
