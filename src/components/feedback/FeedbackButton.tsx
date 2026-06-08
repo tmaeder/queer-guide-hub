@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { insertRow } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { captureContext, captureScreenshot } from '@/utils/feedbackContext';
 import { feedbackCategories } from '@/config/feedbackCategories';
 
@@ -26,6 +27,7 @@ export function FeedbackButton() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
+  const isMobile = useIsMobile();
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -169,9 +171,14 @@ export function FeedbackButton() {
             aria-label="Share feedback"
             onClick={handleOpenClick}
             disabled={capturing}
-            className="fixed bottom-6 right-6 z-[1200] flex h-12 w-12 items-center justify-center bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-50"
+            className="fixed right-6 z-[1200] flex h-12 w-12 items-center justify-center bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-50"
             style={{
               visibility: capturing ? 'hidden' : 'visible',
+              // On mobile, clear the fixed bottom nav (h-14 + safe-area) so the
+              // FAB doesn't sit on top of the Home/Find tabs.
+              bottom: isMobile
+                ? 'calc(5rem + env(safe-area-inset-bottom, 0px))'
+                : '1.5rem',
             }}
           >
             <MessageSquarePlus size={22} />

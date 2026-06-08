@@ -54,7 +54,11 @@ function prefetchRoute(suggestion: SearchSuggestion) {
   }
 }
 
-function getPlaceholder(pathname: string, t: (k: string, d?: string) => string) {
+function getPlaceholder(
+  pathname: string,
+  t: (k: string, d?: string) => string,
+  isMobile: boolean,
+) {
   if (pathname.startsWith('/admin')) return t('search.placeholders.generic', 'Search...');
   if (pathname.startsWith('/hotels')) return t('search.placeholders.hotels', 'Search hotels...');
   if (pathname.startsWith('/events')) return t('search.placeholders.events', 'Find events...');
@@ -63,6 +67,9 @@ function getPlaceholder(pathname: string, t: (k: string, d?: string) => string) 
   if (pathname.startsWith('/news')) return t('search.placeholders.news', 'Read news...');
   if (pathname.startsWith('/personalities'))
     return t('search.placeholders.personalities', 'Meet personalities...');
+  // The full universal placeholder overflows the narrow mobile header input
+  // (it clipped to "Sear"). Use a short label on mobile.
+  if (isMobile) return t('search.placeholders.universalShort', 'Search…');
   return t('search.placeholders.universal', 'Search venues, events, people, places…');
 }
 
@@ -363,7 +370,10 @@ export const UniversalSearchBar = () => {
     localStorage.removeItem('recent-searches');
   }, []);
 
-  const placeholder = useMemo(() => getPlaceholder(location.pathname, t), [location.pathname, t]);
+  const placeholder = useMemo(
+    () => getPlaceholder(location.pathname, t, isMobile),
+    [location.pathname, t, isMobile],
+  );
 
   const inputHeight = isMobile ? 48 : 40;
   const iconSize = isMobile ? 20 : 16;
