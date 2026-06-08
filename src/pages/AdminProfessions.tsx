@@ -24,6 +24,8 @@ interface ProfessionRow {
   id: string;
   name: string;
   description: string | null;
+  category: string | null;
+  aliases: string[] | null;
   icon: string | null;
   color: string;
   is_active: boolean;
@@ -36,6 +38,8 @@ const columnHelper = createColumnHelper<ProfessionRow>();
 const emptyForm = {
   name: '',
   description: '',
+  category: '',
+  aliases: '',
   icon: '',
   color: 'hsl(var(--muted-foreground))',
   is_active: true,
@@ -64,6 +68,8 @@ export default function AdminProfessions() {
     setForm({
       name: row.name || '',
       description: row.description || '',
+      category: row.category || '',
+      aliases: (row.aliases || []).join(', '),
       icon: row.icon || '',
       color: row.color || 'hsl(var(--muted-foreground))',
       is_active: row.is_active,
@@ -77,13 +83,21 @@ export default function AdminProfessions() {
       toast({ title: 'Error', description: 'Name is required', variant: 'destructive' });
       return;
     }
+    const payload = {
+      ...form,
+      category: form.category.trim() || null,
+      aliases: form.aliases
+        .split(',')
+        .map((a) => a.trim().toLowerCase())
+        .filter(Boolean),
+    };
     try {
       if (editingId) {
-        const { error } = await crud.upsert(form, editingId);
+        const { error } = await crud.upsert(payload, editingId);
         if (error) throw error;
         toast({ title: 'Success', description: 'Profession updated' });
       } else {
-        const { error } = await crud.upsert(form, null);
+        const { error } = await crud.upsert(payload, null);
         if (error) throw error;
         toast({ title: 'Success', description: 'Profession created' });
       }
@@ -125,6 +139,19 @@ export default function AdminProfessions() {
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
+      columnHelper.accessor('category', {
+        header: 'Category',
+        cell: (info) => info.getValue() || '-',
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('aliases', {
+        header: 'Aliases',
+        cell: (info) => {
+          const a = info.getValue() || [];
+          return <span className="text-muted-foreground">{a.length}</span>;
+        },
+        meta: { hideable: true } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('description', {
         header: 'Description',
         cell: (info) => (
@@ -158,7 +185,7 @@ export default function AdminProfessions() {
   const tableConfig: AdminTableConfig<ProfessionRow> = useMemo(
     () => ({
       tableName: 'professions',
-      select: 'id,name,description,icon,color,is_active,sort_order,created_at',
+      select: 'id,name,description,category,aliases,icon,color,is_active,sort_order,created_at',
       columns,
       defaultSort: { column: 'sort_order', direction: 'asc' },
       defaultPageSize: 50,
@@ -205,6 +232,23 @@ export default function AdminProfessions() {
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Category</Label>
+                <Input
+                  value={form.category}
+                  onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                  placeholder="Performance, Arts, Media, Sports…"
+                />
+              </div>
+              <div>
+                <Label>Aliases</Label>
+                <Textarea
+                  value={form.aliases}
+                  onChange={(e) => setForm((f) => ({ ...f, aliases: e.target.value }))}
+                  rows={2}
+                  placeholder="Comma-separated raw variants that fold into this term (e.g. actress, film actor, voice actor)"
                 />
               </div>
               <div>
