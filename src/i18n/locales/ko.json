@@ -1614,7 +1614,8 @@
       "photos": "사진",
       "noPhotos": "사진 없음",
       "noEvents": "이 장소에서 예정된 이벤트가 없습니다",
-      "noReviews": "아직 리뷰가 없어요. 첫 번째 리뷰를 남겨 보세요!"
+      "noReviews": "아직 리뷰가 없어요. 첫 번째 리뷰를 남겨 보세요!",
+      "accessibility": "[KO] Accessibility"
     },
     "events": {
       "title": "이벤트",

@@ -1614,7 +1614,8 @@
       "photos": "写真",
       "noPhotos": "写真はありません",
       "noEvents": "このスポットでの今後のイベントはありません",
-      "noReviews": "まだレビューがありません。最初のレビューを書いてみましょう！"
+      "noReviews": "まだレビューがありません。最初のレビューを書いてみましょう！",
+      "accessibility": "[JA] Accessibility"
     },
     "events": {
       "title": "イベント",
