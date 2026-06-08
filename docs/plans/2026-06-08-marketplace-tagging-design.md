@@ -1,0 +1,87 @@
+# Marketplace Tagging & Categorisation — Design
+
+**Date:** 2026-06-08
+**Status:** Approved (brainstorming → planning)
+**Scope:** `/marketplace` — revive identity/values axis, richer browse facets, fix taxonomy hygiene, feed search/recommendations.
+
+## Problem (grounded in production)
+
+13,842 active products. Categorisation is **one-dimensional and coarse**, and three of four UI filter axes are **empty shells**.
+
+| Finding | Number |
+|---|---|
+| Active products | 13,842 |
+| `category='products'` | 99.98% (only 3 services) |
+| Real axis = `subcategory_slug` | **16 flat buckets**, adult-skewed (sex_toys 2931, apparel 2005, underwear 1758, bdsm 1676, hygiene 1403, fetish_wear 1244, jewelry 988, anal_toys 757, cock_rings 502, books_art 295, long tail) |
+| `category_id` FK populated | **8 of 17,372** → `marketplace_categories` taxonomy table is dead |
+| `community_owned_tags` | **0 of 17,372** → headline identity filter 100% empty, non-functional |
+| `unified_tag_assignments` for marketplace | **0** → "Value Tags" + "Product Tags" filters return nothing |
+| Subcategory assignment | **source-level mapping, not per-product** (ohmyfantasy→13 subcats, tomboyx→2) → cross-source inconsistency + misbucketing |
+| `lgbti_relevance_score` | **per-source flat defaults** (ohmyfantasy 0.60, others 0.80), not real per-item signal |
+| Brands | 312 distinct, 13,834 with brand (strong, underused signal) |
+| Thin descriptions | ~22% |
+
+**Ownership grain (critical):** `ohmyfantasy` (214 brands) and `misterb` (80 brands) are **aggregators** reselling mainstream wholesalers (Orion 1664, Dreamlove 813, Pipedream, Oxballs — NOT queer-owned). Queer-owned indies are the **single-brand sources** (TomboyX, Automic Gold, Ash + Chess, Super Gay Underwear, WeGan, Nothosaur). Ownership varies *inside* a source → must be detected **per-brand (312), not per-source (23) or per-product (13.8k)**.
+
+## Approach
+
+Blend of three: multi-axis facet model as the spine, data-first backfill to fill it, A-lite self-maintenance wrapper. Maximum data + browse win, minimum new scaffolding. Mirrors the existing Amenity/City/Venue Truth Engine house pattern.
+
+## §1 — Multi-axis taxonomy (the spine)
+
+Replace one flat axis with orthogonal axes:
+
+| Axis | Stored as | Values | Source |
+|---|---|---|---|
+| Type | `category` (keep) | products / services | exists |
+| Department | `subcategory_slug` (keep, re-derive per-product) | apparel, underwear, swimwear, jewelry, books_art, hygiene, **intimacy** (umbrella: sex_toys/anal/rings), bdsm_fetish, accessories | reclassify |
+| **Content rating** | NEW `content_rating` | sfw / suggestive / adult / explicit | derived |
+| Ownership | `community_owned_tags` (revive) | queer/trans/bipoc/women/disabled-owned, nonprofit | per-brand detect |
+| Attributes | `unified_tag_assignments` (revive) | material (leather/silicone/cotton), occasion (pride/drag/wedding/everyday), vibe, body-area, vegan, size-inclusive | free-extract + LLM |
+
+Highest-leverage move: **`content_rating`**. ~55% of catalog is explicit/fetish; without a safe-browsing axis the marketplace is unapproachable for the apparel/books/jewelry audience.
+
+**Decision:** `content_rating` default behaviour = **default-SFW + opt-in toggle**. Marketplace lands on SFW + suggestive; sticky "Show adult" toggle reveals explicit/fetish. Single config flag, reversible.
+
+## §2 — Backfill engine
+
+Three deterministic-first passes:
+
+1. **Brand ownership detect** — new `marketplace_brands` registry (312 rows). Web-grounded LLM classifies each brand → ownership labels + confidence + citation. Single-brand sources seed trivially; mainstream wholesalers → none. **Trust gate: every queer/trans/BIPOC-owned label routes to review queue before publish** (false claim or erasure of queer ownership is the trust-sensitive case). Approved labels fan out to `community_owned_tags` on all the brand's products.
+2. **Free re-extract** (zero cost) — reclassify `subcategory_slug` per-product from title/desc/brand into the new department vocab (replaces source-mapping); derive `content_rating` from department + keyword signals; mine material/occasion/vibe attributes literally present in text → `unified_tag_assignments`. Auto-applies. Also re-scores `lgbti_relevance_score` per-item (kills the flat-default problem).
+3. **LLM gap-fill** (circuit-broken `llm.marketplace-tag`, daily-capped) — only products the free pass left thin. Constrained to vocab. Attributes auto-apply ≥0.8; **content_rating downgrades (adult→sfw) always review-gated** (wrong-SFW is the harmful direction).
+
+## §3 — Self-maintenance (A-lite)
+
+- Daily `marketplace_tag_backfill` cron (batch ~150), empty-first selector `marketplace_due_for_tagging(limit)` — clone of `amenity_truth_backfill`. New ingested products tagged within a day.
+- Reuse review-queue pattern: `marketplace_review_queue` + `approve_/reject_` RPCs cloned from venue/amenity shape.
+- **No stored recompute score on `marketplace_listings`** — it fires a search-doc trigger; nightly 13.8k writes would storm the disk-constrained sync (the Amenity-engine gotcha). Selector ranks by `cardinality(tags)`; admin counts live.
+
+## §4 — Frontend
+
+- Revive the 3 dead filter axes (ownership, value-tags, attributes) — UI exists, returns nothing today.
+- Add `content_rating` toggle (default-SFW) + occasion chips (Pride / Drag / Wedding / Everyday) in the `marketplace_collections` chip slot.
+- Department facet → new umbrella vocab (intimacy groups the 3 adult buckets so SFW browse isn't adult-dominated).
+
+## §5 — Sequencing
+
+- **P0 — SHIPPED 2026-06-08** (migrations `20260608200000` + `20260608200001`). `marketplace_brands` registry (306 brands) + register/approve/reject RPCs (queer/trans/BIPOC require `p_confirm`) + storm-safe `run_marketplace_ownership_apply` cron. Seeded 7 well-documented queer-owned indies → 2,434 products tagged. Ownership filter verified live: "Queer-owned" = 2,434 (was 0). 299 brands remain `pending` for the admin review panel + later web-LLM detection.
+- **P1a — SHIPPED 2026-06-08** (migration `20260608210000`). `content_rating` STORED generated column (sfw/suggestive/adult/explicit) from a pure derivation fn — fixes the broken `sensitivity_flags` adult signal (whole departments were unflagged). Default-SFW browse + persisted 18+ opt-in toggle wired into `useMarketplace` (both query branches) + `MarketplaceFilters`; `isAdultListing` now reads `content_rating`. Distribution sfw 27.5 / suggestive 14.1 / adult 11.4 / explicit 47.0; default browse = 5,759 products.
+- **P1b** — free re-extract of subcategory + attributes (material/occasion/vibe → `unified_tag_assignments`) + per-item relevance re-score (replace flat per-source defaults). Pending.
+- **P2** — content_rating toggle + facet UI.
+- **P3** — LLM gap-fill + daily cron + review queue.
+
+## Key files (from exploration)
+
+- Schema: `supabase/migrations/00000000000000_baseline.sql` (marketplace tables 16574–16735; commit/category resolution 3185–3563)
+- `supabase/migrations/20260524220000_marketplace_community_owned_tags.sql`
+- `supabase/migrations/20260522163914_marketplace_facet_rpcs.sql` (subcategory_slug generated col + facet RPCs)
+- `supabase/functions/pipeline-normalize/index.ts` (243–247 category normalize)
+- `supabase/functions/pipeline-quality-score/index.ts` + `_shared/marketplace-pipeline-utils.ts`
+- `supabase/functions/classify-relevance-backfill/index.ts`
+- `src/pages/Marketplace.tsx`, `src/components/marketplace/MarketplaceFilters.tsx`, `src/hooks/useMarketplace.tsx`
+
+## Reference patterns to clone
+
+- Amenity Truth Engine (vocab + free-extract + LLM gate + review queue + daily cron + no-stored-score) — `_shared/amenity-normalize.ts`, `amenity-truth-backfill` edge fn.
+- City/Venue review-queue + approve/reject RPC shape.

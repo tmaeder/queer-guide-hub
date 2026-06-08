@@ -63,6 +63,15 @@ describe('adult helpers', () => {
     expect(isAdultListing(null)).toBe(false);
   });
 
+  it('isAdultListing prefers content_rating over sensitivity_flags', () => {
+    expect(isAdultListing({ content_rating: 'explicit' })).toBe(true);
+    expect(isAdultListing({ content_rating: 'adult' })).toBe(true);
+    expect(isAdultListing({ content_rating: 'suggestive' })).toBe(false);
+    expect(isAdultListing({ content_rating: 'sfw' })).toBe(false);
+    // content_rating wins even when the legacy flag disagrees.
+    expect(isAdultListing({ content_rating: 'sfw', sensitivity_flags: ['adult'] })).toBe(false);
+  });
+
   it('isAdultCategorySlug normalises hyphens / spaces / casing', () => {
     expect(isAdultCategorySlug('Fetish Gear')).toBe(true);
     expect(isAdultCategorySlug('fetish-gear')).toBe(true);
