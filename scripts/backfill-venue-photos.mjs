@@ -3,7 +3,10 @@
 // REQUIRES Foursquare account credits — bails if it sees sustained 429 (out of credits).
 // Run: SB_ANON=<anon jwt> node scripts/backfill-venue-photos.mjs
 const FN = 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/venue-photo-foursquare';
-const ANON = process.env.SB_ANON || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
+// Supabase anon (publishable) key — provide via env, do not hardcode:
+//   SB_ANON=$(... your project's anon key ...) node scripts/backfill-venue-photos.mjs
+const ANON = process.env.SB_ANON;
+if (!ANON) { console.error('SB_ANON env var required (Supabase anon key)'); process.exit(1); }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ts = () => new Date().toISOString().replace('T', ' ').slice(0, 19);
 

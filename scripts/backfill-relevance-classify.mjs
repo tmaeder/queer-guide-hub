@@ -3,7 +3,10 @@
 // drained. Resumable (the function tracks progress via classified_at). Personalities excluded.
 // Run: node scripts/backfill-relevance-classify.mjs
 const FN = 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/classify-relevance-backfill';
-const ANON = process.env.SB_ANON || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
+// Supabase anon (publishable) key — provide via env, do not hardcode:
+//   SB_ANON=$(... your project's anon key ...) node scripts/backfill-relevance-classify.mjs
+const ANON = process.env.SB_ANON;
+if (!ANON) { console.error('SB_ANON env var required (Supabase anon key)'); process.exit(1); }
 const TYPES = ['venue', 'event', 'marketplace', 'news'];
 const BATCH = 25;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
