@@ -116,7 +116,7 @@ export async function llmChatCompletion(
   for (let attempt = 0; ; attempt++) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
-    let retryable = false
+    let retryable: boolean
 
     try {
       const response = await fetch(`${baseUrl}/chat/completions`, {
