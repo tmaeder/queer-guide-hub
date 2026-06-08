@@ -45,6 +45,9 @@ interface MarketplaceFiltersProps {
     relevanceMin?: number;
     verifiedWithinDays?: number;
   }) => void;
+  /** Default-SFW browse toggle (owned by the page; persisted + 18+ opt-in). */
+  includeAdult?: boolean;
+  onIncludeAdultChange?: (next: boolean) => void;
 }
 
 const COMMUNITY_OWNED_OPTIONS: Array<{ value: string; label: string }> = [
@@ -85,6 +88,8 @@ const businessTypes = ['online', 'physical', 'both'];
 export function MarketplaceFilters({
   initialSearch = '',
   onFiltersChange,
+  includeAdult = false,
+  onIncludeAdultChange,
 }: MarketplaceFiltersProps) {
   const [search, setSearch] = useState(initialSearch);
   // Re-sync the input when the URL `?q=` changes externally (back/forward
@@ -284,6 +289,20 @@ export function MarketplaceFilters({
           )}
         </Button>
       </div>
+
+      {onIncludeAdultChange && (
+        <div className="flex items-center justify-between gap-4 rounded-element border border-border px-4 py-2">
+          <Label htmlFor="show-adult" className="text-13 text-muted-foreground">
+            Show adult products (18+)
+          </Label>
+          <Switch
+            id="show-adult"
+            checked={includeAdult}
+            onCheckedChange={onIncludeAdultChange}
+            aria-label="Show adult products"
+          />
+        </div>
+      )}
 
       {showAllFilters && (
         <div className="flex flex-col gap-4 pt-2">
