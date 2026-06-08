@@ -20,7 +20,7 @@ import {
 
 const LLM_BATCH     = 25
 const DEFAULT_LIMIT = 300
-const WALL_CLOCK_MS = 50_000
+const WALL_CLOCK_MS = 110_000
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -33,23 +33,21 @@ Deno.serve(async (req) => {
     const sourceType = body.source_type as string | undefined
     const dryRun     = body.dry_run ?? false
 
+    // DB-level filter for "not yet translated" (de key absent). Ordering by
+    // updated_at is unreliable here because other jobs bump timestamps, so we
+    // filter on the marker directly — guarantees forward progress + termination.
     let q = supabase
       .from('marketplace_listings')
       .select('id, title, title_i18n')
       .eq('status', 'active')
-      .order('updated_at', { ascending: true, nullsFirst: true })
+      .filter('title_i18n->>de', 'is', null)
+      .order('id', { ascending: true })
       .limit(limit)
     if (sourceType) q = q.eq('source_type', sourceType)
 
     const { data: rows, error } = await q
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
-    // Only rows not yet translated. German has many umlaut-free words ("Slip mit
-    // Vibrator"), so don't gate on umlauts — translate all; the prompt returns
-    // already-English titles unchanged. The title_i18n.de marker makes it idempotent.
-    const todo = (rows ?? []).filter((r) => {
-      const i18n = (r.title_i18n as Record<string, unknown> | null) ?? {}
-      return !('de' in i18n)
-    })
+    const todo = rows ?? []
     if (todo.length === 0) {
       return jsonResponse({ success: true, items: 0, message: 'nothing to translate' }, 200, req)
     }
