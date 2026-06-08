@@ -78,22 +78,16 @@ function GroupNode({ data, selected, id }: NodeProps) {
             style={{ color: scheme.accent }}
           />
         ) : (
-          <span
-            className="flex-1 text-sm font-medium cursor-text truncate"
+          <button
+            type="button"
+            className="flex-1 text-sm font-medium cursor-text truncate bg-transparent border-0 p-0 text-left"
             style={{ color: scheme.accent }}
-            role="button"
-            tabIndex={0}
             aria-label={`Edit group label: ${label}`}
             onDoubleClick={() => setEditing(true)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setEditing(true);
-              }
-            }}
+            onClick={() => setEditing(true)}
           >
             {label}
-          </span>
+          </button>
         )}
         <Popover>
           <PopoverTrigger asChild>
