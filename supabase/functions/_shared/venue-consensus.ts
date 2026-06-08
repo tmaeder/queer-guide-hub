@@ -53,6 +53,8 @@ export const VENUE_FIELDS: FieldSpec[] = [
   { field: 'hours', path: 'hours', kind: 'text' },
   { field: 'tags', path: 'tags', kind: 'array' },
   { field: 'images', path: 'images', kind: 'array' },
+  { field: 'amenities', path: 'amenities', kind: 'array' },
+  { field: 'accessibility_attributes', path: 'accessibility_attributes', kind: 'array' },
   { field: 'lgbti_relevance_score', path: 'lgbti_relevance_score', kind: 'number', tolerance: 0.15 },
 ]
 
