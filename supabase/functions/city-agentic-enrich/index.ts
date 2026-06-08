@@ -1,9 +1,10 @@
 // city-agentic-enrich — the queer moat. For thin / low-completeness cities, fetch
 // grounding sources (Wikipedia extract + official site) and extract queer-aware
 // travel fields. Hybrid-by-confidence for NARRATIVE fields (auto-fill empty cols at
-// >=0.8). SAFETY-SENSITIVE fields (lgbt_friendly_rating, safety_notes, editorial_hook)
-// are ALWAYS routed to city_review_queue — never auto-published — and the rating is
-// only queued when backed by citations. LLM-gated: circuit-broken + per-day cap.
+// >=0.8). SAFETY-SENSITIVE fields (lgbt_friendly_rating, editorial_hook) are ALWAYS
+// routed to city_review_queue — never auto-published — and the rating is only queued
+// when backed by citations. safety_notes is composed deterministically elsewhere
+// (compose_safety_note / city safety backfill). LLM-gated: circuit-broken + per-day cap.
 //
 // Auth: X-Webhook-Secret (cron) or admin/service-role. Body: { batch_limit?, dry_run?, city_ids?, daily_cap? }.
 
@@ -19,7 +20,7 @@ const AUTO_APPLY_CONFIDENCE = 0.8
 const GET_TIMEOUT = 10_000
 const MAX_BODY_BYTES = 400_000
 const WP_UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
-const _GATED_FIELDS = ['lgbt_friendly_rating', 'safety_notes', 'editorial_hook'] as const
+const _GATED_FIELDS = ['lgbt_friendly_rating', 'editorial_hook'] as const
 
 function normalizeUrl(u: string): string { const t = (u ?? '').trim(); return t && !/^https?:\/\//i.test(t) ? `https://${t}` : t }
 
@@ -169,7 +170,8 @@ Deno.serve(async (req: Request) => {
         const r = Math.max(1, Math.min(5, Math.round(ai.lgbt_friendly_rating as number)))
         gatedProposals.push({ field: 'lgbt_friendly_rating', value: { value: r, scale: '1-5', rationale: ai.rating_rationale ?? null }, cite: citations.filter(x => x?.field === 'lgbt_friendly_rating' || x?.field === 'rating') })
       }
-      if (ai.safety_notes) gatedProposals.push({ field: 'safety_notes', value: { value: ai.safety_notes }, cite: citations.filter(x => x?.field === 'safety_notes' || x?.field === 'safety') })
+      // safety_notes is no longer LLM-generated — it is composed deterministically by
+      // the SQL compose_safety_note() / city safety backfill (migration 20260608000001).
       if (ai.editorial_hook) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: citations.filter(x => x?.field === 'editorial_hook' || x?.field === 'hook') })
 
       if (gatedProposals.length) update.needs_attention = true

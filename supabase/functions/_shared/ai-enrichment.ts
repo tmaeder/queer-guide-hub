@@ -478,8 +478,11 @@ Respond with JSON using these keys (null where unknown):
 // ---------------------------------------------------------------------------
 // Agentic city moat enrichment — extract queer-aware travel fields for a city,
 // grounded in fetched sources (Wikipedia + official site + destination context).
-// SAFETY: lgbt_friendly_rating + safety_notes + editorial_hook are review-gated by
-// the caller — never auto-published. The rating MUST be supported by citations.
+// SAFETY: lgbt_friendly_rating + editorial_hook are review-gated by the caller —
+// never auto-published. The rating MUST be supported by citations. safety_notes is
+// NOT generated here — it is composed deterministically from structured country
+// legal status + city LGBTQ+ density by the SQL compose_safety_note() / city safety
+// backfill (migration 20260608000001), with tiered auto-publish.
 // ---------------------------------------------------------------------------
 
 export interface CityMoatEnrichment {
@@ -487,7 +490,6 @@ export interface CityMoatEnrichment {
   editorial_hook?: string         // one evocative sourced line  [REVIEW-GATED]
   best_time_to_visit?: string
   local_customs?: string          // LGBTQ+-relevant local norms, if sourced
-  safety_notes?: string           // calm, factual LGBTQ+ safety context  [REVIEW-GATED]
   lgbt_friendly_rating?: number   // 1-5 integer  [REVIEW-GATED, ALWAYS]
   rating_rationale?: string       // must cite evidence
   citations?: { field: string; url: string; quote: string }[]
@@ -495,7 +497,7 @@ export interface CityMoatEnrichment {
 }
 
 const CITY_MOAT_KEYS = ['description', 'editorial_hook', 'best_time_to_visit', 'local_customs',
-  'safety_notes', 'lgbt_friendly_rating', 'rating_rationale', 'citations', 'confidence']
+  'lgbt_friendly_rating', 'rating_rationale', 'citations', 'confidence']
 
 const CITY_MOAT_SYSTEM_PROMPT = `${BASE_CONTEXT}
 
@@ -506,9 +508,8 @@ Hard rules:
 - description: a factual 2-3 sentence city summary built from the SOURCES. Add queer-relevant detail (gay districts, scene, history) ONLY if the sources state it. Produce this whenever the sources describe the city.
 - editorial_hook: one evocative single line (<=120 chars), grounded in the sources.
 - best_time_to_visit / local_customs: produce if the sources support them, else null. local_customs should favor LGBTQ+-relevant norms where stated.
-- safety_notes [SENSITIVE]: calm, factual LGBTQ+ safety context for a traveler. Combine source facts with the DESTINATION CONTEXT (legal status, equality score). Never alarmist, never reassuring beyond the evidence. Provide a citation.
 - lgbt_friendly_rating [SENSITIVE]: an INTEGER 1-5 (1 = hostile/criminalized, 5 = very welcoming) assessed from the legal/equality DESTINATION CONTEXT plus any LGBTQ+ evidence in the sources. You MUST populate "citations" with a url + exact quote supporting it. If you cannot cite it, set lgbt_friendly_rating to null. Do not guess a middle value.
-- citations: array of {field, url, quote} backing the SENSITIVE fields (rating/safety).
+- citations: array of {field, url, quote} backing the SENSITIVE field (rating).
 - confidence: 0.0-1.0 how well the sources supported the NON-sensitive extraction (description/hook/best_time/customs). Base it on the sources, not on whether a rating was produced.
 
 Respond ONLY with valid JSON. No markdown code blocks.`
@@ -532,13 +533,13 @@ export async function researchEnrichCityFromSources(
 
   const userPrompt = `City: ${ud(input.name)} | Region: ${ud(input.region || 'N/A')} | Country: ${ud(input.country || 'N/A')}
 ${input.existingDescription ? `Existing description: ${ud(input.existingDescription.slice(0, 300))}` : ''}
-${input.safetyContext ? `DESTINATION CONTEXT (legal/equality, for safety_notes + rating): ${ud(input.safetyContext)}` : ''}
+${input.safetyContext ? `DESTINATION CONTEXT (legal/equality, for rating): ${ud(input.safetyContext)}` : ''}
 
 SOURCES:
 ${blocks.join('\n\n')}
 
 Respond with JSON using these keys (null where unknown):
-{"description":"...","editorial_hook":"...","best_time_to_visit":"...","local_customs":"...","safety_notes":"...","lgbt_friendly_rating":0,"rating_rationale":"...","citations":[{"field":"...","url":"...","quote":"..."}],"confidence":0.0}`
+{"description":"...","editorial_hook":"...","best_time_to_visit":"...","local_customs":"...","lgbt_friendly_rating":0,"rating_rationale":"...","citations":[{"field":"...","url":"...","quote":"..."}],"confidence":0.0}`
 
   try {
     const result = await chatCompletion(supabase, {
