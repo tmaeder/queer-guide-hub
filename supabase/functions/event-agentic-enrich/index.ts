@@ -11,9 +11,12 @@ import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse 
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { researchEnrichEventFromPage, type EventMoatEnrichment } from '../_shared/ai-enrichment.ts'
 
-const DEFAULT_BATCH_LIMIT = 5
-const DEFAULT_DAILY_CAP = 50
-const TRUST_CEILING = 40            // only enrich events scoring below this
+const DEFAULT_BATCH_LIMIT = 8
+const DEFAULT_DAILY_CAP = 60        // drain untouched URL-events once each (self-
+                                    // terminating via the not-recently-attempted
+                                    // selector). Moat arrays rarely appear on source
+                                    // pages, so this enriches description/safety/
+                                    // lineup, not accessibility/target_groups.
 const GET_TIMEOUT = 10_000
 const MAX_BODY_BYTES = 500_000
 const AUTO_APPLY_CONFIDENCE = 0.8
@@ -100,7 +103,9 @@ Deno.serve(async (req: Request) => {
   }
   const remaining = eventIds?.length ? batchLimit : Math.min(batchLimit, dailyCap - (doneToday ?? 0))
 
-  // Select thin / low-trust upcoming events.
+  // Select events still missing a moat field (accessibility or target_groups)
+  // that have a per-event URL to ground extraction in. Upcoming first, then
+  // recent past. Excludes the shared WNBR homepage (no per-event moat info).
   let query = supabase
     .from('events')
     .select('id, title, description, city, country, country_id, venue_name, website, ticket_url, accessibility_attributes, target_groups, age_restriction, trust_score, lgbti_relevance_score, enrichment_status')
@@ -108,13 +113,14 @@ Deno.serve(async (req: Request) => {
   if (eventIds?.length) {
     query = query.in('id', eventIds)
   } else {
-    query = query
-      .eq('status', 'active')
-      .gt('start_date', new Date().toISOString())
-      .lt('trust_score', TRUST_CEILING)
-      .or('website.not.is.null,ticket_url.not.is.null')
-      .order('trust_score', { ascending: true })
-      .limit(remaining)
+    // Empty-array predicates can't be expressed in PostgREST, so the SQL
+    // selector returns the ids (missing accessibility or target_groups, has a
+    // per-event URL, not the WNBR homepage, upcoming-first).
+    const { data: ids, error: selErr } = await supabase.rpc('events_needing_moat_enrich', { p_limit: remaining })
+    if (selErr) return jsonResponse({ error: selErr.message, success: false }, 500, req)
+    const idList = (ids ?? []).map((r: { id: string }) => r.id)
+    if (!idList.length) return jsonResponse({ enriched: 0, message: 'no thin events to enrich' }, 200, req)
+    query = query.in('id', idList)
   }
   const { data: events, error } = await query
   if (error) return jsonResponse({ error: error.message, success: false }, 500, req)
@@ -131,11 +137,19 @@ Deno.serve(async (req: Request) => {
       const pageText = target ? await fetchText(target) : null
       if (!pageText) { skipped++; results.push({ id: ev.id, status: 'no_page' }); await logStep(supabase, ev.id, status, started, dryRun); continue }
 
-      // Destination safety context.
+      // Destination safety context. Legality is derived from the canonical
+      // lgbti_criminalization jsonb (the legacy lgbt_legal_status text column was
+      // dropped — M-5); `legal: false` marks a criminalizing destination.
       let safetyContext: string | undefined
       if (ev.country_id) {
-        const { data: c } = await supabase.from('countries').select('name, equality_score, lgbt_legal_status').eq('id', ev.country_id).maybeSingle()
-        if (c) safetyContext = `${c.name}: equality_score=${c.equality_score ?? 'n/a'}, legal_status=${c.lgbt_legal_status ?? 'n/a'}`
+        const { data: c } = await supabase.from('countries').select('name, equality_score, lgbti_criminalization').eq('id', ev.country_id).maybeSingle()
+        if (c) {
+          const crim = (c.lgbti_criminalization ?? {}) as Record<string, unknown>
+          const legalStatus = crim.legal === false
+            ? `criminalized${typeof crim.penalty === 'string' && crim.penalty ? ` (${crim.penalty})` : ''}`
+            : crim.legal === true ? 'legal' : 'n/a'
+          safetyContext = `${c.name}: equality_score=${c.equality_score ?? 'n/a'}, legal_status=${legalStatus}`
+        }
       }
 
       let ai: EventMoatEnrichment | null = null

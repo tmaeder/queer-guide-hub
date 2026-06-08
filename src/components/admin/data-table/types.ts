@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { LucideIcon } from 'lucide-react';
 import type { ExportColumnDef } from '@/utils/excelExport';
+import type { BackfillJob } from '@/config/backfillJobs';
 
 // ── Column Metadata ─────────────────────────────────────────────
 
@@ -60,6 +61,9 @@ export interface AdminTableConfig<TData> {
   columns: ColumnDef<TData, unknown>[];
   entityFilters?: EntityFilterConfig[];
   bulkEditFields?: BulkEditFieldConfig[];
+  /** Selection-scoped backfill jobs (from backfillJobs registry) shown in the
+   *  bulk bar — e.g. events → "Re-check liveness" on the selected rows. */
+  backfillJobs?: BackfillJob[];
   rowActions?: RowActionConfig<TData>[];
   toolbarActions?: React.ReactNode;
   defaultSort?: { column: string; direction: 'asc' | 'desc' };
@@ -102,4 +106,6 @@ export interface FilterPreset {
   filters: Record<string, unknown>;
   search: string;
   sorting: AdminTableState['sorting'];
+  /** When true, this view is applied on page load (one default per table). */
+  isDefault?: boolean;
 }

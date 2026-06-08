@@ -122,14 +122,14 @@ test.describe('search results', () => {
   test('venue-only result set hides Price sort options', async ({ page }) => {
     await page.route(SEARCH_HOST_RE, mockSearch({ 1: venuesPage1 }, 20));
     await page.goto('/search?q=berlin&types=venue');
-    // Wait for the result-page header to mount.
-    await expect(page.getByText('Sort by:')).toBeVisible();
-    // Radix Select trigger is the <button role=combobox> next to "Sort by:".
-    // Click whichever combobox has SelectValue text "Relevance".
+    // Wait for the result-page controls bar to mount. The sort control is a
+    // Radix Select <button role=combobox> whose SelectValue shows the current
+    // sort ("Relevance"). Target it directly rather than a copy-coupled label.
     const sortTrigger = page
       .getByRole('combobox')
       .filter({ hasText: /relevance/i })
       .first();
+    await expect(sortTrigger).toBeVisible();
     await sortTrigger.click();
     // Options render into a Radix portal; assert the Price option is absent.
     await expect(page.getByRole('option', { name: /price: low to high/i })).toHaveCount(0);

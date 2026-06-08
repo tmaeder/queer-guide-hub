@@ -107,7 +107,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
     // Auto-layout to make it look clean
     const laidOut = autoLayout(nodes, edges);
     onApply(laidOut, edges);
-    toast({ title: 'Pipeline applied', description: `${nodes.length} nodes, ${edges.length} edges` });
+    toast.success('Pipeline applied', { description: `${nodes.length} nodes, ${edges.length} edges` });
     setOpen(false);
     setSuggestion(null);
     setDescription('');

@@ -35,8 +35,6 @@ interface CountryRow {
   area_km2: number | null;
   gdp_usd: number | null;
   currency: string | null;
-  lgbt_legal_status: string | null;
-  lgbt_rights_status: string | null;
   equality_score: number | null;
   flag_emoji: string | null;
   languages: string[] | null;
@@ -77,8 +75,6 @@ export default function AdminCountries() {
     gdp_usd: '',
     currency: '',
     flag_emoji: '',
-    lgbt_legal_status: '',
-    lgbt_rights_status: '',
     equality_score: '',
   });
 
@@ -96,8 +92,6 @@ export default function AdminCountries() {
       gdp_usd: country.gdp_usd?.toString() || '',
       currency: country.currency || '',
       flag_emoji: country.flag_emoji || '',
-      lgbt_legal_status: country.lgbt_legal_status || '',
-      lgbt_rights_status: country.lgbt_rights_status || '',
       equality_score: country.equality_score?.toString() || '',
     });
     setEditDialogOpen(true);
@@ -109,7 +103,7 @@ export default function AdminCountries() {
       const { error } = await deleteCountry(country.id);
       if (error) throw error;
       void logAdminGeoEdit('countries', 'delete', country.id, country as unknown as Record<string, unknown>, null);
-      toast({ title: 'Success', description: `${country.name} deleted` });
+      toast.success(`${country.name} deleted`);
       invalidateTable();
     } catch {
       toast.error('Error: Failed to delete country');
@@ -128,14 +122,12 @@ export default function AdminCountries() {
         gdp_usd: formData.gdp_usd ? parseFloat(formData.gdp_usd) : null,
         currency: formData.currency,
         flag_emoji: formData.flag_emoji || null,
-        lgbt_legal_status: formData.lgbt_legal_status || null,
-        lgbt_rights_status: formData.lgbt_rights_status || null,
         equality_score: formData.equality_score ? parseFloat(formData.equality_score) : null,
       };
       const { error } = await updateCountry(editingCountry.id, update);
       if (error) throw error;
       void logAdminGeoEdit('countries', 'update', editingCountry.id, editingCountry as unknown as Record<string, unknown>, update);
-      toast({ title: 'Success', description: `${formData.name} updated` });
+      toast.success(`${formData.name} updated`);
       setEditDialogOpen(false);
       setEditingCountry(null);
       invalidateTable();
@@ -158,8 +150,6 @@ export default function AdminCountries() {
       { header: 'Currency', accessor: (r) => r.currency },
       { header: 'Languages', accessor: (r) => (r.languages as string[] | null)?.join(', ') },
       { header: 'Driving side', accessor: (r) => r.driving_side },
-      { header: 'LGBT legal status', accessor: (r) => r.lgbt_legal_status },
-      { header: 'LGBT rights status', accessor: (r) => r.lgbt_rights_status },
       { header: 'Equality score', accessor: (r) => r.equality_score },
       { header: 'Venues', accessor: (r) => (r.venues as { count: number }[] | null)?.[0]?.count ?? 0 },
       { header: 'Events', accessor: (r) => (r.events as { count: number }[] | null)?.[0]?.count ?? 0 },
@@ -210,31 +200,6 @@ export default function AdminCountries() {
         header: 'Capital',
         cell: (info) => info.getValue() || '-',
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('lgbt_legal_status', {
-        header: 'LGBT legal status',
-        cell: (info) => {
-          const v = info.getValue();
-          if (!v) return <span className="text-muted-foreground">-</span>;
-          const lower = v.toLowerCase();
-          const tone =
-            lower.includes('legal') || lower.includes('protected') || lower.includes('marriage')
-              ? { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }
-              : lower.includes('illegal') || lower.includes('criminal')
-                ? { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--destructive))' }
-                : { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' };
-          return <Badge style={tone}>{v}</Badge>;
-        },
-        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('lgbt_rights_status', {
-        header: 'LGBT rights status',
-        cell: (info) => info.getValue() || '-',
-        meta: {
-          serverSortable: true,
-          defaultVisible: false,
-          hideable: true,
-        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('equality_score', {
         header: 'Equality score',
@@ -314,7 +279,7 @@ export default function AdminCountries() {
     () => ({
       tableName: 'countries',
       select:
-        'id,name,code,capital,population,area_km2,gdp_usd,currency,lgbt_legal_status,lgbt_rights_status,equality_score,flag_emoji,languages,driving_side,continent_id,region_id,created_at,continents(name),regions(name),venues(count),events(count)',
+        'id,name,code,capital,population,area_km2,gdp_usd,currency,equality_score,flag_emoji,languages,driving_side,continent_id,region_id,created_at,continents(name),regions(name),venues(count),events(count)',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 50,
@@ -337,30 +302,6 @@ export default function AdminCountries() {
           column: 'region_id',
           options: 'dynamic',
           dynamicSource: { table: 'regions', column: 'id', labelColumn: 'name' },
-        },
-        {
-          key: 'lgbt_legal_status',
-          label: 'LGBT legal status',
-          type: 'select',
-          column: 'lgbt_legal_status',
-          options: 'dynamic',
-          dynamicSource: {
-            table: 'countries',
-            column: 'lgbt_legal_status',
-            labelColumn: 'lgbt_legal_status',
-          },
-        },
-        {
-          key: 'lgbt_rights_status',
-          label: 'LGBT rights status',
-          type: 'select',
-          column: 'lgbt_rights_status',
-          options: 'dynamic',
-          dynamicSource: {
-            table: 'countries',
-            column: 'lgbt_rights_status',
-            labelColumn: 'lgbt_rights_status',
-          },
         },
         {
           key: 'currency',
@@ -469,24 +410,6 @@ export default function AdminCountries() {
                 value={formData.flag_emoji}
                 onChange={(e) => setFormData((p) => ({ ...p, flag_emoji: e.target.value }))}
                 maxLength={8}
-              />
-            </div>
-            <div>
-              <Label>LGBT legal status</Label>
-              <Input
-                value={formData.lgbt_legal_status}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, lgbt_legal_status: e.target.value }))
-                }
-              />
-            </div>
-            <div>
-              <Label>LGBT rights status</Label>
-              <Input
-                value={formData.lgbt_rights_status}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, lgbt_rights_status: e.target.value }))
-                }
               />
             </div>
             <div>

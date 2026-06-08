@@ -41,6 +41,7 @@ import {
   type ExportColumnDef,
 } from '@/utils/excelExport';
 import { AdminEntityTable } from '@/components/admin/data-table';
+import { backfillJobsFor } from '@/config/backfillJobs';
 import { EventQualityPanel } from '@/components/admin/EventQualityPanel';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -77,7 +78,10 @@ interface EventRow {
   website: string | null;
   ticket_url: string | null;
   tags: string[] | null;
+  pride_subtypes: string[] | null;
   images: string[] | null;
+  accessibility_attributes: string[] | null;
+  target_groups: string[] | null;
   created_at: string;
   trust_score: number | null;
   liveness_status: string | null;
@@ -125,6 +129,8 @@ const emptyForm = {
   is_featured: false,
   tags: [] as string[],
   images: [] as string[],
+  accessibility_attributes: [] as string[],
+  target_groups: [] as string[],
 };
 
 export default function AdminEvents() {
@@ -247,8 +253,13 @@ export default function AdminEvents() {
     }
 
     try {
+      // `tags` is a UI-only holder for pride sub-kinds — `events` has no `tags`
+      // column. Strip it from the payload and persist into `pride_subtypes`.
+      const { tags: prideTags, ...formRest } = formData;
       const eventData = {
-        ...formData,
+        ...formRest,
+        pride_subtypes:
+          formData.event_type === 'pride' && prideTags.length > 0 ? prideTags : null,
         venue_id: formData.venue_id || null,
         organizer_id: formData.organizer_id || null,
         latitude: formData.latitude,
@@ -306,8 +317,10 @@ export default function AdminEvents() {
       organizer_name: event.organizer_name || '',
       organizer_contact: event.organizer_contact || '',
       is_featured: event.is_featured,
-      tags: event.tags || [],
+      tags: event.pride_subtypes || [],
       images: event.images || [],
+      accessibility_attributes: event.accessibility_attributes || [],
+      target_groups: event.target_groups || [],
     });
     setStartDate(new Date(event.start_date));
     setEndDate(event.end_date ? new Date(event.end_date) : undefined);
@@ -339,7 +352,7 @@ export default function AdminEvents() {
       { header: 'Organizer', accessor: (r) => r.organizer_name },
       { header: 'Is Free', accessor: (r) => formatBoolean(r.is_free) },
       { header: 'Featured', accessor: (r) => formatBoolean(r.is_featured) },
-      { header: 'Tags', accessor: (r) => formatArray(r.tags) },
+      { header: 'Pride subtypes', accessor: (r) => formatArray(r.pride_subtypes) },
       { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
     ];
     const allData = await fetchAllRows('events', '*', { column: 'title', ascending: true });
@@ -511,13 +524,14 @@ export default function AdminEvents() {
     () => ({
       tableName: 'events',
       select:
-        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_id,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at,trust_score,liveness_status',
+        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_id,organizer_name,organizer_contact,website,ticket_url,pride_subtypes,images,created_at,trust_score,liveness_status',
       columns,
       defaultSort: { column: 'start_date', direction: 'desc' },
       defaultPageSize: 50,
       enableSelection: true,
       enableSearch: true,
       searchColumns: ['title', 'description', 'city', 'venue_name'],
+      backfillJobs: backfillJobsFor('events'),
       entityFilters: [
         {
           key: 'event_type',
@@ -939,6 +953,46 @@ export default function AdminEvents() {
                             setFormData((p) => ({ ...p, ticket_url: e.target.value }))
                           }
                         />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Accessibility</Label>
+                        <Input
+                          value={formData.accessibility_attributes.join(', ')}
+                          onChange={(e) =>
+                            setFormData((p) => ({
+                              ...p,
+                              accessibility_attributes: e.target.value
+                                .split(',')
+                                .map((s) => s.trim())
+                                .filter(Boolean),
+                            }))
+                          }
+                          placeholder="wheelchair-accessible, gender-neutral-restrooms"
+                        />
+                        <p className="mt-1 text-2xs text-muted-foreground">
+                          Comma-separated. Source pages rarely state these — capture manually.
+                        </p>
+                      </div>
+                      <div>
+                        <Label>Target groups</Label>
+                        <Input
+                          value={formData.target_groups.join(', ')}
+                          onChange={(e) =>
+                            setFormData((p) => ({
+                              ...p,
+                              target_groups: e.target.value
+                                .split(',')
+                                .map((s) => s.trim())
+                                .filter(Boolean),
+                            }))
+                          }
+                          placeholder="trans, women, youth, all-ages"
+                        />
+                        <p className="mt-1 text-2xs text-muted-foreground">
+                          Comma-separated audience segments.
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

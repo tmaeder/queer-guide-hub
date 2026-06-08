@@ -1,0 +1,115 @@
+# Trust-&-Safety Audit — Remediation Log (2026-06-05)
+
+Remediation of [`2026-06-05-trust-safety-audit.md`](./2026-06-05-trust-safety-audit.md).
+All DB changes were applied to prod `xqeacpakadqfxjxjcewc` and verified; edge-function
+and frontend changes deploy on merge to `main`.
+
+## Release gates — all 4 Critical return 0
+
+`select * from release_gate_checks()` after remediation:
+
+| gate | severity | failures |
+|---|---|---|
+| `person_outing_guard` | critical | **0** |
+| `hotline_unverified` | critical | **0** |
+| `crim_consistency` | critical | **0** |
+| `dup_integrity` | critical | **0** |
+| `hotline_reachable` | high | 0 |
+| `hotline_url_live` | high | 3 *(dead crisis links flagged needs_review — human URL fix)* |
+| `venue_closed_seo` | high | 0 |
+| `venue_url_freshness` | high | 4,690 *(drains as the now-daily url-checker runs)* |
+
+Wired into CI (`.github/workflows/data-quality-gates.yml` → `npm run gates`), nightly,
+skipping gracefully when secrets are absent. Critical > 0 blocks the PR.
+
+## Fixed (verified on prod)
+
+| ID | What shipped |
+|---|---|
+| **C-2 / H-5 / M-6** | `personalities.lgbti_connection` → controlled vocab + CHECK constraint; 5,096 public-living "Gay adult performer" rows demoted to `draft`; both scrape labels remapped to non-asserting `unclear` (raw preserved in non-public `lgbti_connection_source`); `death_date ⇒ is_living=false` trigger (14 rows fixed); search index restricted to public rows + draft docs purged; ingest enforcement in `pipeline-normalize`/`pipeline-validate` + shared `lgbti-connection.ts` (unit-tested). Outing guard 5,830 → **0**. |
+| **C-1 / H-1 / H-2** | All 25 hotlines URL-liveness checked (phones validated for format, not dialed); 22 stamped `verified_at`/`verified_by`/`verified_method`; `du-bist-du.ch`→apex (TLS fix), `iglyo.com`→`.org`; 3 referral orgs tagged `kind='directory'` and rendered apart from call-now lines; 3 newly-found dead links flagged `needs_review` (phone CTA kept, dead website hidden). |
+| **H-3** | `url_status='broken'` wired as a closure voter (+ venue's own link health fed to the consensus voter); `closed_at ⇒ seo_indexable=false` trigger; `venue_closed_seo` gate. |
+| **H-4** | `venue-url-checker` rescheduled weekly→daily; 368 broken-URL venues demoted to `needs_attention`; dead public Website CTA hidden; `venue_url_freshness` gate. |
+| **M-8** | 2,494 coords-without-country venues resolved **relationally** (own country text / city's country_id) — 9 genuinely-unresolvable remain (need geocoding). |
+| **dup_integrity** | 9 chained `duplicate_of_id` pointers (events 2, news 7) the audit's venues/people-only check missed — collapsed to canonical. |
+| **M-2** | `marketplace-link-checker` edge function built (probes `external_url`, writes `link_health`/`link_checked_at`, demotes broken→`inactive`); daily pg_cron; new column. |
+| **L-1** | Marketplace validator rejects `price<=0` unless `price_type='free'`; 3 existing 0.00 listings → `inactive`. |
+| **L-2** | `cleanText()` NFKC-normalizes + strips zero-width on ingest; 40 existing rows cleaned. |
+| **L-3** | Venue validator flags mojibake (`W_MOJIBAKE`); 1 existing row flagged `needs_attention` (no auto-guess). |
+
+## Deferred (with rationale)
+
+These were assessed and intentionally not auto-fixed; each is a follow-up rather than
+a quick remediation.
+
+- **M-1 (marketplace queer-owned provenance).** Already honest by omission: the per-listing
+  "Queer-owned" pill is driven by `business_type` (also empty), so no listing falsely
+  claims queer ownership. Populating real provenance requires merchant self-declaration
+  sourcing — fabricating it would be the opposite of the fix. **Do not back-fill a guess.**
+- **M-3 (event timezone from coords).** Needs a tz-boundary dataset (tz shapefile in PostGIS
+  or a lat/lng→tz service); no such data is present. Backfilling without it would guess.
+- **M-4 (news geo/author).** Bulk LLM enrichment at scale; the P0 full-text path already
+  shipped per the news closed-loop roadmap. Out of scope for a data-quality pass; run the
+  enrichment pipeline rather than a one-shot backfill on a disk-constrained DB.
+- **M-5 (drop `lgbt_legal_status`/`lgbt_rights_status`).** Initially deferred as unsafe (live
+  read paths), then **completed** via a two-phase deploy — see the 2026-06-06 follow-up below.
+- **M-7 (cross-source news syndication dedup).** Referential integrity fixed (chains collapsed);
+  syndication *detection* (125 cross-source title/day groups) is an admin discovery
+  enhancement to `find_duplicate_clusters('news')` — lower harm, deferred to avoid risk in a
+  complex clustering RPC.
+- **M-9 (venue accessibility metadata).** Requires sourcing structured accessibility tags
+  (Google/OSM) into `accessibility_attributes` — a sourcing project, no data to populate today.
+
+## Follow-up (2026-06-06)
+
+After PR #1463 merged and deployed (edge functions + frontend redeployed via
+workflow_dispatch — the auto-land merge used GITHUB_TOKEN, which does not re-trigger
+the deploy workflows):
+
+- **M-7 (news cross-source dedup) — DONE.** `find_duplicate_clusters('news')` now keys on
+  published day (every news `search_documents` row carries `start_date`), matching the
+  audit's "same-title-same-day" criterion. News clusters went 182 → 102 (same-title rows
+  on different days are no longer conflated; the same-day syndication signal is isolated).
+  Migration `20260606080000`. Event/festival/venue grouping unchanged. *Trigram near-dup
+  (reworded titles) remains a further enhancement — it needs a similarity join, not a
+  GROUP BY, and is higher-risk for this STABLE RPC.*
+
+- **M-5 (drop dead country columns) — DONE (two-phase, no downtime).** The read-path audit
+  confirmed `lgbt_legal_status`/`lgbt_rights_status` were still SELECTed by live code
+  (`getLegalityBadge`, AdminCountries CRUD, city/village configs, `event-agentic-enrich`)
+  even though they read empty; `getLegalityBadge` and the `cities_admin` view already derive
+  legality from `lgbti_criminalization` + `equality_score`. Removal was sequenced to avoid a
+  deploy-race 500: **phase 1** (#1464) stripped all references (behaviour-preserving) and was
+  deployed; **phase 2** (#1466, migration `20260606090000`) then redefined `cities_admin` to
+  derive both columns purely from the canonical sources (view output unchanged) and dropped
+  `countries.lgbt_legal_status` / `lgbt_rights_status`. Verified on prod: columns gone,
+  `cities_admin` still returns derived values, `/admin/countries` 200, gates all 0.
+
+- **Link-checker false positives — FIXED.** The venue + marketplace link checkers classified
+  every non-2xx/3xx as `broken` (bot walls 403, rate limits 429, HEAD-unsupported 405),
+  and the marketplace one set `status='inactive'` on those — false-deactivating live listings
+  (the team paused cron 198 over it). Shared, unit-tested `_shared/link-health.ts` now does a
+  HEAD→GET probe and treats only an explicit 404/410 as dead; 401/403/405/429 → `blocked`,
+  network errors → `timeout`. Deployed + verified on prod (a 40-listing dry-run preserved 13
+  alive-but-blocked listings the old logic would have deactivated). **Cron 198 (marketplace
+  link-checker) remains PAUSED — ready to re-enable, left as the team's operational call.**
+
+- **M-3 (event timezone) — DONE by the team** (migration `event_timezone_backfill_singlezone`,
+  tz coverage 16%→52%).
+
+- **M-4 / M-9 / M-1 — blocked on external inputs, not fabricated.** M-4 needs the news
+  LLM-enrichment pipeline run at scale
+  (operational, disk-constrained); M-9 needs sourced accessibility tags (Google/OSM);
+  M-1 needs merchant self-declaration of queer ownership (already honest by omission —
+  no listing falsely claims it). None can be completed by inventing data.
+
+- **Human-triage queue (surfaced, awaiting people, not code):** 3 dead hotline links
+  (`needs_review`) need correct numbers/URLs; the 5,096 demoted personalities await identity
+  review; 368 broken-URL + 1 mojibake venue carry `needs_attention`; 9 coord-only venues
+  need geocoding; `venue_url_freshness` (4,690) drains automatically via the now-daily checker.
+
+## Operational notes
+
+- Batched DML scripts live in `scripts/data-quality/` (the per-row search re-index cascade
+  exceeds the statement timeout in one transaction).
+- Migrations `20260605120000`–`20260605170000`, plus `20260606080000` (M-7 follow-up).

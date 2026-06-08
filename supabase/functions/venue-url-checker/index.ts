@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { probeLink, isDeadLink } from '../_shared/link-health.ts'
 
 // ============================================================
 // Venue URL Checker
@@ -47,45 +48,27 @@ Deno.serve(async (req) => {
 
       const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
 
-      let status: 'ok' | 'broken' | 'redirect' | 'timeout' | 'unknown' = 'unknown'
-
-      try {
-        const controller = new AbortController()
-        const tid = setTimeout(() => controller.abort(), TIMEOUT_MS)
-
-        const resp = await fetch(url, {
-          method: 'HEAD',
-          redirect: 'manual',   // don't follow — detect redirects explicitly
-          signal: controller.signal,
-          headers: {
-            'User-Agent': 'QueerGuide-LinkChecker/1.0 (+https://queer.guide/about)',
-          },
-        })
-        clearTimeout(tid)
-
-        if (resp.status >= 200 && resp.status < 300) {
-          status = 'ok'; ok++
-        } else if (resp.status >= 300 && resp.status < 400) {
-          status = 'redirect'; redirect++
-        } else {
-          status = 'broken'; broken++
-        }
-      } catch (e) {
-        const msg = (e as Error).message || ''
-        if (msg.includes('abort') || msg.includes('signal')) {
-          status = 'timeout'; timeout++
-        } else {
-          status = 'broken'; broken++
-        }
-      }
+      // HEAD→GET probe. Only an explicit 404/410 is 'broken'; 401/403/405/429 are
+      // 'blocked' (alive, bot-protected), network errors are 'timeout' — neither
+      // demotes a venue (false positives previously paused the marketplace cron).
+      const status = await probeLink(url, { timeoutMs: TIMEOUT_MS })
+      if (status === 'ok') ok++
+      else if (status === 'redirect') redirect++
+      else if (status === 'broken') broken++
+      else if (status === 'timeout') timeout++
 
       if (!dryRun) {
+        const update: Record<string, unknown> = {
+          url_status:     status,
+          url_checked_at: new Date().toISOString(),
+        }
+        // Demote ONLY confirmed-dead links (H-4): surface for triage / closure
+        // recheck. A dead website never auto-closes a venue alone (the consensus
+        // voter needs >=2 signals) but it must not sit silently.
+        if (isDeadLink(status)) update.needs_attention = true
         await supabase
           .from('venues')
-          .update({
-            url_status:     status,
-            url_checked_at: new Date().toISOString(),
-          })
+          .update(update)
           .eq('id', venue.id)
       }
     }
@@ -98,7 +81,7 @@ Deno.serve(async (req) => {
     }, 200, req)
   } catch (error) {
     console.error('venue-url-checker:', error)
-    await logPipelineError(supabase, 'venue-url-checker', error, { severity: 'warning' })
+    await logPipelineError(supabase, 'venue-url-checker', error, { severity: 'warn' })
     return errorResponse((error as Error).message, 500, req)
   }
 })

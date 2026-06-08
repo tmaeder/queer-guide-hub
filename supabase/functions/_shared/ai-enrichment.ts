@@ -334,7 +334,7 @@ Title: ${ud(article.title)}
 Content: ${ud(textContent.slice(0, 800))}
 URL: ${ud(article.url || 'N/A')}
 
-Respond with JSON:
+Keep "summary" under 40 words. Respond with ONLY this JSON, nothing before or after:
 {"summary": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "sentiment": "neutral", "topics": [...]}`
 
   try {
@@ -344,7 +344,10 @@ Respond with JSON:
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.2,
-      max_tokens: 500,
+      // 500 truncated the JSON once full-text extraction (2026-05-30) grew the
+      // input: the 70B model's summary ran long and the closing braces were cut,
+      // making every response unparseable. Headroom + a summary word-cap fixes it.
+      max_tokens: 1200,
       response_format: { type: 'json_object' },
     })
 
@@ -468,6 +471,91 @@ Respond with JSON using these keys (null where unknown):
     return parseAIResponse<EventMoatEnrichment>(result.content, MOAT_KEYS)
   } catch (err) {
     console.error('Event moat enrichment failed:', (err as Error).message)
+    return null
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Agentic city moat enrichment — extract queer-aware travel fields for a city,
+// grounded in fetched sources (Wikipedia + official site + destination context).
+// SAFETY: lgbt_friendly_rating + safety_notes + editorial_hook are review-gated by
+// the caller — never auto-published. The rating MUST be supported by citations.
+// ---------------------------------------------------------------------------
+
+export interface CityMoatEnrichment {
+  description?: string            // queer-aware factual 2-3 sentences
+  editorial_hook?: string         // one evocative sourced line  [REVIEW-GATED]
+  best_time_to_visit?: string
+  local_customs?: string          // LGBTQ+-relevant local norms, if sourced
+  safety_notes?: string           // calm, factual LGBTQ+ safety context  [REVIEW-GATED]
+  lgbt_friendly_rating?: number   // 1-5 integer  [REVIEW-GATED, ALWAYS]
+  rating_rationale?: string       // must cite evidence
+  citations?: { field: string; url: string; quote: string }[]
+  confidence?: number             // 0.0-1.0 how well sources supported the extraction
+}
+
+const CITY_MOAT_KEYS = ['description', 'editorial_hook', 'best_time_to_visit', 'local_customs',
+  'safety_notes', 'lgbt_friendly_rating', 'rating_rationale', 'citations', 'confidence']
+
+const CITY_MOAT_SYSTEM_PROMPT = `${BASE_CONTEXT}
+
+You enrich CITY pages for queer.guide from PROVIDED SOURCES. This is GROUNDED EXTRACTION, not creative writing.
+
+Hard rules:
+- Use ONLY facts present in the SOURCES + DESTINATION CONTEXT below. NEVER invent venues, neighborhoods, statistics, or claims.
+- description: a factual 2-3 sentence city summary built from the SOURCES. Add queer-relevant detail (gay districts, scene, history) ONLY if the sources state it. Produce this whenever the sources describe the city.
+- editorial_hook: one evocative single line (<=120 chars), grounded in the sources.
+- best_time_to_visit / local_customs: produce if the sources support them, else null. local_customs should favor LGBTQ+-relevant norms where stated.
+- safety_notes [SENSITIVE]: calm, factual LGBTQ+ safety context for a traveler. Combine source facts with the DESTINATION CONTEXT (legal status, equality score). Never alarmist, never reassuring beyond the evidence. Provide a citation.
+- lgbt_friendly_rating [SENSITIVE]: an INTEGER 1-5 (1 = hostile/criminalized, 5 = very welcoming) assessed from the legal/equality DESTINATION CONTEXT plus any LGBTQ+ evidence in the sources. You MUST populate "citations" with a url + exact quote supporting it. If you cannot cite it, set lgbt_friendly_rating to null. Do not guess a middle value.
+- citations: array of {field, url, quote} backing the SENSITIVE fields (rating/safety).
+- confidence: 0.0-1.0 how well the sources supported the NON-sensitive extraction (description/hook/best_time/customs). Base it on the sources, not on whether a rating was produced.
+
+Respond ONLY with valid JSON. No markdown code blocks.`
+
+/**
+ * Extract city moat fields grounded in fetched source text. Caller handles
+ * circuit-breaking, review-gating (rating/safety/hook), and hybrid-by-confidence.
+ */
+export async function researchEnrichCityFromSources(
+  supabase: SupabaseClient,
+  input: { name: string; country?: string; region?: string; existingDescription?: string; sources: { url: string; text: string }[]; safetyContext?: string },
+): Promise<CityMoatEnrichment | null> {
+  if (!(await isOpenAIAvailable(supabase))) return null
+  // Cap total grounding text (~5k chars) to stay within the model's latency budget,
+  // matching the single-page event moat. Too much input trips the 45s ceiling.
+  const blocks = (input.sources || [])
+    .filter(s => (s.text || '').trim().length > 60)
+    .slice(0, 2)
+    .map(s => `SOURCE ${ud(s.url)}:\n${ud((s.text || '').slice(0, 4000))}`)
+  if (blocks.length === 0) return null   // nothing to ground on — skip the LLM call
+
+  const userPrompt = `City: ${ud(input.name)} | Region: ${ud(input.region || 'N/A')} | Country: ${ud(input.country || 'N/A')}
+${input.existingDescription ? `Existing description: ${ud(input.existingDescription.slice(0, 300))}` : ''}
+${input.safetyContext ? `DESTINATION CONTEXT (legal/equality, for safety_notes + rating): ${ud(input.safetyContext)}` : ''}
+
+SOURCES:
+${blocks.join('\n\n')}
+
+Respond with JSON using these keys (null where unknown):
+{"description":"...","editorial_hook":"...","best_time_to_visit":"...","local_customs":"...","safety_notes":"...","lgbt_friendly_rating":0,"rating_rationale":"...","citations":[{"field":"...","url":"...","quote":"..."}],"confidence":0.0}`
+
+  try {
+    const result = await chatCompletion(supabase, {
+      messages: [
+        { role: 'system', content: CITY_MOAT_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.2,
+      max_tokens: 900,
+      response_format: { type: 'json_object' },
+    })
+    // CF Workers AI sometimes returns `response` already parsed as an object
+    // (guided JSON); coerce to a string so parseAIResponse can handle both.
+    const raw = typeof result.content === 'string' ? result.content : JSON.stringify(result.content ?? '')
+    return parseAIResponse<CityMoatEnrichment>(raw, CITY_MOAT_KEYS)
+  } catch (err) {
+    console.error('City moat enrichment failed:', (err as Error).message)
     return null
   }
 }

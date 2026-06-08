@@ -7,6 +7,7 @@
  *   - seo_draft       → meta_title + meta_description draft
  *   - auto_tag        → tag suggestions from existing unified_tags
  *   - fact_check      → flags potentially-stale or unverified claims
+ *   - quality_review  → 0-100 score + field issues + drop-in suggestions
  *
  * Body shape:
  *   {
@@ -55,6 +56,31 @@ async function sha256(s: string): Promise<string> {
     .join('');
 }
 
+/**
+ * Extract a JSON object/array from a model response. We deliberately do NOT
+ * send `response_format: json_object` to the CF Workers AI /ai/v1 endpoint —
+ * that combination hangs (see the JSON-hang gotcha). Instead the prompts ask
+ * for strict JSON and we parse it here, tolerating markdown fences or stray
+ * prose around the payload.
+ */
+function extractJson(text: string): unknown {
+  let t = text.trim();
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) t = fence[1].trim();
+  // Narrow to the outermost JSON brackets if the model wrapped it in prose.
+  const firstObj = t.indexOf('{');
+  const firstArr = t.indexOf('[');
+  const start =
+    firstObj === -1 ? firstArr : firstArr === -1 ? firstObj : Math.min(firstObj, firstArr);
+  if (start > 0) {
+    const open = t[start];
+    const close = open === '{' ? '}' : ']';
+    const end = t.lastIndexOf(close);
+    if (end > start) t = t.slice(start, end + 1);
+  }
+  return JSON.parse(t);
+}
+
 function buildPrompt(op: AIOp, body: Body): { system: string; user: string } {
   const src = JSON.stringify(body.source).slice(0, 8000);
   const locale = body.locale ?? 'en';
@@ -99,6 +125,22 @@ Be strict. Penalize missing description, missing location, generic boilerplate, 
 }
 
 Deno.serve(async (req: Request) => {
+  try {
+    return await handle(req);
+  } catch (err) {
+    // Safety net: surface a structured error instead of an opaque platform 500.
+    console.error('cms-ai unhandled error:', err);
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: err instanceof Error ? err.message : 'Unhandled error',
+      }),
+      { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } },
+    );
+  }
+});
+
+async function handle(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ ok: false, error: 'Method not allowed' }), {
@@ -171,9 +213,15 @@ Deno.serve(async (req: Request) => {
         { role: 'user', content: prompt.user },
       ],
       temperature: 0.2,
-      max_tokens: 600,
-      response_format: wantsJson ? { type: 'json_object' } : undefined,
-      timeoutMs: 30_000,
+      // JSON ops (quality_review especially) emit larger structured payloads;
+      // 600 truncated them mid-object → invalid JSON.
+      max_tokens: wantsJson ? 1500 : 600,
+      // NB: intentionally no response_format — json_object hangs the CF
+      // Workers AI /ai/v1 endpoint. Prompts request strict JSON instead.
+      timeoutMs: 45_000,
+      // CF Workers AI intermittently returns a transient HTML 5xx page (the
+      // cockpit auto-run then shows "non-2xx status code"). Retry to ride it out.
+      retries: 2,
     });
   } catch (err) {
     return new Response(
@@ -185,7 +233,7 @@ Deno.serve(async (req: Request) => {
   let output: unknown = result.content.trim();
   if (wantsJson) {
     try {
-      output = JSON.parse(result.content);
+      output = extractJson(result.content);
     } catch {
       return new Response(
         JSON.stringify({ ok: false, error: 'LLM returned invalid JSON', raw: result.content }),
@@ -216,4 +264,4 @@ Deno.serve(async (req: Request) => {
     JSON.stringify({ ok: true, op: body.op, output, model: result.model }),
     { headers: { ...CORS, 'Content-Type': 'application/json' } },
   );
-});
+}

@@ -12,10 +12,10 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 vi.mock('@/hooks/usePageFetchers', () => ({
-  listFrom: vi.fn().mockResolvedValue([]),
   insertInto: vi.fn().mockResolvedValue({ id: '1' }),
   updateRow: vi.fn().mockResolvedValue({}),
   deleteRow: vi.fn().mockResolvedValue({}),
+  useNewsSources: vi.fn().mockReturnValue({ data: [], isLoading: false, refetch: vi.fn() }),
 }));
 
 import { NewsSourcesManager } from '../NewsSourcesManager';

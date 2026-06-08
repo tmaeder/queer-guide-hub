@@ -60,18 +60,24 @@ async function matchCity(
   // Strip parenthetical suffix: "Berlin (DE)" → "Berlin"
   const cleanName = cityName.includes('(') ? cityName.split('(')[0].trim() : cityName
 
-  // Try name + country first
+  // Try name + country first. NB: cities has no `country_code` column — scope by
+  // country_id (resolved from the ISO-2 code) and exclude placeholder ("tmp-")
+  // stubs so we never link to a hidden bucket city.
   if (countryCode) {
-    const { data } = await supabase
-      .from('cities')
-      .select('id, country_id')
-      .or(`name.ilike.${cleanName},name.ilike.${cityName}`)
-      .eq('country_code', countryCode)
-      .is('duplicate_of_id', null)
-      .order('population', { ascending: false, nullsFirst: false })
-      .limit(1)
-      .single()
-    if (data) return data
+    const scopedCountryId = await resolveCountryId(supabase, countryCode)
+    if (scopedCountryId) {
+      const { data } = await supabase
+        .from('cities')
+        .select('id, country_id')
+        .or(`name.ilike.${cleanName},name.ilike.${cityName}`)
+        .eq('country_id', scopedCountryId)
+        .is('duplicate_of_id', null)
+        .not('slug', 'like', 'tmp-%')
+        .order('population', { ascending: false, nullsFirst: false })
+        .limit(1)
+        .single()
+      if (data) return data
+    }
   }
   // Fallback: name only, largest by population
   const { data } = await supabase
@@ -79,6 +85,7 @@ async function matchCity(
     .select('id, country_id')
     .or(`name.ilike.${cleanName},name.ilike.${cityName}`)
     .is('duplicate_of_id', null)
+    .not('slug', 'like', 'tmp-%')
     .order('population', { ascending: false, nullsFirst: false })
     .limit(1)
     .single()

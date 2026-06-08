@@ -11,8 +11,8 @@ import { useEventQualitySummary } from '@/hooks/useEventQualitySummary';
 export function EventQualityPanel() {
   const { data } = useEventQualitySummary();
   if (!data) return null;
-  const { gaps, needsAttention, livenessFail, lowTrust } = data;
-  if (!gaps.length && !needsAttention && !livenessFail && !lowTrust) return null;
+  const { gaps, needsAttention, livenessFail, lowTrust, coverage, sourceGaps, avgQuality, avgTrust, total } = data;
+  if (!gaps.length && !needsAttention && !livenessFail && !lowTrust && !coverage.length) return null;
 
   return (
     <Card className="mb-6">
@@ -20,6 +20,12 @@ export function EventQualityPanel() {
         <CardTitle className="flex items-center gap-2 text-title">
           <ShieldCheck size={16} />
           Event quality
+          {avgQuality != null && (
+            <span className="ml-auto text-13 font-normal text-muted-foreground tabular-nums">
+              {total != null && <>{total.toLocaleString()} events · </>}
+              completeness {avgQuality} · trust {avgTrust}
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -28,6 +34,34 @@ export function EventQualityPanel() {
           <Stat label="Low trust (upcoming)" value={lowTrust} />
           <Stat label="Cancelled / dead link" value={livenessFail} hardFail={livenessFail > 0} />
         </div>
+
+        {coverage.length > 0 && (
+          <div>
+            <div className="mb-2 text-13 text-muted-foreground">Field coverage</div>
+            <div className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2">
+              {coverage.map((c) => (
+                <CoverageBar key={c.field} label={c.field} pct={c.pctComplete} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {sourceGaps.length > 0 && (
+          <div>
+            <div className="mb-2 text-13 text-muted-foreground">Leakiest sources — fix upstream</div>
+            <div className="flex flex-col gap-1.5">
+              {sourceGaps.map((s) => (
+                <div key={s.source} className="flex items-center gap-2 text-13">
+                  <span className="truncate font-medium">{s.source}</span>
+                  <span className="text-muted-foreground">· {s.total.toLocaleString()}</span>
+                  <span className="ml-auto shrink-0 text-muted-foreground tabular-nums">
+                    {s.pctMissing}% no {s.field}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {gaps.length > 0 && (
           <div>
@@ -46,6 +80,18 @@ export function EventQualityPanel() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function CoverageBar({ label, pct }: { label: string; pct: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-28 shrink-0 text-13 text-muted-foreground">{label}</span>
+      <div className="h-1.5 flex-1 overflow-hidden rounded-badge bg-muted">
+        <div className="h-full rounded-badge bg-foreground" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="w-10 shrink-0 text-right text-13 tabular-nums">{pct}%</span>
+    </div>
   );
 }
 

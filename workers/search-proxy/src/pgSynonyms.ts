@@ -83,11 +83,18 @@ export async function loadActiveSynonyms(env: Env): Promise<PgSynonym[]> {
  * Bidirectional rows (is_one_way=false) match either direction: query word
  * in terms triggers append of replacements; query word in replacements
  * triggers append of terms.
+ *
+ * Caps the output at `maxTerms` (default 40). Substring matching means a short
+ * query can fire many synonyms once a large active set is enabled; the cap keeps
+ * the embedded query from ballooning and bounds relevance dilution regardless of
+ * how many synonyms are activated.
  */
+const DEFAULT_MAX_EXPANSION_TERMS = 40;
+
 export function expandWithPgSynonyms(
 	query: string,
 	synonyms: PgSynonym[],
-	opts: { index?: string; locale?: string } = {},
+	opts: { index?: string; locale?: string; maxTerms?: number } = {},
 ): string[] {
 	if (!query || !synonyms.length) return [];
 	const lcQuery = ` ${query.toLowerCase()} `;
@@ -123,5 +130,8 @@ export function expandWithPgSynonyms(
 			.map((s) => s.trim())
 			.filter(Boolean),
 	);
-	return Array.from(out).filter((t) => !inQuery.has(t));
+	const maxTerms = opts.maxTerms ?? DEFAULT_MAX_EXPANSION_TERMS;
+	return Array.from(out)
+		.filter((t) => !inQuery.has(t))
+		.slice(0, maxTerms);
 }

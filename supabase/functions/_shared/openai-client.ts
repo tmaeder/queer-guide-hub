@@ -227,15 +227,23 @@ function mapToCfModel(openaiModel: string): string {
   return Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
 }
 
-function cfWorkersAiConfig(): { baseUrl: string; apiKey: string } | null {
+/**
+ * Coerce an LLM `content` field to a string. Workers AI (and occasionally the
+ * OpenAI-compat layer) sometimes return an already-parsed object/array instead
+ * of a JSON string; stringifying it lets the defensive JSON parsers downstream
+ * handle every backend uniformly.
+ */
+function asContentString(raw: unknown): string {
+  if (raw == null) return ''
+  if (typeof raw === 'string') return raw
+  try { return JSON.stringify(raw) } catch { return String(raw) }
+}
+
+function cfWorkersAiConfig(): { acct: string; apiKey: string } | null {
   const acct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
   const token = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
   if (!acct || !token) return null
-  // Route through AI Gateway when configured; else hit Workers AI directly.
-  const baseUrl =
-    gatewayBaseUrl('workers-ai') ??
-    `https://api.cloudflare.com/client/v4/accounts/${acct}/ai/v1`
-  return { baseUrl, apiKey: token }
+  return { acct, apiKey: token }
 }
 
 /**
@@ -243,8 +251,11 @@ function cfWorkersAiConfig(): { baseUrl: string; apiKey: string } | null {
  *
  * Backend resolution:
  *  - If CF_ACCOUNT_ID + CF_AI_API_TOKEN (or the CLOUDFLARE_* aliases) are
- *    set, the request is routed to Cloudflare Workers AI's OpenAI-compatible
- *    endpoint and the model is mapped via mapToCfModel().
+ *    set, the request is routed to Cloudflare Workers AI's NATIVE /ai/run
+ *    endpoint and the model is mapped via mapToCfModel(). (The OpenAI-compat
+ *    /ai/v1/chat/completions endpoint hangs for these models — every flyer scan
+ *    500'd with a 25s timeout after the CF-default switch on 2026-04-27. The
+ *    native /ai/run endpoint is the same one the vision pass uses successfully.)
  *  - Otherwise, the legacy OpenAI path is used (OAuth token from DB or
  *    OPENAI_API_KEY env var).
  *
@@ -263,27 +274,26 @@ export async function chatCompletion(
   } = options
 
   const cf = Deno.env.get('USE_OPENAI') === '1' ? null : cfWorkersAiConfig()
-
-  const endpoint = cf
-    ? `${cf.baseUrl}/chat/completions`
-    : `${gatewayBaseUrl('openai') ?? 'https://api.openai.com/v1'}/chat/completions`
-  const accessToken = cf ? cf.apiKey : await getOpenAIAccessToken(supabase)
   const effectiveModel = cf ? mapToCfModel(model) : model
 
-  const body: Record<string, unknown> = {
-    model: effectiveModel,
-    messages,
-    temperature,
-    max_tokens,
-  }
-  if (!cf) {
-    // OpenAI-only: opt out of 30-day retention. CF Workers AI does not store.
-    body.store = false
-  }
-  if (response_format) body.response_format = response_format
+  // CF Workers AI: native /ai/run (proven-good). OpenAI: compat chat/completions.
+  const endpoint = cf
+    ? `https://api.cloudflare.com/client/v4/accounts/${cf.acct}/ai/run/${effectiveModel}`
+    : `${gatewayBaseUrl('openai') ?? 'https://api.openai.com/v1'}/chat/completions`
+  const accessToken = cf ? cf.apiKey : await getOpenAIAccessToken(supabase)
+
+  const body: Record<string, unknown> = cf
+    ? { messages, temperature, max_tokens }
+    : { model: effectiveModel, messages, temperature, max_tokens, store: false }
+  // Do NOT send response_format to CF Workers AI: json_object guided generation
+  // hangs @cf/meta/llama-3.3-70b on BOTH the compat and native endpoints (25s
+  // timeout). The model follows the prompt's "return ONLY valid JSON" instead,
+  // and callers parse defensively. OpenAI honors response_format normally.
+  if (!cf && response_format) body.response_format = response_format
 
   let lastError: Error | null = null
-  const PER_CALL_TIMEOUT_MS = 25_000
+  // 45s ceiling: the 70B structuring call legitimately runs ~20-26s; 25s clipped it.
+  const PER_CALL_TIMEOUT_MS = 45_000
 
   for (let attempt = 0; attempt < 3; attempt++) {
     const ac = new AbortController()
@@ -295,17 +305,19 @@ export async function chatCompletion(
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
-          ...gatewayHeaders({ fn: 'chatCompletion', backend: cf ? 'workers-ai' : 'openai' }),
+          ...(cf ? {} : gatewayHeaders({ fn: 'chatCompletion', backend: 'openai' })),
         },
         body: JSON.stringify(body),
         signal: ac.signal,
       })
     } catch (e) {
       clearTimeout(timer)
-      const msg = (e as Error).name === 'AbortError'
-        ? `OpenAI request timed out after ${PER_CALL_TIMEOUT_MS}ms`
-        : (e as Error).message
-      lastError = new Error(msg)
+      // A timed-out model call almost never succeeds on retry and would stack to
+      // ~75s (3×25s) — surface it immediately instead.
+      if ((e as Error).name === 'AbortError') {
+        throw new Error(`${cf ? 'Workers AI' : 'OpenAI'} request timed out after ${PER_CALL_TIMEOUT_MS}ms`, { cause: e })
+      }
+      lastError = new Error((e as Error).message, { cause: e })
       if (attempt < 2) { await new Promise(r => setTimeout(r, 500 * (attempt + 1))); continue }
       throw lastError
     }
@@ -313,8 +325,34 @@ export async function chatCompletion(
 
     if (response.ok) {
       const data = await response.json()
+      if (cf) {
+        // Native CF shape: { result: { response, usage }, success }.
+        // `result.response` is sometimes already a parsed OBJECT, not a string
+        // (the model emitted JSON and the native endpoint pre-parsed it). The
+        // downstream string parser then threw on `.match`/`.trim`, which
+        // collapsed news enrichment to a 100% "unparseable" rate (0 success
+        // 2026-06-06/07). Coerce to a JSON string so parseAIResponse works, and
+        // treat empty/failed as retryable so the circuit breaker actually sees it.
+        const cfContent = asContentString(data.result?.response)
+        if (data.success === false || !cfContent.trim()) {
+          lastError = new Error('Workers AI returned empty/failed result')
+          if (attempt < 2) { await new Promise(r => setTimeout(r, 1000 * (attempt + 1))); continue }
+          throw lastError
+        }
+        return {
+          content: cfContent,
+          usage: data.result?.usage,
+          model: effectiveModel,
+        }
+      }
+      const oaContent = asContentString(data.choices?.[0]?.message?.content)
+      if (!oaContent.trim()) {
+        lastError = new Error('OpenAI returned empty content')
+        if (attempt < 2) { await new Promise(r => setTimeout(r, 1000 * (attempt + 1))); continue }
+        throw lastError
+      }
       return {
-        content: data.choices?.[0]?.message?.content || '',
+        content: oaContent,
         usage: data.usage,
         model: data.model,
       }

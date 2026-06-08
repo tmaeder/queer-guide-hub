@@ -52,7 +52,6 @@ interface VillageRow {
   cities: { name: string; population: number | null } | null;
   countries: {
     name: string;
-    lgbt_legal_status: string | null;
     population: number | null;
   } | null;
   venues: { count: number }[];
@@ -333,12 +332,6 @@ export default function AdminQueerVillages() {
         meta: { hideable: true } satisfies AdminColumnMeta,
       }),
       columnHelper.display({
-        id: 'lgbt_legal_status',
-        header: 'LGBT legal status',
-        cell: ({ row }) => row.original.countries?.lgbt_legal_status || '-',
-        meta: { hideable: true } satisfies AdminColumnMeta,
-      }),
-      columnHelper.display({
         id: 'population',
         header: 'Population',
         cell: ({ row }) => {
@@ -386,7 +379,7 @@ export default function AdminQueerVillages() {
     () => ({
       tableName: 'queer_villages',
       select:
-        'id,name,slug,description,history,image_url,website,latitude,longitude,city_id,country_id,notable_landmarks,tags,featured,created_at,cities(name,population),countries(name,lgbt_legal_status,population),venues(count),events(count)',
+        'id,name,slug,description,history,image_url,website,latitude,longitude,city_id,country_id,notable_landmarks,tags,featured,created_at,cities(name,population),countries(name,population),venues(count),events(count)',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 25,

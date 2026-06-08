@@ -8,13 +8,8 @@ export interface LegalityBadge {
 
 interface CountryLegalityInput {
   equality_score?: number | null;
-  lgbt_legal_status?: string | null;
-  lgbt_rights_status?: string | null;
   lgbti_criminalization?: unknown;
 }
-
-const CRIMINALIZED_TEXT = /criminali[sz]ed|outlawed|punishable|imprisonment|death penalty applies/i;
-const PROTECTED_TEXT = /legal and protected|same-?sex marriage|full equality|fully recogni[sz]ed/i;
 
 function hasCriminalizationFlag(input: unknown): boolean {
   if (!input || typeof input !== 'object') return false;
@@ -33,8 +28,7 @@ export function getLegalityBadge(country: CountryLegalityInput | null | undefine
   if (!country) return null;
 
   const score = country.equality_score;
-  const status = (country.lgbt_legal_status || country.lgbt_rights_status || '').toLowerCase();
-  const criminalized = hasCriminalizationFlag(country.lgbti_criminalization) || CRIMINALIZED_TEXT.test(status);
+  const criminalized = hasCriminalizationFlag(country.lgbti_criminalization);
 
   if (criminalized) {
     return {
@@ -63,21 +57,6 @@ export function getLegalityBadge(country: CountryLegalityInput | null | undefine
       level: 'restricted',
       label: 'Restrictions apply',
       ariaLabel: `LGBTQ+ legal status: limited or no protections (equality score ${score})`,
-    };
-  }
-
-  if (status) {
-    if (PROTECTED_TEXT.test(status)) {
-      return {
-        level: 'protected',
-        label: 'LGBTQ+ legal',
-        ariaLabel: `LGBTQ+ legal status: ${country.lgbt_legal_status || country.lgbt_rights_status}`,
-      };
-    }
-    return {
-      level: 'mixed',
-      label: 'Mixed protections',
-      ariaLabel: `LGBTQ+ legal status: ${country.lgbt_legal_status || country.lgbt_rights_status}`,
     };
   }
 

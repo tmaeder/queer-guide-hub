@@ -30,6 +30,9 @@ import {
   type ExportColumnDef,
 } from '@/utils/excelExport';
 import { TagCategorizer } from '@/components/admin/TagCategorizer';
+import { TagQualityPanel } from '@/components/admin/TagQualityPanel';
+import { TagSuggestionsReviewPanel } from '@/components/admin/TagSuggestionsReviewPanel';
+import { SensitiveTagReviewPanel } from '@/components/admin/SensitiveTagReviewPanel';
 import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
 import TagMergeCandidates from '@/components/admin/TagMergeCandidates';
 import { TagImageUpload } from '@/components/admin/TagImageUpload';
@@ -141,7 +144,7 @@ export default function AdminTags() {
       await Promise.all(
         Object.entries(bulkEditTags).map(([id, description]) => updateTag(id, { description })),
       );
-      toast({ title: 'Success', description: `Updated ${Object.keys(bulkEditTags).length} tags` });
+      toast.success(`Updated ${Object.keys(bulkEditTags).length} tags`);
       setIsBulkEditOpen(false);
       setBulkEditTags({});
     } catch {
@@ -324,7 +327,7 @@ export default function AdminTags() {
             if (!tag.image_url) return;
             try {
               await updateTag(tag.id, { image_url: null });
-              toast({ title: 'Image cleared', description: `Removed image from "${tag.name}"` });
+              toast.success('Image cleared', { description: `Removed image from "${tag.name}"` });
             } catch {
               toast.error('Error: Failed to clear image');
             }
@@ -447,6 +450,9 @@ export default function AdminTags() {
       config={tableConfig}
       beforeTable={
         <>
+          <TagQualityPanel />
+          <SensitiveTagReviewPanel />
+          <TagSuggestionsReviewPanel />
           <div className="mb-6">
             <TagCategorizer />
           </div>

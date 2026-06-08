@@ -2,6 +2,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { LayerType } from '@/hooks/useExploreMapData';
+import { LAYER_DEFS } from '@/components/map/ExploreMapLayers';
 import type {
   MapLens,
   MapShellConfig,
@@ -10,6 +11,20 @@ import type {
 } from '@/components/map/MapShell.types';
 
 const PREFS_KEY = 'map_shell_prefs';
+
+/**
+ * Layers enabled on first load: the surface's available layers narrowed to
+ * those flagged `defaultOn` (and not coming-soon). Keeps external/best-effort
+ * layers like `restrooms` (Refuge API) available in the picker but OFF until
+ * the user opts in, so we don't hit the external API on every pan/zoom.
+ */
+function seedEnabledLayers(available: LayerType[]): LayerType[] {
+  const defaultOn = new Set(
+    LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
+  );
+  const seeded = available.filter((l) => defaultOn.has(l));
+  return seeded.length > 0 ? seeded : available;
+}
 
 function readPrefs(): Partial<MapShellState> | null {
   try {
@@ -69,10 +84,11 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   const [searchParams, setSearchParams] = useSearchParams();
   const useUrl = config.enableUrlState !== false;
   const prefs = useMemo(() => readPrefs(), []);
+  const defaultLayers = useMemo(() => seedEnabledLayers(config.layers), [config.layers]);
 
   const inMemoryRef = useRef<MapShellState>({
     lens: config.defaultLens,
-    enabledLayers: config.layers,
+    enabledLayers: defaultLayers,
     filters: {},
   });
 
@@ -88,7 +104,7 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   const savedLayers = prefs?.enabledLayers?.filter((l) => config.layers.includes(l));
   const enabledLayers: LayerType[] = useUrl
     ? parseLayers(searchParams.get('layers'), config.layers) ??
-      (savedLayers && savedLayers.length > 0 ? savedLayers : config.layers)
+      (savedLayers && savedLayers.length > 0 ? savedLayers : defaultLayers)
     : inMemoryRef.current.enabledLayers;
 
   const filters: MapShellFilters = useMemo(() => {
@@ -108,6 +124,10 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
       }
     }
     if (searchParams.get('queer_owned') === '1') next.queerOwned = true;
+    if (searchParams.get('open') === '1') next.openNow = true;
+    const from = searchParams.get('from');
+    const to = searchParams.get('to');
+    if (from && to) next.dateRange = { start: from, end: to };
     const era = searchParams.get('era');
     if (era) {
       const [s, e] = era.split('-').map(Number);
@@ -191,6 +211,15 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
             }
             if (next.queerOwned) sp.set('queer_owned', '1');
             else sp.delete('queer_owned');
+            if (next.openNow) sp.set('open', '1');
+            else sp.delete('open');
+            if (next.dateRange) {
+              sp.set('from', next.dateRange.start);
+              sp.set('to', next.dateRange.end);
+            } else {
+              sp.delete('from');
+              sp.delete('to');
+            }
             if (next.era) sp.set('era', `${next.era.decadeStart}-${next.era.decadeEnd}`);
             else sp.delete('era');
             return sp;

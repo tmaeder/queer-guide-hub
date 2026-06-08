@@ -3604,8 +3604,6 @@ export type Database = {
           last_refreshed_at: string | null
           last_synced_at: string | null
           latitude: number | null
-          lgbt_legal_status: string | null
-          lgbt_rights_status: string | null
           lgbti_adoption_rights: string | null
           lgbti_association_restrictions: Json | null
           lgbti_bullying_protection: Json | null
@@ -3683,8 +3681,6 @@ export type Database = {
           last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null
-          lgbt_legal_status?: string | null
-          lgbt_rights_status?: string | null
           lgbti_adoption_rights?: string | null
           lgbti_association_restrictions?: Json | null
           lgbti_bullying_protection?: Json | null
@@ -3762,8 +3758,6 @@ export type Database = {
           last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null
-          lgbt_legal_status?: string | null
-          lgbt_rights_status?: string | null
           lgbti_adoption_rights?: string | null
           lgbti_association_restrictions?: Json | null
           lgbti_bullying_protection?: Json | null
@@ -5099,6 +5093,7 @@ export type Database = {
           organizer_contact: string | null
           organizer_id: string | null
           organizer_name: string | null
+          pride_subtypes: string[] | null
           price_max: number | null
           price_min: number | null
           quality_score: number | null
@@ -5112,6 +5107,7 @@ export type Database = {
           start_date: string
           state: string | null
           status: string | null
+          tags: string[] | null
           target_groups: string[] | null
           ticket_url: string | null
           timezone: string | null
@@ -5168,6 +5164,7 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
+          pride_subtypes?: string[] | null
           price_max?: number | null
           price_min?: number | null
           quality_score?: number | null
@@ -5181,6 +5178,7 @@ export type Database = {
           start_date: string
           state?: string | null
           status?: string | null
+          tags?: string[] | null
           target_groups?: string[] | null
           ticket_url?: string | null
           timezone?: string | null
@@ -5237,6 +5235,7 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
+          pride_subtypes?: string[] | null
           price_max?: number | null
           price_min?: number | null
           quality_score?: number | null
@@ -5250,6 +5249,7 @@ export type Database = {
           start_date?: string
           state?: string | null
           status?: string | null
+          tags?: string[] | null
           target_groups?: string[] | null
           ticket_url?: string | null
           timezone?: string | null

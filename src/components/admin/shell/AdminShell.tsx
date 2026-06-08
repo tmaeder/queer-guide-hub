@@ -19,20 +19,39 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, ChevronRight } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { getBreadcrumbsForRoute } from '@/config/adminNavigation';
+import { getBreadcrumbsForRoute, getRouteMinRole } from '@/config/adminNavigation';
+import { roleAtLeast } from '@/config/adminRoles';
+import { useGranularRoles } from '@/hooks/useGranularRoles';
+import { Lock } from 'lucide-react';
+import { AdminAreaHint } from '@/components/admin/AdminAreaHint';
 import { AdminCommandPaletteHost } from '@/components/admin/command-palette/AdminCommandPalette';
 import { AdminCommandActionsProvider } from '@/components/admin/command-palette/useAdminCommandActions';
 import { GlobalAdminActions } from '@/components/admin/command-palette/useGlobalAdminActions';
 
 // ── Editor Context ────────────────────────────────────────────────────────────
 
+/** One entry in a review/edit queue (cockpit mode). */
+export interface EditorQueueItem {
+  contentType: string;
+  itemId: string;
+}
+
+/** Ordered queue the editor steps through, with the active position. */
+export interface EditorQueue {
+  items: EditorQueueItem[];
+  index: number;
+}
+
 interface EditorContext {
   contentType: string;
   itemId: string | null;
+  queue?: EditorQueue;
 }
 
 interface AdminShellContextValue {
-  openEditor: (contentType: string, itemId: string | null) => void;
+  /** Open the editor for one record, or — when `queue` is passed — over an ordered
+   *  queue starting at `queue.index` (cockpit mode: N/M nav + auto-advance). */
+  openEditor: (contentType: string, itemId: string | null, queue?: EditorQueue) => void;
   closeEditor: () => void;
 }
 
@@ -105,17 +124,45 @@ export function AdminShell() {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  const openEditor = useCallback((contentType: string, itemId: string | null) => {
-    setEditor({ contentType, itemId });
-  }, []);
+  const openEditor = useCallback(
+    (contentType: string, itemId: string | null, queue?: EditorQueue) => {
+      setEditor({ contentType, itemId, queue });
+    },
+    [],
+  );
 
   const closeEditor = useCallback(() => {
     setEditor(null);
   }, []);
 
+  // Move to a different position in the queue (cockpit prev/next + auto-advance).
+  const navigateQueue = useCallback((index: number) => {
+    setEditor((prev) => {
+      if (!prev?.queue) return prev;
+      const clamped = Math.max(0, Math.min(index, prev.queue.items.length - 1));
+      const next = prev.queue.items[clamped];
+      if (!next) return prev;
+      return {
+        contentType: next.contentType,
+        itemId: next.itemId,
+        queue: { ...prev.queue, index: clamped },
+      };
+    });
+  }, []);
+
   const handleEditorSaved = useCallback((_id: string) => {
     // Stay on editor after save -- child can navigate if desired
   }, []);
+
+  // Per-route role enforcement. AdminRouteGuard already gated console entry at
+  // 'editor'; here each route's minRole (system → admin, automation → moderator,
+  // content/import-review → editor) is enforced via the nav config so admin-only
+  // pages can't be reached by URL even though the sidebar hides them.
+  const { effectiveRole, loading: rolesLoading } = useGranularRoles();
+  const requiredRole = getRouteMinRole(location.pathname);
+  const routeDenied = !rolesLoading && !roleAtLeast(effectiveRole, requiredRole);
+  // Avoid flashing restricted content while roles resolve on elevated routes.
+  const routeGatingPending = rolesLoading && requiredRole !== 'editor';
 
   // Build breadcrumbs from current route
   const breadcrumbs = getBreadcrumbsForRoute(location.pathname);
@@ -206,6 +253,9 @@ export function AdminShell() {
             </div>
           )}
 
+          {/* Area hint — one-line "what is this area" under the breadcrumb */}
+          {!editor && <AdminAreaHint />}
+
           {/* Content area */}
           <main id="admin-main-content" tabIndex={-1} className="flex-1 overflow-auto p-4 sm:p-6">
             {/* Editor overlay takes priority when open */}
@@ -214,6 +264,8 @@ export function AdminShell() {
                 <CMSEditorLayout
                   contentType={editor.contentType}
                   itemId={editor.itemId}
+                  queue={editor.queue}
+                  onNavigate={navigateQueue}
                   onClose={closeEditor}
                   onSaved={handleEditorSaved}
                 />
@@ -221,7 +273,25 @@ export function AdminShell() {
             ) : (
               <ErrorBoundary>
                 <div key={location.pathname} className="content-enter">
-                  <Outlet />
+                  {routeDenied ? (
+                    <div
+                      className="flex flex-col items-center gap-2 rounded-container border border-border bg-muted/30 p-8 text-center"
+                      role="alert"
+                    >
+                      <Lock className="h-6 w-6 text-muted-foreground" aria-hidden />
+                      <p className="text-13 font-medium">You don't have access to this area</p>
+                      <p className="text-2xs text-muted-foreground">
+                        Requires {requiredRole} role. Ask an admin if you need it.
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
+                        Back to Cockpit
+                      </Button>
+                    </div>
+                  ) : routeGatingPending ? (
+                    <Skeleton className="h-64 w-full rounded-container" />
+                  ) : (
+                    <Outlet />
+                  )}
                 </div>
               </ErrorBoundary>
             )}

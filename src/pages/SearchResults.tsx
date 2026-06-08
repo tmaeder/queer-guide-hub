@@ -28,7 +28,8 @@ import { SearchResultCard } from '@/components/search/SearchResultCard';
 import { SearchCalendarView } from '@/components/search/SearchCalendarView';
 import { SearchAskPanel } from '@/components/search/SearchAskPanel';
 import { useTrackClick } from '@/hooks/useSearchActions';
-import { trackSearchUx } from '@/lib/searchClient';
+import { trackSearchUx, getSessionId } from '@/lib/searchClient';
+import { useAuth } from '@/hooks/useAuth';
 import { useDidYouMean } from '@/hooks/useDidYouMean';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -117,11 +118,15 @@ export default function SearchResults() {
     setSearchQuery(query);
   }, [query]);
 
+  // Pass identity so the worker personalizes ranking from the profile
+  // (interests/home_city → _boostReason). Anonymous users fall back to session.
+  const { user } = useAuth();
   const { results, loading, error, errorKind, totalHits, tooShort, facets } = useSearch(
     query,
     filters,
     page,
     workerSort(effectiveSort),
+    { userId: user?.id ?? null, sessionId: getSessionId() },
   );
 
   // ── URL sync ───────────────────────────────────────────────────────────

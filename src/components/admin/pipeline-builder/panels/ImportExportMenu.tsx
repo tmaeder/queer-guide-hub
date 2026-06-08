@@ -87,7 +87,7 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
     a.download = `${pipelineName || 'pipeline'}-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast({ title: 'Pipeline exported', description: `${nodes.length} nodes, ${edges.length} edges` });
+    toast.success('Pipeline exported', { description: `${nodes.length} nodes, ${edges.length} edges` });
   };
 
   const handleCopy = async () => {
@@ -98,7 +98,7 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
     const payload = serialize(nodes, edges, pipelineName || 'unnamed-pipeline', pipelineDescription);
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-      toast({ title: 'Copied to clipboard', description: `${nodes.length} nodes, ${edges.length} edges` });
+      toast.success('Copied to clipboard', { description: `${nodes.length} nodes, ${edges.length} edges` });
     } catch (_e) {
       toast.error('Copy failed');
     }
@@ -114,7 +114,7 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
       const parsed = JSON.parse(text);
       if (!validate(parsed)) throw new Error('Invalid pipeline format (missing version/nodes/edges)');
       onImport(parsed);
-      toast({ title: 'Pipeline imported', description: `${parsed.nodes.length} nodes, ${parsed.edges.length} edges` });
+      toast.success('Pipeline imported', { description: `${parsed.nodes.length} nodes, ${parsed.edges.length} edges` });
     } catch (_err) {
       toast.error('Import failed');
     } finally {
@@ -128,7 +128,7 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
       const parsed = JSON.parse(text);
       if (!validate(parsed)) throw new Error('Clipboard does not contain a valid pipeline export');
       onImport(parsed);
-      toast({ title: 'Pipeline pasted', description: `${parsed.nodes.length} nodes, ${parsed.edges.length} edges` });
+      toast.success('Pipeline pasted', { description: `${parsed.nodes.length} nodes, ${parsed.edges.length} edges` });
     } catch (_err) {
       toast.error('Paste failed');
     }

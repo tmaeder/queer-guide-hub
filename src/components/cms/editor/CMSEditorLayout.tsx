@@ -21,6 +21,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useCMSEditor } from '@/hooks/useCMSEditor';
+import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
 import {
   getContentType,
   getFieldsByGroup,
@@ -30,10 +31,12 @@ import {
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { EditorHeader } from './EditorHeader';
 import { EditorSidebar } from './EditorSidebar';
+import { EntityAuditHistory } from '@/components/cms/EntityAuditHistory';
 import { AIAssistDrawer } from '@/components/cms/AIAssistDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import type { FieldGroup } from '@/types/cms';
+import type { FieldGroup, WorkflowState } from '@/types/cms';
+import type { EditorQueue } from '@/components/admin/shell/AdminShell';
 import { brandColors } from '@/theme/brandColors';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -66,15 +69,31 @@ const fieldGroupColors: Record<FieldGroup, string> = {
 interface CMSEditorLayoutProps {
   contentType: string;
   itemId: string | null;
+  /** When present, the editor runs in cockpit mode: N/M nav + approve/advance. */
+  queue?: EditorQueue;
+  /** Jump to a position in the queue (cockpit prev/next + auto-advance). */
+  onNavigate?: (index: number) => void;
   onClose: () => void;
   onSaved?: (id: string) => void;
 }
 
-export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEditorLayoutProps) {
+export function CMSEditorLayout({
+  contentType,
+  itemId,
+  queue,
+  onNavigate,
+  onClose,
+  onSaved,
+}: CMSEditorLayoutProps) {
   const config = getContentType(contentType);
 
   const { state, setField, setFields, save, reset, setActiveGroup, metadata, updateMetadata } =
     useCMSEditor({ contentType, itemId });
+
+  // Cockpit workflow transitions (approve / request changes). The queue feeds
+  // items that are in `review`; fall back to the record's own workflow_state.
+  const workflowState = (metadata?.workflow_state as WorkflowState) ?? 'review';
+  const { transition, isTransitioning } = useCMSWorkflow(workflowState);
 
   const titleValue = (config ? (state.data[config.titleField] as string) : '') ?? '';
   useEffect(() => {
@@ -187,6 +206,73 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
     }
   }, [save, onSaved, state.itemId]);
 
+  // ── Queue (cockpit) navigation + actions ─────────────────────────
+  const inQueue = Boolean(queue && queue.items.length > 0);
+  const queueIndex = queue?.index ?? 0;
+  const queueTotal = queue?.items.length ?? 0;
+  const isFirst = queueIndex <= 0;
+  const isLast = queueIndex >= queueTotal - 1;
+
+  const confirmDiscardIfDirty = useCallback(() => {
+    if (!state.isDirty) return true;
+    return window.confirm('You have unsaved changes. Discard them and continue?');
+  }, [state.isDirty]);
+
+  const handlePrev = useCallback(() => {
+    if (!inQueue || isFirst) return;
+    if (!confirmDiscardIfDirty()) return;
+    onNavigate?.(queueIndex - 1);
+  }, [inQueue, isFirst, confirmDiscardIfDirty, onNavigate, queueIndex]);
+
+  // Step forward; close + toast when the queue is drained.
+  const advance = useCallback(
+    (processed: number) => {
+      if (!inQueue || isLast) {
+        if (inQueue) toast.success(`Queue cleared — ${processed} processed`);
+        onClose();
+        return;
+      }
+      onNavigate?.(queueIndex + 1);
+    },
+    [inQueue, isLast, onClose, onNavigate, queueIndex],
+  );
+
+  const handleNext = useCallback(() => {
+    if (!inQueue || isLast) return;
+    if (!confirmDiscardIfDirty()) return;
+    onNavigate?.(queueIndex + 1);
+  }, [inQueue, isLast, confirmDiscardIfDirty, onNavigate, queueIndex]);
+
+  const handleApprove = useCallback(async () => {
+    if (!state.itemId || !config) return;
+    // Persist any pending edits before publishing, else they're lost on advance.
+    if (state.isDirty) {
+      const saved = await save();
+      if (!saved) return;
+    }
+    const ok = await transition(config.tableName, state.itemId, 'published');
+    if (ok) {
+      toast.success('Published');
+      advance(queueIndex + 1);
+    } else {
+      toast.error('Could not publish — check workflow state / permissions');
+    }
+  }, [state.itemId, state.isDirty, config, save, transition, advance, queueIndex]);
+
+  const handleRequestChanges = useCallback(
+    async (reason: string) => {
+      if (!state.itemId || !config || !reason.trim()) return;
+      const ok = await transition(config.tableName, state.itemId, 'draft', reason.trim());
+      if (ok) {
+        toast.success('Sent back to draft');
+        advance(queueIndex + 1);
+      } else {
+        toast.error('Could not request changes');
+      }
+    },
+    [state.itemId, config, transition, advance, queueIndex],
+  );
+
   // Bridge global CMS shortcuts to local editor handlers (CMSShell dispatches
   // these so it can own ⌘K/⌘S/⌘Enter without holding editor refs).
   useEffect(() => {
@@ -206,12 +292,50 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
     };
   }, [handleSave, state.isDirty, state.isSaving]);
 
+  // Cockpit keyboard loop: [ / ] prev/next, ⌘/Ctrl+Enter approve. Ignored while
+  // typing in a field. Active only in queue mode.
+  useEffect(() => {
+    if (!inQueue) return;
+    const isTyping = (el: EventTarget | null) => {
+      const node = el as HTMLElement | null;
+      if (!node) return false;
+      const tag = node.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || node.isContentEditable;
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (!isTransitioning && !state.isSaving) handleApprove();
+        return;
+      }
+      if (isTyping(e.target)) return;
+      if (e.key === ']') {
+        e.preventDefault();
+        handleNext();
+      } else if (e.key === '[') {
+        e.preventDefault();
+        handlePrev();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [inQueue, isTransitioning, state.isSaving, handleApprove, handleNext, handlePrev]);
+
   // Curried field change handler
   const handleFieldChange = useCallback(
     (fieldName: string) => (value: unknown) => {
       setField(fieldName, value);
     },
     [setField],
+  );
+
+  // Jump to the field-group tab that owns a field (QualityPanel "Jump").
+  const handleJumpToField = useCallback(
+    (fieldName: string) => {
+      const f = config?.fields.find((x) => x.name === fieldName);
+      if (f?.group) setActiveGroup(f.group);
+    },
+    [config, setActiveGroup],
   );
 
   // ── AI Assist drawer ────────────────────────────────────────
@@ -280,6 +404,14 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
           onClose={onClose}
           onEnrich={handleEnrich}
           isEnriching={isEnriching}
+          queueInfo={inQueue ? { index: queueIndex, total: queueTotal } : undefined}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          canPrev={inQueue && !isFirst}
+          canNext={inQueue && !isLast}
+          onApprove={handleApprove}
+          onRequestChanges={handleRequestChanges}
+          isTransitioning={isTransitioning}
         />
 
         {/* ── Progress bar ─────────────────────────────────────── */}
@@ -384,7 +516,16 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
             itemId={state.itemId ?? itemId}
             metadata={metadata}
             onUpdateMetadata={updateMetadata}
+            qualitySource={state.data}
+            onApplyField={setField}
+            onJumpToField={handleJumpToField}
+            autoRunQuality={inQueue}
           />
+          {config && state.itemId && (
+            <div className="p-4 pt-0">
+              <EntityAuditHistory sourceTable={config.tableName} sourceId={state.itemId} />
+            </div>
+          )}
         </div>
       </div>
 

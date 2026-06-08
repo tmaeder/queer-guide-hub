@@ -28,7 +28,16 @@ function buildChips(filters: MapShellFilters): Chip[] {
   }
   if (filters.nearMe) chips.push({ key: 'nearMe', label: `Within ${filters.nearMe.radiusKm} km` });
   if (filters.dateRange) {
-    chips.push({ key: 'dateRange', label: `${filters.dateRange.start} → ${filters.dateRange.end}` });
+    const fmt = (s: string) => {
+      const d = new Date(s);
+      return Number.isNaN(d.getTime())
+        ? s
+        : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    };
+    chips.push({
+      key: 'dateRange',
+      label: `${fmt(filters.dateRange.start)} – ${fmt(filters.dateRange.end)}`,
+    });
   }
   if (filters.accessible) chips.push({ key: 'accessible', label: 'Accessible' });
   if (filters.queerOwned) chips.push({ key: 'queerOwned', label: 'Queer-owned' });

@@ -17,6 +17,7 @@ import { useNearMe } from '@/hooks/useNearMe';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
 import { useUserMode } from '@/hooks/useUserMode';
+import { useAuth } from '@/hooks/useAuth';
 import { useAssistant } from '@/hooks/useAssistant';
 import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
@@ -120,9 +121,11 @@ export const UniversalSearchBar = () => {
   // feed when available; fall back to trending. Gated behind a build flag so the
   // panel fires no /recommendations request until the worker endpoint is deployed.
   const recsEnabled = import.meta.env.VITE_RECOMMENDATIONS_ENABLED === 'true';
+  const { user } = useAuth();
   const { recommendations } = useSearchRecommendations(recsEnabled && isOpen && !query, {
     limit: 6,
     types: trendingTypes,
+    userId: user?.id ?? null,
   });
   const discoveryHits = recommendations.length > 0 ? recommendations : trending;
   const discoverySource: 'recommended' | 'trending' =
@@ -404,6 +407,7 @@ export const UniversalSearchBar = () => {
                   aria-expanded={isOpen}
                   aria-controls="qg-search-listbox"
                   aria-haspopup="listbox"
+                  aria-activedescendant={resultsFocused !== null ? `result-${resultsFocused}` : undefined}
                   placeholder={placeholder}
                   value={query}
                   onChange={(e) => {

@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_DEFS } from './ExploreMapLayers';
 import { LensPicker } from './LensPicker';
+import { MapQuickFilters } from './MapQuickFilters';
 import { TimePopover } from './FilterPopovers';
 import { MapFiltersPanel } from './MapFiltersPanel';
 import {
@@ -89,6 +90,10 @@ interface CommandBarProps {
   onGeolocate?: () => void;
   onFitBounds?: () => void;
   onShare?: () => void;
+  /** Saved (favorites) quick-toggle — only rendered when the viewer can save. */
+  canSave?: boolean;
+  savedOnly?: boolean;
+  onToggleSaved?: () => void;
   className?: string;
 }
 
@@ -110,11 +115,17 @@ export const CommandBar = ({
   onGeolocate,
   onFitBounds,
   onShare,
+  canSave,
+  savedOnly,
+  onToggleSaved,
   className,
 }: CommandBarProps) => {
   const navigate = useLocalizedNavigate();
   const isMobile = useIsMobile();
   const [query, setQuery] = useState(filters.search ?? '');
+  // Search starts collapsed to a single icon so it doesn't duplicate the global
+  // header search; it expands on click or whenever a search filter is active.
+  const [searchOpen, setSearchOpen] = useState(!!filters.search);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [layerOpen, setLayerOpen] = useState(false);
@@ -128,8 +139,9 @@ export const CommandBar = ({
   // with it. Typing doesn't touch filters.search until the user applies, so
   // this never fights live keystrokes.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs local input with the external search filter; one-way mirror, never fights keystrokes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-way mirror of external search filter into local input + expanded state; never fights keystrokes.
     setQuery(filters.search ?? '');
+    if (filters.search) setSearchOpen(true);
   }, [filters.search]);
 
   // Primary action: narrow what's on the map to the typed term. Secondary
@@ -180,18 +192,37 @@ export const CommandBar = ({
     <div
       data-testid="map-command-bar"
       className={cn(
-        'absolute top-3 left-3 right-3 z-20 flex items-center gap-2 border border-border bg-background h-10 px-2',
+        // Content-width pill anchored top-left — NOT full-width, so wide screens
+        // don't get a huge empty gap between the left controls and the right.
+        // Caps at the viewport and scrolls horizontally if it ever overflows.
+        'absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-element border border-border bg-background h-11 px-2 max-w-[calc(100%-1.5rem)] overflow-x-auto',
         className,
       )}
     >
-      {/* Search */}
+      {/* Search — collapsed to an icon by default (no duplicate of the global
+          header search); expands inline on click or when a filter is active. */}
+      {!searchOpen ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Search this map"
+          title="Search this map"
+          onClick={() => {
+            setSearchOpen(true);
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }}
+          className="h-8 w-8 p-0 border border-border"
+        >
+          <Search size={14} aria-hidden="true" />
+        </Button>
+      ) : (
       <Popover
         open={popoverOpen && (loading || suggestions.length > 0 || query.length >= 2)}
         onOpenChange={setPopoverOpen}
       >
         <PopoverTrigger asChild>
           <div
-            className="relative flex-1 min-w-0"
+            className="relative w-56 shrink-0"
             role="combobox"
             aria-expanded={popoverOpen}
             aria-controls="map-shell-listbox"
@@ -226,7 +257,7 @@ export const CommandBar = ({
                   setQuery('');
                   if (filters.search) onFiltersChange({ ...filters, search: undefined });
                   setPopoverOpen(false);
-                  inputRef.current?.focus();
+                  setSearchOpen(false);
                 }}
                 className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
               >
@@ -286,10 +317,23 @@ export const CommandBar = ({
           </Command>
         </PopoverContent>
       </Popover>
+      )}
 
-      <div className="h-6 w-px bg-border" aria-hidden="true" />
+      {/* Quick filters sit inline next to the view controls (replaces the old
+          floating chip row); the bar stays content-width so there's no gap. */}
+      <MapQuickFilters
+        filters={filters}
+        onChange={onFiltersChange}
+        showTime={availableFilters.includes('time')}
+        canSave={canSave}
+        savedOnly={savedOnly}
+        onToggleSaved={onToggleSaved}
+      />
 
-      <LensPicker lenses={lenses} value={lens} onChange={onLensChange} />
+      <div className="mx-0.5 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
+
+      <div className="flex items-center gap-1 shrink-0">
+        <LensPicker lenses={lenses} value={lens} onChange={onLensChange} />
 
       {hasPanelFilters &&
         (isMobile ? (
@@ -299,7 +343,8 @@ export const CommandBar = ({
                 variant="ghost"
                 size="sm"
                 aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
-                className="relative h-8 w-8 p-0 border border-border"
+                title="Filters"
+                className="relative h-8 w-8 p-0"
               >
                 <SlidersHorizontal size={14} aria-hidden="true" />
                 {activeFilterCount > 0 && (
@@ -332,7 +377,8 @@ export const CommandBar = ({
                 variant="ghost"
                 size="sm"
                 aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
-                className="relative h-8 w-8 p-0 border border-border"
+                title="Filters"
+                className="relative h-8 w-8 p-0"
               >
                 <SlidersHorizontal size={14} aria-hidden="true" />
                 {activeFilterCount > 0 && (
@@ -342,12 +388,32 @@ export const CommandBar = ({
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="p-4 w-80 border-border max-h-[70dvh] overflow-y-auto">
-              <MapFiltersPanel
-                availableFilters={availableFilters}
-                filters={filters}
-                onFiltersChange={onFiltersChange}
-              />
+            <PopoverContent align="end" className="p-0 w-80 max-h-[70dvh] overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
+                <span className="text-13 font-semibold text-foreground">Filters</span>
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = { ...filters };
+                      delete next.category;
+                      delete next.tags;
+                      delete next.nearMe;
+                      onFiltersChange(next);
+                    }}
+                    className="text-13 text-muted-foreground underline hover:text-foreground"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+              <div className="overflow-y-auto p-4">
+                <MapFiltersPanel
+                  availableFilters={availableFilters}
+                  filters={filters}
+                  onFiltersChange={onFiltersChange}
+                />
+              </div>
             </PopoverContent>
           </Popover>
         ))}
@@ -359,26 +425,30 @@ export const CommandBar = ({
               variant="ghost"
               size="sm"
               aria-label="Layers"
-              className="h-8 w-8 p-0 border border-border"
+              title="Layers"
+              className="h-8 w-8 p-0"
             >
               <Layers size={14} aria-hidden="true" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="p-2 w-56 border-border">
-            <div className="flex flex-col gap-1">
+          <PopoverContent align="end" className="p-1.5 w-56">
+            <p className="px-2 pt-1 pb-1.5 text-2xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Layers
+            </p>
+            <div className="flex flex-col gap-0.5">
               {LAYER_DEFS.filter((d) => availableLayers.includes(d.type) && !d.comingSoon).map((d) => {
                 const checked = enabledLayers.includes(d.type);
                 return (
                   <label
                     key={d.type}
-                    className="inline-flex items-center gap-2 h-8 px-2 text-sm hover:bg-muted cursor-pointer"
+                    className="flex items-center gap-2 h-9 px-2 rounded-element text-sm hover:bg-muted cursor-pointer"
                   >
                     <Checkbox
                       checked={checked}
                       onCheckedChange={() => toggleLayer(d.type)}
                       aria-label={d.label}
                     />
-                    <span>{d.label}</span>
+                    <span className="flex-1">{d.label}</span>
                   </label>
                 );
               })}
@@ -400,20 +470,24 @@ export const CommandBar = ({
             variant="ghost"
             size="sm"
             aria-label="More map options"
-            className="h-8 w-8 p-0 border border-border"
+            title="More"
+            className="h-8 w-8 p-0"
           >
             <MoreHorizontal size={14} aria-hidden="true" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="p-1 w-48 border-border">
-          <div className="flex flex-col">
+        <PopoverContent align="end" className="p-1.5 w-52">
+          <p className="px-2 pt-1 pb-1.5 text-2xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Map options
+          </p>
+          <div className="flex flex-col gap-0.5">
             {onGeolocate && (
               <button
                 type="button"
                 onClick={() => { onGeolocate(); setMoreOpen(false); }}
-                className="inline-flex items-center gap-2 h-8 px-2 text-sm hover:bg-muted text-left"
+                className="flex items-center gap-2.5 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
               >
-                <Locate size={14} aria-hidden="true" />
+                <Locate size={15} aria-hidden="true" className="text-muted-foreground" />
                 <span>My location</span>
               </button>
             )}
@@ -421,9 +495,9 @@ export const CommandBar = ({
               <button
                 type="button"
                 onClick={() => { onFitBounds(); setMoreOpen(false); }}
-                className="inline-flex items-center gap-2 h-8 px-2 text-sm hover:bg-muted text-left"
+                className="flex items-center gap-2.5 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
               >
-                <Maximize2 size={14} aria-hidden="true" />
+                <Maximize2 size={15} aria-hidden="true" className="text-muted-foreground" />
                 <span>Fit to results</span>
               </button>
             )}
@@ -431,15 +505,16 @@ export const CommandBar = ({
               <button
                 type="button"
                 onClick={() => { onShare(); setMoreOpen(false); }}
-                className="inline-flex items-center gap-2 h-8 px-2 text-sm hover:bg-muted text-left"
+                className="flex items-center gap-2.5 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
               >
-                <Share2 size={14} aria-hidden="true" />
+                <Share2 size={15} aria-hidden="true" className="text-muted-foreground" />
                 <span>Share view</span>
               </button>
             )}
           </div>
         </PopoverContent>
       </Popover>
+      </div>
     </div>
   );
 };

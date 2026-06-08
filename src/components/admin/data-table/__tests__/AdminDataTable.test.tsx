@@ -24,7 +24,14 @@ vi.mock('@/hooks/useAdminTableState', () => ({
   }),
 }));
 vi.mock('@/hooks/useFilterPresets', () => ({
-  useFilterPresets: () => ({ presets: [], save: vi.fn(), remove: vi.fn(), get: vi.fn() }),
+  useFilterPresets: () => ({
+    presets: [],
+    save: vi.fn(),
+    remove: vi.fn(),
+    get: vi.fn(),
+    setDefault: vi.fn(),
+    getDefault: vi.fn(() => null),
+  }),
 }));
 
 import { AdminDataTable } from '../AdminDataTable';

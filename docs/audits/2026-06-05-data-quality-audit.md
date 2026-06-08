@@ -48,6 +48,8 @@ Live audit against prod (`xqeacpakadqfxjxjcewc`). Counts are real, not estimates
 **✅ Venue geocoding + geo-linking — COMPLETE:**
 - **Geocoding** — `scripts/backfill-venue-geocode-photon.mjs`. Country-validated Photon, 9,688 processed: **6,946 located (72%)**, 824 rejected (cross-country mislinks correctly blocked), 1,918 no-result (name-only "addresses" like "Afghan Women's Network", not geocodable).
 - **City/country linking** — PostGIS nearest-city (country-scoped, then global ≤100km). Result for live venues: **coords 56%→88%, city_id 73%→95.4%, country_id →95.6%**. Remaining ~363 are >100km from any city in our table (remote / sparse city coverage).
+**🟢 Running now (background, supervised, resumable):**
+- **Venue geocoding** — `scripts/backfill-venue-geocode-photon.mjs`. Country-validated Photon, ~25 venues/min, ~71% located, ~16% rejected as cross-country mislinks. ~10.2k queued, ETA ~6–7h.
 - **Personality Wikidata-by-QID enrichment** — `scripts/backfill-personality-wikidata.mjs`. ✅ **DONE** (2,886 processed): +491 nationalities; **~14% (~400) of QIDs are wrong** (point to given-name/disambiguation items, not humans) → flagged `needs_attention`; birth-date yield ~0 — Wikidata genuinely lacks day-precision births for this obscure cohort (finding: poor Wikidata coverage + bad QID linkage). Day-precision-only gate kept (no fake `YYYY-01-01`).
 
 Both write per-row via the Management API (bulk venue/personality writes time out on the `search_documents_sync` reindex trigger) and self-restart on DNS/network blips.
@@ -77,3 +79,77 @@ Both write per-row via the Management API (bulk venue/personality writes time ou
 Event geocoding, news full-text + geo-tagging were completed by the parallel session (events 100% geocoded; news thin 7.6k→2.7k, geo-missing 16.7k→4.9k).
 
 **Operational guards:** prod DB is disk-constrained (~5.8 GB, read-only trips near ~6.7 GB) — size-check before bulk writes that add content/embeddings; respect Photon rate limits; verify on https://queer.guide after each batch.
+**⏭️ Remaining (need geocode to finish, or edge-fn / LLM budget):**
+
+| Job | Count | Driver |
+|-----|------|--------|
+| Venue city-link (post-geocode) | ~6,283 | reverse-geocode / city-text match after coords land |
+| Event geocoding | 1,855 | same Photon client |
+| Event liveness sweep | ~440 upcoming | **blocked**: only 3 upcoming-unknown events have a ticket/website URL to check |
+| News full-text backfill | 7,628 | shipped extraction over pre-2026-05-30 corpus |
+| News geo-tagging | 16,676 | `pipeline-enrich-news` geo step (LLM) |
+| Real LGBTQ+ classification | all types | LLM classifier (cost) — replaces the default index score |
+| Personality name-only enrichment (no QID) | ~7,500 | needs safe disambiguation — name matching alone is unsafe |
+| Images + descriptions | venues 97%, pers 79% | highest cost; queue via `venues_due_for_refresh` + agentic-enrich |
+
+**Operational guards:** prod DB is disk-constrained (~5.8 GB, read-only trips near ~6.7 GB) — size-check before bulk writes that add content/embeddings; respect Photon rate limits; verify on https://queer.guide after each batch.
+
+## Phase B — second session (event + news), 2026-06-05
+
+**✅ Event geocoding — DONE.** `scripts/backfill-event-geocode.mjs`. **Live events with coords: 1,452/3,307 (44%) → 3,307/3,307 (100%)**, 0 remaining, 0 out-of-range/null-island.
+- Key finding that reshaped the approach: all 1,855 missing-coord events *already* carried a correct `city_id` (→ `country_id`), and every linked city had coords. Only **31** events had a street address or `venue_name` worth precise geocoding; **1,824 were city-level** (Pride, street fairs, NYE parties).
+- Pass A (Photon, country-validated, reject `countrycode ≠ event.country`): 31 → **30 precise**, 1 no-result, 0 rejected.
+- Pass B (city-coord inherit, country-safe by construction since `city_id` was already resolved): **1,825** events given city-center coords.
+- `trg_event_geocode` (pg_net→Nominatim reverse-geocode) was **not** triggered — its `WHEN (NEW.city_id IS NULL)` guard holds for all rows, so no external fan-out. `latitude IS NULL` is the natural resume cursor (every row has a city fallback → job is idempotent + terminating).
+
+**✅ News full-text backfill — DONE.** `scripts/backfill-news-fulltext.mjs` under `scripts/run-supervised.sh` (detached). Re-fetched the URL of each thin live article (`content < 120` chars, 7,658) and recovered the body via a **faithful jsdom port of the shipped `_shared/news-quality/extract.ts`** (JSON-LD `articleBody` → `<article>` → `<main>` → densest `<p>`-cluster). Conservative swap (≥250 chars AND ≥1.2× current), never blanks on 404/paywall/non-HTML.
+- **Result: 7,658 processed → 5,080 extracted (66%), 2,577 skipped (paywall/404/non-HTML/no-gain), 1 failed.** Single supervisor run, 0 restarts. **Live-news content coverage 54% → 84.6% (14,174/16,752).** The 2,578 still-thin are genuinely unextractable over HTTP (hard paywalls / dead links).
+- **DB growth +90 MB only** (5,794 → 5,884 MB) — nowhere near the 6,300 MB guard.
+- **Realized value (important nuance):** news detail pages are *intentionally* gone (headlines link to publishers), and `search_documents_index_news` builds the keyword `search_tsv` from **title + category + excerpt only — not `content`**. So the win is via (a) **excerpt** (indexed weight-D + shown as the search-result description; ~839 thin rows had none), and (b) **semantic search** — a content-change trigger **re-embeds** automatically (now 16,719/16,752 live news carry embeddings, 99.8%), so the fuller body improves vector recall even though it isn't in the tsvector. Content also feeds quality-scoring + dedup fingerprints and brings the pre-2026-05-30 corpus to new-pipeline parity. Side-effect to note: this triggered ~5k re-embeddings (existing automatic lifecycle, not a new LLM cost line).
+- **Known limitation:** the density fallback occasionally captures trailing boilerplate (e.g. a "Related Categories" rail) on sites with thin article markup — same behavior as the shipped extractor; left faithful. The excerpt (taken from the top lead paragraph) is unaffected.
+- Resumable id-keyset cursor (`scripts/output/news-fulltext.cursor`), disk-guarded (exit 42 at 6,300 MB), per-row writes.
+
+**✅ News geo-tagging — conservative pass DONE (310 of ~16,725 empty `country_ids`).** Decision: a broad text pass is **not** safe (sampled bare-country-name-in-title matching ran only ~80% precision — proper-noun collisions like "Tom of Finland"→Finland, publisher names, demonym-as-person). Two confident slices were applied instead, leaving the bulk for the LLM geo step:
+- **11 deterministic** — articles already carrying `city_ids` → `country_ids` derived from `cities.country_id`. Zero risk.
+- **299 governance-gated** — title contains exactly **one** unambiguous country name (length ≥4; hard stoplist drops state/word collisions: Georgia, Turkey, Jordan, Chad, Guinea, Niger, Cuba, Chile, Hungary, …) **AND** a legislative/governmental cue (`pass|ban|repeal|decriminali|criminali|legali|parliament|lawmaker|senate|court|ruling|president|government|bill|constitution|referendum|crackdown|…`). Two systematic false-positive patterns patched out: "Northern Ireland"→Ireland, and publisher suffixes ("Free Malaysia **Today**"→Malaysia on a Hungary story). Sampled precision ~95%+; this slice is exactly the core anti/pro-LGBTQ legislation-by-country content. Verified: Ghana/Botswana/Senegal/India/Russia tagged correctly; NI + publisher cases correctly left empty.
+- **167 tag-based** (added after full-text run) — author-assigned `tags` containing exactly one unambiguous country name **or** a US-state name (→ US), single-distinct-country guard. Sampled 100% correct (state tags like `pennsylvania`/`idaho`/`florida` → US; `australia`/`brazil`/`canada`/`russia` tags → those countries). Tags are sparse though — only ~150 net.
+- **Tagged live news: 27 → 504.** All three safe signals (city_ids, governance-gated title, author tags) are now **exhausted**. Remaining **16,311** empty → **deferred to `pipeline-enrich-news` LLM geo step** (needs body comprehension + relevance, not keyword/tag matching). Reversal if ever needed: clear `country_ids` on rows where the single value matches a matcher and `updated_at` falls in the apply window.
+
+## Phase C — extended remediation (all types), 2026-06-06
+
+**Built:** `supabase/functions/backfill-llm-enrich` — config-driven webhook-gated edge function. targets: `news` (geo + relevance), `events` (relevance), `venues` (relevance, conservative prompt), `personalities` (relevance). Uses `chatCompletion()` → CF Workers AI Llama-8B under `llm.openai.enrich-news` circuit breaker. Disjoint id-range shards for safe parallelism. Per-row writes (trigger-timeout safe). Resumable: `classified_at IS NULL`.
+
+**`scripts/backfill-llm-enrich-drive.mjs`** — sharded driver, 4 id-range shards, sequential targets, circuit-aware backoff.
+
+**`scripts/backfill-images-drive.mjs`** — loops free-source image backfill edge functions (Wikipedia/Pexels).
+
+### Classification results (all live entities, 100% complete)
+
+| Entity | Before | After | High-relevance (≥0.7) | Notes |
+|--------|--------|-------|----------------------|-------|
+| news_articles | ~150 (0.9%) | **16,872 (100%)** | 7,802 (46%) | + geo (see below) |
+| events | 95 (2.9%) | **3,307 (100%)** | 2,695 (81%) | LGBTQ+ events catalogue = ~81% relevant |
+| venues | 0 | **23,188 (100%)** | 6,204 (27%) | Conservative prompt; generic venues score low |
+| personalities | 0 | **12,528 (100%)** | 7,584 (61%) | |
+
+**`lgbti_relevance_score` is now a real signal across all entity types** — replacing the audit finding of "near-constant defaults" (1.0 for marketplace/news, 0.5–1.0 for events/personalities, only 6 real values for venues).
+
+### LLM news geo-tagging (Phase C pass)
+On top of the Phase B 504 deterministic + title-governance + tag-based tags, the LLM classified **12,157/16,872 (72.1%)** news articles with a `country_id`. The ~28% without are globally-scoped or celebrity-only items (no country attribution — not a gap).
+
+### Cities images
+`scripts/backfill-images-drive.mjs` via `backfill-cities-images` (Pexels, free-source). Added 55 city images for the highest-population cities; remaining ~1,000 are flagged-unfindable by the function (no Pexels results or already exhausted). Personality images: all missing are `visibility='draft'` — skip correct. Country images: none missing.
+
+### Incident: circuit breaker tripped
+Ran 8 concurrent LLM shards (P1 news×4 + P2 venues×4) — tripped the shared `llm.openai.enrich-news` circuit breaker (threshold=5 failures, 120s cooldown). Also blocked the live news-ingestion pipeline. **Root cause:** CF Workers AI rate-limits burst requests across concurrent edge-fn invocations. **Fix:** manual `UPDATE api_circuit_breakers SET state='closed', failure_count=0 WHERE api_name='llm.openai.enrich-news'`; manually classified the poisoned half-open probe row (Sydney Mardi Gras). **Lesson:** max 4 concurrent LLM shards on this project's CF Workers AI allocation. Sequenced all subsequent targets solo at 4-shard load → 0 failures.
+
+### Venue city-linking (post-geocode, Phase C follow-up)
+After the other session's Photon geocode run completed (~88% venue coord coverage), an additional SQL city-text pass ran:
+- **1,322 venues** inherited coords + city_id from `cities` table by exact `lower(name)=lower(city)` + country code match. Country-scoped → no cross-country mislinks.
+- **14 more** linked by city text for venues that had Photon coords but Nominatim reverse-geocode returned no usable city.
+- **Final venue state:** **93.7% with coords** (21,726/23,188), **100% classified**, 1,462 genuinely ungeocodable (Photon found nothing + no city text match), 310 with coords but no city (city name doesn't match any `cities` table entry — foreign spellings, rural venues).
+
+### Final DB state
+- **Disk:** 5,794 MB → **5,852 MB** (+58 MB total across all phases). Headroom ~450 MB to 6,300 MB guard.
+- **Descriptions/images (venues 97%, personalities 79% draft):** deferred — LLM-generation cost + disk risk. Queue via `venues_due_for_refresh` + `event-agentic-enrich` when budget allows.
+- **Open PRs:** #1468 (placeholder city map fix), #1469 (venue coord/city consistency), #1470, #1471 (this branch) — all MERGEABLE with auto-merge enabled and CI green.

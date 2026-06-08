@@ -35,4 +35,16 @@ describe("expandWithPgSynonyms", () => {
 		expect(expandWithPgSynonyms("", [syn({ terms: ["club"], replacements: ["disco"] })])).toEqual([]);
 		expect(expandWithPgSynonyms("club", [])).toEqual([]);
 	});
+
+	it("caps expansion terms (defends against a large active synonym set)", () => {
+		const reps = Array.from({ length: 100 }, (_, i) => `rep${i}`);
+		const out = expandWithPgSynonyms("club", [syn({ terms: ["club"], replacements: reps })]);
+		expect(out.length).toBe(40);
+	});
+
+	it("respects an explicit maxTerms", () => {
+		const reps = Array.from({ length: 100 }, (_, i) => `rep${i}`);
+		const out = expandWithPgSynonyms("club", [syn({ terms: ["club"], replacements: reps })], { maxTerms: 5 });
+		expect(out.length).toBe(5);
+	});
 });

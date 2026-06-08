@@ -66,10 +66,14 @@ async function loadReferenceData() {
     countryById.set(c.id, c);
   }
 
-  // Load all cities
+  // Load all cities — exclude placeholder ("tmp-") stubs so content is never
+  // linked to a hidden, low-quality bucket city (the cause of the mis-bucketing
+  // that this function would otherwise never re-fix, since it only reprocesses
+  // rows with a NULL city_id/country_id).
   const { data: cities } = await supabase
     .from('cities')
     .select('id, name, country_id, population')
+    .not('slug', 'like', 'tmp-%')
     .order('population', { ascending: false, nullsFirst: false });
 
   citiesCache = cities || [];
