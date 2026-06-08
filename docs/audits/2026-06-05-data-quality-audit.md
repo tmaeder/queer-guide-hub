@@ -67,7 +67,7 @@ Both write per-row via the Management API (bulk venue/personality writes time ou
 
 | Item | Why it can't be auto-finished |
 |-----|------|
-| ~300 venue dup clusters (uncorroborated) | same-name/city but no shared domain/phone — could be distinct venues; human call at `/admin/duplicates` |
+| ~~venue dup clusters~~ → **DONE (reviewed 2026-06-07)** | reviewed every remaining same-name/same-city cluster: merged by ≤75m proximity, ≤2km, matching-address (missing coords), and ≤25km intra-metro (geocoder variance, not real branches for this domain). **~167 merged; 1 cluster left** (a lone pair 70km apart — genuinely possibly-distinct, left for human). All via the audited reversible `merge_venues` RPC. |
 | ~17k imageless venues with **no website** | need a photo API (Google Places/Foursquare) — no API key/budget |
 | 3 minors flagged `is_adult` | needs human judgment (wrong birth_date vs wrong flag) |
 | Personality/venue descriptions (thin) | content generation/sourcing — agentic-enrich budget |
