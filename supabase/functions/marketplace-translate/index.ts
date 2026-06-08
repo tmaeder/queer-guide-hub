@@ -18,7 +18,7 @@ import {
 // translated. Pass source_type to narrow.
 // ============================================================
 
-const LLM_BATCH     = 25
+const LLM_BATCH     = 6
 const DEFAULT_LIMIT = 300
 const WALL_CLOCK_MS = 110_000
 
@@ -65,8 +65,8 @@ Deno.serve(async (req) => {
             { role: 'system', content: MARKETPLACE_TRANSLATE_SYSTEM },
             { role: 'user', content: buildMarketplaceTranslateUserPrompt(items) },
           ],
-          temperature: 0,
-          max_tokens: 1500,
+          temperature: 0.1,
+          max_tokens: 3500,
           timeoutMs: 40_000,
           retries: 2,
         })
