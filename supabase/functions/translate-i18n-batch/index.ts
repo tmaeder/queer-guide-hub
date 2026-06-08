@@ -29,6 +29,7 @@ import {
   errorResponse,
   corsResponse,
   requireAdmin,
+  hasInternalSecret,
 } from '../_shared/supabase-client.ts'
 import { anthropicMessages } from '../_shared/anthropic-shim.ts'
 import { applySuggestion, insertSuggestion } from '../_shared/ai-suggestions.ts'
@@ -121,13 +122,15 @@ Deno.serve(async (req) => {
   try {
     const supabase = getServiceClient()
 
-    // Webhook secret (for future cron) bypass; otherwise admin auth.
+    // Auth, in order: internal-secret (pg_cron via Vault internal_invoke_secret),
+    // then the dedicated webhook secret (if configured), then admin user.
     const provided = req.headers.get('x-webhook-secret') ?? ''
     const expected =
       Deno.env.get('TRANSLATE_I18N_WEBHOOK_SECRET') ??
       Deno.env.get('WEBHOOK_SECRET') ??
       ''
-    if (!provided || provided !== expected) {
+    const webhookOk = expected !== '' && provided === expected
+    if (!hasInternalSecret(req) && !webhookOk) {
       const auth = await requireAdmin(req, supabase)
       if (auth instanceof Response) return auth
     }

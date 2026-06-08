@@ -287,8 +287,8 @@ export default function Hotels() {
         {view === 'map' ? (
           <Suspense
             fallback={
-              <div className="flex items-center justify-center h-[560px] border border-foreground/10">
-                <Loader2 className="animate-spin" />
+              <div className="flex items-center justify-center h-[560px] border border-foreground/10" role="status" aria-label="Loading map">
+                <Loader2 className="animate-spin" aria-hidden="true" />
               </div>
             }
           >

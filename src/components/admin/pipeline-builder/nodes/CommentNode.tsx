@@ -91,18 +91,12 @@ function CommentNode({ data, selected, id }: NodeProps) {
         </div>
       </div>
 
-      <div
-        className="p-2"
-        role="button"
-        tabIndex={0}
+      <button
+        type="button"
+        className="p-2 w-full text-left bg-transparent border-0 cursor-text"
         aria-label="Edit comment text"
         onDoubleClick={() => setEditing(true)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setEditing(true);
-          }
-        }}
+        onClick={() => setEditing(true)}
       >
         {editing ? (
           <textarea
@@ -132,7 +126,7 @@ function CommentNode({ data, selected, id }: NodeProps) {
             {text || <span className="opacity-40 italic">Double-click to edit</span>}
           </div>
         )}
-      </div>
+      </button>
     </div>
   );
 }
