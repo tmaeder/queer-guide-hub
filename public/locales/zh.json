@@ -1614,7 +1614,8 @@
       "photos": "照片",
       "noPhotos": "暂无照片",
       "noEvents": "该场所暂无即将举办的活动",
-      "noReviews": "还没有评价。成为第一个评价的人吧！"
+      "noReviews": "还没有评价。成为第一个评价的人吧！",
+      "accessibility": "[ZH] Accessibility"
     },
     "events": {
       "title": "活动",

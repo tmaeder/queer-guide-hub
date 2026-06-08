@@ -36,7 +36,7 @@ import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
-import { Edit, Trash2, Star, Plus } from 'lucide-react';
+import { Edit, Trash2, Star, Plus, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 const HOTEL_TYPES = [
@@ -97,13 +97,29 @@ const emptyForm = {
 
 export default function AdminHotels() {
   const { user } = useAuth();
-  const { createHotel, updateHotel, deleteHotel } = useHotels();
+  const { createHotel, updateHotel, deleteHotel, regenerateSafetyNote } = useHotels();
   const { resolveAddress } = useAddressResolver();
   const queryClient = useQueryClient();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingHotel, setEditingHotel] = useState<HotelRow | null>(null);
   const [formData, setFormData] = useState(emptyForm);
+  const [regenBusy, setRegenBusy] = useState(false);
+
+  // Recompose this hotel's safety note from its amenity signals (deterministic composer).
+  const handleRegenerateSafety = async () => {
+    if (!editingHotel) return;
+    setRegenBusy(true);
+    try {
+      const note = await regenerateSafetyNote(editingHotel.id);
+      setFormData((p) => ({ ...p, queer_safety_notes: note }));
+      toast.success('Safety note regenerated from signals');
+    } catch (e) {
+      toast.error(`Error: ${(e as Error).message}`);
+    } finally {
+      setRegenBusy(false);
+    }
+  };
 
   const invalidateTable = () =>
     queryClient.invalidateQueries({ queryKey: ['admin-table', 'hotels'] });
@@ -528,7 +544,14 @@ export default function AdminHotels() {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="hotel-safety">Queer Safety Notes</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="hotel-safety">Queer Safety Notes</Label>
+                  {editingHotel && (
+                    <Button type="button" size="sm" variant="outline" disabled={regenBusy} onClick={handleRegenerateSafety}>
+                      <RefreshCw size={13} className="mr-1" /> Regenerate from signals
+                    </Button>
+                  )}
+                </div>
                 <Textarea
                   id="hotel-safety"
                   value={formData.queer_safety_notes}

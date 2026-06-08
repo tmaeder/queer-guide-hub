@@ -85,6 +85,12 @@ function GroupNode({ data, selected, id }: NodeProps) {
             aria-label={`Edit group label: ${label}`}
             onDoubleClick={() => setEditing(true)}
             onClick={() => setEditing(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setEditing(true);
+              }
+            }}
           >
             {label}
           </button>

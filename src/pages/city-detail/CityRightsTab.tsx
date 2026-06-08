@@ -3,6 +3,7 @@ import { InlineLoading } from '@/components/ui/loading';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { ShieldCheck } from 'lucide-react';
 import type { CityRelation, CountryRelation } from './types';
 
 export interface CityRightsTabProps {
@@ -44,6 +45,16 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
             national level. Local laws and enforcement in {city.name} may vary.
           </p>
         </div>
+
+        {city.safety_notes && (
+          <div className="flex gap-3 rounded-element border p-4">
+            <ShieldCheck size={18} className="mt-0.5 shrink-0 text-muted-foreground" />
+            <div>
+              <h3 className="font-medium">Safety notes for {city.name}</h3>
+              <p className="mt-1 text-body text-muted-foreground">{city.safety_notes}</p>
+            </div>
+          </div>
+        )}
 
         {countryLoading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-4">

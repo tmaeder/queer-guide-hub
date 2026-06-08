@@ -230,6 +230,17 @@ export function useHotels(autoFetch = true) {
     if (error) throw error;
   }, []);
 
+  // Recompose one hotel's queer_safety_notes from its amenity signals via the
+  // deterministic SQL composer, then return the freshly written note.
+  const regenerateSafetyNote = useCallback(async (id: string): Promise<string> => {
+    const { error } = await supabase.rpc('run_hotel_safety_backfill', { p_hotel_id: id });
+    if (error) throw error;
+    const { data, error: readErr } = await supabase
+      .from('hotels').select('queer_safety_notes').eq('id', id).single();
+    if (readErr) throw readErr;
+    return data?.queer_safety_notes ?? '';
+  }, []);
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (autoFetch) fetchHotels();
@@ -246,6 +257,7 @@ export function useHotels(autoFetch = true) {
     createHotel,
     updateHotel,
     deleteHotel,
+    regenerateSafetyNote,
     refetch: () => fetchHotels(),
   };
 }

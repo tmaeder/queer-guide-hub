@@ -25,7 +25,7 @@ type Source = 'extract' | 'places' | 'llm'
 
 // Google Places v1 boolean field -> { kind, slug }. Ready for Phase 7; unused until
 // place_ids exist. accessibilityOptions.* and the serving/seating booleans.
-const PLACES_BOOLEAN_MAP: Record<string, { kind: 'amenity' | 'accessibility'; slug: string }> = {
+const _PLACES_BOOLEAN_MAP: Record<string, { kind: 'amenity' | 'accessibility'; slug: string }> = {
   'wheelchairAccessibleEntrance': { kind: 'accessibility', slug: 'wheelchair-accessible' },
   'wheelchairAccessibleRestroom': { kind: 'accessibility', slug: 'accessible-restroom' },
   'wheelchairAccessibleParking': { kind: 'accessibility', slug: 'accessible-parking' },

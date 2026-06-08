@@ -1618,7 +1618,8 @@
       "photos": "Photos",
       "noPhotos": "Aucune photo disponible",
       "noEvents": "Aucun événement à venir dans ce lieu",
-      "noReviews": "Pas encore d'avis. Sois la première personne à en laisser un !"
+      "noReviews": "Pas encore d'avis. Sois la première personne à en laisser un !",
+      "accessibility": "[FR] Accessibility"
     },
     "events": {
       "title": "Événements",
