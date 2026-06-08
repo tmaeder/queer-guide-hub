@@ -17,6 +17,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'lucide-react';
 import { useUnifiedTags } from '@/hooks/useUnifiedTags';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
+import { useAmenityVocabulary } from '@/hooks/useAmenityVocabulary';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
 
 interface VenueFiltersProps {
@@ -146,6 +147,10 @@ export function VenueFilters({
 
   const { tags: unifiedTags, loading: tagsLoading, fetchTags } = useUnifiedTags();
   const { accessibilityAttributes, loading: accessibilityLoading } = useAccessibilityAttributes();
+  const { vocab: amenityVocab } = useAmenityVocabulary();
+  const amenityOptions = Array.from(amenityVocab?.values() ?? [])
+    .filter((a) => a.kind === 'amenity')
+    .map((a) => ({ key: a.slug, label: a.name }));
   const { targetGroups, loading: targetGroupsLoading } = useTargetGroups();
 
   useEffect(() => {
@@ -650,7 +655,7 @@ export function VenueFilters({
             amenitiesSelected={selectedAmenities}
             servicesSelected={selectedServices}
             accessibilitySelected={selectedAccessibilityAttributes}
-            amenities={commonAmenities.map((a) => ({ key: a, label: a }))}
+            amenities={amenityOptions.length ? amenityOptions : commonAmenities.map((a) => ({ key: a, label: a }))}
             services={commonServices.map((s) => ({ key: s, label: s }))}
             accessibility={accessibilityAttributes.map((a) => ({ key: a.id, label: a.name }))}
             accessibilityLoading={accessibilityLoading}
