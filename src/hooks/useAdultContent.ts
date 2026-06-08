@@ -11,8 +11,15 @@ const ADULT_CATEGORY_SLUGS = new Set([
   'adult_toys',
 ]);
 
-export function isAdultListing(listing: { sensitivity_flags?: unknown } | null | undefined): boolean {
+export function isAdultListing(
+  listing: { sensitivity_flags?: unknown; content_rating?: unknown } | null | undefined,
+): boolean {
   if (!listing) return false;
+  // content_rating is the canonical signal (migration 20260608210000). It's a
+  // STORED generated column, correct on every row; sensitivity_flags is the
+  // under-populated legacy fallback kept only for pre-migration cached data.
+  const rating = listing.content_rating;
+  if (typeof rating === 'string') return rating === 'adult' || rating === 'explicit';
   const flags = listing.sensitivity_flags;
   if (Array.isArray(flags)) return flags.includes('adult');
   if (flags && typeof flags === 'object') {

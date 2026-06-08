@@ -38,7 +38,17 @@ export interface MarketplaceFiltersInput {
   relevanceMin?: number;
   /** last_verified_at within N days. Skipped when null/undefined or 0. */
   verifiedWithinDays?: number;
+  /**
+   * When false/undefined, browse is default-SFW: only content_rating in
+   * ('sfw','suggestive') is returned. Set true (after a 18+ opt-in) to also
+   * include 'adult' / 'explicit' listings.
+   */
+  includeAdult?: boolean;
 }
+
+// Browse-safe ratings shown without the adult opt-in. Mirrors the
+// content_rating tiers derived in migration 20260608210000.
+const SFW_RATINGS = ['sfw', 'suggestive'];
 
 export function useMarketplace() {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
@@ -128,13 +138,17 @@ export function useMarketplace() {
             setTotal(0);
             return;
           }
-          const { data: rows, error: rowsErr } = await supabase
+          let rowsQuery = supabase
             .from('marketplace_listings')
             .select(
               `*, marketplace_reviews(rating), marketplace_favorites(id), venues(name, address, city)`,
             )
             .eq('status', 'active')
             .in('id', constrainedIds);
+          if (!filters?.includeAdult) {
+            rowsQuery = rowsQuery.in('content_rating', SFW_RATINGS);
+          }
+          const { data: rows, error: rowsErr } = await rowsQuery;
           if (rowsErr) throw rowsErr;
           const byId = new Map((rows ?? []).map((r) => [r.id, r] as const));
           const ordered = ids.map((id) => byId.get(id)).filter(Boolean) as MarketplaceListing[];
@@ -247,6 +261,11 @@ export function useMarketplace() {
 
       if (filters?.communityOwned && filters.communityOwned.length > 0) {
         query = query.overlaps('community_owned_tags', filters.communityOwned);
+      }
+
+      // Default-SFW browse: hide adult/explicit unless the visitor opted in (18+).
+      if (!filters?.includeAdult) {
+        query = query.in('content_rating', SFW_RATINGS);
       }
 
       if (filters?.currency) {
