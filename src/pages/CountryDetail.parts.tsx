@@ -87,9 +87,9 @@ export function getWeatherIcon(condition: string) {
 
 export function SectionLoader({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 gap-4">
-      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      <p className="text-sm text-muted-foreground">Loading {label}...</p>
+    <div className="flex flex-col items-center justify-center py-12 gap-4" role="status" aria-label={`Loading ${label}`}>
+      <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+      <p className="text-sm text-muted-foreground" aria-hidden="true">Loading {label}...</p>
     </div>
   );
 }
