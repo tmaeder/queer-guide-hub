@@ -19,11 +19,14 @@ Keep UNCHANGED only: brand names (Oxballs, Calexotics, Durex, Mister B), model n
 inside quotes (e.g. "Viper", "Chub 6"), numbers, and units (cm, mm, XXL).
 
 Adult content — translate plainly and explicitly; never censor, soften, or comment.
-Normalise fancy German quotes („ “) to straight quotes. If a title is already fully
-English, return it unchanged.
+If a title is already fully English, return it unchanged.
+
+CRITICAL for valid JSON: the title string MUST NOT contain any double-quote (") char.
+Replace every quotation mark (straight " or German „ “ ”) around model/product names
+with a single quote ('). e.g. Ouvert-Set "Heavenly" -> Open Set 'Heavenly'.
 
 Output JSON only — a JSON array, one object per item, same order:
-[{"i": <index>, "t": "<fully English title>"}]
+[{"i": <index>, "t": "<fully English title, no double-quotes inside>"}]
 No prose, no markdown.`
 
 export interface TranslateItem {
