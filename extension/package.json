@@ -10,22 +10,22 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "overrides": {
     "rollup": "2.80.0"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.4.0",
-    "@types/chrome": "^0.1.42",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@types/chrome": "^0.1.43",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.0.2",
-    "happy-dom": "^20.9.0",
+    "happy-dom": "^20.10.2",
     "typescript": "^6.0.3",
-    "vite": "^8.0.13",
-    "vitest": "^4.1.6"
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
   }
 }
