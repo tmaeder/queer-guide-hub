@@ -66,7 +66,8 @@ Three deterministic-first passes:
 ## §5 — Sequencing
 
 - **P0 — SHIPPED 2026-06-08** (migrations `20260608200000` + `20260608200001`). `marketplace_brands` registry (306 brands) + register/approve/reject RPCs (queer/trans/BIPOC require `p_confirm`) + storm-safe `run_marketplace_ownership_apply` cron. Seeded 7 well-documented queer-owned indies → 2,434 products tagged. Ownership filter verified live: "Queer-owned" = 2,434 (was 0). 299 brands remain `pending` for the admin review panel + later web-LLM detection.
-- **P1** — free re-extract (subcategory + content_rating + attributes + relevance re-score, zero cost).
+- **P1a — SHIPPED 2026-06-08** (migration `20260608210000`). `content_rating` STORED generated column (sfw/suggestive/adult/explicit) from a pure derivation fn — fixes the broken `sensitivity_flags` adult signal (whole departments were unflagged). Default-SFW browse + persisted 18+ opt-in toggle wired into `useMarketplace` (both query branches) + `MarketplaceFilters`; `isAdultListing` now reads `content_rating`. Distribution sfw 27.5 / suggestive 14.1 / adult 11.4 / explicit 47.0; default browse = 5,759 products.
+- **P1b** — free re-extract of subcategory + attributes (material/occasion/vibe → `unified_tag_assignments`) + per-item relevance re-score (replace flat per-source defaults). Pending.
 - **P2** — content_rating toggle + facet UI.
 - **P3** — LLM gap-fill + daily cron + review queue.
 
