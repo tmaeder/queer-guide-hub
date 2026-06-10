@@ -20,7 +20,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import webpush from 'https://esm.sh/web-push@3.6.7';
-import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireInternalOrAdmin } from '../_shared/supabase-client.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -155,6 +155,9 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('method not allowed', { status: 405, headers: cors });
   }
+
+  const _auth = await requireInternalOrAdmin(req, createClient(SUPABASE_URL, SERVICE_ROLE_KEY));
+  if (_auth instanceof Response) return _auth;
 
   let body: Record<string, unknown> = {};
   try {
