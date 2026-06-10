@@ -1614,7 +1614,8 @@
       "photos": "Foto",
       "noPhotos": "Nessuna foto disponibile",
       "noEvents": "Nessun evento in programma in questo locale",
-      "noReviews": "Ancora nessuna recensione. Lascia tu la prima!"
+      "noReviews": "Ancora nessuna recensione. Lascia tu la prima!",
+      "accessibility": "[IT] Accessibility"
     },
     "events": {
       "title": "Eventi",

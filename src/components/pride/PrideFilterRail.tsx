@@ -124,7 +124,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
       className="rounded-container border border-foreground/15 bg-background p-4 lg:p-6 space-y-4"
       aria-label={t('pride.filters.aria')}
     >
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <div className="relative flex-1 min-w-[220px] max-w-md">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-foreground/50 pointer-events-none" />
           <input
@@ -134,7 +134,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
             onChange={(e) => setFilters({ ...filters, query: e.target.value })}
             placeholder={t('pride.filters.searchPlaceholder')}
             aria-label={t('pride.filters.searchAria')}
-            className="w-full rounded-element border border-foreground/20 bg-background pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+            className="w-full rounded-element border border-foreground/20 bg-background pl-8 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
           />
         </div>
 

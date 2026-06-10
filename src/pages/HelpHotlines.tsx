@@ -342,14 +342,14 @@ export default function HelpHotlines() {
       <div className="mb-4 flex items-center gap-1">
         <LocalizedLink
           to="/resources"
-          className="text-sm text-muted-foreground no-underline hover:opacity-70"
+          className="text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
         >
           {t('help.breadcrumb_resources', 'Resources')}
         </LocalizedLink>
         <ChevronRight size={14} style={{ opacity: 0.5 }} />
         <LocalizedLink
           to="/resources?category=Support+%26+News"
-          className="text-sm text-muted-foreground no-underline hover:opacity-70"
+          className="text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
         >
           {t('help.breadcrumb_support', 'Support & News')}
         </LocalizedLink>

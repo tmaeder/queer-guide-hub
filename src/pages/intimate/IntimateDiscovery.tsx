@@ -89,7 +89,7 @@ export default function IntimateDiscovery() {
     <div className="mx-auto max-w-5xl p-6">
       <header className="mb-6 flex items-baseline justify-between">
         <h1 className="text-2xl">Intimate</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {matches.length > 0 && (
             <Link to="/messages" className="text-sm underline">
               {matches.length} match{matches.length === 1 ? '' : 'es'}
@@ -108,8 +108,8 @@ export default function IntimateDiscovery() {
                 onClick={() => setViewMode(m)}
                 className={
                   viewMode === m
-                    ? 'bg-foreground text-background px-3 py-1 text-13 capitalize'
-                    : 'bg-card text-foreground px-3 py-1 text-13 capitalize hover:bg-muted/40'
+                    ? 'bg-foreground text-background px-2.5 py-1 text-13 capitalize'
+                    : 'bg-card text-foreground px-2.5 py-1 text-13 capitalize hover:bg-muted/40'
                 }
               >
                 {m}

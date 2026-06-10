@@ -98,7 +98,7 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
 
   return (
     <section aria-labelledby="trips-heading">
-      <div className="flex items-baseline justify-between gap-2 flex-wrap mb-3">
+      <div className="flex items-baseline justify-between gap-2 flex-wrap mb-4">
         <h2 id="trips-heading" className="text-title font-medium">
           {t('pride.trips.title')}
         </h2>
@@ -110,9 +110,9 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
         {clusters.map((c) => (
           <article
             key={c.id}
-            className="rounded-container border border-foreground/15 bg-background p-5 space-y-4"
+            className="rounded-container border border-foreground/15 bg-background p-6 space-y-4"
           >
-            <div className="flex items-baseline justify-between gap-3 flex-wrap">
+            <div className="flex items-baseline justify-between gap-2 flex-wrap">
               <p className="text-xs2 uppercase tracking-label text-foreground/60">
                 {c.events.length} prides · {c.span} day{c.span === 1 ? '' : 's'}
                 {c.totalKm > 0 && ` · ${Math.round(c.totalKm).toLocaleString()} km`}
@@ -139,7 +139,7 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
                       onClick={() => onSelect?.(isSelected ? null : e.id)}
                       aria-pressed={isSelected}
                       className={cn(
-                        'group flex w-full items-center gap-3 text-left min-h-0 p-2 rounded-element transition-colors',
+                        'group flex w-full items-center gap-2 text-left min-h-0 p-2 rounded-element transition-colors',
                         isSelected ? 'bg-muted' : 'hover:bg-muted/60',
                       )}
                     >

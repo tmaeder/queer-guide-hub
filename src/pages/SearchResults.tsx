@@ -276,7 +276,7 @@ export default function SearchResults() {
   );
 
   const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
-  const listClass = 'flex flex-col gap-3';
+  const listClass = 'flex flex-col gap-4';
 
   return (
     <div className="relative">
@@ -346,7 +346,7 @@ export default function SearchResults() {
           <>
             <SearchScopeChips activeScope={activeScope} onScopeChange={handleScopeChange} />
 
-            <div className="flex flex-wrap items-center justify-between gap-3 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-4 py-2">
               <div className="min-w-0 flex-1">
                 <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
@@ -358,7 +358,7 @@ export default function SearchResults() {
             </div>
 
             {/* Controls bar */}
-            <div className="mb-6 flex flex-col gap-3 rounded-element bg-muted p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-6 flex flex-col gap-4 rounded-element bg-muted p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">{t('search.sortBy', 'Sort')}</span>
                 <Select value={effectiveSort} onValueChange={handleSortChange}>
@@ -546,7 +546,7 @@ function ZeroState({
             </Button>
           ))}
         </div>
-        <p className="mb-3 text-sm text-muted-foreground">{t('search.orBrowse', 'Or browse by category:')}</p>
+        <p className="mb-4 text-sm text-muted-foreground">{t('search.orBrowse', 'Or browse by category:')}</p>
         <div className="flex flex-wrap gap-2">
           {[
             { label: t('nav.venues', 'Venues'), path: '/venues' },
@@ -590,7 +590,7 @@ function ZeroState({
       <p className="mb-4 text-muted-foreground">
         {t('search.tryDifferent', 'Try different keywords or ask the guide.')}
       </p>
-      <div className="flex flex-wrap justify-center gap-3">
+      <div className="flex flex-wrap justify-center gap-2">
         <Button onClick={onAsk} className="gap-2">
           <Sparkles className="h-4 w-4" />
           {t('search.ask.cta2', 'Ask the guide')}
@@ -600,7 +600,7 @@ function ZeroState({
         </Button>
       </div>
       <div className="mt-8">
-        <p className="mb-3 text-sm text-muted-foreground">{t('search.orTry', 'Or try one of these:')}</p>
+        <p className="mb-4 text-sm text-muted-foreground">{t('search.orTry', 'Or try one of these:')}</p>
         <div className="flex flex-wrap justify-center gap-2">
           {SUGGESTED_SEARCHES.map((s) => (
             <Button key={s} variant="outline" size="sm" onClick={() => onSuggest(s)}>

@@ -1614,7 +1614,8 @@
       "photos": "Fotos",
       "noPhotos": "No hay fotos disponibles",
       "noEvents": "No hay próximos eventos en este lugar",
-      "noReviews": "Aún no hay reseñas. ¡Sé la primera persona en dejar una!"
+      "noReviews": "Aún no hay reseñas. ¡Sé la primera persona en dejar una!",
+      "accessibility": "[ES] Accessibility"
     },
     "events": {
       "title": "Eventos",

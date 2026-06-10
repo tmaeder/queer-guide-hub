@@ -30,11 +30,11 @@ export function ReadingStreak() {
         </span>
       </p>
       {current === 0 ? (
-        <p className="mt-3 text-13 text-muted-foreground leading-snug">
+        <p className="mt-2 text-13 text-muted-foreground leading-snug">
           Read one story today to start a streak.
         </p>
       ) : (
-        <p className="mt-3 text-13 text-muted-foreground leading-snug">
+        <p className="mt-2 text-13 text-muted-foreground leading-snug">
           Longest: {longest} {longest === 1 ? 'day' : 'days'}
         </p>
       )}

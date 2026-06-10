@@ -115,7 +115,7 @@ export function SearchCalendarView({ results, query, onSelect }: SearchCalendarV
             >
               {fmtHeading(k)}
             </h3>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {byDay.get(k)!.map((r) => (
                 <SearchResultCard
                   key={`${r.type}-${r.objectID}`}
@@ -134,7 +134,7 @@ export function SearchCalendarView({ results, query, onSelect }: SearchCalendarV
             <h3 className="mb-2 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
               {t('search.calendar.undated', 'Undated')}
             </h3>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {undated.map((r) => (
                 <SearchResultCard
                   key={`${r.type}-${r.objectID}`}

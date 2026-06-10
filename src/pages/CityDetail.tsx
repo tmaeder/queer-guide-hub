@@ -3,6 +3,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
 import { useNews } from '@/hooks/useNews';
@@ -129,8 +130,23 @@ export default function CityDetail() {
     if (!city) return;
     (async () => {
       try {
-        const result = await fetchCityImage(city.id, city.name, city.countries?.name || '');
-        setImageUrl(result.image_url || '');
+        const result = await fetchCityImage(city.id, city.name, city.countries?.name || '', {
+          existing: {
+            image_url: city.image_url,
+            curated_image_url: city.curated_image_url,
+            image_flagged: city.image_flagged,
+          },
+        });
+        if (result?.image_url) {
+          setImageUrl(result.image_url);
+          return;
+        }
+        // Miss: prefer a real gallery photo over the abstract texture fallback
+        const { data } = await supabase.functions.invoke('get-pexels-images', {
+          body: { query: city.name, type: 'city' },
+        });
+        const first = data?.images?.[0];
+        setImageUrl(first?.url || first?.thumbnail || '');
       } catch {
         // Image loading failure is non-critical, fallback to no image
       }

@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonCrossfade } from "@/components/effects";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { TrendingUp } from "lucide-react";
-import { getRandomFallbackImage } from "@/utils/fallbackImages";
+import { getFallbackImage, type FallbackTheme } from "@/utils/fallbackImages";
 import { isValidImageUrl } from "@/lib/images/resolveEntityImage";
 
 interface Props {
@@ -34,6 +34,18 @@ const TYPE_PATH: Record<string, string> = {
 	marketplace: "/marketplace",
 	hotel: "/hotels",
 };
+
+function fallbackTheme(type: string): FallbackTheme {
+	switch (type) {
+		case "venue": return "venue";
+		case "event": return "event";
+		case "hotel": return "hotel";
+		case "news": return "news";
+		case "marketplace": return "marketplace";
+		case "personality": return "person";
+		default: return "place";
+	}
+}
 
 function hitPath(type: string, slug: string): string | null {
 	if (type === "tag") return `/resources/${slug}`;
@@ -106,7 +118,7 @@ export function TrendingStrip({
 
 	return (
 		<section className={className} aria-label={headline}>
-			<h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+			<h2 className="text-title font-semibold mb-4 flex items-center gap-2">
 				<TrendingUp className="h-5 w-5 text-foreground" />
 				{headline}
 			</h2>
@@ -143,14 +155,14 @@ export function TrendingStrip({
 									>
 										<Card className="h-40 overflow-hidden transition">
 											<img
-												src={isValidImageUrl(it.image_url) ? it.image_url : getRandomFallbackImage()}
+												src={isValidImageUrl(it.image_url) ? it.image_url : getFallbackImage(fallbackTheme(it.entity_type), it.entity_id)}
 												alt=""
 												role="presentation"
 												loading="lazy"
 												referrerPolicy="no-referrer"
 												className="h-24 w-full object-cover"
 												onError={(e) => {
-													const fb = getRandomFallbackImage();
+													const fb = getFallbackImage(fallbackTheme(it.entity_type), it.entity_id);
 													if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
 												}}
 											/>

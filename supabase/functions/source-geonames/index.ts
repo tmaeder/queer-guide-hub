@@ -12,7 +12,7 @@
 //   pipeline_run_id: string (optional; auto-generated if absent)
 //   dry_run: boolean
 // ============================================================
-import { getCorsHeaders, getServiceClient, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, jsonResponse, errorResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 const SOURCE_NAME = 'geonames'
@@ -49,6 +49,7 @@ function parseRow(line: string): GeoRow | null {
 Deno.serve(withErrorReporting('source-geonames', async (req) => {
   const cors = getCorsHeaders(req)
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
 
   const supabase = getServiceClient()
   try {

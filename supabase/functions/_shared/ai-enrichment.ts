@@ -334,7 +334,7 @@ Title: ${ud(article.title)}
 Content: ${ud(textContent.slice(0, 800))}
 URL: ${ud(article.url || 'N/A')}
 
-Respond with JSON:
+Keep "summary" under 40 words. Respond with ONLY this JSON, nothing before or after:
 {"summary": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "sentiment": "neutral", "topics": [...]}`
 
   try {
@@ -344,7 +344,10 @@ Respond with JSON:
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.2,
-      max_tokens: 500,
+      // 500 truncated the JSON once full-text extraction (2026-05-30) grew the
+      // input: the 70B model's summary ran long and the closing braces were cut,
+      // making every response unparseable. Headroom + a summary word-cap fixes it.
+      max_tokens: 1200,
       response_format: { type: 'json_object' },
     })
 
@@ -475,8 +478,11 @@ Respond with JSON using these keys (null where unknown):
 // ---------------------------------------------------------------------------
 // Agentic city moat enrichment — extract queer-aware travel fields for a city,
 // grounded in fetched sources (Wikipedia + official site + destination context).
-// SAFETY: lgbt_friendly_rating + safety_notes + editorial_hook are review-gated by
-// the caller — never auto-published. The rating MUST be supported by citations.
+// SAFETY: lgbt_friendly_rating + editorial_hook are review-gated by the caller —
+// never auto-published. The rating MUST be supported by citations. safety_notes is
+// NOT generated here — it is composed deterministically from structured country
+// legal status + city LGBTQ+ density by the SQL compose_safety_note() / city safety
+// backfill (migration 20260608000001), with tiered auto-publish.
 // ---------------------------------------------------------------------------
 
 export interface CityMoatEnrichment {
@@ -484,7 +490,6 @@ export interface CityMoatEnrichment {
   editorial_hook?: string         // one evocative sourced line  [REVIEW-GATED]
   best_time_to_visit?: string
   local_customs?: string          // LGBTQ+-relevant local norms, if sourced
-  safety_notes?: string           // calm, factual LGBTQ+ safety context  [REVIEW-GATED]
   lgbt_friendly_rating?: number   // 1-5 integer  [REVIEW-GATED, ALWAYS]
   rating_rationale?: string       // must cite evidence
   citations?: { field: string; url: string; quote: string }[]
@@ -492,7 +497,7 @@ export interface CityMoatEnrichment {
 }
 
 const CITY_MOAT_KEYS = ['description', 'editorial_hook', 'best_time_to_visit', 'local_customs',
-  'safety_notes', 'lgbt_friendly_rating', 'rating_rationale', 'citations', 'confidence']
+  'lgbt_friendly_rating', 'rating_rationale', 'citations', 'confidence']
 
 const CITY_MOAT_SYSTEM_PROMPT = `${BASE_CONTEXT}
 
@@ -503,9 +508,8 @@ Hard rules:
 - description: a factual 2-3 sentence city summary built from the SOURCES. Add queer-relevant detail (gay districts, scene, history) ONLY if the sources state it. Produce this whenever the sources describe the city.
 - editorial_hook: one evocative single line (<=120 chars), grounded in the sources.
 - best_time_to_visit / local_customs: produce if the sources support them, else null. local_customs should favor LGBTQ+-relevant norms where stated.
-- safety_notes [SENSITIVE]: calm, factual LGBTQ+ safety context for a traveler. Combine source facts with the DESTINATION CONTEXT (legal status, equality score). Never alarmist, never reassuring beyond the evidence. Provide a citation.
 - lgbt_friendly_rating [SENSITIVE]: an INTEGER 1-5 (1 = hostile/criminalized, 5 = very welcoming) assessed from the legal/equality DESTINATION CONTEXT plus any LGBTQ+ evidence in the sources. You MUST populate "citations" with a url + exact quote supporting it. If you cannot cite it, set lgbt_friendly_rating to null. Do not guess a middle value.
-- citations: array of {field, url, quote} backing the SENSITIVE fields (rating/safety).
+- citations: array of {field, url, quote} backing the SENSITIVE field (rating).
 - confidence: 0.0-1.0 how well the sources supported the NON-sensitive extraction (description/hook/best_time/customs). Base it on the sources, not on whether a rating was produced.
 
 Respond ONLY with valid JSON. No markdown code blocks.`
@@ -529,13 +533,13 @@ export async function researchEnrichCityFromSources(
 
   const userPrompt = `City: ${ud(input.name)} | Region: ${ud(input.region || 'N/A')} | Country: ${ud(input.country || 'N/A')}
 ${input.existingDescription ? `Existing description: ${ud(input.existingDescription.slice(0, 300))}` : ''}
-${input.safetyContext ? `DESTINATION CONTEXT (legal/equality, for safety_notes + rating): ${ud(input.safetyContext)}` : ''}
+${input.safetyContext ? `DESTINATION CONTEXT (legal/equality, for rating): ${ud(input.safetyContext)}` : ''}
 
 SOURCES:
 ${blocks.join('\n\n')}
 
 Respond with JSON using these keys (null where unknown):
-{"description":"...","editorial_hook":"...","best_time_to_visit":"...","local_customs":"...","safety_notes":"...","lgbt_friendly_rating":0,"rating_rationale":"...","citations":[{"field":"...","url":"...","quote":"..."}],"confidence":0.0}`
+{"description":"...","editorial_hook":"...","best_time_to_visit":"...","local_customs":"...","lgbt_friendly_rating":0,"rating_rationale":"...","citations":[{"field":"...","url":"...","quote":"..."}],"confidence":0.0}`
 
   try {
     const result = await chatCompletion(supabase, {
@@ -553,6 +557,89 @@ Respond with JSON using these keys (null where unknown):
     return parseAIResponse<CityMoatEnrichment>(raw, CITY_MOAT_KEYS)
   } catch (err) {
     console.error('City moat enrichment failed:', (err as Error).message)
+    return null
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Venue amenity extraction (Amenity Truth Engine)
+// ---------------------------------------------------------------------------
+
+export interface VenueAmenityExtraction {
+  amenities?: string[]                // MUST be slugs from the supplied canonical list
+  accessibility_attributes?: string[] // MUST be slugs from the supplied list  [REVIEW-GATED]
+  accessibility_notes?: string        // free text  [REVIEW-GATED]
+  citations?: { field: string; quote: string }[]
+  confidence?: number                 // 0.0-1.0 how well the text supported the extraction
+}
+
+const VENUE_AMENITY_KEYS = ['amenities', 'accessibility_attributes', 'accessibility_notes', 'citations', 'confidence']
+
+const VENUE_AMENITY_SYSTEM_PROMPT = `${BASE_CONTEXT}
+
+You extract AMENITIES and ACCESSIBILITY features for a venue from its PROVIDED description/tags. This is GROUNDED EXTRACTION, not creative writing.
+
+Hard rules:
+- Use ONLY facts stated in the PROVIDED TEXT. NEVER invent amenities or accessibility features.
+- amenities: array of slugs, chosen ONLY from the ALLOWED AMENITIES list. Omit anything not clearly stated. Do not output slugs outside the list.
+- accessibility_attributes [SENSITIVE]: array of slugs chosen ONLY from the ALLOWED ACCESSIBILITY list, and ONLY when the text explicitly states the feature. A wrong accessibility claim causes real-world harm — when in doubt, omit.
+- accessibility_notes [SENSITIVE]: one short factual sentence about access, only if the text supports it, else null.
+- citations: array of {field, quote} with the EXACT supporting phrase from the text for each accessibility claim.
+- confidence: 0.0-1.0 how well the text supported the amenity extraction.
+
+Respond ONLY with valid JSON. No markdown code blocks.`
+
+/**
+ * Extract venue amenities + accessibility from existing description/tags, constrained
+ * to the controlled vocabulary. Caller circuit-breaks, auto-applies amenities by
+ * confidence, and ALWAYS review-gates accessibility (attributes + notes).
+ */
+export async function extractVenueAmenitiesFromText(
+  supabase: SupabaseClient,
+  input: { name: string; category?: string | null; description?: string | null; tags?: string[] | null; canonicalAmenities: string[]; canonicalAccessibility: string[] },
+): Promise<VenueAmenityExtraction | null> {
+  if (!(await isOpenAIAvailable(supabase))) return null
+  const text = String(input.description ?? '').trim()
+  if (text.length < 80) return null   // not enough material to ground on
+
+  const tagLine = Array.isArray(input.tags) && input.tags.length ? `Tags: ${ud(input.tags.slice(0, 20).join(', '))}` : ''
+  const userPrompt = `Venue: ${ud(input.name)} | Category: ${ud(input.category || 'N/A')}
+ALLOWED AMENITIES (slugs): ${input.canonicalAmenities.join(', ')}
+ALLOWED ACCESSIBILITY (slugs): ${input.canonicalAccessibility.join(', ')}
+${tagLine}
+
+PROVIDED TEXT:
+${ud(text.slice(0, 4000))}
+
+Respond with JSON (empty arrays / null where unknown):
+{"amenities":[],"accessibility_attributes":[],"accessibility_notes":null,"citations":[{"field":"...","quote":"..."}],"confidence":0.0}`
+
+  try {
+    const result = await chatCompletion(supabase, {
+      messages: [
+        { role: 'system', content: VENUE_AMENITY_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.1,
+      max_tokens: 500,
+      response_format: { type: 'json_object' },
+    })
+    // CF Workers AI may return `content` already parsed as an object; coerce to string.
+    const raw = typeof result.content === 'string' ? result.content : JSON.stringify(result.content ?? '')
+    const parsed = parseAIResponse<VenueAmenityExtraction>(raw, VENUE_AMENITY_KEYS)
+    if (!parsed) return null
+    // Defense-in-depth: clamp model output to the allowed vocabulary even if it strays.
+    const amSet = new Set(input.canonicalAmenities)
+    const acSet = new Set(input.canonicalAccessibility)
+    return {
+      amenities: (parsed.amenities ?? []).filter((s) => amSet.has(s)),
+      accessibility_attributes: (parsed.accessibility_attributes ?? []).filter((s) => acSet.has(s)),
+      accessibility_notes: parsed.accessibility_notes,
+      citations: Array.isArray(parsed.citations) ? parsed.citations : [],
+      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
+    }
+  } catch (err) {
+    console.error('Venue amenity extraction failed:', (err as Error).message)
     return null
   }
 }

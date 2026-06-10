@@ -1,8 +1,9 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 // ============================================================
 // Source: RSS/News APIs — unified adapter for all news sources
@@ -256,6 +257,7 @@ async function fetchFromRss(feedUrl: string): Promise<Record<string, unknown>[]>
   // Throw on failure so the caller's catch can register the failure
   // (consecutive_failures + backoff_until). Returning [] silently would
   // mask flapping feeds and never trip auto-pause.
+  assertPublicHttpUrl(feedUrl) // feed URLs are admin/DB-supplied — refuse private targets
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 20_000)
   try {
@@ -367,6 +369,7 @@ function extractTags(title: string, content: string): string[] {
 
 Deno.serve(withErrorReporting('source-rss-news', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
 
   const supabase = getServiceClient()
 

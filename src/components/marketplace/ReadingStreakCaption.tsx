@@ -8,7 +8,7 @@ export function ReadingStreakCaption() {
   const { data: streak = 0 } = useReadingStreak();
   if (streak < 2) return null;
   return (
-    <p className="text-13 text-muted-foreground my-3">
+    <p className="text-13 text-muted-foreground my-2">
       {streak}-week reading streak.
     </p>
   );

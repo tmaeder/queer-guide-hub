@@ -50,7 +50,7 @@ function PickBlock({ pick, index }: { pick: EventPickWithEvent; index: number })
           </div>
         </div>
       </div>
-      <div className="col-span-12 md:col-span-7 space-y-5">
+      <div className="col-span-12 md:col-span-7 space-y-6">
         <p className="inline-flex items-center rounded-badge border border-border px-2 py-1 text-13 uppercase tracking-[0.15em]">
           {TIER_LABEL[pick.tier]}
         </p>
@@ -243,7 +243,7 @@ const EventGuide = () => {
         </div>
       )}
       {guide.intro_md && (
-        <section className="container mx-auto px-4 max-w-3xl mb-16 space-y-5">
+        <section className="container mx-auto px-4 max-w-3xl mb-16 space-y-6">
           {guide.intro_md.split(/\n\n+/).map((para, i) => (
             <p key={i} className="text-body-lg leading-relaxed">{para}</p>
           ))}

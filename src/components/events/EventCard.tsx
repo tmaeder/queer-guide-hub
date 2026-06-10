@@ -209,7 +209,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
                   </p>
                 )}
                 <SocialSignalBar
-                  className="mt-3"
+                  className="mt-2"
                   signals={[
                     {
                       icon: SignalIcons.friends,

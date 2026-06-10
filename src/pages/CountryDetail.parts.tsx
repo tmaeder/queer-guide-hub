@@ -87,9 +87,9 @@ export function getWeatherIcon(condition: string) {
 
 export function SectionLoader({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 gap-4">
-      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      <p className="text-sm text-muted-foreground">Loading {label}...</p>
+    <div className="flex flex-col items-center justify-center py-12 gap-4" role="status" aria-label={`Loading ${label}`}>
+      <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+      <p className="text-sm text-muted-foreground" aria-hidden="true">Loading {label}...</p>
     </div>
   );
 }
@@ -206,7 +206,7 @@ export function CountryOverviewTab({ country, worldBankData, sdgData }: CountryO
             <CardContent>
               <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
                 {country.description ||
-                  `Discover everything about ${country.name} – from major cities and cultural landmarks to local venues and upcoming events.`}
+                  `Cities, venues, events, and legal context for ${country.name}.`}
               </p>
             </CardContent>
           </Card>
@@ -364,7 +364,7 @@ export function CountryCitiesTab({ country, cities, citiesLoading }: CountryCiti
       ) : (
         <EmptyCard
           icon={Building2}
-          title="No cities found"
+          title="No cities yet"
           description="No cities are currently listed for this country."
         />
       )}
@@ -404,7 +404,7 @@ export function CountryVenuesTab({ country, venues, loading }: CountryVenuesTabP
       ) : (
         <EmptyCard
           icon={MapPin}
-          title="No venues found yet"
+          title="No venues yet"
           description={`Be the first to add venues from ${country.name}!`}
         />
       )}
@@ -530,7 +530,7 @@ export function CountryNewsTab({
       ) : (
         <EmptyCard
           icon={Newspaper}
-          title="No local news found"
+          title="No local news yet"
           description={`No news articles are currently available for ${country.name}.`}
         />
       )}

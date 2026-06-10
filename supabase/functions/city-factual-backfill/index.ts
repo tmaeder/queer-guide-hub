@@ -17,7 +17,7 @@ const FETCH_TIMEOUT = 10_000
 
 interface WpSummary { extract: string; thumbnail?: string; lat?: number; lon?: number; qid?: string }
 
-async function fetchJson(url: string, headers: Record<string, string>): Promise<any | null> {
+async function fetchJson(url: string, headers: Record<string, string>): Promise<Record<string, unknown> | null> {
   const ctl = new AbortController()
   const t = setTimeout(() => ctl.abort(), FETCH_TIMEOUT)
   try {
@@ -58,22 +58,27 @@ async function fetchQid(title: string): Promise<string | null> {
 }
 
 interface WdFacts { population?: number; area_km2?: number; elevation_m?: number; founded_year?: number; official_website?: string }
+type WdClaimValue = { mainsnak?: { datavalue?: { value?: { amount?: string; time?: string } | string } } }
+type WdClaims = Record<string, WdClaimValue[]>
 
-function parseWdFacts(claims: Record<string, any>): WdFacts {
+function parseWdFacts(claims: WdClaims): WdFacts {
   const qty = (p: string): number | undefined => {
-    const v = claims[p]?.[0]?.mainsnak?.datavalue?.value?.amount
-    if (v == null) return undefined
-    const n = parseFloat(String(v).replace(/^\+/, ''))
+    const val = claims[p]?.[0]?.mainsnak?.datavalue?.value
+    const amount = typeof val === 'object' ? val?.amount : undefined
+    if (amount == null) return undefined
+    const n = parseFloat(String(amount).replace(/^\+/, ''))
     return isFinite(n) ? n : undefined
   }
   const out: WdFacts = {}
   const pop = qty('P1082'); if (pop != null) out.population = Math.round(pop)
   const area = qty('P2046'); if (area != null) out.area_km2 = Math.round(area * 100) / 100
   const elev = qty('P2044'); if (elev != null) out.elevation_m = Math.round(elev)
-  const tRaw = claims['P571']?.[0]?.mainsnak?.datavalue?.value?.time as string | undefined
+  const tRaw571 = claims['P571']?.[0]?.mainsnak?.datavalue?.value
+  const tRaw = typeof tRaw571 === 'object' ? tRaw571?.time : undefined
   if (tRaw) { const y = parseInt(tRaw.slice(1, 5), 10); if (isFinite(y) && y > 0) out.founded_year = y }
-  const site = claims['P856']?.[0]?.mainsnak?.datavalue?.value
-  if (typeof site === 'string' && /^https?:\/\//i.test(site)) out.official_website = site
+  const siteVal = claims['P856']?.[0]?.mainsnak?.datavalue?.value
+  const site = typeof siteVal === 'string' ? siteVal : undefined
+  if (site && /^https?:\/\//i.test(site)) out.official_website = site
   return out
 }
 
@@ -169,7 +174,7 @@ Deno.serve(async (req: Request) => {
   const cityIds: string[] | undefined = body.city_ids
 
   // Work-list: explicit ids or prioritized batch from the refresh selector.
-  let ids: string[] = []
+  let ids: string[]
   if (cityIds?.length) {
     ids = cityIds
   } else {
@@ -192,7 +197,7 @@ Deno.serve(async (req: Request) => {
   for (const c of cities ?? []) {
     const started = Date.now()
     const country = (c.countries as { name?: string } | null)?.name
-    let status = 'skipped'
+    let status: string
     try {
       const prov: Prov = { ...(c.field_provenance as Prov ?? {}) }
       const update: Record<string, unknown> = {}

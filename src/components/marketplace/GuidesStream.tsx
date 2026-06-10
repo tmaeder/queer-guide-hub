@@ -54,7 +54,7 @@ export function GuidesStream({
               className="col-span-12 md:col-span-6 lg:col-span-4 rounded-container border border-border bg-card overflow-hidden"
             >
               <div className="aspect-[16/9] bg-muted animate-pulse" />
-              <div className="p-6 space-y-3">
+              <div className="p-6 space-y-2">
                 <div className="h-3 w-24 bg-muted animate-pulse rounded-badge" />
                 <div className="h-6 w-3/4 bg-muted animate-pulse rounded-element" />
                 <div className="h-4 w-2/3 bg-muted animate-pulse rounded-element" />

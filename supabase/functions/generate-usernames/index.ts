@@ -7,6 +7,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { anthropicMessages } from '../_shared/anthropic-shim.ts';
 import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { checkUserRateLimit } from '../_shared/user-rate-limit.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -52,6 +53,9 @@ async function generateBatch(): Promise<string[]> {
 Deno.serve(async (req) => {
   const cors = corsFor(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  if (!(await checkUserRateLimit(req, 'generate-usernames', 60, 3600))) {
+    return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), { status: 429, headers: { ...cors, 'Content-Type': 'application/json' } });
+  }
   if (req.method !== 'POST') {
     return new Response('method not allowed', { status: 405, headers: cors });
   }

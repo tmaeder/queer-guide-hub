@@ -19,7 +19,7 @@ export function PassportStrip() {
         className="rounded-container border border-border/60 bg-card p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
       >
         <div className="flex items-start gap-4">
-          <div className="rounded-element bg-muted p-3">
+          <div className="rounded-element bg-muted p-2">
             <Compass className="h-5 w-5" />
           </div>
           <div>
@@ -44,7 +44,7 @@ export function PassportStrip() {
       className="rounded-container border border-border/60 bg-card p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6"
     >
       <div className="flex items-center gap-4">
-        <div className="rounded-element bg-muted p-3">
+        <div className="rounded-element bg-muted p-2">
           <Compass className="h-5 w-5" />
         </div>
         <div>

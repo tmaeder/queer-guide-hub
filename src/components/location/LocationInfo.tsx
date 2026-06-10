@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -184,8 +183,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
           <CardHeader>
             <CardTitle>
               <Globe size={20} />
-              About {name}
-              <Badge variant="secondary">{type}</Badge>
+              Background
             </CardTitle>
           </CardHeader>
           <CardContent>

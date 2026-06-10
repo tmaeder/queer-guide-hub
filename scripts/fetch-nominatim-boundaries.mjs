@@ -18,9 +18,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = join(__dirname, 'output');
 mkdirSync(OUT_DIR, { recursive: true });
 
-const SUPABASE_URL = 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const SUPABASE_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xqeacpakadqfxjxjcewc.supabase.co';
+// Supabase anon (publishable) key — provide via env, do not hardcode.
+const SUPABASE_KEY = process.env.SB_ANON || process.env.SUPABASE_ANON_KEY;
+if (!SUPABASE_KEY) { console.error('SB_ANON env var required (Supabase anon key)'); process.exit(1); }
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org/search';
 const USER_AGENT = 'QueerGuide/1.0 (https://queer.guide)';
 const CITY_THRESHOLD = 0.005;

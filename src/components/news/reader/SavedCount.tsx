@@ -18,7 +18,7 @@ export function SavedCount() {
       <p className="mt-4 m-0 text-hero font-bold leading-none tracking-tight tabular-nums">
         {count}
       </p>
-      <p className="mt-3 text-13 text-muted-foreground leading-snug">
+      <p className="mt-2 text-13 text-muted-foreground leading-snug">
         {count === 0 ? 'Tap the heart on any article to save.' : 'Open reading list →'}
       </p>
     </LocalizedLink>

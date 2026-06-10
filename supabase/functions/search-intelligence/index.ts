@@ -589,6 +589,15 @@ async function updateSuggestion(ctx: RouteContext): Promise<Response> {
     if (applied) {
       update.status = 'applied'
       update.applied_at = new Date().toISOString()
+      // An admin-approved enrichment for a tag means that tag is now human-
+      // reviewed: flip the flag so enforce_tag_seo_sensitivity_gate releases the
+      // SEO index hold on sensitive/adult tag pages.
+      if (before.entity_type === 'unified_tags' && before.entity_id) {
+        await ctx.service
+          .from('unified_tags')
+          .update({ human_reviewed: true, updated_at: new Date().toISOString() })
+          .eq('id', before.entity_id)
+      }
     } else if (applyError) {
       update.review_notes = `auto-apply failed: ${applyError}` +
         (body.review_notes ? `\n${body.review_notes}` : '')

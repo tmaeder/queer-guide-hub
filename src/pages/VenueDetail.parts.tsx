@@ -5,9 +5,6 @@ import {
   Globe,
   Mail,
   Clock,
-  Wifi,
-  Car,
-  Accessibility,
   Luggage,
   Navigation2,
 } from 'lucide-react';
@@ -23,6 +20,7 @@ import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
 import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
+import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { EntityMap } from '@/components/map/EntityMap';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
@@ -468,32 +466,12 @@ export function VenueOverview({
             </Card>
           )}
 
-          {/* Amenities */}
-          {venue.amenities && venue.amenities.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('pages.venueDetail.amenities', 'Amenities')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {venue.amenities.map((amenity, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 rounded">
-                      {amenity === 'wifi' && <Wifi size={16} />}
-                      {amenity === 'parking' && <Car size={16} />}
-                      {amenity === 'wheelchair-accessible' && <Accessibility size={16} />}
-                      {!['wifi', 'parking', 'wheelchair-accessible'].includes(amenity) && (
-                        <div
-                          className="rounded-full bg-muted flex-shrink-0"
-                          style={{ width: 16, height: 16 }}
-                        />
-                      )}
-                      <span className="text-sm capitalize">{amenity.replace('-', ' ')}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Amenities + accessibility (vocabulary-driven icons + i18n) */}
+          <AmenityDisplay
+            amenities={venue.amenities}
+            accessibility={venue.accessibility_attributes}
+            accessibilityNotes={venue.accessibility_notes}
+          />
 
           <VenueSafetySignalDisplay venueId={venue.id} />
 

@@ -395,6 +395,11 @@ export default tseslint.config(
       "src/components/country/CountryHeroImages.tsx",
     ],
     rules: {
+      // NOTE (2026-06-10): flat config replaces no-restricted-syntax WHOLESALE
+      // per matching block — this block is the last match for the public tree,
+      // so it must carry EVERY public selector (the radius/spacing block above
+      // only covers files this block ignores). Dropping a selector here
+      // silently disables it for all public files.
       "no-restricted-syntax": [
         "warn",
         {
@@ -408,6 +413,30 @@ export default tseslint.config(
             "Literal[value=/\\bfont-extrabold\\b/]",
           message:
             "Weight scale is 400/500/600/700. Use font-bold (700).",
+        },
+        {
+          selector:
+            "Literal[value=/\\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
+          message:
+            "Use semantic radius: rounded-container (cards/modals), rounded-element (buttons/inputs), or rounded-badge (chips/tags). See src/index.css @theme.",
+        },
+        {
+          selector:
+            "Literal[value=/\\b(p|m|mx|my|mt|mb|ml|mr|px|py|pl|pr|pt|pb|gap|gap-x|gap-y|space-x|space-y)-(3|5|7|9|11|13|15)\\b/]",
+          message:
+            "Strict 8 pt grid (UI audit P8). Use even-step Tailwind utility (-4, -6, -8, -10, -12, -14, -16) or the explicit .5 micro-spacing (-0.5, -1.5, -2.5, -3.5) for icon-level offsets.",
+        },
+        {
+          selector:
+            "Literal[value=/\\btext-\\[/]",
+          message:
+            "Arbitrary text class — use the semantic type scale (text-3xs/2xs/xs2/13/15/body-lg/title/headline/display/hero) and color tokens (text-foreground / text-muted-foreground / text-destructive).",
+        },
+        {
+          selector:
+            "JSXText[value=/\\b(Discover|Explore|Unlock|Curated|Journey|Amazing|Tailored|Personalized)\\b/]",
+          message:
+            "Marketing voice — copy is direct and factual (CLAUDE.md § Design). Use Browse/Find/See/View or plain nouns.",
         },
       ],
     },
