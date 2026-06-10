@@ -5,8 +5,8 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Backfill og:image / twitter:image for events that have a URL but no image (P1).
 // Gets the event's OWN image from its source page (complements fetch-images,
-// which fills stock/Pexels/Wikipedia art). Reuses the social-card scraper from
-// backfill-news-images. Gates the result (drops logos/sprites/svg/data-uris)
+// which fills stock/Pexels/Wikipedia art). Reuses the og:image social-card
+// scraper pattern. Gates the result (drops logos/sprites/svg/data-uris)
 // before storing into events.images. Safe to run repeatedly — only touches rows
 // with an empty images array.
 // Auth: X-Webhook-Secret (cron) or admin/service-role, mirroring the other
