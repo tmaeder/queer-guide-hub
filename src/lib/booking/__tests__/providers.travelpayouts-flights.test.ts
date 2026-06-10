@@ -22,7 +22,6 @@ describe('travelpayoutsFlights identity', () => {
   it('declares name, vertical, in-app=false', () => {
     expect(travelpayoutsFlights.name).toBe('travelpayouts');
     expect(travelpayoutsFlights.vertical).toBe('flight');
-    expect(travelpayoutsFlights.supportsInApp).toBe(false);
   });
 });
 
@@ -101,7 +100,6 @@ describe('travelpayoutsFlights.search', () => {
       stops: 1,
       duration: 720,
       bookingUrl: 'https://av.example/x',
-      supportsInApp: false,
     });
     expect(buildAviasalesUrlMock).toHaveBeenCalledWith({
       origin: 'BER',
@@ -142,7 +140,6 @@ describe('travelpayoutsFlights.getBookingUrl', () => {
       price: 1,
       currency: 'eur',
       bookingUrl: 'https://av.example/y',
-      supportsInApp: false,
     });
     expect(url).toBe('https://av.example/y');
   });
@@ -155,7 +152,6 @@ describe('travelpayoutsFlights.getBookingUrl', () => {
       title: 'x',
       price: 1,
       currency: 'eur',
-      supportsInApp: false,
     });
     expect(url).toBe('https://www.aviasales.com/?marker=452012');
   });

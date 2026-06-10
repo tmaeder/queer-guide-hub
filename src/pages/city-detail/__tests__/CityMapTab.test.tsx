@@ -6,9 +6,9 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { Suspense } from 'react';
 
-// CityMapTab renders MapShell, which needs router state (useSearchParams) and
-// consumes auth + favorites (saved layer, map wave 3) — stub the hooks and
-// wrap renders in MemoryRouter.
+// CityMapTab renders MapShell, which needs router state (useSearchParams),
+// reads auth + favorites (saved layer, map wave 3), and renders the real
+// ExploreMap — stub all three and wrap renders in MemoryRouter.
 vi.mock('@/components/map/ExploreMap', () => ({
   ExploreMap: () => <div data-testid="explore-map">map</div>,
 }));

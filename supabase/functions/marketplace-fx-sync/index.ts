@@ -1,10 +1,11 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 
 const TARGET_CURRENCIES = ['EUR','GBP','CAD','AUD','CHF','JPY','CNY','SEK','NOK','DKK','NZD','BRL','MXN','ZAR','INR','SGD','HKD','KRW','TRY','PLN','CZK','HUF']
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  const _auth = await requireInternalOrAdmin(req, supabase); if (_auth instanceof Response) return _auth
   try {
     // open.er-api.com — free, no key required, updates daily
     const res = await fetch('https://open.er-api.com/v6/latest/USD')

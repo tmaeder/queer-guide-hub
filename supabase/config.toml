@@ -91,7 +91,7 @@ gcp_project_id = ""
 gcp_project_number = ""
 gcp_jwt_path = "supabase/gcp.json"
 
-[functions.create-booking]
+[functions.send-welcome-email]
 verify_jwt = false
 
 [functions.get-pexels-images]
@@ -103,35 +103,17 @@ verify_jwt = false
 [functions.get-weather-forecast]
 verify_jwt = false
 
-[functions.get-wikipedia-info]
-verify_jwt = false
-
-[functions.search-flights]
-verify_jwt = true
-
-[functions.search-hotels]
-verify_jwt = true
-
 [functions.store-tag-images]
 verify_jwt = false
 
 [functions.tag-enrichment-sweep]
 verify_jwt = false
 
-[functions.secure-mapbox-token]
-verify_jwt = false
-
 [functions.calendar-feed]
-verify_jwt = false
-
-[functions.compute-tag-relationships]
 verify_jwt = false
 
 [functions.import-awin-products]
 verify_jwt = false
-
-[functions.manage-email-templates]
-verify_jwt = true
 
 [functions.send-bulk-email]
 verify_jwt = true
@@ -149,9 +131,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.enrich-venue]
-verify_jwt = false
-
-[functions.manage-placeholder-images]
 verify_jwt = false
 
 [functions.calendar-token]
@@ -392,24 +371,6 @@ verify_jwt = false
 [functions.feedback-story-titler]
 verify_jwt = false
 
-[functions.fetch-city-images]
-verify_jwt = false
-
-[functions.fetch-country-images]
-verify_jwt = false
-
-[functions.fetch-event-images]
-verify_jwt = false
-
-[functions.fetch-personality-images]
-verify_jwt = false
-
-[functions.fetch-venue-images]
-verify_jwt = false
-
-[functions.fetch-village-images]
-verify_jwt = false
-
 [functions.github-notifications-poller]
 verify_jwt = false
 
@@ -433,21 +394,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.marketplace-relevance]
-verify_jwt = false
-
-[functions.marketplace-ingestion]
-verify_jwt = false
-
-[functions.social-media-ingestion]
-verify_jwt = false
-
-[functions.scrape-events-daily]
-verify_jwt = false
-
-[functions.news-pipeline]
-verify_jwt = false
-
-[functions.personality-pipeline]
 verify_jwt = false
 
 [functions.event-liveness-checker]
@@ -484,4 +430,20 @@ verify_jwt = false
 # authenticate/verify-authentication actions run for logged-out users, so
 # platform JWT verification must be off.
 [functions.secure-passkey-operations]
+verify_jwt = false
+
+# Recovered 2026-06-10 (deployed-but-not-in-git audit) — flags mirror deployed verify_jwt
+[functions.import-foursquare-venues]
+verify_jwt = false
+
+[functions.pipeline-enrich-country-editorial]
+verify_jwt = false
+
+[functions.personality-extract-from-bio]
+verify_jwt = false
+
+[functions.source-shopify-public]
+verify_jwt = false
+
+[functions.marketplace-tag-backfill]
 verify_jwt = false

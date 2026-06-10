@@ -8,7 +8,7 @@
  * (retry + Sentry capture), is safe across unmount (React Query owns the
  * lifecycle), and standardizes error toasting through sonner.
  *
- * Pairs with <AsyncActionButton>, which owns the pending/disabled/progress UI.
+ *
  */
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';

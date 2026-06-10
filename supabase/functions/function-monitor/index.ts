@@ -13,14 +13,10 @@ const FUNCTION_REGISTRY: FunctionMeta[] = [
   { name: 'geo-link-content', category: 'workflow', description: 'Geo-link content to cities/countries', envVars: [] },
   { name: 'validate-links', category: 'workflow', description: 'HTTP validation of content URLs', envVars: [] },
   { name: 'populate-embeddings', category: 'workflow', description: 'Generate vector embeddings via CF Workers AI', envVars: ['CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN'] },
-  { name: 'auto-tag-content', category: 'workflow', description: 'AI-powered content auto-tagging', envVars: ['OPENAI_API_KEY'] },
-  { name: 'import-airports-data', category: 'workflow', description: 'Seed airports from Travelpayouts', envVars: [] },
   { name: 'scrape-gaycities-events', category: 'workflow', description: 'Scrape events from gaytravel4u.com', envVars: [] },
-  { name: 'bulk-scrape-events', category: 'workflow', description: 'Multi-source event scraping', envVars: [] },
   { name: 'optimize-images-batch', category: 'workflow', description: 'Image compression and resize', envVars: [] },
   { name: 'send-bulk-email', category: 'workflow', description: 'Templated bulk email via Resend', envVars: ['RESEND_API_KEY'] },
   { name: 'send-group-notifications', category: 'workflow', description: 'Group activity notifications', envVars: ['RESEND_API_KEY'] },
-  { name: 'generate-sitemap', category: 'workflow', description: 'Generate sitemap.xml', envVars: [] },
   { name: 'workflow-dispatcher', category: 'workflow', description: 'pgmq-based job dispatcher', envVars: [] },
 
   // ── API functions (invoked from frontend) ──

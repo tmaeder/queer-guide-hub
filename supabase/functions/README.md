@@ -3,7 +3,7 @@
 Deno edge functions — the backend data plane. This is the canonical location (not the repo-root `functions/`).
 
 What lives here:
-- `source-*` data fetchers and `pipeline-*` DAG stages (normalize → validate → dedupe → quality-score → review-gate → commit); webhooks (Stripe, Meta, Sentry, Turnstile); admin/ops endpoints; `_shared/` (cross-function helpers — supabase-client, dedup-engine, consensus, ai-enrichment, …).
+- `source-*` data fetchers and `pipeline-*` DAG stages (normalize → validate → dedupe → quality-score → review-gate → commit); webhooks (Stripe, Meta, Sentry, Turnstile); admin/ops endpoints; `_shared/` (cross-function helpers — supabase-client, consensus, ai-enrichment, …).
 - Functions are wired into pipelines via `pipeline_definitions.nodes` and scheduled via `cron.job` — **the live DB is authoritative**, repo migrations only seed it.
 
 Conventions:

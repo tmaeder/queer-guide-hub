@@ -10,7 +10,6 @@ function makeProvider(
   return {
     name,
     vertical,
-    supportsInApp: false,
     search: async () => results,
   };
 }
@@ -59,7 +58,6 @@ describe('bookingRegistry', () => {
           title: 'Expensive',
           price: 300,
           currency: 'EUR',
-          supportsInApp: false,
         },
       ]),
     );
@@ -72,7 +70,6 @@ describe('bookingRegistry', () => {
           title: 'Cheap',
           price: 80,
           currency: 'EUR',
-          supportsInApp: false,
         },
       ]),
     );
@@ -90,13 +87,11 @@ describe('bookingRegistry', () => {
         title: 'OK',
         price: 100,
         currency: 'EUR',
-        supportsInApp: false,
       },
     ]));
     bookingRegistry.register({
       name: 'broken',
       vertical: 'hotel',
-      supportsInApp: false,
       search: async () => {
         throw new Error('provider died');
       },
