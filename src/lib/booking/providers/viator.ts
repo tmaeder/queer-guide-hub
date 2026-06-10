@@ -13,7 +13,6 @@ import type { BookingProvider, BookingSearchParams, BookingResult } from '../typ
 export const viatorProvider: BookingProvider = {
   name: 'viator',
   vertical: 'activity',
-  supportsInApp: false,
 
   async search(params: BookingSearchParams): Promise<BookingResult[]> {
     const { cityName, checkIn, limit = 6 } = params;
@@ -40,7 +39,6 @@ export const viatorProvider: BookingProvider = {
       currency: 'EUR',
       category: cat.slug,
       bookingUrl: buildViatorUrl(cityName, cat.slug, checkIn),
-      supportsInApp: false,
     }));
   },
 

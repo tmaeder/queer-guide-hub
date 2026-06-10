@@ -49,7 +49,6 @@ export function useActivitySearch({
         durationText: activity.duration as string | undefined,
         category: activity.category as string | undefined,
         bookingUrl: activity.bookingUrl as string | undefined,
-        supportsInApp: false,
       }));
     },
     enabled: enabled && (!!city || !!latitude),
