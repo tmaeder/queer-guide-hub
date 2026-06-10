@@ -124,7 +124,7 @@ Deno.serve(async (req: Request) => {
 
   for (const v of venues) {
     const started = Date.now()
-    let status = 'skipped'
+    let status: string
     try {
       // --- Source 1: extract (free, auto-apply) ---
       const ex = normalizeVenueAmenities(
