@@ -49,7 +49,7 @@ export function GroupCollections({ groupId, isMember, className }: GroupCollecti
 
   return (
     <section className={cn('flex flex-col gap-4', className)} aria-label="Group collections">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-4">
         <h3 className="text-lg font-semibold">Collections</h3>
         {isMember && <NewCollectionDialog groupId={groupId} />}
       </div>
@@ -70,7 +70,7 @@ export function GroupCollections({ groupId, isMember, className }: GroupCollecti
                     type="button"
                     onClick={() => setActiveId(c.id)}
                     className={cn(
-                      'w-full rounded-element border px-3 py-2 text-left text-sm whitespace-nowrap md:whitespace-normal',
+                      'w-full rounded-element border px-4 py-2 text-left text-sm whitespace-nowrap md:whitespace-normal',
                       active
                         ? 'border-foreground bg-foreground text-background'
                         : 'border-border bg-card text-foreground hover:bg-muted/40',
@@ -120,7 +120,7 @@ function NewCollectionDialog({ groupId }: { groupId: string }) {
               A shared bucket for venues, events, listings, and trips this group cares about.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-3">
+          <div className="space-y-4 py-4">
             <div className="space-y-1">
               <Label htmlFor="collection-name">Name</Label>
               <Input
@@ -171,7 +171,7 @@ function CollectionItemsPanel({
 
   return (
     <div className="rounded-container border border-border bg-card p-4">
-      <header className="mb-3">
+      <header className="mb-4">
         <h4 className="text-base font-semibold text-foreground">{collection.name}</h4>
         {collection.description && (
           <p className="mt-1 text-13 text-muted-foreground">{collection.description}</p>
@@ -190,7 +190,7 @@ function CollectionItemsPanel({
           {items.map((it) => (
             <li
               key={it.id}
-              className="flex items-center justify-between gap-3 rounded-element border border-border bg-background px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-2 rounded-element border border-border bg-background px-4 py-2 text-sm"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-foreground capitalize">

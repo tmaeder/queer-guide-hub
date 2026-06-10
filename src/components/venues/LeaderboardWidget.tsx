@@ -39,7 +39,7 @@ export function LeaderboardWidget({ cityId, cityName }: LeaderboardWidgetProps) 
         </Link>
       </div>
 
-      <ol className="space-y-3">
+      <ol className="space-y-2">
         {loading
           ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)
           : rows.map((r) => {
@@ -47,7 +47,7 @@ export function LeaderboardWidget({ cityId, cityName }: LeaderboardWidgetProps) 
               return (
                 <li
                   key={r.user_id}
-                  className="flex items-center gap-3 text-sm"
+                  className="flex items-center gap-2 text-sm"
                   aria-current={isYou ? 'true' : undefined}
                 >
                   <span className="w-6 text-right tabular-nums font-semibold text-muted-foreground">

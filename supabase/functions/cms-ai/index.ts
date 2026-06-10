@@ -32,6 +32,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { llmChatCompletion, isLlmConfigured } from '../_shared/llm-client.ts';
+import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
 type AIOp = 'summarize' | 'alt_text' | 'seo_draft' | 'auto_tag' | 'fact_check' | 'quality_review';
 
@@ -43,11 +44,11 @@ interface Body {
   source: Record<string, unknown>;
 }
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
+const corsFor = (req: Request) => ({
+  ...getCorsHeaders(req),
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+});
 
 async function sha256(s: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
@@ -125,6 +126,7 @@ Be strict. Penalize missing description, missing location, generic boilerplate, 
 }
 
 Deno.serve(async (req: Request) => {
+  const CORS = corsFor(req);
   try {
     return await handle(req);
   } catch (err) {
@@ -141,6 +143,7 @@ Deno.serve(async (req: Request) => {
 });
 
 async function handle(req: Request): Promise<Response> {
+  const CORS = corsFor(req);
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ ok: false, error: 'Method not allowed' }), {

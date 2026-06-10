@@ -753,7 +753,7 @@ export const MessagingInterface = ({ typeFilter }: MessagingInterfaceProps = {})
               const conv = conversations.find((c) => c.id === selectedConversation);
               if (conv?.conversation_type !== 'match') return null;
               return (
-                <div className="px-4 pt-3 md:px-4 md:pt-3">
+                <div className="px-4 pt-4 md:px-4 md:pt-4">
                   <IntimateMatchThread
                     conversationId={selectedConversation!}
                     hasMessages={currentMessages.length > 0}

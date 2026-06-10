@@ -59,7 +59,7 @@ export function SearchScopeChips({ activeScope, onScopeChange }: SearchScopeChip
     <div
       role="tablist"
       aria-label={t('search.scope.all', 'Search scope')}
-      className="flex items-center gap-1.5 overflow-x-auto border-b border-border px-3 py-2 [scrollbar-width:thin]"
+      className="flex items-center gap-1.5 overflow-x-auto border-b border-border px-4 py-2 [scrollbar-width:thin]"
     >
       <ScopeChip
         label={t('search.scope.all', 'All')}

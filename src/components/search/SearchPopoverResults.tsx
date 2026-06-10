@@ -103,7 +103,7 @@ export function SearchPopoverResults({
         {loading && suggestions.length === 0 && (
           <div className="p-2">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="flex items-center gap-3 px-2 py-2">
+              <div key={i} className="flex items-center gap-4 px-2 py-2">
                 <div className="h-12 w-12 animate-pulse rounded-element bg-muted" />
                 <div className="flex flex-1 flex-col gap-2">
                   <div className="h-3 w-3/5 animate-pulse bg-muted" />
@@ -177,7 +177,7 @@ export function SearchPopoverResults({
           type="button"
           onClick={onAsk}
           className={cn(
-            'flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm transition-colors hover:bg-accent',
+            'flex w-full items-center gap-2 border-t border-border px-4 py-2 text-left text-sm transition-colors hover:bg-accent',
             thin && 'bg-muted font-medium',
           )}
         >

@@ -30,7 +30,7 @@ export function ContinueReadingRail() {
             <li key={it.guide_id}>
               <LocalizedLink
                 to={`/marketplace/guides/${it.guide.slug}`}
-                className="group flex gap-4 items-start rounded-element border border-border p-3 no-underline hover:bg-muted/40"
+                className="group flex gap-4 items-start rounded-element border border-border p-4 no-underline hover:bg-muted/40"
               >
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-badge bg-muted">
                   {hero ? (

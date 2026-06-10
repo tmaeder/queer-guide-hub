@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import {
   validateVenueNormalized,
   validateCityNormalized,
@@ -26,6 +26,7 @@ import { isLgbtiConnectionVocab } from '../_shared/lgbti-connection.ts'
 
 Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
 
   try {

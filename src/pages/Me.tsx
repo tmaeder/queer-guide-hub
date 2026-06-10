@@ -34,7 +34,7 @@ function QuickLink({ to, icon: Icon, title, subtitle }: QuickLinkProps) {
   return (
     <LocalizedLink
       to={to}
-      className="group flex items-center gap-3 rounded-container border border-border bg-card p-4 hover:bg-muted/30 transition-colors"
+      className="group flex items-center gap-4 rounded-container border border-border bg-card p-4 hover:bg-muted/30 transition-colors"
     >
       <Icon className="h-5 w-5 text-foreground" aria-hidden />
       <div className="flex-1 min-w-0">
@@ -121,7 +121,7 @@ export default function Me() {
 
       <ActivityStrip />
 
-      <section className="grid gap-3 md:grid-cols-3" aria-label="Quick links">
+      <section className="grid gap-4 md:grid-cols-3" aria-label="Quick links">
         <QuickLink
           to="/me/passport"
           icon={Trophy}
@@ -142,7 +142,7 @@ export default function Me() {
         />
       </section>
 
-      <section className="grid gap-3 md:grid-cols-2" aria-label="Continue">
+      <section className="grid gap-4 md:grid-cols-2" aria-label="Continue">
         <QuickLink
           to="/marketplace/guides"
           icon={BookOpen}

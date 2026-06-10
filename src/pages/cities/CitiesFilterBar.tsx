@@ -67,7 +67,7 @@ function ChipButton({
       aria-label={label}
       onClick={onPress}
       className={cn(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-element border px-3 py-1.5 text-13 font-medium transition-colors',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-element border px-2.5 py-1.5 text-13 font-medium transition-colors',
         pressed
           ? 'border-foreground bg-foreground text-background'
           : 'border-foreground/15 bg-background text-foreground hover:bg-muted',
@@ -105,7 +105,7 @@ export function CitiesFilterBar({
     >
       <div className="px-4 md:px-0 py-4 space-y-4">
         {/* Row 1: Search + Reset */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="max-w-[480px] flex-1">
             <Input
               aria-label={t('cities.searchAriaLabel', 'Search cities')}
@@ -153,7 +153,7 @@ export function CitiesFilterBar({
         )}
 
         {/* Row 3: Equality tier chips + sort */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div
             className="flex flex-wrap gap-2"
             role="group"

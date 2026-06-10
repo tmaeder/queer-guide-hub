@@ -54,6 +54,7 @@ export async function fetchTripSuggestionVenues(
       'id, name, category, address, foursquare_rating, is_featured, latitude, longitude, city_id, country_id',
     )
     .in('city_id', cityIds)
+    .neq('review_status', 'archived')
     .is('duplicate_of_id', null)
     .order('foursquare_rating', { ascending: false, nullsFirst: false })
     .limit(30);
@@ -67,6 +68,7 @@ export async function fetchTripMapVenues<T = unknown>(cityIds: string[]): Promis
     .from('venues')
     .select('id, name, category, latitude, longitude')
     .in('city_id', cityIds)
+    .neq('review_status', 'archived')
     .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
