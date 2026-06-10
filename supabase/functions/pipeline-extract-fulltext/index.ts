@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { extractArticle } from '../_shared/news-quality/extract.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
@@ -40,6 +40,7 @@ async function fetchHtml(url: string): Promise<string | null> {
 
 Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
 
   try {

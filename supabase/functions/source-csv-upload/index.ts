@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import {
@@ -7,6 +7,7 @@ import {
   type EntityType,
 } from '../_shared/entity-type-classifier.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 // ============================================================
 // Source: CSV File Upload — generic adapter for all entity types.
@@ -37,6 +38,7 @@ const csvUploadAdapter: SourceAdapter = {
     // Download CSV from Supabase storage or URL
     let csvText: string
     if (fileUrl.startsWith('http')) {
+      assertPublicHttpUrl(fileUrl)
       const res = await fetch(fileUrl)
       if (!res.ok) throw new Error(`Failed to download CSV: ${res.status}`)
       csvText = await res.text()
@@ -134,6 +136,7 @@ function routeRawItems(
 
 Deno.serve(withErrorReporting('source-csv-upload', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
   try {
     const body = await req.json().catch(() => ({}))

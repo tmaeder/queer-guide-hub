@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { scoreMarketplaceQuality } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { gateImages } from '../_shared/image-gate.ts'
@@ -14,6 +14,7 @@ const IMAGE_GATED_TABLES = new Set(['venues', 'events', 'marketplace_listings', 
 
 Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
 
   const supabase = getServiceClient()
 

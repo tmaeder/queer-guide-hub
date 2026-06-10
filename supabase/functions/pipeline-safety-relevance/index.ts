@@ -2,8 +2,7 @@ import {
   getServiceClient,
   jsonResponse,
   errorResponse,
-  corsResponse,
-} from '../_shared/supabase-client.ts'
+  corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { llmChatCompletion } from '../_shared/llm-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import {
@@ -30,6 +29,7 @@ const WALL_CLOCK_LIMIT_MS = 45_000
 
 Deno.serve(withErrorReporting('pipeline-safety-relevance', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
 
   try {
