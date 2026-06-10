@@ -11,6 +11,19 @@ vi.mock('@/components/map/ExploreMap', () => ({
 vi.mock('@/components/map/ExploreMapLayers', () => ({
   LAYER_DEFS: [{ type: 'venues', comingSoon: false }, { type: 'events', comingSoon: false }],
 }));
+// MapShell consumes auth + favorites (saved layer, map wave 3) — these page
+// tests don't mount providers, so stub both hooks.
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: null, session: null, loading: false }),
+}));
+vi.mock('@/hooks/useFavorites', () => ({
+  useFavorites: () => ({
+    favoriteIds: new Set<string>(),
+    isFavorited: () => false,
+    toggleFavorite: async () => {},
+    loading: false,
+  }),
+}));
 
 import MapPage from '../Map';
 
