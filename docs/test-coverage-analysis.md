@@ -98,7 +98,7 @@ Six of eight workers ship with zero tests. The ones in critical paths:
 - `workers/search-proxy/` (11 src files) — fronts Meilisearch with the API key; bugs here either leak the key or break search globally. Only shell scripts (`contract.sh`, `cities.sh`) exist; no vitest setup.
 - `workers/ingest/` — search-intelligence ingest pipeline
 - `workers/snapshot-archiver/` — admin/editorial snapshot archival
-- `workers/image-cdn/`, `workers/image-ingest/`, `workers/geo/` — lower blast radius but still production paths
+- `workers/image-cdn/`, `workers/image-ingest/` — lower blast radius but still production paths
 
 **Recommended:** start with `search-proxy` — add vitest config, then tests for synonym lookup, API-key gating, and query-shape validation. The shell `contract.sh` tests can be ported into vitest `it.each(...)` blocks for reproducibility.
 

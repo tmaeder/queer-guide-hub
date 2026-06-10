@@ -60,7 +60,6 @@ queer-guide-hub/
 **Personhood Disposition (data quality, 2026-06-07):** Detects organizations / venues / teams misfiled in `personalities` (the bare-name residue the Wikidata resolver refuses because of its `P31=Q5` human filter — e.g. *Sisters of Perpetual Indulgence*, *SF Tsunami Water Polo*, *La Montaña*) and **reversibly soft-archives** confirmed non-persons (`visibility→draft` + `review_status='archived'` + `seo_indexable=false`, the Phase-1 adult-cohort convention; never hard-deletes, never reclassifies — no org table exists). Classifier `_shared/personhood-classifier.ts` fuses name/bio heuristics (reusing `entity-type-classifier.ts`) + Wikidata `P31` (`classifyWikidataPersonhood` in `_shared/wikidata-resolve.ts`) + LLM grounded in the bio, hybrid-by-confidence: a confident Wikidata-human match **vetoes** archiving; only `non_person` ≥0.8 archives, `uncertain` → `needs_attention`, `person` recorded + excluded from future runs. RPCs (migration `20260607400000`): `archive_personality_as_nonperson(id,reason,signals)`, `unarchive_personality(id)` (existing admin restore, extended to also restore visibility/seo from `enrichment_status.personhood.archived` snapshot), `set_personhood_verdict(id,verdict,payload)`, `personalities_nonperson_candidates(limit)`. Edge fn `pipeline-classify-personhood` (circuit-broken, daily-capped, internal-secret gated) on weekly cron `wf-classify-personhood` (`30 6 * * 1`). New critical `person_nonperson_public` gate in `release_gate_checks()`. Backfill driver `scripts/data-quality/classify-personhood.mjs`. First pass (2026-06-07): 12 archived, 6 flagged for triage, 62 confirmed persons, 0 public non-persons. Audit: `docs/audits/2026-06-07-personhood-disposition.md`.
 
 **Amenity Truth Engine (data quality, 2026-06-08):** Venue amenities were garbage — only 2.9% of venues had any, and the 945 that did held **2,020 distinct uncontrolled values** (TripAdvisor scrape noise: adjectives `casual`/`trendy`, food `eggs`/`bacon`/`salads`, meal types, location words) because `normalizeAmenities` only ran for hotels. `accessibility_attributes` was 100% empty. The fix is a controlled vocabulary + cleanup + self-maintaining engine. **Vocabulary:** `public.amenities` is now the single category-aware vocabulary (was a dead 0-row catalog) — `slug`/`icon_name` (lucide)/`kind` (`amenity`|`accessibility`|`queer`)/`category_scope[]`; 61 seeded terms (migration `20260608100000`). `venue_amenities`/`attributes` deprecated. **Normalizer** `_shared/amenity-normalize.ts` (DB-backed, category-aware, default-reject) classifies each raw term → amenity (`amenities[]`) / accessibility (`accessibility_attributes[]`) / queer (`tags[]`) / noise (dropped); anything not in the vocab/aliases is dropped. `detectLgbtqMarkers` reused for queer markers. **Engine** (`amenity-truth-backfill` edge fn, `verify_jwt=false`, X-Webhook-Secret `amenity_quality_webhook_secret`): three sources per venue — `extract` (free re-classify of existing data, auto-applies), `places` (Google structured booleans → slugs, auto-applies; **deferred — 0 venues have a `platform_ids.google` id**, real fetch is Phase 7 ~$500 to resolve place_ids), `llm` (`extractVenueAmenitiesFromText` in `_shared/ai-enrichment.ts`, constrained to vocab, circuit-broken `llm.openai.amenity-extract`; amenities auto-apply ≥0.8, **accessibility ALWAYS review-gated** — never auto-published, a wrong access claim is real-world harm). Schema (migration `20260608110000`): `venue_quality_signals` ledger, `venue_review_queue` + `approve_venue_review`/`reject_venue_review` RPCs (array-union into the column on approve), `venues_due_for_amenity_backfill(limit)` selector (empty-first); reuses `venue_field_provenance`/`venue_consensus_audit`. Deliberately stores **no** recomputed score on venues — `trg_search_documents_venue` fires on every UPDATE, so a 32k-row nightly write would storm the search sync (disk-constrained DB); the selector ranks by `cardinality(amenities)` and the admin panel counts live. Daily extract+LLM sweep cron `amenity_truth_backfill` (`15 4 * * *`, batch 60) cleans (free) and mines descriptions for amenities (auto ≥0.8) + queues accessibility for review (LLM daily-cap 80 bounds spend); weekly read-only `run_amenity_coverage_summary` health pulse. Consensus: `amenities`/`accessibility_attributes` added to `VENUE_FIELDS` (`_shared/venue-consensus.ts`, array union). Admin at `/admin/content/venue-quality` (`AmenityQualityPanel` + `VenueReviewQueue`). Frontend: `AmenityDisplay` (vocab-driven lucide icons via `src/lib/amenityIcons.ts` + i18n, accessibility in its own prominent block) on venue + hotel detail; `VenueFilters` amenity facet now vocab-driven. **First cleanup pass (2026-06-08): 945 venues, 2,020 → 33 distinct values, 0 non-canonical, 201 pure-noise venues correctly emptied.**
-**Amenity Truth Engine (data quality, 2026-06-08):** Venue amenities were garbage — only 2.9% of venues had any, and the 945 that did held **2,020 distinct uncontrolled values** (TripAdvisor scrape noise: adjectives `casual`/`trendy`, food `eggs`/`bacon`/`salads`, meal types, location words) because `normalizeAmenities` only ran for hotels. `accessibility_attributes` was 100% empty. The fix is a controlled vocabulary + cleanup + self-maintaining engine. **Vocabulary:** `public.amenities` is now the single category-aware vocabulary (was a dead 0-row catalog) — `slug`/`icon_name` (lucide)/`kind` (`amenity`|`accessibility`|`queer`)/`category_scope[]`; 61 seeded terms (migration `20260608100000`). `venue_amenities`/`attributes` deprecated. **Normalizer** `_shared/amenity-normalize.ts` (DB-backed, category-aware, default-reject) classifies each raw term → amenity (`amenities[]`) / accessibility (`accessibility_attributes[]`) / queer (`tags[]`) / noise (dropped); anything not in the vocab/aliases is dropped. `detectLgbtqMarkers` reused for queer markers. **Engine** (`amenity-truth-backfill` edge fn, `verify_jwt=false`, X-Webhook-Secret `amenity_quality_webhook_secret`): three sources per venue — `extract` (free re-classify of existing data, auto-applies), `places` (Google structured booleans → slugs, auto-applies; **deferred — 0 venues have a `platform_ids.google` id**, real fetch is Phase 7 ~$500 to resolve place_ids), `llm` (`extractVenueAmenitiesFromText` in `_shared/ai-enrichment.ts`, constrained to vocab, circuit-broken `llm.openai.amenity-extract`; amenities auto-apply ≥0.8, **accessibility ALWAYS review-gated** — never auto-published, a wrong access claim is real-world harm). Schema (migration `20260608110000`): `venue_quality_signals` ledger, `venue_review_queue` + `approve_venue_review`/`reject_venue_review` RPCs (array-union into the column on approve), `venues_due_for_amenity_backfill(limit)` selector (empty-first); reuses `venue_field_provenance`/`venue_consensus_audit`. Deliberately stores **no** recomputed score on venues — `trg_search_documents_venue` fires on every UPDATE, so a 32k-row nightly write would storm the search sync (disk-constrained DB); the selector ranks by `cardinality(amenities)` and the admin panel counts live. Daily extract-sweep cron `amenity_truth_backfill` (`15 4 * * *`, batch 150) mines tags→amenities for free; weekly read-only `run_amenity_coverage_summary` health pulse. Consensus: `amenities`/`accessibility_attributes` added to `VENUE_FIELDS` (`_shared/venue-consensus.ts`, array union). Admin at `/admin/content/venue-quality` (`AmenityQualityPanel` + `VenueReviewQueue`). Frontend: `AmenityDisplay` (vocab-driven lucide icons via `src/lib/amenityIcons.ts` + i18n, accessibility in its own prominent block) on venue + hotel detail; `VenueFilters` amenity facet now vocab-driven. **First cleanup pass (2026-06-08): 945 venues, 2,020 → 33 distinct values, 0 non-canonical, 201 pure-noise venues correctly emptied.**
 
 **Payments:** Stripe via `create-checkout-session` + `stripe-webhook` edge functions.
 
@@ -70,74 +69,15 @@ queer-guide-hub/
 
 ## Repo stats
 
+- **Edge functions:** 212
 - **Edge functions:** 201
-- **Migrations:** 554
+- **Migrations:** 555
 - **Edge functions:** 204
 - **Migrations:** 553
 - **Edge functions:** 203
 - **Migrations:** 548
 - **Migrations:** 541
 - **Migrations:** 547
-- **Migrations:** 542
-- **Edge functions:** 202
-- **Migrations:** 534
-- **Migrations:** 531
-- **Migrations:** 522
-- **Migrations:** 507
-- **Edge functions:** 197
-- **Migrations:** 512
-- **Edge functions:** 198
-- **Migrations:** 513
-- **Edge functions:** 195
-- **Edge functions:** 194
-- **Migrations:** 507
-- **Migrations:** 505
-- **Edge functions:** 196
-- **Migrations:** 509
-- **Edge functions:** 194
-- **Migrations:** 495
-- **Edge functions:** 195
-- **Migrations:** 507
-- **Edge functions:** 193
-- **Migrations:** 497
-- **Edge functions:** 195
-- **Migrations:** 496
-- **Edge functions:** 192
-- **Migrations:** 500
-- **Migrations:** 488
-- **Edge functions:** 193
-- **Migrations:** 499
-- **Migrations:** 485
-- **Edge functions:** 190
-- **Migrations:** 458
-- **Migrations:** 438
-- **Migrations:** 434
-- **Edge functions:** 196
-- **Migrations:** 420
-- **Migrations:** 418
-- **Migrations:** 419
-- **Edge functions:** 192
-- **Edge functions:** 189
-- **Migrations:** 413
-- **Edge functions:** 189
-- **Migrations:** 401
-- **Edge functions:** 185
-- **Migrations:** 398
-- **Migrations:** 396
-- **Migrations:** 394
-- **Edge functions:** 185
-- **Migrations:** 390
-- **Migrations:** 388
-- **Edge functions:** 185
-- **Migrations:** 382
-- **Edge functions:** 185
-- **Migrations:** 381
-- **Edge functions:** 182
-- **Migrations:** 370
-- **Migrations:** 363
-- **Migrations:** 372
-- **Migrations:** 367
-- **Migrations:** 371
 
 ## Infrastructure
 
