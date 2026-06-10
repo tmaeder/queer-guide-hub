@@ -35,7 +35,7 @@ function SignedOutPrompt() {
 
 function CityRow({ city }: { city: LocalSupporterCity }) {
   return (
-    <li className="border-t border-border first:border-t-0 py-5 flex items-center justify-between gap-4">
+    <li className="border-t border-border first:border-t-0 py-4 flex items-center justify-between gap-4">
       <div className="min-w-0">
         <p className="text-title leading-tight">{city.city_name}</p>
         <p className="text-13 uppercase tracking-[0.1em] text-muted-foreground mt-1">
@@ -93,10 +93,10 @@ function ContinueReadingBlock() {
       </header>
       <ul className="divide-y divide-border">
         {items.map((it) => (
-          <li key={it.guide_id} className="py-3">
+          <li key={it.guide_id} className="py-2">
             <LocalizedLink
               to={`/marketplace/guides/${it.guide.slug}`}
-              className="group flex items-center gap-3 no-underline"
+              className="group flex items-center gap-4 no-underline"
             >
               <div className="flex-1 min-w-0">
                 <p className="text-15 truncate group-hover:underline underline-offset-4">
@@ -125,7 +125,7 @@ function LocalSupporterBlock() {
   const { data: cities = [], isLoading } = useLocalSupporterCities();
   return (
     <section className="rounded-container border border-border p-6 bg-card">
-      <header className="flex items-center justify-between gap-4 mb-3">
+      <header className="flex items-center justify-between gap-4 mb-2">
         <p className="text-13 uppercase tracking-[0.1em] text-muted-foreground">
           Local Supporter
         </p>
@@ -133,7 +133,7 @@ function LocalSupporterBlock() {
           0 — 100 per city
         </p>
       </header>
-      <p className="text-13 text-muted-foreground mb-5">
+      <p className="text-13 text-muted-foreground mb-4">
         +5 per saved queer-owned spot · +10 per review · +2 per completed guide pick
         in that city. Decays −1/week for inactivity.
       </p>

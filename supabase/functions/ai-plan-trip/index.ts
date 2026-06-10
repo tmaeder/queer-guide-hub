@@ -25,6 +25,7 @@
 // Deno edge function — runs in Supabase runtime, not in the app bundle.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { anthropicMessages } from '../_shared/anthropic-shim.ts';
+import { checkUserRateLimit } from '../_shared/user-rate-limit.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
@@ -192,6 +193,9 @@ Deno.serve(async (req) => {
   const auth = req.headers.get('authorization');
   if (!auth) {
     return new Response(JSON.stringify({ error: 'auth required' }), { status: 401, headers: { ...cors, 'content-type': 'application/json' } });
+  }
+  if (!(await checkUserRateLimit(req, 'ai-plan-trip', 20, 3600))) {
+    return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), { status: 429, headers: { ...cors, 'content-type': 'application/json' } });
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

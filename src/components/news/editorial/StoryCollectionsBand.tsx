@@ -39,7 +39,7 @@ export function StoryCollectionsBand({
           <h2 className="m-0 text-display font-bold leading-none tracking-tight">
             Following the thread
           </h2>
-          <p className="mt-3 text-15 italic text-muted-foreground max-w-xl leading-snug">
+          <p className="mt-2 text-15 italic text-muted-foreground max-w-xl leading-snug">
             Multi-article stories grouped by reporters and editors.
           </p>
         </div>

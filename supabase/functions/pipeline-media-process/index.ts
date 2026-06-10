@@ -2,8 +2,7 @@ import {
   getServiceClient,
   jsonResponse,
   errorResponse,
-  corsResponse,
-} from '../_shared/supabase-client.ts'
+  corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
@@ -170,6 +169,7 @@ async function processRow(row: RowMedia, supabase: ReturnType<typeof getServiceC
 
 Deno.serve(withErrorReporting('pipeline-media-process', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
 
   try {

@@ -15,7 +15,7 @@ function MissionCard({ mission }: { mission: MissionStatus }) {
   return (
     <article
       className={cn(
-        'flex flex-col gap-2 rounded-element border border-border p-3 min-w-[200px]',
+        'flex flex-col gap-2 rounded-element border border-border p-4 min-w-[200px]',
         mission.completed ? 'bg-card' : 'bg-card/60',
       )}
       aria-label={`${mission.title}: ${mission.progress} of ${mission.target}`}
@@ -31,7 +31,7 @@ function MissionCard({ mission }: { mission: MissionStatus }) {
           <p className="text-13 text-muted-foreground line-clamp-2">{mission.description}</p>
         </div>
       </header>
-      <div className="flex items-center justify-between gap-3 text-13 text-muted-foreground">
+      <div className="flex items-center justify-between gap-2 text-13 text-muted-foreground">
         <span className="tabular-nums">
           {mission.progress}/{mission.target}
         </span>
@@ -70,7 +70,7 @@ export function MissionsRow({ className, hideCompleted = false, limit = 6 }: Mis
       className={cn('rounded-container border border-border bg-card p-4', className)}
       aria-label="Active missions"
     >
-      <div className="mb-3 flex items-baseline justify-between">
+      <div className="mb-4 flex items-baseline justify-between">
         <h3 className="text-sm font-medium text-foreground inline-flex items-center gap-2">
           <Compass className="h-4 w-4" aria-hidden /> Missions
         </h3>
@@ -78,7 +78,7 @@ export function MissionsRow({ className, hideCompleted = false, limit = 6 }: Mis
           {missions.filter((m) => m.completed).length}/{missions.length} done
         </span>
       </div>
-      <ul className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <ul className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {filtered.map((m) => (
           <li key={m.slug}>
             <MissionCard mission={m} />

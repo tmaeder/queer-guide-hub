@@ -89,7 +89,7 @@ const Wishlists = () => {
                     to={`/wishlists/${w.slug}`}
                     className="block border border-border rounded-container p-6 hover:border-foreground/40 transition-colors"
                   >
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-2">
                       <Icon size={14} className="text-muted-foreground" aria-hidden="true" />
                       <span className="text-2xs uppercase tracking-wide text-muted-foreground">
                         {w.visibility}

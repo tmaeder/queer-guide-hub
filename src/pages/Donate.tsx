@@ -92,7 +92,7 @@ export default function Donate() {
                     description={item.description}
                   />
                 ) : (
-                  <div className="flex flex-col gap-3 p-6 md:p-8 h-full">
+                  <div className="flex flex-col gap-4 p-6 md:p-8 h-full">
                     <Icon size={20} aria-hidden="true" />
                     <p className="font-bold text-body-lg">{item.title}</p>
                     <p className="text-sm text-muted-foreground leading-[1.6]">

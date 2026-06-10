@@ -214,7 +214,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                 )}
                 {socialSignal && (
                   <SocialSignalBar
-                    className="mt-3"
+                    className="mt-4"
                     signals={[
                       {
                         icon: SignalIcons.friends,
@@ -231,7 +231,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                 )}
                 {!isClosed && (
                   <div
-                    className="mt-3"
+                    className="mt-4"
                     onClick={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                     role="presentation"

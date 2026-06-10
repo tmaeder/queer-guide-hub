@@ -47,7 +47,7 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
         </div>
 
         {city.safety_notes && (
-          <div className="flex gap-3 rounded-element border p-4">
+          <div className="flex gap-4 rounded-element border p-4">
             <ShieldCheck size={18} className="mt-0.5 shrink-0 text-muted-foreground" />
             <div>
               <h3 className="font-medium">Safety notes for {city.name}</h3>

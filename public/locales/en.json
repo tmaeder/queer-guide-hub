@@ -97,7 +97,7 @@
       "interest": "Matches your interests",
       "recent_tag": "Recently viewed topic",
       "home_city": "In your home city",
-      "recent_city": "In a city you've explored",
+      "recent_city": "In a city you've visited",
       "featured": "Featured"
     },
     "mapView": "Map view",
@@ -386,7 +386,7 @@
       },
       "editors": {
         "title": "Editor’s picks",
-        "subtitle": "Hand-curated highlights worth the trip."
+        "subtitle": "Editor picks worth the trip."
       }
     },
     "hero": {
@@ -1063,12 +1063,12 @@
       }
     },
     "discover": {
-      "title": "Places",
-      "button": "Browse marketplace",
+      "title": "Public trips",
+      "button": "Browse trips",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Browse public trips",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -1450,11 +1450,11 @@
     "news": {
       "title": "Latest News"
     },
-    "discover": "Discover",
+    "discover": "Destinations",
     "destinationsTitle": "Where the scene lives.",
     "destinationsSubtitle": "Six cities our community keeps coming back to.",
     "allCities": "All cities",
-    "exploreCity": "Explore",
+    "exploreCity": "See the city",
     "browseEyebrow": "The index",
     "browseTitle": "Browse everything.",
     "browseSections": "sections",

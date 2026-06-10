@@ -106,7 +106,7 @@ export function EventHoverCard({
         collisionPadding={12}
         className="w-80 max-w-[calc(100vw-24px)] p-0 overflow-hidden"
       >
-        <div className="flex gap-3 p-3">
+        <div className="flex gap-4 p-4">
           {img && (
             <Link to={`/events/${event.slug}`} className="shrink-0">
               <img
@@ -154,10 +154,10 @@ export function EventHoverCard({
         </div>
 
         {event.description && (
-          <p className="px-3 pb-2 text-xs2 text-foreground/80 line-clamp-3">{event.description}</p>
+          <p className="px-4 pb-2 text-xs2 text-foreground/80 line-clamp-3">{event.description}</p>
         )}
 
-        <div className="px-3 pb-2 flex flex-wrap gap-1">
+        <div className="px-4 pb-2 flex flex-wrap gap-1">
           {event.event_type && (
             <Badge variant="outline" className="text-xs2 px-1.5 py-0">
               {event.event_type}
