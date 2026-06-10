@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
@@ -100,6 +100,7 @@ function getTagText(html: string, tag: string): string {
 
 Deno.serve(withErrorReporting('source-spartacus', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
   try {
     const body = await req.json().catch(() => ({}))

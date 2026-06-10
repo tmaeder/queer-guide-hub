@@ -8,7 +8,7 @@
 // Writes everything into staging.enriched_data; never clobbers user input.
 // ============================================================
 
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { resolveByNameAndProfession, readClaim as claimValue } from '../_shared/wikidata-resolve.ts'
 
@@ -36,6 +36,7 @@ async function imageOk(url: string | null): Promise<boolean> {
 
 Deno.serve(withErrorReporting('pipeline-enrich-personality', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
 
   try {
