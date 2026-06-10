@@ -6,44 +6,45 @@ import {
   Sparkles,
   Tag,
   Lock,
-  HeartHandshake,
-  PartyPopper,
-  Stethoscope,
+  Droplets,
   BookOpen,
   Wrench,
-  Image as ImageIcon,
+  Waves,
   type LucideIcon,
 } from 'lucide-react';
 import { useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
+import { DEPARTMENT_ORDER, departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
 
-function prettify(slug: string): string {
-  return slug
-    .replace(/[_-]+/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-const SUBCATEGORY_ICONS: Record<string, LucideIcon> = {
-  sex_toys: Heart,
-  fetish_gear: Lock,
+// Tiles are the department umbrellas (not the 16 fine buckets) so the default
+// browse isn't dominated by the three adult toy categories — SFW departments
+// lead, intimacy/bdsm_fetish sit last in DEPARTMENT_ORDER.
+const DEPARTMENT_ICONS: Record<string, LucideIcon> = {
+  apparel: Shirt,
   underwear: Shirt,
-  personal_care: Sparkles,
-  personal_training: HeartHandshake,
-  event_planning: PartyPopper,
-  mental_health: Stethoscope,
-  books: BookOpen,
+  swimwear: Waves,
   jewelry: Sparkles,
-  'jewelry_&_pins': Sparkles,
-  'prints_&_posters': ImageIcon,
+  books_art: BookOpen,
+  hygiene: Droplets,
+  intimacy: Heart,
+  bdsm_fetish: Lock,
   services: Wrench,
 };
 
 function iconFor(slug: string): LucideIcon {
-  const key = slug.toLowerCase().replace(/[\s-]+/g, '_');
-  return SUBCATEGORY_ICONS[key] ?? Tag;
+  return DEPARTMENT_ICONS[slug] ?? Tag;
 }
 
 export function MarketplaceCategoryTiles() {
-  const { data: tiles, loading } = useMarketplaceSubcategoryTiles();
+  const { data: subcats, loading } = useMarketplaceSubcategoryTiles(null);
+
+  const counts = new Map<string, number>();
+  for (const t of subcats) {
+    const d = departmentOf(t.slug);
+    counts.set(d, (counts.get(d) ?? 0) + t.count);
+  }
+  const tiles = DEPARTMENT_ORDER
+    .filter((d) => d !== 'other' && (counts.get(d) ?? 0) > 0)
+    .map((d) => ({ slug: d, count: counts.get(d) ?? 0 }));
 
   if (!loading && tiles.length === 0) return null;
 
@@ -52,7 +53,7 @@ export function MarketplaceCategoryTiles() {
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
           <h2 id="category-tiles" className="text-2xl font-bold tracking-tight">
-            Browse by category
+            Browse by department
           </h2>
           <p className="text-sm text-muted-foreground mt-1">Jump straight to what you're looking for.</p>
         </div>
@@ -88,7 +89,7 @@ export function MarketplaceCategoryTiles() {
                     />
                   </div>
                   <div className="flex flex-col gap-1 mt-4">
-                    <span className="text-sm font-semibold leading-tight text-balance">{prettify(tile.slug)}</span>
+                    <span className="text-sm font-semibold leading-tight text-balance">{departmentLabel(tile.slug)}</span>
                     <span className="text-xs2 uppercase tracking-[0.14em] text-muted-foreground">
                       {tile.count.toLocaleString()} listing{tile.count !== 1 ? 's' : ''}
                     </span>

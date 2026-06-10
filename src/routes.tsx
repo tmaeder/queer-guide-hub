@@ -90,6 +90,7 @@ const AdminEvents = lazy(() => import('./pages/AdminEvents'));
 const AdminCityQuality = lazy(() => import('./pages/AdminCityQuality'));
 const AdminVenueQuality = lazy(() => import('./pages/AdminVenueQuality'));
 const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
+const AdminMarketplaceQuality = lazy(() => import('./pages/AdminMarketplaceQuality'));
 const AdminMarketplaceGuides = lazy(() => import('./pages/AdminMarketplaceGuides'));
 const AdminVenueGuides = lazy(() => import('./pages/AdminVenueGuides'));
 const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
@@ -328,6 +329,7 @@ export const AppRoutes = () => {
 
                 {/* Content type admin pages */}
                 <Route path="content/venue-quality" element={<AdminVenueQuality />} />
+                <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
                 <Route path="hotels" element={<AdminHotels />} />
                 <Route path="villages" element={<AdminQueerVillages />} />
 

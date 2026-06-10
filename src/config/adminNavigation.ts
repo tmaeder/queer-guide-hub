@@ -193,6 +193,12 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'marketplace_listings',
       },
       {
+        id: 'marketplace-quality',
+        label: 'Marketplace tags',
+        icon: Tag,
+        route: '/admin/content/marketplace-quality',
+      },
+      {
         id: 'marketplace-guides',
         label: 'Marketplace Guides',
         icon: BookOpen,
