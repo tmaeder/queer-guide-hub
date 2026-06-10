@@ -99,7 +99,7 @@ export function IntimateMatchThread({
     return (
       <div
         className={cn(
-          'rounded-element border border-border bg-muted/30 p-3 text-13 text-muted-foreground',
+          'rounded-element border border-border bg-muted/30 p-4 text-13 text-muted-foreground',
           className,
         )}
         role="status"
@@ -110,8 +110,8 @@ export function IntimateMatchThread({
   }
 
   return (
-    <div className={cn('flex flex-col gap-3', className)}>
-      <div className="flex items-center justify-between gap-3 rounded-element border border-border bg-card p-3 text-13">
+    <div className={cn('flex flex-col gap-4', className)}>
+      <div className="flex items-center justify-between gap-2 rounded-element border border-border bg-card p-4 text-13">
         <div className="flex items-center gap-2 text-foreground">
           <Sparkles className="h-4 w-4" aria-hidden />
           <span>Matched{matchedOn ? ` ${matchedOn}` : ''}</span>
@@ -128,10 +128,10 @@ export function IntimateMatchThread({
         </Button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {/* Photo unlock — mutual consent */}
-        <div className="flex flex-col gap-2 rounded-element border border-border p-3">
-          <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-2 rounded-element border border-border p-4">
+          <div className="flex items-center justify-between gap-2">
             <Label
               htmlFor={`photo-unlock-${conversationId}`}
               className="inline-flex items-center gap-2 text-sm font-medium"
@@ -158,7 +158,7 @@ export function IntimateMatchThread({
         </div>
 
         {/* Location share — single auto-expire timestamp */}
-        <div className="flex flex-col gap-2 rounded-element border border-border p-3">
+        <div className="flex flex-col gap-2 rounded-element border border-border p-4">
           <div className="flex items-center gap-2 text-sm font-medium">
             <MapPin className="h-4 w-4" aria-hidden />
             Share location
@@ -205,7 +205,7 @@ export function IntimateMatchThread({
       </div>
 
       {!hasMessages && moves.length > 0 && (
-        <div className="rounded-element border border-dashed border-border p-3">
+        <div className="rounded-element border border-dashed border-border p-4">
           <p className="mb-2 text-13 text-muted-foreground">
             Pick a prompt to break the ice — you can edit it before sending.
           </p>
@@ -215,7 +215,7 @@ export function IntimateMatchThread({
                 key={m.slug}
                 type="button"
                 onClick={() => onPickOpeningMove?.(m.prompt)}
-                className="rounded-badge border border-border px-3 py-1 text-13 text-foreground hover:bg-muted/40 transition-colors"
+                className="rounded-badge border border-border px-2.5 py-1 text-13 text-foreground hover:bg-muted/40 transition-colors"
                 title={m.tone}
               >
                 {m.prompt.length > 60 ? `${m.prompt.slice(0, 57)}…` : m.prompt}

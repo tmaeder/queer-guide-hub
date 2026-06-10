@@ -141,7 +141,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
               style={{ left: `${((todayMonthIndex + (todayDay - 1) / 31) / 12) * 100}%` }}
               aria-hidden="true"
             >
-              <div className="absolute -top-1 -translate-x-1/2 text-[9px] uppercase tracking-wider bg-foreground text-background px-1 rounded-badge">
+              <div className="absolute -top-1 -translate-x-1/2 text-3xs uppercase tracking-wider bg-foreground text-background px-1 rounded-badge">
                 {t('pride.timeline.today')}
               </div>
             </div>
@@ -186,7 +186,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
                       />
                       <span
                         className={cn(
-                          'flex items-center gap-1 text-[10px] leading-none whitespace-nowrap overflow-hidden min-w-0',
+                          'flex items-center gap-1 text-2xs leading-none whitespace-nowrap overflow-hidden min-w-0',
                           isSelected || p.event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
                           'group-hover:text-foreground group-hover:font-medium',
                         )}
@@ -204,7 +204,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
                     side="top"
                     sideOffset={8}
                     collisionPadding={12}
-                    className="z-50 w-64 max-w-[calc(100vw-24px)] px-3 py-2.5 rounded-element border border-foreground/15 bg-background text-foreground font-normal text-left shadow-none"
+                    className="z-50 w-64 max-w-[calc(100vw-24px)] px-4 py-2.5 rounded-element border border-foreground/15 bg-background text-foreground font-normal text-left shadow-none"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium leading-tight">

@@ -89,15 +89,15 @@ export function ActivityStrip({ className, limit = 8 }: ActivityStripProps) {
       className={cn('rounded-container border border-border bg-card p-4', className)}
       aria-label="Recent activity"
     >
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-baseline justify-between mb-4">
         <h3 className="text-sm font-medium text-foreground">Recent activity</h3>
         <span className="text-13 text-muted-foreground">last {events.length}</span>
       </div>
-      <ol className="space-y-3">
+      <ol className="space-y-2">
         {events.map((ev) => {
           const Icon = ICON_MAP[eventIcon(ev.event_type)] ?? Activity;
           return (
-            <li key={ev.id} className="flex items-start gap-3">
+            <li key={ev.id} className="flex items-start gap-2">
               <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">

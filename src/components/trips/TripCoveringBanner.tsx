@@ -43,11 +43,11 @@ export function TripCoveringBanner({ target, className }: TripCoveringBannerProp
     <aside
       aria-label={t('trips.banner.label', 'Your trip covers this destination')}
       className={cn(
-        'flex flex-wrap items-center justify-between gap-3 border-y bg-muted px-4 py-3',
+        'flex flex-wrap items-center justify-between gap-4 border-y bg-muted px-4 py-2',
         className,
       )}
     >
-      <div className="flex items-center gap-3 text-sm text-foreground">
+      <div className="flex items-center gap-2 text-sm text-foreground">
         <Luggage size={16} aria-hidden="true" />
         <span>
           {range

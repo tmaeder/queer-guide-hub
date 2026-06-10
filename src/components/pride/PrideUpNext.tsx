@@ -58,13 +58,13 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
 
   return (
     <section aria-labelledby="upnext-heading">
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-baseline justify-between mb-4">
         <h2 id="upnext-heading" className="text-title font-medium">
           {t('pride.upNext.title')}
         </h2>
         <span className="text-xs2 text-foreground/50">{t('pride.upNext.subtitle')}</span>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-thin -mx-2 px-2 snap-x">
+      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin -mx-2 px-2 snap-x">
         {upcoming.map((e) => {
           const isSelected = selectedId === e.id;
           const d = new Date(e.start_date);
@@ -81,7 +81,7 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
                 isSelected ? 'border-foreground' : 'border-foreground/15 hover:border-foreground',
               )}
             >
-              <div className="flex items-center justify-between text-xs2 uppercase tracking-label text-foreground/60 mb-3">
+              <div className="flex items-center justify-between text-xs2 uppercase tracking-label text-foreground/60 mb-2">
                 <span>{relativeDateLabel(e.start_date, now, t)}</span>
                 {e.is_featured && <Star className="size-3 fill-foreground text-foreground" aria-label={t('pride.featured')} />}
               </div>

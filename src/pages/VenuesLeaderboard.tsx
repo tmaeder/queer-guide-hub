@@ -33,7 +33,7 @@ const VenuesLeaderboard = () => {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10 space-y-8">
       <header>
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-2 mb-2">
           <Trophy size={24} />
           <h1 className="text-headline font-semibold">{t('venues.leaderboard.title', 'Leaderboard')}</h1>
         </div>
@@ -93,7 +93,7 @@ function Board({
         return (
           <li
             key={r.user_id}
-            className="flex items-center gap-4 px-4 py-3"
+            className="flex items-center gap-4 px-4 py-2"
             aria-current={isYou ? 'true' : undefined}
           >
             <span className="w-8 text-right tabular-nums font-semibold">{r.rank}</span>

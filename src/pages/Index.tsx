@@ -170,7 +170,7 @@ const Index = React.memo(() => {
       <div className="relative flex flex-col md:flex-row md:min-h-[calc(100vh-64px)] bg-background overflow-hidden">
         {/* Text panel */}
         <div className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0">
-          <Eyebrow as="div" className="mb-3">
+          <Eyebrow as="div" className="mb-2">
             {t('home.eyebrow', 'Queer Guide')}
           </Eyebrow>
           <h1
@@ -317,7 +317,7 @@ const Index = React.memo(() => {
           </div>
 
           {/* Bento: 1 hero (col-span-2 row-span-2) + 4 small cards on md+ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-3 md:gap-4 auto-rows-[14rem] sm:auto-rows-[16rem] md:auto-rows-[15rem]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-4 auto-rows-[14rem] sm:auto-rows-[16rem] md:auto-rows-[15rem]">
             {trendingDestinations.slice(0, 5).map((d, i) => {
               const isHero = i === 0;
               return (
@@ -344,7 +344,7 @@ const Index = React.memo(() => {
                   <div
                     className={[
                       'relative h-full flex flex-col justify-end text-background',
-                      isHero ? 'p-6 md:p-8' : 'p-4 md:p-5',
+                      isHero ? 'p-6 md:p-8' : 'p-4 md:p-6',
                     ].join(' ')}
                   >
                     <span
@@ -365,11 +365,11 @@ const Index = React.memo(() => {
                       {d.city}
                     </h3>
                     {isHero && (
-                      <p className="mt-3 max-w-md text-sm md:text-base opacity-85 leading-[1.5]">
+                      <p className="mt-2 max-w-md text-sm md:text-base opacity-85 leading-[1.5]">
                         {d.blurb}
                       </p>
                     )}
-                    <span className="mt-3 inline-flex items-center gap-1 text-13 font-medium opacity-90">
+                    <span className="mt-4 inline-flex items-center gap-1 text-13 font-medium opacity-90">
                       {t('home.exploreCity', 'See the city')}
                       <span className="transition-transform group-hover:translate-x-1">→</span>
                     </span>

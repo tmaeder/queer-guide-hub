@@ -126,7 +126,7 @@ function SearchResultCardImpl({ result, view, query, onSelect }: SearchResultCar
           <div className="absolute left-2 top-2 flex gap-1">{typeChip}</div>
           {featuredChip && <div className="absolute right-2 top-2">{featuredChip}</div>}
         </div>
-        <div className="flex flex-1 flex-col gap-1 p-3">
+        <div className="flex flex-1 flex-col gap-1 p-4">
           <h3 className="line-clamp-2 text-15 font-semibold">{title}</h3>
           {meta && <p className="truncate text-xs text-muted-foreground">{meta}</p>}
           <div className="mt-auto flex items-center justify-between pt-2">
@@ -151,7 +151,7 @@ function SearchResultCardImpl({ result, view, query, onSelect }: SearchResultCar
       onKeyDown={(e) => {
         if (e.key === 'Enter') onSelect(result);
       }}
-      className="group flex cursor-pointer items-center gap-4 rounded-element border border-border p-3 transition-colors hover:bg-accent"
+      className="group flex cursor-pointer items-center gap-4 rounded-element border border-border p-4 transition-colors hover:bg-accent"
     >
       <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-element border border-border bg-muted">
         {result.imageUrl ? (
@@ -179,7 +179,7 @@ function SearchResultCardImpl({ result, view, query, onSelect }: SearchResultCar
         {result.description && (
           <p className="line-clamp-1 text-sm text-muted-foreground">{result.description}</p>
         )}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           {result.location && (
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3 w-3" />

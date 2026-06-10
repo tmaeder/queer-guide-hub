@@ -70,7 +70,7 @@ const Wishlist = () => {
     <div className="min-h-screen">
       <div className="container mx-auto py-12 md:py-16 px-4">
         <header className="mb-12">
-          <div className="flex items-center gap-2 text-13 uppercase tracking-wide text-muted-foreground mb-3">
+          <div className="flex items-center gap-2 text-13 uppercase tracking-wide text-muted-foreground mb-2">
             <VisibilityIcon size={14} aria-hidden="true" />
             <span>{wishlist.visibility} wishlist</span>
           </div>
@@ -78,7 +78,7 @@ const Wishlist = () => {
           {wishlist.description && (
             <p className="text-body-lg text-muted-foreground max-w-2xl">{wishlist.description}</p>
           )}
-          <div className="flex items-center gap-3 mt-6">
+          <div className="flex items-center gap-4 mt-6">
             <Button variant="outline" onClick={handleShare}>
               <Share2 size={16} />
               Share

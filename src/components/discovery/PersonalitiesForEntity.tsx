@@ -67,7 +67,7 @@ function PersonalityRailCard({ personality }: { personality: Personality }) {
     <LocalizedLink
       to={href}
       aria-label={personality.name}
-      className="group flex h-full flex-col gap-3 no-underline"
+      className="group flex h-full flex-col gap-2 no-underline"
     >
       <div className="relative aspect-square w-full overflow-hidden rounded-container border bg-muted">
         {src ? (
@@ -106,7 +106,7 @@ function RailSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="w-44 shrink-0">
           <Skeleton variant="rectangular" height={176} className="rounded-container" />
-          <div className="mt-3 h-3 w-2/3 bg-muted" />
+          <div className="mt-2 h-3 w-2/3 bg-muted" />
           <div className="mt-2 h-2 w-1/2 bg-muted" />
         </div>
       ))}

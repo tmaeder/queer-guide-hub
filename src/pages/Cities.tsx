@@ -215,7 +215,7 @@ export default function Cities() {
                 </div>
                 <LocalizedLink
                   to="/submit"
-                  className="inline-flex items-center gap-2 rounded-full border border-foreground px-6 py-3 text-sm font-bold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline shrink-0"
+                  className="inline-flex items-center gap-2 rounded-full border border-foreground px-6 py-2.5 text-sm font-bold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline shrink-0"
                 >
                   {t('cities.suggestCta', 'Suggest a city')}
                   <ArrowRight size={16} aria-hidden="true" />

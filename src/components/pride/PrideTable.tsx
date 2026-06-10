@@ -67,7 +67,7 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
 
   return (
     <section aria-labelledby="alltable-heading">
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-baseline justify-between mb-4">
         <h2 id="alltable-heading" className="text-title font-medium">
           {t('pride.table.title')}
         </h2>
@@ -82,26 +82,26 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
             <tr>
               <th
                 scope="col"
-                className="py-2 px-3 text-left w-[140px]"
+                className="py-2 px-4 text-left w-[140px]"
                 aria-sort={sortKey === 'date' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
               >
                 {headerBtn(t('pride.table.when'), 'date')}
               </th>
               <th
                 scope="col"
-                className="py-2 px-3 text-left"
+                className="py-2 px-4 text-left"
                 aria-sort={sortKey === 'name' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
               >
                 {headerBtn(t('pride.table.pride'), 'name')}
               </th>
               <th
                 scope="col"
-                className="py-2 px-3 text-left hidden sm:table-cell"
+                className="py-2 px-4 text-left hidden sm:table-cell"
                 aria-sort={sortKey === 'location' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
               >
                 {headerBtn(t('pride.table.location'), 'location')}
               </th>
-              <th scope="col" className="py-2 px-3 text-left hidden lg:table-cell w-[110px]">
+              <th scope="col" className="py-2 px-4 text-left hidden lg:table-cell w-[110px]">
                 <span className="text-xs2 uppercase tracking-label text-foreground/60">{t('pride.table.region')}</span>
               </th>
               <th scope="col" className="py-2 px-2 w-[40px]" aria-label="Flags" />
@@ -122,13 +122,13 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                   onClick={() => onSelect?.(isSelected ? null : e.id)}
                   aria-selected={isSelected}
                 >
-                  <td className="py-2 px-3 align-top whitespace-nowrap tabular-nums">
+                  <td className="py-2 px-4 align-top whitespace-nowrap tabular-nums">
                     <span className="text-sm">{fmtDate(e.start_date, e.end_date)}</span>
                     {e.verification_status !== 'verified' && (
                       <span className="block text-2xs text-foreground/50">{t('pride.table.estimated')}</span>
                     )}
                   </td>
-                  <td className="py-2 px-3 align-top">
+                  <td className="py-2 px-4 align-top">
                     <Link
                       to={`/events/${e.slug}`}
                       onClick={(ev) => ev.stopPropagation()}
@@ -140,10 +140,10 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                       {[e.city, e.country].filter(Boolean).join(', ')}
                     </span>
                   </td>
-                  <td className="py-2 px-3 align-top text-foreground/80 hidden sm:table-cell">
+                  <td className="py-2 px-4 align-top text-foreground/80 hidden sm:table-cell">
                     {[e.city, e.country].filter(Boolean).join(', ')}
                   </td>
-                  <td className="py-2 px-3 align-top text-foreground/70 hidden lg:table-cell">
+                  <td className="py-2 px-4 align-top text-foreground/70 hidden lg:table-cell">
                     {t(`pride.continents.${continent}` as 'pride.continents.Europe')}
                   </td>
                   <td className="py-2 px-2 align-top text-right">

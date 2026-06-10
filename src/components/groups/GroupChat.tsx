@@ -49,7 +49,7 @@ export function GroupChat({ groupId, canPost = false }: GroupChatProps) {
   return (
     <section className="flex h-[600px] flex-col rounded-container border border-border bg-card">
       <ScrollArea className="flex-1">
-        <div className="flex flex-col gap-3 p-4">
+        <div className="flex flex-col gap-2 p-4">
           {loading ? (
             <p className="text-center text-13 text-muted-foreground">Loading…</p>
           ) : messages.length === 0 ? (
@@ -80,7 +80,7 @@ export function GroupChat({ groupId, canPost = false }: GroupChatProps) {
                     </div>
                     <div
                       className={cn(
-                        'rounded-element border border-border px-3 py-2 text-sm whitespace-pre-wrap break-words',
+                        'rounded-element border border-border px-4 py-2 text-sm whitespace-pre-wrap break-words',
                         isOwn ? 'bg-foreground text-background border-foreground' : 'bg-background text-foreground',
                       )}
                     >
@@ -97,7 +97,7 @@ export function GroupChat({ groupId, canPost = false }: GroupChatProps) {
 
       <form
         onSubmit={onSubmit}
-        className="flex items-center gap-2 border-t border-border p-3"
+        className="flex items-center gap-2 border-t border-border p-4"
       >
         <Input
           value={draft}
