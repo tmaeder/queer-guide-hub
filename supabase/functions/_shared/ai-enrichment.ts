@@ -643,3 +643,93 @@ Respond with JSON (empty arrays / null where unknown):
     return null
   }
 }
+
+// ---------------------------------------------------------------------------
+// Marketplace tag extraction (P1b LLM gap-fill) — department + attributes
+// ---------------------------------------------------------------------------
+
+export interface MarketplaceTagExtraction {
+  department?: string                 // ONE bare department slug from the supplied list
+  material?: string[]                 // bare attribute slugs from the supplied lists
+  occasion?: string[]
+  vibe?: string[]
+  citations?: { field: string; quote: string }[]
+  confidence?: number                 // 0.0-1.0 how well the text supported the extraction
+}
+
+const MARKETPLACE_TAG_KEYS = ['department', 'material', 'occasion', 'vibe', 'citations', 'confidence']
+
+const MARKETPLACE_TAG_SYSTEM_PROMPT = `${BASE_CONTEXT}
+
+You classify a MARKETPLACE PRODUCT for an LGBTQ+ shop from its PROVIDED title/description/brand. This is GROUNDED EXTRACTION, not creative writing.
+
+Hard rules:
+- department: choose AT MOST ONE slug from the ALLOWED DEPARTMENTS list — the single best product category. Omit if genuinely unclear. Never invent a slug.
+- material / occasion / vibe: arrays of slugs chosen ONLY from the matching ALLOWED list, and ONLY when the text clearly supports them. Omit anything not stated. Do not output slugs outside the lists.
+- Be conservative: an empty array is correct when the text doesn't say.
+- citations: array of {field, quote} with the EXACT supporting phrase for each non-obvious claim.
+- confidence: 0.0-1.0 how well the text supported the classification.
+
+Respond ONLY with valid JSON. No markdown code blocks.`
+
+/**
+ * Extract a product's department + material/occasion/vibe attributes from its text,
+ * constrained to the controlled vocabulary. Caller circuit-breaks, auto-applies
+ * attributes by confidence, and review-gates any content_rating DOWNGRADE the
+ * proposed department would cause (re-bucketing OUT of an adult department).
+ */
+export async function extractMarketplaceTagsFromText(
+  supabase: SupabaseClient,
+  input: {
+    title: string; description?: string | null; brand?: string | null
+    allowedDepartments: string[]; allowedMaterial: string[]; allowedOccasion: string[]; allowedVibe: string[]
+  },
+): Promise<MarketplaceTagExtraction | null> {
+  if (!(await isOpenAIAvailable(supabase))) return null
+  const text = `${input.title ?? ''}\n${input.description ?? ''}`.trim()
+  if (text.length < 30) return null   // not enough material to ground on
+
+  const userPrompt = `Product: ${ud(input.title)} | Brand: ${ud(input.brand || 'N/A')}
+ALLOWED DEPARTMENTS (slugs): ${input.allowedDepartments.join(', ')}
+ALLOWED MATERIAL (slugs): ${input.allowedMaterial.join(', ')}
+ALLOWED OCCASION (slugs): ${input.allowedOccasion.join(', ')}
+ALLOWED VIBE (slugs): ${input.allowedVibe.join(', ')}
+
+PROVIDED TEXT:
+${ud(text.slice(0, 3000))}
+
+Respond with JSON (omit/empty where unknown):
+{"department":null,"material":[],"occasion":[],"vibe":[],"citations":[{"field":"...","quote":"..."}],"confidence":0.0}`
+
+  try {
+    const result = await chatCompletion(supabase, {
+      messages: [
+        { role: 'system', content: MARKETPLACE_TAG_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.1,
+      max_tokens: 500,
+      response_format: { type: 'json_object' },
+    })
+    // CF Workers AI may return `content` already parsed as an object; coerce to string.
+    const raw = typeof result.content === 'string' ? result.content : JSON.stringify(result.content ?? '')
+    const parsed = parseAIResponse<MarketplaceTagExtraction>(raw, MARKETPLACE_TAG_KEYS)
+    if (!parsed) return null
+    // Defense-in-depth: clamp model output to the allowed vocabularies.
+    const dSet = new Set(input.allowedDepartments)
+    const mSet = new Set(input.allowedMaterial)
+    const oSet = new Set(input.allowedOccasion)
+    const vSet = new Set(input.allowedVibe)
+    return {
+      department: parsed.department && dSet.has(parsed.department) ? parsed.department : undefined,
+      material: (parsed.material ?? []).filter((s) => mSet.has(s)),
+      occasion: (parsed.occasion ?? []).filter((s) => oSet.has(s)),
+      vibe: (parsed.vibe ?? []).filter((s) => vSet.has(s)),
+      citations: Array.isArray(parsed.citations) ? parsed.citations : [],
+      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
+    }
+  } catch (err) {
+    console.error('Marketplace tag extraction failed:', (err as Error).message)
+    return null
+  }
+}

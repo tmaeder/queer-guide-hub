@@ -7,6 +7,7 @@ import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { isAdultCategorySlug } from '@/hooks/useAdultContent';
+import { DEPARTMENT_LABELS } from '@/lib/marketplaceTaxonomy';
 
 function prettify(slug: string): string {
   return slug.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -15,7 +16,11 @@ function prettify(slug: string): string {
 export default function MarketplaceCategory() {
   const { slug } = useParams<{ slug: string }>();
   const subcategory = (slug ?? '').toLowerCase();
-  const name = prettify(subcategory);
+  // The route serves both grains: department umbrellas (apparel, intimacy, …)
+  // from the browse tiles, and fine subcategory slugs (sex_toys, …) from
+  // legacy links / the all-categories page.
+  const isDepartment = subcategory in DEPARTMENT_LABELS;
+  const name = isDepartment ? DEPARTMENT_LABELS[subcategory] : prettify(subcategory);
 
   useMeta({
     title: name ? `${name} — Marketplace` : 'Marketplace category',
@@ -50,7 +55,7 @@ export default function MarketplaceCategory() {
         </div>
         <PageHeader title={name} subtitle="Queer-friendly products and services in this category." />
         <MarketplaceFilteredView
-          filters={{ subcategory }}
+          filters={isDepartment ? { department: subcategory } : { subcategory }}
           emptyTitle={`No ${name.toLowerCase()} listings yet.`}
           emptyDescription="Check back soon or list a business."
         />
