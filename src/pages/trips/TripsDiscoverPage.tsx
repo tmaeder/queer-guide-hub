@@ -172,7 +172,7 @@ export default function TripsDiscoverPage() {
     <div className="container mx-auto max-w-screen-lg px-4 py-6 md:py-10">
       <PageHeader
         eyebrow={t('trips.discover.eyebrow', 'Real travelers')}
-        title={t('trips.discover.title', 'Discover trips')}
+        title={t('trips.discover.title', 'Public trips')}
         subtitle={t(
           'trips.discover.subtitle',
           'Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.',

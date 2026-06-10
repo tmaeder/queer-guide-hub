@@ -113,7 +113,7 @@ export default function Groups() {
                 style={{ alignItems: 'center', gap: '0.5rem' }}
                 className="flex font-bold"
               >
-                <Search size={16} /> {t('pages.groups.discover', 'Discover')}
+                <Search size={16} /> {t('pages.groups.discover', 'Find groups')}
               </TabsTrigger>
               <TabsTrigger
                 value="my-groups"

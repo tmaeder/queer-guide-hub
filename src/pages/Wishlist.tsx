@@ -20,7 +20,7 @@ const Wishlist = () => {
 
   useMeta({
     title: wishlist?.title ?? 'Wishlist',
-    description: wishlist?.description ?? 'A curated wishlist on Queer Guide',
+    description: wishlist?.description ?? 'A wishlist on Queer Guide',
     canonicalPath: wishlist ? `/wishlists/${wishlist.slug}` : undefined,
   });
 

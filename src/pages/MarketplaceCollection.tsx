@@ -17,7 +17,7 @@ const MarketplaceCollection = () => {
 
   useMeta({
     title: collection?.title ?? 'Collection',
-    description: collection?.editor_blurb ?? collection?.subtitle ?? 'A curated collection on Queer Guide.',
+    description: collection?.editor_blurb ?? collection?.subtitle ?? 'A collection on Queer Guide.',
     canonicalPath: collection ? `/marketplace/collection/${collection.slug}` : undefined,
   });
 

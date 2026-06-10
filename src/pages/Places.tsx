@@ -61,7 +61,7 @@ export default function Places() {
   const { _t } = useTranslation();
   useMeta({
     title: 'Queer Places — Cities, Neighborhoods, Villages',
-    description: 'Explore LGBTQ+ friendly countries, cities, and neighborhoods worldwide. See legality at a glance and find your next destination.',
+    description: 'Browse LGBTQ+ friendly countries, cities, and neighborhoods worldwide. See legality at a glance and find your next destination.',
     canonicalPath: '/places',
   });
   const { countries, loading: countriesLoading, error: countriesError } = useOptimizedCountries();
@@ -240,9 +240,9 @@ export default function Places() {
             {/* Dynamic Title */}
             <div className="flex flex-col gap-4">
               <h3 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
-                {viewMode === 'overview' && 'Explore Places'}
-                {viewMode === 'country' && selectedCountry && <>Explore {selectedCountry.name}</>}
-                {viewMode === 'city' && selectedCity && <>Discover {selectedCity.name}</>}
+                {viewMode === 'overview' && 'Places'}
+                {viewMode === 'country' && selectedCountry && <>{selectedCountry.name}</>}
+                {viewMode === 'city' && selectedCity && <>{selectedCity.name}</>}
                 {viewMode === 'search' && 'Search Results'}
               </h3>
 
@@ -251,7 +251,7 @@ export default function Places() {
                   'Countries, cities, and locations worldwide.'}
                 {viewMode === 'country' &&
                   selectedCountry &&
-                  `Explore cities and regions in ${selectedCountry.name}. Find the perfect destination for your next adventure.`}
+                  `Cities and regions in ${selectedCountry.name}.`}
                 {viewMode === 'city' &&
                   selectedCity &&
                   `Everything you need to know about ${selectedCity.name}. Weather, demographics, and local insights.`}
@@ -524,10 +524,10 @@ export default function Places() {
                 <EmptyState
                   icon={Globe}
                   title="No destinations match"
-                  description="Explore a different region or check back later."
+                  description="Try a different region or check back later."
                   mood="encouraging"
                   primaryAction={{
-                    label: 'Explore All',
+                    label: 'All regions',
                     onClick: () => {
                       setViewMode('overview');
                       setSearchResults({ countries: [], cities: [] });

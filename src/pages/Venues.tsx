@@ -65,13 +65,13 @@ const Venues = () => {
   useMeta({
     title: 'Venues',
     description:
-      'Discover queer-friendly venues, businesses, and organizations worldwide. Find safe spaces near you.',
+      'Find queer-friendly venues, businesses, and organizations worldwide, and safe spaces near you.',
     canonicalPath: '/venues',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'Queer-Friendly Venues',
-      description: 'Discover queer-friendly venues, businesses, and organizations worldwide.',
+      description: 'Queer-friendly venues, businesses, and organizations worldwide.',
       url: 'https://queer.guide/venues',
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },

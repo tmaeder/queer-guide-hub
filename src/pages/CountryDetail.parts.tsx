@@ -206,7 +206,7 @@ export function CountryOverviewTab({ country, worldBankData, sdgData }: CountryO
             <CardContent>
               <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
                 {country.description ||
-                  `Discover everything about ${country.name} – from major cities and cultural landmarks to local venues and upcoming events.`}
+                  `Cities, venues, events, and legal context for ${country.name}.`}
               </p>
             </CardContent>
           </Card>

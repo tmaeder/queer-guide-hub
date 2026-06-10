@@ -13,7 +13,7 @@ const VenueGuides = () => {
   useMeta({
     title: 'Venue Guides',
     description:
-      'Editor-curated guides to LGBTQ+ venues — comparison-driven, city-first, no fluff.',
+      'Editor-written guides to LGBTQ+ venues — comparison-driven, city-first, no fluff.',
     canonicalPath: '/venues/guides',
     jsonLd: {
       '@context': 'https://schema.org',

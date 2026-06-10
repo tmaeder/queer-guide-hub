@@ -116,10 +116,10 @@ export default function TripsPage() {
             size="lg"
             onClick={() => navigate('/trips/discover')}
             style={{ paddingLeft: 16, paddingRight: 16 }}
-            aria-label={t('trips.discover.aria', 'Discover public trips')}
+            aria-label={t('trips.discover.aria', 'Browse public trips')}
           >
             <Compass size={18} className="mr-1.5" />
-            {t('trips.discover.button', 'Discover')}
+            {t('trips.discover.button', 'Browse trips')}
           </Button>
           <Button
             variant="brand"

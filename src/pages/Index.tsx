@@ -292,7 +292,7 @@ const Index = React.memo(() => {
           <div className="flex items-end justify-between mb-8 md:mb-10">
             <div>
               <Eyebrow as="div" className="mb-2">
-                {t('home.discover', 'Discover')}
+                {t('home.discover', 'Destinations')}
               </Eyebrow>
               <h2
                 className="text-headline md:text-headline-lg font-bold tracking-tight"
@@ -370,7 +370,7 @@ const Index = React.memo(() => {
                       </p>
                     )}
                     <span className="mt-3 inline-flex items-center gap-1 text-13 font-medium opacity-90">
-                      {t('home.exploreCity', 'Explore')}
+                      {t('home.exploreCity', 'See the city')}
                       <span className="transition-transform group-hover:translate-x-1">→</span>
                     </span>
                   </div>

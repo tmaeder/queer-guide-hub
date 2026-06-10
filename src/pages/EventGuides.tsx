@@ -13,7 +13,7 @@ const EventGuides = () => {
   useMeta({
     title: 'Event Guides',
     description:
-      'Pride circuits, festival itineraries, and weeknight roundups — editor-curated guides to LGBTQ+ events.',
+      'Pride circuits, festival itineraries, and weeknight roundups — editor-written guides to LGBTQ+ events.',
     canonicalPath: '/events/guides',
     jsonLd: {
       '@context': 'https://schema.org',
