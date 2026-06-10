@@ -333,10 +333,11 @@ ON CONFLICT (slug) DO UPDATE
   SET description=EXCLUDED.description, action=EXCLUDED.action, schedule=EXCLUDED.schedule;
 
 -- Vault secret for the cron -> edge fn webhook auth (matches MARKETPLACE_TAG_WEBHOOK_SECRET
--- set on the edge function env). Create only if absent.
+-- set on the edge function env). Create only if absent. Random per install — copy the
+-- generated value into the edge fn env MARKETPLACE_TAG_WEBHOOK_SECRET.
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM vault.secrets WHERE name='marketplace_tag_webhook_secret') THEN
-    PERFORM vault.create_secret('mktag_4d5963e2e2f325bee7d60dfa61b2189f20cbad2a', 'marketplace_tag_webhook_secret');
+    PERFORM vault.create_secret('mktag_' || encode(extensions.gen_random_bytes(20), 'hex'), 'marketplace_tag_webhook_secret');
   END IF;
 END $$;
 
