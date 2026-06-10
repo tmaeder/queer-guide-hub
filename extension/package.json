@@ -17,7 +17,7 @@
     "rollup": "2.80.0"
   },
   "devDependencies": {
-    "@crxjs/vite-plugin": "^2.4.0",
+    "@crxjs/vite-plugin": "^2.5.0",
     "@types/chrome": "^0.1.43",
     "@types/node": "^25.9.2",
     "@types/react": "^19.2.17",

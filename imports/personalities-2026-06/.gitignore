@@ -1,0 +1,6 @@
+personalities_import.json
+wikidata_cache.json
+wikidata_targets.json
+_issues.json
+*.log
+__pycache__/
