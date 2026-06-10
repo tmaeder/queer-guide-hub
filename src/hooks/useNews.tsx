@@ -92,17 +92,20 @@ export const useNews = () => {
         .is('duplicate_of_id', null)
         .order(sortField, { ascending: sortOrder });
 
+      // city_ids / country_ids are uuid[] columns — use array overlap, not scalar eq/in
       if (filters?.cityIds && filters.cityIds.length > 0) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).in('city_id', filters.cityIds);
+        queryBuilder = (queryBuilder as typeof queryBuilder).overlaps('city_ids', filters.cityIds);
       }
       if (filters?.countryIds && filters.countryIds.length > 0) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).in('country_id', filters.countryIds);
+        queryBuilder = (queryBuilder as typeof queryBuilder).overlaps('country_ids', filters.countryIds);
       }
       if (filters?.location?.city_id) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).eq('city_id', filters.location.city_id);
+        queryBuilder = (queryBuilder as typeof queryBuilder).contains('city_ids', [filters.location.city_id]);
       }
       if (filters?.location?.country_id) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).eq('country_id', filters.location.country_id);
+        queryBuilder = (queryBuilder as typeof queryBuilder).contains('country_ids', [
+          filters.location.country_id,
+        ]);
       }
       if (filters?.search && filters.search.trim() !== '') {
         const escaped = filters.search.replace(/[%_,]/g, (m) => `\\${m}`);

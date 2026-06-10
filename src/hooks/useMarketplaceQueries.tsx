@@ -58,6 +58,32 @@ export function useMarketplaceSubcategoryTiles(limit: number | null = 8) {
   );
 }
 
+export interface MarketplaceAttributeOption {
+  slug: string;       // namespaced unified_tags slug (mat-cotton, occ-pride, vibe-minimal)
+  name: string;
+  kind: 'material' | 'occasion' | 'vibe';
+}
+
+/** Controlled attribute vocabulary (material / occasion / vibe) from unified_tags. */
+export function useMarketplaceAttributeVocab() {
+  return useAsync<MarketplaceAttributeOption[]>(
+    [],
+    async () => {
+      const { data, error } = await supabase
+        .from('unified_tags')
+        .select('slug, name, category')
+        .in('category', ['material', 'occasion', 'vibe'])
+        .eq('status', 'active')
+        .order('name');
+      if (error || !data) return [];
+      return data
+        .filter((t): t is { slug: string; name: string; category: string } => !!t.slug && !!t.name)
+        .map((t) => ({ slug: t.slug, name: t.name, kind: t.category as MarketplaceAttributeOption['kind'] }));
+    },
+    [],
+  );
+}
+
 export function useMarketplaceListingsRelated(limit = 4) {
   // Generic "related products" surface for cross-product hooks (news, blog).
   // Prefers featured listings; orders by relevance score where available.

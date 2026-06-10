@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { enrichNewsWithAI } from '../_shared/ai-enrichment.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
@@ -8,6 +8,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 Deno.serve(withErrorReporting('pipeline-enrich-news', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
 
   try {

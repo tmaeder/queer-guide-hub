@@ -57,7 +57,11 @@ function getOAuthConfig() {
  */
 async function signState(payload: Record<string, string>): Promise<string> {
   const config = getOAuthConfig()
-  const secret = config.clientSecret || Deno.env.get('MASTER_ENCRYPTION_KEY') || ''
+  const secret = config.clientSecret || Deno.env.get('MASTER_ENCRYPTION_KEY')
+  if (!secret) {
+    // Fail closed: never HMAC-sign state with an empty key (forgeable CSRF token).
+    throw new Error('Cannot sign OAuth state: OPENAI_OAUTH_CLIENT_SECRET or MASTER_ENCRYPTION_KEY must be configured')
+  }
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),
@@ -77,7 +81,11 @@ async function signState(payload: Record<string, string>): Promise<string> {
 async function verifyState(stateToken: string): Promise<Record<string, string> | null> {
   try {
     const config = getOAuthConfig()
-    const secret = config.clientSecret || Deno.env.get('MASTER_ENCRYPTION_KEY') || ''
+    const secret = config.clientSecret || Deno.env.get('MASTER_ENCRYPTION_KEY')
+    if (!secret) {
+      // Fail closed: with no signing key we cannot trust any state token.
+      return null
+    }
     const key = await crypto.subtle.importKey(
       'raw',
       new TextEncoder().encode(secret),

@@ -74,5 +74,8 @@ Deno.serve(async (req) => {
       await sb.from(cfg.table).update(patch).eq('id', res.id)
     }))
     return json({ processed: ok + failed, ok, failed, retry, batch: rows.length })
-  } catch (e) { return json({ error: String(e) }, 500) }
+  } catch (e) {
+    console.error('classify-relevance-backfill error', e)
+    return json({ error: 'internal error' }, 500)
+  }
 })

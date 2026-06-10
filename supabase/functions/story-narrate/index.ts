@@ -14,6 +14,8 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { checkUserRateLimit } from '../_shared/user-rate-limit.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -21,11 +23,11 @@ const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID')!;
 const CF_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN')!;
 const CF_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
+const corsFor = (req: Request) => ({
+  ...getCorsHeaders(req),
   'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+});
 
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
@@ -35,13 +37,6 @@ interface MemberText {
   description?: string;
   message?: string;
   service?: string;
-}
-
-function jsonResp(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...cors, 'content-type': 'application/json' },
-  });
 }
 
 const SYSTEM = `You write concise user-story narratives for a product admin queue.
@@ -116,7 +111,16 @@ async function cfNarrate(members: MemberText[]): Promise<{ brief_title: string; 
 }
 
 Deno.serve(async (req) => {
+  const cors = corsFor(req);
+  const jsonResp = (body: unknown, status = 200): Response =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...cors, 'content-type': 'application/json' },
+    });
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+  if (!(await checkUserRateLimit(req, 'story-narrate', 30, 3600))) {
+    return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), { status: 429, headers: { ...cors, 'Content-Type': 'application/json' } });
+  }
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: cors });
 
   let body: { story_id?: string; force?: boolean };

@@ -45,6 +45,7 @@ export function useFeaturedVenue() {
         .select('*')
         .eq('is_featured', true)
         .neq('data_source', 'refuge-restrooms')
+        .neq('review_status', 'archived')
         .is('duplicate_of_id', null)
         .not('images', 'is', null)
         .order('updated_at', { ascending: false })
@@ -72,6 +73,7 @@ export function useEditorsPicks(limit = 8) {
         .select('*')
         .eq('is_featured', true)
         .neq('data_source', 'refuge-restrooms')
+        .neq('review_status', 'archived')
         .is('duplicate_of_id', null)
         .order('updated_at', { ascending: false })
         .limit(limit);

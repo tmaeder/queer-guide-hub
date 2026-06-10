@@ -288,6 +288,10 @@ export async function fetchVenueWithReviews<TVenue, TReview>(
     throw venueError;
   }
   if (!venueData) return { venue: null, reviews: [], notFound: true };
+  // Archived rows (e.g. soft-removed non-venue records) are not publicly viewable.
+  if ((venueData as { review_status?: string }).review_status === 'archived') {
+    return { venue: null, reviews: [], notFound: true };
+  }
   const venue = venueData as TVenue & { id: string };
   const { data: reviewsData, error: reviewsError } = await supabase
     .from('venue_reviews')

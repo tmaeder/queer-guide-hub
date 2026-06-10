@@ -12,6 +12,7 @@ import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
 import { isAdultListing } from '@/hooks/useAdultContent';
+import { departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
 import { formatListingPrice, getOutboundLink, highlightMatches } from './marketplaceHelpers';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
@@ -99,7 +100,8 @@ function MarketplaceCardImpl({
 
         <div className="p-6 flex flex-col gap-2">
           <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
-            <span>{listing.category}</span>
+            {/* Department label ("Underwear") beats the type enum ("products") as card context. */}
+            <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
             {listing.business_name && (
               <>
                 <span className="mx-1.5">·</span>

@@ -1,4 +1,4 @@
-import { corsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
 
 interface EventbriteEvent {
@@ -71,7 +71,7 @@ interface EventbriteResponse {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -241,11 +241,11 @@ Deno.serve(async (req) => {
         query: query,
         location: location
       }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+      {
+        headers: {
+          ...getCorsHeaders(req),
+          'Content-Type': 'application/json'
+        }
       }
     );
 

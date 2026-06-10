@@ -1,9 +1,10 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 interface ShopifyProduct {
   id: number; title: string; body_html: string; vendor: string; product_type: string; handle: string; status: string; tags: string;
@@ -19,6 +20,7 @@ function makeAdapter(shopDomain: string): SourceAdapter {
       const limit = Math.min(config.batchSize || 50, 250)
       const since = config.filters?.updatedAtMin as string | undefined
       const url = new URL(`https://${shopDomain}/admin/api/2024-04/products.json`)
+      assertPublicHttpUrl(url.toString()) // shopDomain is request/merchant-registry supplied — refuse private targets
       url.searchParams.set('limit', String(limit)); url.searchParams.set('status', 'active')
       if (since) url.searchParams.set('updated_at_min', since)
       const supabase = getServiceClient()
@@ -57,6 +59,7 @@ function makeAdapter(shopDomain: string): SourceAdapter {
 
 Deno.serve(withErrorReporting('source-shopify', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
   try {
     const body = await req.json().catch(() => ({}))

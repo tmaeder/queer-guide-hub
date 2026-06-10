@@ -32,7 +32,7 @@ Deno.test('classifyHttpStatus: other 4xx + 5xx are ambiguous, never dead', () =>
 })
 
 Deno.test('isDeadLink: only broken', () => {
-  for (const s of ['ok', 'redirect', 'blocked', 'timeout', 'unknown'] as const) {
+  for (const s of ['ok', 'redirect', 'blocked', 'timeout', 'unknown', 'unsafe'] as const) {
     assertEquals(isDeadLink(s), false)
   }
   assertEquals(isDeadLink('broken'), true)
@@ -65,4 +65,22 @@ Deno.test('probeLink: HEAD throws, GET 200 → ok', async () => {
 
 Deno.test('probeLink: both throw → timeout (never auto-dead)', async () => {
   assertEquals(await probeLink('http://x', { fetchImpl: mockFetch({ HEAD: 'throw', GET: 'throw' }) }), 'timeout')
+})
+
+Deno.test('probeLink: SSRF targets → unsafe, never fetched', async () => {
+  const neverCalled: typeof fetch = (() => {
+    throw new Error('fetch must not be called for unsafe URLs')
+  }) as unknown as typeof fetch
+  for (const url of [
+    'http://169.254.169.254/latest/meta-data/',
+    'http://127.0.0.1:8080/',
+    'http://localhost/admin',
+    'http://10.0.0.5/',
+    'http://192.168.1.1/',
+    'file:///etc/passwd',
+    'not a url',
+  ]) {
+    assertEquals(await probeLink(url, { fetchImpl: neverCalled }), 'unsafe')
+    assertEquals(isDeadLink('unsafe'), false)
+  }
 })
