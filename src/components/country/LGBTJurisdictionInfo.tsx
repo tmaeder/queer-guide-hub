@@ -144,7 +144,7 @@ function ProtectionRow({
           );
         })}
       </div>
-      {since && <span className="flex-shrink-0 text-xs2 text-[#9ca3af]">{since}</span>}
+      {since && <span className="flex-shrink-0 text-xs2 text-muted-foreground">{since}</span>}
     </div>
   );
 }
@@ -179,7 +179,7 @@ function SimpleRow({
           </Badge>
         </div>
       ) : (
-        <span className="text-xs text-[#9ca3af]">No data</span>
+        <span className="text-xs text-muted-foreground">No data</span>
       )}
     </div>
   );
@@ -187,7 +187,7 @@ function SimpleRow({
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <p
-    className="mb-2 text-xs2 font-bold uppercase text-[#6b7280]"
+    className="mb-2 text-xs2 font-bold uppercase text-muted-foreground"
     style={{ letterSpacing: '0.05em' }}
   >
     {children}
@@ -255,14 +255,14 @@ export default function LGBTJurisdictionInfo({
               </div>
             </div>
             {crimLegal === false && crim?.penalty && (
-              <p className="pl-8 text-xs font-medium text-[#dc2626]">
+              <p className="pl-8 text-xs font-medium text-destructive">
                 Penalty: {crim.penalty}
                 {crim.max_prison ? ` (${crim.max_prison})` : ''}
                 {hasDeathPenalty(crim) ? ' - Death penalty possible' : ''}
               </p>
             )}
             {crimLegal === true && crim?.decrim_year_1 && (
-              <p className="pl-8 text-xs text-[#9ca3af]">
+              <p className="pl-8 text-xs text-muted-foreground">
                 Decriminalized: {crim.decrim_year_1}
                 {crim.decrim_year_2 ? ` / ${crim.decrim_year_2}` : ''}
               </p>
@@ -279,14 +279,14 @@ export default function LGBTJurisdictionInfo({
         <div>
           <div className="mb-2 flex items-center justify-between">
             <p
-              className="text-xs2 font-bold uppercase text-[#6b7280]"
+              className="text-xs2 font-bold uppercase text-muted-foreground"
               style={{ letterSpacing: '0.05em' }}
             >
               Anti-Discrimination Protection
             </p>
             <div className="flex gap-1">
               {['SO', 'GI', 'GE', 'SC'].map((dim) => (
-                <span key={dim} className="w-6 text-center text-3xs font-semibold text-[#9ca3af]">
+                <span key={dim} className="w-6 text-center text-3xs font-semibold text-muted-foreground">
                   {dim}
                 </span>
               ))}
@@ -369,7 +369,7 @@ export default function LGBTJurisdictionInfo({
               </div>
             </div>
             {ssuDetails.marriage_since && (
-              <p className="pl-8 text-xs text-[#9ca3af]">
+              <p className="pl-8 text-xs text-muted-foreground">
                 Marriage since {ssuDetails.marriage_since}
                 {ssuDetails.civil_union_since
                   ? ` | Civil union since ${ssuDetails.civil_union_since}`

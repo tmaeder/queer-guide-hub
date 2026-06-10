@@ -199,12 +199,12 @@ function ComparisonTable({
             <tr key={row.label} className="border-b last:border-b-0">
               <th
                 scope="row"
-                className="px-4 py-3 text-left text-13 font-medium text-muted-foreground"
+                className="px-4 py-2 text-left text-13 font-medium text-muted-foreground"
               >
                 {row.label}
               </th>
-              <td className="px-4 py-3 tabular-nums text-foreground">{row.aValue}</td>
-              <td className="px-4 py-3 tabular-nums text-foreground">{row.bValue}</td>
+              <td className="px-4 py-2 tabular-nums text-foreground">{row.aValue}</td>
+              <td className="px-4 py-2 tabular-nums text-foreground">{row.bValue}</td>
             </tr>
           ))}
         </tbody>

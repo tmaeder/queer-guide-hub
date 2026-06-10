@@ -227,6 +227,18 @@ function mapToCfModel(openaiModel: string): string {
   return Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
 }
 
+/**
+ * Coerce an LLM `content` field to a string. Workers AI (and occasionally the
+ * OpenAI-compat layer) sometimes return an already-parsed object/array instead
+ * of a JSON string; stringifying it lets the defensive JSON parsers downstream
+ * handle every backend uniformly.
+ */
+function asContentString(raw: unknown): string {
+  if (raw == null) return ''
+  if (typeof raw === 'string') return raw
+  try { return JSON.stringify(raw) } catch { return String(raw) }
+}
+
 function cfWorkersAiConfig(): { acct: string; apiKey: string } | null {
   const acct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
   const token = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
@@ -314,15 +326,33 @@ export async function chatCompletion(
     if (response.ok) {
       const data = await response.json()
       if (cf) {
-        // Native CF shape: { result: { response, usage }, success }
+        // Native CF shape: { result: { response, usage }, success }.
+        // `result.response` is sometimes already a parsed OBJECT, not a string
+        // (the model emitted JSON and the native endpoint pre-parsed it). The
+        // downstream string parser then threw on `.match`/`.trim`, which
+        // collapsed news enrichment to a 100% "unparseable" rate (0 success
+        // 2026-06-06/07). Coerce to a JSON string so parseAIResponse works, and
+        // treat empty/failed as retryable so the circuit breaker actually sees it.
+        const cfContent = asContentString(data.result?.response)
+        if (data.success === false || !cfContent.trim()) {
+          lastError = new Error('Workers AI returned empty/failed result')
+          if (attempt < 2) { await new Promise(r => setTimeout(r, 1000 * (attempt + 1))); continue }
+          throw lastError
+        }
         return {
-          content: data.result?.response ?? '',
+          content: cfContent,
           usage: data.result?.usage,
           model: effectiveModel,
         }
       }
+      const oaContent = asContentString(data.choices?.[0]?.message?.content)
+      if (!oaContent.trim()) {
+        lastError = new Error('OpenAI returned empty content')
+        if (attempt < 2) { await new Promise(r => setTimeout(r, 1000 * (attempt + 1))); continue }
+        throw lastError
+      }
       return {
-        content: data.choices?.[0]?.message?.content || '',
+        content: oaContent,
         usage: data.usage,
         model: data.model,
       }

@@ -1614,7 +1614,8 @@
       "photos": "Fotos",
       "noPhotos": "Nenhuma foto disponível",
       "noEvents": "Nenhum evento próximo neste local",
-      "noReviews": "Ainda não há avaliações. Seja a primeira pessoa a avaliar!"
+      "noReviews": "Ainda não há avaliações. Seja a primeira pessoa a avaliar!",
+      "accessibility": "[PT] Accessibility"
     },
     "events": {
       "title": "Eventos",

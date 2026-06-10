@@ -41,7 +41,7 @@ export function ListingFeaturedInGuides({ listingId }: { listingId: string }) {
           Featured in {appearances.length === 1 ? 'a guide' : `${appearances.length} guides`}
         </h2>
       </header>
-      <ul className="space-y-5">
+      <ul className="space-y-6">
         {appearances.map((a) => (
           <li key={a.id}>
             <FeaturedInItem appearance={a} />
@@ -70,7 +70,7 @@ function FeaturedInItem({ appearance }: { appearance: GuideAppearance }) {
           “{rationale_md}”
         </p>
       )}
-      <p className="mt-3 inline-flex items-center gap-1 text-13 text-muted-foreground">
+      <p className="mt-2 inline-flex items-center gap-1 text-13 text-muted-foreground">
         Read the full guide
         <ArrowRight size={14} aria-hidden />
       </p>
@@ -125,7 +125,7 @@ export function MerchantFeaturedInGuides({ merchantDomain }: { merchantDomain: s
                     />
                   ) : null}
                 </div>
-                <div className="p-5">
+                <div className="p-6">
                   <p className="text-xs2 uppercase tracking-[0.15em] text-muted-foreground">
                     Guide
                     {g.reading_time_min ? ` · ${g.reading_time_min} min read` : ''}

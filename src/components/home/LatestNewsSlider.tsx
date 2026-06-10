@@ -188,7 +188,7 @@ const LatestNewsSlider = React.memo(() => {
                     </span>
                   </div>
                   <div
-                    className="overflow-hidden text-15 font-semibold leading-[1.3] transition-colors group-hover:text-[hsl(var(--foreground))] md:text-base"
+                    className="overflow-hidden text-15 font-semibold leading-[1.3] transition-colors group-hover:text-foreground md:text-base"
                     style={{
                       fontFamily: DISPLAY_FONT,
                       display: '-webkit-box',

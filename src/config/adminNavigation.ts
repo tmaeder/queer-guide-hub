@@ -13,6 +13,7 @@ import {
   Cloud,
   Layers,
   Building,
+  Accessibility,
   Calendar,
   Newspaper,
   Users,
@@ -122,6 +123,12 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Building,
         route: '/admin/content/venues',
         countTable: 'venues',
+      },
+      {
+        id: 'venue-quality',
+        label: 'Amenity quality',
+        icon: Accessibility,
+        route: '/admin/content/venue-quality',
       },
       {
         id: 'duplicates',

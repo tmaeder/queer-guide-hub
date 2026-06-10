@@ -17,7 +17,7 @@ const MarketplaceCollection = () => {
 
   useMeta({
     title: collection?.title ?? 'Collection',
-    description: collection?.editor_blurb ?? collection?.subtitle ?? 'A curated collection on Queer Guide.',
+    description: collection?.editor_blurb ?? collection?.subtitle ?? 'A collection on Queer Guide.',
     canonicalPath: collection ? `/marketplace/collection/${collection.slug}` : undefined,
   });
 
@@ -50,7 +50,7 @@ const MarketplaceCollection = () => {
     <div className="min-h-screen">
       <div className="container mx-auto py-12 md:py-16 px-4">
         <header className="mb-12 max-w-3xl">
-          <p className="text-13 uppercase tracking-wide text-muted-foreground mb-3">Collection</p>
+          <p className="text-13 uppercase tracking-wide text-muted-foreground mb-2">Collection</p>
           <h1 className="text-headline-lg md:text-display font-semibold mb-4 leading-tight">
             {collection.title}
           </h1>

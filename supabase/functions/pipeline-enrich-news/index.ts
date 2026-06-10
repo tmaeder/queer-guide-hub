@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { enrichNewsWithAI } from '../_shared/ai-enrichment.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
@@ -8,6 +8,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 Deno.serve(withErrorReporting('pipeline-enrich-news', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
 
   try {
@@ -33,11 +34,12 @@ Deno.serve(withErrorReporting('pipeline-enrich-news', async (req) => {
     }
 
     let enriched = 0, failed = 0, skipped = 0
+    const concurrency = Math.min(8, Math.max(1, body.concurrency ?? 6))
 
-    for (const item of items) {
+    const processItem = async (item: (typeof items)[number]) => {
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
       const title = String(n.title ?? n.name ?? '').trim()
-      if (!title) { skipped++; continue }
+      if (!title) { skipped++; return }
 
       const startedAt = Date.now()
       let ai: Awaited<ReturnType<typeof enrichNewsWithAI>> = null
@@ -96,12 +98,20 @@ Deno.serve(withErrorReporting('pipeline-enrich-news', async (req) => {
           p_duration_ms:     Date.now() - startedAt,
         })
 
-        if (applyErr) { failed++; console.error(`apply_enrichment ${item.id}: ${applyErr.message}`); continue }
+        if (applyErr) { failed++; console.error(`apply_enrichment ${item.id}: ${applyErr.message}`); return }
 
         if (status === 'success') enriched++
         else if (status === 'failed') failed++
         else skipped++
       } else { enriched++ }
+    }
+
+    // Bounded-concurrency pool. The previous sequential loop made ~50 LLM calls
+    // (~2s each) per invocation, overran the edge-function wall clock, and
+    // returned HTTP 504 — losing the whole batch's enrichment. A small pool
+    // keeps each invocation well under the limit while bounding OpenAI load.
+    for (let i = 0; i < items.length; i += concurrency) {
+      await Promise.all(items.slice(i, i + concurrency).map(processItem))
     }
 
     return jsonResponse({

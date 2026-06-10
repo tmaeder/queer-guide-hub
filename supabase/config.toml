@@ -115,6 +115,9 @@ verify_jwt = true
 [functions.store-tag-images]
 verify_jwt = false
 
+[functions.tag-enrichment-sweep]
+verify_jwt = false
+
 [functions.secure-mapbox-token]
 verify_jwt = false
 
@@ -469,6 +472,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.city-agentic-enrich]
+verify_jwt = false
+
+[functions.amenity-truth-backfill]
 verify_jwt = false
 
 # Passkey ops: enroll/verify-enrollment do a manual JWT check in code; the

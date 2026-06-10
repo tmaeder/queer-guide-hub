@@ -34,7 +34,7 @@ export function ModeSwitcher() {
               aria-checked={active}
               onClick={() => setMode(m.value)}
               className={cn(
-                'inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-element border px-3 py-2 text-xs transition-colors',
+                'inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-element border px-2.5 py-2 text-xs transition-colors',
                 active
                   ? 'border-foreground bg-foreground text-background'
                   : 'border-border text-muted-foreground hover:text-foreground',

@@ -24,7 +24,7 @@ const GRAPH_TOKEN = Deno.env.get('WHATSAPP_GRAPH_TOKEN') || ''
 const GRAPH_BASE = 'https://graph.facebook.com/v20.0'
 
 async function verifySignature(req: Request, raw: string): Promise<boolean> {
-  if (!APP_SECRET) return true
+  if (!APP_SECRET) return false // fail closed: unconfigured secret must not bypass signature check
   const sig = req.headers.get('x-hub-signature-256') || ''
   if (!sig.startsWith('sha256=')) return false
   const expected = sig.slice('sha256='.length)

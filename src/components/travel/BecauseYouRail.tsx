@@ -76,7 +76,7 @@ export function BecauseYouRail({ limit = 8 }: { limit?: number }) {
                     ) : null}
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
                   </div>
-                  <div className="flex flex-1 flex-col gap-2 p-5">
+                  <div className="flex flex-1 flex-col gap-2 p-6">
                     <h3 className="truncate text-title font-bold leading-tight text-foreground">
                       {flag ? <span aria-hidden>{flag} </span> : null}
                       {city.name}

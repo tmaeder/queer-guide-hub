@@ -45,12 +45,40 @@ Live audit against prod (`xqeacpakadqfxjxjcewc`). Counts are real, not estimates
 
 ## Phase B backfills — running / remaining
 
+**✅ Venue geocoding + geo-linking — COMPLETE:**
+- **Geocoding** — `scripts/backfill-venue-geocode-photon.mjs`. Country-validated Photon, 9,688 processed: **6,946 located (72%)**, 824 rejected (cross-country mislinks correctly blocked), 1,918 no-result (name-only "addresses" like "Afghan Women's Network", not geocodable).
+- **City/country linking** — PostGIS nearest-city (country-scoped, then global ≤100km). Result for live venues: **coords 56%→88%, city_id 73%→95.4%, country_id →95.6%**. Remaining ~363 are >100km from any city in our table (remote / sparse city coverage).
 **🟢 Running now (background, supervised, resumable):**
 - **Venue geocoding** — `scripts/backfill-venue-geocode-photon.mjs`. Country-validated Photon, ~25 venues/min, ~71% located, ~16% rejected as cross-country mislinks. ~10.2k queued, ETA ~6–7h.
 - **Personality Wikidata-by-QID enrichment** — `scripts/backfill-personality-wikidata.mjs`. ✅ **DONE** (2,886 processed): +491 nationalities; **~14% (~400) of QIDs are wrong** (point to given-name/disambiguation items, not humans) → flagged `needs_attention`; birth-date yield ~0 — Wikidata genuinely lacks day-precision births for this obscure cohort (finding: poor Wikidata coverage + bad QID linkage). Day-precision-only gate kept (no fake `YYYY-01-01`).
 
 Both write per-row via the Management API (bulk venue/personality writes time out on the `search_documents_sync` reindex trigger) and self-restart on DNS/network blips.
 
+**✅ LGBTQ+ relevance classification — DONE (CF Workers AI):** new edge fn `classify-relevance-backfill` (self-contained, native `/ai/run`, UNKNOWN over false-0, **personalities excluded — outing risk**) + driver `scripts/backfill-relevance-classify.mjs`. Coverage: venue 85% scored (avg 0.32), event 100% (0.75), marketplace 98% (0.69), news 99% (0.44); rest UNKNOWN (thin data, honestly unscored). **Propagated to `search_documents.lgbtq_score`** (~33,500 docs) so search ranks on the real signal instead of the 0.5 default. Cleanup TODO: delete the one-off `classify-relevance-backfill` edge fn (`supabase functions delete`).
+
+**✅ Autonomous-finish pass (2026-06-07):**
+- **Country conflicts resolved by coords** — ~426 venues where `country` text ≠ `country_id` corrected to the coordinate's true country; 13 remote leftovers stay flagged.
+- **High-confidence dup merges** — 31 near-certain duplicates (same name+city + identical real domain/phone) merged via the real `merge_venues` RPC (full reparent + slug-redirect + audit; run in a tx with the admin JWT claim set). The ~300 uncorroborated same-name clusters left for human review at `/admin/duplicates`.
+- **Personality QID validation** — `scripts/validate-personality-qids.mjs`: re-checked all 3,614 QIDs against Wikidata P31; **425 confirmed non-human links nulled** + flagged `needs_attention` (kept ones with no P31 evidence).
+- **Venue images** — `scripts/backfill-venue-ogimage.mjs`: sourced real `og:image`/`twitter:image` from venues' own websites (rejects favicons/svg/ico, forces https). ✅ DONE: 4,470 processed, **1,099 real images** (25%). Foursquare/TomTom stored data holds no photos for imageless venues; the remaining ~16k imageless venues have no website → need a paid photo API (Google Places).
+- **Coordinate-proximity dup merges** — 62 same-name venues within 75m of each other merged (certain same-place, even without shared domain/phone). Platform-ID dedup checked (foursquare/tripadvisor/external) — 0 genuine dupes (collisions were cross-source coincidental).
+- **Minor/adult contradictions resolved** — the 4 personalities born <18y ago yet `is_adult` were all bad birth-dates on adult performers (e.g. "born 2100/2017") → birth_date nulled, `is_adult` kept, flagged. Full sweep: 0 future births/deaths, 0 death-before-birth remain.
+- One-off `classify-relevance-backfill` edge fn **deleted** (cleanup done).
+
+**⏭️ Genuinely remaining (needs human, budget, or data that doesn't exist):**
+
+| Item | Why it can't be auto-finished |
+|-----|------|
+| ~~venue dup clusters~~ → **DONE (reviewed 2026-06-07)** | reviewed every remaining same-name/same-city cluster: merged by ≤75m proximity, ≤2km, matching-address (missing coords), and ≤25km intra-metro (geocoder variance, not real branches for this domain). **~167 merged; 1 cluster left** (a lone pair 70km apart — genuinely possibly-distinct, left for human). All via the audited reversible `merge_venues` RPC. |
+| ~16k imageless venues with **no website** | **Built + deployed** `venue-photo-foursquare` (Foursquare 2025 Places API, coords-validated within 400m → real venue photos) + driver `scripts/backfill-venue-photos.mjs`. **Blocked on provider billing:** Foursquare account returns 429 "no API credits remaining"; `GOOGLE_PLACES_API_KEY` unset. → add Foursquare credits (or set a Google key) then run the driver — ready. |
+| Venue descriptions (85% thin) | **Not auto-filled — deliberate.** No external source provides venue prose; deterministic templates surfaced bad geo data ("St. Gallen, Germany") + read as filler; LLM prose makes unverifiable claims about real safe-spaces (trust/safety risk). Needs editorial input. Side-fix: 41 venues with wrong `country_id` vs their city corrected. |
+| 3 minors flagged `is_adult` | needs human judgment (wrong birth_date vs wrong flag) |
+| Personality/venue descriptions (thin) | content generation/sourcing — agentic-enrich budget |
+| Data floor | ~2,540 personalities Wikidata lacks; ~363 remote venues no nearby city; ~2,600 news paywalled/dead-URL; non-geographic news |
+
+Event geocoding, news full-text + geo-tagging were completed by the parallel session (events 100% geocoded; news thin 7.6k→2.7k, geo-missing 16.7k→4.9k).
+
+**Operational guards:** prod DB is disk-constrained (~5.8 GB, read-only trips near ~6.7 GB) — size-check before bulk writes that add content/embeddings; respect Photon rate limits; verify on https://queer.guide after each batch.
 **⏭️ Remaining (need geocode to finish, or edge-fn / LLM budget):**
 
 | Job | Count | Driver |

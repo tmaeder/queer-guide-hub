@@ -193,7 +193,7 @@ export const PlacesSearch = ({
               <div className="flex flex-col gap-2">
                 <Label className="text-xs font-medium text-muted-foreground">Continent</Label>
                 <Select value={filters.continent} onValueChange={(value) => handleFilterChange("continent", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Continent">
                     <SelectValue placeholder="All Continents" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
@@ -212,7 +212,7 @@ export const PlacesSearch = ({
               <div className="flex flex-col gap-2">
                 <Label className="text-xs font-medium text-muted-foreground">Population Range</Label>
                 <Select value={filters.populationRange} onValueChange={(value) => handleFilterChange("populationRange", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Population range">
                     <SelectValue placeholder="All Sizes" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
@@ -228,7 +228,7 @@ export const PlacesSearch = ({
               <div className="flex flex-col gap-2">
                 <Label className="text-xs font-medium text-muted-foreground">Capital Cities</Label>
                 <Select value={filters.isCapital} onValueChange={(value) => handleFilterChange("isCapital", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Capital cities">
                     <SelectValue placeholder="All Cities" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
@@ -242,7 +242,7 @@ export const PlacesSearch = ({
               <div className="flex flex-col gap-2">
                 <Label className="text-xs font-medium text-muted-foreground">Major Cities</Label>
                 <Select value={filters.isMajorCity} onValueChange={(value) => handleFilterChange("isMajorCity", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Major cities">
                     <SelectValue placeholder="All Cities" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
@@ -256,7 +256,7 @@ export const PlacesSearch = ({
               <div className="flex flex-col gap-2">
                 <Label className="text-xs font-medium text-muted-foreground">Sort By</Label>
                 <Select value={filters.sortBy} onValueChange={(value) => handleFilterChange("sortBy", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Sort by">
                     <SelectValue placeholder="Sort by..." />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
