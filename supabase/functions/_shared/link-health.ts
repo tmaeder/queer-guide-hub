@@ -5,8 +5,14 @@
 // the site is ALIVE — classifying those as broken caused false venue demotions
 // and false marketplace deactivations (the reason cron 198 was paused). Network
 // errors are treated as transient ('timeout'), never as dead.
+//
+// SSRF: URLs come from the database (venue websites, listing URLs, article
+// URLs), so probeLink refuses private/loopback/metadata targets up front and
+// returns 'unsafe' — never fetched, never classified as dead.
 
-export type LinkStatus = 'ok' | 'redirect' | 'broken' | 'blocked' | 'timeout' | 'unknown'
+import { assertPublicHttpUrl } from './ssrf-guard.ts'
+
+export type LinkStatus = 'ok' | 'redirect' | 'broken' | 'blocked' | 'timeout' | 'unknown' | 'unsafe'
 
 /** Classify a single HTTP status code. Only 404/410 are confirmed-dead. */
 export function classifyHttpStatus(code: number): LinkStatus {
@@ -38,6 +44,12 @@ export async function probeLink(
   const timeoutMs = opts.timeoutMs ?? 8_000
   const ua = opts.ua ?? DEFAULT_UA
   const doFetch = opts.fetchImpl ?? fetch
+
+  try {
+    assertPublicHttpUrl(url)
+  } catch {
+    return 'unsafe'
+  }
 
   const attempt = async (method: 'HEAD' | 'GET'): Promise<LinkStatus> => {
     const controller = new AbortController()

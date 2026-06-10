@@ -5,6 +5,7 @@ import {
   corsResponse,
 } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 // ============================================================
 // Source: Generic social URL → community_submissions
@@ -142,6 +143,11 @@ Deno.serve(withErrorReporting('source-social-url', async (req) => {
     }
     if (!/^https?:$/.test(parsed.protocol)) {
       return errorResponse('http(s) only', 400, req)
+    }
+    try {
+      assertPublicHttpUrl(url) // user-supplied URL fetched server-side — refuse private targets
+    } catch {
+      return errorResponse('blocked url', 400, req)
     }
 
     const platform = detectPlatform(url)

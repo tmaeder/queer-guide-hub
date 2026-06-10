@@ -4,6 +4,7 @@ import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 interface ShopifyProduct {
   id: number; title: string; body_html: string; vendor: string; product_type: string; handle: string; status: string; tags: string;
@@ -19,6 +20,7 @@ function makeAdapter(shopDomain: string): SourceAdapter {
       const limit = Math.min(config.batchSize || 50, 250)
       const since = config.filters?.updatedAtMin as string | undefined
       const url = new URL(`https://${shopDomain}/admin/api/2024-04/products.json`)
+      assertPublicHttpUrl(url.toString()) // shopDomain is request/merchant-registry supplied — refuse private targets
       url.searchParams.set('limit', String(limit)); url.searchParams.set('status', 'active')
       if (since) url.searchParams.set('updated_at_min', since)
       const supabase = getServiceClient()

@@ -25,16 +25,17 @@
 // Deno edge function — runs in Supabase runtime, not in the app bundle.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { anthropicMessages } from '../_shared/anthropic-shim.ts';
+import { getCorsHeaders } from '../_shared/supabase-client.ts';
 import { checkUserRateLimit } from '../_shared/user-rate-limit.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
+const corsFor = (req: Request) => ({
+  ...getCorsHeaders(req),
   'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+});
 
 interface TripContext {
   id: string;
@@ -183,6 +184,7 @@ Return JSON: { "days": [ { "date": "YYYY-MM-DD", "places": [ { "venue_id": "..."
 }
 
 Deno.serve(async (req) => {
+  const cors = corsFor(req);
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: cors });
   }
