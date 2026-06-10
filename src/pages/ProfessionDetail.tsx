@@ -191,7 +191,7 @@ export default function ProfessionDetail() {
           ) : (
             <Card>
               <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No people found for this profession.</p>
+                <p className="text-muted-foreground">No people for this profession yet.</p>
               </CardContent>
             </Card>
           )}

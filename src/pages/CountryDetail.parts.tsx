@@ -364,7 +364,7 @@ export function CountryCitiesTab({ country, cities, citiesLoading }: CountryCiti
       ) : (
         <EmptyCard
           icon={Building2}
-          title="No cities found"
+          title="No cities yet"
           description="No cities are currently listed for this country."
         />
       )}
@@ -404,7 +404,7 @@ export function CountryVenuesTab({ country, venues, loading }: CountryVenuesTabP
       ) : (
         <EmptyCard
           icon={MapPin}
-          title="No venues found yet"
+          title="No venues yet"
           description={`Be the first to add venues from ${country.name}!`}
         />
       )}
@@ -530,7 +530,7 @@ export function CountryNewsTab({
       ) : (
         <EmptyCard
           icon={Newspaper}
-          title="No local news found"
+          title="No local news yet"
           description={`No news articles are currently available for ${country.name}.`}
         />
       )}

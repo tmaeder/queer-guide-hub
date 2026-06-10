@@ -440,7 +440,7 @@ export default function Places() {
                     <Building2
                       style={ICON_XL}
                     />
-                    <p>No cities found in this country</p>
+                    <p>No cities in this country yet</p>
                   </div>
                 )}
               </div>
