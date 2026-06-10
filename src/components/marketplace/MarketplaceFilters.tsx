@@ -21,7 +21,18 @@ import {
 } from '@/components/ui/accordion';
 import { Search, Filter, X, Sliders } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
-import { useMarketplaceFacets, useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
+import {
+  useMarketplaceFacets,
+  useMarketplaceSubcategoryTiles,
+  useMarketplaceAttributeVocab,
+} from '@/hooks/useMarketplaceQueries';
+import {
+  DEPARTMENT_ORDER,
+  departmentLabel,
+  departmentOf,
+  ATTRIBUTE_KIND_LABELS,
+  type MarketplaceAttributeKind,
+} from '@/lib/marketplaceTaxonomy';
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 500;
@@ -33,6 +44,8 @@ interface MarketplaceFiltersProps {
     search?: string;
     /** products / services (was labelled "Category", now "Type"). */
     category?: string;
+    /** browse umbrella (apparel, underwear, intimacy, …). */
+    department?: string;
     /** canonical subcategory slug (fetish_gear, sex_toys, …). */
     subcategory?: string;
     location?: string;
@@ -101,6 +114,7 @@ export function MarketplaceFilters({
     setSearch(initialSearch);
   }, [initialSearch]);
   const [category, setCategory] = useState('');
+  const [department, setDepartment] = useState('');
   const [subcategory, setSubcategory] = useState('');
   const [location, setLocation] = useState('');
   const [businessType, setBusinessType] = useState('');
@@ -112,6 +126,9 @@ export function MarketplaceFilters({
   // product-type tags. Combined into a single `tags` payload on submit.
   const [valueTags, setValueTags] = useState<string[]>([]);
   const [productTags, setProductTags] = useState<string[]>([]);
+  // Attribute facets (material/occasion/vibe) — namespaced unified_tags slugs
+  // that ride the same `tags` filter pipeline as the selectors above.
+  const [attributeTags, setAttributeTags] = useState<string[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
   const [communityOwned, setCommunityOwned] = useState<string[]>([]);
   const [currency, setCurrency] = useState('');
@@ -126,7 +143,13 @@ export function MarketplaceFilters({
     );
   };
 
-  const allTags = [...valueTags, ...productTags];
+  const allTags = [...valueTags, ...productTags, ...attributeTags];
+
+  const toggleAttribute = (slug: string) => {
+    setAttributeTags((prev) =>
+      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
+    );
+  };
 
   const buildFilters = () => {
     const priceRange = priceTouched
@@ -141,6 +164,7 @@ export function MarketplaceFilters({
     return {
       search: cleanSearch || undefined,
       category: category === 'all' ? undefined : category || undefined,
+      department: department === 'all' ? undefined : department || undefined,
       subcategory: subcategory === 'all' ? undefined : subcategory || undefined,
       location: location || undefined,
       businessType: businessType === 'all' ? undefined : businessType || undefined,
@@ -181,6 +205,7 @@ export function MarketplaceFilters({
   }, [
     search,
     category,
+    department,
     subcategory,
     location,
     businessType,
@@ -189,6 +214,7 @@ export function MarketplaceFilters({
     priceTouched,
     valueTags,
     productTags,
+    attributeTags,
     communityOwned,
     currency,
     availability,
@@ -199,6 +225,7 @@ export function MarketplaceFilters({
   const clearFilters = () => {
     setSearch('');
     setCategory('');
+    setDepartment('');
     setSubcategory('');
     setLocation('');
     setBusinessType('');
@@ -207,6 +234,7 @@ export function MarketplaceFilters({
     setPriceTouched(false);
     setValueTags([]);
     setProductTags([]);
+    setAttributeTags([]);
     setCommunityOwned([]);
     setCurrency('');
     setAvailability('in_stock');
@@ -218,6 +246,7 @@ export function MarketplaceFilters({
   const hasActiveFilters =
     search ||
     (category && category !== 'all') ||
+    (department && department !== 'all') ||
     (subcategory && subcategory !== 'all') ||
     location ||
     (businessType && businessType !== 'all') ||
@@ -232,6 +261,7 @@ export function MarketplaceFilters({
   const activeFilterCount =
     (search ? 1 : 0) +
     (category && category !== 'all' ? 1 : 0) +
+    (department && department !== 'all' ? 1 : 0) +
     (subcategory && subcategory !== 'all' ? 1 : 0) +
     (location ? 1 : 0) +
     (businessType && businessType !== 'all' ? 1 : 0) +
@@ -252,8 +282,32 @@ export function MarketplaceFilters({
     subcategory: subcategory && subcategory !== 'all' ? subcategory : undefined,
     businessType: businessType && businessType !== 'all' ? businessType : undefined,
   });
-  const { data: subcategoryOptions } = useMarketplaceSubcategoryTiles();
+  const { data: subcategoryOptions } = useMarketplaceSubcategoryTiles(null);
+  const { data: attributeVocab } = useMarketplaceAttributeVocab();
   const fmtCount = (n: number | undefined) => (n != null && n > 0 ? ` (${n.toLocaleString()})` : '');
+
+  // Department counts: group the fine subcategory tiles into umbrellas.
+  const departmentCounts = new Map<string, number>();
+  for (const opt of subcategoryOptions) {
+    const d = departmentOf(opt.slug);
+    departmentCounts.set(d, (departmentCounts.get(d) ?? 0) + opt.count);
+  }
+  const departmentOptions = DEPARTMENT_ORDER.filter((d) => (departmentCounts.get(d) ?? 0) > 0);
+  // Drill-down: with a department selected, only show its fine subcategories.
+  const visibleSubcategories = department && department !== 'all'
+    ? subcategoryOptions.filter((o) => departmentOf(o.slug) === department)
+    : subcategoryOptions;
+
+  const handleDepartmentChange = (next: string) => {
+    setDepartment(next);
+    // Keep the drill-down coherent: drop a subcategory that left the umbrella.
+    if (subcategory && subcategory !== 'all' && next !== 'all' && departmentOf(subcategory) !== next) {
+      setSubcategory('');
+    }
+  };
+
+  const attributesByKind = (kind: MarketplaceAttributeKind) =>
+    attributeVocab.filter((a) => a.kind === kind);
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-background">
@@ -335,6 +389,23 @@ export function MarketplaceFilters({
                     </Select>
                   </div>
                   <div className="flex flex-col gap-2">
+                    <Label htmlFor="department">Department</Label>
+                    <Select value={department} onValueChange={handleDepartmentChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All departments</SelectItem>
+                        {departmentOptions.map((d) => (
+                          <SelectItem key={d} value={d}>
+                            {departmentLabel(d)}
+                            {fmtCount(departmentCounts.get(d))}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="subcategory">Category</Label>
                     <Select value={subcategory} onValueChange={setSubcategory}>
                       <SelectTrigger>
@@ -342,7 +413,7 @@ export function MarketplaceFilters({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All categories</SelectItem>
-                        {subcategoryOptions.map((opt) => (
+                        {visibleSubcategories.map((opt) => (
                           <SelectItem key={opt.slug} value={opt.slug}>
                             {prettifySlug(opt.slug)}
                             {fmtCount(facets.subcategory.get(opt.slug) ?? opt.count)}
@@ -351,6 +422,45 @@ export function MarketplaceFilters({
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="attributes">
+              <AccordionTrigger className="text-13 uppercase tracking-wide text-muted-foreground">
+                Attributes
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-4 pt-2">
+                  {(['material', 'occasion', 'vibe'] as MarketplaceAttributeKind[]).map((kind) => {
+                    const opts = attributesByKind(kind);
+                    if (opts.length === 0) return null;
+                    return (
+                      <div key={kind} className="flex flex-col gap-2">
+                        <Label>{ATTRIBUTE_KIND_LABELS[kind]}</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {opts.map((opt) => {
+                            const active = attributeTags.includes(opt.slug);
+                            return (
+                              <button
+                                key={opt.slug}
+                                type="button"
+                                onClick={() => toggleAttribute(opt.slug)}
+                                aria-pressed={active}
+                                className={`rounded-badge border px-2 py-1 text-xs transition-colors ${
+                                  active
+                                    ? 'border-foreground bg-foreground text-background'
+                                    : 'border-border bg-background text-foreground hover:bg-muted'
+                                }`}
+                              >
+                                {opt.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -585,6 +695,12 @@ export function MarketplaceFilters({
               <X size={12} className="cursor-pointer" onClick={() => setCategory('')} />
             </Badge>
           )}
+          {department && department !== 'all' && (
+            <Badge variant="secondary">
+              Department: {departmentLabel(department)}
+              <X size={12} className="cursor-pointer" onClick={() => setDepartment('')} />
+            </Badge>
+          )}
           {subcategory && subcategory !== 'all' && (
             <Badge variant="secondary">
               Category: {prettifySlug(subcategory)}
@@ -637,6 +753,15 @@ export function MarketplaceFilters({
               />
             </Badge>
           ))}
+          {attributeTags.map((slug) => {
+            const label = attributeVocab.find((a) => a.slug === slug)?.name ?? slug;
+            return (
+              <Badge key={slug} variant="secondary">
+                {label}
+                <X size={12} className="cursor-pointer" onClick={() => toggleAttribute(slug)} />
+              </Badge>
+            );
+          })}
           {communityOwned.map((v) => {
             const label = COMMUNITY_OWNED_OPTIONS.find((o) => o.value === v)?.label ?? v;
             return (

@@ -35,7 +35,49 @@ export async function fetchSitemap(url: string): Promise<SitemapEntry[]> {
   return parseLocs(xml).slice(0, MAX_URLS);
 }
 
+function assertPublicHttpUrl(raw: string): void {
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    throw new Error("Invalid sitemap URL");
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") {
+    throw new Error(`Blocked sitemap scheme: ${u.protocol}`);
+  }
+  const host = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".local") ||
+    host.endsWith(".internal") ||
+    host === "::1" ||
+    host.startsWith("fc") ||
+    host.startsWith("fd") ||
+    host.startsWith("fe80")
+  ) {
+    throw new Error("Blocked sitemap host");
+  }
+  const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const a = Number(m[1]);
+    const b = Number(m[2]);
+    if (
+      a === 10 ||
+      a === 127 ||
+      a === 0 ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 100 && b >= 64 && b <= 127)
+    ) {
+      throw new Error("Blocked sitemap host (private range)");
+    }
+  }
+}
+
 async function timedFetchText(url: string): Promise<string> {
+  assertPublicHttpUrl(url);
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   try {

@@ -531,19 +531,37 @@ export type Database = {
       }
       amenities: {
         Row: {
+          category_scope: string[]
           icon_name: string | null
           id: string
+          is_active: boolean
+          kind: string
           name: string
+          slug: string | null
+          sort_order: number
+          updated_at: string
         }
         Insert: {
+          category_scope?: string[]
           icon_name?: string | null
           id?: string
+          is_active?: boolean
+          kind?: string
           name: string
+          slug?: string | null
+          sort_order?: number
+          updated_at?: string
         }
         Update: {
+          category_scope?: string[]
           icon_name?: string | null
           id?: string
+          is_active?: boolean
+          kind?: string
           name?: string
+          slug?: string | null
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1202,6 +1220,7 @@ export type Database = {
           best_time_to_visit: string | null
           canonical_key: string | null
           climate_type: string | null
+          completeness_score: number
           cost_of_living: Json | null
           country_id: string
           created_at: string
@@ -1214,6 +1233,8 @@ export type Database = {
           economy_sectors: string[] | null
           editorial_hook: string | null
           elevation_m: number | null
+          enrichment_status: Json
+          field_provenance: Json
           founded_year: number | null
           historical_names: Json
           id: string
@@ -1224,6 +1245,7 @@ export type Database = {
           is_major_city: boolean | null
           last_refreshed_at: string | null
           last_synced_at: string | null
+          last_verified_at: string | null
           latitude: number | null
           lgbt_friendly_rating: number | null
           local_customs: string | null
@@ -1236,16 +1258,20 @@ export type Database = {
           name_en: string | null
           name_i18n: Json
           name_normalized: string | null
+          needs_attention: boolean
           notable_landmarks: string[] | null
           official_website: string | null
           population: number | null
           postal_codes: string[] | null
           region_name: string | null
+          safety_notes: string | null
           seo_indexable: boolean
+          shell_status: string
           sister_cities: string[] | null
           slug: string
           timezone: string | null
           transportation_info: Json | null
+          trust_score: number
           universities: string[] | null
           updated_at: string
           wolfram_enriched_at: string | null
@@ -1257,6 +1283,7 @@ export type Database = {
           best_time_to_visit?: string | null
           canonical_key?: string | null
           climate_type?: string | null
+          completeness_score?: number
           cost_of_living?: Json | null
           country_id: string
           created_at?: string
@@ -1269,6 +1296,8 @@ export type Database = {
           economy_sectors?: string[] | null
           editorial_hook?: string | null
           elevation_m?: number | null
+          enrichment_status?: Json
+          field_provenance?: Json
           founded_year?: number | null
           historical_names?: Json
           id?: string
@@ -1279,6 +1308,7 @@ export type Database = {
           is_major_city?: boolean | null
           last_refreshed_at?: string | null
           last_synced_at?: string | null
+          last_verified_at?: string | null
           latitude?: number | null
           lgbt_friendly_rating?: number | null
           local_customs?: string | null
@@ -1291,16 +1321,20 @@ export type Database = {
           name_en?: string | null
           name_i18n?: Json
           name_normalized?: string | null
+          needs_attention?: boolean
           notable_landmarks?: string[] | null
           official_website?: string | null
           population?: number | null
           postal_codes?: string[] | null
           region_name?: string | null
+          safety_notes?: string | null
           seo_indexable?: boolean
+          shell_status?: string
           sister_cities?: string[] | null
           slug: string
           timezone?: string | null
           transportation_info?: Json | null
+          trust_score?: number
           universities?: string[] | null
           updated_at?: string
           wolfram_enriched_at?: string | null
@@ -1312,6 +1346,7 @@ export type Database = {
           best_time_to_visit?: string | null
           canonical_key?: string | null
           climate_type?: string | null
+          completeness_score?: number
           cost_of_living?: Json | null
           country_id?: string
           created_at?: string
@@ -1324,6 +1359,8 @@ export type Database = {
           economy_sectors?: string[] | null
           editorial_hook?: string | null
           elevation_m?: number | null
+          enrichment_status?: Json
+          field_provenance?: Json
           founded_year?: number | null
           historical_names?: Json
           id?: string
@@ -1334,6 +1371,7 @@ export type Database = {
           is_major_city?: boolean | null
           last_refreshed_at?: string | null
           last_synced_at?: string | null
+          last_verified_at?: string | null
           latitude?: number | null
           lgbt_friendly_rating?: number | null
           local_customs?: string | null
@@ -1346,16 +1384,20 @@ export type Database = {
           name_en?: string | null
           name_i18n?: Json
           name_normalized?: string | null
+          needs_attention?: boolean
           notable_landmarks?: string[] | null
           official_website?: string | null
           population?: number | null
           postal_codes?: string[] | null
           region_name?: string | null
+          safety_notes?: string | null
           seo_indexable?: boolean
+          shell_status?: string
           sister_cities?: string[] | null
           slug?: string
           timezone?: string | null
           transportation_info?: Json | null
+          trust_score?: number
           universities?: string[] | null
           updated_at?: string
           wolfram_enriched_at?: string | null
@@ -1426,6 +1468,123 @@ export type Database = {
           },
         ]
       }
+      city_consensus_audit: {
+        Row: {
+          action: string | null
+          agreeing_sources: string[] | null
+          city_id: string | null
+          confidence: number | null
+          conflicting_sources: string[] | null
+          created_at: string
+          details: Json
+          field: string | null
+          id: string
+          winning_source: string | null
+          winning_value: Json | null
+        }
+        Insert: {
+          action?: string | null
+          agreeing_sources?: string[] | null
+          city_id?: string | null
+          confidence?: number | null
+          conflicting_sources?: string[] | null
+          created_at?: string
+          details?: Json
+          field?: string | null
+          id?: string
+          winning_source?: string | null
+          winning_value?: Json | null
+        }
+        Update: {
+          action?: string | null
+          agreeing_sources?: string[] | null
+          city_id?: string | null
+          confidence?: number | null
+          conflicting_sources?: string[] | null
+          created_at?: string
+          details?: Json
+          field?: string | null
+          id?: string
+          winning_source?: string | null
+          winning_value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_consensus_audit_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_consensus_audit_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      city_coverage_gaps: {
+        Row: {
+          city_id: string | null
+          city_name: string | null
+          content_counts: Json
+          created_at: string
+          gap_score: number
+          id: string
+          last_checked_at: string
+          missing_fields: string[]
+          resolution: string
+          shell_status: string
+          status: string
+          suggested_actions: Json
+        }
+        Insert: {
+          city_id?: string | null
+          city_name?: string | null
+          content_counts?: Json
+          created_at?: string
+          gap_score?: number
+          id?: string
+          last_checked_at?: string
+          missing_fields?: string[]
+          resolution?: string
+          shell_status?: string
+          status?: string
+          suggested_actions?: Json
+        }
+        Update: {
+          city_id?: string | null
+          city_name?: string | null
+          content_counts?: Json
+          created_at?: string
+          gap_score?: number
+          id?: string
+          last_checked_at?: string
+          missing_fields?: string[]
+          resolution?: string
+          shell_status?: string
+          status?: string
+          suggested_actions?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_coverage_gaps_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: true
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_coverage_gaps_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: true
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       city_favorites: {
         Row: {
           city_id: string
@@ -1446,6 +1605,173 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      city_merge_audit: {
+        Row: {
+          actor: string | null
+          created_at: string
+          drop_id: string
+          id: string
+          keep_id: string
+          reparented: Json
+          undone_at: string | null
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string
+          drop_id: string
+          id?: string
+          keep_id: string
+          reparented?: Json
+          undone_at?: string | null
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string
+          drop_id?: string
+          id?: string
+          keep_id?: string
+          reparented?: Json
+          undone_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_merge_audit_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_merge_audit_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_merge_audit_keep_id_fkey"
+            columns: ["keep_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_merge_audit_keep_id_fkey"
+            columns: ["keep_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      city_quality_signals: {
+        Row: {
+          city_id: string
+          created_at: string
+          details: Json
+          id: string
+          signal_type: string
+          source: string | null
+          value: number
+          weight: number
+        }
+        Insert: {
+          city_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          signal_type: string
+          source?: string | null
+          value?: number
+          weight?: number
+        }
+        Update: {
+          city_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          signal_type?: string
+          source?: string | null
+          value?: number
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_quality_signals_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_quality_signals_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      city_review_queue: {
+        Row: {
+          citations: Json
+          city_id: string
+          confidence: number | null
+          created_at: string
+          field: string
+          id: string
+          model: string | null
+          proposed_value: Json
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_note: string | null
+          status: string
+        }
+        Insert: {
+          citations?: Json
+          city_id: string
+          confidence?: number | null
+          created_at?: string
+          field: string
+          id?: string
+          model?: string | null
+          proposed_value: Json
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          status?: string
+        }
+        Update: {
+          citations?: Json
+          city_id?: string
+          confidence?: number | null
+          created_at?: string
+          field?: string
+          id?: string
+          model?: string | null
+          proposed_value?: Json
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_review_queue_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_review_queue_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cms_ai_cache: {
         Row: {
@@ -3576,6 +3902,7 @@ export type Database = {
           capital_coordinates: Json | null
           climate_zones: string[] | null
           code: string
+          content_completeness_score: number | null
           continent_id: string
           created_at: string
           curated_image_url: string | null
@@ -3587,6 +3914,7 @@ export type Database = {
           duplicate_of_id: string | null
           editorial_hook: string | null
           editorial_long: string | null
+          enrichment_status: Json
           equality_score: number | null
           exports: string[] | null
           flag_emoji: string | null
@@ -3653,6 +3981,7 @@ export type Database = {
           capital_coordinates?: Json | null
           climate_zones?: string[] | null
           code: string
+          content_completeness_score?: number | null
           continent_id: string
           created_at?: string
           curated_image_url?: string | null
@@ -3664,6 +3993,7 @@ export type Database = {
           duplicate_of_id?: string | null
           editorial_hook?: string | null
           editorial_long?: string | null
+          enrichment_status?: Json
           equality_score?: number | null
           exports?: string[] | null
           flag_emoji?: string | null
@@ -3730,6 +4060,7 @@ export type Database = {
           capital_coordinates?: Json | null
           climate_zones?: string[] | null
           code?: string
+          content_completeness_score?: number | null
           continent_id?: string
           created_at?: string
           curated_image_url?: string | null
@@ -3741,6 +4072,7 @@ export type Database = {
           duplicate_of_id?: string | null
           editorial_hook?: string | null
           editorial_long?: string | null
+          enrichment_status?: Json
           equality_score?: number | null
           exports?: string[] | null
           flag_emoji?: string | null
@@ -4006,13 +4338,6 @@ export type Database = {
             foreignKeyName: "dedup_decisions_feedback_candidate_venue_id_fkey"
             columns: ["candidate_venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "dedup_decisions_feedback_candidate_venue_id_fkey"
-            columns: ["candidate_venue_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -4105,6 +4430,24 @@ export type Database = {
           stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      edge_rate_limits: {
+        Row: {
+          bucket_key: string
+          expires_at: string
+          hits: number
+        }
+        Insert: {
+          bucket_key: string
+          expires_at: string
+          hits?: number
+        }
+        Update: {
+          bucket_key?: string
+          expires_at?: string
+          hits?: number
         }
         Relationships: []
       }
@@ -4696,6 +5039,54 @@ export type Database = {
         }
         Relationships: []
       }
+      event_coverage_gaps: {
+        Row: {
+          city_id: string | null
+          city_name: string | null
+          created_at: string
+          id: string
+          last_checked_at: string
+          status: string
+          suggested_queries: Json
+          upcoming_count: number
+        }
+        Insert: {
+          city_id?: string | null
+          city_name?: string | null
+          created_at?: string
+          id?: string
+          last_checked_at?: string
+          status?: string
+          suggested_queries?: Json
+          upcoming_count?: number
+        }
+        Update: {
+          city_id?: string | null
+          city_name?: string | null
+          created_at?: string
+          id?: string
+          last_checked_at?: string
+          status?: string
+          suggested_queries?: Json
+          upcoming_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_coverage_gaps_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: true
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_coverage_gaps_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: true
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_favorites: {
         Row: {
           created_at: string
@@ -4919,6 +5310,54 @@ export type Database = {
           },
         ]
       }
+      event_quality_signals: {
+        Row: {
+          created_at: string
+          details: Json
+          event_id: string
+          id: string
+          signal_type: string
+          source: string | null
+          value: number
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          event_id: string
+          id?: string
+          signal_type: string
+          source?: string | null
+          value?: number
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          event_id?: string
+          id?: string
+          signal_type?: string
+          source?: string | null
+          value?: number
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_quality_signals_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_quality_signals_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_services: {
         Row: {
           category: string | null
@@ -5073,6 +5512,7 @@ export type Database = {
           event_type: string
           external_id: string | null
           festival_id: string | null
+          field_provenance: Json
           geo_linked_at: string | null
           group_id: string | null
           id: string
@@ -5083,8 +5523,10 @@ export type Database = {
           is_recurring: boolean | null
           last_refreshed_at: string | null
           last_synced_at: string | null
+          last_verified_at: string | null
           latitude: number | null
           lgbti_relevance_score: number | null
+          liveness_status: string
           logo_fetched_at: string | null
           logo_url: string | null
           longitude: number | null
@@ -5093,9 +5535,9 @@ export type Database = {
           organizer_contact: string | null
           organizer_id: string | null
           organizer_name: string | null
-          pride_subtypes: string[] | null
           price_max: number | null
           price_min: number | null
+          pride_subtypes: string[] | null
           quality_score: number | null
           queer_village_id: string | null
           recurrence_pattern: string | null
@@ -5107,13 +5549,14 @@ export type Database = {
           start_date: string
           state: string | null
           status: string | null
-          tags: string[] | null
+          tags: string[]
           target_groups: string[] | null
           ticket_url: string | null
           timezone: string | null
           title: string
           title_i18n: Json
           title_normalized: string | null
+          trust_score: number
           updated_at: string
           venue_id: string | null
           venue_name: string | null
@@ -5144,6 +5587,7 @@ export type Database = {
           event_type: string
           external_id?: string | null
           festival_id?: string | null
+          field_provenance?: Json
           geo_linked_at?: string | null
           group_id?: string | null
           id?: string
@@ -5154,8 +5598,10 @@ export type Database = {
           is_recurring?: boolean | null
           last_refreshed_at?: string | null
           last_synced_at?: string | null
+          last_verified_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
+          liveness_status?: string
           logo_fetched_at?: string | null
           logo_url?: string | null
           longitude?: number | null
@@ -5164,9 +5610,9 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
-          pride_subtypes?: string[] | null
           price_max?: number | null
           price_min?: number | null
+          pride_subtypes?: string[] | null
           quality_score?: number | null
           queer_village_id?: string | null
           recurrence_pattern?: string | null
@@ -5178,13 +5624,14 @@ export type Database = {
           start_date: string
           state?: string | null
           status?: string | null
-          tags?: string[] | null
+          tags?: string[]
           target_groups?: string[] | null
           ticket_url?: string | null
           timezone?: string | null
           title: string
           title_i18n?: Json
           title_normalized?: string | null
+          trust_score?: number
           updated_at?: string
           venue_id?: string | null
           venue_name?: string | null
@@ -5215,6 +5662,7 @@ export type Database = {
           event_type?: string
           external_id?: string | null
           festival_id?: string | null
+          field_provenance?: Json
           geo_linked_at?: string | null
           group_id?: string | null
           id?: string
@@ -5225,8 +5673,10 @@ export type Database = {
           is_recurring?: boolean | null
           last_refreshed_at?: string | null
           last_synced_at?: string | null
+          last_verified_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
+          liveness_status?: string
           logo_fetched_at?: string | null
           logo_url?: string | null
           longitude?: number | null
@@ -5235,9 +5685,9 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
-          pride_subtypes?: string[] | null
           price_max?: number | null
           price_min?: number | null
+          pride_subtypes?: string[] | null
           quality_score?: number | null
           queer_village_id?: string | null
           recurrence_pattern?: string | null
@@ -5249,13 +5699,14 @@ export type Database = {
           start_date?: string
           state?: string | null
           status?: string | null
-          tags?: string[] | null
+          tags?: string[]
           target_groups?: string[] | null
           ticket_url?: string | null
           timezone?: string | null
           title?: string
           title_i18n?: Json
           title_normalized?: string | null
+          trust_score?: number
           updated_at?: string
           venue_id?: string | null
           venue_name?: string | null
@@ -5344,13 +5795,6 @@ export type Database = {
             foreignKeyName: "events_organizer_id_fkey"
             columns: ["organizer_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "events_organizer_id_fkey"
-            columns: ["organizer_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -5360,13 +5804,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "queer_villages"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "events_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
           },
           {
             foreignKeyName: "events_venue_id_fkey"
@@ -6027,13 +6464,6 @@ export type Database = {
             foreignKeyName: "festivals_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "festivals_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -6128,13 +6558,6 @@ export type Database = {
             foreignKeyName: "flyer_scans_matched_venue_id_fkey"
             columns: ["matched_venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "flyer_scans_matched_venue_id_fkey"
-            columns: ["matched_venue_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -6188,6 +6611,36 @@ export type Database = {
           total_linked?: number
           total_processed?: number
           total_skipped?: number
+        }
+        Relationships: []
+      }
+      geo_relink_audit: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: number
+          method: string
+          new_city_id: string | null
+          old_city_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: never
+          method: string
+          new_city_id?: string | null
+          old_city_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: never
+          method?: string
+          new_city_id?: string | null
+          old_city_id?: string | null
         }
         Relationships: []
       }
@@ -6919,6 +7372,7 @@ export type Database = {
           description: string | null
           description_i18n: Json
           email: string | null
+          enrichment_status: Json | null
           external_id: string | null
           featured: boolean | null
           featured_priority: number | null
@@ -6926,11 +7380,16 @@ export type Database = {
           hotel_type: string
           id: string
           images: string[] | null
+          last_seen_at: string | null
+          last_verified_at: string | null
           latitude: number | null
           lgbtq_friendly: boolean | null
+          liveness_checked_at: string | null
+          liveness_status: string | null
           longitude: number | null
           name: string
           name_i18n: Json
+          payload_hash: string | null
           phone: string | null
           price_range: number | null
           queer_safety_notes: string | null
@@ -6958,6 +7417,7 @@ export type Database = {
           description?: string | null
           description_i18n?: Json
           email?: string | null
+          enrichment_status?: Json | null
           external_id?: string | null
           featured?: boolean | null
           featured_priority?: number | null
@@ -6965,11 +7425,16 @@ export type Database = {
           hotel_type?: string
           id?: string
           images?: string[] | null
+          last_seen_at?: string | null
+          last_verified_at?: string | null
           latitude?: number | null
           lgbtq_friendly?: boolean | null
+          liveness_checked_at?: string | null
+          liveness_status?: string | null
           longitude?: number | null
           name: string
           name_i18n?: Json
+          payload_hash?: string | null
           phone?: string | null
           price_range?: number | null
           queer_safety_notes?: string | null
@@ -6997,6 +7462,7 @@ export type Database = {
           description?: string | null
           description_i18n?: Json
           email?: string | null
+          enrichment_status?: Json | null
           external_id?: string | null
           featured?: boolean | null
           featured_priority?: number | null
@@ -7004,11 +7470,16 @@ export type Database = {
           hotel_type?: string
           id?: string
           images?: string[] | null
+          last_seen_at?: string | null
+          last_verified_at?: string | null
           latitude?: number | null
           lgbtq_friendly?: boolean | null
+          liveness_checked_at?: string | null
+          liveness_status?: string | null
           longitude?: number | null
           name?: string
           name_i18n?: Json
+          payload_hash?: string | null
           phone?: string | null
           price_range?: number | null
           queer_safety_notes?: string | null
@@ -7723,13 +8194,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pipeline_stuck_items"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ingestion_events_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
           },
           {
             foreignKeyName: "ingestion_events_venue_id_fkey"
@@ -8552,6 +9016,66 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_brands: {
+        Row: {
+          brand_key: string
+          confidence: number | null
+          created_at: string
+          detection_source: string
+          display_name: string
+          evidence: string | null
+          id: string
+          ownership_tags: string[]
+          product_count: number
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_note: string | null
+          sample_url: string | null
+          status: string
+          suggested_tags: string[]
+          top_source: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand_key: string
+          confidence?: number | null
+          created_at?: string
+          detection_source?: string
+          display_name: string
+          evidence?: string | null
+          id?: string
+          ownership_tags?: string[]
+          product_count?: number
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          sample_url?: string | null
+          status?: string
+          suggested_tags?: string[]
+          top_source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand_key?: string
+          confidence?: number | null
+          created_at?: string
+          detection_source?: string
+          display_name?: string
+          evidence?: string | null
+          id?: string
+          ownership_tags?: string[]
+          product_count?: number
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          sample_url?: string | null
+          status?: string
+          suggested_tags?: string[]
+          top_source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       marketplace_categories: {
         Row: {
           created_at: string
@@ -9014,9 +9538,11 @@ export type Database = {
           community_owned_tags: string[]
           contact_email: string | null
           contact_phone: string | null
+          content_rating: string | null
           created_at: string
           created_by: string | null
           currency: string | null
+          department: string | null
           deprecated_at: string | null
           description: string | null
           description_i18n: Json
@@ -9029,6 +9555,7 @@ export type Database = {
           last_seen_at: string | null
           last_verified_at: string | null
           lgbti_relevance_score: number | null
+          link_checked_at: string | null
           link_health: string | null
           location: string | null
           merchant_domain: string | null
@@ -9049,6 +9576,7 @@ export type Database = {
           status: string | null
           subcategory: string | null
           subcategory_slug: string | null
+          tagged_at: string | null
           title: string
           title_i18n: Json
           title_normalized: string | null
@@ -9069,9 +9597,11 @@ export type Database = {
           community_owned_tags?: string[]
           contact_email?: string | null
           contact_phone?: string | null
+          content_rating?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
+          department?: string | null
           deprecated_at?: string | null
           description?: string | null
           description_i18n?: Json
@@ -9084,6 +9614,7 @@ export type Database = {
           last_seen_at?: string | null
           last_verified_at?: string | null
           lgbti_relevance_score?: number | null
+          link_checked_at?: string | null
           link_health?: string | null
           location?: string | null
           merchant_domain?: string | null
@@ -9104,6 +9635,7 @@ export type Database = {
           status?: string | null
           subcategory?: string | null
           subcategory_slug?: string | null
+          tagged_at?: string | null
           title: string
           title_i18n?: Json
           title_normalized?: string | null
@@ -9124,9 +9656,11 @@ export type Database = {
           community_owned_tags?: string[]
           contact_email?: string | null
           contact_phone?: string | null
+          content_rating?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
+          department?: string | null
           deprecated_at?: string | null
           description?: string | null
           description_i18n?: Json
@@ -9139,6 +9673,7 @@ export type Database = {
           last_seen_at?: string | null
           last_verified_at?: string | null
           lgbti_relevance_score?: number | null
+          link_checked_at?: string | null
           link_health?: string | null
           location?: string | null
           merchant_domain?: string | null
@@ -9159,6 +9694,7 @@ export type Database = {
           status?: string | null
           subcategory?: string | null
           subcategory_slug?: string | null
+          tagged_at?: string | null
           title?: string
           title_i18n?: Json
           title_normalized?: string | null
@@ -9209,13 +9745,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "affiliate_partners"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "marketplace_listings_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
           },
           {
             foreignKeyName: "marketplace_listings_venue_id_fkey"
@@ -9325,6 +9854,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "marketplace_price_history_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_review_queue: {
+        Row: {
+          citations: Json
+          confidence: number | null
+          created_at: string
+          field: string
+          id: string
+          listing_id: string
+          model: string | null
+          proposed_value: Json
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_note: string | null
+          status: string
+        }
+        Insert: {
+          citations?: Json
+          confidence?: number | null
+          created_at?: string
+          field?: string
+          id?: string
+          listing_id: string
+          model?: string | null
+          proposed_value: Json
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          status?: string
+        }
+        Update: {
+          citations?: Json
+          confidence?: number | null
+          created_at?: string
+          field?: string
+          id?: string
+          listing_id?: string
+          model?: string | null
+          proposed_value?: Json
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_review_queue_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "marketplace_listings"
@@ -9783,6 +10365,7 @@ export type Database = {
           classified_at: string | null
           content: string | null
           content_hash: string | null
+          corroboration_count: number
           country_ids: string[] | null
           created_at: string
           description_i18n: Json
@@ -9798,11 +10381,13 @@ export type Database = {
           image_url: string | null
           ingestion_run_id: string | null
           ingestion_staging_id: string | null
+          integrity_flags: string[]
           is_editors_pick: boolean
           is_featured: boolean | null
           is_premium: boolean
           last_quality_run_at: string | null
           last_seen_at: string | null
+          last_verified_at: string | null
           lgbti_relevance_score: number | null
           needs_attention: boolean | null
           published_at: string
@@ -9822,6 +10407,7 @@ export type Database = {
           tags: string[] | null
           title: string
           title_i18n: Json
+          trust_score: number
           updated_at: string
           url: string
           views_count: number | null
@@ -9836,6 +10422,7 @@ export type Database = {
           classified_at?: string | null
           content?: string | null
           content_hash?: string | null
+          corroboration_count?: number
           country_ids?: string[] | null
           created_at?: string
           description_i18n?: Json
@@ -9851,11 +10438,13 @@ export type Database = {
           image_url?: string | null
           ingestion_run_id?: string | null
           ingestion_staging_id?: string | null
+          integrity_flags?: string[]
           is_editors_pick?: boolean
           is_featured?: boolean | null
           is_premium?: boolean
           last_quality_run_at?: string | null
           last_seen_at?: string | null
+          last_verified_at?: string | null
           lgbti_relevance_score?: number | null
           needs_attention?: boolean | null
           published_at: string
@@ -9875,6 +10464,7 @@ export type Database = {
           tags?: string[] | null
           title: string
           title_i18n?: Json
+          trust_score?: number
           updated_at?: string
           url: string
           views_count?: number | null
@@ -9889,6 +10479,7 @@ export type Database = {
           classified_at?: string | null
           content?: string | null
           content_hash?: string | null
+          corroboration_count?: number
           country_ids?: string[] | null
           created_at?: string
           description_i18n?: Json
@@ -9904,11 +10495,13 @@ export type Database = {
           image_url?: string | null
           ingestion_run_id?: string | null
           ingestion_staging_id?: string | null
+          integrity_flags?: string[]
           is_editors_pick?: boolean
           is_featured?: boolean | null
           is_premium?: boolean
           last_quality_run_at?: string | null
           last_seen_at?: string | null
+          last_verified_at?: string | null
           lgbti_relevance_score?: number | null
           needs_attention?: boolean | null
           published_at?: string
@@ -9928,6 +10521,7 @@ export type Database = {
           tags?: string[] | null
           title?: string
           title_i18n?: Json
+          trust_score?: number
           updated_at?: string
           url?: string
           views_count?: number | null
@@ -9946,6 +10540,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pipeline_runs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_articles_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "news_quality_source_health"
+            referencedColumns: ["source_id"]
           },
           {
             foreignKeyName: "news_articles_source_id_fkey"
@@ -10148,6 +10749,13 @@ export type Database = {
             foreignKeyName: "news_dedup_audit_source_id_fkey"
             columns: ["source_id"]
             isOneToOne: false
+            referencedRelation: "news_quality_source_health"
+            referencedColumns: ["source_id"]
+          },
+          {
+            foreignKeyName: "news_dedup_audit_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
             referencedRelation: "news_sources"
             referencedColumns: ["id"]
           },
@@ -10173,6 +10781,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      news_feedback_events: {
+        Row: {
+          actor_id: string | null
+          after: Json | null
+          article_id: string | null
+          before: Json | null
+          changed_fields: string[]
+          created_at: string
+          detail: Json
+          event_type: string
+          id: string
+          source_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          after?: Json | null
+          article_id?: string | null
+          before?: Json | null
+          changed_fields?: string[]
+          created_at?: string
+          detail?: Json
+          event_type: string
+          id?: string
+          source_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          after?: Json | null
+          article_id?: string | null
+          before?: Json | null
+          changed_fields?: string[]
+          created_at?: string
+          detail?: Json
+          event_type?: string
+          id?: string
+          source_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_feedback_events_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       news_quality_settings: {
         Row: {
@@ -10203,6 +10858,47 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: []
+      }
+      news_quality_signals: {
+        Row: {
+          article_id: string
+          created_at: string
+          details: Json
+          id: string
+          signal_type: string
+          source: string | null
+          value: number
+          weight: number
+        }
+        Insert: {
+          article_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          signal_type: string
+          source?: string | null
+          value?: number
+          weight?: number
+        }
+        Update: {
+          article_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          signal_type?: string
+          source?: string | null
+          value?: number
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_quality_signals_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       news_sources: {
         Row: {
@@ -10291,12 +10987,15 @@ export type Database = {
       news_stories: {
         Row: {
           article_count: number
+          corroborating_source_ids: string[]
+          corroboration_count: number
           country_ids: string[]
           created_at: string
           embedding: string | null
           first_seen_at: string
           hero_article_id: string | null
           id: string
+          integrity_flags: string[]
           last_updated_at: string
           slug: string
           summary: string | null
@@ -10305,12 +11004,15 @@ export type Database = {
         }
         Insert: {
           article_count?: number
+          corroborating_source_ids?: string[]
+          corroboration_count?: number
           country_ids?: string[]
           created_at?: string
           embedding?: string | null
           first_seen_at?: string
           hero_article_id?: string | null
           id?: string
+          integrity_flags?: string[]
           last_updated_at?: string
           slug: string
           summary?: string | null
@@ -10319,12 +11021,15 @@ export type Database = {
         }
         Update: {
           article_count?: number
+          corroborating_source_ids?: string[]
+          corroboration_count?: number
           country_ids?: string[]
           created_at?: string
           embedding?: string | null
           first_seen_at?: string
           hero_article_id?: string | null
           id?: string
+          integrity_flags?: string[]
           last_updated_at?: string
           slug?: string
           summary?: string | null
@@ -10366,6 +11071,13 @@ export type Database = {
             columns: ["article_id"]
             isOneToOne: false
             referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_story_articles_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "news_corroborated_stories"
             referencedColumns: ["id"]
           },
           {
@@ -10460,27 +11172,30 @@ export type Database = {
       passkey_challenges: {
         Row: {
           action: string
-          challenge: number[]
+          challenge: number[] | null
+          challenge_b64: string | null
           created_at: string
           expires_at: string
           id: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           action: string
-          challenge: number[]
+          challenge?: number[] | null
+          challenge_b64?: string | null
           created_at?: string
           expires_at: string
           id?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           action?: string
-          challenge?: number[]
+          challenge?: number[] | null
+          challenge_b64?: string | null
           created_at?: string
           expires_at?: string
           id?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -10514,6 +11229,7 @@ export type Database = {
           is_living: boolean | null
           last_refreshed_at: string | null
           lgbti_connection: string | null
+          lgbti_connection_source: string | null
           lgbti_details: string | null
           lgbti_relevance_score: number | null
           name: string
@@ -10573,6 +11289,7 @@ export type Database = {
           is_living?: boolean | null
           last_refreshed_at?: string | null
           lgbti_connection?: string | null
+          lgbti_connection_source?: string | null
           lgbti_details?: string | null
           lgbti_relevance_score?: number | null
           name: string
@@ -10632,6 +11349,7 @@ export type Database = {
           is_living?: boolean | null
           last_refreshed_at?: string | null
           lgbti_connection?: string | null
+          lgbti_connection_source?: string | null
           lgbti_details?: string | null
           lgbti_relevance_score?: number | null
           name?: string
@@ -10712,6 +11430,13 @@ export type Database = {
             referencedRelation: "personalities"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "personalities_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
+            isOneToOne: false
+            referencedRelation: "personality_data_health"
+            referencedColumns: ["id"]
+          },
         ]
       }
       personality_internal_notes: {
@@ -10739,6 +11464,134 @@ export type Database = {
             columns: ["personality_id"]
             isOneToOne: true
             referencedRelation: "personalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personality_internal_notes_personality_id_fkey"
+            columns: ["personality_id"]
+            isOneToOne: true
+            referencedRelation: "personality_data_health"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personality_profession_tags: {
+        Row: {
+          created_at: string
+          id: number
+          profession_kw: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          profession_kw: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          profession_kw?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personality_profession_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personality_profession_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personality_profession_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personality_profession_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personality_relationships: {
+        Row: {
+          created_at: string
+          detail: Json | null
+          id: number
+          relationship_type: string
+          source: string
+          source_personality_id: string
+          target_entity_id: string | null
+          target_personality_id: string | null
+          target_type: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          detail?: Json | null
+          id?: number
+          relationship_type: string
+          source?: string
+          source_personality_id: string
+          target_entity_id?: string | null
+          target_personality_id?: string | null
+          target_type: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          detail?: Json | null
+          id?: number
+          relationship_type?: string
+          source?: string
+          source_personality_id?: string
+          target_entity_id?: string | null
+          target_personality_id?: string | null
+          target_type?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personality_relationships_source_personality_id_fkey"
+            columns: ["source_personality_id"]
+            isOneToOne: false
+            referencedRelation: "personalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personality_relationships_source_personality_id_fkey"
+            columns: ["source_personality_id"]
+            isOneToOne: false
+            referencedRelation: "personality_data_health"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personality_relationships_target_personality_id_fkey"
+            columns: ["target_personality_id"]
+            isOneToOne: false
+            referencedRelation: "personalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personality_relationships_target_personality_id_fkey"
+            columns: ["target_personality_id"]
+            isOneToOne: false
+            referencedRelation: "personality_data_health"
             referencedColumns: ["id"]
           },
         ]
@@ -10789,6 +11642,13 @@ export type Database = {
             columns: ["personality_id"]
             isOneToOne: false
             referencedRelation: "personalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personality_sources_personality_id_fkey"
+            columns: ["personality_id"]
+            isOneToOne: false
+            referencedRelation: "personality_data_health"
             referencedColumns: ["id"]
           },
         ]
@@ -11393,35 +12253,47 @@ export type Database = {
       }
       professions: {
         Row: {
+          aliases: string[]
+          category: string | null
           color: string | null
           created_at: string | null
           description: string | null
           icon: string | null
+          icon_name: string | null
           id: string
           is_active: boolean
           name: string
+          slug: string | null
           sort_order: number | null
           updated_at: string | null
         }
         Insert: {
+          aliases?: string[]
+          category?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
           icon?: string | null
+          icon_name?: string | null
           id?: string
           is_active?: boolean
           name: string
+          slug?: string | null
           sort_order?: number | null
           updated_at?: string | null
         }
         Update: {
+          aliases?: string[]
+          category?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
           icon?: string | null
+          icon_name?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          slug?: string | null
           sort_order?: number | null
           updated_at?: string | null
         }
@@ -13543,6 +14415,113 @@ export type Database = {
         }
         Relationships: []
       }
+      search_documents: {
+        Row: {
+          city: string | null
+          closed_at: string | null
+          content_language: string | null
+          country: string | null
+          description: string | null
+          doc_id: string
+          end_date: string | null
+          entity_id: string
+          entity_type: string
+          facets: Json
+          geog: unknown
+          image_url: string | null
+          is_featured: boolean
+          is_free: boolean | null
+          lgbtq_score: number
+          liveness_status: string | null
+          price_max: number | null
+          price_min: number | null
+          quality_score: number | null
+          search_tsv: unknown
+          slug: string | null
+          start_date: string | null
+          title: string | null
+          trust_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          closed_at?: string | null
+          content_language?: string | null
+          country?: string | null
+          description?: string | null
+          doc_id: string
+          end_date?: string | null
+          entity_id: string
+          entity_type: string
+          facets?: Json
+          geog?: unknown
+          image_url?: string | null
+          is_featured?: boolean
+          is_free?: boolean | null
+          lgbtq_score?: number
+          liveness_status?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          quality_score?: number | null
+          search_tsv?: unknown
+          slug?: string | null
+          start_date?: string | null
+          title?: string | null
+          trust_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          closed_at?: string | null
+          content_language?: string | null
+          country?: string | null
+          description?: string | null
+          doc_id?: string
+          end_date?: string | null
+          entity_id?: string
+          entity_type?: string
+          facets?: Json
+          geog?: unknown
+          image_url?: string | null
+          is_featured?: boolean
+          is_free?: boolean | null
+          lgbtq_score?: number
+          liveness_status?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          quality_score?: number | null
+          search_tsv?: unknown
+          slug?: string | null
+          start_date?: string | null
+          title?: string | null
+          trust_score?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      search_embeddings: {
+        Row: {
+          doc_id: string
+          embedding: string | null
+        }
+        Insert: {
+          doc_id: string
+          embedding?: string | null
+        }
+        Update: {
+          doc_id?: string
+          embedding?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_embeddings_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: true
+            referencedRelation: "search_documents"
+            referencedColumns: ["doc_id"]
+          },
+        ]
+      }
       search_queries: {
         Row: {
           clicked_entity_id: string | null
@@ -13666,6 +14645,42 @@ export type Database = {
           index_name?: string
           settings?: Json
           version?: number
+        }
+        Relationships: []
+      }
+      search_shadow_log: {
+        Row: {
+          created_at: string
+          fn: string | null
+          id: number
+          meili_top: Json | null
+          overlap_at_10: number
+          pg_ms: number | null
+          pg_top: Json | null
+          pg_total: number | null
+          q: string
+        }
+        Insert: {
+          created_at?: string
+          fn?: string | null
+          id?: never
+          meili_top?: Json | null
+          overlap_at_10: number
+          pg_ms?: number | null
+          pg_top?: Json | null
+          pg_total?: number | null
+          q: string
+        }
+        Update: {
+          created_at?: string
+          fn?: string | null
+          id?: never
+          meili_top?: Json | null
+          overlap_at_10?: number
+          pg_ms?: number | null
+          pg_top?: Json | null
+          pg_total?: number | null
+          q?: string
         }
         Relationships: []
       }
@@ -15888,13 +16903,6 @@ export type Database = {
             foreignKeyName: "trip_places_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "trip_places_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -16487,11 +17495,14 @@ export type Database = {
           image_url: string | null
           is_adult: boolean
           is_sensitive: boolean | null
+          last_quality_at: string | null
           last_verified_at: string | null
           long_description: string | null
           merged_into_id: string | null
           name: string
           name_i18n: Json
+          quality_breakdown: Json | null
+          quality_score: number | null
           scientific_data: Json | null
           sensitive_topics: string[] | null
           seo_indexable: boolean
@@ -16527,11 +17538,14 @@ export type Database = {
           image_url?: string | null
           is_adult?: boolean
           is_sensitive?: boolean | null
+          last_quality_at?: string | null
           last_verified_at?: string | null
           long_description?: string | null
           merged_into_id?: string | null
           name: string
           name_i18n?: Json
+          quality_breakdown?: Json | null
+          quality_score?: number | null
           scientific_data?: Json | null
           sensitive_topics?: string[] | null
           seo_indexable?: boolean
@@ -16567,11 +17581,14 @@ export type Database = {
           image_url?: string | null
           is_adult?: boolean
           is_sensitive?: boolean | null
+          last_quality_at?: string | null
           last_verified_at?: string | null
           long_description?: string | null
           merged_into_id?: string | null
           name?: string
           name_i18n?: Json
+          quality_breakdown?: Json | null
+          quality_score?: number | null
           scientific_data?: Json | null
           sensitive_topics?: string[] | null
           seo_indexable?: boolean
@@ -16988,6 +18005,7 @@ export type Database = {
       }
       user_passkeys: {
         Row: {
+          aaguid: string | null
           counter: number
           created_at: string
           credential_id: string
@@ -16996,11 +18014,14 @@ export type Database = {
           is_revoked: boolean
           last_used_at: string | null
           passkey_encryption_key_id: string | null
-          public_key: string
+          public_key: string | null
+          public_key_b64: string | null
           public_key_encrypted: string | null
+          transports: string[] | null
           user_id: string
         }
         Insert: {
+          aaguid?: string | null
           counter?: number
           created_at?: string
           credential_id: string
@@ -17009,11 +18030,14 @@ export type Database = {
           is_revoked?: boolean
           last_used_at?: string | null
           passkey_encryption_key_id?: string | null
-          public_key: string
+          public_key?: string | null
+          public_key_b64?: string | null
           public_key_encrypted?: string | null
+          transports?: string[] | null
           user_id: string
         }
         Update: {
+          aaguid?: string | null
           counter?: number
           created_at?: string
           credential_id?: string
@@ -17022,8 +18046,10 @@ export type Database = {
           is_revoked?: boolean
           last_used_at?: string | null
           passkey_encryption_key_id?: string | null
-          public_key?: string
+          public_key?: string | null
+          public_key_b64?: string | null
           public_key_encrypted?: string | null
+          transports?: string[] | null
           user_id?: string
         }
         Relationships: []
@@ -17269,6 +18295,33 @@ export type Database = {
           role_changed?: Database["public"]["Enums"]["app_role"]
           target_user_id?: string
           timestamp?: string
+        }
+        Relationships: []
+      }
+      user_role_permissions: {
+        Row: {
+          content_type: string
+          created_at: string
+          id: string
+          permissions: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          id?: string
+          permissions?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          id?: string
+          permissions?: string[]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -17621,13 +18674,6 @@ export type Database = {
             foreignKeyName: "venue_checkins_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "venue_checkins_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -17669,17 +18715,81 @@ export type Database = {
             foreignKeyName: "venue_closed_audit_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
+        ]
+      }
+      venue_coord_fixes: {
+        Row: {
+          city_id: string | null
+          created_at: string
+          id: number
+          km_before: number | null
+          mode: string
+          new_lat: number | null
+          new_lng: number | null
+          old_lat: number | null
+          old_lng: number | null
+          source: string
+          venue_id: string
+        }
+        Insert: {
+          city_id?: string | null
+          created_at?: string
+          id?: never
+          km_before?: number | null
+          mode: string
+          new_lat?: number | null
+          new_lng?: number | null
+          old_lat?: number | null
+          old_lng?: number | null
+          source?: string
+          venue_id: string
+        }
+        Update: {
+          city_id?: string | null
+          created_at?: string
+          id?: never
+          km_before?: number | null
+          mode?: string
+          new_lat?: number | null
+          new_lng?: number | null
+          old_lat?: number | null
+          old_lng?: number | null
+          source?: string
+          venue_id?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "venue_closed_audit_venue_id_fkey"
+            foreignKeyName: "venue_coord_fixes_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
         ]
+      }
+      venue_dup_chain_fix_backup: {
+        Row: {
+          fixed_at: string
+          new_duplicate_of_id: string
+          old_duplicate_of_id: string
+          venue_id: string
+        }
+        Insert: {
+          fixed_at?: string
+          new_duplicate_of_id: string
+          old_duplicate_of_id: string
+          venue_id: string
+        }
+        Update: {
+          fixed_at?: string
+          new_duplicate_of_id?: string
+          old_duplicate_of_id?: string
+          venue_id?: string
+        }
+        Relationships: []
       }
       venue_event_staging: {
         Row: {
@@ -17816,13 +18926,6 @@ export type Database = {
             foreignKeyName: "venue_field_conflicts_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "venue_field_conflicts_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -17872,13 +18975,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "venue_guides"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "venue_guide_picks_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
           },
           {
             foreignKeyName: "venue_guide_picks_venue_id_fkey"
@@ -18040,6 +19136,51 @@ export type Database = {
           },
         ]
       }
+      venue_merge_audit: {
+        Row: {
+          actor: string | null
+          created_at: string
+          drop_id: string
+          id: string
+          keep_id: string
+          reparented: Json
+          undone_at: string | null
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string
+          drop_id: string
+          id?: string
+          keep_id: string
+          reparented?: Json
+          undone_at?: string | null
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string
+          drop_id?: string
+          id?: string
+          keep_id?: string
+          reparented?: Json
+          undone_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_merge_audit_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venue_merge_audit_keep_id_fkey"
+            columns: ["keep_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       venue_personal_visits: {
         Row: {
           user_id: string
@@ -18061,11 +19202,45 @@ export type Database = {
             foreignKeyName: "venue_personal_visits_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
+        ]
+      }
+      venue_quality_signals: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          signal_type: string
+          source: string | null
+          value: number
+          venue_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          signal_type: string
+          source?: string | null
+          value?: number
+          venue_id: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          signal_type?: string
+          source?: string | null
+          value?: number
+          venue_id?: string
+          weight?: number
+        }
+        Relationships: [
           {
-            foreignKeyName: "venue_personal_visits_venue_id_fkey"
+            foreignKeyName: "venue_quality_signals_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
             referencedRelation: "venues"
@@ -18093,6 +19268,59 @@ export type Database = {
           slug_to?: string
         }
         Relationships: []
+      }
+      venue_review_queue: {
+        Row: {
+          citations: Json
+          confidence: number | null
+          created_at: string
+          field: string
+          id: string
+          model: string | null
+          proposed_value: Json
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_note: string | null
+          status: string
+          venue_id: string
+        }
+        Insert: {
+          citations?: Json
+          confidence?: number | null
+          created_at?: string
+          field: string
+          id?: string
+          model?: string | null
+          proposed_value: Json
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          status?: string
+          venue_id: string
+        }
+        Update: {
+          citations?: Json
+          confidence?: number | null
+          created_at?: string
+          field?: string
+          id?: string
+          model?: string | null
+          proposed_value?: Json
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          status?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_review_queue_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       venue_reviews: {
         Row: {
@@ -18161,13 +19389,6 @@ export type Database = {
             foreignKeyName: "venue_reviews_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "venue_reviews_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -18208,13 +19429,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "safety_signal_questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "venue_safety_signals_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
           },
           {
             foreignKeyName: "venue_safety_signals_venue_id_fkey"
@@ -18264,6 +19478,32 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_slug_redirects: {
+        Row: {
+          created_at: string
+          old_slug: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string
+          old_slug: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string
+          old_slug?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_slug_redirects_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       venue_sources: {
         Row: {
           confidence: number | null
@@ -18309,13 +19549,6 @@ export type Database = {
             foreignKeyName: "venue_sources_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "venue_sources_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -18341,13 +19574,6 @@ export type Database = {
           venue_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "venue_tag_assignments_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
           {
             foreignKeyName: "venue_tag_assignments_venue_id_fkey"
             columns: ["venue_id"]
@@ -18653,13 +19879,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "safe_profiles"
             referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "venues_duplicate_of_id_fkey"
-            columns: ["duplicate_of_id"]
-            isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
           },
           {
             foreignKeyName: "venues_duplicate_of_id_fkey"
@@ -19354,6 +20573,36 @@ export type Database = {
         }
         Relationships: []
       }
+      donor_wall: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          currency: string | null
+          donation_type: string | null
+          donor_name: string | null
+          id: string | null
+          message: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          donation_type?: string | null
+          donor_name?: string | null
+          id?: string | null
+          message?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          donation_type?: string | null
+          donor_name?: string | null
+          id?: string | null
+          message?: string | null
+        }
+        Relationships: []
+      }
       entity_cluster_membership: {
         Row: {
           cluster_ids: string[] | null
@@ -19453,13 +20702,6 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "events_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
           {
             foreignKeyName: "events_venue_id_fkey"
             columns: ["venue_id"]
@@ -19576,6 +20818,54 @@ export type Database = {
           },
         ]
       }
+      mv_entity_popularity: {
+        Row: {
+          content_id: string | null
+          content_type: string | null
+          pn: number | null
+          score: number | null
+        }
+        Relationships: []
+      }
+      news_corroborated_stories: {
+        Row: {
+          article_count: number | null
+          corroborating_source_ids: string[] | null
+          corroboration_count: number | null
+          country_ids: string[] | null
+          id: string | null
+          integrity_flags: string[] | null
+          last_updated_at: string | null
+          slug: string | null
+          title: string | null
+          top_tags: string[] | null
+        }
+        Insert: {
+          article_count?: number | null
+          corroborating_source_ids?: string[] | null
+          corroboration_count?: number | null
+          country_ids?: string[] | null
+          id?: string | null
+          integrity_flags?: string[] | null
+          last_updated_at?: string | null
+          slug?: string | null
+          title?: string | null
+          top_tags?: string[] | null
+        }
+        Update: {
+          article_count?: number | null
+          corroborating_source_ids?: string[] | null
+          corroboration_count?: number | null
+          country_ids?: string[] | null
+          id?: string | null
+          integrity_flags?: string[] | null
+          last_updated_at?: string | null
+          slug?: string | null
+          title?: string | null
+          top_tags?: string[] | null
+        }
+        Relationships: []
+      }
       news_image_duplicates: {
         Row: {
           article_ids: string[] | null
@@ -19602,37 +20892,86 @@ export type Database = {
         }
         Relationships: []
       }
-      news_quality_source_health: {
+      news_quality_scorecard: {
         Row: {
           avg_quality: number | null
           avg_relevance: number | null
+          corroborated: number | null
+          last_30d: number | null
+          last_run_at: string | null
+          needs_attention: number | null
+          no_author: number | null
+          no_city: number | null
+          no_excerpt: number | null
+          no_geo: number | null
+          no_image: number | null
+          no_tags: number | null
+          qstatus_null: number | null
+          qstatus_passed: number | null
+          qstatus_rejected: number | null
+          qstatus_review: number | null
+          thin_lt200: number | null
+          thin_lt500: number | null
+          total_live: number | null
+        }
+        Relationships: []
+      }
+      news_quality_source_health: {
+        Row: {
+          auto_paused: boolean | null
+          avg_quality: number | null
+          avg_relevance: number | null
+          is_active: boolean | null
           last_run_at: string | null
           legacy: number | null
+          no_geo: number | null
+          no_tags: number | null
           passed: number | null
           reject_rate: number | null
           rejected: number | null
+          reliability_score: number | null
           review: number | null
           source_id: string | null
           source_name: string | null
+          thin: number | null
           total: number | null
+        }
+        Relationships: []
+      }
+      news_source_editor_feedback: {
+        Row: {
+          accept_rate: number | null
+          approvals: number | null
+          decisions: number | null
+          edits: number | null
+          last_feedback_at: string | null
+          rejections: number | null
+          reverts: number | null
+          source_id: string | null
+          source_name: string | null
         }
         Relationships: []
       }
       personality_data_health: {
         Row: {
-          avg_quality: number | null
-          draft_rows: number | null
-          known_duplicates: number | null
-          missing_description: number | null
-          missing_image: number | null
-          missing_lgbti: number | null
-          missing_qid: number | null
-          needs_attention: number | null
-          open_reviews: number | null
-          pending_verification: number | null
-          public_rows: number | null
-          total: number | null
-          verified: number | null
+          birth_date_missing: boolean | null
+          connection_missing: boolean | null
+          death_date: string | null
+          debt_score: number | null
+          description_missing: boolean | null
+          id: string | null
+          image_missing: boolean | null
+          is_living: boolean | null
+          is_stale: boolean | null
+          last_refreshed_at: string | null
+          name: string | null
+          nationality_missing: boolean | null
+          priority: number | null
+          profession_missing: boolean | null
+          quality_score: number | null
+          ttl_days: number | null
+          view_count: number | null
+          wikidata_qid_missing: boolean | null
         }
         Relationships: []
       }
@@ -20193,13 +21532,6 @@ export type Database = {
             foreignKeyName: "venue_checkins_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: "news_quality_source_health"
-            referencedColumns: ["source_id"]
-          },
-          {
-            foreignKeyName: "venue_checkins_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
@@ -20343,6 +21675,17 @@ export type Database = {
         Args: { p_action: string; p_user_id: string }
         Returns: Json
       }
+      admin_synonyms_counts: { Args: never; Returns: Json }
+      admin_synonyms_list: {
+        Args: {
+          p_limit?: number
+          p_locale?: string
+          p_offset?: number
+          p_q?: string
+          p_status?: string
+        }
+        Returns: Json
+      }
       anonymize_location_data: {
         Args: { p_days_old?: number }
         Returns: number
@@ -20360,6 +21703,10 @@ export type Database = {
           p_status?: string
         }
         Returns: string
+      }
+      approve_city_review: {
+        Args: { p_confirm?: boolean; p_id: string; p_note?: string }
+        Returns: Json
       }
       approve_editorial_draft: {
         Args: { p_draft_id: string }
@@ -20384,6 +21731,19 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      approve_marketplace_brand: {
+        Args: {
+          p_brand_id: string
+          p_confirm?: boolean
+          p_note?: string
+          p_tags: string[]
+        }
+        Returns: Json
+      }
+      approve_marketplace_review: {
+        Args: { p_id: string; p_note?: string }
+        Returns: Json
+      }
       approve_story_for_claude: {
         Args: { p_note?: string; p_story_id: string }
         Returns: string
@@ -20391,6 +21751,14 @@ export type Database = {
       approve_tag_suggestions: {
         Args: { p_reviewer_id?: string; p_suggestion_ids: string[] }
         Returns: number
+      }
+      approve_venue_review: {
+        Args: { p_id: string; p_note?: string }
+        Returns: Json
+      }
+      archive_personality_as_nonperson: {
+        Args: { p_id: string; p_reason?: string; p_signals?: Json }
+        Returns: Json
       }
       archive_story: {
         Args: { p_reason?: string; p_story_id: string }
@@ -20424,6 +21792,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      assert_search_hybrid_contract: { Args: never; Returns: string }
+      assign_personality_profession_tags: {
+        Args: { p_dry_run?: boolean; p_limit?: number }
+        Returns: {
+          out_personality_id: string
+          out_tag_id: string
+        }[]
       }
       assign_user_role: {
         Args: { role_name: string; user_id: string }
@@ -20480,10 +21856,19 @@ export type Database = {
         Args: { p_submission_id: string }
         Returns: string
       }
+      backfill_personality_geo: {
+        Args: { p_dry_run?: boolean; p_limit?: number }
+        Returns: {
+          out_city_id: string
+          out_country_id: string
+          out_personality_id: string
+        }[]
+      }
       basic_rate_limit: {
         Args: { identifier: string; max_attempts?: number }
         Returns: boolean
       }
+      batch_approve_safe_city_reviews: { Args: never; Returns: Json }
       batch_find_duplicates: {
         Args: { p_batch_limit?: number; p_target_table?: string }
         Returns: Json
@@ -20500,6 +21885,20 @@ export type Database = {
           similarity: number
           tag_id: string
           tag_name: string
+        }[]
+      }
+      build_personality_relationships: {
+        Args: {
+          p_dry_run?: boolean
+          p_limit?: number
+          p_per_node?: number
+          p_tag_max?: number
+        }
+        Returns: {
+          relationship_type: string
+          source_id: string
+          target_id: string
+          weight: number
         }[]
       }
       bulk_apply_batch_changes:
@@ -20611,6 +22010,23 @@ export type Database = {
         Args: { p_api_name: string }
         Returns: undefined
       }
+      cities_due_for_refresh: {
+        Args: { p_limit?: number }
+        Returns: {
+          completeness_score: number
+          country_id: string
+          description: string
+          id: string
+          last_refreshed_at: string
+          latitude: number
+          longitude: number
+          name: string
+          official_website: string
+          refresh_reason: string
+          shell_status: string
+          slug: string
+        }[]
+      }
       city_canonical_key: { Args: { p_name: string }; Returns: string }
       city_markable_totals: {
         Args: { p_city_id: string }
@@ -20641,6 +22057,10 @@ export type Database = {
         Returns: boolean
       }
       cms_run_scheduled_publish: { Args: never; Returns: undefined }
+      collapse_duplicate_image_assets: {
+        Args: { p_limit?: number }
+        Returns: number
+      }
       commit_city_staging_batch: {
         Args: { p_limit?: number }
         Returns: {
@@ -20684,6 +22104,14 @@ export type Database = {
         Returns: {
           action: string
           event_id: string
+        }[]
+      }
+      commit_hotel_staging_batch: {
+        Args: { p_limit?: number; p_pipeline_run_id?: string }
+        Returns: {
+          action: string
+          hotel_id: string
+          staging_id: string
         }[]
       }
       commit_marketplace_staging_batch: {
@@ -20746,6 +22174,8 @@ export type Database = {
           village_id: string
         }[]
       }
+      compose_safety_note: { Args: { p: Json }; Returns: Json }
+      compute_city_completeness: { Args: { p_id: string }; Returns: number }
       compute_community_level: { Args: { p_points: number }; Returns: number }
       compute_level: { Args: { p_points: number }; Returns: number }
       compute_quality_score: {
@@ -20814,6 +22244,14 @@ export type Database = {
       count_marketplace_subcategory: {
         Args: { p_slug: string }
         Returns: number
+      }
+      countries_due_for_enrichment: {
+        Args: { p_limit?: number; p_phase?: string }
+        Returns: {
+          content_completeness_score: number
+          id: string
+          name: string
+        }[]
       }
       create_notification: {
         Args: { data?: Json; message: string; type: string; user_id: string }
@@ -21040,6 +22478,25 @@ export type Database = {
           favorite_count: number
         }[]
       }
+      event_field_coverage: {
+        Args: never
+        Returns: {
+          avg_quality: number
+          avg_trust: number
+          data_source: string
+          pct_no_a11y: number
+          pct_no_desc: number
+          pct_no_end: number
+          pct_no_geo: number
+          pct_no_img: number
+          pct_no_relev: number
+          pct_no_target: number
+          pct_no_tz: number
+          pct_no_url: number
+          pct_no_venue: number
+          total: number
+        }[]
+      }
       event_localized_description: {
         Args: { p_id: string; p_locale?: string }
         Returns: string
@@ -21048,16 +22505,37 @@ export type Database = {
         Args: { p_id: string; p_locale?: string }
         Returns: string
       }
-      events_in_window: {
-        Args: { p_from: string; p_to: string }
+      event_previous_editions: {
+        Args: { p_city?: string; p_limit?: number; p_title: string }
+        Returns: Json
+      }
+      events_in_window:
+        | {
+            Args: { p_from: string; p_to: string }
+            Returns: {
+              is_exception: boolean
+              master_event_id: string
+              master_slug: string
+              master_title: string
+              occurrence_end: string
+              occurrence_id: string
+              occurrence_start: string
+            }[]
+          }
+        | {
+            Args: {
+              p_city?: string
+              p_country?: string
+              p_end: string
+              p_limit?: number
+              p_start: string
+            }
+            Returns: Json
+          }
+      events_needing_moat_enrich: {
+        Args: { p_limit?: number }
         Returns: {
-          is_exception: boolean
-          master_event_id: string
-          master_slug: string
-          master_title: string
-          occurrence_end: string
-          occurrence_id: string
-          occurrence_start: string
+          id: string
         }[]
       }
       expand_all_recurring_events: {
@@ -21139,6 +22617,22 @@ export type Database = {
           same_city: boolean
           similarity_score: number
         }[]
+      }
+      find_duplicate_clusters: {
+        Args: { p_content_type: string; p_limit?: number }
+        Returns: Json
+      }
+      find_duplicates: {
+        Args: {
+          p_content_type: string
+          p_embedding?: string
+          p_exclude_id?: string
+          p_limit?: number
+          p_title?: string
+          p_title_threshold?: number
+          p_vec_threshold?: number
+        }
+        Returns: Json
       }
       find_event_duplicate_candidates: {
         Args: {
@@ -21240,6 +22734,15 @@ export type Database = {
           time_diff_hours: number
         }[]
       }
+      find_near_duplicate_assets: {
+        Args: { p_max_hamming?: number; p_phash: string }
+        Returns: {
+          distance: number
+          id: string
+          phash: string
+          url: string
+        }[]
+      }
       find_nearest_airport: {
         Args: { visitor_lat: number; visitor_lng: number }
         Returns: {
@@ -21247,6 +22750,19 @@ export type Database = {
           country_code: string
           distance_km: number
           iata_code: string
+        }[]
+      }
+      find_nearest_city: {
+        Args: {
+          p_country_id?: string
+          p_lat: number
+          p_lng: number
+          p_max_km?: number
+        }
+        Returns: {
+          city_id: string
+          city_name: string
+          distance_km: number
         }[]
       }
       find_news_duplicates: {
@@ -21490,6 +23006,10 @@ export type Database = {
           attribute_name: string
         }[]
       }
+      get_entity_detail: {
+        Args: { p_id?: string; p_slug?: string; p_type: string }
+        Returns: Json
+      }
       get_entity_tags: {
         Args: { entity_id_param: string; entity_type_param: string }
         Returns: {
@@ -21575,6 +23095,10 @@ export type Database = {
         Returns: string
       }
       get_or_create_email_token: { Args: never; Returns: string }
+      get_personality_graph_data: {
+        Args: { p_limit?: number; p_personality_id: string }
+        Returns: Json
+      }
       get_personality_profession_facets: {
         Args: { lim?: number }
         Returns: {
@@ -21592,6 +23116,20 @@ export type Database = {
       }
       get_public_profile_safe: {
         Args: { target_user_id: string }
+        Returns: Json
+      }
+      get_recommendations: {
+        Args: {
+          p_bias_vec?: string
+          p_city?: string
+          p_content_types?: string[]
+          p_exclude_ids?: string[]
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_now?: string
+          p_radius_km?: number
+        }
         Returns: Json
       }
       get_secure_profile_data: {
@@ -21948,6 +23486,7 @@ export type Database = {
           saves: number
         }[]
       }
+      hamming_hex: { Args: { a: string; b: string }; Returns: number }
       has_any_role_jwt: {
         Args: { required_roles: Database["public"]["Enums"]["app_role"][] }
         Returns: boolean
@@ -21983,6 +23522,7 @@ export type Database = {
           slug: string
         }[]
       }
+      i18n_to_tsv: { Args: { p: Json; weight: unknown }; Returns: unknown }
       immutable_unaccent: { Args: { "": string }; Returns: string }
       increment_article_views: {
         Args: { article_id: string }
@@ -22072,6 +23612,7 @@ export type Database = {
         Returns: boolean
       }
       jwt_claim: { Args: { claim: string }; Returns: string }
+      lgbti_source_score: { Args: { p_src: string }; Returns: number }
       local_supporter_score: {
         Args: { p_city_id: string; p_user_id: string }
         Returns: {
@@ -22093,6 +23634,14 @@ export type Database = {
           p_query: string
           p_session_id: string
           p_took_ms: number
+        }
+        Returns: undefined
+      }
+      log_search_click: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_session_id: string
         }
         Returns: undefined
       }
@@ -22132,6 +23681,72 @@ export type Database = {
         Args: { p_reason: string; p_story_id: string }
         Returns: string
       }
+      marketplace_brand_name_signal: {
+        Args: { p_text: string }
+        Returns: string[]
+      }
+      marketplace_brands_pending: {
+        Args: { p_limit?: number }
+        Returns: {
+          brand_key: string
+          confidence: number | null
+          created_at: string
+          detection_source: string
+          display_name: string
+          evidence: string | null
+          id: string
+          ownership_tags: string[]
+          product_count: number
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_note: string | null
+          sample_url: string | null
+          status: string
+          suggested_tags: string[]
+          top_source: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "marketplace_brands"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      marketplace_completeness_score: {
+        Args: {
+          p_brand: string
+          p_description: string
+          p_images: string[]
+          p_link_health: string
+          p_price: number
+          p_price_usd: number
+        }
+        Returns: number
+      }
+      marketplace_content_rating: {
+        Args: { p_description: string; p_subcategory: string; p_title: string }
+        Returns: string
+      }
+      marketplace_department: {
+        Args: { p_subcategory: string }
+        Returns: string
+      }
+      marketplace_due_for_tagging: {
+        Args: { p_limit?: number }
+        Returns: {
+          brand: string
+          community_owned_tags: string[]
+          content_rating: string
+          description: string
+          has_attributes: boolean
+          id: string
+          lgbti_relevance_score: number
+          subcategory: string
+          subcategory_slug: string
+          title: string
+        }[]
+      }
       marketplace_guide_reading_streak: {
         Args: { p_user_id: string }
         Returns: number
@@ -22140,6 +23755,23 @@ export type Database = {
         Args: { p_id: string; p_locale?: string }
         Returns: string
       }
+      marketplace_listings_due_for_refresh: {
+        Args: { p_limit?: number }
+        Returns: {
+          external_url: string
+          id: string
+          last_verified_at: string
+          link_health: string
+          quality_score: number
+          source_type: string
+          title: string
+        }[]
+      }
+      marketplace_normalize_brand: {
+        Args: { p_brand: string }
+        Returns: string
+      }
+      marketplace_register_brands: { Args: never; Returns: Json }
       match_city_with_aliases: {
         Args: { p_city_text: string }
         Returns: string
@@ -22157,6 +23789,10 @@ export type Database = {
           metadata: Json
           similarity: number
         }[]
+      }
+      merge_cities: {
+        Args: { p_drop_id: string; p_keep_id: string }
+        Returns: Json
       }
       merge_duplicate_images: {
         Args: { p_keep_id: string; p_remove_ids: string[] }
@@ -22186,6 +23822,10 @@ export type Database = {
           p_duplicate_id: string
         }
         Returns: undefined
+      }
+      merge_venues: {
+        Args: { p_drop_id: string; p_keep_id: string }
+        Returns: Json
       }
       my_missions: {
         Args: never
@@ -22233,6 +23873,19 @@ export type Database = {
           updated: number
         }[]
       }
+      news_completeness_score: {
+        Args: {
+          p_author: string
+          p_content: string
+          p_excerpt: string
+          p_image_url: string
+          p_published_at: string
+          p_source_id: string
+          p_tags: string[]
+          p_title: string
+        }
+        Returns: number
+      }
       news_compute_fingerprint: {
         Args: {
           p_published_at: string
@@ -22248,6 +23901,16 @@ export type Database = {
           article_count: number
           id: string
           name: string
+        }[]
+      }
+      news_due_for_refresh: {
+        Args: { p_limit?: number }
+        Returns: {
+          id: string
+          last_verified_at: string
+          published_at: string
+          title: string
+          trust_score: number
         }[]
       }
       news_reading_streak: {
@@ -22284,6 +23947,7 @@ export type Database = {
       normalize_event_title: { Args: { t: string }; Returns: string }
       normalize_name: { Args: { n: string }; Returns: string }
       normalize_phone: { Args: { p: string }; Returns: string }
+      normalize_profession: { Args: { p: string }; Returns: string }
       normalize_tag_name: { Args: { input: string }; Returns: string }
       normalize_tag_slug: { Args: { p_input: string }; Returns: string }
       normalize_venue_category: { Args: { c: string }; Returns: string }
@@ -22304,6 +23968,24 @@ export type Database = {
         }
         Returns: string
       }
+      personalities_nonperson_candidates: {
+        Args: { p_limit?: number }
+        Returns: {
+          bio: string
+          has_dates: boolean
+          id: string
+          name: string
+          nationality: string
+          profession: string
+          signals: string[]
+          visibility: string
+        }[]
+      }
+      personalities_on_this_day: {
+        Args: { p_limit?: number; p_today?: string }
+        Returns: Json
+      }
+      personality_quality_overview: { Args: never; Returns: Json }
       personalized_semantic_search: {
         Args: {
           p_bias_vec?: string
@@ -22441,6 +24123,10 @@ export type Database = {
           display_name: string
           user_id: string
         }[]
+      }
+      rate_limit_hit: {
+        Args: { p_key: string; p_max: number; p_window: number }
+        Returns: boolean
       }
       reap_stuck_pipeline_runs: { Args: never; Returns: number }
       reap_stuck_workflow_runs: { Args: never; Returns: number }
@@ -22652,6 +24338,10 @@ export type Database = {
       refresh_contribution_metrics_yearly: { Args: never; Returns: undefined }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
       refresh_my_community_score: { Args: never; Returns: undefined }
+      refresh_news_corroboration: {
+        Args: { p_window?: string }
+        Returns: number
+      }
       refresh_source_coverage: { Args: never; Returns: undefined }
       refresh_source_reliability: { Args: never; Returns: number }
       refresh_story_metadata: { Args: { p_story_id?: string }; Returns: number }
@@ -22663,6 +24353,10 @@ export type Database = {
           p_threshold?: number
         }
         Returns: string
+      }
+      reject_city_review: {
+        Args: { p_id: string; p_note?: string }
+        Returns: Json
       }
       reject_group_join_request: {
         Args: { request_id: string }
@@ -22682,6 +24376,38 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      reject_marketplace_brand: {
+        Args: { p_brand_id: string; p_note?: string }
+        Returns: Json
+      }
+      reject_marketplace_review: {
+        Args: { p_id: string; p_note?: string }
+        Returns: Json
+      }
+      reject_venue_review: {
+        Args: { p_id: string; p_note?: string }
+        Returns: Json
+      }
+      related_entities: {
+        Args: {
+          p_content_types?: string[]
+          p_entity_id: string
+          p_entity_type: string
+          p_limit?: number
+          p_now?: string
+          p_same_type_only?: boolean
+        }
+        Returns: Json
+      }
+      release_gate_checks: {
+        Args: never
+        Returns: {
+          detail: Json
+          failures: number
+          gate: string
+          severity: string
+        }[]
       }
       remove_story_members: {
         Args: { p_story_id: string; p_submission_ids: string[] }
@@ -22825,12 +24551,63 @@ export type Database = {
           venue: Json
         }[]
       }
+      run_amenity_coverage_summary: {
+        Args: { p_force?: boolean }
+        Returns: Json
+      }
+      run_city_completeness_recompute: {
+        Args: { p_force?: boolean }
+        Returns: Json
+      }
+      run_city_coverage_radar: { Args: { p_force?: boolean }; Returns: Json }
+      run_city_safety_backfill: {
+        Args: { p_batch?: number; p_force?: boolean }
+        Returns: Json
+      }
+      run_city_trust_recompute: { Args: { p_force?: boolean }; Returns: Json }
+      run_country_completeness_recompute: { Args: never; Returns: Json }
       run_enrichment_log_purge: { Args: never; Returns: Json }
       run_event_auto_archive: { Args: never; Returns: Json }
+      run_event_completeness_recompute: { Args: never; Returns: Json }
+      run_event_coverage_radar: { Args: never; Returns: Json }
+      run_event_inherit_moat_from_venue: { Args: never; Returns: Json }
+      run_event_trust_recompute: { Args: never; Returns: Json }
+      run_hotel_safety_backfill: {
+        Args: { p_batch?: number; p_hotel_id?: string }
+        Returns: Json
+      }
+      run_i18n_cron_auth_fix: { Args: never; Returns: Json }
       run_ingestion_events_purge: { Args: never; Returns: Json }
+      run_marketplace_ownership_apply: {
+        Args: { p_batch?: number; p_force?: boolean }
+        Returns: Json
+      }
+      run_marketplace_quality_recompute: { Args: never; Returns: number }
+      run_marketplace_tag_backfill: {
+        Args: { p_force?: boolean }
+        Returns: Json
+      }
+      run_marketplace_tag_coverage_summary: {
+        Args: { p_force?: boolean }
+        Returns: Json
+      }
+      run_marketplace_tag_llm: { Args: { p_force?: boolean }; Returns: Json }
       run_news_dedup_audit_purge: { Args: never; Returns: Json }
+      run_news_quality_recompute: { Args: never; Returns: Json }
+      run_news_trust_recompute: { Args: never; Returns: Json }
+      run_profession_normalize_backfill: {
+        Args: { p_batch?: number }
+        Returns: {
+          changed: number
+          processed: number
+        }[]
+      }
       run_scraper_dedupe_purge: { Args: never; Returns: Json }
       run_staging_auto_reject_stale: { Args: never; Returns: Json }
+      run_tag_assignment_reconcile: { Args: never; Returns: Json }
+      run_tag_quality_recompute: { Args: never; Returns: Json }
+      run_venue_coord_snap: { Args: never; Returns: Json }
+      run_visibility_score_batch: { Args: { p_limit?: number }; Returns: Json }
       run_workflow_runs_purge: { Args: never; Returns: Json }
       scan_table_duplicates:
         | {
@@ -22871,6 +24648,40 @@ export type Database = {
         Returns: number
       }
       scraper_snapshot_body: { Args: { p_id: string }; Returns: string }
+      search_analytics_summary: {
+        Args: { p_since: string; p_until?: string }
+        Returns: Json
+      }
+      search_analytics_top_queries: {
+        Args: { p_limit?: number; p_since: string; p_until?: string }
+        Returns: {
+          avg_ms: number
+          avg_results: number
+          ctr_pct: number
+          lang: string
+          n: number
+          query_normalized: string
+          zero_n: number
+        }[]
+      }
+      search_analytics_zero_results: {
+        Args: { p_limit?: number; p_since: string; p_until?: string }
+        Returns: {
+          lang: string
+          last_seen: string
+          n: number
+          query_normalized: string
+        }[]
+      }
+      search_autocomplete: {
+        Args: {
+          p_content_types?: string[]
+          p_limit?: number
+          p_now?: string
+          p_prefix: string
+        }
+        Returns: Json
+      }
       search_cities: {
         Args: { max_results?: number; q: string }
         Returns: {
@@ -22882,6 +24693,43 @@ export type Database = {
           timezone: string
         }[]
       }
+      search_documents_index_cities: {
+        Args: { p_id?: string }
+        Returns: undefined
+      }
+      search_documents_index_countries: {
+        Args: { p_id?: string }
+        Returns: undefined
+      }
+      search_documents_index_events: {
+        Args: { p_id?: string }
+        Returns: undefined
+      }
+      search_documents_index_marketplace: {
+        Args: { p_id?: string }
+        Returns: undefined
+      }
+      search_documents_index_news: {
+        Args: { p_id?: string }
+        Returns: undefined
+      }
+      search_documents_index_personalities: {
+        Args: { p_id?: string }
+        Returns: undefined
+      }
+      search_documents_index_tags: {
+        Args: { p_id?: string }
+        Returns: undefined
+      }
+      search_documents_index_venues: {
+        Args: { p_id?: string }
+        Returns: undefined
+      }
+      search_documents_index_villages: {
+        Args: { p_id?: string }
+        Returns: undefined
+      }
+      search_documents_rebuild: { Args: never; Returns: undefined }
       search_events: {
         Args: {
           p_accessibility_attributes?: string[]
@@ -22901,6 +24749,38 @@ export type Database = {
           total: number
         }[]
       }
+      search_facets: {
+        Args: {
+          p_content_types?: string[]
+          p_filters?: Json
+          p_lat?: number
+          p_lng?: number
+          p_now?: string
+          p_query?: string
+          p_radius_km?: number
+        }
+        Returns: Json
+      }
+      search_hybrid: {
+        Args: {
+          p_content_types?: string[]
+          p_date_from?: string
+          p_date_to?: string
+          p_filters?: Json
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_now?: string
+          p_offset?: number
+          p_price_max?: number
+          p_price_min?: number
+          p_query?: string
+          p_query_vec?: string
+          p_radius_km?: number
+          p_sort?: string
+        }
+        Returns: Json
+      }
       search_tags_with_aliases: {
         Args: { p_limit?: number; q: string }
         Returns: {
@@ -22915,9 +24795,24 @@ export type Database = {
           verification_status: string
         }[]
       }
+      search_visibility_worst: {
+        Args: { p_entity_type?: string; p_limit?: number }
+        Returns: {
+          computed_at: string
+          entity_id: string
+          entity_type: string
+          score: number
+          suggestions: string[]
+          title: string
+        }[]
+      }
       secure_passkey_access: {
         Args: { p_operation: string; p_user_id: string }
         Returns: boolean
+      }
+      set_personhood_verdict: {
+        Args: { p_id: string; p_payload?: Json; p_verdict: string }
+        Returns: Json
       }
       set_story_narrative: {
         Args: {
@@ -22999,6 +24894,16 @@ export type Database = {
           sample_items: string
         }[]
       }
+      tag_quality_scorecard: { Args: never; Returns: Json }
+      tags_due_for_category: {
+        Args: { p_limit?: number; p_random?: boolean }
+        Returns: {
+          id: string
+          is_adult: boolean
+          is_sensitive: boolean
+          name: string
+        }[]
+      }
       tags_missing_descriptions: {
         Args: { p_limit: number }
         Returns: {
@@ -23065,6 +24970,32 @@ export type Database = {
         }
         Returns: Json
       }
+      triage_stuck_city_safety_reviews: { Args: never; Returns: Json }
+      trust_safety_gate_status: {
+        Args: never
+        Returns: {
+          detail: string
+          failing: number
+          gate: string
+          severity: string
+        }[]
+      }
+      tune_news_source_reliability: {
+        Args: {
+          p_alpha?: number
+          p_dry_run?: boolean
+          p_min_decisions?: number
+        }
+        Returns: {
+          accept_rate: number
+          decisions: number
+          new_score: number
+          old_score: number
+          source_id: string
+          source_name: string
+        }[]
+      }
+      unarchive_personality: { Args: { p_id: string }; Returns: number }
       unarchive_story: {
         Args: { p_story_id: string }
         Returns: {
@@ -23133,10 +25064,13 @@ export type Database = {
           title: string
         }[]
       }
+      unmerge_cities: { Args: { p_audit_id: string }; Returns: Json }
+      unmerge_venues: { Args: { p_audit_id: string }; Returns: Json }
       upsert_api_error: {
         Args: { p_data: Json; p_fingerprint: string; p_source?: string }
         Returns: string
       }
+      url_encode: { Args: { p: string }; Returns: string }
       user_id_for_email_token: { Args: { p_token: string }; Returns: string }
       user_local_supporter_cities: {
         Args: { p_user_id: string }
@@ -23169,6 +25103,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      venue_completeness: {
+        Args: {
+          p_category: string
+          p_description: string
+          p_email: string
+          p_hours: Json
+          p_images: string[]
+          p_latitude: number
+          p_longitude: number
+          p_phone: string
+          p_relevance: number
+          p_tags: string[]
+          p_website: string
+        }
+        Returns: number
+      }
       venue_duplicate_summary: {
         Args: never
         Returns: {
@@ -23187,6 +25137,80 @@ export type Database = {
       venue_localized_name: {
         Args: { p_id: string; p_locale?: string }
         Returns: string
+      }
+      venue_quality_stats: { Args: never; Returns: Json }
+      venues_due_for_amenity_backfill: {
+        Args: { p_limit?: number }
+        Returns: {
+          accessibility_attributes: string[]
+          amenities: string[]
+          category: string
+          description: string
+          id: string
+          last_refreshed_at: string
+          name: string
+          platform_ids: Json
+          refresh_reason: string
+          tags: string[]
+        }[]
+      }
+      venues_due_for_refresh: {
+        Args: { p_limit?: number }
+        Returns: {
+          category: string
+          city: string
+          completeness: number
+          country: string
+          description: string
+          external_id: string
+          foursquare_id: string
+          has_website: boolean
+          id: string
+          last_refreshed_at: string
+          latitude: number
+          longitude: number
+          name: string
+          needs_category: boolean
+          needs_contact: boolean
+          needs_description: boolean
+          needs_hours: boolean
+          needs_images: boolean
+          needs_tags: boolean
+          platform_ids: Json
+          quality_score: number
+          refresh_reason: string
+          slug: string
+          tomtom_id: string
+          url_status: string
+          website: string
+        }[]
+      }
+      venues_misplaced: {
+        Args: { p_limit?: number }
+        Returns: {
+          address: string
+          city_id: string
+          city_name: string
+          country_id: string
+          cur_lat: number
+          cur_lng: number
+          is_geocodable: boolean
+          km_to_linked: number
+          km_to_nearest: number
+          name: string
+          nearest_other_city: string
+          venue_id: string
+        }[]
+      }
+      venues_needing_geocode: {
+        Args: { p_limit?: number }
+        Returns: {
+          address: string
+          ccode: string
+          city: string
+          cname: string
+          id: string
+        }[]
       }
       venues_open_now: {
         Args: { p_city_id?: string; p_limit?: number }

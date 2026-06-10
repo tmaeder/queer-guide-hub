@@ -1,5 +1,5 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { llmChatCompletion } from '../_shared/llm-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
@@ -40,6 +40,7 @@ Output JSON only: {"long": "..."} — no prose, no markdown.`
 
 Deno.serve(withErrorReporting('pipeline-enrich-places', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   if (req.method !== 'POST') return errorResponse('POST only', 405, req)
 
   const supabase = getServiceClient()

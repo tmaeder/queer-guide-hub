@@ -2,8 +2,7 @@ import {
   getServiceClient,
   jsonResponse,
   errorResponse,
-  corsResponse,
-} from '../_shared/supabase-client.ts'
+  corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { insertSuggestion } from '../_shared/ai-suggestions.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
@@ -98,6 +97,7 @@ async function scoreImageVision(imageUrl: string): Promise<VisionScore> {
 
 Deno.serve(withErrorReporting('pipeline-image-vision', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
 
   try {

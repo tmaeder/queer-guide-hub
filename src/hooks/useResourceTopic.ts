@@ -77,6 +77,7 @@ export function useSupportOrgs(categories: string[] = ['community_center', 'orga
       const { data, error } = await supabase
         .from('venues')
         .select('*')
+        .neq('review_status', 'archived')
         .in('category', categories)
         .order('is_featured', { ascending: false })
         .order('name')

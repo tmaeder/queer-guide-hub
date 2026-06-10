@@ -36,6 +36,14 @@ vi.mock('@/hooks/useMarketplaceQueries', () => ({
     ],
     loading: false,
   }),
+  useMarketplaceAttributeVocab: () => ({
+    data: [
+      { slug: 'mat-cotton', name: 'Cotton', kind: 'material' },
+      { slug: 'occ-pride', name: 'Pride', kind: 'occasion' },
+      { slug: 'vibe-minimal', name: 'Minimal', kind: 'vibe' },
+    ],
+    loading: false,
+  }),
 }));
 
 import { MarketplaceFilters } from '../MarketplaceFilters';

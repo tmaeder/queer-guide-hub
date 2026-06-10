@@ -265,18 +265,23 @@ const Marketplace = () => {
     );
   };
 
+  // One-tap occasion chip (?occ=occ-pride) rides the tags filter pipeline.
+  const occParam = searchParams.get('occ') || '';
+
   const combinedFilters = useMemo<MarketplaceFiltersInput>(() => {
     const merged = { ...filters };
     if (activeTab !== 'all') merged.category = activeTab;
+    if (occParam) merged.tags = [...(merged.tags ?? []), occParam];
     merged.includeAdult = includeAdult;
     return merged;
-  }, [filters, activeTab, includeAdult]);
+  }, [filters, activeTab, includeAdult, occParam]);
 
   const hasActiveFilters = useMemo(() => {
     const f = combinedFilters;
     return Boolean(
       f.search ||
       f.category ||
+      f.department ||
       f.subcategory ||
       f.location ||
       f.businessType ||
@@ -400,9 +405,10 @@ const Marketplace = () => {
           size="md"
         />
         <div className="container mx-auto py-8 md:py-12 px-4 relative">
+          {/* Chips stay visible while an occasion is active so it can be toggled off. */}
+          {(!hasActiveFilters || occParam) && <OccasionChips />}
           {!hasActiveFilters && (
             <>
-              <OccasionChips />
               <ContinueReadingRail />
               <HeroCollection />
               <GuidesStream limit={6} />
