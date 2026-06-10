@@ -19,17 +19,6 @@ vi.mock('@/hooks/useFavorites', () => ({
     toggleFavorite: vi.fn(),
     loading: false,
     favoriteIds: new Set<string>(),
-// MapShell consumes auth + favorites (saved layer, map wave 3) — these page
-// tests don't mount providers, so stub both hooks.
-vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: null, session: null, loading: false }),
-}));
-vi.mock('@/hooks/useFavorites', () => ({
-  useFavorites: () => ({
-    favoriteIds: new Set<string>(),
-    isFavorited: () => false,
-    toggleFavorite: async () => {},
-    loading: false,
   }),
 }));
 
