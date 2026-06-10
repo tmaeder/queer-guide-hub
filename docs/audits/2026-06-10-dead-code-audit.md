@@ -233,13 +233,30 @@ sweep only for the non-shadcn ones; no action now.
 
 ---
 
-## Proposed remediation order (pending approval)
+## Remediation log (executed 2026-06-10, same day)
 
-1. **BR-1** recover 16 live fns into main (no behavior change, pure source recovery)
-2. **OR-1 + OR-6** src orphans + root images (one commit each class)
-3. **OR-2/OR-3 (+RD-1)** _shared + src/lib orphan clusters
-4. **RD-3** drop 2 unused deps
-5. **BR-6/DE-1** lint fix
-6. **BR-3 + BR-4** cron repoint + config.toml cleanup (migration + config commit)
-7. **User decisions needed:** BR-2 booking feature, BR-5 welcome email, OR-4 content-classifier,
-   OR-5 extension scripts, RD-2 geo winner, OR-7 webhook/backfill fns, infra undeploy sweep
+| Finding | Action | Verification |
+|---|---|---|
+| BR-1 | All 16 fns recovered into repo from **deployed source** (`supabase functions download` — authoritative over stale branches); 6 deployed-only `_shared` modules added; repo `_shared` kept (newer). config.toml entries mirror deployed verify_jwt. | lint 0 errors, tsc green |
+| BR-3 | 5 dead `enrich-*-images` crons unscheduled (migration `20260610200000`, applied) | jobs gone |
+| **BR-7 (new)** | Found during remediation: 4 crons (incl. every-minute `pipeline-dlq-consumer`) referenced vault secrets `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` that were **never created** → `net.http_post(url := NULL)`, dead since migration `20260610000000`. Repointed to hardcoded URL + existing `internal_invoke_secret`. | DLQ cron succeeding per minute post-fix |
+| BR-4 | 19 stale config.toml entries removed; every remaining entry maps to a repo dir | diff vs dirs clean |
+| BR-6/DE-1 | dead initializer fixed; repo eslint-error-free | eslint 0 errors |
+| OR-1 | 7 src files deleted; stale comments updated | tsc+lint+build green |
+| OR-2/3+RD-1 | orphan cluster deleted in both trees; `confidence-scoring.ts` (_shared) **kept** — recovered `pipeline-enrich-country-editorial` imports it; `content-classifier.ts` kept (classification roadmap) | tsc+lint green |
+| OR-5 | extension orphans deleted | extension tsc green |
+| OR-6 | 8 root images deleted | — |
+| OR-7 | whatsapp-webhook + backfill-{countries,personality,news}-images deleted from repo **and undeployed**; `backfill-cities-images` kept (driver default) | — |
+| RD-2 | `queer-guide-geo` worker deleted (deployed + repo + dependabot); live `/api/geo` verified serving the Pages function (no-store header, full payload), zero downtime | live curl |
+| RD-3 | `file-selector` + `@fontsource-variable/inter` removed | build + 17 upload tests green |
+| RD-4 | CLAUDE.md repo-stats collapsed, dup paragraph removed | — |
+| Undeploy sweep | **74 dead deployed functions deleted** (69 legacy + `_debug-echo-meili-url` via Mgmt API + 4 OR-7). Source backed up first: `~/QG-edge-fn-undeploy-backup-2026-06-10.tgz`. Cross-checked: every repo/corpus reference was comment-only ("Replaces:" headers). function-monitor registry pruned. | **deployed 214 = repo 214, zero drift both ways** |
+| Drift re-sync | 4 fns whose repo copy got lint touch-ups redeployed (verify_jwt flags confirmed unchanged) | Mgmt API flag check |
+
+## Still open (user decisions)
+
+- **BR-2** booking feature: 3 edge fns + HotelBookingFlow write to nonexistent `bookings` table — revive (create table) or remove the in-app path. Left untouched.
+- **BR-5** send-welcome-email: never wired (no auth hook, 0 emails ever). Wire or delete.
+- **OR-4** `_shared/content-classifier.ts`: kept as seed of the planned classification work.
+- **Security:** `venue-url-checker` + `marketplace-link-checker` have **no auth at all** (verify_jwt=false, no secret check) — missed by the #1542 gating pass (not `pipeline-*`/`source-*` prefixed).
+- 64 duplicate migration timestamps: live with it; avoid new collisions.
