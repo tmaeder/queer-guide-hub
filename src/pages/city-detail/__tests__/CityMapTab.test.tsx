@@ -4,7 +4,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Suspense } from 'react';
-import { MemoryRouter } from 'react-router';
 
 // CityMapTab renders MapShell, which needs router state (useSearchParams),
 // reads auth + favorites (saved layer, map wave 3), and renders the real

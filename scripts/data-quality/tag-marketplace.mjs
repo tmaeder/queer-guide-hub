@@ -26,7 +26,9 @@ const FN_URL = `https://${PROJECT}.supabase.co/functions/v1/marketplace-tag-back
 const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
 const WANT_LLM = args.includes('--llm')
-const BATCH = Number(args[args.indexOf('--batch') + 1]) || (WANT_LLM ? 40 : 150)
+// LLM batches must finish inside the pg_net timeout — 40 items × ~3-5s/LLM call
+// blew the 150s window (request killed mid-batch, poll timed out). 20 fits.
+const BATCH = Number(args[args.indexOf('--batch') + 1]) || (WANT_LLM ? 20 : 150)
 const SLEEP_BETWEEN_BATCHES_MS = 8000
 
 function token() {
@@ -37,17 +39,28 @@ function token() {
 const TOKEN = token()
 
 async function sql(query) {
-  const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      'Content-Type': 'application/json',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-    },
-    body: JSON.stringify({ query }),
-  })
-  if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 300)}`)
-  return res.json()
+  // Mgmt API throws transient 5xx (upstream connection resets) on long runs — retry.
+  let lastErr
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt) await new Promise((r) => setTimeout(r, 5000 * attempt))
+    try {
+      const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${TOKEN}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        },
+        body: JSON.stringify({ query }),
+      })
+      if (res.status >= 500) { lastErr = new Error(`mgmt API ${res.status}`); continue }
+      if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 300)}`)
+      return res.json()
+    } catch (e) {
+      lastErr = e
+    }
+  }
+  throw lastErr
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -60,7 +73,7 @@ async function invoke() {
     headers:=jsonb_build_object('Content-Type','application/json','X-Webhook-Secret',(select decrypted_secret from vault.decrypted_secrets where name='marketplace_tag_webhook_secret')),
     body:='${body}'::jsonb, timeout_milliseconds:=150000) as request_id;`
   const rid = (await sql(send))[0].request_id
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 60; i++) {
     await sleep(6000)
     const r = await sql(`select status_code, content from net._http_response where id=${rid};`)
     if (r[0]?.status_code != null) return { status: r[0].status_code, data: JSON.parse(r[0].content) }
@@ -69,8 +82,17 @@ async function invoke() {
 }
 
 async function remaining(runStart) {
-  const r = await sql(`select count(*)::int n from public.marketplace_listings
-    where status='active' and (tagged_at is null or tagged_at < '${runStart}');`)
+  // LLM mode targets only the attribute-less pool (the selector serves it first);
+  // re-walking the whole catalog with extract-only re-stamps would waste days.
+  const scope = WANT_LLM
+    ? `and not exists (
+         select 1 from public.unified_tag_assignments a
+         join public.unified_tags t on t.id=a.tag_id
+         where a.entity_type='marketplace_listing' and a.entity_id=l.id
+           and t.category in ('material','occasion','vibe'))`
+    : ''
+  const r = await sql(`select count(*)::int n from public.marketplace_listings l
+    where l.status='active' and (l.tagged_at is null or l.tagged_at < '${runStart}') ${scope};`)
   return r[0].n
 }
 
