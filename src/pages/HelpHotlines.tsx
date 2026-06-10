@@ -359,14 +359,15 @@ export default function HelpHotlines() {
         </span>
       </div>
 
+      {/* i18n first: the CMS base row is a single language, so preferring it
+          over t() leaked German on /en/help (P0-2 regression). The bundles
+          carry help.title/subtitle in every locale; CMS is only a fallback. */}
       <PageHeader
-        title={
-          page?.title ||
-          t('help.title', ready ? 'Help & Crisis Hotlines' : 'Help & Crisis Hotlines')
-        }
-        subtitle={
-          page?.subtitle || t('help.subtitle', 'You are not alone. Find immediate support here.')
-        }
+        title={t('help.title', page?.title || 'Help & Crisis Hotlines')}
+        subtitle={t(
+          'help.subtitle',
+          page?.subtitle || 'You are not alone. Find immediate support here.',
+        )}
       />
 
       {/* Sticky emergency banner — renders synchronously, never blocked on i18n/CMS */}
