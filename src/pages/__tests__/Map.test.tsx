@@ -11,14 +11,6 @@ vi.mock('@/components/map/ExploreMap', () => ({
 vi.mock('@/components/map/ExploreMapLayers', () => ({
   LAYER_DEFS: [{ type: 'venues', comingSoon: false }, { type: 'events', comingSoon: false }],
 }));
-// MapShell (rendered when VITE_MAP_SHELL is on) reads auth + favorites.
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
-vi.mock('@/hooks/useFavorites', () => ({
-  useFavorites: () => ({
-    isFavorited: () => false,
-    toggleFavorite: vi.fn(),
-    loading: false,
-    favoriteIds: new Set<string>(),
 // MapShell consumes auth + favorites (saved layer, map wave 3) — these page
 // tests don't mount providers, so stub both hooks.
 vi.mock('@/hooks/useAuth', () => ({
