@@ -16,7 +16,6 @@ describe('getyourguideProvider identity', () => {
   it('declares name, vertical, in-app=false', () => {
     expect(getyourguideProvider.name).toBe('getyourguide');
     expect(getyourguideProvider.vertical).toBe('activity');
-    expect(getyourguideProvider.supportsInApp).toBe(false);
   });
 });
 
@@ -99,7 +98,6 @@ describe('getyourguideProvider.search', () => {
       price: 25,
       currency: 'EUR',
       durationText: '2h',
-      supportsInApp: false,
     });
   });
 });
@@ -108,7 +106,7 @@ describe('getyourguideProvider.getBookingUrl', () => {
   it('returns the result bookingUrl when present', () => {
     const url = getyourguideProvider.getBookingUrl!({
       id: 'x', provider: 'getyourguide', vertical: 'activity', title: 't',
-      price: 0, currency: 'EUR', bookingUrl: 'https://gyg.com/y', supportsInApp: false,
+      price: 0, currency: 'EUR', bookingUrl: 'https://gyg.com/y',
     });
     expect(url).toBe('https://gyg.com/y');
   });
@@ -116,7 +114,7 @@ describe('getyourguideProvider.getBookingUrl', () => {
   it('falls back to the canonical partner URL', () => {
     const url = getyourguideProvider.getBookingUrl!({
       id: 'x', provider: 'getyourguide', vertical: 'activity', title: 't',
-      price: 0, currency: 'EUR', supportsInApp: false,
+      price: 0, currency: 'EUR',
     });
     expect(url).toBe('https://www.getyourguide.com/?partner_id=2PBDXWH');
   });

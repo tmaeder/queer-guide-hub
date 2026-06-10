@@ -19,7 +19,8 @@ vi.mock('@/hooks/useTripBookingAssistant', () => ({
 vi.mock('@/hooks/useTravelDeals', () => ({ useTravelDeals: () => ({ data: [] }) }));
 vi.mock('@/hooks/useHotelSearch', () => ({ useHotelSearch: () => ({ data: [], isLoading: false }) }));
 vi.mock('@/hooks/useVisitorOrigin', () => ({ useVisitorOrigin: () => ({ originIata: null }) }));
-vi.mock('@/components/booking/HotelBookingFlow', () => ({ HotelBookingFlow: () => null }));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
+vi.mock('@/hooks/usePageFetchers', () => ({ insertRow: vi.fn().mockResolvedValue({}) }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
 }));

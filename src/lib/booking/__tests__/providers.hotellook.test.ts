@@ -16,7 +16,6 @@ describe('hotellookProvider identity', () => {
   it('declares name, vertical, in-app=false', () => {
     expect(hotellookProvider.name).toBe('hotellook');
     expect(hotellookProvider.vertical).toBe('hotel');
-    expect(hotellookProvider.supportsInApp).toBe(false);
   });
 });
 
@@ -96,7 +95,6 @@ describe('hotellookProvider.search', () => {
       starRating: 4,
       lgbtqFriendly: true,
       bookingUrl: 'https://hotellook.com/x',
-      supportsInApp: false,
     });
   });
 });
@@ -105,7 +103,7 @@ describe('hotellookProvider.getBookingUrl', () => {
   it('returns result bookingUrl when present', () => {
     const url = hotellookProvider.getBookingUrl!({
       id: 'x', provider: 'hotellook', vertical: 'hotel', title: 't',
-      price: 0, currency: 'EUR', bookingUrl: 'https://hotellook.com/y', supportsInApp: false,
+      price: 0, currency: 'EUR', bookingUrl: 'https://hotellook.com/y',
     });
     expect(url).toBe('https://hotellook.com/y');
   });
@@ -113,7 +111,7 @@ describe('hotellookProvider.getBookingUrl', () => {
   it('falls back to Booking.com affiliate URL (Hotellook sunset)', () => {
     const url = hotellookProvider.getBookingUrl!({
       id: 'x', provider: 'hotellook', vertical: 'hotel', title: 't',
-      price: 0, currency: 'EUR', supportsInApp: false,
+      price: 0, currency: 'EUR',
     });
     expect(url).toBe('https://www.booking.com?aid=2381426&label=queerguide-452012');
   });

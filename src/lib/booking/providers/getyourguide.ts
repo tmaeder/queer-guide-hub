@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 export const getyourguideProvider: BookingProvider = {
   name: 'getyourguide',
   vertical: 'activity',
-  supportsInApp: false,
 
   async search(params: BookingSearchParams): Promise<BookingResult[]> {
     const { cityName, latitude, longitude, category, checkIn, currency = 'eur', limit = 12 } = params;
@@ -39,7 +38,6 @@ export const getyourguideProvider: BookingProvider = {
       durationText: activity.duration as string | undefined,
       category: activity.category as string | undefined,
       bookingUrl: activity.bookingUrl as string | undefined,
-      supportsInApp: false,
       providerData: activity,
     }));
   },

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plane, Hotel, Plus, Shield, MapPin, Star, Check, Loader2 } from 'lucide-react';
 import {
   fetchBookingAssistantCities,
@@ -16,8 +16,9 @@ import { useTripMutations, type TripPlace, type TripDay } from '@/hooks/useTrips
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
-import { HotelBookingFlow } from '@/components/booking/HotelBookingFlow';
 import type { BookingResult } from '@/lib/booking/types';
+import { insertRow } from '@/hooks/usePageFetchers';
+import { useAuth } from '@/hooks/useAuth';
 import { formatPrice } from '@/lib/booking/price';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
@@ -34,7 +35,8 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
   const { toast } = useToast();
   const { addPlace } = useTripMutations();
   const { originIata, _originCity } = useVisitorOrigin();
-  const [bookingHotel, setBookingHotel] = useState<BookingResult | null>(null);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'suggestions' | 'booking'>('suggestions');
   const [addingId, setAddingId] = useState<string | null>(null);
 
@@ -70,6 +72,38 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
   });
 
   const hasHotelBooked = (reservations || []).some((r) => r.type === 'hotel');
+
+  // Affiliate-only booking: open the partner site and save a pending reservation.
+  const openHotelBooking = (hotel: BookingResult) => {
+    if (hotel.bookingUrl) {
+      window.open(hotel.bookingUrl, '_blank', 'noopener,noreferrer');
+    }
+    if (!user) return;
+    insertRow('reservations', {
+      user_id: user.id,
+      trip_id: tripId,
+      source: 'provider_api',
+      type: 'hotel',
+      title: hotel.title,
+      status: 'pending',
+      provider: hotel.provider,
+      booking_url: hotel.bookingUrl,
+      total_amount: hotel.price,
+      currency: hotel.currency,
+      raw_provider_data: hotel.providerData || {},
+    })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ['trip-reservations', tripId] });
+        toast({
+          title: t('trips.bookingAssistant.reservationSaved', 'Reservation saved'),
+          description: t(
+            'trips.bookingAssistant.completeOnPartner',
+            'Complete your booking on the partner site.',
+          ),
+        });
+      })
+      .catch((err) => console.error('Reservation save failed:', err));
+  };
   const hasFlightBooked = (reservations || []).some((r) => r.type === 'flight');
 
   // Venue suggestions per city
@@ -331,11 +365,11 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                     <div
                       key={hotel.id}
                       className="flex items-center gap-4 p-4 bg-muted rounded cursor-pointer"
-                      onClick={() => setBookingHotel(hotel)}
+                      onClick={() => openHotelBooking(hotel)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          setBookingHotel(hotel);
+                          openHotelBooking(hotel);
                         }
                       }}
                       role="button"
@@ -381,13 +415,6 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
         </div>
       )}
 
-      {/* Hotel Booking Dialog */}
-      <HotelBookingFlow
-        hotel={bookingHotel}
-        open={!!bookingHotel}
-        onClose={() => setBookingHotel(null)}
-        tripId={tripId}
-      />
     </div>
   );
 }
