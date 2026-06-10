@@ -66,13 +66,29 @@ export interface SimilarPersonality {
   similarity: number;
 }
 
+// Imports may write structured objects into fields/achievements (e.g.
+// {"parties": [...]}, {"type": "award_detail", "text": "..."}). The detail
+// page renders plain strings, so keep strings and unwrap a string `text`
+// property; drop everything else instead of crashing React.
+function toRenderableStrings(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry) => {
+    if (typeof entry === 'string') return [entry];
+    if (entry && typeof entry === 'object') {
+      const text = (entry as { text?: unknown }).text;
+      if (typeof text === 'string' && text.trim()) return [text];
+    }
+    return [];
+  });
+}
+
 export function transformPersonality(data: Record<string, unknown>): PersonalityWithBirthCity {
   const birthCity = (data.birth_city ?? null) as PersonalityBirthCity | null;
   const deathCity = (data.death_city ?? null) as PersonalityDeathCity | null;
   return {
     ...(data as unknown as Personality),
-    fields: Array.isArray(data.fields) ? (data.fields as string[]) : [],
-    achievements: Array.isArray(data.achievements) ? (data.achievements as string[]) : [],
+    fields: toRenderableStrings(data.fields),
+    achievements: toRenderableStrings(data.achievements),
     social_links: (data.social_links as Record<string, unknown>) || {},
     tags: (data.tags as string[]) || [],
     verification_status:
