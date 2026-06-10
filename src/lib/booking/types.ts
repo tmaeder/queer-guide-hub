@@ -47,54 +47,16 @@ export interface BookingResult {
   /** For activities */
   durationText?: string;
   category?: string;
-  /** Booking action */
+  /** Booking action (affiliate redirect) */
   bookingUrl?: string;
-  supportsInApp: boolean;
   /** Provider-specific raw data */
   providerData?: Record<string, unknown>;
-}
-
-export interface BookingFlowData {
-  provider: string;
-  providerItemId: string;
-  vertical: BookingVertical;
-  checkIn: string;
-  checkOut: string;
-  guests: number;
-  rooms?: BookingRoom[];
-}
-
-export interface BookingRoom {
-  roomId: string;
-  roomName: string;
-  price: number;
-  currency: string;
-  cancellationPolicy?: string;
-  breakfastIncluded?: boolean;
-}
-
-export interface BookingConfirmation {
-  bookingId: string;
-  providerBookingId: string;
-  provider: string;
-  status: BookingStatus;
-  confirmationCode?: string;
-  totalAmount: number;
-  currency: string;
-  cancellationUrl?: string;
 }
 
 export interface BookingProvider {
   name: string;
   vertical: BookingVertical;
-  supportsInApp: boolean;
 
   search(params: BookingSearchParams): Promise<BookingResult[]>;
   getBookingUrl?(result: BookingResult): string;
-
-  /** In-app booking (Phase 2+) */
-  getRoomOptions?(itemId: string, params: BookingSearchParams): Promise<BookingRoom[]>;
-  createBooking?(data: BookingFlowData): Promise<BookingConfirmation>;
-  cancelBooking?(bookingId: string): Promise<{ success: boolean; error?: string }>;
-  getBookingStatus?(providerBookingId: string): Promise<BookingStatus>;
 }

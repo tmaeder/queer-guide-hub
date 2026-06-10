@@ -3,22 +3,23 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
 import { Suspense } from 'react';
 
-// MapShell (rendered when VITE_MAP_SHELL is on) reads auth + favorites and
-// renders the real ExploreMap — mock all three so the test passes under
-// either flag state.
+// CityMapTab renders MapShell, which needs router state (useSearchParams),
+// reads auth + favorites (saved layer, map wave 3), and renders the real
+// ExploreMap — stub all three and wrap renders in MemoryRouter.
 vi.mock('@/components/map/ExploreMap', () => ({
   ExploreMap: () => <div data-testid="explore-map">map</div>,
 }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: null, session: null, loading: false }),
+}));
 vi.mock('@/hooks/useFavorites', () => ({
   useFavorites: () => ({
-    isFavorited: () => false,
-    toggleFavorite: vi.fn(),
-    loading: false,
     favoriteIds: new Set<string>(),
+    isFavorited: () => false,
+    toggleFavorite: async () => {},
+    loading: false,
   }),
 }));
 

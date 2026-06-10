@@ -8,7 +8,7 @@
 // the shared sendEmail() helper (Resend backend).
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { sendEmail } from '../_shared/email.ts';
-import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, getServiceClient, hasInternalSecret, requireAdmin } from '../_shared/supabase-client.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -31,6 +31,12 @@ const handler = async (req: Request): Promise<Response> => {
       status: 405,
       headers: { ...cors, 'Content-Type': 'application/json' },
     });
+  }
+
+  // Internal-only: pg_cron dispatch (X-Internal-Secret) or admin/service-role.
+  if (!hasInternalSecret(req)) {
+    const gate = await requireAdmin(req, getServiceClient());
+    if (gate instanceof Response) return gate;
   }
 
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -89,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
   // Load template from existing email_templates table
   const { data: tpl, error: tplErr } = await supabase
     .from('email_templates')
-    .select('subject, body_html, body_text')
+    .select('subject, html_content, text_content')
     .eq('template_key', 'welcome')
     .eq('is_active', true)
     .maybeSingle();
@@ -111,8 +117,8 @@ const handler = async (req: Request): Promise<Response> => {
       from: 'The Queer Guide <noreply@queer.guide>',
       to: [toEmail],
       subject: renderTemplate(tpl.subject, vars),
-      html: renderTemplate(tpl.body_html, vars),
-      text: tpl.body_text ? renderTemplate(tpl.body_text, vars) : undefined,
+      html: renderTemplate(tpl.html_content, vars),
+      text: tpl.text_content ? renderTemplate(tpl.text_content, vars) : undefined,
     });
   } catch (e) {
     console.error('welcome email send failed', e);

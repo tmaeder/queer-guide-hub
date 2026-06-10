@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 export const travelpayoutsFlights: BookingProvider = {
   name: 'travelpayouts',
   vertical: 'flight',
-  supportsInApp: false,
 
   async search(params: BookingSearchParams): Promise<BookingResult[]> {
     const { originIata, destinationIata, _checkIn, currency = 'eur', limit = 9 } = params;
@@ -45,7 +44,6 @@ export const travelpayoutsFlights: BookingProvider = {
         stops: (deal.stops as number) || 0,
         duration: deal.duration as number | undefined,
         bookingUrl: url.url || (deal.affiliate_url as string),
-        supportsInApp: false,
         providerData: deal,
       };
     });

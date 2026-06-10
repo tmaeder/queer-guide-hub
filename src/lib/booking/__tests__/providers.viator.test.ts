@@ -6,7 +6,6 @@ describe('viatorProvider', () => {
     it('declares its name, vertical, and in-app support', () => {
       expect(viatorProvider.name).toBe('viator');
       expect(viatorProvider.vertical).toBe('activity');
-      expect(viatorProvider.supportsInApp).toBe(false);
     });
   });
 
@@ -54,7 +53,6 @@ describe('viatorProvider', () => {
         vertical: 'activity',
         price: 0,
         currency: 'EUR',
-        supportsInApp: false,
       });
       expect(r[0].title).toContain('Paris');
     });
@@ -70,7 +68,6 @@ describe('viatorProvider', () => {
         price: 0,
         currency: 'EUR',
         bookingUrl: 'https://viator.com/foo',
-        supportsInApp: false,
       });
       expect(url).toBe('https://viator.com/foo');
     });
@@ -83,7 +80,6 @@ describe('viatorProvider', () => {
         title: 'x',
         price: 0,
         currency: 'EUR',
-        supportsInApp: false,
       });
       expect(url).toBe('https://www.viator.com/?pid=P00089289&mcid=42383&medium=link');
     });

@@ -153,9 +153,7 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
         <div className="flex gap-2">
           <Button size="sm" className="flex-1" onClick={handleBook}>
             <ExternalLink size={14} className="mr-1.5" />
-            {result.supportsInApp
-              ? 'Book Now'
-              : `Book ${result.vertical === 'flight' ? 'Flight' : result.vertical === 'hotel' ? 'Hotel' : 'Activity'}`}
+            {`Book ${result.vertical === 'flight' ? 'Flight' : result.vertical === 'hotel' ? 'Hotel' : 'Activity'}`}
           </Button>
           {onAddToTrip && (
             <Button size="sm" variant="outline" onClick={() => onAddToTrip(result)}>

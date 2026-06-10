@@ -77,7 +77,6 @@ describe('useHotelSearch', () => {
       title: 'Hotel One',
       price: 100,
       currency: 'EUR',
-      supportsInApp: false,
     });
   });
 
