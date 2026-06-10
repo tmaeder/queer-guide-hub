@@ -22,6 +22,7 @@
 
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
 import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,7 @@ const MAX_PAGES_PER_INVOCATION = 25
 let fetchCounter = 0
 
 async function fetchPage(url: string, userAgent: string, attempt = 0): Promise<string> {
+  assertPublicHttpUrl(url) // source.url + crawled links are operator/DB-supplied — refuse private targets
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 30000)
   try {
@@ -938,6 +940,7 @@ async function fetchFromApi(source: ScrapeSource): Promise<ExtractedItem[]> {
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`
 
     try {
+      assertPublicHttpUrl(url)
       const res = await fetch(url, { headers })
       if (!res.ok) {
         console.error(`API fetch failed for ${url}: ${res.status}`)
