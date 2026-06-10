@@ -6,15 +6,16 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { anthropicMessages } from '../_shared/anthropic-shim.ts';
+import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
+const corsFor = (req: Request) => ({
+  ...getCorsHeaders(req),
   'Access-Control-Allow-Headers': 'authorization, content-type, apikey, x-client-info',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+});
 
 const SYSTEM_PROMPT =
   'You are a programmatic username generation API for queer.guide. Generate exactly 5 unique usernames blending at least two of these themes: queer culture/slang, traveling/exploration, kink/sex-positivity, and creativity/art. Length: 8-15 chars. Format: PascalCase. Avoid numbers/special chars. Output ONLY minified JSON matching this schema: { "usernames": [ "String", "String", "String", "String", "String" ] }';
@@ -49,6 +50,7 @@ async function generateBatch(): Promise<string[]> {
 }
 
 Deno.serve(async (req) => {
+  const cors = corsFor(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') {
     return new Response('method not allowed', { status: 405, headers: cors });
