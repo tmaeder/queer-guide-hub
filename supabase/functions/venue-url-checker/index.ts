@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { probeLink, isDeadLink } from '../_shared/link-health.ts'
 
@@ -17,6 +17,7 @@ const DEFAULT_STALE = 30   // re-check after N days
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  const _auth = await requireInternalOrAdmin(req, supabase); if (_auth instanceof Response) return _auth
 
   try {
     const body = await req.json().catch(() => ({}))
