@@ -21,6 +21,7 @@ import {
   GhComment,
   GhIssue,
 } from '../_shared/github-sync.ts';
+import { requireInternalOrAdmin } from '../_shared/supabase-client.ts';
 
 const REPO_OWNER = 'tmaeder';
 const REPO_NAME = 'queer-guide-hub';
@@ -55,10 +56,11 @@ async function gh<T>(path: string, token: string): Promise<T> {
 Deno.serve(async (req) => {
   if (req.method !== 'POST' && req.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
 
+  const svc = getServiceClient();
+  const _auth = await requireInternalOrAdmin(req, svc); if (_auth instanceof Response) return _auth;
+
   const token = Deno.env.get('GITHUB_PAT');
   if (!token) return json({ error: 'GITHUB_PAT not configured' }, 500);
-
-  const svc = getServiceClient();
 
   const { data: stateRow } = await svc
     .from('github_poller_state')

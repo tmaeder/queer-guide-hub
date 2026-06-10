@@ -15,7 +15,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, hasInternalSecret, requireInternalOrAdmin } from '../_shared/supabase-client.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -226,6 +226,26 @@ Deno.serve(async (req) => {
       } catch {
         // no body — full scan
       }
+    }
+    if (tripId) {
+      // Single-trip refresh is user-facing: any caller whose JWT can see the
+      // trip under RLS may rescan it. Internal callers (cron secret) pass too.
+      if (!hasInternalSecret(req)) {
+        const userClient = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!, {
+          global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
+        });
+        const { data: visible } = await userClient
+          .from('trips').select('id').eq('id', tripId).maybeSingle();
+        if (!visible) {
+          return new Response(JSON.stringify({ error: 'Forbidden' }), {
+            status: 403, headers: { ...cors, 'content-type': 'application/json' },
+          });
+        }
+      }
+    } else {
+      // Full sweep is cron/admin-only — it touches every active trip.
+      const _auth = await requireInternalOrAdmin(req, admin);
+      if (_auth instanceof Response) return _auth;
     }
     const trips = await activeTrips(admin, tripId);
     let totalCandidates = 0;
