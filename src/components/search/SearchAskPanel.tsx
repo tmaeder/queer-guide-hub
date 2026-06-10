@@ -46,7 +46,7 @@ export function SearchAskPanel({
 
   return (
     <div className="flex h-[480px] flex-col">
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <button
           type="button"
           onClick={onBack}
@@ -65,7 +65,7 @@ export function SearchAskPanel({
         {messages.map((m, i) =>
           m.role === 'user' ? (
             <div key={i} className="flex justify-end">
-              <div className="max-w-[80%] rounded-element bg-foreground px-3 py-2 text-sm text-background">
+              <div className="max-w-[80%] rounded-element bg-foreground px-4 py-2 text-sm text-background">
                 {m.text}
               </div>
             </div>
@@ -117,7 +117,7 @@ export function SearchAskPanel({
         )}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-border px-3 py-2">
+      <div className="flex items-center gap-2 border-t border-border px-4 py-2">
         <input
           ref={inputRef}
           type="text"

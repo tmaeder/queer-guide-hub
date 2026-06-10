@@ -33,7 +33,7 @@ describe('CityVenuesTab', () => {
 
   it('shows empty state', () => {
     render(<CityVenuesTab city={city} venues={[]} venuesLoading={false} showCreateTrip={false} onCreateTrip={vi.fn()} />);
-    expect(screen.getByText(/No venues found yet/)).toBeInTheDocument();
+    expect(screen.getByText(/No venues yet/)).toBeInTheDocument();
   });
 
   it('renders one card per venue', () => {

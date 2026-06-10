@@ -29,7 +29,7 @@ export function HeroCollection() {
       className="mb-16 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12"
     >
       <header className="lg:col-span-5">
-        <p className="text-13 uppercase tracking-wide text-muted-foreground mb-3">
+        <p className="text-13 uppercase tracking-wide text-muted-foreground mb-2">
           This week's collection
         </p>
         <h2

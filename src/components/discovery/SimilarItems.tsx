@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ScrollReveal } from "@/components/animation/ScrollReveal";
 import { SkeletonCrossfade } from "@/components/effects";
-import { getRandomFallbackImage } from "@/utils/fallbackImages";
+import { getFallbackImage, type FallbackTheme } from "@/utils/fallbackImages";
 import { isValidImageUrl } from "@/lib/images/resolveEntityImage";
 
 interface Props {
@@ -40,6 +40,18 @@ const TYPE_PATH: Record<string, string> = {
 	marketplace: "/marketplace",
 	hotel: "/hotels",
 };
+
+function fallbackTheme(type: string): FallbackTheme {
+	switch (type) {
+		case "venue": return "venue";
+		case "event": return "event";
+		case "hotel": return "hotel";
+		case "news": return "news";
+		case "marketplace": return "marketplace";
+		case "personality": case "person": return "person";
+		default: return "place";
+	}
+}
 
 function hitPath(type: string, slug: string): string | null {
 	if (type === "tag") return `/resources/${slug}`;
@@ -105,7 +117,7 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 	return (
 		<ScrollReveal direction="up">
 		<section className={className} aria-label={title}>
-			<h2 className="text-lg font-semibold mb-4">{title}</h2>
+			<h2 className="text-title font-semibold mb-4">{title}</h2>
 			<ScrollArea className="w-full whitespace-nowrap">
 				<SkeletonCrossfade
 					loading={!items}
@@ -137,13 +149,13 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 										>
 											<Card className="h-40 overflow-hidden transition">
 												<img
-														src={isValidImageUrl(it.metadata?.image_url) ? (it.metadata!.image_url as string) : getRandomFallbackImage()}
+														src={isValidImageUrl(it.metadata?.image_url) ? (it.metadata!.image_url as string) : getFallbackImage(fallbackTheme(it.content_type), it.content_id)}
 														alt=""
 														role="presentation"
 														loading="lazy"
 														referrerPolicy="no-referrer"
 														className="h-24 w-full object-cover"
-														onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
+														onError={(e) => { const fb = getFallbackImage(fallbackTheme(it.content_type), it.content_id); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
 													/>
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">

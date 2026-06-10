@@ -53,7 +53,7 @@ export function AchievementsRow({ limit = 8, className }: AchievementsRowProps) 
       className={cn('rounded-container border border-border bg-card p-4', className)}
       aria-label="Achievements"
     >
-      <div className="mb-3 flex items-baseline justify-between">
+      <div className="mb-4 flex items-baseline justify-between">
         <h3 className="text-sm font-medium text-foreground inline-flex items-center gap-2">
           <Award className="h-4 w-4" aria-hidden /> Achievements
         </h3>
@@ -61,14 +61,14 @@ export function AchievementsRow({ limit = 8, className }: AchievementsRowProps) 
           See all
         </LocalizedLink>
       </div>
-      <ul className="flex gap-3 overflow-x-auto pb-1">
+      <ul className="flex gap-4 overflow-x-auto pb-1">
         {ordered.map((a) => {
           const earned = earnedSet.has(a.slug);
           return (
             <li
               key={a.slug}
               className={cn(
-                'flex shrink-0 w-32 flex-col items-center gap-1 rounded-element border border-border p-3 text-center',
+                'flex shrink-0 w-32 flex-col items-center gap-1 rounded-element border border-border p-2 text-center',
                 earned ? 'bg-card text-foreground' : 'bg-card/40 text-muted-foreground',
               )}
               title={`${a.name} — ${a.description}`}

@@ -159,12 +159,12 @@ export function ReservationsTab({ tripId }: Props) {
       {/* Next up card */}
       {nextUp && (
         <div className="flex items-center gap-4 bg-[hsl(var(--foreground)/0.08)] p-4">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-element bg-[hsl(var(--foreground))] text-[hsl(var(--background))]">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-element bg-foreground text-background">
             <CalendarClock size={18} />
           </div>
           <div className="min-w-0 flex-1">
             <span
-              className="block text-xs2 font-bold uppercase text-[hsl(var(--foreground))]"
+              className="block text-xs2 font-bold uppercase text-foreground"
               style={{ letterSpacing: '0.06em' }}
             >
               {t('trips.reservations.nextUp')}

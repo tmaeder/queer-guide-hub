@@ -80,7 +80,7 @@ export function CityOverviewTab({
             <CardContent>
               <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
                 {city.description ||
-                  `Discover ${city.name} – from local venues and cultural landmarks to upcoming events.`}
+                  `Venues, events, and neighborhoods in ${city.name}.`}
               </p>
             </CardContent>
           </Card>

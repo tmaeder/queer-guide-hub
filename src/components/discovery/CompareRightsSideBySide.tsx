@@ -49,10 +49,10 @@ export function CompareRightsSideBySide({
       <table className="w-full text-13">
         <thead>
           <tr className="border-b text-2xs uppercase tracking-[0.14em] text-muted-foreground">
-            <th scope="col" className="px-4 py-3 text-left">
+            <th scope="col" className="px-4 py-2 text-left">
               {t('discovery.compareRights.country', 'Country')}
             </th>
-            <th scope="col" className="px-4 py-3 text-right tabular-nums">
+            <th scope="col" className="px-4 py-2 text-right tabular-nums">
               {t('discovery.compareRights.equality', 'Equality score')}
             </th>
           </tr>
@@ -67,7 +67,7 @@ export function CompareRightsSideBySide({
                   : 'border-b last:border-b-0'
               }
             >
-              <td className="px-4 py-3">
+              <td className="px-4 py-2">
                 {row.slug ? (
                   <LocalizedLink to={`/country/${row.slug}`} className="no-underline">
                     {row.flag_emoji ? <span aria-hidden>{row.flag_emoji} </span> : null}
@@ -80,7 +80,7 @@ export function CompareRightsSideBySide({
                   </>
                 )}
               </td>
-              <td className="px-4 py-3 text-right tabular-nums">
+              <td className="px-4 py-2 text-right tabular-nums">
                 {row.equality_score != null ? `${row.equality_score}/10` : '—'}
               </td>
             </tr>

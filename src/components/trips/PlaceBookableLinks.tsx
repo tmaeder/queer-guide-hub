@@ -104,7 +104,7 @@ export function PlaceBookableLinks({
                   rel="noopener sponsored noreferrer"
                   onClick={() => onClick(link)}
                   aria-label={link.label}
-                  className="inline-flex items-center justify-center p-1 text-muted-foreground transition-colors hover:text-[hsl(var(--foreground))]"
+                  className="inline-flex items-center justify-center p-1 text-muted-foreground transition-colors hover:text-foreground"
                   style={{ opacity: 0.55 }}
                   onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                   onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.55')}

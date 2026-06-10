@@ -146,7 +146,7 @@ const RegionalEventsCalendar = () => {
               />
             </div>
           <div
-            className="mb-2 text-sm font-bold uppercase text-[hsl(var(--foreground))] md:text-base"
+            className="mb-2 text-sm font-bold uppercase text-foreground md:text-base"
             style={{
               fontFamily: DISPLAY,
               letterSpacing: '0.04em',
@@ -248,7 +248,7 @@ const RegionalEventsCalendar = () => {
                   <div
                     className={cn(
                       'mb-2 text-2xl font-light leading-none md:text-headline',
-                      isToday && 'text-[hsl(var(--foreground))]',
+                      isToday && 'text-foreground',
                     )}
                     style={{ fontFamily: DISPLAY, fontVariantNumeric: 'tabular-nums' }}
                   >

@@ -28,12 +28,12 @@ export function DomainBreakdown({ breakdown, className }: DomainBreakdownProps) 
       className={cn('rounded-container border border-border bg-card p-4', className)}
       aria-label="Points by domain"
     >
-      <div className="mb-3 flex items-baseline justify-between">
+      <div className="mb-4 flex items-baseline justify-between">
         <h3 className="text-sm font-medium text-foreground">Where your points came from</h3>
         <span className="text-13 tabular-nums text-muted-foreground">{total} pts</span>
       </div>
       <div
-        className="mb-3 flex h-2 w-full overflow-hidden rounded-badge border border-border"
+        className="mb-2 flex h-2 w-full overflow-hidden rounded-badge border border-border"
         role="img"
         aria-label="Per-domain point distribution"
       >

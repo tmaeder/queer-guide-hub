@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts'
 import { sanitizeArticle } from '../_shared/news-quality/sanitize.ts'
@@ -61,6 +61,7 @@ async function callQualityLLM(
 
 Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
 
   try {

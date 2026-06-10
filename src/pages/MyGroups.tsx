@@ -70,7 +70,7 @@ export default function MyGroups() {
       <div className="container mx-auto py-8 px-4">
         <PageHeader
           title="My Groups"
-          subtitle={t('pages.myGroups.subtitle', 'Manage and explore your community groups')}
+          subtitle={t('pages.myGroups.subtitle', 'Manage your community groups')}
           actions={
             <>
               <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
@@ -168,7 +168,7 @@ export default function MyGroups() {
             <EmptyState
               icon={Search}
               title={t('pages.myGroups.emptyTitle', "You haven't joined any groups yet")}
-              description="Explore groups and find your people."
+              description="Browse groups and find your people."
               mood="encouraging"
             />
           ) : (

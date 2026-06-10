@@ -71,7 +71,7 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
         </button>
       )}
 
-      <div className="p-6 lg:p-8 space-y-5">
+      <div className="p-6 lg:p-8 space-y-6">
         <div className="flex flex-wrap items-center gap-2 text-xs2 uppercase tracking-label text-foreground/60">
           <span>{t('pride.spotlight.eyebrow')}</span>
           {event.is_featured && (

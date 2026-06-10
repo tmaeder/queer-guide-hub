@@ -169,7 +169,7 @@ function ReaderDashboard() {
                   className="group block no-underline text-inherit"
                 >
                   {img && (
-                    <div className="overflow-hidden rounded-container bg-muted aspect-[4/3] mb-3">
+                    <div className="overflow-hidden rounded-container bg-muted aspect-[4/3] mb-4">
                       <img
                         src={img}
                         alt=""

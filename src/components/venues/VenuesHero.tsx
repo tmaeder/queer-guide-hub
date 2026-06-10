@@ -34,7 +34,7 @@ export function VenuesHero() {
         )}
         <div className="flex flex-col justify-between gap-6 p-6 md:p-10">
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
               {t('venues.hero.kicker', 'Featured this week')}
             </p>
             <h1 className="text-display font-semibold leading-tight tracking-tight">

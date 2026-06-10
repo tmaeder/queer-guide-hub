@@ -65,7 +65,7 @@ export function CityVenuesTab({
         ) : (
           <EmptyState
             icon={Building}
-            title="No venues found yet"
+            title="No venues yet"
             description={`Be the first to add venues in ${city.name}!`}
             mood="encouraging"
           />

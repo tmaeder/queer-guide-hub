@@ -435,7 +435,7 @@ export function EventsTimelineView({
               style={{ left: `${pxForMs(today.getTime())}px` }}
               aria-hidden="true"
             >
-              <div className="absolute -top-1 -translate-x-1/2 text-[9px] uppercase tracking-wider bg-foreground text-background px-1 rounded-badge">
+              <div className="absolute -top-1 -translate-x-1/2 text-3xs uppercase tracking-wider bg-foreground text-background px-1 rounded-badge">
                 Today
               </div>
             </div>
@@ -461,7 +461,7 @@ export function EventsTimelineView({
                         type="button"
                         aria-label={`${count} events around ${format(new Date(p.startMs), 'PP')}`}
                         className={cn(
-                          'absolute flex items-center justify-center text-[10px] font-medium leading-none',
+                          'absolute flex items-center justify-center text-2xs font-medium leading-none',
                           'bg-foreground text-background rounded-full border border-foreground hover:scale-110 transition-transform',
                           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1',
                           isPast && 'opacity-50',
@@ -482,7 +482,7 @@ export function EventsTimelineView({
                       collisionPadding={12}
                       className="z-50 w-72 max-w-[calc(100vw-24px)] p-0 rounded-element border border-foreground/15 bg-background"
                     >
-                      <div className="px-3 py-2 border-b border-foreground/10 text-xs2 text-foreground/70">
+                      <div className="px-4 py-2 border-b border-foreground/10 text-xs2 text-foreground/70">
                         {count} events · {format(new Date(item.startMs), 'PP')}
                       </div>
                       <ul className="max-h-64 overflow-y-auto">
@@ -494,7 +494,7 @@ export function EventsTimelineView({
                                 setOpenCluster(null);
                                 onEventSelect?.(e);
                               }}
-                              className="block px-3 py-2 hover:bg-muted text-sm no-underline border-b border-foreground/5 last:border-b-0"
+                              className="block px-4 py-2 hover:bg-muted text-sm no-underline border-b border-foreground/5 last:border-b-0"
                             >
                               <p className="font-medium leading-tight truncate">
                                 {e.is_featured && (
@@ -565,7 +565,7 @@ export function EventsTimelineView({
                         )}
                         style={{ width: `${widthPx}px`, height: `${BAR_HEIGHT}px` }}
                       >
-                        <span className="truncate text-[10px] leading-none font-medium">{event.title}</span>
+                        <span className="truncate text-2xs leading-none font-medium">{event.title}</span>
                       </span>
                     ) : (
                       <>
@@ -579,7 +579,7 @@ export function EventsTimelineView({
                         />
                         <span
                           className={cn(
-                            'flex items-center gap-1 text-[10px] leading-none whitespace-nowrap overflow-hidden min-w-0',
+                            'flex items-center gap-1 text-2xs leading-none whitespace-nowrap overflow-hidden min-w-0',
                             event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
                             'group-hover:text-foreground group-hover:font-medium',
                           )}

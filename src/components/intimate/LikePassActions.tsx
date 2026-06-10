@@ -30,7 +30,7 @@ export function LikePassActions({
     return (
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-badge border border-foreground bg-foreground px-3 py-1 text-13 text-background',
+          'inline-flex items-center gap-1.5 rounded-badge border border-foreground bg-foreground px-2.5 py-1 text-13 text-background',
           className,
         )}
       >

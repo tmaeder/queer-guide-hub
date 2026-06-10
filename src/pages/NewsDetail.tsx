@@ -361,11 +361,11 @@ export default function NewsDetail() {
             </LocalizedLink>
           )}
           {!story && article.category && article.category !== 'general' && (
-            <Eyebrow as="div" className="mb-3">
+            <Eyebrow as="div" className="mb-2">
               {getCategoryLabel(article.category)}
             </Eyebrow>
           )}
-          <div className="flex items-center gap-4 mb-3 flex-wrap">
+          <div className="flex items-center gap-4 mb-4 flex-wrap">
             <h1 className="text-display md:text-headline-lg font-bold leading-[1.05] tracking-tight m-0">
               <Editable
                 contentType="news_articles"
@@ -482,7 +482,7 @@ export default function NewsDetail() {
                   )
                 }
                 as="div"
-                className="mt-3"
+                className="mt-2"
               >
                 {article.editorial_note ? (
                   <p className="m-0 text-base italic leading-relaxed">

@@ -64,7 +64,7 @@ export function AmenityDisplay({ amenities, accessibility, accessibilityNotes }:
               {t('pages.venueDetail.accessibility', 'Accessibility')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
+          <CardContent className="flex flex-col gap-4">
             {accessList.length > 0 && (
               <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                 {accessList.map((slug) => <Row key={slug} slug={slug} />)}

@@ -30,7 +30,7 @@ export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
   );
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <Label>Pick an avatar</Label>
         <Button
@@ -43,7 +43,7 @@ export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
           Reroll
         </Button>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-4">
         {options.map((cfg, i) => {
           const selected = sameConfig(value, cfg);
           return (

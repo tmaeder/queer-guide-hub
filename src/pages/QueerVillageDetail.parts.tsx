@@ -223,7 +223,7 @@ export function VillageOverviewTab({ village, onContentUpdated }: { village: Vil
               >
                 <p className="leading-relaxed text-muted-foreground">
                   {village.description ||
-                    `Discover ${village.name}, a vibrant LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
+                    `${village.name} is an LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
                 </p>
               </Editable>
             </CardContent>
@@ -321,7 +321,7 @@ export function VillageVenuesTab({
               style={{ margin: '0 auto 16px' }}
               className="text-muted-foreground"
             />
-            <h3 className="text-lg text-muted-foreground">No venues found</h3>
+            <h3 className="text-lg text-muted-foreground">No venues yet</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               Check back later as we continue to add venues in this area.
             </p>
