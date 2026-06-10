@@ -444,6 +444,3 @@ verify_jwt = false
 
 [functions.source-shopify-public]
 verify_jwt = false
-
-[functions.marketplace-tag-backfill]
-verify_jwt = false
