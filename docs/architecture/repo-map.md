@@ -39,7 +39,7 @@ Frontend heavy deps are all lazy-loaded and split into manual Vite chunks (see `
 Query/Router/Table; Supabase JS client (`src/integrations`). No `moment`/full `lodash`.
 
 Backend: edge functions share logic through `supabase/functions/_shared/` (supabase-client,
-dedup-engine, confidence-scoring, ai-enrichment, automation-utils, venue-consensus, …) — no
+confidence-scoring, ai-enrichment, automation-utils, venue-consensus, …) — no
 significant duplicate-helper drift.
 
 ## Surface area (public)
