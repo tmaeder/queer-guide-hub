@@ -5,7 +5,7 @@
 // AI bge-base-en-v1.5 pipeline (same model as populate-embeddings).
 
 import 'https://deno.land/x/xhr@0.1.0/mod.ts';
-import { getCorsHeaders, errorResponse, getServiceClient, jsonResponse } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts';
 
 const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '';
 const CF_EMBEDDINGS_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/v1/embeddings`;
@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: getCorsHeaders(req) });
   }
+  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const token = Deno.env.get('CLOUDFLARE_API_TOKEN');
   if (!token) return errorResponse('CLOUDFLARE_API_TOKEN missing', 500, req);
 
