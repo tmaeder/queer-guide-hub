@@ -137,7 +137,7 @@ export function IntimateMatchThread({
               className="inline-flex items-center gap-2 text-sm font-medium"
             >
               <ImageIcon className="h-4 w-4" aria-hidden />
-              Unlock my photos
+              Share my photos
             </Label>
             <Switch
               id={`photo-unlock-${conversationId}`}
