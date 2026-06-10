@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { Suspense } from 'react';
 
 // CityMapTab renders MapShell, which needs router state (useSearchParams),

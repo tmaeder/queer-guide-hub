@@ -2,7 +2,7 @@
  * Shared utilities for all automation pipeline edge functions.
  * Provides module config loading, rate limiting, change writing, and run logging.
  *
- * Used by both the unified content-automation function and legacy individual functions.
+ * Used by analyze-flyer, geo-link-content and resolve-or-create-city.
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'

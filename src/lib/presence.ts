@@ -1,6 +1,5 @@
 // Supabase Realtime Presence helpers — channel naming + visibility gating.
 //
-// The actual subscription is in usePresence() (src/hooks/usePresence.ts).
 // This module owns the channel-name contract and the privacy gate logic, so
 // new presence-aware features (groups, conversations, discovery) all reach
 // for the same primitives.

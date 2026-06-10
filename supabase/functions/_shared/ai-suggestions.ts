@@ -1,9 +1,8 @@
 // Shared helpers for the ai_suggestions queue (schema in
 // 20260429190000_image_assets_and_ai_suggestions.sql).
 //
-// Two consumers:
-//   - supabase/functions/search-intelligence/index.ts   (admin review/approve route)
-//   - supabase/functions/auto-tag-content/index.ts      (AI tag producer)
+// Consumer: supabase/functions/search-intelligence/index.ts (admin review/approve
+// route). The auto-tag-content producer was retired in the 2026-06-10 declutter.
 //
 // Keep `applySuggestion` byte-compatible with the original copy in
 // search-intelligence/index.ts — the route's existing call expectations are
