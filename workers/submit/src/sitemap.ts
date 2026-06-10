@@ -60,7 +60,8 @@ function assertPublicHttpUrl(raw: string): void {
   }
   const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (m) {
-    const [a, b] = m.slice(1).map(Number);
+    const a = Number(m[1]);
+    const b = Number(m[2]);
     if (
       a === 10 ||
       a === 127 ||
