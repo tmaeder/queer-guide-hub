@@ -135,7 +135,7 @@ export const EditorialGuideCard = memo(function EditorialGuideCard({
         {guide.dek && (
           <p className="italic text-body-lg text-muted-foreground">{guide.dek}</p>
         )}
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-2">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
           <span className="inline-flex items-center gap-2 text-13 text-muted-foreground">
             <Clock size={14} aria-hidden />
             {guide.pick_count} picks

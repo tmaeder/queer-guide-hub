@@ -50,7 +50,7 @@ export function NextLegFromHere({ cityId, latitude, longitude }: Props) {
               <li key={row.id}>
                 <LocalizedLink
                   to={`/city/${row.slug || row.id}`}
-                  className="flex items-center justify-between gap-3 rounded-element border px-4 py-3 no-underline transition-colors hover:border-foreground/40"
+                  className="flex items-center justify-between gap-2 rounded-element border px-4 py-2 no-underline transition-colors hover:border-foreground/40"
                 >
                   <span className="flex min-w-0 items-baseline gap-2">
                     {row.countries?.flag_emoji ? (

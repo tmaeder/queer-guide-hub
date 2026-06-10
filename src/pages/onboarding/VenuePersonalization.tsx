@@ -164,7 +164,7 @@ const VenuePersonalization = () => {
       )}
 
       {step === 3 && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <Input
             placeholder={t('venues.onboarding.cityPlaceholder', 'Type your city')}
             value={city}

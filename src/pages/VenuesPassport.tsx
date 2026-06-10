@@ -121,7 +121,7 @@ const VenuesPassport = () => {
           {t('venues.passport.visited', { count: venues.length, defaultValue: '{{count}} venues visited' })}
         </h2>
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-20 w-full rounded-container" />
             ))}
@@ -134,10 +134,10 @@ const VenuesPassport = () => {
           <div className="space-y-8">
             {groupedByCity.map(([city, list]) => (
               <div key={city}>
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   {city} · {list.length}
                 </h3>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {list.map((v) => (
                     <li key={v.id} className="border rounded-container overflow-hidden flex">
                       {v.images?.[0] && (
@@ -147,7 +147,7 @@ const VenuesPassport = () => {
                           aria-hidden
                         />
                       )}
-                      <div className="p-3 min-w-0">
+                      <div className="p-4 min-w-0">
                         <LocalizedLink
                           to={`/venues/${v.slug ?? v.id}`}
                           className="text-sm font-semibold truncate block"

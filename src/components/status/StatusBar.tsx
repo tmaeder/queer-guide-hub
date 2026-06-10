@@ -45,7 +45,7 @@ export function StatusBar({ status, compact = false, className, onClick }: Statu
         type={interactive ? 'button' : undefined}
         onClick={onClick}
         className={cn(
-          'inline-flex items-center gap-2 rounded-element border border-border px-3 py-1.5 text-sm text-muted-foreground',
+          'inline-flex items-center gap-2 rounded-element border border-border px-2.5 py-1.5 text-sm text-muted-foreground',
           interactive && 'hover:bg-muted/40 transition-colors',
           className,
         )}

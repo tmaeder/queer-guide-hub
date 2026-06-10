@@ -61,7 +61,7 @@ export function TripCockpit() {
               {title}
             </h2>
           </LocalizedLink>
-          <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-13 text-muted-foreground">
+          <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-13 text-muted-foreground">
             {current.primary_city_name ? (
               <span className="inline-flex items-center gap-1.5">
                 <MapPin size={14} aria-hidden />
@@ -168,7 +168,7 @@ function CockpitSkeleton() {
     <section className="mb-10 rounded-container border bg-background p-8" aria-hidden>
       <div className="h-4 w-24 bg-muted" />
       <div className="mt-4 h-8 w-2/3 bg-muted" />
-      <div className="mt-3 flex gap-4">
+      <div className="mt-2 flex gap-4">
         <div className="h-4 w-24 bg-muted" />
         <div className="h-4 w-32 bg-muted" />
       </div>

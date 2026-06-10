@@ -174,7 +174,7 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
                   type="button"
                   onClick={() => toggleTag(t)}
                   className={cn(
-                    'rounded-badge border border-border px-3 py-1 text-13',
+                    'rounded-badge border border-border px-2.5 py-1 text-13',
                     form.tags.has(t)
                       ? 'bg-foreground text-background'
                       : 'text-muted-foreground hover:bg-muted/40',
@@ -264,7 +264,7 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
             </div>
           </section>
 
-          <section className="space-y-3 rounded-element border border-border p-4">
+          <section className="space-y-2 rounded-element border border-border p-4">
             <Label>Who can see this</Label>
             <p className="text-13 text-muted-foreground">
               Status defaults to invisible. Choose where it shows up.
@@ -277,7 +277,7 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
                 ['in_discovery', 'Discovery / cruising (if enabled)'],
               ] as const
             ).map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between gap-3">
+              <div key={key} className="flex items-center justify-between gap-2">
                 <Label htmlFor={`vis-${key}`} className="text-sm font-normal">
                   {label}
                 </Label>

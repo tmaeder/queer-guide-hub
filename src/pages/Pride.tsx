@@ -111,7 +111,7 @@ export default function PridePage() {
           {t('pride.eyebrow')}
         </div>
         <div className="flex flex-wrap items-end gap-4 justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="icon"
@@ -193,7 +193,7 @@ export default function PridePage() {
 
           {/* Map */}
           <section aria-labelledby="map-heading">
-            <h2 id="map-heading" className="text-title font-medium mb-3">
+            <h2 id="map-heading" className="text-title font-medium mb-4">
               {t('pride.map.title')}
             </h2>
             {isLoading ? (

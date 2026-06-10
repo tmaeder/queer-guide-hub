@@ -431,7 +431,7 @@ export default function GroupDetail() {
             </CardHeader>
             <CardContent>
               {groupMembers.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No members found.</p>
+                <p className="text-muted-foreground text-center py-8">No members yet.</p>
               ) : (
                 <GroupMembersList
                   members={groupMembers}

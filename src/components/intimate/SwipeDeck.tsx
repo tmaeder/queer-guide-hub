@@ -99,7 +99,7 @@ export function SwipeDeck({ cards, onLike, onPass, className }: SwipeDeckProps) 
             <motion.div
               key={card.id}
               className={cn(
-                'absolute inset-0 flex flex-col gap-3 overflow-hidden rounded-container border border-border bg-card p-4 select-none',
+                'absolute inset-0 flex flex-col gap-4 overflow-hidden rounded-container border border-border bg-card p-4 select-none',
                 isTop ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none',
               )}
               style={isTop ? { x, rotate, zIndex: 10 } : { zIndex: 10 - i }}
@@ -137,13 +137,13 @@ export function SwipeDeck({ cards, onLike, onPass, className }: SwipeDeckProps) 
                 <>
                   <motion.div
                     style={{ opacity: likeOpacity }}
-                    className="pointer-events-none absolute top-4 right-4 rounded-badge border-2 border-foreground bg-background/90 px-3 py-1 text-sm font-bold uppercase tracking-wider"
+                    className="pointer-events-none absolute top-4 right-4 rounded-badge border-2 border-foreground bg-background/90 px-2.5 py-1 text-sm font-bold uppercase tracking-wider"
                   >
                     Like
                   </motion.div>
                   <motion.div
                     style={{ opacity: passOpacity }}
-                    className="pointer-events-none absolute top-4 left-4 rounded-badge border-2 border-foreground bg-background/90 px-3 py-1 text-sm font-bold uppercase tracking-wider"
+                    className="pointer-events-none absolute top-4 left-4 rounded-badge border-2 border-foreground bg-background/90 px-2.5 py-1 text-sm font-bold uppercase tracking-wider"
                   >
                     Pass
                   </motion.div>

@@ -134,7 +134,7 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
             style={{ left: `${t.leftPct}%` }}
             aria-hidden
           >
-            <span className="absolute top-0 left-1 text-[9px] text-foreground/60">{t.year}</span>
+            <span className="absolute top-0 left-1 text-3xs text-foreground/60">{t.year}</span>
           </div>
         ))}
 

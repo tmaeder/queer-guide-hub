@@ -116,12 +116,12 @@ export function WishlistPicker({ listingId, size = 'tap' }: WishlistPickerProps)
         className="w-72 p-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="border-b border-border px-4 py-3">
+        <div className="border-b border-border px-4 py-2">
           <p className="text-13 uppercase tracking-wide text-muted-foreground">Save to</p>
         </div>
         <div className="max-h-64 overflow-y-auto py-1">
           {wishlists.length === 0 && (
-            <p className="px-4 py-3 text-sm text-muted-foreground">No lists yet — create one below.</p>
+            <p className="px-4 py-2 text-sm text-muted-foreground">No lists yet — create one below.</p>
           )}
           {wishlists.map((w) => {
             const inList = isInWishlist(listingId, w.id);
@@ -145,7 +145,7 @@ export function WishlistPicker({ listingId, size = 'tap' }: WishlistPickerProps)
             );
           })}
         </div>
-        <div className="border-t border-border p-3">
+        <div className="border-t border-border p-4">
           <div className="flex gap-2">
             <Input
               value={newTitle}

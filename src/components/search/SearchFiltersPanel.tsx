@@ -101,7 +101,7 @@ export const SearchFiltersPanel = ({
     (filters.cluster_ids?.length ?? 0) > 0;
 
   return (
-    <div className="flex flex-col gap-5 p-4">
+    <div className="flex flex-col gap-6 p-4">
       {/* Location */}
       {show('geo') && (
         <div className="flex flex-col gap-2">
@@ -151,7 +151,7 @@ export const SearchFiltersPanel = ({
 
       {/* Price + Free */}
       {(show('price') || show('free')) && (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {show('price') && (
             <div className="flex flex-col gap-2">
               <Label className="flex items-center gap-1 text-sm font-medium">
