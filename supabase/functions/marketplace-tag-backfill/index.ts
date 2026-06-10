@@ -137,7 +137,7 @@ Deno.serve(async (req: Request) => {
 
   for (const l of listings) {
     const started = Date.now()
-    let status = 'skipped'
+    let status: string
     try {
       const currentSlug = l.subcategory_slug ?? ''
       const currentRank = contentTierRank(currentSlug, l.title, l.description)
