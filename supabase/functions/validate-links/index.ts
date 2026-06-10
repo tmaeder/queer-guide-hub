@@ -1,4 +1,5 @@
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 const HEAD_TIMEOUT = 5_000
 const GET_TIMEOUT = 10_000
@@ -27,6 +28,14 @@ interface CheckResult {
 async function checkUrl(rawUrl: string): Promise<CheckResult> {
   const url = normalizeUrl(rawUrl)
   if (!url) return { status: 'BROKEN', httpStatus: null, finalUrl: null, error: 'Empty URL' }
+
+  try {
+    assertPublicHttpUrl(url)
+  } catch {
+    // Private/loopback/metadata target — permanently invalid as a content
+    // link, so let it ride the BROKEN → recheck → auto-remove path.
+    return { status: 'BROKEN', httpStatus: null, finalUrl: null, error: 'Blocked unsafe URL (SSRF guard)' }
+  }
 
   try {
     // Try HEAD first (faster, less bandwidth)
