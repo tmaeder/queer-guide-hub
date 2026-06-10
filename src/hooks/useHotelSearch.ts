@@ -81,7 +81,6 @@ export function useHotelSearch({
           starRating: hotel.stars as number | undefined,
           lgbtqFriendly: hotel.lgbtqFriendly as boolean | undefined,
           bookingUrl: hotel.bookingUrl as string | undefined,
-          supportsInApp: false,
         }))
         // Defensive client-side backstop: never show 0 / invalid-price cards,
         // and respect active price bounds even if the edge function slips.

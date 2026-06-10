@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 export const hotellookProvider: BookingProvider = {
   name: 'hotellook',
   vertical: 'hotel',
-  supportsInApp: false,
 
   async search(params: BookingSearchParams): Promise<BookingResult[]> {
     const { cityName, checkIn, checkOut, guests = 2, currency = 'eur', limit = 12 } = params;
@@ -38,7 +37,6 @@ export const hotellookProvider: BookingProvider = {
       starRating: hotel.stars as number | undefined,
       lgbtqFriendly: hotel.lgbtqFriendly as boolean | undefined,
       bookingUrl: hotel.bookingUrl as string | undefined,
-      supportsInApp: false,
       providerData: hotel,
     }));
   },
