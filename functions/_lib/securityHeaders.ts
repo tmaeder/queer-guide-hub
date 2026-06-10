@@ -63,6 +63,15 @@ const SCRIPT_SRC_HOSTS = [
 // + Microsoft Clarity — allow-listing them re-enables the analytics chain this
 // project intentionally turned off. They stay blocked. (CF's Web Analytics
 // beacon is an external script under script-src hosts, not an inline hash.)
+//
+// Root cause traced 2026-06-10: the stubs (GTM-5KHP3NFH, "first-party mode"
+// Google tag) are injected at the Cloudflare ZONE layer by the
+// "Google tag gateway" setting (API: zones/{id}/settings/google_tag_gateway),
+// AFTER this middleware runs — browser UAs only, so curl never sees them.
+// They reach the page at document lines 2-3 and the nonce CSP blocks them,
+// which is the two console errors on every page. Code-side this is working
+// as designed; the permanent fix is turning OFF "Google tag gateway" in the
+// CF dashboard for the queer.guide zone. Do NOT add the hashes here.
 const CF_PAGES_INLINE_SCRIPT_HASHES: string[] = [];
 
 const FRAME_SRC = [
