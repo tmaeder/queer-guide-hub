@@ -420,6 +420,9 @@ verify_jwt = false
 [functions.amenity-truth-backfill]
 verify_jwt = false
 
+[functions.marketplace-tag-backfill]
+verify_jwt = false
+
 # Passkey ops: enroll/verify-enrollment do a manual JWT check in code; the
 # authenticate/verify-authentication actions run for logged-out users, so
 # platform JWT verification must be off.

@@ -17,6 +17,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
@@ -24,11 +25,11 @@ const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID')!;
 const CF_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN')!;
 const CF_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
+const corsFor = (req: Request) => ({
+  ...getCorsHeaders(req),
   'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+});
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/heic', 'image/webp']);
 const MAX_INPUT_BYTES = 4 * 1024 * 1024;
@@ -73,14 +74,13 @@ function b64ToBytes(b64: string): number[] {
   return out;
 }
 
-function jsonResp(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...cors, 'content-type': 'application/json' },
-  });
-}
-
 Deno.serve(async (req) => {
+  const cors = corsFor(req);
+  const jsonResp = (body: unknown, status = 200): Response =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...cors, 'content-type': 'application/json' },
+    });
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: cors });
 

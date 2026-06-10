@@ -1,6 +1,11 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+
+// waitFor's 1s default flakes when CI workers (or parallel local suites)
+// starve the CPU — passing tests don't get slower, only the failure
+// deadline moves. Keep below test.testTimeout in vite.config.ts.
+configure({ asyncUtilTimeout: 5000 });
 
 // Ensure DOM is reset between tests
 afterEach(() => {

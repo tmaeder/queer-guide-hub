@@ -2,13 +2,26 @@ import { useCallback, useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'qg.marketplace.ageAck';
 // Categories that gate without needing any per-listing flag — useful for the
-// category-page route where listings haven't loaded yet.
+// category-page route where listings haven't loaded yet. Mirrors the adult /
+// explicit department bases in marketplace_content_rating() plus the two
+// adult browse umbrellas (department column).
 const ADULT_CATEGORY_SLUGS = new Set([
+  // fine subcategory slugs (explicit/adult rating base)
   'fetish_gear',
+  'fetish_wear',
   'sex_toys',
+  'anal_toys',
+  'cock_rings_and_stretchers',
+  'pumps_and_enlargement',
+  'chastity',
+  'bdsm_and_bondage',
+  'pup_and_pet_play',
   'lubricant',
   'bdsm',
   'adult_toys',
+  // department umbrellas
+  'intimacy',
+  'bdsm_fetish',
 ]);
 
 export function isAdultListing(

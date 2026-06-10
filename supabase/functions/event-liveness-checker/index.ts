@@ -7,6 +7,7 @@
 // Auth: X-Webhook-Secret (cron) or admin/service-role (manual). Body: { batch_limit?, dry_run?, event_ids? }.
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 const GET_TIMEOUT = 10_000
 const MAX_BODY_BYTES = 600_000
@@ -34,6 +35,13 @@ function normalizeUrl(url: string): string {
 async function fetchBody(rawUrl: string): Promise<{ httpStatus: number | null; body: string | null; error: string | null }> {
   const url = normalizeUrl(rawUrl)
   if (!url) return { httpStatus: null, body: null, error: 'empty_url' }
+  try {
+    assertPublicHttpUrl(url)
+  } catch {
+    // Private/loopback/metadata target — never fetch; classify() sees a null
+    // httpStatus and yields 'unknown' (inconclusive), so nothing is demoted.
+    return { httpStatus: null, body: null, error: 'blocked_unsafe_url' }
+  }
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), GET_TIMEOUT)
   try {

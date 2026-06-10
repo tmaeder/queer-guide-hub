@@ -139,6 +139,7 @@ async function fetchVenuesInBbox(
       'id, slug, name, category, latitude, longitude, city, country, is_featured, images, hours, price_range',
     )
     .neq('data_source', 'refuge-restrooms')
+    .neq('review_status', 'archived')
     .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)

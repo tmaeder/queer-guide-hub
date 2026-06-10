@@ -28,19 +28,26 @@ describe('MarketplaceCategoryTiles', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('prettifies tile slugs (snake-case → Title Case)', () => {
+  it('groups fine subcategories into department umbrellas', () => {
     hookMock.mockReturnValue({
-      data: [{ slug: 'home_decor', count: 3 }, { slug: 'art-prints', count: 1 }],
+      data: [
+        { slug: 'sex_toys', count: 2931 },
+        { slug: 'anal_toys', count: 757 },
+        { slug: 'underwear_and_swimwear', count: 1758 },
+      ],
       loading: false,
     });
     render(<MarketplaceCategoryTiles />);
-    expect(screen.getByText('Home Decor')).toBeInTheDocument();
-    expect(screen.getByText('Art Prints')).toBeInTheDocument();
+    // sex_toys + anal_toys collapse into one Intimacy tile with summed count.
+    expect(screen.getByText('Intimacy')).toBeInTheDocument();
+    expect(screen.getByText('3,688 listings')).toBeInTheDocument();
+    expect(screen.getByText('Underwear')).toBeInTheDocument();
+    expect(screen.queryByText('Sex Toys')).toBeNull();
   });
 
   it('uses singular vs plural listing copy', () => {
     hookMock.mockReturnValue({
-      data: [{ slug: 'x', count: 1 }, { slug: 'y', count: 5 }],
+      data: [{ slug: 'swimwear', count: 1 }, { slug: 'jewelry_and_pins', count: 5 }],
       loading: false,
     });
     render(<MarketplaceCategoryTiles />);
@@ -48,10 +55,26 @@ describe('MarketplaceCategoryTiles', () => {
     expect(screen.getByText('5 listings')).toBeInTheDocument();
   });
 
-  it('links each tile to its category route', () => {
-    hookMock.mockReturnValue({ data: [{ slug: 'foo', count: 2 }], loading: false });
+  it('links each department tile to its category route', () => {
+    hookMock.mockReturnValue({ data: [{ slug: 'books_and_art', count: 2 }], loading: false });
     render(<MarketplaceCategoryTiles />);
-    const tileLink = screen.getByRole('link', { name: /foo/i });
-    expect(tileLink).toHaveAttribute('href', '/marketplace/category/foo');
+    const tileLink = screen.getByRole('link', { name: /books & art/i });
+    expect(tileLink).toHaveAttribute('href', '/marketplace/category/books_art');
+  });
+
+  it('SFW departments precede the adult umbrellas', () => {
+    hookMock.mockReturnValue({
+      data: [
+        { slug: 'sex_toys', count: 100 },
+        { slug: 'apparel_and_accessories', count: 50 },
+      ],
+      loading: false,
+    });
+    render(<MarketplaceCategoryTiles />);
+    const labels = screen.getAllByRole('link').map((a) => a.textContent ?? '');
+    const apparelIdx = labels.findIndex((t) => t.includes('Apparel'));
+    const intimacyIdx = labels.findIndex((t) => t.includes('Intimacy'));
+    expect(apparelIdx).toBeGreaterThanOrEqual(0);
+    expect(apparelIdx).toBeLessThan(intimacyIdx);
   });
 });

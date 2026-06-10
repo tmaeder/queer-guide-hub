@@ -35,5 +35,8 @@ Deno.serve(async (req) => {
       } catch { /* skip */ }
     }
     return json({ processed: rows.length, found, last, nocredits })
-  } catch (e) { return json({ error: String(e) }, 500) }
+  } catch (e) {
+    console.error('venue-photo-foursquare error', e)
+    return json({ error: 'internal error' }, 500)
+  }
 })

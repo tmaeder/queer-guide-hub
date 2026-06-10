@@ -20,6 +20,8 @@ export type MarketplaceSort =
 
 export interface MarketplaceFiltersInput {
   category?: string;
+  /** browse umbrella (apparel, underwear, intimacy, …) — generated `department` column. */
+  department?: string;
   subcategory?: string;
   location?: string;
   priceRange?: { min: number; max: number };
@@ -223,6 +225,10 @@ export function useMarketplace() {
 
       if (filters?.category) {
         query = query.eq('category', filters.category);
+      }
+
+      if (filters?.department) {
+        query = query.eq('department', filters.department);
       }
 
       if (filters?.subcategory) {
