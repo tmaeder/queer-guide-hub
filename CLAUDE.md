@@ -163,7 +163,7 @@ queer-guide-hub/
 - **Edge functions:** `supabase functions deploy <function-name>`
 - **Workers:** `wrangler deploy` from each worker directory
 - **Scraper:** GitHub Actions — daily full refresh (03:15 UTC) + hourly events
-- **DB migrations:** applied via Supabase CLI or dashboard
+- **DB migrations:** merged to `main` auto-apply via CI `db push` (history drift repaired 2026-06-10; remote `schema_migrations` == repo files). If applying early via MCP `apply_migration` (records history), commit the file with the SAME version — CI then skips it. Raw Management-API SQL does NOT record history → drift returns.
 
 ## Testing
 
@@ -189,6 +189,8 @@ The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git co
 ### Migrations
 - Cannot use `CONCURRENTLY` (migrations run inside transactions)
 - `supabase/migrations/` is large — check for conflicts before adding new ones (see Repo stats for current count)
+- NEVER reuse a 14-digit version across two files — duplicate versions break `db push` file↔history matching (34 dups renamed 2026-06-10, PR #1553)
+- History repair: `supabase migration repair --status applied|reverted <versions>` from a checkout with all files + `supabase/.temp` link state. Pre-repair backup: `supabase_migrations.schema_migrations_backup_20260610`
 
 ### Frontend
 - Path alias: `@/*` → `src/*`
