@@ -482,3 +482,19 @@ verify_jwt = false
 # platform JWT verification must be off.
 [functions.secure-passkey-operations]
 verify_jwt = false
+
+# Recovered 2026-06-10 (deployed-but-not-in-git audit) — flags mirror deployed verify_jwt
+[functions.import-foursquare-venues]
+verify_jwt = false
+
+[functions.pipeline-enrich-country-editorial]
+verify_jwt = false
+
+[functions.personality-extract-from-bio]
+verify_jwt = false
+
+[functions.source-shopify-public]
+verify_jwt = false
+
+[functions.marketplace-tag-backfill]
+verify_jwt = false
