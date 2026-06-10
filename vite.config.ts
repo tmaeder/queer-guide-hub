@@ -53,6 +53,10 @@ export default defineConfig(({ mode }) => ({
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
+    // 5s default flakes under parallel load (saturated CI workers /
+    // concurrent local suites); headroom above asyncUtilTimeout (5s)
+    // set in src/test/setup.ts.
+    testTimeout: 15000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov', 'json-summary'],

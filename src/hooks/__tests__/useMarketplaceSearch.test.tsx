@@ -15,12 +15,29 @@ vi.mock('@/lib/searchFetch', () => ({
 }));
 
 const supabaseMock = vi.hoisted(() => {
-  const inFn = vi.fn();
-  const eqFn = vi.fn(() => ({ in: inFn }));
-  const selectFn = vi.fn(() => ({ eq: eqFn }));
+  // The rows query chains .in() twice (id filter + SFW content_rating
+  // filter, added in PR #1538), so the builder must be a self-returning
+  // thenable — a plain mockResolvedValueOnce breaks on the second .in().
+  const rowResults: Array<{ data: unknown; error: unknown }> = [];
+  const builder: Record<string, unknown> = {};
+  const inFn = vi.fn(() => builder);
+  const eqFn = vi.fn(() => builder);
+  builder.in = inFn;
+  builder.eq = eqFn;
+  builder.then = (onFulfilled: (v: unknown) => unknown) =>
+    Promise.resolve(rowResults.shift() ?? { data: [], error: null }).then(onFulfilled);
+  const selectFn = vi.fn(() => builder);
   const fromFn = vi.fn(() => ({ select: selectFn }));
   const rpcFn = vi.fn(() => Promise.resolve({ data: [], error: null }));
-  return { from: fromFn, rpc: rpcFn, _select: selectFn, _eq: eqFn, _in: inFn };
+  return {
+    from: fromFn,
+    rpc: rpcFn,
+    _select: selectFn,
+    _eq: eqFn,
+    _in: inFn,
+    _queueRows: (r: { data: unknown; error: unknown }) => rowResults.push(r),
+    _rowResults: rowResults,
+  };
 });
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -33,8 +50,9 @@ vi.mock('@/utils/fetchWithRetry', () => ({
 
 beforeEach(() => {
   searchFetchMock.mockReset();
-  supabaseMock._in.mockReset();
+  supabaseMock._in.mockClear();
   supabaseMock.from.mockClear();
+  supabaseMock._rowResults.length = 0;
 });
 
 describe('useMarketplace search routing', () => {
@@ -45,7 +63,7 @@ describe('useMarketplace search routing', () => {
       totalHits: 3,
     });
     // Supabase resolves the three full rows.
-    supabaseMock._in.mockResolvedValueOnce({
+    supabaseMock._queueRows({
       data: [
         { id: 'a', title: 'Alpha', slug: 'alpha' },
         { id: 'b', title: 'Bravo', slug: 'bravo' },

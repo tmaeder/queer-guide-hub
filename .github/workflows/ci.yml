@@ -54,7 +54,11 @@ jobs:
       - run: npm ci --prefer-offline --no-audit
       # Coverage gate is enforced via thresholds in vite.config.ts
       # test.coverage.thresholds (Phase 6, locked 2026-05-16).
+      # VITE_MAP_SHELL matches the production build (deploy-pages.yml)
+      # so tests exercise the MapShell path, not the legacy fallback.
       - run: npm run test:coverage
+        env:
+          VITE_MAP_SHELL: 'true'
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v7
