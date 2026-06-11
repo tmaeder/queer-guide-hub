@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useUserMode } from '@/hooks/useUserMode';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileData } from '@/hooks/useProfileData';
 import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
@@ -116,10 +115,8 @@ interface ContentProps {
 
 function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPasskey, user }: ContentProps) {
   const [searchParams] = useSearchParams();
-  const { setMode, datingEnabled } = useUserMode();
-  // Mode-driven IA (2026-06-06): a lean core everyone fills —
-  //   profile (You) / preferences / privacy / account — plus a dating section
-  //   whose depth only mounts when dating mode is on. Old slugs remap below so
+  // Lean core everyone fills — profile (You) / preferences / privacy / account —
+  //   plus a dating section open to all users. Old slugs remap below so
   //   existing deep links keep resolving.
   const rawTab = searchParams.get('tab') || 'profile';
   const LEGACY_TAB_MAP: Record<string, string> = {
@@ -334,53 +331,15 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
             </div>
           </TabsContent>
 
-          {/* Dating — full depth, only when dating mode is on */}
+          {/* Dating — available to everyone; intimate details still opt-in inside */}
           <TabsContent value="dating">
-            {datingEnabled ? (
-              <div className="flex flex-col gap-6">
-                <IdentityTab formData={formData} onChange={handleInputChange} onComingOutChange={handleComingOutChange} />
-                <RelationshipsTab formData={formData} onChange={handleInputChange} />
-                <IntimateTab />
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="pt-6 flex flex-col gap-4">
-                  <div>
-                    <p className="font-semibold">Dating is off</p>
-                    <p className="text-sm text-muted-foreground">
-                      Turn on dating mode to set up your dating and identity profile — relationship
-                      style, intimacy, and what you're looking for. Nothing here is shown until you
-                      opt in, and you can turn it off again any time.
-                    </p>
-                  </div>
-                  <Button
-                    className="rounded-element self-start"
-                    onClick={() => setMode('dating')}
-                  >
-                    <Heart size={16} className="mr-2" />
-                    Turn on dating mode
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            <div className="flex flex-col gap-6">
+              <IdentityTab formData={formData} onChange={handleInputChange} onComingOutChange={handleComingOutChange} />
+              <RelationshipsTab formData={formData} onChange={handleInputChange} />
+              <IntimateTab />
+            </div>
           </TabsContent>
         </Tabs>
-
-        {datingEnabled && (
-          <section className="mt-10 border-t border-border pt-6">
-            <p className="text-sm text-muted-foreground">
-              Dating mode is on.{' '}
-              <button
-                type="button"
-                className="underline underline-offset-4"
-                onClick={() => setMode('community')}
-              >
-                Turn it off
-              </button>{' '}
-              — your dating profile stays saved, just hidden.
-            </p>
-          </section>
-        )}
       </div>
 
       {/* Sticky auto-save status bar */}
