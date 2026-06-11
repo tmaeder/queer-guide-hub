@@ -72,13 +72,8 @@ affected public personality detail page** from ~19:45 UTC.
 strings, unwrap `object.text`, drop the rest) — repairs all pages on deploy and keeps
 the structured data in the DB.
 
-**Open (needs operator approval):** batched DB cleanup of the 1,673 junk rows:
-
-```sql
--- run in batches of ≤300 (search_documents trigger fires per row)
-WITH b AS (SELECT id FROM personalities WHERE fields = '[{}]'::jsonb LIMIT 300)
-UPDATE personalities p SET fields = '[]'::jsonb FROM b WHERE p.id = b.id;
-```
-
-The `{"parties":…}` rows and structured achievements can stay (UI now tolerates them);
+**DB cleanup completed 2026-06-11 (operator-approved):** the 1,673 literal-`[{}]` rows
+were set to `[]` in 300-row batches, plus ~19 rows with a trailing `{}` appended to
+real string arrays had the empty objects stripped. 0 empty-object elements remain.
+The `{"parties":…}` rows (131) and structured achievements stay (UI tolerates them);
 longer term the import transform should write strings or a dedicated column.
