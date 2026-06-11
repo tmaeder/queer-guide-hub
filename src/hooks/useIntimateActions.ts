@@ -2,22 +2,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-export function useVerifiedEmail() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ['verified-email', user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('verified_email')
-        .eq('id', user!.id)
-        .maybeSingle();
-      return Boolean(data?.verified_email);
-    },
-  });
-}
-
 export function useProfileDisplay(userId: string | undefined) {
   return useQuery({
     queryKey: ['profile-display', userId],
