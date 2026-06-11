@@ -13,6 +13,11 @@ const QUEUE_CONFIG: Record<string, number> = {
 const MAX_MESSAGES_PER_QUEUE = 10
 const MAX_TOTAL_CONCURRENCY = 20
 
+// Must match the workflow_runs_triggered_by_check constraint. Messages can
+// carry arbitrary triggered_by values (e.g. 'bulk-create:<uuid>'); anything
+// outside the allowed set is clamped to 'system' so the insert can't fail.
+const ALLOWED_TRIGGERED_BY = new Set(['cron', 'webhook', 'admin', 'api', 'system', 'db_trigger'])
+
 interface QueueMessage {
   msg_id: number
   read_ct: number
@@ -234,8 +239,11 @@ async function handleDispatch(
       }
 
       // Merge default payload with message payload
-      const { _workflow, _triggered_by, idempotency_key: _idk, ...messagePayload } = msg.message
+      const { workflow: _workflow, triggered_by: _triggered_by, idempotency_key: _idk, ...messagePayload } = msg.message
       const mergedPayload = { ...def.default_payload, ...messagePayload }
+
+      const rawTriggeredBy = (msg.message?.triggered_by as string) || 'cron'
+      const triggeredBy = ALLOWED_TRIGGERED_BY.has(rawTriggeredBy) ? rawTriggeredBy : 'system'
 
       const { data: run, error: insertError } = await supabase
         .from('workflow_runs')
@@ -248,7 +256,7 @@ async function handleDispatch(
           attempt,
           max_attempts: maxAttempts,
           input_payload: mergedPayload,
-          triggered_by: msg.message?.triggered_by || 'cron',
+          triggered_by: triggeredBy,
           idempotency_key: idempotencyKey || null,
           started_at: new Date().toISOString(),
         })
