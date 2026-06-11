@@ -303,21 +303,20 @@ export function useMarketplace() {
 
       query = query.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
-      const [listingsResult, brokenResult] = await Promise.all([
-        queryWithRetry(() => query) as Promise<{ data: unknown[]; count: number | null; error: Error | null }>,
-        supabase.rpc('get_broken_marketplace_ids'),
-      ]);
+      // Broken listings are demoted to status='inactive' server-side by the
+      // marketplace-link-checker; get_broken_marketplace_ids is admin-only
+      // since the 20260527 linter cleanup, so no client-side filter here.
+      const listingsResult = (await queryWithRetry(() => query)) as {
+        data: unknown[];
+        count: number | null;
+        error: Error | null;
+      };
 
       if (listingsResult.error) throw listingsResult.error;
 
-      const brokenIds = new Set<string>((brokenResult.data ?? []).map((id: string) => id));
-
       const rawData = (listingsResult.data || []) as MarketplaceListing[];
-      const filtered = rawData.filter(
-        (l: MarketplaceListing) => !brokenIds.has(l.id),
-      );
-      setListings(filtered);
-      setTotal(listingsResult.count ?? filtered.length);
+      setListings(rawData);
+      setTotal(listingsResult.count ?? rawData.length);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch listings');
     } finally {
