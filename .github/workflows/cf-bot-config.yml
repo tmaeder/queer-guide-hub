@@ -1,0 +1,54 @@
+name: CF Bot Config
+
+# Operator tool: inspect / fix zone-level bot protection.
+# Bot Fight Mode blocks any request with a crawler UA from a non-verified IP
+# (curl -A Googlebot, the SEO check, UA-spoofed audits) with HTTP 403.
+# See: SEO Check failures 2026-06-11.
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to do
+        required: true
+        default: show
+        type: choice
+        options:
+          - show
+          - disable-bot-fight-mode
+          - enable-bot-fight-mode
+
+permissions:
+  contents: read
+
+jobs:
+  bot-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          ACTION: ${{ github.event.inputs.action }}
+        run: |
+          set -euo pipefail
+          api() {
+            curl -sS -X "$1" "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/bot_management" \
+              -H "Authorization: Bearer ${CF_TOKEN}" \
+              -H "Content-Type: application/json" \
+              ${2:+--data "$2"}
+          }
+          echo "== current config =="
+          api GET | jq '{success, errors, result}'
+          case "$ACTION" in
+            disable-bot-fight-mode)
+              echo "== disabling fight_mode =="
+              api PUT '{"fight_mode": false}' | jq '{success, errors, result}'
+              ;;
+            enable-bot-fight-mode)
+              echo "== enabling fight_mode =="
+              api PUT '{"fight_mode": true}' | jq '{success, errors, result}'
+              ;;
+            show) ;;
+          esac
