@@ -6,7 +6,11 @@
  *   GET /thumb/{id}.{ext}     → 400px-wide thumbnail (generated on first request, cached in R2)
  *   PUT /upload/{id}.{ext}    → upload image to R2 (requires ADMIN_SECRET)
  *   POST /upload-batch        → upload multiple images (requires ADMIN_SECRET)
+ *   POST /avatar/resolve      → privacy proxy: resolve via unavatar.io, cache in R2
+ *                               (requires Supabase user JWT)
  */
+
+import { handleAvatarResolve } from './avatarResolve';
 
 interface Env {
   IMAGES: R2Bucket;
@@ -14,6 +18,8 @@ interface Env {
   THUMB_WIDTH: string;
   THUMB_QUALITY: string;
   ADMIN_SECRET?: string;
+  SUPABASE_URL?: string;
+  SUPABASE_JWT_SECRET?: string;
 }
 
 const CACHE_TTL = 60 * 60 * 24 * 365; // 1 year
@@ -55,6 +61,11 @@ export default {
     // POST /upload-batch — batch upload
     if (req.method === 'POST' && path === 'upload-batch') {
       return handleBatchUpload(req, env);
+    }
+
+    // POST /avatar/resolve — unavatar privacy proxy
+    if (req.method === 'POST' && path === 'avatar/resolve') {
+      return handleAvatarResolve(req, env, corsHeaders(req, env));
     }
 
     // GET — serve image
@@ -137,8 +148,8 @@ async function serveThumb(req: Request, env: Env, ctx: ExecutionContext, key: st
 
   try {
     const resized = await fetch(publicUrl, {
-      cf: { image: { width, quality, format: 'webp' } },
-    } as RequestInit & { cf: { image: { width: number; quality: number; format: string } } });
+      cf: { image: { width, quality, format: 'webp' as const } },
+    });
 
     if (resized.ok) {
       const body = await resized.arrayBuffer();
