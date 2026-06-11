@@ -67,16 +67,9 @@ function sanitizeVenueData(venue: FoursquareVenue): unknown {
 }
 
 async function mapVenueCategory(supabase: unknown, categoryName: string) {
-  let venueCategory = 'Entertainment & Nightlife'
-  let categorySlug = 'entertainment-nightlife'
-
-  if (categoryName === 'Gay Bar') {
-    venueCategory = 'Entertainment & Nightlife'
-    categorySlug = 'entertainment-nightlife'
-  } else {
-    venueCategory = 'Community Organizations'
-    categorySlug = 'community-organizations'
-  }
+  const isGayBar = categoryName === 'Gay Bar'
+  const venueCategory = isGayBar ? 'Entertainment & Nightlife' : 'Community Organizations'
+  const categorySlug = isGayBar ? 'entertainment-nightlife' : 'community-organizations'
 
   const categoryId = await getOrCreateVenueCategory(supabase, venueCategory, categorySlug)
 
