@@ -151,7 +151,8 @@ Deno.serve(async (req: Request) => {
       'Write the hook and long paragraph.',
     ].filter((x) => x !== null).join('\n')
 
-    let hook = '', long = ''
+    let hook: string
+    let long: string
     try {
       const res = await withCircuitBreaker(supabase, BREAKER, () => llmChatCompletion({
         messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: userMsg }],

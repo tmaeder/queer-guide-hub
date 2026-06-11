@@ -50,7 +50,10 @@ async function check(path) {
   const html = await humanRes.text();
   const botHtml = await botRes.text();
   const title = pick(html, /<title[^>]*>([\s\S]*?)<\/title>/i);
-  const description = pick(html, /<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i);
+  // Backreference on the opening quote so apostrophes inside double-quoted
+  // content don't truncate the match (e.g. "who's behind it").
+  const descMatch = /<meta\s+name=["']description["']\s+content=(["'])([\s\S]*?)\1/i.exec(html);
+  const description = descMatch ? descMatch[2].trim() : null;
   const canonical = pick(html, /<link\s+rel=["']canonical["']\s+href=["']([^"']*)["']/i);
   const ogImage = pick(html, /<meta\s+property=["']og:image["']\s+content=["']([^"']*)["']/i);
   const hasJsonLd = /application\/ld\+json/.test(html);
