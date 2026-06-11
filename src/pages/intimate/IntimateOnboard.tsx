@@ -8,7 +8,6 @@ import {
   useSetIntimateText,
   useUpsertIntimateProfile,
 } from '@/hooks/useIntimateProfile';
-import { useVerifiedEmail } from '@/hooks/useIntimateActions';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -78,8 +77,6 @@ export default function IntimateOnboard() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const { data: verifiedEmail } = useVerifiedEmail();
-
   const [stepIdx, setStepIdx] = useState(0);
   const [draft, setDraft] = useState<Draft>({});
   const [consent, setConsent] = useState(false);
@@ -114,17 +111,6 @@ export default function IntimateOnboard() {
 
   if (isLoading) return <div className="p-8 text-muted-foreground">Loading…</div>;
   if (!user) return <div className="p-8">Sign in to continue.</div>;
-  if (verifiedEmail === false) {
-    return (
-      <div className="mx-auto max-w-md p-8">
-        <h1 className="mb-4 text-2xl">Verify your email first</h1>
-        <p className="mb-6 text-muted-foreground">
-          The intimate profile is only available to users with a verified email address.
-        </p>
-        <Button onClick={() => navigate('/settings/profile')}>Go to settings</Button>
-      </div>
-    );
-  }
 
   const visibleIdx = visibleSteps.indexOf(step);
   const isLast = visibleIdx === visibleSteps.length - 1;
