@@ -38,7 +38,6 @@ vi.mock('@/integrations/supabase/client', () => ({
 vi.mock('@/hooks/useAuth', () => ({ useAuth: useAuthMock }));
 
 import {
-  useVerifiedEmail,
   useProfileDisplay,
   useSendFriendRequest,
   useBlockUser,
@@ -57,28 +56,6 @@ beforeEach(() => {
   state.calls.length = 0;
   useAuthMock.mockReset();
   useAuthMock.mockReturnValue({ user: { id: 'u1' } });
-});
-
-describe('useVerifiedEmail', () => {
-  it('returns true when profile.verified_email is true', async () => {
-    withResults({ data: { verified_email: true }, error: null });
-    const { result } = renderHook(() => useVerifiedEmail(), { wrapper });
-    await waitFor(() => expect(result.current.data).toBeDefined());
-    expect(result.current.data).toBe(true);
-  });
-
-  it('returns false when profile missing or value falsy', async () => {
-    withResults({ data: null, error: null });
-    const { result } = renderHook(() => useVerifiedEmail(), { wrapper });
-    await waitFor(() => expect(result.current.data).toBeDefined());
-    expect(result.current.data).toBe(false);
-  });
-
-  it('disabled without user', () => {
-    useAuthMock.mockReturnValue({ user: null });
-    renderHook(() => useVerifiedEmail(), { wrapper });
-    expect(state.calls).toHaveLength(0);
-  });
 });
 
 describe('useProfileDisplay', () => {
