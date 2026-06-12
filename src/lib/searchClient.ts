@@ -7,7 +7,7 @@
  */
 
 const SEARCH_URL =
-	import.meta.env.VITE_SEARCH_PROXY_URL ||
+	import.meta.env?.VITE_SEARCH_PROXY_URL ||
 	"https://search.queer.guide";
 
 const SESSION_KEY = "qg_sid";

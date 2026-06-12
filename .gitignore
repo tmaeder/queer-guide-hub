@@ -25,6 +25,7 @@ tmp/
 # Root-only txt/json dumps (keep nested ones for real code)
 /*.txt
 /*.json
+!/design-sync.config.json
 
 # Local workspaces + tool outputs
 .claude/
@@ -56,3 +57,11 @@ test-results/
 # Bundle visualizer output (vite rollup-plugin-visualizer, enabled via BUNDLE_STATS=1)
 bundle-baselines/
 scripts/output/
+
+# design-sync (claude.ai/design converter scratch)
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+types/
+/index.d.ts
