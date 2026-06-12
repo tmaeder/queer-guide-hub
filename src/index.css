@@ -382,6 +382,11 @@
    Unlayered, this reset beats every layered utility in any build that
    preserves cascade layers (e.g. the tailwindcss CLI) — the Vite prod
    build only escapes that by flattening layers. */
+   Wrapped in @layer base so Tailwind border-* utilities (which live in
+   @layer utilities, a later layer) can override `border-width: 0`. Without
+   the layer this rule is unlayered and wins over every layered utility —
+   `.border`, `.border-b` etc. silently compute to 0px and the whole site
+   loses its 1px chrome. Same pitfall as the link rules below. */
 
 @layer base {
   *,
