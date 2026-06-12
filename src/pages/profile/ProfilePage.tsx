@@ -7,6 +7,7 @@ import { ArrowLeft, Flag, Share2, Shield, User } from 'lucide-react';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { OverviewTab } from '@/components/profile/tabs/OverviewTab';
 import { ContributionsTab } from '@/components/profile/tabs/ContributionsTab';
+import { TravelTab } from '@/components/profile/tabs/TravelTab';
 import { ProgressTab } from '@/components/profile/tabs/ProgressTab';
 import { StatusPicker } from '@/components/status/StatusPicker';
 import { useSecurePublicProfile } from '@/hooks/useSecurePublicProfile';
@@ -17,7 +18,7 @@ import { useCommunityScore } from '@/hooks/useCommunityScore';
 import { usePublicCommunityScore } from '@/hooks/usePublicCommunityScore';
 import { useToast } from '@/hooks/use-toast';
 
-const TABS = ['overview', 'contributions', 'progress'] as const;
+const TABS = ['overview', 'travel', 'contributions', 'progress'] as const;
 type ProfileTab = (typeof TABS)[number];
 
 /**
@@ -183,6 +184,7 @@ export default function ProfilePage() {
             {(
               [
                 ['overview', 'Overview'],
+                ['travel', 'Travel'],
                 ['contributions', 'Contributions'],
                 ...(isOwnProfile ? ([['progress', 'Progress']] as const) : []),
               ] as ReadonlyArray<readonly [string, string]>
@@ -204,6 +206,10 @@ export default function ProfilePage() {
               completionPct={completionPct}
               onPostsClick={() => setTab('contributions')}
             />
+          </TabsContent>
+
+          <TabsContent value="travel">
+            <TravelTab userId={profile.user_id} isOwnProfile={isOwnProfile} />
           </TabsContent>
 
           <TabsContent value="contributions">

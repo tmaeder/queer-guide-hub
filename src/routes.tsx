@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
@@ -168,8 +168,6 @@ const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard
 const IntimateDiscovery = lazyRetry(() => import('./pages/intimate/IntimateDiscovery'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
 const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
-const Footprint = lazyRetry(() => import('./pages/profile/Footprint'));
-const FootprintPublic = lazyRetry(() => import('./pages/profile/FootprintPublic'));
 
 const Feed = lazyRetry(() => import('./pages/Feed'));
 
@@ -197,6 +195,12 @@ const HelpHotlines = lazyRetry(() => import('./pages/HelpHotlines'));
 const CMSPage = lazyRetry(() => import('./pages/Page'));
 const ShareTarget = lazyRetry(() => import('./pages/ShareTarget'));
 const PridePage = lazyRetry(() => import('./pages/Pride'));
+
+/** Maps the legacy /profile/footprint/:userId/public URL to the unified profile Travel tab. */
+function FootprintRedirect() {
+  const { userId } = useParams<{ userId: string }>();
+  return <Navigate to={`/user/${userId}/travel`} replace />;
+}
 
 /** Routes table + per-route ErrorBoundary/Suspense/MotionPage and a11y main element */
 export const AppRoutes = () => {
@@ -519,8 +523,8 @@ export const AppRoutes = () => {
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
                 <Route path="profile/tiers" element={<ProfileTiers />} />
-                <Route path="profile/footprint" element={<Footprint />} />
-                <Route path="profile/footprint/:userId/public" element={<FootprintPublic />} />
+                <Route path="profile/footprint" element={<Navigate to="/me/travel" replace />} />
+                <Route path="profile/footprint/:userId/public" element={<FootprintRedirect />} />
                 <Route path="user/:userId/:tab?" element={<ProfilePage />} />
                 <Route path="sitemap" element={<Sitemap />} />
                 <Route path="feedback" element={<FeedbackBoard />} />
