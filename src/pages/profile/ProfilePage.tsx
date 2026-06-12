@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Flag, Share2, Shield, User } from 'lucide-react';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { OverviewTab } from '@/components/profile/tabs/OverviewTab';
 import { ContributionsTab } from '@/components/profile/tabs/ContributionsTab';
 import { TravelTab } from '@/components/profile/tabs/TravelTab';
@@ -118,6 +119,21 @@ export default function ProfilePage() {
             <ArrowLeft size={16} className="mr-2" />
             Back to directory
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if ((profile as Record<string, unknown>).locked && !isOwnProfile) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12 flex flex-col items-center gap-4">
+          <Shield size={48} className="text-muted-foreground" aria-hidden />
+          <div>
+            <p className="text-base font-medium mb-2">{profile.display_name || 'Anonymous User'}</p>
+            <p className="text-sm text-muted-foreground">This profile is only visible to friends.</p>
+          </div>
+          <UserRelationshipActions targetUserId={profile.user_id} />
         </div>
       </div>
     );

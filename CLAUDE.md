@@ -76,6 +76,7 @@ queer-guide-hub/
 - **Migrations:** 578
 - **Migrations:** 574
 - **Migrations:** 575
+- **Migrations:** 576
 - **Migrations:** 572
 - **Migrations:** 568
 - **Migrations:** 564

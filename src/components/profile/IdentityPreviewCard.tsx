@@ -7,20 +7,22 @@ import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import type { AvatarConfig } from '@/components/profile/AvatarBuilder';
 import { cn } from '@/lib/utils';
 
-export type VisibilityLens = 'public' | 'community' | 'private';
+export type VisibilityLens = 'public' | 'friends' | 'private';
 
 const LENS_LABEL: Record<VisibilityLens, string> = {
   public: 'Anyone',
-  community: 'Community',
+  friends: 'Friends',
   private: 'Only you',
 };
-const LENS_ORDER: VisibilityLens[] = ['public', 'community', 'private'];
+const LENS_ORDER: VisibilityLens[] = ['public', 'friends', 'private'];
 
-/** Does a field with `vis` (public|friends|private) show at `lens`? */
+/** Does a field with `vis` (public|friends|private) show at `lens`?
+ * Friends-visibility fields are only shown to accepted friends (server-enforced),
+ * so the middle lens previews the friend view — not the whole community. */
 function visibleAt(vis: string | undefined, lens: VisibilityLens): boolean {
   const v = vis ?? 'public';
   if (lens === 'private') return true;
-  if (lens === 'community') return v === 'public' || v === 'friends';
+  if (lens === 'friends') return v === 'public' || v === 'friends';
   return v === 'public';
 }
 

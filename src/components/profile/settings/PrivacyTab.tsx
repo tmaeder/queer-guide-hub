@@ -10,14 +10,13 @@ import type { ProfileFormData } from '@/types/profileForm';
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Public' },
-  { value: 'community', label: 'Community' },
+  { value: 'community', label: 'Community (signed-in members)' },
+  { value: 'friends', label: 'Friends' },
   { value: 'private', label: 'Private' },
 ];
 
-/** Legacy stored value — 'friends' renamed to 'community' (2026-06 profile rebuild). */
 function normalizeVisibility(v: string | undefined, fallback: string): string {
-  if (!v) return fallback;
-  return v === 'friends' ? 'community' : v;
+  return v || fallback;
 }
 
 interface PrivacyTabProps {

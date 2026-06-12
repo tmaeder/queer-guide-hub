@@ -4,7 +4,7 @@ import { SocialSummaryRow } from '@/components/profile/SocialSummaryRow';
 import { ActivityStrip } from '@/components/profile/ActivityStrip';
 import { CompletionNudge } from '@/components/profile/CompletionNudge';
 import { GapPromptCard } from '@/components/profile/GapPromptCard';
-import { sectionVisible, type ProfileLens } from '@/lib/profileLens';
+import { previewFilterProfile, sectionVisible, type ProfileLens } from '@/lib/profileLens';
 
 interface OverviewTabProps {
   profile: Record<string, unknown>;
@@ -54,9 +54,8 @@ export function OverviewTab({
       {ownView && <ActivityStrip />}
 
       <SecureProfileViewer
-        profile={profile}
-        isOwnProfile={isOwnProfile}
-        lens={isOwnProfile ? lens : 'you'}
+        profile={isOwnProfile ? previewFilterProfile(profile, lens) : profile}
+        isOwnProfile={ownView}
       />
     </div>
   );
