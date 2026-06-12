@@ -11,11 +11,11 @@ vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null, isLoa
 vi.mock('@/hooks/useProfileData', () => ({ useProfileData: () => ({ data: null, isLoading: false }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
-import ProfileSettings from '../ProfileSettings';
+import Settings from '../Settings';
 
-describe('ProfileSettings', () => {
+describe('Settings', () => {
   it('renders without crashing', () => {
-    const { container } = render(<MemoryRouter><ProfileSettings /></MemoryRouter>);
+    const { container } = render(<MemoryRouter><Settings /></MemoryRouter>);
     expect(container).toBeTruthy();
   });
 });
