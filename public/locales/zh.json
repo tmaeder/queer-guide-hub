@@ -959,8 +959,8 @@
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
       "ageAria": "Confirm age 18 or older",
-      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
-      "combinedAria": "Accept terms, privacy and confirm 18 or older"
+      "combined": "我同意<1>条款</1>和<3>隐私政策</3>，并确认我已年满18岁。",
+      "combinedAria": "同意条款和隐私政策并确认已年满18岁"
     },
     "oauth": {
       "google": "Continue with Google",
