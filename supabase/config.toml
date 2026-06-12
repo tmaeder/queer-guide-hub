@@ -444,3 +444,6 @@ verify_jwt = false
 
 [functions.source-shopify-public]
 verify_jwt = false
+
+[functions.send-username-reminder]
+verify_jwt = false
