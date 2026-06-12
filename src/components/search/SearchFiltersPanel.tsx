@@ -12,6 +12,13 @@ import { useTopicClusters } from '@/hooks/useTopicClusters';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import type { SearchFilterKey } from '@/config/searchTypeConfig';
+import {
+  usePreferenceChips,
+  useDefaultPromptGate,
+  saveTravelPreference,
+  budgetLevelForRange,
+} from '@/hooks/usePreferenceChips';
+import { SaveDefaultPrompt } from '@/components/preferences/SaveDefaultPrompt';
 
 interface SearchFiltersPanelProps {
   filters: SearchFilters;
@@ -58,6 +65,13 @@ export const SearchFiltersPanel = ({
     : undefined;
 
   const { clusters, loading: clustersLoading } = useTopicClusters();
+
+  // "Save as my default budget" — first price-filter use, max one
+  // save-default prompt per session across all surfaces.
+  const { chips: budgetChips, loading: prefsLoading, signedIn } = usePreferenceChips(['budget']);
+  const { show: showBudgetPrompt, dismiss: dismissBudgetPrompt } = useDefaultPromptGate(
+    signedIn && !prefsLoading && budgetChips.length === 0 && !!filters.priceRange,
+  );
 
   const toggleCategory = (value: string, facet: string) => {
     const current = filters.categories ?? [];
@@ -173,6 +187,20 @@ export const SearchFiltersPanel = ({
                   </span>
                 </div>
               </div>
+              {showBudgetPrompt && filters.priceRange && (
+                <SaveDefaultPrompt
+                  message={t(
+                    'prefs.saveDefault.budget',
+                    'Make this price range your default? It will apply to future searches.',
+                  )}
+                  onSave={() =>
+                    saveTravelPreference({
+                      budget_level: budgetLevelForRange(filters.priceRange as [number, number]),
+                    })
+                  }
+                  onDismiss={dismissBudgetPrompt}
+                />
+              )}
             </div>
           )}
           {show('free') && (

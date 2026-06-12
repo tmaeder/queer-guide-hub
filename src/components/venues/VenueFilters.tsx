@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,9 +16,14 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'lucide-react';
 import { useUnifiedTags } from '@/hooks/useUnifiedTags';
-import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useAmenityVocabulary } from '@/hooks/useAmenityVocabulary';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
+import {
+  usePreferenceChips,
+  useDefaultPromptGate,
+  saveTravelPreference,
+} from '@/hooks/usePreferenceChips';
+import { SaveDefaultPrompt } from '@/components/preferences/SaveDefaultPrompt';
 
 interface VenueFiltersProps {
   /** Seed initial search input. Used for URL hydration on mount. */
@@ -31,6 +36,8 @@ interface VenueFiltersProps {
   initialServices?: string[];
   initialAccessibilityAttributes?: string[];
   initialTargetGroups?: string[];
+  /** Traveling preference chips rendered by the host page (Venues). */
+  preferenceChips?: ReactNode;
   onFiltersChange: (filters: {
     search?: string;
     city?: string;
@@ -122,6 +129,7 @@ export function VenueFilters({
   initialServices,
   initialAccessibilityAttributes,
   initialTargetGroups,
+  preferenceChips,
   onFiltersChange,
 }: VenueFiltersProps) {
   const [search, setSearch] = useState(initialSearch);
@@ -146,12 +154,32 @@ export function VenueFilters({
   );
 
   const { tags: unifiedTags, loading: tagsLoading, fetchTags } = useUnifiedTags();
-  const { accessibilityAttributes, loading: accessibilityLoading } = useAccessibilityAttributes();
-  const { vocab: amenityVocab } = useAmenityVocabulary();
+  const { vocab: amenityVocab, loading: vocabLoading } = useAmenityVocabulary();
   const amenityOptions = Array.from(amenityVocab?.values() ?? [])
     .filter((a) => a.kind === 'amenity')
     .map((a) => ({ key: a.slug, label: a.name }));
+  // Accessibility options come from the controlled vocabulary (kind=
+  // 'accessibility'), keyed by SLUG — venues.accessibility_attributes stores
+  // vocab slugs, so the legacy accessibility_attributes-table IDs/names never
+  // matched the column. Selections (and the URL param) are slugs.
+  const accessibilityOptions = Array.from(amenityVocab?.values() ?? [])
+    .filter((a) => a.kind === 'accessibility')
+    .map((a) => ({ key: a.slug, label: a.name }));
+  const accessibilityLabel = (slug: string) =>
+    accessibilityOptions.find((o) => o.key === slug)?.label ?? slug.replace(/[-_]/g, ' ');
   const { targetGroups, loading: targetGroupsLoading } = useTargetGroups();
+
+  // "Save as my accessibility needs" — first-use affordance, max one
+  // save-default prompt per session across all surfaces.
+  const { chips: savedAccessibilityChips, loading: prefsLoading, signedIn } =
+    usePreferenceChips(['accessibility']);
+  const { show: showAccessibilityPrompt, dismiss: dismissAccessibilityPrompt } =
+    useDefaultPromptGate(
+      signedIn &&
+        !prefsLoading &&
+        savedAccessibilityChips.length === 0 &&
+        selectedAccessibilityAttributes.length > 0,
+    );
 
   useEffect(() => {
     fetchTags();
@@ -481,6 +509,18 @@ export function VenueFilters({
         ))}
       </div>
 
+      {/* Traveling preference chips (host-provided) + first-use save prompt */}
+      {preferenceChips}
+      {showAccessibilityPrompt && (
+        <SaveDefaultPrompt
+          message="Save these as your accessibility needs? They'll apply everywhere. Only you see this."
+          onSave={() =>
+            saveTravelPreference({ accessibility_needs: selectedAccessibilityAttributes })
+          }
+          onDismiss={dismissAccessibilityPrompt}
+        />
+      )}
+
       {/* Active Filter Chips — always visible when any filter is on */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-1.5 items-center pt-1 px-1">
@@ -547,7 +587,7 @@ export function VenueFilters({
           ))}
           {selectedAccessibilityAttributes.map((a) => (
             <Badge key={a} variant="secondary">
-              {a}
+              {accessibilityLabel(a)}
               <X
                 style={xStyle}
                 role="button"
@@ -657,8 +697,9 @@ export function VenueFilters({
             accessibilitySelected={selectedAccessibilityAttributes}
             amenities={amenityOptions.length ? amenityOptions : commonAmenities.map((a) => ({ key: a, label: a }))}
             services={commonServices.map((s) => ({ key: s, label: s }))}
-            accessibility={accessibilityAttributes.map((a) => ({ key: a.id, label: a.name }))}
-            accessibilityLoading={accessibilityLoading}
+            accessibility={accessibilityOptions}
+            accessibilityLoading={vocabLoading}
+            accessibilityLabel={accessibilityLabel}
             onToggleAmenity={handleAmenityToggle}
             onToggleService={handleServiceToggle}
             onToggleAccessibility={handleAccessibilityToggle}
@@ -828,6 +869,8 @@ interface WhatYouNeedProps {
   services: { key: string; label: string }[];
   accessibility: { key: string; label: string }[];
   accessibilityLoading?: boolean;
+  /** slug → display name for selected accessibility values. */
+  accessibilityLabel?: (v: string) => string;
   onToggleAmenity: (v: string) => void;
   onToggleService: (v: string) => void;
   onToggleAccessibility: (v: string) => void;
@@ -843,6 +886,7 @@ function WhatYouNeedDropdown({
   services,
   accessibility,
   accessibilityLoading,
+  accessibilityLabel,
   onToggleAmenity,
   onToggleService,
   onToggleAccessibility,
@@ -917,6 +961,7 @@ function WhatYouNeedDropdown({
                 searchPlaceholder="Search accessibility…"
                 emptyMessage="No accessibility features found."
                 loading={accessibilityLoading}
+                byKey
               />
             </TabsContent>
           </Tabs>
@@ -925,12 +970,16 @@ function WhatYouNeedDropdown({
       {total > 0 && (
         <div className="flex flex-wrap gap-1">
           {[
-            ...amenitiesSelected.map((v) => ({ v, toggle: onToggleAmenity })),
-            ...servicesSelected.map((v) => ({ v, toggle: onToggleService })),
-            ...accessibilitySelected.map((v) => ({ v, toggle: onToggleAccessibility })),
-          ].map(({ v, toggle }) => (
+            ...amenitiesSelected.map((v) => ({ v, label: v, toggle: onToggleAmenity })),
+            ...servicesSelected.map((v) => ({ v, label: v, toggle: onToggleService })),
+            ...accessibilitySelected.map((v) => ({
+              v,
+              label: accessibilityLabel ? accessibilityLabel(v) : v,
+              toggle: onToggleAccessibility,
+            })),
+          ].map(({ v, label, toggle }) => (
             <Badge key={v} variant="secondary">
-              {v}
+              {label}
               <X
                 style={{
                   width: 12,
@@ -959,6 +1008,7 @@ function FilterList({
   searchPlaceholder,
   emptyMessage,
   loading,
+  byKey,
 }: {
   items: { key: string; label: string }[];
   selected: string[];
@@ -966,7 +1016,10 @@ function FilterList({
   searchPlaceholder: string;
   emptyMessage: string;
   loading?: boolean;
+  /** Toggle/select by item.key (vocab slug) instead of the display label. */
+  byKey?: boolean;
 }) {
+  const valueOf = (item: { key: string; label: string }) => (byKey ? item.key : item.label);
   return (
     <Command>
       <CommandInput placeholder={searchPlaceholder} />
@@ -982,13 +1035,13 @@ function FilterList({
               <CommandItem
                 key={item.key}
                 value={item.label}
-                onSelect={() => onToggle(item.label)}
+                onSelect={() => onToggle(valueOf(item))}
               >
                 <Check
                   style={{
                     width: 16,
                     height: 16,
-                    opacity: selected.includes(item.label) ? 1 : 0,
+                    opacity: selected.includes(valueOf(item)) ? 1 : 0,
                   }}
                   className="mr-2"
                 />

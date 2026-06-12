@@ -138,7 +138,7 @@ export async function handleAvatarResolve(
   }
 
   if (upstream.status === 404) return json({ error: 'not found' }, 404);
-  if (!upstream.ok) return json({ error: 'upstream error' }, 502);
+  if (!upstream.ok) return json({ error: 'upstream error', upstream_status: upstream.status }, 502);
 
   const ct = (upstream.headers.get('Content-Type') || '').split(';')[0].trim();
   if (!EXT[ct]) return json({ error: 'not an image' }, 422);
