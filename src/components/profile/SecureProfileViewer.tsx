@@ -32,14 +32,13 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
   const phone = str('phone');
   const genderIdentity = str('gender_identity');
   const sexualOrientation = str('sexual_orientation');
-  const relationshipStatus = str('relationship_status');
-  const incomeRange = str('income_range');
+  const relationshipStatus = str('current_relationship_status');
   const interests =
     Array.isArray(profile.interests) && profile.interests.length > 0
       ? (profile.interests as string[])
       : null;
 
-  const hasSensitive = genderIdentity || sexualOrientation || relationshipStatus || incomeRange;
+  const hasSensitive = genderIdentity || sexualOrientation || relationshipStatus;
 
   return (
     <div className="flex flex-col gap-6">
@@ -186,12 +185,6 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   </div>
                 )}
 
-                {(isOwnProfile || isAdmin) && incomeRange && (
-                  <div>
-                    <p className="text-sm font-medium">Income Range</p>
-                    <p className="text-sm text-muted-foreground">{incomeRange}</p>
-                  </div>
-                )}
               </div>
 
               {!isOwnProfile && isAdmin && (

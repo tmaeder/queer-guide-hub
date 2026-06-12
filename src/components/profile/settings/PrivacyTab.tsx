@@ -10,9 +10,14 @@ import type { ProfileFormData } from '@/types/profileForm';
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Public' },
+  { value: 'community', label: 'Community (signed-in members)' },
   { value: 'friends', label: 'Friends' },
   { value: 'private', label: 'Private' },
 ];
+
+function normalizeVisibility(v: string | undefined, fallback: string): string {
+  return v || fallback;
+}
 
 interface PrivacyTabProps {
   formData: ProfileFormData;
@@ -61,29 +66,43 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
               id="profile_visibility"
               label="Profile Visibility"
               description="Who can see your profile"
-              value={ps.profile_visibility}
+              value={normalizeVisibility(ps.profile_visibility, 'private')}
               onChange={(v) => onPrivacyChange('profile_visibility', v)}
             />
             <VisibilityRow
               id="identity_visibility"
               label="Identity Information"
               description="Who can see gender, orientation, chosen family"
-              value={ps.identity_visibility || 'friends'}
+              value={normalizeVisibility(ps.identity_visibility, 'community')}
               onChange={(v) => onPrivacyChange('identity_visibility', v)}
             />
             <VisibilityRow
               id="relationships_visibility"
               label="Relationship Information"
-              description="Who can see relationship and intimacy details"
-              value={ps.relationships_visibility || 'friends'}
+              description="Who can see relationship details"
+              value={normalizeVisibility(ps.relationships_visibility, 'community')}
               onChange={(v) => onPrivacyChange('relationships_visibility', v)}
             />
             <VisibilityRow
               id="travel_visibility"
-              label="Travel Preferences"
-              description="Who can see your travel preferences"
-              value={ps.travel_visibility || 'public'}
+              label="Travel"
+              description="Who can see your travel tab (per-stat sharing on the Travel tab itself)"
+              value={normalizeVisibility(ps.travel_visibility, 'public')}
               onChange={(v) => onPrivacyChange('travel_visibility', v)}
+            />
+            <VisibilityRow
+              id="contributions_visibility"
+              label="Contributions"
+              description="Who can see your posts, reviews, and photos"
+              value={normalizeVisibility(ps.contributions_visibility, 'public')}
+              onChange={(v) => onPrivacyChange('contributions_visibility', v)}
+            />
+            <VisibilityRow
+              id="social_visibility"
+              label="Community summary"
+              description="Who can see your friends and groups counts"
+              value={normalizeVisibility(ps.social_visibility, 'community')}
+              onChange={(v) => onPrivacyChange('social_visibility', v)}
             />
             <SwitchField
               id="email_visible"

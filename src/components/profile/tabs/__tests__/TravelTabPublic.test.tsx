@@ -10,14 +10,14 @@ vi.mock('@/integrations/supabase/untyped', () => ({
   untypedSupabase: { rpc: vi.fn().mockResolvedValue({ data: null, error: null }) },
 }));
 
-import FootprintPublic from '../FootprintPublic';
+import { TravelTab } from '@/components/profile/tabs/TravelTab';
 
-describe('FootprintPublic', () => {
+describe('TravelTab (public)', () => {
   it('renders', () => {
     const { container } = render(
       <MemoryRouter initialEntries={['/u/x']}>
         <Routes>
-          <Route path="/u/:userId" element={<FootprintPublic />} />
+          <Route path="/u/:userId" element={<TravelTab userId="u1" isOwnProfile={false} />} />
         </Routes>
       </MemoryRouter>,
     );

@@ -95,7 +95,7 @@ export default function IntimateDiscovery() {
               {matches.length} match{matches.length === 1 ? '' : 'es'}
             </Link>
           )}
-          <Link to="/profile/settings?tab=dating" className="text-sm underline">
+          <Link to="/settings?tab=dating" className="text-sm underline">
             Edit my profile
           </Link>
           <div className="inline-flex rounded-element border border-border overflow-hidden" role="tablist" aria-label="View mode">

@@ -56,7 +56,7 @@ export const useProfile = () => {
     }
 
     // Coerce empty strings to null so CHECK-constrained enum columns
-    // (disability_status, bdsm_role, etc.) don't reject the whole update.
+    // (disability_status, chosen_family_status, etc.) don't reject the whole update.
     const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(updates)) {
       sanitized[key] = value === "" ? null : value;

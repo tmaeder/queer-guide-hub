@@ -11,23 +11,38 @@ interface PrivacyGuardProps {
   fallback?: React.ReactNode;
   adminJustification?: string;
   logAccess?: boolean;
+  /**
+   * Lens override for the owner's "view as" preview: when set to 'community'
+   * or 'public', the owner/admin shortcuts are skipped so the owner sees
+   * exactly what that audience sees.
+   */
+  lens?: 'you' | 'community' | 'public';
 }
 
-export function PrivacyGuard({ 
-  children, 
-  profileUserId, 
-  requiredPrivacyField, 
+export function PrivacyGuard({
+  children,
+  profileUserId,
+  requiredPrivacyField,
   privacySettings = {},
   fallback = null,
   adminJustification = 'data_access',
-  logAccess = true
+  logAccess = true,
+  lens = 'you'
 }: PrivacyGuardProps) {
   const { user } = useAuth();
   const { isAdmin } = useAdminRoles();
 
-  // Always show content to the profile owner
-  if (user?.id === profileUserId) {
+  // Always show content to the profile owner (unless previewing another lens)
+  if (lens === 'you' && user?.id === profileUserId) {
     return <>{children}</>;
+  }
+
+  if (lens !== 'you') {
+    // Preview mode: only the boolean public flag counts.
+    const isPublicPreview =
+      privacySettings && typeof privacySettings === 'object' &&
+      privacySettings[requiredPrivacyField] === true;
+    return <>{isPublicPreview ? children : fallback}</>;
   }
 
   // Admin access with enhanced logging and justification
