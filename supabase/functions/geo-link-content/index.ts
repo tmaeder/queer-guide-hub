@@ -382,6 +382,14 @@ async function processNewsArticles(
     const { cityIds, countryIds } = extractGeoFromText(text);
 
     if (cityIds.length === 0 && countryIds.length === 0) {
+      // Persist the no-signal verdict so the article doesn't recycle at the
+      // head of every subsequent sweep (head-stall).
+      if (!dryRun) {
+        const { error } = await supabase
+          .from('news_geo_checked')
+          .upsert({ article_id: id }, { onConflict: 'article_id' });
+        if (error) console.error(`Error marking news ${id} geo-checked:`, error.message);
+      }
       results.push({
         entity_id: id, entity_name: title,
         city_resolved: null, country_resolved: null,
@@ -489,18 +497,14 @@ async function fetchUnlinkedItems(
           .eq('id', contentId);
         return data || [];
       }
-      // Fetch articles that have no country links yet
-      const { data: linkedIds } = await supabase
-        .from('news_article_countries')
-        .select('article_id');
-      const linked = new Set((linkedIds || []).map((r: unknown) => r.article_id));
-
-      const { data: articles } = await supabase
-        .from('news_articles')
-        .select('id, title, excerpt')
-        .limit(batchLimit * 2);
-
-      return (articles || []).filter((a: unknown) => !linked.has(a.id)).slice(0, batchLimit);
+      // Work-list RPC: newest-first articles with no country links and no
+      // persisted "no geo signal" marker (NOT EXISTS in SQL — avoids fetching
+      // the whole news_article_countries table and head-stalling on
+      // unlinkable articles).
+      const { data: articles, error } = await supabase
+        .rpc('news_articles_unlinked_geo', { p_limit: batchLimit });
+      if (error) console.error('news_articles_unlinked_geo failed:', error.message);
+      return articles || [];
     }
     default:
       return [];
