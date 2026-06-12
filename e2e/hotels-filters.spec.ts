@@ -59,7 +59,8 @@ test.describe('Hotels — Phase 1 quick wins', () => {
     await page.goto('/hotels/__definitely-not-a-real-slug-9999999', {
       waitUntil: 'networkidle',
     });
-    await expect(page.getByText('Hotel not found')).toBeVisible();
+    // Middleware copy: "We couldn't find that hotel" (functions/_middleware.ts).
+    await expect(page.getByText(/couldn.t find that hotel/i)).toBeVisible();
 
     // Prerender meta is only emitted by the static-site prerender pipeline.
     // Skip the meta-tag asserts on environments where prerender is disabled

@@ -17,17 +17,14 @@ test.describe('@p0-1 /resources tag graph', () => {
         resp.request().method() === 'POST',
     );
 
-    await page.goto('/resources');
+    // The pure overview (Help-first rework) has no filter bar — enter via
+    // ?q= so the bar (and its graph toggle) renders.
+    await page.goto('/resources?q=les');
 
-    // Switch into the graph view. The control may be a tab, button, or
-    // segmented control depending on the latest UI — match by accessible
-    // name to keep this resilient.
-    const graphSwitch = page.getByRole('tab', { name: /graph|network/i }).first();
-    if (await graphSwitch.count()) {
-      await graphSwitch.click();
-    } else {
-      await page.getByRole('button', { name: /graph|network/i }).first().click();
-    }
+    // Switch into the graph view — the toggle lives in ResourcesFilterBar
+    // with aria-label "Tag relationship graph" (resources.filter.graph).
+    const graphSwitch = page.getByRole('button', { name: /graph|network/i }).first();
+    await graphSwitch.click({ timeout: 15_000 });
 
     const response = await rpcResponse;
     expect(response.status(), 'RPC must succeed (would be 403 without the GRANT)').toBe(200);

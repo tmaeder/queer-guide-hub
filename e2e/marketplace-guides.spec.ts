@@ -73,8 +73,15 @@ test.describe('Marketplace — editorial guides', () => {
   });
 
   test('listing detail surfaces "Featured in" backlink when picked', async ({ page }) => {
-    // The Emari is the top pick in the seeded underwear guide.
-    await page.goto('/marketplace/the-emari');
+    // Resolve the top pick from the guide page instead of hardcoding a slug —
+    // reingest passes re-slug listings (the-emari → the-emari-a2b74804).
+    await page.goto('/marketplace/guides/pride-briefs-queer-owned-underwear-2026');
+    const pickLink = page
+      .locator('a[href*="/marketplace/"]:not([href*="/guides"]):not([href*="/merchants"])')
+      .first();
+    await expect(pickLink).toBeVisible({ timeout: 30_000 });
+    const href = await pickLink.getAttribute('href');
+    await page.goto(href!);
     await page.waitForLoadState('domcontentloaded');
     // The callout uses "Featured in a guide" / "Featured in N guides"
     await expect(page.getByText(/featured in (a|\d+) guides?/i)).toBeVisible({

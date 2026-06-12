@@ -126,7 +126,7 @@ function MarketplaceCardImpl({
             <LocalizedLink
               to={`/marketplace/${listing.slug}`}
               onClick={(e) => e.stopPropagation()}
-              className="hover:underline underline-offset-2"
+              className="py-1 hover:underline underline-offset-2"
             >
               <HighlightedText text={listing.title} query={searchQuery} />
             </LocalizedLink>

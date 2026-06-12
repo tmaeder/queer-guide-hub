@@ -31,8 +31,9 @@ test.describe('Venues — polish & a11y', () => {
     if (images.length > 0) {
       for (const img of images.slice(0, 8)) {
         const alt = await img.getAttribute('alt');
-        expect(alt, 'VenueCard img missing alt').toBeTruthy();
-        expect(alt!.length).toBeGreaterThan(0);
+        // alt must be PRESENT; empty alt="" is valid for decorative images
+        // (e.g. guide covers whose title sits right next to them).
+        expect(alt, 'VenueCard img missing alt attribute').not.toBeNull();
       }
     }
   });

@@ -70,26 +70,70 @@ interface CentralizedTagsData {
  * Core fetch function — parallelises independent queries and enriches tags
  * with multi-category assignments.
  */
-async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
-  // Run independent queries in parallel
-  const [tagsResult, catAssignmentsResult, allCatsResult, treeResult] = await Promise.all([
-    supabase
+// PostgREST caps any single request at max-rows (1000) — the assignments
+// table holds ~5k rows, so an unpaged select silently dropped 80% of
+// category links. That broke category chips AND the adult age-gate (a tag
+// with no categories never matches ADULT_CATEGORY_NAMES). Page through.
+interface AssignmentRow {
+  tag_id: string;
+  category_id: string;
+  is_primary: boolean;
+  tag_categories: {
+    id: string;
+    name: string;
+    slug: string;
+    level: number;
+    parent_id: string | null;
+  } | null;
+}
+
+async function fetchAllAssignments(): Promise<AssignmentRow[]> {
+  const PAGE = 1000;
+  const rows: AssignmentRow[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from('tag_category_assignments')
+      .select('tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)')
+      .order('tag_id', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) break;
+    rows.push(...(data ?? []));
+    if (!data || data.length < PAGE) break;
+  }
+  return rows;
+}
+
+// Same max-rows cap: ~3.7k active tags, so `.limit(10000)` still returned
+// only the first 1000. Page through all of them.
+async function fetchAllActiveTags() {
+  const PAGE = 1000;
+  const rows: Record<string, unknown>[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
       .from('unified_tags')
       .select('*')
       .eq('status', 'active')
       .order('usage_count', { ascending: false })
-      .limit(10000),
-    supabase
-      .from('tag_category_assignments')
-      .select('tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)'),
+      .order('id', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) {
+      if (rows.length === 0) throw error;
+      break;
+    }
+    rows.push(...((data as Record<string, unknown>[]) ?? []));
+    if (!data || data.length < PAGE) break;
+  }
+  return rows;
+}
+
+async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
+  // Run independent queries in parallel
+  const [data, catAssignments, allCatsResult, treeResult] = await Promise.all([
+    fetchAllActiveTags(),
+    fetchAllAssignments(),
     supabase.from('tag_categories').select('id, name, slug, level, parent_id'),
     supabase.rpc('get_category_tree'),
   ]);
-
-  if (tagsResult.error) throw tagsResult.error;
-
-  const data = tagsResult.data || [];
-  const catAssignments = catAssignmentsResult.data;
   const allCats = allCatsResult.data;
   const treeData = treeResult.data;
 

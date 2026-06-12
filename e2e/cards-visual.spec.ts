@@ -32,18 +32,24 @@ test('visual: /events card grid — mobile', async ({ page }) => {
   });
 });
 
-test('visual: hamburger button hit target at 375px', async ({ page }) => {
+// The header hamburger was replaced by the fixed MobileBottomNav
+// (src/components/layout/MobileBottomNav.tsx) — assert its tap targets.
+test('visual: mobile bottom-nav hit targets at 375px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   await dismissCookieBanner(page);
-  const hamburger = page.getByRole('button', { name: /open menu/i }).first();
-  await expect(hamburger).toBeVisible();
-  const box = await hamburger.boundingBox();
-  expect(box?.width).toBeGreaterThanOrEqual(44);
-  expect(box?.height).toBeGreaterThanOrEqual(44);
+  const nav = page.getByRole('navigation', { name: /primary mobile navigation/i });
+  await expect(nav).toBeVisible();
+  const links = await nav.getByRole('link').all();
+  expect(links.length).toBeGreaterThanOrEqual(2);
+  for (const link of links) {
+    const box = await link.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
+  }
   await page.screenshot({
-    path: 'test-results/cards-hamburger-mobile.png',
+    path: 'test-results/cards-bottomnav-mobile.png',
     fullPage: false,
   });
 });
