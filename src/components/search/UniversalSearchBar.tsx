@@ -510,8 +510,8 @@ export const UniversalSearchBar = () => {
           // Radix's translated popper wrapper so the fixed full-screen mobile
           // sheet anchors to the viewport, not the transformed wrapper.
           className={cn(
-            'rounded-none border-border p-0 shadow-none',
-            isMobile && 'qg-mobile-search-overlay',
+            'w-[var(--radix-popover-trigger-width)] overflow-hidden p-0',
+            isMobile && 'qg-mobile-search-overlay rounded-none',
           )}
           style={
             isMobile
@@ -523,7 +523,7 @@ export const UniversalSearchBar = () => {
                   maxHeight: '100dvh',
                   zIndex: 50,
                 }
-              : { width: 'min(560px, calc(100vw - 32px))', zIndex: 50 }
+              : undefined
           }
           align="start"
           onOpenAutoFocus={(e) => {
