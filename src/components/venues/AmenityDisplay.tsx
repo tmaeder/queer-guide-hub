@@ -1,8 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Accessibility } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Accessibility, Check } from 'lucide-react';
 import { useAmenityVocabulary } from '@/hooks/useAmenityVocabulary';
 import { amenityIcon } from '@/lib/amenityIcons';
+import { useProfile } from '@/hooks/useProfile';
+import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
 
 function humanize(slug: string) {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -22,10 +25,26 @@ interface Props {
 export function AmenityDisplay({ amenities, accessibility, accessibilityNotes }: Props) {
   const { t } = useTranslation();
   const { vocab } = useAmenityVocabulary();
+  const { profile } = useProfile();
 
   const amenityList = (amenities ?? []).filter(Boolean);
   const accessList = (accessibility ?? []).filter(Boolean);
-  if (!amenityList.length && !accessList.length && !accessibilityNotes) return null;
+
+  // The payoff for saving accessibility needs: per-venue match against the
+  // user's own needs. Visible only to the user — needs are never public.
+  const travelPrefs = (profile as { travel_preferences?: { accessibility_needs?: string[] } } | null)
+    ?.travel_preferences;
+  const userNeeds = Array.isArray(travelPrefs?.accessibility_needs)
+    ? travelPrefs.accessibility_needs
+    : [];
+  const { matched, unlisted } =
+    userNeeds.length > 0
+      ? matchNeeds(userNeeds, accessList)
+      : { matched: [], unlisted: [] };
+  const matchedSlugSet = new Set(matched.flatMap((m) => m.matchedSlugs));
+
+  if (!amenityList.length && !accessList.length && !accessibilityNotes && userNeeds.length === 0)
+    return null;
 
   const label = (slug: string) => {
     const term = vocab?.get(slug);
@@ -56,7 +75,7 @@ export function AmenityDisplay({ amenities, accessibility, accessibilityNotes }:
         </Card>
       )}
 
-      {(accessList.length > 0 || accessibilityNotes) && (
+      {(accessList.length > 0 || accessibilityNotes || userNeeds.length > 0) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -65,10 +84,35 @@ export function AmenityDisplay({ amenities, accessibility, accessibilityNotes }:
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            {matched.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {matched.map((m) => (
+                  <Badge key={m.need} variant="secondary" className="rounded-badge gap-1">
+                    <Check size={12} aria-hidden="true" />
+                    {t('accessibility.matchesNeed', '{{need}} — matches your needs', {
+                      need: needLabel(m.need),
+                    })}
+                  </Badge>
+                ))}
+              </div>
+            )}
             {accessList.length > 0 && (
               <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                {accessList.map((slug) => <Row key={slug} slug={slug} />)}
+                {accessList.map((slug) => (
+                  <div
+                    key={slug}
+                    className={matchedSlugSet.has(slug) ? 'rounded-element bg-muted' : undefined}
+                  >
+                    <Row slug={slug} />
+                  </div>
+                ))}
               </div>
+            )}
+            {unlisted.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {t('accessibility.notListed', 'Not listed here (may still be available — ask):')}{' '}
+                {unlisted.map(needLabel).join(', ')}
+              </p>
             )}
             {accessibilityNotes && <p className="text-sm text-muted-foreground">{accessibilityNotes}</p>}
           </CardContent>

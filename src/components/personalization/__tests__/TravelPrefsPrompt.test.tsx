@@ -41,30 +41,33 @@ describe('TravelPrefsPrompt', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders nothing when user already has prefs', async () => {
+  it('shows the quiet edit entry when user already has prefs', async () => {
     useAuthMock.mockReturnValue({ user: { id: 'u1' } });
     fetchPrefsMock.mockResolvedValue({ budget: 'mid' });
-    const { container } = render(<TravelPrefsPrompt />, { wrapper });
+    render(<TravelPrefsPrompt />, { wrapper });
     await waitFor(() => expect(fetchPrefsMock).toHaveBeenCalled());
-    expect(container.firstChild).toBeNull();
+    expect(screen.getByRole('button', { name: /Travel preferences/i })).toBeInTheDocument();
+    expect(screen.queryByText(/Personalize your travel/i)).not.toBeInTheDocument();
   });
 
-  it('shows prompt when user has no prefs', async () => {
+  it('shows the full banner when user has no prefs, with an in-context Set up button', async () => {
     useAuthMock.mockReturnValue({ user: { id: 'u1' } });
     fetchPrefsMock.mockResolvedValue({});
     render(<TravelPrefsPrompt />, { wrapper });
     await waitFor(() => expect(screen.getByText(/Personalize your travel/i)).toBeInTheDocument());
-    expect(screen.getByRole('link', { name: /Set up/i })).toHaveAttribute('href', '/profile/settings?tab=preferences');
+    // in-context capture: a sheet trigger, not a link to settings
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Set up/i })).toBeInTheDocument();
   });
 
-  it('Dismiss persists to sessionStorage and hides the prompt', async () => {
+  it('Dismiss persists to sessionStorage and collapses to the quiet entry', async () => {
     useAuthMock.mockReturnValue({ user: { id: 'u1' } });
     fetchPrefsMock.mockResolvedValue({});
-    const { container } = render(<TravelPrefsPrompt />, { wrapper });
+    render(<TravelPrefsPrompt />, { wrapper });
     await waitFor(() => expect(screen.getByText(/Personalize your travel/i)).toBeInTheDocument());
-    const dismissBtns = screen.getAllByRole('button');
-    fireEvent.click(dismissBtns[dismissBtns.length - 1]);
+    fireEvent.click(screen.getByRole('button', { name: /Dismiss/i }));
     expect(sessionStorage.getItem('qg_travel_prefs_dismissed')).toBe('1');
-    expect(container.firstChild).toBeNull();
+    expect(screen.queryByText(/Personalize your travel/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Travel preferences/i })).toBeInTheDocument();
   });
 });

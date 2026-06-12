@@ -5,9 +5,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CalendarIcon } from 'lucide-react';
-import { AvatarSettings } from '@/components/profile/AvatarSettings';
 import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
+import { PronounCombobox } from '@/components/ui/pronoun-combobox';
+import { ProfessionAutocomplete } from '@/components/ui/profession-autocomplete';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { FormField } from './fields';
 import { getMinAgeDate, isValidDob } from '@/types/profileForm';
 import type { ProfileFormData } from '@/types/profileForm';
@@ -19,11 +27,8 @@ interface BasicInfoTabProps {
   profile: Profile | null | undefined;
   user: User;
   onChange: (field: string, value: string) => void;
-  onAvatarSave: (data: {
-    avatarUrl?: string;
-    avatarConfig?: Record<string, unknown>;
-    avatarType?: string;
-  }) => void;
+  onPronounTagsChange: (tags: string[]) => void;
+  onPrivacyChange: (field: string, value: string | boolean) => void;
 }
 
 export function BasicInfoTab({
@@ -31,34 +36,14 @@ export function BasicInfoTab({
   profile,
   user,
   onChange,
-  onAvatarSave,
+  onPronounTagsChange,
+  onPrivacyChange,
 }: BasicInfoTabProps) {
   const minAgeDate = getMinAgeDate();
+  void user; // kept in the prop contract for sheet parents; avatar moved to the identity card
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Avatar */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Avatar</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Choose how you want to appear to other users. Upload your own photo, use our avatar
-            builder, or connect your Gravatar account.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <AvatarSettings
-            initialData={{
-              avatarUrl: profile?.avatar_url,
-              avatarConfig: profile?.avatar_config,
-              avatarType: profile?.avatar_type as 'upload' | 'builder' | 'initials' | undefined,
-              email: user?.email || '',
-            }}
-            onSave={onAvatarSave}
-          />
-        </CardContent>
-      </Card>
-
       {/* Basic Information */}
       <Card>
         <CardHeader>
@@ -102,13 +87,32 @@ export function BasicInfoTab({
                 placeholder="How you appear to others"
                 description="Shown on your profile and in conversations"
               />
-              <FormField
-                id="pronouns"
-                label="Pronouns"
-                value={formData.pronouns}
-                onChange={(v) => onChange('pronouns', v)}
-                placeholder="e.g., they/them, she/her, he/him"
-              />
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="pronouns">Pronouns</Label>
+                <PronounCombobox
+                  id="pronouns"
+                  value={formData.pronoun_tags}
+                  onValueChange={onPronounTagsChange}
+                />
+                <div className="flex items-center gap-2 mt-1">
+                  <Label htmlFor="pronouns-visibility" className="text-xs text-muted-foreground shrink-0">
+                    Visible to
+                  </Label>
+                  <Select
+                    value={formData.privacy_settings.pronouns_visibility ?? 'public'}
+                    onValueChange={(v) => onPrivacyChange('pronouns_visibility', v)}
+                  >
+                    <SelectTrigger id="pronouns-visibility" className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Anyone</SelectItem>
+                      <SelectItem value="friends">Community</SelectItem>
+                      <SelectItem value="private">Only me</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <FormField
                 id="name_pronunciation"
                 label="Name Pronunciation"
@@ -211,13 +215,18 @@ export function BasicInfoTab({
 
             {/* Occupation + Education */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                id="occupation"
-                label="Occupation"
-                value={formData.occupation}
-                onChange={(v) => onChange('occupation', v)}
-                placeholder="What do you do?"
-              />
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="occupation">Occupation</Label>
+                <ProfessionAutocomplete
+                  id="occupation"
+                  value={formData.occupation}
+                  onValueChange={(v) => onChange('occupation', v)}
+                  placeholder="Pick one or type your own"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Stored exactly as you write it.
+                </p>
+              </div>
               <FormField
                 id="education"
                 label="Education"
