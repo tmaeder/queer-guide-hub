@@ -12,7 +12,6 @@ interface SignUpMetadata {
   location?: string;
   pronouns?: string;
   preferred_language?: string;
-  looking_for?: string[];
   interests?: string[];
   terms_accepted_at?: string;
   privacy_accepted_at?: string;

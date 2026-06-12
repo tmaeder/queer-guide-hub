@@ -37,7 +37,6 @@ import { PushNotificationSettings } from '@/components/profile/PushNotificationS
 import { DocumentsList } from '@/components/trips/DocumentsList';
 import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
 import { IdentityTab } from '@/components/profile/settings/IdentityTab';
-import { RelationshipsTab } from '@/components/profile/settings/RelationshipsTab';
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { IntimateTab } from '@/components/profile/IntimateTab';
 import { IdentityPreviewCard } from '@/components/profile/IdentityPreviewCard';
@@ -291,15 +290,6 @@ function ProfileSettingsContent({
         romantic_orientation: formData.romantic_orientation,
         relationship_style: formData.relationship_style,
         current_relationship_status: formData.current_relationship_status,
-        romance_style: formData.romance_style,
-        physical_affection_preference: formData.physical_affection_preference,
-        sexual_frequency_preference: formData.sexual_frequency_preference,
-        communication_about_sex: formData.communication_about_sex,
-        sexual_exploration_openness: formData.sexual_exploration_openness,
-        sexual_health_status: formData.sexual_health_status,
-        kink_experience_level: formData.kink_experience_level,
-        bdsm_role: formData.bdsm_role,
-        jealousy_comfort_level: formData.jealousy_comfort_level,
         privacy_settings: formData.privacy_settings,
         user_mode: formData.user_mode,
       } as Partial<Profile>);
@@ -529,7 +519,6 @@ function ProfileSettingsContent({
                   onChange={handleInputChange}
                   onComingOutChange={handleComingOutChange}
                 />
-                <RelationshipsTab formData={formData} onChange={handleInputChange} />
                 <IntimateTab />
               </div>
             )}

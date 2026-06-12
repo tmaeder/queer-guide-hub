@@ -49,19 +49,10 @@ export interface ProfileFormData {
   cultural_background: string[];
   languages: string[];
 
-  // Relationships
+  // Relationships — dating/intimacy preferences live in the opt-in Intimate module
   romantic_orientation: string;
   current_relationship_status: string;
   relationship_style: string;
-  romance_style: string;
-  physical_affection_preference: string;
-  sexual_frequency_preference: string;
-  communication_about_sex: string;
-  sexual_exploration_openness: string;
-  sexual_health_status: string;
-  kink_experience_level: string;
-  bdsm_role: string;
-  jealousy_comfort_level: string;
 
   // Privacy
   privacy_settings: PrivacySettings;
@@ -107,10 +98,7 @@ export function initFormData(profile: Profile | null | undefined): ProfileFormDa
       chosen_family_status: '', disability_status: '', neurodivergent_status: '',
       cultural_background: [], languages: [],
       romantic_orientation: '', current_relationship_status: '',
-      relationship_style: '', romance_style: '', physical_affection_preference: '',
-      sexual_frequency_preference: '', communication_about_sex: '',
-      sexual_exploration_openness: '', sexual_health_status: '',
-      kink_experience_level: '', bdsm_role: '', jealousy_comfort_level: '',
+      relationship_style: '',
       privacy_settings: DEFAULT_PRIVACY,
       user_mode: 'exploration',
     };
@@ -153,15 +141,6 @@ export function initFormData(profile: Profile | null | undefined): ProfileFormDa
     romantic_orientation: str(p.romantic_orientation),
     current_relationship_status: str(p.current_relationship_status),
     relationship_style: str(p.relationship_style),
-    romance_style: str(p.romance_style),
-    physical_affection_preference: str(p.physical_affection_preference),
-    sexual_frequency_preference: str(p.sexual_frequency_preference),
-    communication_about_sex: str(p.communication_about_sex),
-    sexual_exploration_openness: str(p.sexual_exploration_openness),
-    sexual_health_status: str(p.sexual_health_status),
-    kink_experience_level: str(p.kink_experience_level),
-    bdsm_role: str(p.bdsm_role),
-    jealousy_comfort_level: str(p.jealousy_comfort_level),
 
     privacy_settings: { ...DEFAULT_PRIVACY, ...privacy },
     user_mode: str(p.user_mode) || 'exploration',
