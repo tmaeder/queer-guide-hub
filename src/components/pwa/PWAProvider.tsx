@@ -130,9 +130,17 @@ export function PWAProvider({ children }: { children: ReactNode }) {
           });
         });
 
-        // When the new SW takes over, reload the page
+        // When a new SW takes over an already-controlled page, reload to pick
+        // up the new assets. On the very first visit the SW's clients.claim()
+        // also fires controllerchange (controller goes null → SW) — reloading
+        // there reloads every fresh visitor mid-session, so skip it.
+        let hadController = Boolean(navigator.serviceWorker.controller);
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!hadController) {
+            hadController = true;
+            return;
+          }
           if (refreshing) return;
           refreshing = true;
           window.location.reload();

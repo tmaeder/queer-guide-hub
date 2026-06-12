@@ -97,8 +97,10 @@ export const ExploreMapFiltersPanel = ({
     }
   };
 
+  // right-12 keeps the bar clear of the maplibre NavigationControl at
+  // top-right (axe target-size: the bar obscured the zoom buttons).
   return (
-    <div className="absolute top-3 left-16 right-3 z-20 rounded-container border border-border bg-background/85 backdrop-blur-md px-4 py-2">
+    <div className="absolute top-3 left-16 right-12 z-20 rounded-container border border-border bg-background/85 backdrop-blur-md px-4 py-2">
       <div className="flex gap-2 items-center">
         <Popover open={popoverOpen && (loading || suggestions.length > 0 || query.length >= 2)} onOpenChange={setPopoverOpen}>
           <PopoverTrigger asChild>

@@ -19,7 +19,11 @@ test.describe('Cities directory', () => {
 
     await expect(page.getByRole('region', { name: /cities map/i })).toBeVisible();
     await expect(page.getByRole('list', { name: /^cities$/i })).toBeVisible();
-    await expect(page.getByRole('status')).toContainText(/cities/i);
+    // Two role=status nodes exist (an sr-only live region + the visible
+    // count) — target the one that carries the count text.
+    await expect(page.getByRole('status').filter({ hasText: /cities/i })).toContainText(
+      /cities/i,
+    );
   });
 
   test('typing in the search input filters the list and updates ?q=', async ({ page }) => {

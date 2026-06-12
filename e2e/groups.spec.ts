@@ -16,6 +16,13 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Groups — QA fixtures', () => {
+  // Private fixture groups (Trans IT / Polyamory) are RLS-hidden from anon —
+  // these tests only make sense with the signed-in storage state CI sets up.
+  test.skip(
+    !process.env.E2E_ADMIN_EMAIL && !process.env.E2E_STORAGE_STATE,
+    'Requires a signed-in session (E2E_ADMIN_EMAIL / E2E_STORAGE_STATE) — private groups are RLS-hidden from anon.',
+  );
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/groups', { waitUntil: 'domcontentloaded' });
   });

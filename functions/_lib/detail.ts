@@ -848,13 +848,38 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
 const DETAIL_ROUTE_RE =
   /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?)\/([^/?#]+)\/?$/;
 
+// Static SPA sub-routes that share a segment with detail routes
+// (/venues/guides, /events/guides, legacy /venues/leaderboard redirect, …).
+// These are never entity slugs — treating them as one made the middleware
+// return a hard 404 for the whole page.
+const RESERVED_DETAIL_SLUGS = new Set([
+  'guides',
+  'leaderboard',
+  'passport',
+  'share',
+  'hotels',
+  'events',
+  'news',
+  'marketplace',
+  'travel',
+  'groups',
+  'resources',
+]);
+
+function matchDetailPath(pathname: string): RegExpMatchArray | null {
+  const m = pathname.match(DETAIL_ROUTE_RE);
+  if (!m) return null;
+  if (RESERVED_DETAIL_SLUGS.has(decodeURIComponent(m[2]).toLowerCase())) return null;
+  return m;
+}
+
 /**
  * True if the URL matches a detail-route pattern (regardless of whether the
  * row actually exists). The middleware uses this to decide whether a missing
  * detail row should produce a 404 vs. fall through to the SPA.
  */
 export function isDetailPath(pathname: string): boolean {
-  return DETAIL_ROUTE_RE.test(pathname);
+  return matchDetailPath(pathname) !== null;
 }
 
 export async function resolveDetailRoute(
@@ -864,7 +889,7 @@ export async function resolveDetailRoute(
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
   }
-  const m = pathname.match(DETAIL_ROUTE_RE);
+  const m = matchDetailPath(pathname);
   if (!m) return null;
   const [, kindRaw, rawSlug] = m;
   const slug = decodeURIComponent(rawSlug);
