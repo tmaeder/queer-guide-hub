@@ -10,6 +10,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useDiscoveryProfile } from '@/hooks/useVenuesV2Data';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { VenueFilters } from '@/components/venues/VenueFilters';
+import { PreferenceChips } from '@/components/preferences/PreferenceChips';
+import {
+  usePreferenceChips,
+  accessibilitySlugsFromChips,
+  tagsFromChips,
+} from '@/hooks/usePreferenceChips';
 import { VenuesHero } from '@/components/venues/VenuesHero';
 import { QuickFilters, type QuickFiltersValue } from '@/components/venues/QuickFilters';
 import { VenuesPersonalStrip } from '@/components/venues/VenuesPersonalStrip';
@@ -164,6 +170,36 @@ const Venues = () => {
   }, [urlSearch, urlCategory]);
 
   const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(buildFiltersFromUrl);
+
+  // Traveling preference chips — saved accessibility needs apply by default,
+  // interest vibes are opt-in per session. Contributions merge into every
+  // fetch but stay OUT of currentFilters and the URL (accessibility needs are
+  // private; a shared link must not carry them).
+  const { chips: prefChips, toggle: togglePrefChip, forget: forgetPrefChip } = usePreferenceChips([
+    'accessibility',
+    'interest',
+  ]);
+  const chipAccessibility = useMemo(() => accessibilitySlugsFromChips(prefChips), [prefChips]);
+  const chipTags = useMemo(() => tagsFromChips(prefChips), [prefChips]);
+  const chipKey = [...chipAccessibility, ...chipTags].join(',');
+  const mergeChipFilters = useCallback(
+    (f: Record<string, unknown>): Record<string, unknown> => {
+      const out = { ...f };
+      if (chipAccessibility.length) {
+        const manual = Array.isArray(out.accessibilityAttributes)
+          ? (out.accessibilityAttributes as string[])
+          : [];
+        out.accessibilityAttributes = [...new Set([...manual, ...chipAccessibility])];
+      }
+      if (chipTags.length) {
+        const manual = Array.isArray(out.tags) ? (out.tags as string[]) : [];
+        out.tags = [...new Set([...manual, ...chipTags])];
+      }
+      return out;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [chipKey],
+  );
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -237,7 +273,9 @@ const Venues = () => {
       { replace: true },
     );
     await fetchVenues(
-      { ...filters, userLocation: userLocation ?? undefined } as Parameters<typeof fetchVenues>[0],
+      mergeChipFilters({ ...filters, userLocation: userLocation ?? undefined }) as Parameters<
+        typeof fetchVenues
+      >[0],
       baseFetchOptions({ page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy }),
     );
   };
@@ -255,7 +293,7 @@ const Venues = () => {
     setPage(1);
     setAutoLoadedCount(0);
     fetchVenues(
-      baseNext as Parameters<typeof fetchVenues>[0],
+      mergeChipFilters(baseNext) as Parameters<typeof fetchVenues>[0],
       baseFetchOptions({ page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -272,6 +310,7 @@ const Venues = () => {
     urlPrice,
     urlRadius,
     sortBy,
+    chipKey,
     userLocation?.latitude,
     userLocation?.longitude,
   ]);
@@ -304,7 +343,7 @@ const Venues = () => {
           const nextPage = page + 1;
           setPage(nextPage);
           const result = await fetchVenues(
-            { ...currentFilters, userLocation: userLocation ?? undefined } as Parameters<typeof fetchVenues>[0],
+            mergeChipFilters({ ...currentFilters, userLocation: userLocation ?? undefined }) as Parameters<typeof fetchVenues>[0],
             baseFetchOptions({
               page: nextPage,
               pageSize: PAGE_SIZE,
@@ -365,6 +404,13 @@ const Venues = () => {
           initialServices={urlServices}
           initialAccessibilityAttributes={urlAccessibility}
           initialTargetGroups={urlTargetGroups}
+          preferenceChips={
+            <PreferenceChips
+              chips={prefChips}
+              onToggle={togglePrefChip}
+              onForget={forgetPrefChip}
+            />
+          }
           onFiltersChange={handleFiltersChange}
         />
 
@@ -582,7 +628,7 @@ const Venues = () => {
                         const nextPage = page + 1;
                         setPage(nextPage);
                         await fetchVenues(
-                          { ...currentFilters, userLocation: userLocation ?? undefined } as Parameters<typeof fetchVenues>[0],
+                          mergeChipFilters({ ...currentFilters, userLocation: userLocation ?? undefined }) as Parameters<typeof fetchVenues>[0],
                           baseFetchOptions({
                             page: nextPage,
                             pageSize: PAGE_SIZE,
