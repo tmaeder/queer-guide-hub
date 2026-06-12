@@ -987,8 +987,8 @@
       "termsAria": "Принять условия использования",
       "privacyAria": "Принять политику конфиденциальности",
       "ageAria": "Подтвердить возраст 18+",
-      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
-      "combinedAria": "Accept terms, privacy and confirm 18 or older"
+      "combined": "Я принимаю <1>Условия использования</1> и <3>Политику конфиденциальности</3> и подтверждаю, что мне исполнилось 18 лет.",
+      "combinedAria": "Принять условия, конфиденциальность и подтвердить возраст 18+"
     },
     "oauth": {
       "google": "Продолжить через Google",
