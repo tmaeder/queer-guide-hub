@@ -1,5 +1,8 @@
-// Placeholder line-art pictograms for the intimate-profile add-on.
-// Monochrome, currentColor stroke. v1 — replace with commissioned art before launch.
+// Line-art pictograms for the intimate-profile add-on.
+// Monochrome, currentColor stroke, 64×64 grid. v2 — redrawn 2026-06-11 for
+// recognizability + clearer differentiation between variants. Keys are stored
+// in intimate_profiles (genital_pictogram_key / body_pictogram_key) — never
+// rename a key, only redraw its art.
 
 import type { SVGProps } from 'react';
 
@@ -10,7 +13,7 @@ const base = (children: JSX.Element, props: SVGProps<SVGSVGElement>) => (
     viewBox="0 0 64 64"
     fill="none"
     stroke="currentColor"
-    strokeWidth={1.5}
+    strokeWidth={1.75}
     strokeLinecap="round"
     strokeLinejoin="round"
     aria-hidden="true"
@@ -21,41 +24,90 @@ const base = (children: JSX.Element, props: SVGProps<SVGSVGElement>) => (
 );
 
 // ---------------- Genital pictograms ----------------
+// Front view, shaft up. Variants differ in one readable trait each:
+// 1 straight · 2 curved right · 3 thick · 4 long+slim · 5 uncut · 6 curved left.
+
+const scrotum = (
+  <>
+    <circle cx="25.5" cy="49" r="7" />
+    <circle cx="38.5" cy="49" r="7" />
+  </>
+);
 
 export const penisPictograms: Record<string, Picto> = {
-  'penis-1': (p) => base(<><ellipse cx="32" cy="48" rx="10" ry="8" /><path d="M32 40 V14 a4 4 0 0 1 8 0" /></>, p),
-  'penis-2': (p) => base(<><ellipse cx="32" cy="48" rx="11" ry="7" /><path d="M32 41 V12" /><circle cx="32" cy="10" r="4" /></>, p),
-  'penis-3': (p) => base(<><ellipse cx="32" cy="48" rx="9" ry="9" /><path d="M30 39 V16 c0 -4 6 -4 6 0 V20" /></>, p),
-  'penis-4': (p) => base(<><ellipse cx="32" cy="48" rx="12" ry="8" /><path d="M32 40 V8" /></>, p),
-  'penis-5': (p) => base(<><ellipse cx="32" cy="48" rx="8" ry="7" /><path d="M32 41 V18 q4 -6 8 -2" /></>, p),
-  'penis-6': (p) => base(<><ellipse cx="32" cy="50" rx="10" ry="6" /><path d="M28 44 V14 q4 -4 8 0 V44" /></>, p),
+  // straight, average
+  'penis-1': (p) => base(<>{scrotum}<path d="M28 42 V19 Q28 11 32 11 Q36 11 36 19 V42" /><path d="M28 20 Q32 24 36 20" /></>, p),
+  // curved (rises to the right)
+  'penis-2': (p) => base(<>{scrotum}<path d="M28 42 C27 30 30 19 40 13 Q44 11 45.5 14.5 Q47 18 43 20.5 C37 24 36 33 36 42" /><path d="M40 15.5 Q43 19 39 21.5" /></>, p),
+  // thick
+  'penis-3': (p) => base(<>{scrotum}<path d="M26 42 V21 Q26 11 32 11 Q38 11 38 21 V42" /><path d="M26 22 Q32 27 38 22" /></>, p),
+  // long + slim
+  'penis-4': (p) => base(<>{scrotum}<path d="M29 42 V14 Q29 7.5 32 7.5 Q35 7.5 35 14 V42" /><path d="M29 15.5 Q32 18.5 35 15.5" /></>, p),
+  // uncut — tapered foreskin tip
+  'penis-5': (p) => base(<>{scrotum}<path d="M28 42 V19 C28 13 30 9.5 32 7 C34 9.5 36 13 36 19 V42" /><path d="M30.5 11 Q32 13 33.5 11" /></>, p),
+  // curved (rises to the left)
+  'penis-6': (p) => base(<>{scrotum}<path d="M36 42 C37 30 34 19 24 13 Q20 11 18.5 14.5 Q17 18 21 20.5 C27 24 28 33 28 42" /><path d="M24 15.5 Q21 19 25 21.5" /></>, p),
 };
+
+// Front view. Variants differ in one readable trait each:
+// 1 classic · 2 inner labia visible · 3 fuller outer · 4 prominent inner
+// labia · 5 neat single line · 6 asymmetric.
+
+const hood = <path d="M29.5 19.5 Q32 16.5 34.5 19.5" />;
 
 export const vaginaPictograms: Record<string, Picto> = {
-  'vagina-1': (p) => base(<path d="M32 10 C20 28 20 36 32 54 C44 36 44 28 32 10 Z" />, p),
-  'vagina-2': (p) => base(<><path d="M32 10 C22 28 22 36 32 54 C42 36 42 28 32 10 Z" /><path d="M32 18 V46" /></>, p),
-  'vagina-3': (p) => base(<><ellipse cx="32" cy="32" rx="10" ry="22" /><path d="M28 14 Q32 18 36 14" /></>, p),
-  'vagina-4': (p) => base(<path d="M22 14 Q32 32 22 50 M42 14 Q32 32 42 50" />, p),
-  'vagina-5': (p) => base(<><path d="M32 12 C20 30 20 34 32 52" /><path d="M32 12 C44 30 44 34 32 52" /><circle cx="32" cy="20" r="2" /></>, p),
-  'vagina-6': (p) => base(<><path d="M32 12 C18 32 18 36 32 54" /><path d="M32 12 C46 32 46 36 32 54" /></>, p),
+  // classic — almond outline, hood, center line
+  'vagina-1': (p) => base(<><path d="M32 9 C21 21 19 38 32 55 C45 38 43 21 32 9 Z" />{hood}<path d="M32 23 V46" /></>, p),
+  // inner labia visible — soft double inner curves
+  'vagina-2': (p) => base(<><path d="M32 9 C21 21 19 38 32 55 C45 38 43 21 32 9 Z" />{hood}<path d="M29.5 24 Q28 34 31 45" /><path d="M34.5 24 Q36 34 33 45" /></>, p),
+  // fuller outer lips — rounder outline, short line
+  'vagina-3': (p) => base(<><path d="M32 10 C19 20 17 40 32 54 C47 40 45 20 32 10 Z" /><path d="M28.5 21 Q32 18 35.5 21" /><path d="M32 26 V42" /></>, p),
+  // prominent inner labia — inner curves reaching past the line
+  'vagina-4': (p) => base(<><path d="M32 9 C21 21 19 38 32 55 C45 38 43 21 32 9 Z" />{hood}<path d="M30 23 Q26.5 35 30.5 47" /><path d="M34 23 Q37.5 35 33.5 47" /><path d="M32 25 V44" /></>, p),
+  // neat — slender outline, single line, small hood dot
+  'vagina-5': (p) => base(<><path d="M32 10 C24 22 22.5 38 32 54 C41.5 38 40 22 32 10 Z" /><circle cx="32" cy="20" r="1.75" /><path d="M32 25 V45" /></>, p),
+  // asymmetric — one inner lip fuller than the other
+  'vagina-6': (p) => base(<><path d="M32 9 C21 21 19 38 32 55 C45 38 43 21 32 9 Z" />{hood}<path d="M31 23 Q29.5 34 31.5 45" /><path d="M33.5 23 Q38 34 33 47" /></>, p),
 };
 
+// Combined-symbol marks (circle + mars arrow + venus cross), drawn precisely.
 export const intersexPictograms: Record<string, Picto> = {
-  'intersex-1': (p) => base(<><circle cx="32" cy="32" r="18" /><path d="M14 14 L22 22 M18 14 H14 V18" /><path d="M32 50 V58 M28 58 H36" /></>, p),
-  'intersex-2': (p) => base(<><circle cx="32" cy="32" r="16" /><path d="M32 16 V8 M28 12 L32 8 L36 12" /><path d="M44 44 L50 50 M50 46 V50 H46" /></>, p),
+  // intersex symbol — circle, arrow up-right, cross below
+  'intersex-1': (p) => base(<><circle cx="30" cy="32" r="13" /><path d="M39.5 22.5 L51 11" /><path d="M43.5 11 H51 V18.5" /><path d="M30 45 V58" /><path d="M24 52 H36" /></>, p),
+  // androgyne variant — circle, arrow straight up, cross below
+  'intersex-2': (p) => base(<><circle cx="32" cy="33" r="13" /><path d="M32 20 V6" /><path d="M26.5 11 L32 5.5 L37.5 11" /><path d="M32 46 V58" /><path d="M26 52.5 H38" /></>, p),
 };
 
 // ---------------- Body pictograms ----------------
+// Torso silhouettes (head + closed torso outline + legs), differentiated by
+// shoulder width, waist, belly, and hair marks. Stick figures retired in v2.
+
+const head = (r = 5.5) => <circle cx="32" cy="10" r={r} />;
+const legs = (lx: number, rx: number, spread = 2.5) => (
+  <path d={`M${lx} 47 L${lx - spread} 60 M${rx} 47 L${rx + spread} 60`} />
+);
+// Chest-hair squiggles for bear/otter.
+const chestHair = (
+  <path d="M28 27 q1.5 1.5 3 0 q1.5 1.5 3 0 M27 31 q1.5 1.5 3 0 q1.5 1.5 3 0 q1.5 1.5 3 0" strokeWidth={1.25} />
+);
 
 export const bodyPictograms: Record<string, Picto> = {
-  'body-slim':       (p) => base(<><circle cx="32" cy="12" r="6" /><path d="M32 18 V40 M26 22 H38 M28 40 L24 60 M36 40 L40 60" /></>, p),
-  'body-average':    (p) => base(<><circle cx="32" cy="12" r="6" /><path d="M32 18 V42 M24 22 H40 M28 42 L24 60 M36 42 L40 60" /></>, p),
-  'body-athletic':   (p) => base(<><circle cx="32" cy="12" r="6" /><path d="M32 18 V42 M22 22 H42 M20 26 Q32 32 44 26 M28 42 L22 60 M36 42 L42 60" /></>, p),
-  'body-muscular':   (p) => base(<><circle cx="32" cy="12" r="6" /><path d="M32 18 V44 M20 24 H44 M18 28 Q32 36 46 28 M16 22 L20 24 M48 22 L44 24 M26 44 L20 60 M38 44 L44 60" /></>, p),
-  'body-bear':       (p) => base(<><circle cx="32" cy="12" r="6" /><path d="M32 18 V46 M20 24 Q32 32 44 24 M18 32 Q32 42 46 32 M26 46 L22 60 M38 46 L42 60" /></>, p),
-  'body-chub':       (p) => base(<><circle cx="32" cy="12" r="6" /><path d="M32 18 V46 M18 28 Q32 40 46 28 M22 46 L20 60 M42 46 L44 60" /></>, p),
-  'body-twink':      (p) => base(<><circle cx="32" cy="12" r="5" /><path d="M32 17 V40 M27 22 H37 M29 40 L26 60 M35 40 L38 60" /></>, p),
-  'body-otter':      (p) => base(<><circle cx="32" cy="12" r="6" /><path d="M32 18 V42 M24 22 H40 M22 28 Q32 34 42 28 M28 42 L24 60 M36 42 L40 60" /></>, p),
+  // slim — narrow, straight sides
+  'body-slim': (p) => base(<>{head()}<path d="M26 20 Q32 17.5 38 20 C38.5 28 38 34 38 40 Q38 44 37.5 47 L26.5 47 Q26 44 26 40 C26 34 25.5 28 26 20 Z" />{legs(28.5, 35.5)}</>, p),
+  // average — medium frame, gentle waist
+  'body-average': (p) => base(<>{head()}<path d="M24 20 Q32 17 40 20 C41 27 40 32 39 36 Q38.5 42 39 47 L25 47 Q25.5 42 25 36 C24 32 23 27 24 20 Z" />{legs(28, 36)}</>, p),
+  // athletic — broad shoulders, V-taper
+  'body-athletic': (p) => base(<>{head()}<path d="M21 20 Q32 16.5 43 20 C43 27 40.5 32 38.5 36 Q38 42 38.5 47 L25.5 47 Q26 42 25.5 36 C23.5 32 21 27 21 20 Z" /><path d="M26 25 Q32 28 38 25" strokeWidth={1.25} />{legs(28, 36)}</>, p),
+  // muscular — widest shoulders, arm caps, hard taper
+  'body-muscular': (p) => base(<>{head(6)}<path d="M19 21 Q32 16 45 21 C45.5 28 42 33 39 37 Q38.5 42 39 47 L25 47 Q25.5 42 25 37 C22 33 18.5 28 19 21 Z" /><path d="M19 21 Q15.5 25 16.5 30 M45 21 Q48.5 25 47.5 30" /><path d="M25.5 26 Q32 30 38.5 26" strokeWidth={1.25} />{legs(27.5, 36.5, 3)}</>, p),
+  // bear — broad frame, full belly, chest hair
+  'body-bear': (p) => base(<>{head(6)}<path d="M22 20 Q32 17 42 20 C45 28 46 36 44 42 Q43 45.5 41 47 L23 47 Q21 45.5 20 42 C18 36 19 28 22 20 Z" />{chestHair}{legs(27, 37, 3)}</>, p),
+  // chub — soft and round all the way down
+  'body-chub': (p) => base(<>{head()}<path d="M24 20 Q32 17.5 40 20 C45 28 46.5 38 44 44 Q43 46.5 41 47 L23 47 Q21 46.5 20 44 C17.5 38 19 28 24 20 Z" />{legs(27, 37, 3)}</>, p),
+  // twink — very slim, narrowest frame
+  'body-twink': (p) => base(<>{head(5)}<path d="M27 19.5 Q32 17.5 37 19.5 C37.5 27 37 34 37 40 Q37 44 36.5 47 L27.5 47 Q27 44 27 40 C27 34 26.5 27 27 19.5 Z" />{legs(29, 35, 2)}</>, p),
+  // otter — slim-athletic with chest hair
+  'body-otter': (p) => base(<>{head()}<path d="M23.5 20 Q32 17 40.5 20 C41 27 39.5 32 38 36 Q37.5 42 38 47 L26 47 Q26.5 42 26 36 C24.5 32 23 27 23.5 20 Z" />{chestHair}{legs(28.5, 35.5)}</>, p),
 };
 
 // ---------------- Erection-angle silhouettes ----------------
@@ -68,8 +120,9 @@ const angleSvg = (deg: number): Picto => (p) => {
   const tipY = 40 + Math.cos(rad) * 22;
   return base(
     <>
-      <ellipse cx="32" cy="50" rx="10" ry="6" />
-      <path d={`M32 40 L${tipX.toFixed(1)} ${tipY.toFixed(1)}`} strokeWidth={4} />
+      <circle cx="26.5" cy="48" r="6" />
+      <circle cx="37.5" cy="48" r="6" />
+      <path d={`M32 40 L${tipX.toFixed(1)} ${tipY.toFixed(1)}`} strokeWidth={4.5} />
     </>,
     p,
   );
