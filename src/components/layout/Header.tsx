@@ -283,7 +283,7 @@ export function Header() {
             <div className="justify-self-start">{brand}</div>
             <div
               className="min-w-0 justify-self-center"
-              style={{ width: 'clamp(320px, 34vw, 480px)' }}
+              style={{ width: 'clamp(320px, 40vw, 672px)' }}
             >
               <UniversalSearchBar />
             </div>
