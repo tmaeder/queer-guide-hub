@@ -14,8 +14,6 @@ const Index = lazyRetry(() => import('./pages/Index'));
 const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
 const VenueDetail = lazyRetry(() => import('./pages/VenueDetail'));
-const VenuesLeaderboard = lazyRetry(() => import('./pages/VenuesLeaderboard'));
-const VenuesPassport = lazyRetry(() => import('./pages/VenuesPassport'));
 const VenueGuides = lazyRetry(() => import('./pages/VenueGuides'));
 const VenueGuide = lazyRetry(() => import('./pages/VenueGuide'));
 const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
@@ -31,7 +29,6 @@ const MarketplaceCategories = lazyRetry(() => import('./pages/MarketplaceCategor
 const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 const MarketplaceCollection = lazyRetry(() => import('./pages/MarketplaceCollection'));
-const MarketplaceMissions = lazyRetry(() => import('./pages/MarketplaceMissions'));
 const MarketplaceGuides = lazyRetry(() => import('./pages/MarketplaceGuides'));
 const MarketplaceGuide = lazyRetry(() => import('./pages/MarketplaceGuide'));
 const Wishlist = lazyRetry(() => import('./pages/Wishlist'));
@@ -159,7 +156,6 @@ const CloudflareDashboard = lazy(() =>
 const ProfessionDetail = lazyRetry(() => import('./pages/ProfessionDetail'));
 const News = lazyRetry(() => import('./pages/News'));
 const NewsArchive = lazyRetry(() => import('./pages/NewsArchive'));
-const NewsMe = lazyRetry(() => import('./pages/NewsMe'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
 const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
@@ -167,7 +163,6 @@ const ProfileSettings = lazyRetry(() => import('./pages/ProfileSettings'));
 const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard'));
 const IntimateDiscovery = lazyRetry(() => import('./pages/intimate/IntimateDiscovery'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
-const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
 
 const Feed = lazyRetry(() => import('./pages/Feed'));
 
@@ -421,8 +416,8 @@ export const AppRoutes = () => {
                 <Route path="venues/groups" element={<Navigate to="/groups" replace />} />
                 <Route path="venues/resources" element={<Navigate to="/resources" replace />} />
                 {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
-                <Route path="venues/leaderboard" element={<Navigate to="/me/leaderboard" replace />} />
-                <Route path="venues/passport" element={<Navigate to="/me/passport" replace />} />
+                <Route path="venues/leaderboard" element={<Navigate to="/me/progress" replace />} />
+                <Route path="venues/passport" element={<Navigate to="/me/progress" replace />} />
                 <Route path="venues/guides" element={<VenueGuides />} />
                 <Route path="venues/guides/:slug" element={<VenueGuide />} />
                 <Route path="venues/:slug" element={<VenueDetail />} />
@@ -434,7 +429,7 @@ export const AppRoutes = () => {
                 <Route path="pride/:year" element={<PridePage />} />
                 <Route path="marketplace" element={<Marketplace />} />
                 <Route path="marketplace/share" element={<MarketplaceShare />} />
-                <Route path="marketplace/missions" element={<Navigate to="/me/missions" replace />} />
+                <Route path="marketplace/missions" element={<Navigate to="/me/progress" replace />} />
                 <Route path="marketplace/categories" element={<MarketplaceCategories />} />
                 <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
                 <Route path="marketplace/collection/:slug" element={<MarketplaceCollection />} />
@@ -497,7 +492,7 @@ export const AppRoutes = () => {
                 <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
                 <Route path="news" element={<News />} />
                 <Route path="news/all" element={<NewsArchive />} />
-                <Route path="news/me" element={<NewsMe />} />
+                <Route path="news/me" element={<Navigate to="/me/progress" replace />} />
                 <Route path="news/story/:slug" element={<NewsStoryDetail />} />
                 <Route path="news/:slug" element={<NewsDetail />} />
                 <Route path="search" element={<SearchResults />} />
@@ -512,17 +507,17 @@ export const AppRoutes = () => {
                 <Route path="feed" element={<Feed />} />
                 <Route path="community" element={<Navigate to="/feed" replace />} />
                 <Route path="me/:tab?" element={<ProfilePage />} />
-                <Route path="me/passport" element={<VenuesPassport />} />
-                <Route path="me/missions" element={<MarketplaceMissions />} />
-                <Route path="me/leaderboard" element={<VenuesLeaderboard />} />
+                <Route path="me/passport" element={<Navigate to="/me/progress" replace />} />
+                <Route path="me/missions" element={<Navigate to="/me/progress" replace />} />
+                <Route path="me/leaderboard" element={<Navigate to="/me/progress" replace />} />
                 <Route path="me/settings" element={<Navigate to="/profile/settings" replace />} />
-                <Route path="me/tiers" element={<Navigate to="/profile/tiers" replace />} />
+                <Route path="me/tiers" element={<Navigate to="/me/progress" replace />} />
                 <Route path="profile/settings" element={<ProfileSettings />} />
                 <Route path="intimate" element={<IntimateDiscovery />} />
                 <Route path="discover" element={<IntimateDiscovery />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
-                <Route path="profile/tiers" element={<ProfileTiers />} />
+                <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />
                 <Route path="profile/footprint" element={<Navigate to="/me/travel" replace />} />
                 <Route path="profile/footprint/:userId/public" element={<FootprintRedirect />} />
                 <Route path="user/:userId/:tab?" element={<ProfilePage />} />

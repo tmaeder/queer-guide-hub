@@ -12,7 +12,7 @@ interface AchievementsRowProps {
 
 /**
  * Compact horizontal row of recent / earned achievements. Locked ones get a
- * muted variant. Tap-through lands on /me/passport for the full grid.
+ * muted variant. Tap-through lands on /me/progress for the full grid.
  *
  * Phase 1 only tracks venue-domain achievements; this row will surface more
  * domains as Phase 9 (quests + missions) wires them in.
@@ -57,7 +57,7 @@ export function AchievementsRow({ limit = 8, className }: AchievementsRowProps) 
         <h3 className="text-sm font-medium text-foreground inline-flex items-center gap-2">
           <Award className="h-4 w-4" aria-hidden /> Achievements
         </h3>
-        <LocalizedLink to="/me/passport" className="text-13 text-muted-foreground hover:underline">
+        <LocalizedLink to="/me/progress" className="text-13 text-muted-foreground hover:underline">
           See all
         </LocalizedLink>
       </div>
