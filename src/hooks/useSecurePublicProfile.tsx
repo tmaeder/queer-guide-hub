@@ -6,6 +6,7 @@ interface PublicProfileData {
   id: string;
   user_id: string;
   display_name?: string;
+  username?: string;
   bio?: string;
   avatar_url?: string;
   created_at: string;
@@ -23,8 +24,7 @@ interface PublicProfileData {
   phone?: string;
   gender_identity?: string;
   sexual_orientation?: string;
-  relationship_status?: string;
-  income_range?: string;
+  current_relationship_status?: string;
 }
 
 export function useSecurePublicProfile(targetUserId?: string) {

@@ -226,28 +226,15 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   privacySettings={profile.privacy_settings}
                   adminJustification="profile_moderation"
                 >
-                  {profile.relationship_status && (
+                  {profile.current_relationship_status && (
                     <div className="flex items-center gap-4">
                       <Heart className="h-5 w-5 text-muted-foreground" />
                       <div>
                         <p className="text-sm font-medium">Relationship Status</p>
-                        <p className="text-sm text-muted-foreground">{profile.relationship_status}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {profile.current_relationship_status}
+                        </p>
                       </div>
-                    </div>
-                  )}
-                </PrivacyGuard>
-
-                {/* Income Range - Highly sensitive */}
-                <PrivacyGuard
-                  profileUserId={profile.user_id}
-                  requiredPrivacyField="income_range_public"
-                  privacySettings={profile.privacy_settings}
-                  adminJustification="financial_verification"
-                >
-                  {profile.income_range && (
-                    <div>
-                      <p className="text-sm font-medium">Income Range</p>
-                      <p className="text-sm text-muted-foreground">{profile.income_range}</p>
                     </div>
                   )}
                 </PrivacyGuard>

@@ -18,7 +18,7 @@ const VenuesLeaderboard = lazyRetry(() => import('./pages/VenuesLeaderboard'));
 const VenuesPassport = lazyRetry(() => import('./pages/VenuesPassport'));
 const VenueGuides = lazyRetry(() => import('./pages/VenueGuides'));
 const VenueGuide = lazyRetry(() => import('./pages/VenueGuide'));
-const Me = lazyRetry(() => import('./pages/Me'));
+const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
 const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
 const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
@@ -170,7 +170,7 @@ const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUser
 const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
 const Footprint = lazyRetry(() => import('./pages/profile/Footprint'));
 const FootprintPublic = lazyRetry(() => import('./pages/profile/FootprintPublic'));
-const UserProfile = lazyRetry(() => import('./pages/UserProfile'));
+
 const Feed = lazyRetry(() => import('./pages/Feed'));
 
 const Messages = lazyRetry(() => import('./pages/Messages'));
@@ -507,7 +507,7 @@ export const AppRoutes = () => {
                 <Route path="favorites" element={<Favorites />} />
                 <Route path="feed" element={<Feed />} />
                 <Route path="community" element={<Navigate to="/feed" replace />} />
-                <Route path="me" element={<Me />} />
+                <Route path="me/:tab?" element={<ProfilePage />} />
                 <Route path="me/passport" element={<VenuesPassport />} />
                 <Route path="me/missions" element={<MarketplaceMissions />} />
                 <Route path="me/leaderboard" element={<VenuesLeaderboard />} />
@@ -521,7 +521,7 @@ export const AppRoutes = () => {
                 <Route path="profile/tiers" element={<ProfileTiers />} />
                 <Route path="profile/footprint" element={<Footprint />} />
                 <Route path="profile/footprint/:userId/public" element={<FootprintPublic />} />
-                <Route path="user/:userId" element={<UserProfile />} />
+                <Route path="user/:userId/:tab?" element={<ProfilePage />} />
                 <Route path="sitemap" element={<Sitemap />} />
                 <Route path="feedback" element={<FeedbackBoard />} />
                 <Route path="help" element={<HelpHotlines />} />
