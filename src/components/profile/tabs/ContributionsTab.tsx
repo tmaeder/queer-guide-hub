@@ -1,15 +1,14 @@
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { UserPostsList } from '@/components/posts/UserPostsList';
+import { UserReviewsList } from '@/components/profile/contributions/UserReviewsList';
+import { UserSubmissionsList } from '@/components/profile/contributions/UserSubmissionsList';
 
 interface ContributionsTabProps {
   userId: string;
   isOwnProfile: boolean;
 }
 
-/**
- * What this user gave to the community. Photos + posts now; reviews and
- * submissions sections land with the contributions aggregation hooks.
- */
+/** What this user gave to the community: posts, reviews, photos, submissions. */
 export function ContributionsTab({ userId, isOwnProfile }: ContributionsTabProps) {
   return (
     <div className="flex flex-col gap-8">
@@ -17,10 +16,21 @@ export function ContributionsTab({ userId, isOwnProfile }: ContributionsTabProps
         <h2 className="text-title font-semibold">Posts</h2>
         <UserPostsList userId={userId} isOwnProfile={isOwnProfile} />
       </section>
+      <section aria-label="Reviews" className="flex flex-col gap-4">
+        <h2 className="text-title font-semibold">Reviews</h2>
+        <UserReviewsList userId={userId} />
+      </section>
       <section aria-label="Photos" className="flex flex-col gap-4">
         <h2 className="text-title font-semibold">Photos</h2>
         <PhotoGallery userId={userId} isOwnProfile={isOwnProfile} />
       </section>
+      {isOwnProfile && (
+        <section aria-label="Submissions" className="flex flex-col gap-4">
+          <h2 className="text-title font-semibold">Submissions</h2>
+          <p className="text-13 text-muted-foreground -mt-2">Visible only to you.</p>
+          <UserSubmissionsList />
+        </section>
+      )}
     </div>
   );
 }
