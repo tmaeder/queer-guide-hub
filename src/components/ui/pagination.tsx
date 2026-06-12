@@ -68,7 +68,7 @@ const PaginationLink = ({
       height: 36,
       padding: size === 'icon' ? 0 : '0 16px',
       border: 'none',
-      backgroundColor: isActive ? 'var(--background, #fff)' : 'transparent',
+      backgroundColor: isActive ? 'hsl(var(--muted))' : 'transparent',
       ...style,
     }}
     {...props}

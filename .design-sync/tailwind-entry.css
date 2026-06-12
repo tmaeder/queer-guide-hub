@@ -1,0 +1,6 @@
+/* Harness-only Tailwind entry for the design-sync cssEntry build.
+   Imports the app stylesheet and additionally scans the committed preview
+   sources — Tailwind v4 auto-detection skips dot-directories, so classes
+   used only in .design-sync/previews/ would otherwise silently no-op. */
+@import "../src/index.css";
+@source "./previews";

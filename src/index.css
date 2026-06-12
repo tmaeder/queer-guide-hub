@@ -378,14 +378,20 @@
 }
 
 /* ── Base resets ───────────────────────────────────────────────────── */
+/* @layer base — unlayered, this reset outranked every border-* utility
+   (which Tailwind v4 emits inside @layer utilities; unlayered beats layered
+   regardless of specificity), zeroing all 1px borders site-wide. Verified
+   against the deployed bundle 2026-06-12. Keep it layered. */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
-  border-color: hsl(var(--border));
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: hsl(var(--border));
+  }
 }
 
 html {
