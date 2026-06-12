@@ -377,15 +377,26 @@
   background: hsl(var(--muted)) !important;
 }
 
-/* ── Base resets ───────────────────────────────────────────────────── */
+/* ── Base resets ───────────────────────────────────────────────────────
+   Wrapped in @layer base so border-* utilities (later layer) always win.
+   Unlayered, this reset beats every layered utility in any build that
+   preserves cascade layers (e.g. the tailwindcss CLI) — the Vite prod
+   build only escapes that by flattening layers. */
+   Wrapped in @layer base so Tailwind border-* utilities (which live in
+   @layer utilities, a later layer) can override `border-width: 0`. Without
+   the layer this rule is unlayered and wins over every layered utility —
+   `.border`, `.border-b` etc. silently compute to 0px and the whole site
+   loses its 1px chrome. Same pitfall as the link rules below. */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
-  border-color: hsl(var(--border));
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: hsl(var(--border));
+  }
 }
 
 html {
@@ -444,6 +455,17 @@ body {
 @layer base {
   a, button, [role="button"], input, select, textarea {
     min-height: 44px;
+  }
+
+  /* Compact controls (Checkbox 16px, Switch 20px) opt out with min-h-0 —
+     min-height beats the h-* utility at the box-model level, so the 44px
+     rule was stretching them into vertical pills. The wrapping label keeps
+     the 44px tap target instead (WCAG 2.5.5). */
+  label:has([role="checkbox"]),
+  label:has([role="switch"]) {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
   }
 }
 

@@ -963,8 +963,8 @@
       "termsAria": "Accepter les conditions d'utilisation",
       "privacyAria": "Accepter la politique de confidentialité",
       "ageAria": "Confirmer avoir 18 ans ou plus",
-      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
-      "combinedAria": "Accept terms, privacy and confirm 18 or older"
+      "combined": "J'accepte les <1>Conditions d'utilisation</1> et la <3>Politique de confidentialité</3>, et je confirme avoir 18 ans ou plus.",
+      "combinedAria": "Accepter les conditions, la confidentialité et confirmer 18 ans ou plus"
     },
     "oauth": {
       "google": "Continuer avec Google",
