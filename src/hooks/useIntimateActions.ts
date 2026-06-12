@@ -10,7 +10,7 @@ export function useProfileDisplay(userId: string | undefined) {
       const { data } = await supabase
         .from('profiles')
         .select('display_name, avatar_url')
-        .eq('id', userId!)
+        .eq('user_id', userId!)
         .maybeSingle();
       return data as { display_name: string | null; avatar_url: string | null } | null;
     },
