@@ -10,6 +10,9 @@ vi.mock('@/components/animation/ScrollReveal', () => ({ ScrollReveal: ({ childre
 vi.mock('@/components/effects/ParallaxHero', () => ({ ParallaxHero: () => null }));
 vi.mock('@/components/moderation/ReportButton', () => ({ ReportButton: () => null }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
+// AmenityDisplay (inside HotelOverview) reads the profile for matched-needs
+// badges; stub it so no QueryClientProvider is needed here.
+vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }));
 
 import { HotelHero, HotelOverview, HotelSidebar, HotelPhotos } from '../HotelDetail.parts';
 

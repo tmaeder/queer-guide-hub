@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Sparkles } from 'lucide-react';
@@ -19,6 +19,8 @@ import { useSearch, type SearchResult, type SearchFilters } from '@/hooks/useSea
 import { useAssistant } from '@/hooks/useAssistant';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 import { ActiveFilterChips } from '@/components/search/ActiveFilterChips';
+import { PreferenceChips } from '@/components/preferences/PreferenceChips';
+import { usePreferenceChips, priceRangeFromChips } from '@/hooks/usePreferenceChips';
 import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
 import { BackToTopButton } from '@/components/search/BackToTopButton';
 import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
@@ -118,12 +120,26 @@ export default function SearchResults() {
     setSearchQuery(query);
   }, [query]);
 
+  // Traveling preference chips — the saved budget applies as a default price
+  // range unless the user sets one manually. Stays out of filters/URL.
+  const { chips: prefChips, toggle: togglePrefChip, forget: forgetPrefChip } =
+    usePreferenceChips(['budget']);
+  const chipPriceRange = priceRangeFromChips(prefChips);
+  const effectiveFilters = useMemo<SearchFilters>(
+    () =>
+      chipPriceRange && !filters.priceRange
+        ? { ...filters, priceRange: chipPriceRange }
+        : filters,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filters, chipPriceRange?.[0], chipPriceRange?.[1]],
+  );
+
   // Pass identity so the worker personalizes ranking from the profile
   // (interests/home_city → _boostReason). Anonymous users fall back to session.
   const { user } = useAuth();
   const { results, loading, error, errorKind, totalHits, tooShort, facets } = useSearch(
     query,
-    filters,
+    effectiveFilters,
     page,
     workerSort(effectiveSort),
     { userId: user?.id ?? null, sessionId: getSessionId() },
@@ -347,7 +363,12 @@ export default function SearchResults() {
             <SearchScopeChips activeScope={activeScope} onScopeChange={handleScopeChange} />
 
             <div className="flex flex-wrap items-center justify-between gap-4 py-2">
-              <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <PreferenceChips
+                  chips={prefChips}
+                  onToggle={togglePrefChip}
+                  onForget={forgetPrefChip}
+                />
                 <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
               <SavedSearchesMenu

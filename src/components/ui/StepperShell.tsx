@@ -88,18 +88,13 @@ export function StepperShell({
           </div>
         </div>
 
+        {/* No step-swap animation: AnimatePresence mode="wait" freezes the
+            exiting step's children, and a stalled exit leaves the previous
+            step's content on screen while the header advances (seen live on
+            /intimate/onboard 2026-06-11). Discreet mode promises no
+            decorative motion anyway — swap instantly. */}
         <div className="flex-1 container mx-auto px-4 py-8 max-w-2xl w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={active?.id ?? current}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+          <div key={active?.id ?? current}>{children}</div>
         </div>
 
         <div className="sticky bottom-0 border-t border-border bg-background/95 backdrop-blur-sm">

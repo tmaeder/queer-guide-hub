@@ -20,12 +20,12 @@ test.describe('Marketplace — discovery surface', () => {
 
   test('/marketplace cards expose affiliate links with rel="sponsored"', async ({ page }) => {
     await page.goto('/marketplace');
-    await page.waitForSelector('a[data-affiliate="true"]', { timeout: 30_000 });
+    // Auto-retrying assertion instead of waitForSelector + count: the grid
+    // re-renders when query data settles, so a matched node can detach
+    // between the wait and the count (observed flake 2026-06-12).
     const affiliates = page.locator('a[data-affiliate="true"]');
-    const count = await affiliates.count();
-    expect(count).toBeGreaterThan(0);
+    await expect(affiliates.first()).toHaveAttribute('rel', /sponsored/, { timeout: 30_000 });
     const rel = await affiliates.first().getAttribute('rel');
-    expect(rel).toContain('sponsored');
     expect(rel).toContain('nofollow');
     expect(rel).toContain('noopener');
   });
@@ -110,7 +110,10 @@ test.describe('Marketplace — discovery surface', () => {
   test('marketplace detail page emits Product JSON-LD with offers', async ({ page }) => {
     await page.goto('/marketplace');
     await page.waitForSelector('a[href^="/marketplace/"]', { timeout: 30_000 });
-    const detailLink = page.locator('a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="share"]):not([href$="/submit"])').first();
+    // Exclude every non-listing route under /marketplace — notably guides
+    // (editorial pages emit no Product JSON-LD; picking one stalls the
+    // waitForFunction below until timeout, the CI failure of 2026-06-12).
+    const detailLink = page.locator('a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="guide"]):not([href*="share"]):not([href$="/submit"])').first();
     const href = await detailLink.getAttribute('href');
     expect(href).toBeTruthy();
     await page.goto(href!);

@@ -491,6 +491,8 @@ function ProfileSettingsContent({
       {/* ---------- Sheets ---------- */}
       <Sheet open={openSheet !== null} onOpenChange={(open) => !open && setOpenSheet(null)}>
         <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto px-4 pb-8 sm:px-6">
+          {/* full-width sheet on mobile; reading-width column on desktop */}
+          <div className="mx-auto w-full max-w-2xl">
           {openSheet && (
             <SheetHeader className="text-left">
               <SheetTitle>{sheetTitleId[openSheet]}</SheetTitle>
@@ -561,6 +563,7 @@ function ProfileSettingsContent({
                 onSave={handleAvatarSave}
               />
             )}
+          </div>
           </div>
         </SheetContent>
       </Sheet>

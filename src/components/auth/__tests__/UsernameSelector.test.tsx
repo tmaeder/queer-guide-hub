@@ -89,6 +89,6 @@ describe('UsernameSelector — custom input idle states', () => {
     render(<UsernameSelector value={null} onChange={vi.fn()} />);
     await waitFor(() => screen.getByLabelText(/Or type your own custom username/i));
     const input = screen.getByLabelText(/Or type your own custom username/i);
-    expect(input).toHaveAttribute('placeholder', '8–15 letters, starts with a letter');
+    expect(input).toHaveAttribute('placeholder', '3–20 chars: letters, numbers, dots, underscores');
   });
 });
