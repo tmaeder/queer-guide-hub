@@ -5,7 +5,19 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-const FORMAT_RE = /^[A-Za-z][A-Za-z0-9]{7,14}$/;
+// v2 rules: 3-20 chars, lowercase a-z 0-9 _ ., letter start, alnum end,
+// no consecutive separators. Mirrors the DB CHECK + username_available().
+export const USERNAME_RE = /^[a-z][a-z0-9._]{1,18}[a-z0-9]$/;
+export const usernameFormatError = (v: string): string | null => {
+  if (v.length < 3) return 'At least 3 characters.';
+  if (v.length > 20) return 'At most 20 characters.';
+  if (!/^[a-z]/.test(v)) return 'Usernames start with a letter.';
+  if (/[._]$/.test(v)) return 'Usernames end with a letter or number.';
+  if (/[._]{2}/.test(v)) return 'No repeated dots or underscores.';
+  if (!USERNAME_RE.test(v)) return 'Only lowercase letters, numbers, dots and underscores.';
+  return null;
+};
+const FORMAT_RE = USERNAME_RE;
 
 type Status = 'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'error';
 
@@ -31,7 +43,8 @@ export function UsernameSelector({ value, onChange }: Props) {
       });
       if (error) throw error;
       const names = (data as { usernames?: string[] })?.usernames ?? [];
-      setSuggestions(names);
+      // LLM emits PascalCase; v2 usernames are lowercase-only.
+      setSuggestions(names.map((n) => n.toLowerCase()).filter((n) => USERNAME_RE.test(n)));
     } catch (err) {
       setFetchError(
         err instanceof Error ? err.message : 'Could not generate usernames',
@@ -47,7 +60,7 @@ export function UsernameSelector({ value, onChange }: Props) {
   }, [fetchNames]);
 
   const checkAvailability = useCallback(async (candidate: string) => {
-    if (!FORMAT_RE.test(candidate)) {
+    if (!FORMAT_RE.test(candidate) || /[._]{2}/.test(candidate)) {
       setStatus('invalid');
       return;
     }
@@ -63,7 +76,8 @@ export function UsernameSelector({ value, onChange }: Props) {
     if (data) onChange(candidate);
   }, [onChange]);
 
-  const handleCustomChange = (v: string) => {
+  const handleCustomChange = (raw: string) => {
+    const v = raw.toLowerCase();
     setCustom(v);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!v) {
@@ -128,7 +142,7 @@ export function UsernameSelector({ value, onChange }: Props) {
             id="username-custom"
             value={custom}
             onChange={(e) => handleCustomChange(e.target.value)}
-            placeholder="8–15 letters, starts with a letter"
+            placeholder="3–20 chars: letters, numbers, dots, underscores"
             autoComplete="off"
             spellCheck={false}
           />
@@ -146,11 +160,14 @@ export function UsernameSelector({ value, onChange }: Props) {
         </div>
         {status === 'invalid' && (
           <p className="text-xs text-muted-foreground">
-            8–15 chars, letters/numbers only, must start with a letter.
+            {usernameFormatError(custom) ??
+              'Lowercase letters, numbers, dots and underscores; starts with a letter.'}
           </p>
         )}
         {status === 'taken' && (
-          <p className="text-xs text-destructive">Username already taken.</p>
+          <p className="text-xs text-destructive">
+            That name (or a lookalike with dots/underscores) is taken or reserved.
+          </p>
         )}
         {status === 'available' && (
           <p className="text-xs text-muted-foreground">Available.</p>

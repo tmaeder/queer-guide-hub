@@ -16,6 +16,8 @@ export interface PrivacySettings {
   travel_visibility?: string;
   coming_out_visibility?: string;
   appear_in_recognition?: boolean;
+  /** public | friends | private — who sees pronouns (default public). */
+  pronouns_visibility?: string;
 }
 
 export interface ProfileFormData {
@@ -26,6 +28,8 @@ export interface ProfileFormData {
   chosen_name: string;
   name_pronunciation: string;
   pronouns: string;
+  /** Ordered pronoun sets — source of truth; `pronouns` is the derived display string. */
+  pronoun_tags: string[];
   bio: string;
   location: string;
   date_of_birth: string;
@@ -80,6 +84,7 @@ const DEFAULT_PRIVACY: PrivacySettings = {
   travel_visibility: 'public',
   coming_out_visibility: 'private',
   appear_in_recognition: false,
+  pronouns_visibility: 'public',
 };
 
 function str(val: unknown): string {
@@ -94,7 +99,7 @@ export function initFormData(profile: Profile | null | undefined): ProfileFormDa
   if (!profile) {
     return {
       display_name: '', first_name: '', last_name: '', chosen_name: '',
-      name_pronunciation: '', pronouns: '', bio: '', location: '',
+      name_pronunciation: '', pronouns: '', pronoun_tags: [], bio: '', location: '',
       date_of_birth: '', age_range: '', occupation: '', education: '',
       phone: '', website: '',
       gender_identity: '', sexual_orientation: '',
@@ -122,6 +127,11 @@ export function initFormData(profile: Profile | null | undefined): ProfileFormDa
     chosen_name: str(p.chosen_name),
     name_pronunciation: str(p.name_pronunciation),
     pronouns: str(p.pronouns),
+    pronoun_tags: strArr(p.pronoun_tags).length > 0
+      ? strArr(p.pronoun_tags)
+      : str(p.pronouns).trim()
+        ? [str(p.pronouns).trim()]
+        : [],
     bio: str(p.bio),
     location: str(p.location),
     date_of_birth: str(p.date_of_birth),

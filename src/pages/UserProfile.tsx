@@ -117,7 +117,7 @@ export default function UserProfile() {
 
   const getProfileVisibility = () => {
     const privacy = profile.privacy_settings as Record<string, unknown> | null;
-    return privacy?.profile_visibility || 'public';
+    return profile.profile_visibility || privacy?.profile_visibility || 'public';
   };
 
   if (getProfileVisibility() === 'private' && !isOwnProfile) {
@@ -131,6 +131,42 @@ export default function UserProfile() {
             <ArrowLeft size={16} className="mr-2" />
             Back to Directory
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Friends-only profile, viewer is not an accepted friend — server returned a
+  // locked stub, so only name/avatar are available. Offer the friend request.
+  if (profile.locked && !isOwnProfile) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12 flex flex-col items-center gap-4">
+          <Avatar style={{ width: 96, height: 96 }}>
+            <AvatarImage
+              src={profile.avatar_url || undefined}
+              alt={profile.display_name || 'Profile photo'}
+            />
+            <AvatarFallback className="text-2xl">
+              {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="text-base font-medium mb-2">
+              {profile.display_name || 'Anonymous User'}
+            </p>
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Shield size={16} />
+              <p className="text-sm">This profile is only visible to friends.</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <UserRelationshipActions targetUserId={profile.user_id} />
+            <Button variant="outline" onClick={() => navigate('/users')}>
+              <ArrowLeft size={16} className="mr-2" />
+              Back to Directory
+            </Button>
+          </div>
         </div>
       </div>
     );

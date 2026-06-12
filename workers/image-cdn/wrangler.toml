@@ -11,6 +11,8 @@ bucket_name = "queer-guide-images"
 ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:3000,http://localhost:8080"
 THUMB_WIDTH = "400"
 THUMB_QUALITY = "80"
+SUPABASE_URL = "https://xqeacpakadqfxjxjcewc.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8"
 
 [[routes]]
 pattern = "img.queer.guide"

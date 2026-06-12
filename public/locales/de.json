@@ -1080,8 +1080,8 @@
       "termsAria": "Nutzungsbedingungen akzeptieren",
       "privacyAria": "Datenschutzrichtlinie akzeptieren",
       "ageAria": "Bestätigen, dass du mindestens 18 bist",
-      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
-      "combinedAria": "Accept terms, privacy and confirm 18 or older"
+      "combined": "Ich akzeptiere die <1>Nutzungsbedingungen</1> und die <3>Datenschutzrichtlinie</3> und bestätige, dass ich mindestens 18 Jahre alt bin.",
+      "combinedAria": "Nutzungsbedingungen und Datenschutz akzeptieren und Alter 18+ bestätigen"
     },
     "oauth": {
       "google": "Weiter mit Google",

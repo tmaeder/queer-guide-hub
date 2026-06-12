@@ -19,6 +19,8 @@ import {
 } from './MapShell.types';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { lensToRenderMode, exploreLayersFor } from './mapShellAdapters';
+import { PreferenceChips } from '@/components/preferences/PreferenceChips';
+import { usePreferenceChips, accessibilitySlugsFromChips } from '@/hooks/usePreferenceChips';
 
 export interface MapShellProps {
   surface: MapSurface;
@@ -103,6 +105,22 @@ export const MapShell = ({
     if (f.dateRange) out.dateRange = f.dateRange;
     return out;
   }, [state.filters, config.filters]);
+
+  // Traveling preference chips — saved accessibility needs flip the map's
+  // accessible filter by default on surfaces that expose it. The chip is the
+  // control; the contribution merges into the map's filters without touching
+  // shell/URL state (accessibility needs are private).
+  const supportsAccessibility = config.filters.includes('accessibility');
+  const { chips: prefChips, toggle: togglePrefChip, forget: forgetPrefChip } =
+    usePreferenceChips(supportsAccessibility ? ['accessibility'] : []);
+  const chipAccessible = accessibilitySlugsFromChips(prefChips).length > 0;
+  const mapFilters: MapShellFilters = useMemo(
+    () =>
+      chipAccessible && !exposedFilters.accessible
+        ? { ...exposedFilters, accessible: true }
+        : exposedFilters,
+    [exposedFilters, chipAccessible],
+  );
 
   const removeFilter = useCallback(
     (key: keyof MapShellFilters) => {
@@ -229,7 +247,7 @@ export const MapShell = ({
       <ExploreMap
         height={height}
         defaultLayers={exploreLayers}
-        defaultFilters={exposedFilters}
+        defaultFilters={mapFilters}
         showLayerToggles={false}
         showFilters={false}
         initialCenter={fallbackCenter}
@@ -287,15 +305,21 @@ export const MapShell = ({
 
       {/* Quick filters now live inside the command bar; only the active-filter
           chips render below it, and only when something is applied. */}
-      {config.showCommandBar !== false && Object.keys(exposedFilters).length > 0 && (
-        <div className="absolute top-[3.25rem] left-3 right-3 z-20">
-          <FilterChips
-            filters={exposedFilters}
-            onRemove={removeFilter}
-            onClearAll={() => setFilters({})}
-          />
-        </div>
-      )}
+      {config.showCommandBar !== false &&
+        (Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
+          <div className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5">
+            <PreferenceChips
+              chips={prefChips}
+              onToggle={togglePrefChip}
+              onForget={forgetPrefChip}
+            />
+            <FilterChips
+              filters={exposedFilters}
+              onRemove={removeFilter}
+              onClearAll={() => setFilters({})}
+            />
+          </div>
+        )}
     </div>
   );
 };

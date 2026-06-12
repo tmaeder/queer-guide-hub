@@ -237,7 +237,7 @@ export default function Signup({ onBack }: Props) {
               />
             </div>
 
-            <div className="flex items-start gap-2 pt-1">
+            <Label className="flex items-start gap-2 pt-1 text-sm font-normal text-muted-foreground">
               <Checkbox
                 id="signup-consent"
                 checked={consent}
@@ -246,13 +246,18 @@ export default function Signup({ onBack }: Props) {
                 className="mt-0.5"
                 disabled={isLoading}
               />
-              <Label htmlFor="signup-consent" className="text-sm font-normal text-muted-foreground">
-                <Trans i18nKey="auth.consent.combined">
-                  I agree to the <LocalizedLink to="/terms">Terms</LocalizedLink> and{' '}
-                  <LocalizedLink to="/privacy">Privacy Policy</LocalizedLink>, and confirm I am 18 or older.
-                </Trans>
-              </Label>
-            </div>
+              <span>
+                {/* components map (not JSX children) — child-index inference broke when a formatter split " and " into two text nodes, dropping the <3> link */}
+                <Trans
+                  i18nKey="auth.consent.combined"
+                  defaults="I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older."
+                  components={{
+                    1: <LocalizedLink to="/terms">Terms</LocalizedLink>,
+                    3: <LocalizedLink to="/privacy">Privacy Policy</LocalizedLink>,
+                  }}
+                />
+              </span>
+            </Label>
 
             <Button type="submit" disabled={isLoading} className="mt-2">
               {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

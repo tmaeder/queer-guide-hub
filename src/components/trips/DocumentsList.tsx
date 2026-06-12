@@ -41,6 +41,8 @@ interface Props {
   tripId: string | null;
   /** Smaller heading + no surrounding heading when embedded in another section. */
   embedded?: boolean;
+  /** Download/delete only — no new uploads (personal-docs deprecation). */
+  readOnly?: boolean;
 }
 
 const ICON_BY_TYPE: Record<DocType, typeof FileText> = {
@@ -62,7 +64,7 @@ const EXPIRY_BADGE_VARIANT: Record<ExpiryLevel, 'default' | 'secondary' | 'destr
   expired: 'destructive',
 };
 
-export function DocumentsList({ tripId, embedded = false }: Props) {
+export function DocumentsList({ tripId, embedded = false, readOnly = false }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { data: docs, isLoading } = useTripDocuments(tripId);
@@ -111,14 +113,16 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
               ? t('docs.list.personalTitle', 'Personal documents')
               : t('docs.list.tripTitle', 'Trip documents')}
           </h6>
-          <Button variant="brand" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus size={14} className="mr-1.5" />
-            {t('docs.list.add', 'Add document')}
-          </Button>
+          {!readOnly && (
+            <Button variant="brand" size="sm" onClick={() => setAddOpen(true)}>
+              <Plus size={14} className="mr-1.5" />
+              {t('docs.list.add', 'Add document')}
+            </Button>
+          )}
         </div>
       )}
 
-      {embedded && (
+      {embedded && !readOnly && (
         <div className="flex justify-end mb-2">
           <Button variant="ghost" size="sm" onClick={() => setAddOpen(true)}>
             <Plus size={14} className="mr-1.5" />
@@ -147,11 +151,15 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
             'docs.list.emptyDescription',
             'Stored privately. PDF, JPG, PNG, HEIC, or WebP up to 25 MB.',
           )}
-          primaryAction={{
-            label: t('docs.list.add', 'Add document'),
-            onClick: () => setAddOpen(true),
-            variant: 'brand',
-          }}
+          primaryAction={
+            readOnly
+              ? undefined
+              : {
+                  label: t('docs.list.add', 'Add document'),
+                  onClick: () => setAddOpen(true),
+                  variant: 'brand',
+                }
+          }
         />
       )}
 

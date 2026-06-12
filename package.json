@@ -120,6 +120,7 @@
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.7",
     "react-dropzone": "^15.0.0",
+    "react-easy-crop": "^6.0.1",
     "react-force-graph-2d": "^1.29.1",
     "react-hook-form": "^7.78.0",
     "react-i18next": "^17.0.8",

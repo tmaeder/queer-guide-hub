@@ -94,9 +94,18 @@ export default function IntimateOnboard() {
   const step = STEP_ORDER[stepIdx];
   const draftG = draft.genitalia ?? existing?.genitalia;
   const showAngle = draftG === 'penis';
+  // The anatomy-pictogram step only exists when the chosen genitalia has a
+  // pictogram set (none for "prefer not to say" / nothing selected) — otherwise
+  // it renders an empty grid.
+  const hasPictograms = Object.keys(getGenitalPictogramSet(draftG ?? null)).length > 0;
   const visibleSteps = useMemo(
-    () => STEP_ORDER.filter((s) => (s === 'angle' || s === 'size') ? showAngle : true),
-    [showAngle],
+    () =>
+      STEP_ORDER.filter((s) => {
+        if (s === 'angle' || s === 'size') return showAngle;
+        if (s === 'genital-pictogram') return hasPictograms;
+        return true;
+      }),
+    [showAngle, hasPictograms],
   );
 
   const stepperSteps: StepperStep[] = useMemo(

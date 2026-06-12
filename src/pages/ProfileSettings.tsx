@@ -1,12 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import {
   User,
   ArrowLeft,
@@ -14,8 +18,11 @@ import {
   Heart,
   Lock,
   Check,
-  SlidersHorizontal,
   Settings,
+  ChevronRight,
+  AtSign,
+  Sparkles,
+  FileText,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -25,7 +32,6 @@ import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
 import OptimizedErrorBoundary, {
   DataErrorFallback,
 } from '@/components/error/OptimizedErrorBoundary';
-import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { EmailForwardingSettings } from '@/components/profile/EmailForwardingSettings';
 import { PushNotificationSettings } from '@/components/profile/PushNotificationSettings';
 import { DocumentsList } from '@/components/trips/DocumentsList';
@@ -34,17 +40,35 @@ import { IdentityTab } from '@/components/profile/settings/IdentityTab';
 import { RelationshipsTab } from '@/components/profile/settings/RelationshipsTab';
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { IntimateTab } from '@/components/profile/IntimateTab';
+import { IdentityPreviewCard } from '@/components/profile/IdentityPreviewCard';
+import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarChooser';
+import { UsernamePanel } from '@/components/profile/UsernamePanel';
+import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
+import { pronounDisplay } from '@/components/ui/pronoun-combobox';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
+import type { AvatarConfig } from '@/components/profile/AvatarBuilder';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { UsernameSelector } from '@/components/auth/UsernameSelector';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+/** Columns newer than the generated Supabase types. */
+type ProfileX = Profile & {
+  username?: string | null;
+  pronoun_tags?: string[] | null;
+  avatar_auto_assigned?: boolean | null;
+  username_auto_assigned?: boolean | null;
+};
+
+type SheetKind = 'profile' | 'dating' | 'privacy' | 'account' | 'avatar' | null;
+
+/** Personal documents are removed after this date (T+30 export window). */
+const DOCS_REMOVAL_DATE = 'July 11, 2026';
 
 export default function ProfileSettings() {
   const navigate = useLocalizedNavigate();
   const { user, hasPasskey } = useAuth();
-  const { updateProfile } = useProfile();
+  const { updateProfile, refetchProfile } = useProfile();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,6 +81,7 @@ export default function ProfileSettings() {
     <OptimizedErrorBoundary fallback={DataErrorFallback}>
       <ProfileSettingsLoader
         updateProfile={updateProfile}
+        refetchProfile={refetchProfile}
         toast={toast}
         navigate={navigate}
         hasPasskey={hasPasskey}
@@ -68,15 +93,15 @@ export default function ProfileSettings() {
 
 interface LoaderProps {
   updateProfile: (updates: Partial<Profile>) => Promise<ProfileUpdateResult>;
+  refetchProfile: () => Promise<unknown>;
   toast: ReturnType<typeof useToast>['toast'];
   navigate: ReturnType<typeof useLocalizedNavigate>;
   hasPasskey: boolean;
   user: SupabaseUser;
 }
 
-function ProfileSettingsLoader({ updateProfile, toast, navigate, hasPasskey, user }: LoaderProps) {
-  const { profile, isLoading, isError, errors, profileLoading, profileError } =
-    useProfileData();
+function ProfileSettingsLoader({ updateProfile, refetchProfile, toast, navigate, hasPasskey, user }: LoaderProps) {
+  const { profile, isLoading, isError, errors, profileLoading, profileError } = useProfileData();
 
   if (isLoading || profileLoading) {
     return <OptimizedLoader type="profile" />;
@@ -96,6 +121,7 @@ function ProfileSettingsLoader({ updateProfile, toast, navigate, hasPasskey, use
     <ProfileSettingsContent
       profile={profile}
       updateProfile={updateProfile}
+      refetchProfile={refetchProfile}
       toast={toast}
       navigate={navigate}
       hasPasskey={hasPasskey}
@@ -107,36 +133,98 @@ function ProfileSettingsLoader({ updateProfile, toast, navigate, hasPasskey, use
 interface ContentProps {
   profile: Profile | null | undefined;
   updateProfile: (updates: Partial<Profile>) => Promise<ProfileUpdateResult>;
+  refetchProfile: () => Promise<unknown>;
   toast: ReturnType<typeof useToast>['toast'];
   navigate: ReturnType<typeof useLocalizedNavigate>;
   hasPasskey: boolean;
   user: SupabaseUser;
 }
 
-function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPasskey, user }: ContentProps) {
+/** Glanceable state row — never an input. Tap opens the focused editor sheet. */
+function SummaryCard({
+  icon: Icon,
+  title,
+  summary,
+  onOpen,
+}: {
+  icon: typeof User;
+  title: string;
+  summary: string;
+  onOpen: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full text-left rounded-container border border-border bg-card p-4 flex items-center gap-4 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40"
+    >
+      <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
+        <Icon size={18} aria-hidden="true" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold">{title}</p>
+        <p className="text-sm text-muted-foreground truncate">{summary}</p>
+      </div>
+      <ChevronRight size={16} className="text-muted-foreground shrink-0" aria-hidden="true" />
+    </button>
+  );
+}
+
+const PROMPT_DISMISS_KEY = 'qg.settings.prompt.dismissed';
+const PROMPT_REDISPLAY_MS = 7 * 24 * 60 * 60 * 1000;
+
+function promptDismissed(kind: string): boolean {
+  try {
+    const raw = localStorage.getItem(`${PROMPT_DISMISS_KEY}.${kind}`);
+    return !!raw && Date.now() - Number(raw) < PROMPT_REDISPLAY_MS;
+  } catch {
+    return false;
+  }
+}
+
+function ProfileSettingsContent({
+  profile,
+  updateProfile,
+  refetchProfile,
+  toast,
+  navigate,
+  hasPasskey,
+  user,
+}: ContentProps) {
+  const px = profile as ProfileX | null | undefined;
   const [searchParams] = useSearchParams();
-  // Lean core everyone fills — profile (You) / preferences / privacy / account —
-  //   plus a dating section open to all users. Old slugs remap below so
-  //   existing deep links keep resolving.
-  const rawTab = searchParams.get('tab') || 'profile';
-  const LEGACY_TAB_MAP: Record<string, string> = {
-    account: 'account',
-    basic: 'profile',
-    identity: 'profile',
-    relationships: 'dating',
-    intimate: 'dating',
-    notifications: 'account',
-    travel: 'preferences',
-  };
-  const [activeTab, setActiveTab] = useState(LEGACY_TAB_MAP[rawTab] ?? rawTab);
   const [formData, setFormData] = useState<ProfileFormData>(() => initFormData(profile));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error'>('saved');
+  const [saveStatus, setSaveStatus] = useState<
+    'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error'
+  >('saved');
+  // Old deep links (?tab=privacy etc.) open the matching sheet.
+  const LEGACY_TAB_TO_SHEET: Record<string, SheetKind> = {
+    profile: 'profile',
+    basic: 'profile',
+    identity: 'profile',
+    account: 'account',
+    notifications: 'account',
+    privacy: 'privacy',
+    dating: 'dating',
+    relationships: 'dating',
+    intimate: 'dating',
+  };
+  const [openSheet, setOpenSheet] = useState<SheetKind>(
+    () => LEGACY_TAB_TO_SHEET[searchParams.get('tab') ?? ''] ?? null,
+  );
+  const [promptTick, setPromptTick] = useState(0);
 
   const profileCompletion = calculateCompletion(formData, profile);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
+    setSaveStatus('unsaved');
+  };
+
+  const handlePronounTagsChange = (tags: string[]) => {
+    setFormData((prev) => ({ ...prev, pronoun_tags: tags, pronouns: pronounDisplay(tags) }));
     setHasUnsavedChanges(true);
     setSaveStatus('unsaved');
   };
@@ -159,15 +247,19 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
     setSaveStatus('unsaved');
   };
 
-  const handleAvatarSave = async (avatarData: { avatarUrl?: string; avatarConfig?: Record<string, unknown>; avatarType?: string }) => {
-    setFormData((prev) => ({
-      ...prev,
-      avatar_url: avatarData.avatarUrl,
-      avatar_config: avatarData.avatarConfig,
-      avatar_type: avatarData.avatarType,
-    } as ProfileFormData));
-    setHasUnsavedChanges(false);
-    setSaveStatus('saved');
+  const handleAvatarSave = async (data: AvatarSaveData) => {
+    const { error } = await updateProfile({
+      avatar_url: data.avatarUrl,
+      avatar_config: data.avatarConfig,
+      avatar_type: data.avatarType,
+      avatar_auto_assigned: false,
+    } as Partial<Profile>);
+    if (error) {
+      toast({ title: 'Avatar not saved', description: error, variant: 'destructive' });
+      return;
+    }
+    setOpenSheet(null);
+    toast({ title: 'Avatar updated' });
   };
 
   const handleSave = useCallback(
@@ -181,6 +273,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         bio: formData.bio,
         location: formData.location,
         pronouns: formData.pronouns,
+        pronoun_tags: formData.pronoun_tags,
         phone: formData.phone,
         website: formData.website,
         date_of_birth: formData.date_of_birth || null,
@@ -231,116 +324,260 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
     return () => clearTimeout(id);
   }, [formData, hasUnsavedChanges, handleSave, saveStatus]);
 
-  const lineTab =
-    'h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none';
+  // ---- Prompt slot: one gap-driven nudge, priority username > avatar > pronouns
+  const username = px?.username ?? null;
+  let prompt: { kind: string; title: string; body: string; cta: string; sheet: SheetKind } | null =
+    null;
+  if (!username) {
+    prompt = {
+      kind: 'username',
+      title: 'Claim your @username',
+      body: 'Your permanent handle for mentions and your profile link.',
+      cta: 'Claim now',
+      sheet: 'account',
+    };
+  } else if (px?.avatar_auto_assigned && !promptDismissed('avatar')) {
+    prompt = {
+      kind: 'avatar',
+      title: 'Make your avatar yours',
+      body: 'We gave you a starter look. Upload a photo, import one, or build your own.',
+      cta: 'Choose avatar',
+      sheet: 'avatar',
+    };
+  } else if (formData.pronoun_tags.length === 0 && !promptDismissed('pronouns')) {
+    prompt = {
+      kind: 'pronouns',
+      title: 'Add your pronouns',
+      body: 'Optional, takes 30 seconds. You decide who sees them.',
+      cta: 'Add pronouns',
+      sheet: 'profile',
+    };
+  }
+  void promptTick;
+
+  const dismissPrompt = (kind: string) => {
+    try {
+      localStorage.setItem(`${PROMPT_DISMISS_KEY}.${kind}`, String(Date.now()));
+    } catch {
+      /* storage unavailable — prompt just stays */
+    }
+    setPromptTick((t) => t + 1);
+  };
+
+  const privacySummary = [
+    `Profile: ${formData.privacy_settings.profile_visibility || 'public'}`,
+    `Identity: ${formData.privacy_settings.identity_visibility || 'friends'}`,
+    `Travel: ${formData.privacy_settings.travel_visibility || 'public'}`,
+  ].join(' · ');
+
+  const sheetTitleId: Record<Exclude<SheetKind, null>, string> = {
+    profile: 'Profile',
+    dating: 'Identity & dating',
+    privacy: 'Privacy & visibility',
+    account: 'Account',
+    avatar: 'Your avatar',
+  };
 
   return (
-    <div className="container mx-auto py-8 px-4 flex flex-col gap-6 pb-24">
-      {/* Header */}
+    <div className="container mx-auto py-8 px-4 flex flex-col gap-6 pb-24 max-w-2xl">
       <PageHeader
-        title="Profile Settings"
-        subtitle="Manage your account information and privacy settings"
+        title="Settings"
+        subtitle="Your profile, the way you want to be seen"
         actions={
           <Button variant="outline" onClick={() => navigate(-1)} className="rounded-element">
             <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
         }
-      >
-        <div className="border-t border-border pt-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium">Profile Completion</p>
-            <p className="text-sm text-muted-foreground">{profileCompletion}%</p>
-          </div>
-          <Progress value={profileCompletion} className="h-1" />
-          <p className="text-xs text-muted-foreground mt-2 block">
-            Complete your profile to connect better with the community
-          </p>
-        </div>
-      </PageHeader>
+      />
 
-      {/* Tabs — line style. Dating depth only mounts in dating mode. */}
-      <div>
-        <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
-          <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
-            <TabsTrigger value="profile" className={lineTab}>
-              <span className="flex items-center gap-2"><User size={16} /> You</span>
-            </TabsTrigger>
-            <TabsTrigger value="preferences" className={lineTab}>
-              <span className="flex items-center gap-2"><SlidersHorizontal size={16} /> Preferences</span>
-            </TabsTrigger>
-            <TabsTrigger value="privacy" className={lineTab}>
-              <span className="flex items-center gap-2"><Lock size={16} /> Privacy</span>
-            </TabsTrigger>
-            <TabsTrigger value="account" className={lineTab}>
-              <span className="flex items-center gap-2"><Settings size={16} /> Account</span>
-            </TabsTrigger>
-            <TabsTrigger value="dating" className={lineTab}>
-              <span className="flex items-center gap-2"><Heart size={16} /> Dating</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* Identity hero — live preview, tap to edit */}
+      <IdentityPreviewCard
+        displayName={formData.display_name}
+        username={username}
+        pronouns={formData.pronouns}
+        pronounsVisibility={formData.privacy_settings.pronouns_visibility}
+        occupation={formData.occupation}
+        bio={formData.bio}
+        avatarUrl={px?.avatar_url}
+        avatarConfig={px?.avatar_config as AvatarConfig | null}
+        email={user.email || ''}
+        completion={profileCompletion}
+        onEditAvatar={() => setOpenSheet('avatar')}
+        onEditProfile={() => setOpenSheet('profile')}
+        onEditAccount={() => setOpenSheet('account')}
+      />
 
-          {/* You — identity that shows everywhere */}
-          <TabsContent value="profile">
-            <BasicInfoTab formData={formData} profile={profile} user={user} onChange={handleInputChange} onAvatarSave={handleAvatarSave} />
-          </TabsContent>
-
-          {/* Preferences — the signal that drives search/trips/recs */}
-          <TabsContent value="preferences">
-            <div className="flex flex-col gap-6">
-              <Card>
-                <CardContent className="pt-6 flex flex-col gap-2">
-                  <p className="font-semibold">Personalize your search</p>
-                  <p className="text-sm text-muted-foreground">
-                    Pick vibes, home city, and languages so search and recommendations learn what you like.
-                  </p>
-                  <LocalizedLink to="/onboarding/search" className="text-sm underline underline-offset-4 mt-1">
-                    Set your vibes →
-                  </LocalizedLink>
-                </CardContent>
-              </Card>
-              <TravelPreferencesEditor />
-              <DocumentsList tripId={null} />
+      {/* Prompt slot — at most one gap-driven nudge, never a wall */}
+      {prompt && (
+        <Card className="rounded-container border-foreground/20">
+          <CardContent className="pt-6 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
+              {prompt.kind === 'username' ? (
+                <AtSign size={18} aria-hidden="true" />
+              ) : (
+                <Sparkles size={18} aria-hidden="true" />
+              )}
             </div>
-          </TabsContent>
-
-          {/* Privacy & visibility */}
-          <TabsContent value="privacy">
-            <PrivacyTab formData={formData} hasPasskey={hasPasskey} onPrivacyChange={handlePrivacyChange} />
-          </TabsContent>
-
-          {/* Account & security */}
-          <TabsContent value="account">
-            <div className="flex flex-col gap-6">
-              <Card>
-                <CardContent className="pt-6 flex flex-col gap-4">
-                  <div>
-                    <p className="font-semibold">Username</p>
-                    <p className="text-sm text-muted-foreground">
-                      Your unique queer.guide handle.
-                    </p>
-                  </div>
-                  <UsernameSelector
-                    value={(profile as Profile & { username?: string | null })?.username ?? null}
-                    onChange={(username) => updateProfile({ username } as Partial<Profile>)}
-                  />
-                </CardContent>
-              </Card>
-              <EmailForwardingSettings />
-              <PushNotificationSettings />
+            <div className="flex-1">
+              <p className="font-semibold">{prompt.title}</p>
+              <p className="text-sm text-muted-foreground">{prompt.body}</p>
+              <div className="flex gap-2 mt-4">
+                <Button size="sm" className="rounded-element" onClick={() => setOpenSheet(prompt!.sheet)}>
+                  {prompt.cta}
+                </Button>
+                {prompt.kind !== 'username' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-element"
+                    onClick={() => dismissPrompt(prompt!.kind)}
+                  >
+                    Later
+                  </Button>
+                )}
+              </div>
             </div>
-          </TabsContent>
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Dating — available to everyone; intimate details still opt-in inside */}
-          <TabsContent value="dating">
-            <div className="flex flex-col gap-6">
-              <IdentityTab formData={formData} onChange={handleInputChange} onComingOutChange={handleComingOutChange} />
-              <RelationshipsTab formData={formData} onChange={handleInputChange} />
-              <IntimateTab />
-            </div>
-          </TabsContent>
-        </Tabs>
+      {/* State-of-your-account — summaries, not inputs */}
+      <div className="flex flex-col gap-2">
+        <SummaryCard
+          icon={User}
+          title="Profile"
+          summary={
+            [formData.bio && 'bio', formData.location, formData.website && 'links']
+              .filter(Boolean)
+              .join(' · ') || 'Bio, location, links'
+          }
+          onOpen={() => setOpenSheet('profile')}
+        />
+        <SummaryCard
+          icon={Heart}
+          title="Identity & dating"
+          summary={`Mode: ${formData.user_mode}${formData.gender_identity ? ' · identity set' : ''}`}
+          onOpen={() => setOpenSheet('dating')}
+        />
+        <SummaryCard
+          icon={Lock}
+          title="Privacy & visibility"
+          summary={privacySummary}
+          onOpen={() => setOpenSheet('privacy')}
+        />
+        <SummaryCard
+          icon={Settings}
+          title="Account"
+          summary={username ? `@${username} · email, notifications` : 'Username, email, notifications'}
+          onOpen={() => setOpenSheet('account')}
+        />
       </div>
+
+      {/* Preferences — review-only mirror of in-context choices */}
+      <PreferencesMirrorCard profile={profile} onUpdate={(u) => updateProfile(u as Partial<Profile>)} />
+
+      {/* Personal documents — deprecation notice + export window */}
+      <Card>
+        <CardContent className="pt-6 flex flex-col gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
+              <FileText size={18} aria-hidden="true" />
+            </div>
+            <div>
+              <p className="font-semibold">Personal documents are going away</p>
+              <p className="text-sm text-muted-foreground">
+                This feature is being removed on {DOCS_REMOVAL_DATE}. Download anything you want to
+                keep before then — after that date your files and their records are permanently
+                deleted (they also disappear from backups within 35 days). Documents attached to
+                trips are not affected.
+              </p>
+            </div>
+          </div>
+          <DocumentsList tripId={null} embedded readOnly />
+        </CardContent>
+      </Card>
+
+      {/* ---------- Sheets ---------- */}
+      <Sheet open={openSheet !== null} onOpenChange={(open) => !open && setOpenSheet(null)}>
+        <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto px-4 pb-8 sm:px-6">
+          {/* full-width sheet on mobile; reading-width column on desktop */}
+          <div className="mx-auto w-full max-w-2xl">
+          {openSheet && (
+            <SheetHeader className="text-left">
+              <SheetTitle>{sheetTitleId[openSheet]}</SheetTitle>
+              <SheetDescription className="sr-only">
+                Edit your {sheetTitleId[openSheet].toLowerCase()} settings
+              </SheetDescription>
+            </SheetHeader>
+          )}
+
+          <div className="mt-4">
+            {openSheet === 'profile' && (
+              <BasicInfoTab
+                formData={formData}
+                profile={profile}
+                user={user}
+                onChange={handleInputChange}
+                onPronounTagsChange={handlePronounTagsChange}
+                onPrivacyChange={handlePrivacyChange}
+              />
+            )}
+
+            {openSheet === 'dating' && (
+              <div className="flex flex-col gap-6">
+                <IdentityTab
+                  formData={formData}
+                  onChange={handleInputChange}
+                  onComingOutChange={handleComingOutChange}
+                />
+                <RelationshipsTab formData={formData} onChange={handleInputChange} />
+                <IntimateTab />
+              </div>
+            )}
+
+            {openSheet === 'privacy' && (
+              <PrivacyTab
+                formData={formData}
+                hasPasskey={hasPasskey}
+                onPrivacyChange={handlePrivacyChange}
+              />
+            )}
+
+            {openSheet === 'account' && (
+              <div className="flex flex-col gap-6">
+                <Card>
+                  <CardContent className="pt-6 flex flex-col gap-4">
+                    <div>
+                      <p className="font-semibold">Username</p>
+                      <p className="text-sm text-muted-foreground">
+                        Your unique queer.guide handle.
+                      </p>
+                    </div>
+                    <UsernamePanel
+                      username={username}
+                      autoAssigned={px?.username_auto_assigned ?? false}
+                      onChanged={() => void refetchProfile()}
+                    />
+                  </CardContent>
+                </Card>
+                <EmailForwardingSettings />
+                <PushNotificationSettings />
+              </div>
+            )}
+
+            {openSheet === 'avatar' && (
+              <AvatarChooser
+                email={user.email || ''}
+                currentUrl={px?.avatar_url}
+                currentConfig={px?.avatar_config as AvatarConfig | null}
+                onSave={handleAvatarSave}
+              />
+            )}
+          </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Sticky auto-save status bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95">
@@ -366,7 +603,12 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
           {saveStatus === 'auth-error' && (
             <div className="flex items-center gap-4">
               <Badge variant="destructive" className="rounded-element">Session expired</Badge>
-              <Button variant="outline" size="sm" onClick={() => navigate('/auth')} className="rounded-element">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="rounded-element"
+              >
                 Sign in
               </Button>
             </div>

@@ -25,6 +25,8 @@ interface PublicProfileData {
   sexual_orientation?: string;
   relationship_status?: string;
   income_range?: string;
+  profile_visibility?: string;
+  locked?: boolean;
 }
 
 export function useSecurePublicProfile(targetUserId?: string) {

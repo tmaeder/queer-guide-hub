@@ -96,21 +96,13 @@ export function useCityLeaderboard(cityId: string | null, limit = 5) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setLoading(true);
     (async () => {
-      const base = cityId
-        ? supabase
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .from('venue_leaderboard_city' as any)
-            .select('user_id, venues_visited, total_checkins, points, rank')
-            .eq('city_id', cityId)
-            .order('rank', { ascending: true })
-            .limit(limit)
-        : supabase
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .from('venue_leaderboard_global' as any)
-            .select('user_id, venues_visited, total_checkins, points, rank')
-            .order('rank', { ascending: true })
-            .limit(limit);
-      const { data } = await base;
+      // The venue_leaderboard_* mat views are not API-exposed (linter 0016);
+      // rpc_venue_leaderboard is the SECURITY DEFINER gateway.
+      const { data } = await supabase.rpc(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        'rpc_venue_leaderboard' as any,
+        { p_city_id: cityId, p_limit: limit },
+      );
       const lb = (data as Array<Omit<LeaderboardRow, 'display_name' | 'avatar_url'>>) ?? [];
       const map = await hydrateProfiles(lb);
       if (cancelled) return;

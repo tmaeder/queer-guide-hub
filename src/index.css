@@ -451,6 +451,17 @@ body {
   a, button, [role="button"], input, select, textarea {
     min-height: 44px;
   }
+
+  /* Compact controls (Checkbox 16px, Switch 20px) opt out with min-h-0 —
+     min-height beats the h-* utility at the box-model level, so the 44px
+     rule was stretching them into vertical pills. The wrapping label keeps
+     the 44px tap target instead (WCAG 2.5.5). */
+  label:has([role="checkbox"]),
+  label:has([role="switch"]) {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 /* Inline links inside body text are underlined. In a strict B&W system,
