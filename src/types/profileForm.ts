@@ -16,6 +16,10 @@ export interface PrivacySettings {
   travel_visibility?: string;
   coming_out_visibility?: string;
   appear_in_recognition?: boolean;
+  /** public | community | private — who sees posts/reviews/photos (default public). */
+  contributions_visibility?: string;
+  /** public | community | private — who sees friends/groups counts (default community). */
+  social_visibility?: string;
   /** public | friends | private — who sees pronouns (default public). */
   pronouns_visibility?: string;
 }

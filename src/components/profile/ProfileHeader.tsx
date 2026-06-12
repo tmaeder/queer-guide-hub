@@ -165,7 +165,7 @@ export function ProfileHeader({
               </div>
             ) : (
               <div>
-                <Button onClick={() => navigate('/profile/settings')} className="rounded-element">
+                <Button onClick={() => navigate('/settings')} className="rounded-element">
                   Edit profile
                 </Button>
               </div>

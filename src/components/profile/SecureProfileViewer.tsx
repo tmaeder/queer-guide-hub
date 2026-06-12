@@ -4,12 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, GraduationCap, Heart, MapPin, Globe, Phone, Shield } from 'lucide-react';
 
+import type { ProfileLens } from '@/lib/profileLens';
+
 interface SecureProfileViewerProps {
   profile: Record<string, unknown>;
   isOwnProfile: boolean;
+  /** Owner "view as" lens — forwarded to every PrivacyGuard. */
+  lens?: ProfileLens;
 }
 
-export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileViewerProps) {
+export function SecureProfileViewer({ profile, isOwnProfile, lens = 'you' }: SecureProfileViewerProps) {
   const { isAdmin } = useAdminRoles();
 
   if (!profile) return null;
@@ -29,6 +33,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 profileUserId={profile.user_id}
                 requiredPrivacyField="location_public"
                 privacySettings={profile.privacy_settings}
+                lens={lens}
                 adminJustification="location_verification"
               >
                 {profile.location && (
@@ -47,6 +52,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 profileUserId={profile.user_id}
                 requiredPrivacyField="pronouns_public"
                 privacySettings={profile.privacy_settings}
+                lens={lens}
                 adminJustification="identity_verification"
               >
                 {profile.pronouns && (
@@ -62,6 +68,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 profileUserId={profile.user_id}
                 requiredPrivacyField="interests_public"
                 privacySettings={profile.privacy_settings}
+                lens={lens}
                 adminJustification="profile_verification"
               >
                 {profile.occupation && (
@@ -80,6 +87,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 profileUserId={profile.user_id}
                 requiredPrivacyField="interests_public"
                 privacySettings={profile.privacy_settings}
+                lens={lens}
                 adminJustification="profile_verification"
               >
                 {profile.education && (
@@ -99,6 +107,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               profileUserId={profile.user_id}
               requiredPrivacyField="interests_public"
               privacySettings={profile.privacy_settings}
+                lens={lens}
               adminJustification="profile_verification"
             >
               {profile.interests &&
@@ -127,6 +136,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
         profileUserId={profile.user_id}
         requiredPrivacyField="contact_public"
         privacySettings={profile.privacy_settings}
+                lens={lens}
         adminJustification="contact_verification"
       >
         <Card>
@@ -157,6 +167,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 profileUserId={profile.user_id}
                 requiredPrivacyField="phone_public"
                 privacySettings={profile.privacy_settings}
+                lens={lens}
                 adminJustification="emergency_contact"
               >
                 {profile.phone && (
@@ -175,7 +186,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
       </PrivacyGuard>
 
       {/* Sensitive Identity Information - Only for owners and emergency admin access */}
-      {(isOwnProfile || isAdmin) && (
+      {((isOwnProfile && lens === 'you') || (isAdmin && !isOwnProfile)) && (
         <Card>
           <CardHeader>
             <CardTitle>
@@ -194,6 +205,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   profileUserId={profile.user_id}
                   requiredPrivacyField="gender_identity_public"
                   privacySettings={profile.privacy_settings}
+                lens={lens}
                   adminJustification="identity_verification_critical"
                 >
                   {profile.gender_identity && (
@@ -209,6 +221,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   profileUserId={profile.user_id}
                   requiredPrivacyField="sexual_orientation_public"
                   privacySettings={profile.privacy_settings}
+                lens={lens}
                   adminJustification="identity_verification_critical"
                 >
                   {profile.sexual_orientation && (
@@ -224,6 +237,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   profileUserId={profile.user_id}
                   requiredPrivacyField="relationship_status_public"
                   privacySettings={profile.privacy_settings}
+                lens={lens}
                   adminJustification="profile_moderation"
                 >
                   {profile.current_relationship_status && (

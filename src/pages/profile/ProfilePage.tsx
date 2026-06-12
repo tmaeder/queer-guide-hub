@@ -10,6 +10,8 @@ import { ContributionsTab } from '@/components/profile/tabs/ContributionsTab';
 import { TravelTab } from '@/components/profile/tabs/TravelTab';
 import { ProgressTab } from '@/components/profile/tabs/ProgressTab';
 import { StatusPicker } from '@/components/status/StatusPicker';
+import { ViewAsToggle } from '@/components/profile/ViewAsToggle';
+import type { ProfileLens } from '@/lib/profileLens';
 import { useSecurePublicProfile } from '@/hooks/useSecurePublicProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useStatus } from '@/hooks/useStatus';
@@ -42,10 +44,12 @@ export default function ProfilePage() {
   const { score: othersScore } = usePublicCommunityScore(isOwnProfile ? null : targetUserId ?? null);
   const score = isOwnProfile ? ownScore : othersScore;
   const [statusPickerOpen, setStatusPickerOpen] = useState(false);
+  const [lens, setLens] = useState<ProfileLens>('you');
 
   const requestedTab = (params.tab ?? 'overview') as ProfileTab;
+  const ownView = isOwnProfile && lens === 'you';
   const tab: ProfileTab = TABS.includes(requestedTab)
-    ? requestedTab === 'progress' && !isOwnProfile
+    ? requestedTab === 'progress' && !ownView
       ? 'overview'
       : requestedTab
     : 'overview';
@@ -147,7 +151,8 @@ export default function ProfilePage() {
               Back
             </Button>
           )}
-          <div className="flex gap-2 ml-auto">
+          <div className="flex items-center gap-2 ml-auto">
+            {isOwnProfile && <ViewAsToggle lens={lens} onChange={setLens} />}
             <Button
               variant="outline"
               size="icon"
@@ -172,7 +177,7 @@ export default function ProfilePage() {
 
         <ProfileHeader
           profile={profile as unknown as Record<string, unknown>}
-          isOwnProfile={isOwnProfile}
+          isOwnProfile={ownView}
           status={status}
           score={score}
           completionPct={completionPct}
@@ -186,7 +191,7 @@ export default function ProfilePage() {
                 ['overview', 'Overview'],
                 ['travel', 'Travel'],
                 ['contributions', 'Contributions'],
-                ...(isOwnProfile ? ([['progress', 'Progress']] as const) : []),
+                ...(ownView ? ([['progress', 'Progress']] as const) : []),
               ] as ReadonlyArray<readonly [string, string]>
             ).map(([v, l]) => (
               <TabsTrigger
@@ -203,20 +208,26 @@ export default function ProfilePage() {
             <OverviewTab
               profile={profile as unknown as Record<string, unknown>}
               isOwnProfile={isOwnProfile}
+              lens={lens}
               completionPct={completionPct}
               onPostsClick={() => setTab('contributions')}
             />
           </TabsContent>
 
           <TabsContent value="travel">
-            <TravelTab userId={profile.user_id} isOwnProfile={isOwnProfile} />
+            <TravelTab userId={profile.user_id} isOwnProfile={ownView} />
           </TabsContent>
 
           <TabsContent value="contributions">
-            <ContributionsTab userId={profile.user_id} isOwnProfile={isOwnProfile} />
+            <ContributionsTab
+              userId={profile.user_id}
+              isOwnProfile={isOwnProfile}
+              lens={lens}
+              privacySettings={(profile.privacy_settings ?? {}) as Record<string, unknown>}
+            />
           </TabsContent>
 
-          {isOwnProfile && (
+          {ownView && (
             <TabsContent value="progress">
               <ProgressTab />
             </TabsContent>

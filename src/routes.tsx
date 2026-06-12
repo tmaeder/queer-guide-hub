@@ -159,7 +159,7 @@ const NewsArchive = lazyRetry(() => import('./pages/NewsArchive'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
 const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
-const ProfileSettings = lazyRetry(() => import('./pages/ProfileSettings'));
+const Settings = lazyRetry(() => import('./pages/Settings'));
 const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard'));
 const IntimateDiscovery = lazyRetry(() => import('./pages/intimate/IntimateDiscovery'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
@@ -190,6 +190,12 @@ const HelpHotlines = lazyRetry(() => import('./pages/HelpHotlines'));
 const CMSPage = lazyRetry(() => import('./pages/Page'));
 const ShareTarget = lazyRetry(() => import('./pages/ShareTarget'));
 const PridePage = lazyRetry(() => import('./pages/Pride'));
+
+/** Preserves ?tab=/?section= deep links when /profile/settings moves to /settings. */
+function SettingsRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/settings${location.search}`} replace />;
+}
 
 /** Maps the legacy /profile/footprint/:userId/public URL to the unified profile Travel tab. */
 function FootprintRedirect() {
@@ -510,9 +516,11 @@ export const AppRoutes = () => {
                 <Route path="me/passport" element={<Navigate to="/me/progress" replace />} />
                 <Route path="me/missions" element={<Navigate to="/me/progress" replace />} />
                 <Route path="me/leaderboard" element={<Navigate to="/me/progress" replace />} />
-                <Route path="me/settings" element={<Navigate to="/profile/settings" replace />} />
+                <Route path="me/settings" element={<Navigate to="/settings" replace />} />
                 <Route path="me/tiers" element={<Navigate to="/me/progress" replace />} />
-                <Route path="profile/settings" element={<ProfileSettings />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="settings/privacy" element={<Navigate to="/settings?section=privacy" replace />} />
+                <Route path="profile/settings" element={<SettingsRedirect />} />
                 <Route path="intimate" element={<IntimateDiscovery />} />
                 <Route path="discover" element={<IntimateDiscovery />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />

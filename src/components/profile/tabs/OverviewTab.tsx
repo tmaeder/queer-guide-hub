@@ -1,28 +1,63 @@
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SecureProfileViewer } from '@/components/profile/SecureProfileViewer';
 import { SocialSummaryRow } from '@/components/profile/SocialSummaryRow';
 import { ActivityStrip } from '@/components/profile/ActivityStrip';
 import { CompletionNudge } from '@/components/profile/CompletionNudge';
+import { GapPromptCard } from '@/components/profile/GapPromptCard';
+import { sectionVisible, type ProfileLens } from '@/lib/profileLens';
 
 interface OverviewTabProps {
   profile: Record<string, unknown>;
   isOwnProfile: boolean;
+  lens?: ProfileLens;
   completionPct?: number;
   onPostsClick?: () => void;
 }
 
-export function OverviewTab({ profile, isOwnProfile, completionPct, onPostsClick }: OverviewTabProps) {
+export function OverviewTab({
+  profile,
+  isOwnProfile,
+  lens = 'you',
+  completionPct,
+  onPostsClick,
+}: OverviewTabProps) {
+  const ownView = isOwnProfile && lens === 'you';
+  const privacy = (profile.privacy_settings ?? {}) as Record<string, unknown>;
+  const socialVisible = sectionVisible(
+    privacy.social_visibility as string | undefined,
+    isOwnProfile ? lens : 'community',
+    'community',
+  );
+
   return (
     <div className="flex flex-col gap-6">
-      {isOwnProfile && typeof completionPct === 'number' && (
-        <CompletionNudge percent={completionPct} />
+      {ownView && <GapPromptCard profile={profile} />}
+      {ownView && typeof completionPct === 'number' && <CompletionNudge percent={completionPct} />}
+
+      {socialVisible ? (
+        <SocialSummaryRow
+          userId={profile.user_id as string}
+          isOwnProfile={ownView}
+          onPostsClick={onPostsClick}
+        />
+      ) : (
+        isOwnProfile && (
+          <p className="text-13 text-muted-foreground">
+            Community summary hidden at this visibility.{' '}
+            <LocalizedLink to="/settings?section=privacy" className="underline">
+              Privacy settings
+            </LocalizedLink>
+          </p>
+        )
       )}
-      <SocialSummaryRow
-        userId={profile.user_id as string}
+
+      {ownView && <ActivityStrip />}
+
+      <SecureProfileViewer
+        profile={profile}
         isOwnProfile={isOwnProfile}
-        onPostsClick={onPostsClick}
+        lens={isOwnProfile ? lens : 'you'}
       />
-      {isOwnProfile && <ActivityStrip />}
-      <SecureProfileViewer profile={profile} isOwnProfile={isOwnProfile} />
     </div>
   );
 }
