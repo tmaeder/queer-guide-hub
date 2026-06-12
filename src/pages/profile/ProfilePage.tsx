@@ -19,6 +19,8 @@ import { usePublicStatus } from '@/hooks/usePublicStatus';
 import { useCommunityScore } from '@/hooks/useCommunityScore';
 import { usePublicCommunityScore } from '@/hooks/usePublicCommunityScore';
 import { useToast } from '@/hooks/use-toast';
+import { useMeta } from '@/hooks/useMeta';
+import { useTranslation } from 'react-i18next';
 
 const TABS = ['overview', 'travel', 'contributions', 'progress'] as const;
 type ProfileTab = (typeof TABS)[number];
@@ -28,6 +30,7 @@ type ProfileTab = (typeof TABS)[number];
  * renders anyone (own mode when it's you). Progress is own-only.
  */
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const params = useParams<{ userId?: string; tab?: string }>();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
@@ -35,6 +38,8 @@ export default function ProfilePage() {
 
   const isMeRoute = !params.userId;
   const targetUserId = params.userId ?? user?.id;
+
+  useMeta({ title: isMeRoute ? 'Your profile' : 'Profile', noIndex: true });
 
   const { profile, loading, error, isOwnProfile } = useSecurePublicProfile(targetUserId);
   const { status: ownStatus } = useStatus();
@@ -188,10 +193,10 @@ export default function ProfilePage() {
           <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start">
             {(
               [
-                ['overview', 'Overview'],
-                ['travel', 'Travel'],
-                ['contributions', 'Contributions'],
-                ...(ownView ? ([['progress', 'Progress']] as const) : []),
+                ['overview', t('profile.tabs.overview', 'Overview')],
+                ['travel', t('profile.tabs.travel', 'Travel')],
+                ['contributions', t('profile.tabs.contributions', 'Contributions')],
+                ...(ownView ? ([['progress', t('profile.tabs.progress', 'Progress')]] as const) : []),
               ] as ReadonlyArray<readonly [string, string]>
             ).map(([v, l]) => (
               <TabsTrigger

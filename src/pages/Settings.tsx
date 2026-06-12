@@ -24,6 +24,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useMeta } from '@/hooks/useMeta';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileData } from '@/hooks/useProfileData';
@@ -66,6 +67,7 @@ const DOCS_REMOVAL_DATE = 'July 11, 2026';
 
 export default function Settings() {
   const navigate = useLocalizedNavigate();
+  useMeta({ title: 'Settings', noIndex: true });
   const { user, hasPasskey } = useAuth();
   const { updateProfile, refetchProfile } = useProfile();
   const { toast } = useToast();
