@@ -46,6 +46,7 @@ export function useVenues(autoFetch: boolean = true) {
   const fetchVenues = async (
     filters?: {
       city?: string;
+      cityId?: string;
       category?: string;
       tags?: string[];
       amenities?: string[];
@@ -171,7 +172,13 @@ export function useVenues(autoFetch: boolean = true) {
           break;
       }
 
-      if (filters?.city) {
+      if (filters?.cityId) {
+        // Fetch by city_id so correctly-linked venues with mismatched city TEXT
+        // still appear, while keeping name-text matches for the (many) venues
+        // whose city_id was never backfilled. PostgREST .or() uses * wildcards.
+        const nameClause = filters?.city ? `,and(city_id.is.null,city.ilike.*${filters.city}*)` : '';
+        query = query.or(`city_id.eq.${filters.cityId}${nameClause}`);
+      } else if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
       }
 
