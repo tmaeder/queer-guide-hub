@@ -8,9 +8,12 @@
 // map, and the write-time venue_coord_guard trigger + venues_misplaced sweep
 // catch any result that disagrees with a known city (snap / needs_attention).
 //
-// Geocoder: Nominatim (OpenStreetMap), 1 req/s per their usage policy, real UA.
-// Country-validated when the venue carries an ISO-2 country code. (0,0) results
-// are dropped. Writes are batched (<=100/statement) to spare the disk-constrained
+// Geocoder: Photon (komoot) — the same geocoder the ingest pipeline uses, and
+// far more tolerant of sustained automated use than Nominatim's public server
+// (which throttled a bulk run to a 0.2% hit rate). Queries are cleaned (drop
+// parentheticals, collapse newlines) and tried full-address-first, then a
+// simplified "locality, region" tail, which materially lifts yield on the messy
+// scraped addresses. (0,0) results are dropped. Writes are batched (<=100/statement) to spare the disk-constrained
 // DB + the search_documents sync trigger. Every write is audited in
 // venue_coord_fixes (mode='regeocode', source='script'); fully resumable
 // (keyset by id, only ever scans coord-less rows).
@@ -31,7 +34,7 @@ const DRY = args.includes('--dry-run')
 const LIMIT = Number(args[args.indexOf('--limit') + 1]) || Infinity
 const SCAN = 200          // rows pulled per keyset page
 const FLUSH = 100         // rows per write batch
-const NOMINATIM = 'https://nominatim.openstreetmap.org/search'
+const PHOTON = 'https://photon.komoot.io/api/'
 const UA = 'queer.guide-dataquality/1.0 (tmaeder@me.com)'
 
 function token() {
@@ -57,25 +60,37 @@ async function sql(query) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const lit = (s) => (s == null ? 'null' : `'${String(s).replace(/'/g, "''")}'`)
 
-async function geocode(v) {
-  const parts = [v.address, v.city, v.country].filter(Boolean).join(', ')
-  if (!parts) return null
-  const url = new URL(NOMINATIM)
-  url.searchParams.set('format', 'jsonv2')
-  url.searchParams.set('q', parts)
+const clean = (s) => String(s || '').replace(/\([^)]*\)/g, ' ').replace(/[\n\r]+/g, ', ').replace(/\s+/g, ' ').trim()
+
+async function photon(q) {
+  if (!q) return null
+  const url = new URL(PHOTON)
+  url.searchParams.set('q', q)
   url.searchParams.set('limit', '1')
-  if (v.country && String(v.country).trim().length === 2) {
-    url.searchParams.set('countrycodes', String(v.country).trim().toLowerCase())
-  }
   const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
   if (!res.ok) return null
-  const hits = await res.json()
-  const h = hits?.[0]
-  if (!h) return null
-  const lat = Number(h.lat), lng = Number(h.lon)
+  const j = await res.json()
+  const c = j?.features?.[0]?.geometry?.coordinates // GeoJSON: [lng, lat]
+  if (!Array.isArray(c) || c.length < 2) return null
+  const lng = Number(c[0]), lat = Number(c[1])
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
   if (Math.abs(lat) < 0.001 && Math.abs(lng) < 0.001) return null // Null Island guard
   return { lat, lng }
+}
+
+async function geocode(v) {
+  const addr = clean(v.address)
+  const ctx = [v.city, v.country].filter(Boolean).join(', ')
+  // Try 1: full cleaned address (+ city/country context if present).
+  let hit = await photon([addr, ctx].filter(Boolean).join(', '))
+  if (hit) return hit
+  await sleep(1100)
+  // Try 2: simplified "locality, region" tail — last 2 comma segments of the
+  // address, which Photon resolves far more reliably than a full street string.
+  const segs = addr.split(',').map((s) => s.trim()).filter(Boolean)
+  const tail = [segs.slice(-2).join(', '), ctx].filter(Boolean).join(', ')
+  if (tail && tail !== addr) hit = await photon(tail)
+  return hit
 }
 
 async function flush(rows) {
