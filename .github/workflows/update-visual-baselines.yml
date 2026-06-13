@@ -1,0 +1,53 @@
+name: Update Visual Baselines
+
+# Regenerates the Playwright visual-regression baselines on the SAME platform
+# the nightly suite runs on (ubuntu / amd64-linux). The repo previously only
+# carried *-darwin.png snapshots generated on a Mac, so every visual test
+# failed on CI with a missing -linux.png baseline. Run this whenever the UI
+# changes intentionally; it uploads the regenerated linux baselines as an
+# artifact to download and commit.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to screenshot'
+        required: false
+        default: 'https://queer.guide'
+
+permissions:
+  contents: read
+
+jobs:
+  update-baselines:
+    name: Regenerate linux visual baselines
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Regenerate visual baselines
+        env:
+          E2E_BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+        # --update-snapshots writes the new baselines and exits non-zero when
+        # any snapshot changed (Playwright 1.52+ "update but flag" behaviour),
+        # so don't fail the job on that.
+        run: |
+          npx playwright test \
+            e2e/visual-top10.spec.ts \
+            e2e/visual-mobile.spec.ts \
+            e2e/design-system.spec.ts \
+            --update-snapshots --reporter=line || true
+      - name: Upload regenerated linux baselines
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-visual-baselines
+          path: |
+            e2e/**/*-linux.png
+          if-no-files-found: error
+          retention-days: 7
