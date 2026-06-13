@@ -6,9 +6,9 @@
 /tags  /resources  301
 /tags/*  /resources/:splat  301
 
-# P1.2 — /news/:slug → HTTP 410 Gone is served by functions/news/[slug].ts
-# (CF Pages _redirects doesn't support 410). The news index page at /news
-# survives as a curated headline list rendered by the SPA.
+# /news/:slug is a first-class SPA detail page again (the P1.2 410 Gone
+# handler at functions/news/[slug].ts was removed). The SPA renders it and
+# functions/_middleware.ts injects crawler head/meta.
 
 # P1.5 redirect removed 2026-05-24: /places revived as the editorial Atlas
 # (cover destination + passport layer + editor rails). The SPA handles it.

@@ -315,7 +315,7 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     'news_articles',
     'slug',
     slug,
-    'title,slug,excerpt,author,image_url,published_at,url,publisher_name,updated_at',
+    'title,slug,excerpt,author,image_url,published_at,url,publisher_name,updated_at,seo_indexable',
   );
   if (!row) return null;
 
@@ -375,10 +375,15 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     isBasedOn: sourceLink,
   };
 
-  // P1.2 / P1.1 — /news/:slug is hard-removed at the CDN (public/_redirects
-  // serves 410 Gone). This codepath only runs if the redirect rule somehow
-  // misses; mark the row noindex as defense-in-depth.
-  return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: false };
+  // News detail pages are first-class again (the P1.2 410 Gone handler was
+  // removed). Index per the row's own quality gate — seo_indexable is set
+  // false on low-quality / unverified articles, so respect it.
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(articleLd)),
+    indexable: row.seo_indexable !== false,
+  };
 }
 
 // Personalities
