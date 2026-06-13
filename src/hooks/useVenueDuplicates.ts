@@ -70,6 +70,64 @@ export function useDuplicateClusters() {
   };
 }
 
+// --- Fuzzy (same-place) dedup — Phase 1 -----------------------------------
+// find_fuzzy_duplicate_clusters surfaces near-identical names at effectively the
+// same coordinates that the exact name+city grouping misses (word-order swaps,
+// punctuation). auto_eligible pairs (name ≥0.92, ≤100m) are what the automated
+// pass acts on; the rest are here for a human to merge.
+
+export interface FuzzyMember {
+  id: string;
+  title: string;
+  slug: string | null;
+  city: string | null;
+  country: string | null;
+  quality_score: number | null;
+  is_featured: boolean | null;
+}
+export interface FuzzyCluster {
+  score: number;
+  match_type: 'geo_name' | 'city_name';
+  dist_m: number | null;
+  auto_eligible: boolean;
+  count: number;
+  members: FuzzyMember[];
+}
+
+export function useFuzzyDuplicateClusters() {
+  const query = useQuery({
+    queryKey: ['fuzzy-dup-clusters', 'venue'],
+    queryFn: async (): Promise<FuzzyCluster[]> => {
+      const { data, error } = await supabase.rpc('find_fuzzy_duplicate_clusters' as never, {
+        p_limit: 300,
+      } as never);
+      if (error) throw error;
+      return (data ?? []) as unknown as FuzzyCluster[];
+    },
+  });
+  return {
+    clusters: query.data ?? [],
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error as Error | null,
+  };
+}
+
+/** Auto-merge the unambiguous same-place pairs (name ≥0.92, ≤100m). */
+export async function runFuzzyAutomerge(dryRun: boolean): Promise<{
+  merged: number;
+  eligible_pairs: number;
+  skipped: number;
+  chains_collapsed: number;
+  dry_run: boolean;
+}> {
+  const { data, error } = await supabase.rpc('run_venue_fuzzy_automerge' as never, {
+    p_dry_run: dryRun,
+  } as never);
+  if (error) throw error;
+  return data as never;
+}
+
 /** Merge one duplicate into the canonical; returns the audit id for undo. */
 export async function mergeVenuePair(keepId: string, dropId: string): Promise<string | undefined> {
   const { data, error } = await supabase.rpc('merge_venues' as never, {

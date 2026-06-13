@@ -2,15 +2,18 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Loader2, GitMerge, Image as ImageIcon } from 'lucide-react';
+import { Check, Loader2, GitMerge, Image as ImageIcon, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useDuplicateClusters,
+  useFuzzyDuplicateClusters,
+  runFuzzyAutomerge,
   mergeVenuePair,
   unmergeAudit,
   type Cluster,
   type ClusterMember,
   type VenueMeta,
+  type FuzzyCluster,
 } from '@/hooks/useVenueDuplicates';
 
 /**
@@ -40,6 +43,7 @@ function suggestKeep(members: ClusterMember[], meta: Map<string, VenueMeta>): st
 
 export default function AdminDuplicates() {
   const queryClient = useQueryClient();
+  const [view, setView] = useState<'exact' | 'fuzzy'>('exact');
   const { clusters, meta, isLoading, isError, error } = useDuplicateClusters();
   const [picked, setPicked] = useState<Record<string, string>>({});
 
@@ -83,11 +87,24 @@ export default function AdminDuplicates() {
       <header className="flex flex-col gap-2">
         <h1 className="text-headline font-semibold">Duplicate venues</h1>
         <p className="text-muted-foreground text-15">
-          Near-identical venues grouped by name + city. Pick the canonical record and merge the rest —
-          duplicates are hidden, their URLs redirect, and the merge is reversible.
+          Pick the canonical record and merge the rest — duplicates are hidden, their URLs redirect,
+          and every merge is reversible.
         </p>
       </header>
 
+      <div className="flex gap-2">
+        <Button variant={view === 'exact' ? 'default' : 'outline'} size="sm" onClick={() => setView('exact')}>
+          Exact (name + city)
+        </Button>
+        <Button variant={view === 'fuzzy' ? 'default' : 'outline'} size="sm" onClick={() => setView('fuzzy')}>
+          Same place (fuzzy)
+        </Button>
+      </div>
+
+      {view === 'fuzzy' ? (
+        <FuzzyDuplicates />
+      ) : (
+      <>
       {isLoading && (
         <div className="text-muted-foreground flex items-center gap-2 p-4">
           <Loader2 className="animate-spin" size={16} /> Loading clusters…
@@ -142,6 +159,112 @@ export default function AdminDuplicates() {
           );
         })}
       </div>
+      </>
+      )}
+    </div>
+  );
+}
+
+/** Fuzzy "same place" view: name-corroborated pairs, with one-click auto-merge. */
+function FuzzyDuplicates() {
+  const queryClient = useQueryClient();
+  const { clusters, isLoading, isError, error } = useFuzzyDuplicateClusters();
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['fuzzy-dup-clusters', 'venue'] });
+    queryClient.invalidateQueries({ queryKey: ['dup-clusters', 'venue'] });
+  };
+
+  // canonical = higher quality_score → featured → first listed
+  const keepDrop = (c: FuzzyCluster): [string, string] => {
+    const [a, b] = c.members;
+    const aBetter =
+      (a.quality_score ?? -1) > (b.quality_score ?? -1) ||
+      ((a.quality_score ?? -1) === (b.quality_score ?? -1) && Boolean(a.is_featured) && !b.is_featured) ||
+      ((a.quality_score ?? -1) === (b.quality_score ?? -1) && Boolean(a.is_featured) === Boolean(b.is_featured));
+    return aBetter ? [a.id, b.id] : [b.id, a.id];
+  };
+
+  const autoMerge = useMutation({
+    mutationFn: () => runFuzzyAutomerge(false),
+    onSuccess: (r) => {
+      toast.success(`Auto-merged ${r.merged} same-place pair${r.merged === 1 ? '' : 's'}` + (r.skipped ? ` (${r.skipped} skipped)` : ''));
+      refresh();
+    },
+    onError: (e) => toast.error(`Auto-merge failed: ${(e as Error).message}`),
+  });
+
+  const mergeOne = useMutation({
+    mutationFn: async (c: FuzzyCluster) => {
+      const [keep, drop] = keepDrop(c);
+      return mergeVenuePair(keep, drop);
+    },
+    onSuccess: (auditId) => {
+      toast.success('Merged', {
+        action: auditId
+          ? { label: 'Undo', onClick: async () => { await unmergeAudit(auditId); refresh(); } }
+          : undefined,
+      });
+      refresh();
+    },
+    onError: (e) => toast.error(`Merge failed: ${(e as Error).message}`),
+  });
+
+  const autoCount = clusters.filter((c) => c.auto_eligible).length;
+
+  if (isLoading) {
+    return (
+      <div className="text-muted-foreground flex items-center gap-2 p-4">
+        <Loader2 className="animate-spin" size={16} /> Loading pairs…
+      </div>
+    );
+  }
+  if (isError) return <div className="text-destructive p-4">Failed to load pairs: {error?.message}</div>;
+  if (clusters.length === 0) return <div className="text-muted-foreground p-4">No fuzzy duplicate pairs.</div>;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-container flex items-center justify-between gap-4 border p-4">
+        <p className="text-muted-foreground text-15">
+          {clusters.length} candidate pairs · {autoCount} are near-identical at the same spot and safe to merge automatically.
+        </p>
+        <Button size="sm" onClick={() => autoMerge.mutate()} disabled={autoMerge.isPending || autoCount === 0}>
+          {autoMerge.isPending ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
+          Auto-merge {autoCount} same-place
+        </Button>
+      </div>
+
+      {clusters.map((c) => {
+        const [keepId] = keepDrop(c);
+        const busy = mergeOne.isPending && mergeOne.variables === c;
+        return (
+          <div key={`${c.members[0].id}|${c.members[1].id}`} className="rounded-container flex flex-col gap-2 border p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={c.auto_eligible ? 'default' : 'secondary'}>
+                  {c.auto_eligible ? 'auto-safe' : 'review'}
+                </Badge>
+                <Badge variant="outline">sim {c.score.toFixed(2)}</Badge>
+                {c.dist_m != null && <Badge variant="outline">{c.dist_m} m apart</Badge>}
+              </div>
+              <Button size="sm" variant="outline" onClick={() => mergeOne.mutate(c)} disabled={busy}>
+                {busy ? <Loader2 className="animate-spin" size={16} /> : <GitMerge size={16} />}
+                Merge
+              </Button>
+            </div>
+            <div className="flex flex-col gap-1">
+              {c.members.map((m) => (
+                <div key={m.id} className={`rounded-element flex items-center gap-2 p-2 ${m.id === keepId ? 'bg-accent' : ''}`}>
+                  <span className="font-medium">{m.title}</span>
+                  {m.id === keepId && <Badge variant="default">canonical</Badge>}
+                  <code className="text-muted-foreground text-13">{m.slug}</code>
+                  {m.city && <span className="text-muted-foreground text-13">{m.city}</span>}
+                  {typeof m.quality_score === 'number' && <Badge variant="outline">q {Math.round(m.quality_score)}</Badge>}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
