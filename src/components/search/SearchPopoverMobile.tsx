@@ -114,6 +114,9 @@ export function SearchPopoverMobile({
             placeholder={placeholder}
             aria-label={t('search.ariaLabel', 'Search Queer Guide')}
             autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             enterKeyHint="search"
             className="min-w-0 flex-1 border-0 bg-transparent px-2 text-base text-foreground outline-none placeholder:text-muted-foreground"
           />

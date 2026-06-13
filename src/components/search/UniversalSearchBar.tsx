@@ -385,7 +385,10 @@ export const UniversalSearchBar = ({
   const placeholder = useMemo(
     () =>
       isHero
-        ? t('search.placeholders.universal', 'Search venues, events, people, places…')
+        ? isMobile
+          ? // The full universal string clips at the mobile hero field edge.
+            t('search.placeholders.universalShort', 'Search…')
+          : t('search.placeholders.universal', 'Search venues, events, people, places…')
         : getPlaceholder(location.pathname, t, isMobile),
     [isHero, location.pathname, t, isMobile],
   );
@@ -453,6 +456,9 @@ export const UniversalSearchBar = ({
                     setIsOpen(true);
                   }}
                   autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className="w-full border-0 bg-transparent text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                   style={{
                     fontSize: isHero ? '1.0625rem' : isMobile ? '1rem' : '0.875rem',
