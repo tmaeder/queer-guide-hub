@@ -1,39 +1,11 @@
-import {
-  MapPin,
-  Globe,
-  Users,
-  Building2,
-  Calendar,
-  Star,
-  TrendingUp,
-  MapIcon,
-  Newspaper,
-  Cloud,
-  Sun,
-  CloudRain,
-  Plane,
-  Activity,
-  Shield,
-  Info,
-  Loader2,
-} from 'lucide-react';
+import { MapPin, Building2, Calendar, Newspaper, Activity, Loader2 } from 'lucide-react';
 import { MapShell } from '@/components/map/MapShell';
 import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ReportButton } from '@/components/moderation/ReportButton';
-import { AdminEditButton } from '@/components/admin/AdminEditButton';
-import { Editable } from '@/components/admin/inline/Editable';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
-import { WeatherForecast } from '@/components/weather/WeatherForecast';
-import { LocationInfo } from '@/components/location/LocationInfo';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
 import { DirectoryCard } from '@/components/directory/DirectoryCard';
-import CountryHeroImages from '@/components/country/CountryHeroImages';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
-import { WorldBankDataPanel } from '@/components/country/WorldBankDataPanel';
-import { SDGDataPanel } from '@/components/country/SDGDataPanel';
 import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
 import { ActivitiesWidget } from '@/components/activities/ActivitiesWidget';
 import { NewsCard } from '@/components/news/NewsCard';
@@ -79,472 +51,183 @@ export async function fetchCountryWeather(country: CountryRelation): Promise<Wea
   return null;
 }
 
-export function getWeatherIcon(condition: string) {
-  if (condition?.includes('rain') || condition?.includes('drizzle')) return CloudRain;
-  if (condition?.includes('cloud')) return Cloud;
-  return Sun;
-}
-
 export function SectionLoader({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 gap-4" role="status" aria-label={`Loading ${label}`}>
-      <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
-      <p className="text-sm text-muted-foreground" aria-hidden="true">Loading {label}...</p>
+    <div
+      className="flex flex-col items-center justify-center gap-4 py-12"
+      role="status"
+      aria-label={`Loading ${label}`}
+    >
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
     </div>
   );
 }
 
-export interface CountryHeroProps {
-  country: CountryRelation;
-  cities: CityRelation[];
-  weatherData: WeatherDataType;
-  onContentUpdated?: () => void;
+interface EmptyCardProps {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  title: string;
+  description: string;
 }
 
-export function CountryHero({ country, cities, weatherData, onContentUpdated }: CountryHeroProps) {
-  const continentName = (country as unknown as Record<string, { name?: string }>).continents?.name;
-  const regionName = (country as unknown as Record<string, { name?: string }>).regions?.name;
-  const subtitle = [continentName, regionName].filter(Boolean).join(', ');
-
+function EmptyCard({ icon: Icon, title, description }: EmptyCardProps) {
   return (
-    <div>
-      <div className="relative mb-6">
-        <CountryHeroImages country={country} />
-      </div>
-
-      <div className="flex items-start justify-between flex-wrap gap-4 mb-4">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-4">
-            <h3 className="text-3xl lg:text-5xl font-bold text-foreground">
-              {country.flag_emoji}{' '}
-              <Editable
-                contentType="countries"
-                recordId={country.id}
-                field="name"
-                value={country.name}
-                onSaved={onContentUpdated}
-              >
-                {country.name}
-              </Editable>
-            </h3>
-          </div>
-          {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
-        </div>
-
-        {weatherData?.current && (
-          <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-2">
-            {(() => {
-              const WeatherIcon = getWeatherIcon(weatherData.current.condition);
-              return <WeatherIcon style={{ height: 20, width: 20 }} />;
-            })()}
-            <span className="text-lg font-semibold">
-              {Math.round(weatherData.current.temperature)}°C
-            </span>
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              {country.capital || country.name}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className="flex gap-2 flex-wrap mb-2 items-center">
-        <ReportButton contentType="countries" contentId={country.id} contentName={country.name} />
-        <AdminEditButton
-          contentType="countries"
-          contentId={country.id}
-          contentName={country.name}
-          currentData={country as Record<string, unknown>}
-          onSaved={() => window.location.reload()}
-        />
-        {country.capital && (
-          <Badge variant="outline" className="gap-1">
-            <Star size={14} />
-            Capital: {country.capital}
-          </Badge>
-        )}
-        {country.population && (
-          <Badge variant="outline" className="gap-1">
-            <Users size={14} />
-            {(country.population / 1e6).toFixed(1)}M people
-          </Badge>
-        )}
-        {country.area_km2 && (
-          <Badge variant="outline" className="gap-1">
-            <MapIcon size={14} />
-            {country.area_km2.toLocaleString()} km²
-          </Badge>
-        )}
-        {cities.length > 0 && (
-          <Badge variant="outline" className="gap-1">
-            <Building2 size={14} />
-            {cities.length} cities
-          </Badge>
-        )}
+    <div className="flex flex-col items-center gap-4 rounded-container border border-dashed py-12 text-center">
+      <Icon size={28} className="text-muted-foreground" />
+      <div>
+        <p className="font-semibold">{title}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </div>
   );
 }
 
-export interface CountryOverviewTabProps {
-  country: CountryRelation;
-  worldBankData: WorldBankDataType;
-  sdgData: SDGDataType;
+// ── Section bodies. None render their own <h2>; EditorialSection supplies the
+// section heading, so these are pure content blocks. ──────────────────────────
+
+export function CountryRightsTab({ country }: { country: CountryRelation }) {
+  return <LGBTJurisdictionInfo country={country} style={{ borderColor: 'inherit' }} />;
 }
 
-export function CountryOverviewTab({ country, worldBankData, sdgData }: CountryOverviewTabProps) {
-  return (
-    <div className="flex flex-col gap-6">
-      <ScrollReveal direction="up">
-        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <Globe size={20} />
-                About {country.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
-                {country.description ||
-                  `Cities, venues, events, and legal context for ${country.name}.`}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <Star size={20} />
-                Quick Facts
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {country.capital && <FactRow icon={Star} label="Capital" value={country.capital} />}
-              {country.currency && (
-                <FactRow icon={TrendingUp} label="Currency" value={country.currency} />
-              )}
-              {country.languages && (
-                <FactRow
-                  icon={Globe}
-                  label="Languages"
-                  value={
-                    <>
-                      {Array.isArray(country.languages)
-                        ? country.languages.slice(0, 3).join(', ')
-                        : country.languages}
-                      {Array.isArray(country.languages) && country.languages.length > 3
-                        ? ` +${country.languages.length - 3}`
-                        : ''}
-                    </>
-                  }
-                  alignRight
-                />
-              )}
-              {country.timezone && (
-                <FactRow icon={Calendar} label="Timezone" value={country.timezone} />
-              )}
-              {country.calling_code && (
-                <FactRow icon={MapPin} label="Calling Code" value={country.calling_code} />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </ScrollReveal>
-
-      <LocationInfo
-        name={country.name}
-        type="country"
-        style={{ border: 0, backgroundColor: 'hsl(var(--background))' }}
-      />
-
-      {country.latitude && country.longitude && (
-        <Card>
-          <CardContent>
-            <WeatherForecast
-              latitude={country.latitude}
-              longitude={country.longitude}
-              cityName={country.capital || country.name}
-              style={{ height: '100%', border: 0, backgroundColor: 'hsl(var(--background))' }}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      <WorldBankDataPanel data={worldBankData} countryName={country.name} />
-      <SDGDataPanel data={sdgData} countryName={country.name} />
-    </div>
-  );
-}
-
-interface FactRowProps {
-  icon: React.ComponentType<{ style?: React.CSSProperties }>;
-  label: string;
-  value: React.ReactNode;
-  alignRight?: boolean;
-}
-
-function FactRow({ icon: Icon, label, value, alignRight }: FactRowProps) {
-  return (
-    <div className="flex items-center justify-between p-4 rounded-element bg-muted">
-      <div className="flex items-center gap-2">
-        <Icon style={{ height: 14, width: 14 }} className="text-muted-foreground" />
-        <span className="text-sm font-medium">{label}</span>
-      </div>
-      <span
-        className="font-bold"
-        style={alignRight ? { textAlign: 'right', maxWidth: '60%' } : undefined}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
-export interface CountryRightsTabProps {
-  country: CountryRelation;
-}
-
-export function CountryRightsTab({ country }: CountryRightsTabProps) {
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">LGBTI Rights</h2>
-          <p className="text-muted-foreground mt-1">
-            Legal protections and rights status in {country.name}
-          </p>
-        </div>
-      </div>
-
-      <LGBTJurisdictionInfo
-        country={country}
-        style={{ boxShadow: 'none', borderColor: 'inherit' }}
-      />
-    </div>
-  );
-}
-
-export interface CountryCitiesTabProps {
-  country: CountryRelation;
+export function CountryCitiesTab({
+  cities,
+  citiesLoading,
+  emptyTitle,
+  emptyDescription,
+}: {
   cities: CityRelation[];
   citiesLoading: boolean;
-}
-
-export function CountryCitiesTab({ country, cities, citiesLoading }: CountryCitiesTabProps) {
+  emptyTitle: string;
+  emptyDescription: string;
+}) {
+  if (citiesLoading) return <SectionLoader label="cities" />;
+  if (cities.length === 0)
+    return <EmptyCard icon={Building2} title={emptyTitle} description={emptyDescription} />;
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Major Cities</h2>
-          <p className="text-muted-foreground mt-1">Major cities in {country.name}</p>
-        </div>
-        <Badge variant="secondary" style={{ padding: '4px 12px' }} className="text-sm">
-          {cities.length} cities
-        </Badge>
-      </div>
-
-      {citiesLoading ? (
-        <SectionLoader label="cities" />
-      ) : cities.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {cities.map((city: CityRelation) => (
-            <div
-              key={city.id}
-              className="cursor-pointer transition-transform duration-200 hover:scale-[1.03]"
-            >
-              <DirectoryCard
-                type="city"
-                name={city.name}
-                data={city}
-                onClick={() => (window.location.href = `/city/${city.slug || city.id}`)}
-              />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyCard
-          icon={Building2}
-          title="No cities yet"
-          description="No cities are currently listed for this country."
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {cities.map((city: CityRelation) => (
+        <DirectoryCard
+          key={city.id}
+          type="city"
+          name={city.name}
+          data={city}
+          onClick={() => (window.location.href = `/city/${city.slug || city.id}`)}
         />
-      )}
+      ))}
     </div>
   );
 }
 
-export interface CountryVenuesTabProps {
-  country: CountryRelation;
+export function CountryVenuesTab({
+  venues,
+  loading,
+  emptyTitle,
+  emptyDescription,
+}: {
   venues: VenueRelation[];
   loading: boolean;
-}
-
-export function CountryVenuesTab({ country, venues, loading }: CountryVenuesTabProps) {
+  emptyTitle: string;
+  emptyDescription: string;
+}) {
+  if (loading) return <SectionLoader label="venues" />;
+  if (venues.length === 0)
+    return <EmptyCard icon={MapPin} title={emptyTitle} description={emptyDescription} />;
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Local Venues</h2>
-          <p className="text-muted-foreground mt-1">Places to visit in {country.name}</p>
-        </div>
-        <Badge variant="secondary" style={{ padding: '4px 12px' }} className="text-sm">
-          {venues.length} venues
-        </Badge>
-      </div>
-
-      {loading ? (
-        <SectionLoader label="venues" />
-      ) : venues.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {venues.map((venue: VenueRelation) => (
-            <div key={venue.id} className="transition-transform duration-200 hover:scale-[1.03]">
-              <VenueCard venue={venue} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyCard
-          icon={MapPin}
-          title="No venues yet"
-          description={`Be the first to add venues from ${country.name}!`}
-        />
-      )}
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {venues.map((venue: VenueRelation) => (
+        <VenueCard key={venue.id} venue={venue} />
+      ))}
     </div>
   );
 }
 
-export interface CountryEventsTabProps {
-  country: CountryRelation;
+export function CountryEventsTab({
+  events,
+  eventsLoading,
+  emptyTitle,
+  emptyDescription,
+}: {
   events: EventRelation[];
   eventsLoading: boolean;
-}
-
-export function CountryEventsTab({ country, events, eventsLoading }: CountryEventsTabProps) {
+  emptyTitle: string;
+  emptyDescription: string;
+}) {
+  if (eventsLoading) return <SectionLoader label="events" />;
+  if (events.length === 0)
+    return <EmptyCard icon={Calendar} title={emptyTitle} description={emptyDescription} />;
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Upcoming Events</h2>
-          <p className="text-muted-foreground mt-1">
-            Don't miss out on exciting events happening in {country.name}
-          </p>
-        </div>
-        <Badge variant="secondary" style={{ padding: '4px 12px' }} className="text-sm">
-          {events.length} events
-        </Badge>
-      </div>
-
-      {eventsLoading ? (
-        <SectionLoader label="events" />
-      ) : events.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event: EventRelation) => (
-            <div key={event.id} className="transition-transform duration-200 hover:scale-[1.03]">
-              <EventCard event={event} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyCard
-          icon={Calendar}
-          title="No upcoming events"
-          description="No events are currently scheduled for this country."
-        />
-      )}
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {events.map((event: EventRelation) => (
+        <EventCard key={event.id} event={event} />
+      ))}
     </div>
   );
 }
 
-export interface CountryTravelTabProps {
+export function CountryTravelTab({
+  country,
+  activitiesTitle,
+  activitiesDescription,
+}: {
   country: CountryRelation;
-}
-
-export function CountryTravelTab({ country }: CountryTravelTabProps) {
+  activitiesTitle: string;
+  activitiesDescription: string;
+}) {
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Travel & Tours</h2>
-        <p className="text-muted-foreground mt-1">Find flights and experiences in {country.name}</p>
-      </div>
-
       <TravelDealsSection
         destinationCity={country.capital || country.name}
         destinationCountryCode={country.code}
       />
-
       <Card>
         <CardHeader>
           <CardTitle>
-            <Activity size={20} />
-            Activities & Tours
+            <Activity size={20} aria-hidden="true" />
+            {activitiesTitle}
           </CardTitle>
-          <CardDescription>Experiences in {country.name}</CardDescription>
+          <CardDescription>{activitiesDescription}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ActivitiesWidget
-            destination={country.capital || country.name}
-            countryCode={country.code}
-          />
+          <ActivitiesWidget destination={country.capital || country.name} countryCode={country.code} />
         </CardContent>
       </Card>
     </div>
   );
 }
 
-export interface CountryNewsTabProps {
-  country: CountryRelation;
-  articles: ArticleRelation[];
-  newsLoading: boolean;
-  onViewArticle?: (id: string) => void;
-}
-
 export function CountryNewsTab({
-  country,
   articles,
   newsLoading,
   onViewArticle,
-}: CountryNewsTabProps) {
+  emptyTitle,
+  emptyDescription,
+}: {
+  articles: ArticleRelation[];
+  newsLoading: boolean;
+  onViewArticle?: (id: string) => void;
+  emptyTitle: string;
+  emptyDescription: string;
+}) {
+  if (newsLoading) return <SectionLoader label="news" />;
+  if (articles.length === 0)
+    return <EmptyCard icon={Newspaper} title={emptyTitle} description={emptyDescription} />;
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Local News</h2>
-          <p className="text-muted-foreground mt-1">
-            Stay updated with the latest news from {country.name}
-          </p>
-        </div>
-        <Badge variant="secondary" style={{ padding: '4px 12px' }} className="text-sm">
-          {articles.length} articles
-        </Badge>
-      </div>
-
-      {newsLoading ? (
-        <SectionLoader label="news" />
-      ) : articles.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {articles.map((article: ArticleRelation) => (
-            <div key={article.id} className="transition-transform duration-200 hover:scale-[1.03]">
-              <NewsCard article={article} onViewArticle={onViewArticle} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyCard
-          icon={Newspaper}
-          title="No local news yet"
-          description={`No news articles are currently available for ${country.name}.`}
-        />
-      )}
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {articles.map((article: ArticleRelation) => (
+        <NewsCard key={article.id} article={article} onViewArticle={onViewArticle} />
+      ))}
     </div>
   );
 }
 
-export interface CountryMapTabProps {
+export function CountryMapTab({
+  country,
+  ExploreMap,
+  Suspense,
+}: {
   country: CountryRelation;
   ExploreMap: React.ComponentType<Record<string, unknown>>;
   Suspense: typeof import('react').Suspense;
-}
-
-export function CountryMapTab({ country, ExploreMap, Suspense }: CountryMapTabProps) {
+}) {
   if (typeof country.latitude !== 'number' || typeof country.longitude !== 'number') return null;
   const center: [number, number] = [Number(country.longitude), Number(country.latitude)];
 
@@ -574,38 +257,3 @@ export function CountryMapTab({ country, ExploreMap, Suspense }: CountryMapTabPr
     </Suspense>
   );
 }
-
-interface EmptyCardProps {
-  icon: React.ComponentType<{ style?: React.CSSProperties }>;
-  title: string;
-  description: string;
-}
-
-function EmptyCard({ icon: Icon, title, description }: EmptyCardProps) {
-  return (
-    <Card>
-      <CardContent>
-        <div className="flex flex-col gap-4">
-          <div className="p-4 bg-muted rounded-full w-20 h-20 mx-auto flex items-center justify-center">
-            <Icon style={{ height: 40, width: 40 }} className="text-muted-foreground" />
-          </div>
-          <div>
-            <p className="text-lg font-semibold">{title}</p>
-            <p className="text-muted-foreground">{description}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export const COUNTRY_TAB_DEFS = [
-  { id: 'overview', label: 'Overview', icon: Info },
-  { id: 'rights', label: 'Rights', icon: Shield },
-  { id: 'cities', label: 'Cities', icon: Building2 },
-  { id: 'venues', label: 'Venues', icon: MapPin },
-  { id: 'events', label: 'Events', icon: Calendar },
-  { id: 'travel', label: 'Travel', icon: Plane },
-  { id: 'news', label: 'News', icon: Newspaper },
-  { id: 'map', label: 'Map', icon: MapIcon },
-];

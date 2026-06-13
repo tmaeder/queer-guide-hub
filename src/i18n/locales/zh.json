@@ -1473,7 +1473,8 @@
       "next14": "未来14天"
     },
     "news": {
-      "title": "最新资讯"
+      "title": "最新资讯",
+      "eyebrow": "[ZH] Dispatches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1517,7 +1518,17 @@
       "invite": "[ZH] Invite friends",
       "join": "[ZH] Join the community"
     },
-    "subtitleShort": "[ZH] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[ZH] Verified safe places, real events, and the people behind them.",
+    "events": {
+      "eyebrow": "[ZH] What's on",
+      "groups": {
+        "today": "[ZH] Today",
+        "tomorrow": "[ZH] Tomorrow",
+        "thisWeekend": "[ZH] This weekend",
+        "thisWeek": "[ZH] This week",
+        "later": "[ZH] Later"
+      }
+    }
   },
   "header": {
     "signInSignUp": "登录 / 注册",
@@ -2363,6 +2374,130 @@
       "view": "View",
       "addToTrip": "Add to trip",
       "signIn": "Sign in"
+    }
+  },
+  "country": {
+    "loading": "[ZH] Loading country…",
+    "planTrip": "[ZH] Plan a trip to {{country}}",
+    "similar": "[ZH] More destinations",
+    "notFound": {
+      "title": "[ZH] Country not found",
+      "body": "[ZH] The country you're looking for doesn't exist.",
+      "back": "[ZH] Back to Places"
+    },
+    "breadcrumb": {
+      "places": "[ZH] Places"
+    },
+    "hero": {
+      "capital": "[ZH] Capital"
+    },
+    "verdict": {
+      "eyebrow": "[ZH] For LGBTQ+ travelers",
+      "welcoming": "[ZH] Welcoming",
+      "mixed": "[ZH] Mixed",
+      "caution": "[ZH] Use caution",
+      "dangerous": "[ZH] Dangerous",
+      "equality": "[ZH] Equality",
+      "fullBreakdown": "[ZH] Full breakdown"
+    },
+    "facts": {
+      "capital": "[ZH] Capital",
+      "population": "[ZH] Population",
+      "equality": "[ZH] Equality",
+      "languages": "[ZH] Languages",
+      "currency": "[ZH] Currency",
+      "cities": "[ZH] Cities"
+    },
+    "section": {
+      "rights": "[ZH] Rights & safety",
+      "cities": "[ZH] Cities",
+      "venues": "[ZH] Venues",
+      "events": "[ZH] Events",
+      "travel": "[ZH] Travel",
+      "stats": "[ZH] In numbers",
+      "personalities": "[ZH] Voices",
+      "nearby": "[ZH] Nearby",
+      "news": "[ZH] News",
+      "map": "[ZH] Map"
+    },
+    "practical": {
+      "languages": "[ZH] Languages",
+      "currency": "[ZH] Currency",
+      "callingCode": "[ZH] Calling code",
+      "tld": "[ZH] Internet domain",
+      "driving": "[ZH] Driving",
+      "drivesLeft": "[ZH] Left-hand side",
+      "drivesRight": "[ZH] Right-hand side",
+      "airports": "[ZH] Major airports",
+      "government": "[ZH] Government",
+      "nationalDay": "[ZH] National day"
+    },
+    "stats": {
+      "gdpPerCapita": "[ZH] GDP / capita",
+      "hdi": "[ZH] HDI",
+      "lifeExpectancy": "[ZH] Life expectancy",
+      "literacy": "[ZH] Literacy",
+      "income": "[ZH] Income level"
+    },
+    "cities": {
+      "emptyTitle": "[ZH] No cities yet",
+      "emptyBody": "[ZH] No cities are listed for this country yet."
+    },
+    "venues": {
+      "emptyTitle": "[ZH] No venues yet",
+      "emptyBody": "[ZH] Be the first to add a venue in {{country}}."
+    },
+    "events": {
+      "emptyTitle": "[ZH] No upcoming events",
+      "emptyBody": "[ZH] No events are scheduled for this country yet."
+    },
+    "travel": {
+      "activities": "[ZH] Activities & tours",
+      "activitiesBody": "[ZH] Experiences in {{country}}"
+    },
+    "news": {
+      "emptyTitle": "[ZH] No local news yet",
+      "emptyBody": "[ZH] No news articles are available for this country yet."
+    },
+    "rights": {
+      "title": "[ZH] LGBTI rights overview",
+      "source": "[ZH] ILGA World Database",
+      "updated": "[ZH] Updated",
+      "noData": "[ZH] No data",
+      "sameSexActivity": "[ZH] Same-sex activity",
+      "penalty": "[ZH] Penalty",
+      "deathPenalty": "[ZH] death penalty possible",
+      "decriminalized": "[ZH] Decriminalized",
+      "expression": "[ZH] Freedom of expression",
+      "association": "[ZH] Freedom of association",
+      "section": {
+        "criminalisation": "[ZH] Criminalisation & freedoms",
+        "antiDiscrimination": "[ZH] Anti-discrimination protection",
+        "criminalJustice": "[ZH] Criminal justice",
+        "family": "[ZH] Family & relationships",
+        "identity": "[ZH] Identity & health"
+      },
+      "constitutional": "[ZH] Constitutional",
+      "employment": "[ZH] Employment",
+      "housing": "[ZH] Housing",
+      "education": "[ZH] Education",
+      "health": "[ZH] Health",
+      "goodsServices": "[ZH] Goods & services",
+      "bullying": "[ZH] Bullying",
+      "hateCrime": "[ZH] Hate crime laws",
+      "incitement": "[ZH] Incitement prohibition",
+      "unions": "[ZH] Same-sex unions",
+      "marriageSince": "[ZH] Marriage since",
+      "civilUnionSince": "[ZH] civil union since",
+      "adoption": "[ZH] Adoption rights",
+      "genderRecognition": "[ZH] Gender recognition",
+      "marker": "[ZH] Marker",
+      "selfId": "[ZH] Self-ID",
+      "requiresSurgery": "[ZH] Requires surgery",
+      "requiresDiagnosis": "[ZH] Requires diagnosis",
+      "conversionTherapy": "[ZH] Conversion therapy",
+      "intersex": "[ZH] Intersex bodily integrity",
+      "ilgaLink": "[ZH] ILGA World Database"
     }
   }
 }

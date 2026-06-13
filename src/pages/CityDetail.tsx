@@ -112,8 +112,8 @@ export default function CityDetail() {
   fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {
-    fetchVenuesRef.current({ city: city?.name, limit: 12 });
-  }, [city?.name]);
+    fetchVenuesRef.current({ cityId: city?.id, city: city?.name, limit: 12 });
+  }, [city?.id, city?.name]);
 
   useEffect(() => {
     fetchEvents({ city: city?.name, limit: 12 });

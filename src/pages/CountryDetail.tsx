@@ -1,18 +1,21 @@
-import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Globe } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useTrackView } from '@/hooks/useTrackView';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
+import { PageLoading } from '@/components/ui/loading';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { CountryHero } from '@/components/country/CountryHero';
+import { SafetyVerdict } from '@/components/country/SafetyVerdict';
+import { CountryPracticalInfo } from '@/components/country/CountryPracticalInfo';
+import { CountryStatsBand } from '@/components/country/CountryStatsBand';
 import { useWorldBankData } from '@/hooks/useWorldBankData';
 import { useSDGData } from '@/hooks/useSDGData';
 import { useOptimizedCountry, useOptimizedCities } from '@/hooks/usePlaces';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';
-import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import {
   EditorialDetailLayout,
   IntroEssay,
@@ -20,16 +23,14 @@ import {
   type KeyFact,
   type SectionDef,
 } from '@/components/entity/editorial';
-import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { COUNTRY_SECTION_DEFS } from './country-detail/CountrySectionDefs';
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
+import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForCountry } from '@/components/marketplace/MarketplaceForCountry';
 import {
-  CountryHero,
-  CountryOverviewTab,
   CountryRightsTab,
   CountryCitiesTab,
   CountryVenuesTab,
@@ -37,7 +38,6 @@ import {
   CountryTravelTab,
   CountryNewsTab,
   CountryMapTab,
-  COUNTRY_TAB_DEFS,
   fetchCountryWeather,
   type WeatherDataType,
 } from './CountryDetail.parts';
@@ -46,29 +46,33 @@ const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
-  useTranslation();
-  const [weatherData, setWeatherData] = useState<WeatherDataType>(null);
-
+  const { t } = useTranslation();
   const { track } = useTrackEvent();
-  const { country, loading: countryLoading, refetch: refetchCountry } = useOptimizedCountry(countrySlug ?? '');
+
+  const { country, loading, refetch: refetchCountry } = useOptimizedCountry(countrySlug ?? '');
+
+  useTrackView({
+    type: 'country',
+    slug: country?.slug,
+    title: country?.name,
+    country: country?.name,
+  });
+
   const { cities, loading: citiesLoading } = useOptimizedCities({
     countryId: country?.id ?? '',
     limit: 12,
   });
+  const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
+  const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+  const { articles, loading: newsLoading, fetchArticles, incrementViews } = useNews();
 
-  const { venues, loading: venuesLoading, fetchVenues: fetchCountryVenues } = useVenues(false);
-  const {
-    venues: cityVenues,
-    loading: cityVenuesLoading,
-    fetchVenues: fetchCityVenues,
-  } = useVenues(false);
+  const worldBankData = useWorldBankData(country ?? null);
+  const sdgData = useSDGData(country ?? null);
 
-  const fetchCountryVenuesRef = useRef(fetchCountryVenues);
-  const fetchCityVenuesRef = useRef(fetchCityVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effects below read .current.
-  fetchCountryVenuesRef.current = fetchCountryVenues;
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effects below read .current.
-  fetchCityVenuesRef.current = fetchCityVenues;
+  const [weatherData, setWeatherData] = useState<WeatherDataType>(null);
+  const fetchVenuesRef = useRef(fetchVenues);
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref; effect reads .current.
+  fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {
     if (country?.id) {
@@ -82,131 +86,148 @@ export default function CountryDetail() {
   }, [country?.id, country?.name, track]);
 
   useEffect(() => {
-    fetchCountryVenuesRef.current({ city: country?.name, limit: 12 });
-  }, [country?.name]);
+    if (country?.id) fetchVenuesRef.current({ countryId: country.id, limit: 12 });
+  }, [country?.id]);
 
   useEffect(() => {
-    fetchCityVenuesRef.current({ limit: 12 });
-  }, []);
-
-  const cityNames = cities.map((city) => city.name);
-
-  const filteredCityVenues = useMemo(() => {
-    if (!cityVenues || cityNames.length === 0) return [];
-    return cityVenues.filter((venue) =>
-      cityNames.some(
-        (cityName) =>
-          venue.city?.toLowerCase().includes(cityName.toLowerCase()) ||
-          venue.address?.toLowerCase().includes(cityName.toLowerCase()),
-      ),
-    );
-  }, [cityVenues, cityNames]);
-
-  const countryVenues = useMemo(() => {
-    const allVenues = [...(venues || []), ...filteredCityVenues];
-    const uniqueVenues = allVenues.filter(
-      (venue, index, self) => index === self.findIndex((v) => v.id === venue.id),
-    );
-    return uniqueVenues.slice(0, 12);
-  }, [venues, filteredCityVenues]);
-
-  const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+    if (country?.id) fetchEvents({ countryId: country.id, limit: 12 });
+  }, [country?.id, fetchEvents]);
 
   useEffect(() => {
-    fetchEvents({ city: country?.name, limit: 12 });
-  }, [country?.name, fetchEvents]);
+    if (country?.id) fetchArticles({ countryIds: [country.id] });
+  }, [country?.id, fetchArticles]);
 
-  const { articles: localNews, loading: newsLoading, incrementViews } = useNews();
-  const countryNews = useMemo(() => {
-    if (!localNews || !country) return [];
-    return localNews
-      .filter(
-        (article) =>
-          article.country_ids?.includes(country.id) ||
-          article.title.toLowerCase().includes(country.name.toLowerCase()) ||
-          article.content?.toLowerCase().includes(country.name.toLowerCase()),
-      )
-      .slice(0, 12);
-  }, [localNews, country]);
-
-  const worldBankData = useWorldBankData(country);
-  const sdgData = useSDGData(country);
-
-  // Fetch weather data for header indicator
+  // Weather chip for the hero.
   useEffect(() => {
     if (!country) return;
+    let cancelled = false;
     fetchCountryWeather(country).then((data) => {
-      if (data) setWeatherData(data);
+      if (!cancelled && data) setWeatherData(data);
     });
+    return () => {
+      cancelled = true;
+    };
   }, [country?.latitude, country?.longitude, country?.capital, country?.name, country]);
 
-  if (!countrySlug) {
-    return <div>Country not found</div>;
-  }
+  // Placeholder / non-indexable countries stay reachable but never enter search.
+  const isNoindex = !!country && country.seo_indexable === false;
+  useEffect(() => {
+    if (!isNoindex) return;
+    let el = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    const hadTag = !!el;
+    const prev = el?.getAttribute('content') ?? null;
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute('name', 'robots');
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', 'noindex,nofollow');
+    return () => {
+      if (!hadTag) document.querySelector('meta[name="robots"]')?.remove();
+      else if (prev !== null) el?.setAttribute('content', prev);
+    };
+  }, [isNoindex]);
 
-  if (countryLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center flex flex-col gap-4">
-          <div className="animate-pulse">
-            <Globe size={48} style={{ margin: '0 auto' }} className="text-muted-foreground" />
-          </div>
-          <p className="text-muted-foreground">Loading country details...</p>
-        </div>
-      </div>
-    );
-  }
+  const hasCoords =
+    !!country && typeof country.latitude === 'number' && typeof country.longitude === 'number';
+
+  const hasStats = useMemo(
+    () =>
+      !!country &&
+      (worldBankData?.hasData ||
+        sdgData?.hasData ||
+        country.gdp_per_capita_usd != null ||
+        country.human_development_index != null ||
+        country.life_expectancy != null ||
+        country.literacy_rate != null ||
+        !!country.wb_income_level),
+    [country, worldBankData, sdgData],
+  );
+
+  if (loading) return <PageLoading text={t('country.loading', 'Loading country…')} />;
 
   if (!country) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center flex flex-col gap-4">
-          <h4 className="text-2xl font-bold">Country not found</h4>
-          <p className="text-muted-foreground">The country you're looking for doesn't exist.</p>
-          <Button asChild>
-            <LocalizedLink to="/users">
-              <ArrowLeft size={16} className="mr-2" />
-              Back to Directory
-            </LocalizedLink>
-          </Button>
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto px-4 py-8 text-center">
+          <h5 className="mb-4 text-xl font-bold">{t('country.notFound.title', 'Country not found')}</h5>
+          <p className="mb-6 text-muted-foreground">
+            {t('country.notFound.body', "The country you're looking for doesn't exist.")}
+          </p>
+          <LocalizedLink to="/places" className="font-medium" style={{ color: 'inherit' }}>
+            ← {t('country.notFound.back', 'Back to Places')}
+          </LocalizedLink>
         </div>
       </div>
     );
   }
 
-  const breadcrumbs = [{ label: 'Directory', href: '/users' }, { label: country.name }];
+  const breadcrumbs = [
+    { label: t('country.breadcrumb.places', 'Places'), href: '/places' },
+    { label: country.name },
+  ];
+
+  const facts: KeyFact[] = [
+    { label: t('country.facts.capital', 'Capital'), value: country.capital || null },
+    {
+      label: t('country.facts.population', 'Population'),
+      value: country.population ? `${(country.population / 1e6).toFixed(1)}M` : null,
+    },
+    {
+      label: t('country.facts.equality', 'Equality'),
+      value: country.equality_score != null ? `${country.equality_score}/100` : null,
+    },
+    {
+      label: t('country.facts.languages', 'Languages'),
+      value: Array.isArray(country.languages)
+        ? country.languages.slice(0, 3).join(', ')
+        : country.languages || null,
+    },
+    { label: t('country.facts.currency', 'Currency'), value: country.currency || null },
+    { label: t('country.facts.cities', 'Cities'), value: cities.length || null },
+  ];
 
   const sectionContent: Record<string, React.ReactNode> = {
-    overview: (
-      <CountryOverviewTab country={country} worldBankData={worldBankData} sdgData={sdgData} />
-    ),
     rights: <CountryRightsTab country={country} />,
     cities: (
-      <CountryCitiesTab country={country} cities={cities} citiesLoading={citiesLoading} />
+      <CountryCitiesTab
+        cities={cities}
+        citiesLoading={citiesLoading}
+        emptyTitle={t('country.cities.emptyTitle', 'No cities yet')}
+        emptyDescription={t('country.cities.emptyBody', 'No cities are listed for this country yet.')}
+      />
     ),
     venues: (
       <CountryVenuesTab
-        country={country}
-        venues={countryVenues}
-        loading={venuesLoading || cityVenuesLoading}
+        venues={venues}
+        loading={venuesLoading}
+        emptyTitle={t('country.venues.emptyTitle', 'No venues yet')}
+        emptyDescription={t('country.venues.emptyBody', {
+          defaultValue: 'Be the first to add a venue in {{country}}.',
+          country: country.name,
+        })}
       />
     ),
     events: (
-      <CountryEventsTab country={country} events={events} eventsLoading={eventsLoading} />
-    ),
-    travel: <CountryTravelTab country={country} />,
-    news: (
-      <CountryNewsTab
-        country={country}
-        articles={countryNews}
-        newsLoading={newsLoading}
-        onViewArticle={incrementViews}
+      <CountryEventsTab
+        events={events}
+        eventsLoading={eventsLoading}
+        emptyTitle={t('country.events.emptyTitle', 'No upcoming events')}
+        emptyDescription={t('country.events.emptyBody', 'No events are scheduled for this country yet.')}
       />
     ),
-    map: <CountryMapTab country={country} ExploreMap={ExploreMap} Suspense={Suspense} />,
-    personalities: (
-      <PersonalitiesForEntity countryId={country.id} cityName={country.name} />
+    travel: (
+      <CountryTravelTab
+        country={country}
+        activitiesTitle={t('country.travel.activities', 'Activities & tours')}
+        activitiesDescription={t('country.travel.activitiesBody', {
+          defaultValue: 'Experiences in {{country}}',
+          country: country.name,
+        })}
+      />
     ),
+    stats: <CountryStatsBand country={country} worldBankData={worldBankData} sdgData={sdgData} />,
+    personalities: <PersonalitiesForEntity countryId={country.id} cityName={country.name} />,
     nearby: (
       <NearbyTriptych
         countryId={country.id}
@@ -214,74 +235,27 @@ export default function CountryDetail() {
         equalityScore={country.equality_score ?? null}
       />
     ),
+    news: (
+      <CountryNewsTab
+        articles={articles}
+        newsLoading={newsLoading}
+        onViewArticle={incrementViews}
+        emptyTitle={t('country.news.emptyTitle', 'No local news yet')}
+        emptyDescription={t('country.news.emptyBody', 'No news articles are available for this country yet.')}
+      />
+    ),
+    map: <CountryMapTab country={country} ExploreMap={ExploreMap} Suspense={Suspense} />,
   };
 
-  const tabs: EntityDetailTab[] = COUNTRY_TAB_DEFS.map((def) => ({
+  const omit = new Set<string>();
+  if (!hasStats) omit.add('stats');
+  if (!hasCoords) omit.add('map');
+
+  const sections: SectionDef[] = COUNTRY_SECTION_DEFS.filter((def) => !omit.has(def.id)).map((def) => ({
     id: def.id,
-    label: def.label,
+    label: t(`country.section.${def.id}`, def.label),
     content: sectionContent[def.id] ?? null,
   }));
-
-  if (EDITORIAL_DETAIL_LAYOUT_ENABLED) {
-    const sections: SectionDef[] = COUNTRY_SECTION_DEFS.map((def) => ({
-      id: def.id,
-      label: def.label,
-      content: sectionContent[def.id] ?? null,
-    }));
-
-    const languages = Array.isArray(country.languages)
-      ? country.languages.slice(0, 3).join(', ')
-      : country.languages || null;
-
-    const facts: KeyFact[] = [
-      { label: 'Capital', value: country.capital || null },
-      {
-        label: 'Population',
-        value: country.population ? `${(country.population / 1e6).toFixed(1)}M` : null,
-      },
-      {
-        label: 'Equality',
-        value: country.equality_score != null ? `${country.equality_score}/10` : null,
-      },
-      { label: 'Languages', value: languages },
-      { label: 'Currency', value: country.currency || null },
-      { label: 'Cities', value: cities.length || null },
-    ];
-
-    return (
-      <>
-        <SafetyAlertBanner
-          criminalization={country.lgbti_criminalization as Record<string, unknown> | null}
-          countryName={country.name}
-        />
-        <EditorialDetailLayout
-          loading={false}
-          error={null}
-          breadcrumbs={breadcrumbs}
-          banner={<TripCoveringBanner target={{ type: 'country', countryId: country.id }} />}
-          header={
-            <div className="flex flex-col gap-8">
-              <CountryHero
-                country={country}
-                cities={cities}
-                weatherData={weatherData}
-                onContentUpdated={refetchCountry}
-              />
-              <div className="flex flex-wrap gap-2">
-                <PlanTripFromHereButton label={`Plan a trip to ${country.name}`} />
-              </div>
-              <IntroEssay text={country.description} />
-              <KeyFactsStrip facts={facts} />
-            </div>
-          }
-          sections={sections}
-          footer={<MarketplaceForCountry countryId={country.id} countryName={country.name} />}
-          entityType="country"
-          entityId={country.id}
-        />
-      </>
-    );
-  }
 
   return (
     <>
@@ -289,12 +263,43 @@ export default function CountryDetail() {
         criminalization={country.lgbti_criminalization as Record<string, unknown> | null}
         countryName={country.name}
       />
-      <EntityDetailLayout
+      <EditorialDetailLayout
         loading={false}
         error={null}
         breadcrumbs={breadcrumbs}
-        hero={<CountryHero country={country} cities={cities} weatherData={weatherData} onContentUpdated={refetchCountry} />}
-        tabs={tabs}
+        banner={<TripCoveringBanner target={{ type: 'country', countryId: country.id }} />}
+        header={
+          <div className="flex flex-col gap-8">
+            <CountryHero country={country} weatherData={weatherData} onContentUpdated={refetchCountry} />
+            <SafetyVerdict
+              countryId={country.id}
+              equalityScore={country.equality_score ?? null}
+            />
+            <div className="flex flex-wrap gap-2">
+              <PlanTripFromHereButton
+                initialGeo={null}
+                label={t('country.planTrip', {
+                  defaultValue: 'Plan a trip to {{country}}',
+                  country: country.name,
+                })}
+              />
+            </div>
+            <IntroEssay text={country.editorial_long || country.description} />
+            <CountryPracticalInfo country={country} />
+            <KeyFactsStrip facts={facts} />
+          </div>
+        }
+        sections={sections}
+        footer={
+          <div className="flex flex-col gap-8">
+            <MarketplaceForCountry countryId={country.id} countryName={country.name} />
+            <SimilarItems
+              entity={{ type: 'country', id: country.id }}
+              title={t('country.similar', 'More destinations')}
+              contentTypes={['country']}
+            />
+          </div>
+        }
         entityType="country"
         entityId={country.id}
       />
