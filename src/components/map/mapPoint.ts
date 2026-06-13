@@ -18,6 +18,10 @@ export interface MapPointSummary {
   featured: boolean;
   live: boolean;
   image?: string;
+  /** R2-mirrored optimized copy (always reachable) — preferred over `image`. */
+  optimizedImage?: string;
+  /** R2-mirrored thumbnail copy. */
+  thumbImage?: string;
   category?: string;
   city?: string;
   openNow?: boolean | null;
@@ -59,6 +63,8 @@ export function summaryFromFeature(f: PointFeature): MapPointSummary {
     featured: Boolean(p.featured),
     live: Boolean(p.live),
     image: typeof meta.image === 'string' ? meta.image : undefined,
+    optimizedImage: typeof meta.optimizedImage === 'string' ? meta.optimizedImage : undefined,
+    thumbImage: typeof meta.thumbImage === 'string' ? meta.thumbImage : undefined,
     category: typeof meta.category === 'string' ? meta.category : undefined,
     city: typeof meta.city === 'string' ? meta.city : undefined,
     openNow: typeof meta.openNow === 'boolean' ? meta.openNow : null,

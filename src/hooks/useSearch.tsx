@@ -7,6 +7,7 @@ import {
   isSearchUnavailable,
 } from "@/lib/searchFetch";
 import { resolveType } from "@/lib/searchTaxonomy";
+import { resolveImageUrl } from "@/utils/resolveImageUrl";
 
 // P2-8: queries shorter than this never reach the network. The worker accepts
 // short queries (returns []) but a single-character query is overwhelmingly a
@@ -144,15 +145,25 @@ function normaliseHit(h: SearchResult): SearchResult {
   const r = h as SearchResult & {
     start_date?: unknown;
     image_url?: string;
+    optimized_url?: string;
+    thumbnail_url?: string;
     city?: string;
     country?: string;
     slug?: string;
   };
+  // Prefer the R2-mirrored optimized/thumbnail copy (always reachable) over the
+  // raw external image_url, which often hotlink-fails or gets ORB-blocked.
+  const resolvedImage =
+    resolveImageUrl({
+      imageUrl: r.imageUrl ?? r.image_url ?? null,
+      optimizedUrl: r.optimized_url ?? null,
+      thumbnailUrl: r.thumbnail_url ?? null,
+    }) ?? undefined;
   return {
     ...h,
     date: r.date ?? coerceDate(r.start_date),
     location: r.location ?? ([r.city, r.country].filter(Boolean).join(', ') || undefined),
-    imageUrl: r.imageUrl ?? r.image_url,
+    imageUrl: resolvedImage,
     slug: r.slug,
   };
 }

@@ -3,6 +3,7 @@ import { MapPin, Tag, Users, Newspaper, Globe, Building2, CalendarDays, Shopping
 import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
 import { toIndexKeys } from '@/lib/searchTaxonomy';
 import { useDebounce } from '@/hooks/useDebounce';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
 
 const MIN_QUERY_LEN = 2;
 const MAX_PER_TYPE_ALL = 4;
@@ -53,6 +54,16 @@ const IMAGE_KEYS = [
 ] as const;
 
 function pickImage(hit: SearchHit): string | undefined {
+  // Prefer the R2-mirrored optimized/thumbnail copy (reachable) over the raw
+  // external image_url (often hotlink-protected / 404 / ORB-blocked). Suggestion
+  // rows render at 48px, so the thumbnail is the right size.
+  const resolved = resolveImageUrl({
+    imageUrl: (hit.image_url as string) ?? (hit.image as string) ?? null,
+    optimizedUrl: (hit.optimized_url as string) ?? null,
+    thumbnailUrl: (hit.thumbnail_url as string) ?? null,
+    preferThumb: true,
+  });
+  if (resolved) return resolved;
   for (const k of IMAGE_KEYS) {
     const v = hit[k];
     if (typeof v === 'string' && v.length > 0) return v;
