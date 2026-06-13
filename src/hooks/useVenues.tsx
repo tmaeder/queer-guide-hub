@@ -24,7 +24,8 @@ export function useVenues(autoFetch: boolean = true) {
         .select('id', { head: true, count: 'exact' })
         .neq('data_source', 'refuge-restrooms')
         .neq('review_status', 'archived')
-        .is('duplicate_of_id', null);
+        .is('duplicate_of_id', null)
+        .is('closed_at', null);
       if (!cancelled) setDatasetTotal(count ?? 0);
     })();
     return () => {
@@ -45,6 +46,7 @@ export function useVenues(autoFetch: boolean = true) {
   const fetchVenues = async (
     filters?: {
       city?: string;
+      cityId?: string;
       countryId?: string;
       category?: string;
       tags?: string[];
@@ -145,7 +147,8 @@ export function useVenues(autoFetch: boolean = true) {
         .select('*', { count: 'exact' })
         .neq('data_source', 'refuge-restrooms')
         .neq('review_status', 'archived')
-        .is('duplicate_of_id', null);
+        .is('duplicate_of_id', null)
+        .is('closed_at', null);
 
       // Server-side sort
       const sort = options?.sort ?? 'featured';
@@ -174,7 +177,13 @@ export function useVenues(autoFetch: boolean = true) {
         query = query.eq('country_id', filters.countryId);
       }
 
-      if (filters?.city) {
+      if (filters?.cityId) {
+        // Fetch by city_id so correctly-linked venues with mismatched city TEXT
+        // still appear, while keeping name-text matches for the (many) venues
+        // whose city_id was never backfilled. PostgREST .or() uses * wildcards.
+        const nameClause = filters?.city ? `,and(city_id.is.null,city.ilike.*${filters.city}*)` : '';
+        query = query.or(`city_id.eq.${filters.cityId}${nameClause}`);
+      } else if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
       }
 

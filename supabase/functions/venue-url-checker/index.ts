@@ -11,8 +11,9 @@ import { probeLink, isDeadLink } from '../_shared/link-health.ts'
 // ============================================================
 
 const TIMEOUT_MS    = 8_000
-const DEFAULT_BATCH = 200
+const DEFAULT_BATCH = 500
 const DEFAULT_STALE = 30   // re-check after N days
+const CONCURRENCY   = 25   // parallel probes — 500/25 × ~2s keeps a run under the edge wall-clock
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -43,35 +44,44 @@ Deno.serve(async (req) => {
 
     let ok = 0, broken = 0, redirect = 0, timeout = 0, skipped = 0
 
-    for (const venue of venues) {
-      const raw = (venue.website as string | null)?.trim()
-      if (!raw) { skipped++; continue }
+    // Probe in concurrent chunks. Sequential probing (1 venue at a time, up to an
+    // 8s timeout each) only cleared 200/day — 94% of the catalog was never checked.
+    // 25-wide parallelism lets a 500-venue batch finish well within the edge
+    // function wall-clock while keeping DB writes spread out (one UPDATE per venue
+    // as its probe resolves — no bulk single-statement search-trigger storm).
+    const checkable = venues.filter((v) => (v.website as string | null)?.trim())
+    skipped = venues.length - checkable.length
 
-      const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
+    for (let i = 0; i < checkable.length; i += CONCURRENCY) {
+      const chunk = checkable.slice(i, i + CONCURRENCY)
+      await Promise.all(chunk.map(async (venue) => {
+        const raw = (venue.website as string).trim()
+        const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
 
-      // HEAD→GET probe. Only an explicit 404/410 is 'broken'; 401/403/405/429 are
-      // 'blocked' (alive, bot-protected), network errors are 'timeout' — neither
-      // demotes a venue (false positives previously paused the marketplace cron).
-      const status = await probeLink(url, { timeoutMs: TIMEOUT_MS })
-      if (status === 'ok') ok++
-      else if (status === 'redirect') redirect++
-      else if (status === 'broken') broken++
-      else if (status === 'timeout') timeout++
+        // HEAD→GET probe. Only an explicit 404/410 is 'broken'; 401/403/405/429 are
+        // 'blocked' (alive, bot-protected), network errors are 'timeout' — neither
+        // demotes a venue (false positives previously paused the marketplace cron).
+        const status = await probeLink(url, { timeoutMs: TIMEOUT_MS })
+        if (status === 'ok') ok++
+        else if (status === 'redirect') redirect++
+        else if (status === 'broken') broken++
+        else if (status === 'timeout') timeout++
 
-      if (!dryRun) {
-        const update: Record<string, unknown> = {
-          url_status:     status,
-          url_checked_at: new Date().toISOString(),
+        if (!dryRun) {
+          const update: Record<string, unknown> = {
+            url_status:     status,
+            url_checked_at: new Date().toISOString(),
+          }
+          // Demote ONLY confirmed-dead links (H-4): surface for triage / closure
+          // recheck. A dead website never auto-closes a venue alone (the closure
+          // engine needs >=2 signals) but it must not sit silently.
+          if (isDeadLink(status)) update.needs_attention = true
+          await supabase
+            .from('venues')
+            .update(update)
+            .eq('id', venue.id)
         }
-        // Demote ONLY confirmed-dead links (H-4): surface for triage / closure
-        // recheck. A dead website never auto-closes a venue alone (the consensus
-        // voter needs >=2 signals) but it must not sit silently.
-        if (isDeadLink(status)) update.needs_attention = true
-        await supabase
-          .from('venues')
-          .update(update)
-          .eq('id', venue.id)
-      }
+      }))
     }
 
     return jsonResponse({
