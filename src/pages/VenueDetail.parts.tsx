@@ -7,11 +7,18 @@ import {
   Clock,
   Luggage,
   Navigation2,
+  Share2,
+  ShieldCheck,
+  Tag as TagIcon,
+  DollarSign,
+  Sparkles,
 } from 'lucide-react';
 import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Eyebrow } from '@/components/ui/Eyebrow';
+import { Image } from '@/components/ui/Image';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
@@ -20,19 +27,19 @@ import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
 import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
+import { VenueFeaturedInGuides } from '@/components/venues/VenueFeaturedInGuides';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
+import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { EntityMap } from '@/components/map/EntityMap';
+import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
-import { ParallaxHero } from '@/components/effects/ParallaxHero';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -97,6 +104,10 @@ export function buildVenueBreadcrumbs(
   ];
 }
 
+// venue.tags is uncontrolled scraper data — some rows carry 40+ noisy terms.
+// Cap the visible chips so the tag row never becomes a wall.
+const TAG_DISPLAY_LIMIT = 16;
+
 const HOURS_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const HOURS_DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -135,9 +146,16 @@ function renderHoursRow(value: unknown): string | null {
 type HoursPeriod = { day: number; open: string; close: string };
 function asHoursShape(
   hours: unknown,
-): { display?: string; regular?: HoursPeriod[] } | null {
+): { display?: string; regular?: HoursPeriod[]; open_now?: boolean } | null {
   if (!hours || typeof hours !== 'object') return null;
-  return hours as { display?: string; regular?: HoursPeriod[] };
+  return hours as { display?: string; regular?: HoursPeriod[]; open_now?: boolean };
+}
+
+/** Surface the scraper's `open_now` flag when present; null = unknown. */
+export function getOpenNow(hours: unknown): boolean | null {
+  const shape = asHoursShape(hours);
+  if (shape && typeof shape.open_now === 'boolean') return shape.open_now;
+  return null;
 }
 
 // Collapse the `regular` array into a record keyed by day-name. Multiple
@@ -196,13 +214,21 @@ export function formatHours(hours: Record<string, unknown>) {
   if (Object.keys(dayMap).length === 0)
     return <p className="text-sm text-muted-foreground">Hours not available</p>;
 
-  return HOURS_DAYS.map((day, index) => (
-    <div key={day} className="flex justify-between">
-      <span className="text-sm font-medium">{HOURS_DAY_NAMES[index]}</span>
-      <span className="text-sm text-muted-foreground">{dayMap[day] ?? 'Closed'}</span>
+  return (
+    <div className="flex flex-col gap-2">
+      {HOURS_DAYS.map((day, index) => (
+        <div key={day} className="flex items-baseline justify-between gap-4">
+          <span className="text-sm font-medium">{HOURS_DAY_NAMES[index]}</span>
+          <span className="text-sm text-muted-foreground tabular-nums">
+            {dayMap[day] ?? 'Closed'}
+          </span>
+        </div>
+      ))}
     </div>
-  ));
+  );
 }
+
+/* ───────────────────────────── Hero ───────────────────────────── */
 
 interface VenueHeroProps {
   venue: VenueWithRelations;
@@ -217,9 +243,32 @@ interface VenueHeroProps {
   isInTrip?: boolean;
   socialSignal: NonNullable<SocialSignals> extends Map<string, infer V> ? V | undefined : undefined;
   onAddToTrip: () => void;
+  onShare: () => void;
   onCheckInSuccess: () => void;
   onContentUpdated?: () => void;
   t: (key: string, fallback?: string) => string;
+}
+
+function FactCell({
+  icon: Icon,
+  label,
+  value,
+  className,
+}: {
+  icon: typeof Star;
+  label: string;
+  value: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`bg-background p-4 ${className ?? ''}`}>
+      <span className="flex items-center gap-1.5 text-muted-foreground">
+        <Icon size={13} aria-hidden="true" />
+        <Eyebrow as="span">{label}</Eyebrow>
+      </span>
+      <span className="mt-1 block text-15 font-medium">{value}</span>
+    </div>
+  );
 }
 
 export function VenueHero({
@@ -235,25 +284,72 @@ export function VenueHero({
   isInTrip,
   socialSignal,
   onAddToTrip,
+  onShare,
   onCheckInSuccess,
   onContentUpdated,
   t,
 }: VenueHeroProps) {
+  const isMobile = useIsMobile();
+  const isClosed = Boolean(venue.closed_at && new Date(venue.closed_at) <= new Date());
+  const openNow = isClosed ? null : getOpenNow(venue.hours);
+  const hasFlag = isClosed || venue.is_featured || venue.verified;
+
+  // Adaptive fact bar — only cells with real data.
+  const facts: Array<{ icon: typeof Star; label: string; value: React.ReactNode }> = [];
+  if (venue.category)
+    facts.push({ icon: TagIcon, label: 'Type', value: <span className="capitalize">{venue.category}</span> });
+  if (venue.price_range)
+    facts.push({ icon: DollarSign, label: 'Price', value: getPriceRange(venue.price_range) });
+  if (averageRating > 0)
+    facts.push({
+      icon: Star,
+      label: 'Rating',
+      value: `${averageRating.toFixed(1)} · ${reviewCount}`,
+    });
+  if (openNow !== null)
+    facts.push({ icon: Clock, label: 'Right now', value: openNow ? 'Open' : 'Closed' });
+  const factCols = Math.min(facts.length, 4);
+  const factColClass =
+    factCols >= 4 ? 'sm:grid-cols-4' : factCols === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2';
+
   return (
     <>
-      {/* Hero Image */}
-      <ParallaxHero className="w-full h-40 md:h-48 rounded-container mb-6">
-        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
-        <img
-          src={heroImage || getRandomFallbackImage()}
+      {/* Editorial cover */}
+      <div className="group relative mb-6">
+        <Image
+          src={heroImage}
           alt={venue.name}
-          referrerPolicy="no-referrer"
-          className="w-full h-full object-cover"
-          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-      </ParallaxHero>
+          heightPx={isMobile ? 220 : 360}
+          imageRole="hero"
+          rounded="container"
+          scrim={hasFlag ? 'readable' : 'none'}
+          priority
+          fallbackEntityType="venue"
+          fallbackKey={venue.id}
+        >
+          {hasFlag && (
+            <div className="absolute right-4 top-4 flex flex-wrap justify-end gap-2">
+              {isClosed && <Badge variant="destructive">Permanently closed</Badge>}
+              {venue.is_featured && <Badge>Featured</Badge>}
+              {venue.verified && (
+                <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
+              )}
+            </div>
+          )}
+          {venue.logo_url && (
+            <img
+              src={venue.logo_url}
+              alt=""
+              role="presentation"
+              referrerPolicy="no-referrer"
+              className="absolute bottom-4 left-4 h-12 w-12 rounded-element bg-background/90 object-contain p-1"
+              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          )}
+        </Image>
+      </div>
 
       {/* Safety Alert Banner */}
       {venue.countries?.lgbti_criminalization && (
@@ -263,13 +359,13 @@ export function VenueHero({
         />
       )}
 
-      {/* Permanently Closed Banner */}
-      {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
-        <div className="mb-6 px-4 py-4 bg-destructive text-destructive-foreground flex items-center gap-2">
+      {/* Permanently closed banner */}
+      {isClosed && (
+        <div className="mb-6 flex items-center gap-2 bg-destructive px-4 py-4 text-destructive-foreground">
           <p className="text-sm font-semibold">
             Permanently closed
             {' · '}
-            {new Date(venue.closed_at).toLocaleDateString(undefined, {
+            {new Date(venue.closed_at!).toLocaleDateString(undefined, {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -278,63 +374,54 @@ export function VenueHero({
         </div>
       )}
 
-      {/* Title Row */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-4 mb-1 flex-wrap">
-            {venue.logo_url && (
-              <img
-                src={venue.logo_url}
-                alt=""
-                role="presentation"
-                className="object-contain flex-shrink-0 rounded-element"
-                style={{ width: 40, height: 40, padding: '3px' }}
-                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
+      {/* Editorial header */}
+      <div className="mb-6">
+        {(venue.category || venue.countries?.equality_score != null) && (
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {venue.category && (
+              <Eyebrow as="span" className="capitalize">
+                {venue.category}
+              </Eyebrow>
             )}
-            <h1 className="text-2xl font-bold">
-              <Editable
-                contentType="venues"
-                recordId={venue.id}
-                field="name"
-                value={venue.name}
-                onSaved={onContentUpdated}
-              >
-                {venue.name}
-              </Editable>
-            </h1>
-            {venue.verified && (
-              <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
-            )}
-            {venue.is_featured && <Badge>Featured</Badge>}
             {venue.countries?.equality_score != null && (
               <EqualityScoreBadge score={venue.countries.equality_score} size="sm" />
             )}
+            <SocialSignalBadges signal={socialSignal} tripUsageThreshold={1} />
           </div>
-          <div className="flex items-center gap-1 mb-2">
-            <MapPin size={14} className="text-muted-foreground shrink-0" />
-            <span className="text-sm text-muted-foreground">
+        )}
+
+        <h1
+          className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline-lg"
+          style={{ overflowWrap: 'anywhere' }}
+        >
+          <Editable
+            contentType="venues"
+            recordId={venue.id}
+            field="name"
+            value={venue.name}
+            onSaved={onContentUpdated}
+          >
+            {venue.name}
+          </Editable>
+        </h1>
+
+        {(cityName || venue.address) && (
+          <div className="mt-4 flex items-center gap-1.5 text-body-lg text-muted-foreground">
+            <MapPin size={16} className="shrink-0" aria-hidden="true" />
+            <span>
               {cityLink ? (
-                <LocalizedLink to={cityLink} style={{ color: 'inherit' }} className="no-underline">
-                  <span className="text-sm hover:text-primary hover:underline">{cityName}</span>
+                <LocalizedLink to={cityLink} className="hover:underline">
+                  {cityName}
                 </LocalizedLink>
               ) : (
                 cityName
               )}
               {countryName && (
                 <>
-                  {', '}
+                  {cityName ? ', ' : ''}
                   {countryLink ? (
-                    <LocalizedLink
-                      to={countryLink}
-                      style={{ color: 'inherit' }}
-                      className="no-underline"
-                    >
-                      <span className="text-sm hover:text-primary hover:underline">
-                        {countryName}
-                      </span>
+                    <LocalizedLink to={countryLink} className="hover:underline">
+                      {countryName}
                     </LocalizedLink>
                   ) : (
                     countryName
@@ -343,32 +430,47 @@ export function VenueHero({
               )}
             </span>
           </div>
-        </div>
+        )}
+      </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            type="button"
-            onClick={onAddToTrip}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-2.5 text-sm font-bold tracking-tight text-background transition-opacity duration-300 hover:opacity-90"
-          >
-            <Luggage size={14} aria-hidden="true" />
+      {/* Fact bar */}
+      {facts.length > 0 && (
+        <div
+          className={`mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-element border border-border bg-border ${factColClass}`}
+        >
+          {facts.map((f, i) => (
+            <FactCell
+              key={f.label}
+              icon={f.icon}
+              label={f.label}
+              value={f.value}
+              // Odd count leaves an empty cell on the 2-col mobile grid — let
+              // the last fact fill the row. Resets to a single column at sm+.
+              className={
+                facts.length % 2 === 1 && i === facts.length - 1
+                  ? 'col-span-2 sm:col-span-1'
+                  : ''
+              }
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Actions — one primary, the rest quiet */}
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        {!isClosed && (
+          <Button onClick={onAddToTrip}>
+            <Luggage size={16} className="mr-2" />
             Add to trip
-          </button>
-          <FavoriteButton itemId={venue.id} type="venue" size="md" />
-          {isInTrip && (
-            <Badge variant="secondary">
-              In {tripCount} trip{tripCount !== 1 ? 's' : ''}
-            </Badge>
-          )}
-          <SocialSignalBadges signal={socialSignal} tripUsageThreshold={1} />
-          <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
-          <AdminEditButton
-            contentType="venues"
-            contentId={venue.id}
-            contentName={venue.name}
-            currentData={venue as Record<string, unknown>}
-            onSaved={() => window.location.reload()}
-          />
+          </Button>
+        )}
+        <FavoriteButton itemId={venue.id} type="venue" size="md" />
+        {isInTrip && (
+          <Badge variant="soft">
+            In {tripCount} trip{tripCount !== 1 ? 's' : ''}
+          </Badge>
+        )}
+        {!isClosed && (
           <VenueCheckInButton
             venueId={venue.id}
             venueName={venue.name}
@@ -376,55 +478,52 @@ export function VenueHero({
             venueLongitude={venue.longitude}
             onCheckInSuccess={onCheckInSuccess}
           />
-          {venue.phone && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={`tel:${venue.phone}`}>
-                <Phone size={16} className="mr-2" />
-                Call
-              </a>
-            </Button>
-          )}
-          {venue.website && venue.url_status !== 'broken' && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={venue.website} target="_blank" rel="noopener noreferrer nofollow">
-                <Globe size={16} className="mr-2" />
-                Website
-              </a>
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Stat Chips */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {venue.category && <Badge>{venue.category}</Badge>}
-        {cityName && (
-          <Badge variant="outline" className="gap-1">
-            <MapPin size={14} />
-            {cityName}
-            {countryName ? `, ${countryName}` : ''}
-          </Badge>
         )}
-        {venue.price_range && <Badge variant="outline">{getPriceRange(venue.price_range)}</Badge>}
-        {averageRating > 0 && (
-          <Badge variant="outline" className="gap-1">
-            <Star size={14} style={{ fill: 'currentColor' }} />
-            {averageRating.toFixed(1)} ({reviewCount} review{reviewCount !== 1 ? 's' : ''})
-          </Badge>
+        {venue.website && venue.url_status !== 'broken' && (
+          <Button variant="outline" size="sm" asChild>
+            <a href={venue.website} target="_blank" rel="noopener noreferrer nofollow">
+              <Globe size={14} className="mr-1.5" />
+              Website
+            </a>
+          </Button>
         )}
-        {venue.amenities?.map((amenity) => (
-          <Badge key={amenity} variant="outline" className="capitalize">
-            {amenity.replace('-', ' ')}
-          </Badge>
-        ))}
+        {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
+          <Button variant="outline" size="sm" asChild>
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Navigation2 size={14} className="mr-1.5" />
+              Directions
+            </a>
+          </Button>
+        )}
+        <Button variant="outline" size="sm" onClick={onShare}>
+          <Share2 size={14} className="mr-1.5" />
+          Share
+        </Button>
+        <MarkVisitedButton entityType="venue" entityId={venue.id} kind="visited" />
+        <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
+        <AdminEditButton
+          contentType="venues"
+          contentId={venue.id}
+          contentName={venue.name}
+          currentData={venue as Record<string, unknown>}
+          onSaved={() => window.location.reload()}
+        />
       </div>
     </>
   );
 }
 
+/* ─────────────────────────── Overview ─────────────────────────── */
+
 interface VenueOverviewProps {
   venue: VenueWithRelations;
-  checkinRefresh: number;
+  reviews: VenueReview[];
+  venueEvents: Array<{ id: string; venue_id?: string | null }>;
+  averageRating: number;
   navigate: (path: string) => void;
   onContentUpdated?: () => void;
   t: (key: string, fallback?: string) => string;
@@ -432,422 +531,424 @@ interface VenueOverviewProps {
 
 export function VenueOverview({
   venue,
-  checkinRefresh,
+  reviews,
+  venueEvents,
+  averageRating,
   navigate,
   onContentUpdated,
   t,
 }: VenueOverviewProps) {
+  const hasAmenities =
+    (venue.amenities?.length ?? 0) > 0 ||
+    (venue.accessibility_attributes?.length ?? 0) > 0 ||
+    Boolean(venue.accessibility_notes);
+  const hasImages = (venue.images?.length ?? 0) > 0;
+  const hasTags = (venue.tags?.length ?? 0) > 0;
+
   return (
-    <ScrollReveal direction="up">
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 mt-2">
-        {/* Main Content */}
-        <div className="flex flex-col gap-6">
-          {/* Description */}
-          {venue.description && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('pages.venueDetail.about', 'About')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Editable
-                  contentType="venues"
-                  recordId={venue.id}
-                  field="description"
-                  value={venue.description}
-                  onSaved={onContentUpdated}
-                  fieldOverride={{ type: 'textarea' }}
-                  as="div"
-                >
-                  <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
-                    {venue.description}
-                  </p>
-                </Editable>
-              </CardContent>
-            </Card>
-          )}
+    <div className="flex flex-col gap-10">
+      <VenueFeaturedInGuides venueId={venue.id} />
 
-          {/* Amenities + accessibility (vocabulary-driven icons + i18n) */}
-          <AmenityDisplay
-            amenities={venue.amenities}
-            accessibility={venue.accessibility_attributes}
-            accessibilityNotes={venue.accessibility_notes}
-          />
+      {venue.description && (
+        <section>
+          <Eyebrow as="div" className="mb-2">
+            {t('pages.venueDetail.about', 'About')}
+          </Eyebrow>
+          <Editable
+            contentType="venues"
+            recordId={venue.id}
+            field="description"
+            value={venue.description}
+            onSaved={onContentUpdated}
+            fieldOverride={{ type: 'textarea' }}
+            as="div"
+          >
+            <p
+              className="max-w-[68ch] whitespace-pre-wrap text-body-lg text-foreground/90"
+              style={{ lineHeight: 1.7 }}
+            >
+              {venue.description}
+            </p>
+          </Editable>
+        </section>
+      )}
 
-          <VenueSafetySignalDisplay venueId={venue.id} />
-
-          {/* Recent Check-ins (mobile only, shown inline) */}
-          <div className="block lg:hidden">
-            <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="flex flex-col gap-6">
-          {/* Location Map */}
-          {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
-            <Card>
-              <CardContent>
-                <EntityMap
-                  center={[Number(venue.longitude), Number(venue.latitude)]}
-                  zoom={15}
-                  height={200}
-                  markers={[
-                    {
-                      id: venue.id,
-                      lat: Number(venue.latitude),
-                      lng: Number(venue.longitude),
-                      name: venue.name ?? 'Venue',
-                      type: 'venues',
-                      primary: true,
-                    },
-                  ]}
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Recent Check-ins (desktop only) */}
-          <div className="hidden lg:block">
-            <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />
-          </div>
-
-          {/* Contact Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('pages.venueDetail.contact', 'Contact')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {venue.address && (
-                <div className="flex items-start gap-4">
-                  <MapPin size={16} className="text-muted-foreground shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm">
-                      <Editable
-                        contentType="venues"
-                        recordId={venue.id}
-                        field="address"
-                        value={venue.address}
-                        onSaved={onContentUpdated}
-                        fieldOverride={{ type: 'text' }}
-                      >
-                        {venue.address}
-                      </Editable>
-                      {venue.postal_code ? `, ${venue.postal_code}` : ''}
-                    </p>
-                    {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
-                      <Button variant="outline" size="sm" asChild className="mt-2">
-                        <a
-                          href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Navigation2 size={14} className="mr-1.5" />
-                          Directions
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
-              {venue.phone && (
-                <div className="flex items-center gap-4">
-                  <Phone size={16} className="text-muted-foreground" />
-                  <span className="text-sm">
-                    <Editable
-                      contentType="venues"
-                      recordId={venue.id}
-                      field="phone"
-                      value={venue.phone}
-                      onSaved={onContentUpdated}
-                    >
-                      <a
-                        href={`tel:${venue.phone}`}
-                        className="text-primary hover:underline"
-                      >
-                        {venue.phone}
-                      </a>
-                    </Editable>
-                  </span>
-                </div>
-              )}
-              {venue.email && (
-                <div className="flex items-center gap-4">
-                  <Mail size={16} className="text-muted-foreground" />
-                  <span className="text-sm">
-                    <Editable
-                      contentType="venues"
-                      recordId={venue.id}
-                      field="email"
-                      value={venue.email}
-                      onSaved={onContentUpdated}
-                    >
-                      <a
-                        href={`mailto:${venue.email}`}
-                        className="text-primary hover:underline"
-                      >
-                        {venue.email}
-                      </a>
-                    </Editable>
-                  </span>
-                </div>
-              )}
-              {venue.website && (
-                <div className="flex items-center gap-4">
-                  <Globe size={16} className="text-muted-foreground" />
-                  <span className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">
-                    <Editable
-                      contentType="venues"
-                      recordId={venue.id}
-                      field="website"
-                      value={venue.website}
-                      onSaved={onContentUpdated}
-                    >
-                      <a
-                        href={venue.website}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        className="text-primary hover:underline"
-                      >
-                        {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                      </a>
-                    </Editable>
-                  </span>
-                </div>
-              )}
-              {venue.instagram && (
-                <div className="flex items-center gap-4">
-                  <Instagram size={16} className="text-muted-foreground" />
-                  <span className="text-sm">
-                    <Editable
-                      contentType="venues"
-                      recordId={venue.id}
-                      field="instagram"
-                      value={venue.instagram}
-                      onSaved={onContentUpdated}
-                    >
-                      <a
-                        href={`https://instagram.com/${venue.instagram}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        @{venue.instagram}
-                      </a>
-                    </Editable>
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Hours */}
-          {hasUsableHours(venue.hours) && (
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} />
-                    Hours
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Editable
-                  contentType="venues"
-                  recordId={venue.id}
-                  field="hours"
-                  value={venue.hours}
-                  onSaved={onContentUpdated}
-                  as="div"
-                >
-                  {formatHours(venue.hours as Record<string, unknown>)}
-                </Editable>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Tags */}
-          {venue.tags && venue.tags.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('pages.venueDetail.tags', 'Tags')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Editable
-                  contentType="venues"
-                  recordId={venue.id}
-                  field="tags"
-                  value={venue.tags}
-                  onSaved={onContentUpdated}
-                  as="div"
-                >
-                  <div className="flex flex-wrap gap-2">
-                    {venue.tags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="cursor-pointer"
-                        onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </Editable>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
-    </ScrollReveal>
-  );
-}
-
-interface VenuePhotosProps {
-  venue: VenueWithRelations;
-  onContentUpdated?: () => void;
-  t: (key: string, fallback?: string) => string;
-}
-
-export function VenuePhotos({ venue, onContentUpdated, t }: VenuePhotosProps) {
-  const hasImages = venue.images && venue.images.length > 0;
-  const inner = hasImages ? (
-    <StaggerGrid className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2">
-      {venue.images!.map((imageUrl, index) => (
-        <button
-          type="button"
-          key={index}
-          className="aspect-square rounded-element overflow-hidden bg-muted block w-full p-0 border-0"
-          onClick={() => window.open(imageUrl, '_blank')}
-          aria-label={`Open ${venue.name} photo ${index + 1} in a new tab`}
+      {hasTags && (
+        <Editable
+          contentType="venues"
+          recordId={venue.id}
+          field="tags"
+          value={venue.tags}
+          onSaved={onContentUpdated}
+          as="div"
         >
-          <img
-            src={imageUrl}
-            alt={`${venue.name} ${index + 1}`}
-            role="presentation"
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              (e.target as HTMLImageElement).src = '/placeholder.svg';
-            }}
+          <div className="flex flex-wrap gap-2">
+            {venue.tags!.slice(0, TAG_DISPLAY_LIMIT).map((tag, index) => (
+              <Badge
+                key={index}
+                variant="outline"
+                className="cursor-pointer gap-1.5"
+                onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+              >
+                <TagIcon size={12} aria-hidden="true" />
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </Editable>
+      )}
+
+      {hasAmenities && (
+        <AmenityDisplay
+          amenities={venue.amenities}
+          accessibility={venue.accessibility_attributes}
+          accessibilityNotes={venue.accessibility_notes}
+        />
+      )}
+
+      {venueEvents.length > 0 && (
+        <section>
+          <Eyebrow as="div" className="mb-4">
+            What's on here
+          </Eyebrow>
+          <VenueEvents
+            venueId={venue.id}
+            venueName={venue.name}
+            events={venueEvents as Parameters<typeof VenueEvents>[0]['events']}
+            compact={false}
           />
-        </button>
-      ))}
-    </StaggerGrid>
-  ) : (
-    <div className="text-center py-12">
-      <p className="text-muted-foreground">
-        {t('pages.venueDetail.noPhotos', 'No photos available')}
-      </p>
+        </section>
+      )}
+
+      <section>
+        <Eyebrow as="div" className="mb-2 flex items-center gap-1.5">
+          <ShieldCheck size={13} aria-hidden="true" />
+          Visitor signals
+        </Eyebrow>
+        <VenueSafetySignalDisplay venueId={venue.id} />
+      </section>
+
+      <VenueReviews reviews={reviews} averageRating={averageRating} />
+
+      {hasImages && (
+        <section>
+          <Eyebrow as="div" className="mb-4">
+            Photos
+          </Eyebrow>
+          <Editable
+            contentType="venues"
+            recordId={venue.id}
+            field="images"
+            value={venue.images}
+            onSaved={onContentUpdated}
+            as="div"
+          >
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {venue.images!.map((imageUrl, index) => (
+                <button
+                  type="button"
+                  key={index}
+                  className="group block aspect-square w-full overflow-hidden rounded-element border-0 bg-muted p-0"
+                  onClick={() => window.open(imageUrl, '_blank')}
+                  aria-label={`Open ${venue.name} photo ${index + 1} in a new tab`}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={`${venue.name} ${index + 1}`}
+                    role="presentation"
+                    referrerPolicy="no-referrer"
+                    className="h-full w-full cursor-pointer object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                      (e.target as HTMLImageElement).src = '/placeholder.svg';
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          </Editable>
+        </section>
+      )}
     </div>
   );
-
-  return (
-    <Editable
-      contentType="venues"
-      recordId={venue.id}
-      field="images"
-      value={venue.images}
-      onSaved={onContentUpdated}
-      as="div"
-    >
-      {inner}
-    </Editable>
-  );
 }
 
-interface VenueEventsTabProps {
-  venue: VenueWithRelations;
-  venueEvents: Array<{ id: string; venue_id?: string | null }>;
-  t: (key: string, fallback?: string) => string;
-}
+/* ──────────────────────────── Reviews ─────────────────────────── */
 
-export function VenueEventsTab({ venue, venueEvents, t }: VenueEventsTabProps) {
-  if (venueEvents.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">
-          {t('pages.venueDetail.noEvents', 'No upcoming events at this venue')}
-        </p>
-      </div>
-    );
-  }
-  return (
-    <ScrollReveal direction="up">
-      <div className="mt-2">
-        <VenueEvents
-          venueId={venue.id}
-          venueName={venue.name}
-          events={venueEvents as Parameters<typeof VenueEvents>[0]['events']}
-          compact={false}
-        />
-      </div>
-    </ScrollReveal>
-  );
-}
-
-interface VenueReviewsProps {
+function VenueReviews({
+  reviews,
+  averageRating,
+}: {
   reviews: VenueReview[];
-}
-
-export function VenueReviewsTab({ reviews }: VenueReviewsProps) {
-  if (reviews.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No reviews yet. Be the first to leave a review!</p>
-      </div>
-    );
-  }
+  averageRating: number;
+}) {
   return (
-    <ScrollReveal direction="up">
-      <div className="flex flex-col gap-4 mt-2">
-        {reviews.map((review) => (
-          <Card key={review.id}>
-            <CardContent>
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-4">
-                  <div
-                    className="bg-muted rounded-full flex items-center justify-center font-semibold text-sm"
-                    style={{ width: 36, height: 36 }}
-                  >
-                    {review.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold">
-                      {review.profiles?.display_name || 'Anonymous'}
-                    </p>
-                    <div className="flex items-center" style={{ gap: 1 }}>
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          size={13}
-                          style={{
-                            fill: i < review.rating ? 'currentColor' : 'none',
-                            // TODO(polish): no token match — star rating amber/gray
-                            color:
-                              i < review.rating
-                                ? 'hsl(var(--foreground))'
-                                : 'hsl(var(--muted-foreground))',
-                          }}
-                        />
-                      ))}
+    <section>
+      <div className="mb-4 flex items-baseline justify-between gap-4">
+        <Eyebrow as="div">Reviews{reviews.length > 0 ? ` (${reviews.length})` : ''}</Eyebrow>
+        {averageRating > 0 && (
+          <span className="inline-flex items-center gap-1 text-15 font-medium">
+            <Star size={14} style={{ fill: 'currentColor' }} aria-hidden="true" />
+            {averageRating.toFixed(1)}
+          </span>
+        )}
+      </div>
+      {reviews.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No reviews yet. Be the first to share what this place is like.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {reviews.map((review) => (
+            <Card key={review.id}>
+              <CardContent>
+                <div className="mb-2 flex items-start justify-between">
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="flex items-center justify-center rounded-full bg-muted text-sm font-semibold"
+                      style={{ width: 36, height: 36 }}
+                    >
+                      {review.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">
+                        {review.profiles?.display_name || 'Anonymous'}
+                      </p>
+                      <div className="flex items-center" style={{ gap: 1 }}>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            size={13}
+                            style={{
+                              fill: i < review.rating ? 'currentColor' : 'none',
+                              color:
+                                i < review.rating
+                                  ? 'hsl(var(--foreground))'
+                                  : 'hsl(var(--muted-foreground))',
+                            }}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </span>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(review.created_at).toLocaleDateString()}
+                {review.title && <p className="mb-1 text-sm font-semibold">{review.title}</p>}
+                {review.content && (
+                  <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.6 }}>
+                    {review.content}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* ──────────────────────────── Sidebar ─────────────────────────── */
+
+interface VenueSidebarProps {
+  venue: VenueWithRelations;
+  checkinRefresh: number;
+  onContentUpdated?: () => void;
+}
+
+export function VenueSidebar({ venue, checkinRefresh, onContentUpdated }: VenueSidebarProps) {
+  const hasMap = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
+  const openNow = getOpenNow(venue.hours);
+  const hasContact = Boolean(
+    venue.address || venue.phone || venue.email || venue.website || venue.instagram,
+  );
+
+  return (
+    <div className="flex flex-col gap-6">
+      {(hasMap || hasContact) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Location & contact</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            {hasMap && (
+              <EntityMap
+                center={[Number(venue.longitude), Number(venue.latitude)]}
+                zoom={15}
+                height={180}
+                markers={[
+                  {
+                    id: venue.id,
+                    lat: Number(venue.latitude),
+                    lng: Number(venue.longitude),
+                    name: venue.name ?? 'Venue',
+                    type: 'venues',
+                    primary: true,
+                  },
+                ]}
+              />
+            )}
+
+            {venue.address && (
+              <div className="flex items-start gap-2">
+                <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+                <div className="min-w-0">
+                  <p className="text-sm">
+                    <Editable
+                      contentType="venues"
+                      recordId={venue.id}
+                      field="address"
+                      value={venue.address}
+                      onSaved={onContentUpdated}
+                      fieldOverride={{ type: 'text' }}
+                    >
+                      {venue.address}
+                    </Editable>
+                    {venue.postal_code ? `, ${venue.postal_code}` : ''}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {venue.phone && (
+              <div className="flex items-center gap-2">
+                <Phone size={16} className="shrink-0 text-muted-foreground" />
+                <span className="text-sm">
+                  <Editable
+                    contentType="venues"
+                    recordId={venue.id}
+                    field="phone"
+                    value={venue.phone}
+                    onSaved={onContentUpdated}
+                  >
+                    <a href={`tel:${venue.phone}`} className="text-primary hover:underline">
+                      {venue.phone}
+                    </a>
+                  </Editable>
                 </span>
               </div>
-              {review.title && <p className="text-sm font-semibold mb-1">{review.title}</p>}
-              {review.content && (
-                <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.6 }}>
-                  {review.content}
-                </p>
+            )}
+
+            {venue.email && (
+              <div className="flex items-center gap-2">
+                <Mail size={16} className="shrink-0 text-muted-foreground" />
+                <span className="min-w-0 truncate text-sm">
+                  <Editable
+                    contentType="venues"
+                    recordId={venue.id}
+                    field="email"
+                    value={venue.email}
+                    onSaved={onContentUpdated}
+                  >
+                    <a href={`mailto:${venue.email}`} className="text-primary hover:underline">
+                      {venue.email}
+                    </a>
+                  </Editable>
+                </span>
+              </div>
+            )}
+
+            {venue.website && (
+              <div className="flex items-center gap-2">
+                <Globe size={16} className="shrink-0 text-muted-foreground" />
+                <span className="min-w-0 truncate text-sm">
+                  <Editable
+                    contentType="venues"
+                    recordId={venue.id}
+                    field="website"
+                    value={venue.website}
+                    onSaved={onContentUpdated}
+                  >
+                    <a
+                      href={venue.website}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="text-primary hover:underline"
+                    >
+                      {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                    </a>
+                  </Editable>
+                </span>
+              </div>
+            )}
+
+            {venue.instagram && (
+              <div className="flex items-center gap-2">
+                <Instagram size={16} className="shrink-0 text-muted-foreground" />
+                <span className="text-sm">
+                  <Editable
+                    contentType="venues"
+                    recordId={venue.id}
+                    field="instagram"
+                    value={venue.instagram}
+                    onSaved={onContentUpdated}
+                  >
+                    <a
+                      href={`https://instagram.com/${venue.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      @{venue.instagram}
+                    </a>
+                  </Editable>
+                </span>
+              </div>
+            )}
+
+            {hasMap && (
+              <Button variant="outline" size="sm" asChild className="self-start">
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Navigation2 size={14} className="mr-1.5" />
+                  Directions
+                </a>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {hasUsableHours(venue.hours) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2">
+                <Clock size={16} />
+                Hours
+              </span>
+              {openNow !== null && (
+                <Badge variant={openNow ? 'soft' : 'outline'}>{openNow ? 'Open now' : 'Closed'}</Badge>
               )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </ScrollReveal>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Editable
+              contentType="venues"
+              recordId={venue.id}
+              field="hours"
+              value={venue.hours}
+              onSaved={onContentUpdated}
+              as="div"
+            >
+              {formatHours(venue.hours as Record<string, unknown>)}
+            </Editable>
+          </CardContent>
+        </Card>
+      )}
+
+      <DestinationSafetyCard countryIds={[venue.country_id]} />
+
+      <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />
+
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Sparkles size={13} aria-hidden="true" />
+        Spotted something off? Use the flag in the header to let us know.
+      </p>
+    </div>
   );
 }
