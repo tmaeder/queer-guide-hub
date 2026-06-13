@@ -1450,9 +1450,32 @@
     "news": {
       "title": "Latest News"
     },
+    "eyebrow": "Queer Guide",
+    "browseDirectory": "Browse the directory",
+    "planTrip": "Plan a trip",
+    "allVenues": "All venues",
+    "recentlyViewed": {
+      "eyebrow": "Recently viewed",
+      "title": "Pick up where you left off."
+    },
+    "trending": {
+      "eyebrow": "Trending now",
+      "venues": "Venues on the rise.",
+      "venuesNear": "Popular venues in {{city}}.",
+      "venuesDesc": "What the community is checking out this week."
+    },
+    "cta": {
+      "title": "Built by the community,",
+      "title2": "for the community.",
+      "subtitle": "Verified safe spaces, real reviews, no paywalls.",
+      "submit": "Add a venue",
+      "about": "Read the mission",
+      "invite": "Invite friends",
+      "join": "Join the community"
+    },
     "discover": "Destinations",
     "destinationsTitle": "Where the scene lives.",
-    "destinationsSubtitle": "Six cities our community keeps coming back to.",
+    "destinationsSubtitle": "Cities the community keeps coming back to.",
     "allCities": "All cities",
     "exploreCity": "See the city",
     "browseEyebrow": "The index",

@@ -1,5 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -53,6 +54,13 @@ export default function EventDetail() {
   });
 
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
+  useTrackView({
+    type: 'event',
+    slug: event?.slug,
+    title: event?.title,
+    city: event?.cities?.name ?? event?.city,
+    country: event?.countries?.name ?? event?.country,
+  });
 
   const cityForMeta = event?.cities?.name ?? event?.city ?? null;
   const eventOgImage = event ? resolveEntityImage(event, 'event') : undefined;

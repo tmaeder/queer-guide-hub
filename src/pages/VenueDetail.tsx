@@ -1,5 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
@@ -57,6 +58,13 @@ export default function VenueDetail() {
   });
 
   const venue: VenueWithRelations | null = data?.venue ?? null;
+  useTrackView({
+    type: 'venue',
+    slug: venue?.slug,
+    title: venue?.name,
+    city: venue?.cities?.name,
+    country: venue?.countries?.name,
+  });
   const reviews: VenueReview[] = useMemo(() => data?.reviews ?? [], [data]);
   const notFound = data?.notFound ?? false;
 

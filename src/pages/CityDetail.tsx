@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { useTrackView } from '@/hooks/useTrackView';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,6 +60,12 @@ export default function CityDetail() {
   const { fetchCityImage } = useCityImages();
   const { articles, loading: newsLoading, fetchArticles } = useNews();
   const { city, loading, refetch: refetchCity } = useOptimizedCity(slug ?? '');
+  useTrackView({
+    type: 'city',
+    slug: city?.slug,
+    title: city?.name,
+    country: city?.countries?.name,
+  });
   const [imageUrl, setImageUrl] = useState<string>('');
   const [createTripOpen, setCreateTripOpen] = useState(false);
   const { user } = useAuth();
