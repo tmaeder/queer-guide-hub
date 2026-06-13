@@ -218,8 +218,6 @@ export default function CityDetail() {
     </LocalizedLink>
   );
 
-  const citySlug = city.slug || String(city.id);
-
   const sectionContent: Record<string, React.ReactNode> = {
     rights: <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />,
     venues: (
@@ -322,7 +320,7 @@ export default function CityDetail() {
               onFavoriteToggle={handleFavoriteToggle}
               refetchCity={refetchCity}
             />
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-4">
               <PlanTripFromHereButton
                 initialGeo={planGeo}
                 label={t('cities.detail.planTrip', 'Plan a trip to {{city}}', { city: city.name })}

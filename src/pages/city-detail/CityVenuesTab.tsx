@@ -38,7 +38,7 @@ export function CityVenuesTab({
     <div className="flex flex-col gap-12">
       {showCreateTrip && (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-container border border-border/60 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Luggage size={20} className="text-muted-foreground" aria-hidden="true" />
             <p className="font-medium">Planning a trip to {city.name}?</p>
           </div>

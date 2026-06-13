@@ -20,7 +20,7 @@ function ChipCluster({ heading, items }: { heading: string; items: string[] }) {
   if (!items?.length) return null;
   return (
     <div>
-      <h3 className="mb-3 text-title font-semibold tracking-tight">{heading}</h3>
+      <h3 className="mb-4 text-title font-semibold tracking-tight">{heading}</h3>
       <div className="flex flex-wrap gap-2">
         {items.map((item, i) => (
           <Badge key={`${item}-${i}`} variant="outline">
@@ -42,7 +42,7 @@ function DefinitionGrid({
   if (!entries.length) return null;
   return (
     <div>
-      <h3 className="mb-3 text-title font-semibold tracking-tight">{heading}</h3>
+      <h3 className="mb-4 text-title font-semibold tracking-tight">{heading}</h3>
       <dl className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
         {entries.map(([key, value]) => (
           <div
@@ -102,7 +102,7 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
 
           {city.local_customs && (
             <div>
-              <h3 className="mb-3 text-title font-semibold tracking-tight">Local customs</h3>
+              <h3 className="mb-4 text-title font-semibold tracking-tight">Local customs</h3>
               <p className="text-body-lg leading-relaxed text-muted-foreground">
                 {city.local_customs}
               </p>
@@ -120,7 +120,7 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
         {/* Facts aside */}
         {facts.length > 0 && (
           <aside className="md:sticky md:top-32 md:self-start">
-            <h3 className="mb-3 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
+            <h3 className="mb-4 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
               City facts
             </h3>
             <dl className="rounded-container border border-border/60 px-4 py-1">
