@@ -104,12 +104,24 @@ function iso2(country) {
 }
 
 // ---- wikitext helpers ----
+// Apply a removal regex until the string stops changing. A single pass can
+// reintroduce the dangerous sequence (e.g. "<!--<!---->-->" or "<scr<script>ipt>"),
+// so repeat to fixpoint — see CodeQL js/incomplete-multi-character-sanitization.
+function stripUntilStable(str, re) {
+  let prev;
+  do {
+    prev = str;
+    str = str.replace(re, '');
+  } while (str !== prev);
+  return str;
+}
+
 function stripMarkup(s) {
   if (!s) return '';
   let t = s;
   t = t.replace(/<ref[^>]*\/>/gi, '');
   t = t.replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, '');
-  t = t.replace(/<!--[\s\S]*?-->/g, '');
+  t = stripUntilStable(t, /<!--[\s\S]*?-->/g);
   // drop File/Image embeds entirely (their captions carry thumb|NNpx| junk)
   t = t.replace(/\[\[(?:File|Image):[^\[\]]*(?:\[\[[^\]]*\]\][^\[\]]*)*\]\]/gi, '');
   // [[link|text]] -> text ; [[link]] -> link
@@ -125,8 +137,10 @@ function stripMarkup(s) {
   t = t.replace(/'''?/g, '');
   t = t.replace(/\b(thumb|thumbnail|left|right|center|centre|frameless|upright)\|/gi, '');
   t = t.replace(/\b\d+px\|/gi, '');
-  t = t.replace(/<[^>]+>/g, '');
-  t = t.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&ndash;/g, '–');
+  t = stripUntilStable(t, /<[^>]+>/g);
+  // Unescape &amp; LAST so a literal "&ndash;" produced by it isn't re-unescaped
+  // (CodeQL js/double-escaping).
+  t = t.replace(/&nbsp;/g, ' ').replace(/&ndash;/g, '–').replace(/&amp;/g, '&');
   t = t.replace(/\s+/g, ' ').trim();
   t = t.replace(/^[–—-]\s*/, '').trim();
   return t;
