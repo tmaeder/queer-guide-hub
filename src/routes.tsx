@@ -37,7 +37,6 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 const Places = lazyRetry(() => import('./pages/Places'));
 const Resources = lazyRetry(() => import('./pages/Resources'));
 const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
-const UserDirectory = lazyRetry(() => import('./pages/UserDirectory'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
 // CMS-managed pages (content from cms_pages table)
@@ -164,12 +163,10 @@ const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard
 const IntimateDiscovery = lazyRetry(() => import('./pages/intimate/IntimateDiscovery'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
 
-const Feed = lazyRetry(() => import('./pages/Feed'));
+const Community = lazyRetry(() => import('./pages/Community'));
 
 const Messages = lazyRetry(() => import('./pages/Messages'));
 const Inbox = lazyRetry(() => import('./pages/Inbox'));
-const Friends = lazyRetry(() => import('./pages/Friends'));
-const Groups = lazyRetry(() => import('./pages/Groups'));
 const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
 const NotFound = lazyRetry(() => import('./pages/NotFound'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
@@ -203,6 +200,12 @@ function FootprintRedirect() {
 function TripsHubRedirect() {
   const location = useLocation();
   return <Navigate to={`/me/trips${location.search}`} replace />;
+}
+
+/** /groups folded into the /community hub. Preserves ?tab=mine. */
+function GroupsHubRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/community/groups${location.search}`} replace />;
 }
 
 /** Routes table + per-route ErrorBoundary/Suspense/MotionPage and a11y main element */
@@ -472,7 +475,8 @@ export const AppRoutes = () => {
                 <Route path="cities/compare" element={<CitiesCompare />} />
                 <Route path="city/:slug" element={<CityDetail />} />
                 <Route path="country/:slug" element={<CountryDetail />} />
-                <Route path="users" element={<UserDirectory />} />
+                {/* /users folded into the /community hub (Members tab). */}
+                <Route path="users" element={<Navigate to="/community/members" replace />} />
                 <Route path="personalities" element={<Personalities />} />
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
                 <Route path="quests" element={<Quests />} />
@@ -506,10 +510,10 @@ export const AppRoutes = () => {
                 <Route path="news/story/:slug" element={<NewsStoryDetail />} />
                 <Route path="news/:slug" element={<NewsDetail />} />
                 <Route path="search" element={<SearchResults />} />
-                <Route path="groups" element={<Groups />} />
+                {/* /groups + /my-groups folded into the /community hub (Groups tab). */}
+                <Route path="groups" element={<GroupsHubRedirect />} />
                 <Route path="groups/:groupId" element={<GroupDetail />} />
-                {/* /my-groups folded into the Groups page's "My Groups" tab. */}
-                <Route path="my-groups" element={<Navigate to="/groups?tab=mine" replace />} />
+                <Route path="my-groups" element={<Navigate to="/community/groups?tab=mine" replace />} />
                 <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
                 {/* "Inbox" was email + notifications, never messages. Notifications now
                   live in the header menu; the @queer.guide mailbox moved to /mailbox.
@@ -517,11 +521,19 @@ export const AppRoutes = () => {
                 <Route path="inbox" element={<Navigate to="/messages" replace />} />
                 <Route path="mailbox" element={<Inbox />} />
                 <Route path="messages" element={<Messages />} />
-                <Route path="friends" element={<Friends />} />
                 {/* /favorites folded into the /me hub (Saved tab). */}
                 <Route path="favorites" element={<Navigate to="/me/saved" replace />} />
-                <Route path="feed" element={<Feed />} />
-                <Route path="community" element={<Navigate to="/feed" replace />} />
+                {/* Feed, Members, Friends, Groups now live under the /community hub. */}
+                <Route path="feed" element={<Navigate to="/community/feed" replace />} />
+                <Route path="friends" element={<Navigate to="/community/friends" replace />} />
+                {/* Static per-tab routes (not community/:tab?) so the optional
+                  /:locale? parent can't capture "community" as an unknown locale
+                  and 404 — same reason /trips/discover is spelled out statically. */}
+                <Route path="community" element={<Community />} />
+                <Route path="community/feed" element={<Community tab="feed" />} />
+                <Route path="community/members" element={<Community tab="members" />} />
+                <Route path="community/friends" element={<Community tab="friends" />} />
+                <Route path="community/groups" element={<Community tab="groups" />} />
                 <Route path="me/:tab?" element={<ProfilePage />} />
                 <Route path="me/passport" element={<Navigate to="/me/progress" replace />} />
                 <Route path="me/missions" element={<Navigate to="/me/progress" replace />} />

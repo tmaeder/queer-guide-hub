@@ -1,4 +1,4 @@
-import { Compass, Home, MessageCircle, Search, User } from 'lucide-react';
+import { Home, MessageCircle, Search, User, Users } from 'lucide-react';
 import { useLocation } from 'react-router';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,9 +17,9 @@ interface NavItem {
 const ITEMS: NavItem[] = [
   { to: '/', icon: Home, label: 'Home', matchPrefixes: ['/'] },
   { to: '/venues', icon: Search, label: 'Find', matchPrefixes: ['/venues', '/events', '/marketplace', '/places'] },
-  { to: '/me', icon: User, label: 'You', authOnly: true, matchPrefixes: ['/me', '/profile', '/user'] },
-  { to: '/discover', icon: Compass, label: 'Discover', authOnly: true, matchPrefixes: ['/discover', '/intimate'] },
+  { to: '/community', icon: Users, label: 'Community', matchPrefixes: ['/community', '/feed', '/groups', '/users', '/friends'] },
   { to: '/messages', icon: MessageCircle, label: 'Messages', authOnly: true, matchPrefixes: ['/messages'] },
+  { to: '/me', icon: User, label: 'You', authOnly: true, matchPrefixes: ['/me', '/profile', '/user'] },
 ];
 
 /** Strip the optional /:locale prefix so matching is locale-agnostic. */
