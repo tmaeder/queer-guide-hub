@@ -3,8 +3,9 @@ import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Luggage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
@@ -13,12 +14,10 @@ import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import { useEvents } from '@/hooks/useEvents';
 import { useTranslation } from 'react-i18next';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { MarketplaceForVenue } from '@/components/marketplace/MarketplaceForVenue';
-import { TracingBeam } from '@/components/effects/TracingBeam';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
-import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
-import { VenueFeaturedInGuides } from '@/components/venues/VenueFeaturedInGuides';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import { useMeta } from '@/hooks/useMeta';
 import { buildVenueJsonLd, buildVenueMeta } from './VenueDetail.meta';
@@ -28,9 +27,7 @@ import {
   type VenueReview,
   VenueHero,
   VenueOverview,
-  VenuePhotos,
-  VenueEventsTab,
-  VenueReviewsTab,
+  VenueSidebar,
   buildVenueBreadcrumbs,
 } from './VenueDetail.parts';
 
@@ -68,7 +65,7 @@ export default function VenueDetail() {
   const reviews: VenueReview[] = useMemo(() => data?.reviews ?? [], [data]);
   const notFound = data?.notFound ?? false;
 
-  const averageRatingForMeta = useMemo(
+  const averageRating = useMemo(
     () =>
       reviews.length
         ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
@@ -83,11 +80,11 @@ export default function VenueDetail() {
     () =>
       venue
         ? buildVenueJsonLd(venue, {
-            ratingValue: averageRatingForMeta,
+            ratingValue: averageRating,
             ratingCount: reviews.length,
           })
         : null,
-    [venue, averageRatingForMeta, reviews.length],
+    [venue, averageRating, reviews.length],
   );
   useMeta(
     venue && metaOptions ? { ...metaOptions, jsonLd: jsonLd ?? undefined } : {},
@@ -117,6 +114,24 @@ export default function VenueDetail() {
       });
     }
   }, [error, t, toast]);
+
+  const handleShare = async () => {
+    if (!venue) return;
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: venue.name, url: shareUrl });
+      } catch {
+        /* user cancelled */
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: t('pages.venueDetail.linkCopied', 'Link copied'),
+        description: t('pages.venueDetail.linkCopiedDesc', 'Venue link copied to clipboard'),
+      });
+    }
+  };
 
   // NotFound branch
   if (!isLoading && notFound) {
@@ -180,14 +195,6 @@ export default function VenueDetail() {
 
   const venueEvents = venue ? events.filter((event) => event.venue_id === venue.id) : [];
 
-  const averageRating = reviews.length
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-    : 0;
-
-  // Only use the joined city/country names. The raw `venue.city` /
-  // `venue.country` text columns contain inconsistent data — full names
-  // for some rows, ISO codes for others — and would surface as "CH" or
-  // "DE" in the breadcrumb. Omit the segment instead.
   const cityName = venue?.cities?.name ?? null;
   const countryName = venue?.countries?.name ?? null;
   const cityLink = venue?.cities?.id ? `/city/${venue.cities.slug || venue.cities.id}` : null;
@@ -195,8 +202,7 @@ export default function VenueDetail() {
     ? `/country/${venue.countries.slug || venue.countries.id}`
     : null;
   const heroImage = venue?.images && venue.images.length > 0 ? venue.images[0] : null;
-  const remainingImages =
-    venue?.images && venue.images.length > 1 ? venue.images.slice(1) : venue?.images || [];
+  const isClosed = Boolean(venue?.closed_at && new Date(venue.closed_at) <= new Date());
 
   const breadcrumbs = buildVenueBreadcrumbs(venue);
 
@@ -206,40 +212,16 @@ export default function VenueDetail() {
           id: 'overview',
           label: t('pages.venueDetail.overview', 'Overview'),
           content: (
-            <div className="flex flex-col gap-6">
-              <VenueFeaturedInGuides venueId={venue.id} />
-              <VenueOverview
-                venue={venue}
-                checkinRefresh={checkinRefresh}
-                navigate={navigate}
-                onContentUpdated={refetch}
-                t={t}
-              />
-            </div>
+            <VenueOverview
+              venue={venue}
+              reviews={reviews}
+              venueEvents={venueEvents}
+              averageRating={averageRating}
+              navigate={navigate}
+              onContentUpdated={refetch}
+              t={t}
+            />
           ),
-        },
-        ...(remainingImages.length > 0 || heroImage
-          ? [
-              {
-                id: 'photos',
-                label: `Photos ${venue.images && venue.images.length > 0 ? `(${venue.images.length})` : ''}`,
-                content: <VenuePhotos venue={venue} onContentUpdated={refetch} t={t} />,
-              },
-            ]
-          : []),
-        ...(venueEvents.length > 0
-          ? [
-              {
-                id: 'events',
-                label: `Events (${venueEvents.length})`,
-                content: <VenueEventsTab venue={venue} venueEvents={venueEvents} t={t} />,
-              },
-            ]
-          : []),
-        {
-          id: 'reviews',
-          label: `Reviews (${reviews.length})`,
-          content: <VenueReviewsTab reviews={reviews} />,
         },
       ]
     : [];
@@ -265,6 +247,7 @@ export default function VenueDetail() {
               isInTrip={tripStatus?.isInTrip}
               socialSignal={socialSignals?.get(venue.id)}
               onAddToTrip={() => setAddToTripOpen(true)}
+              onShare={handleShare}
               onCheckInSuccess={() => setCheckinRefresh((prev) => prev + 1)}
               onContentUpdated={refetch}
               t={t}
@@ -272,20 +255,33 @@ export default function VenueDetail() {
           ) : null
         }
         tabs={tabs}
+        sidebar={
+          venue ? (
+            <VenueSidebar
+              venue={venue}
+              checkinRefresh={checkinRefresh}
+              onContentUpdated={refetch}
+            />
+          ) : undefined
+        }
         entityType="venue"
         entityId={venue?.id}
       />
 
       {venue && (
         <>
-          <TracingBeam className="container mx-auto pb-8 px-4">
-            <div className="mt-6 flex flex-wrap gap-2">
-              <MarkVisitedButton entityType="venue" entityId={venue.id} kind="visited" />
-              <MarkVisitedButton entityType="venue" entityId={venue.id} kind="saved" />
-            </div>
+          <div className="container mx-auto px-4 pb-28 md:pb-12">
             <MarketplaceForVenue venueId={venue.id} />
-            <SimilarItems entity={{ type: 'venue', id: venue.id }} className="mt-8" />
-          </TracingBeam>
+            {cityName && (
+              <TrendingStrip
+                city={cityName}
+                types={['venue']}
+                title="More venues"
+                className="mt-10"
+              />
+            )}
+            <SimilarItems entity={{ type: 'venue', id: venue.id }} className="mt-10" />
+          </div>
 
           <AddToTripDialog
             open={addToTripOpen}
@@ -302,6 +298,17 @@ export default function VenueDetail() {
               category: venue.category,
             }}
           />
+
+          {/* Sticky mobile action bar */}
+          {!isClosed && (
+            <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 border-t border-border bg-background/95 p-4 backdrop-blur md:hidden">
+              <Button className="flex-1" onClick={() => setAddToTripOpen(true)}>
+                <Luggage size={16} className="mr-2" />
+                Add to trip
+              </Button>
+              <FavoriteButton itemId={venue.id} type="venue" size="md" />
+            </div>
+          )}
         </>
       )}
     </>
