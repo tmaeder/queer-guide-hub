@@ -1549,6 +1549,8 @@
       "footprint": "Footprint",
       "settings": "Settings",
       "inbox": "Inbox",
+      "messages": "Messages",
+      "mailbox": "Mailbox",
       "friends": "Friends",
       "myGroups": "My Groups",
       "accessibility": "Accessibility",

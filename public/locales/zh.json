@@ -1574,7 +1574,9 @@
       "bookings": "预订",
       "tripInbox": "旅行收件箱",
       "extension": "浏览器扩展",
-      "footprint": "Footprint"
+      "footprint": "Footprint",
+      "messages": "[ZH] Messages",
+      "mailbox": "[ZH] Mailbox"
     },
     "modes": {
       "dating": "寻找爱情",

@@ -27,10 +27,12 @@ import {
   Download,
   Link as LinkIcon,
   CalendarDays,
+  Luggage,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchAllUserFavorites } from '@/hooks/usePageFetchers';
 import { FavoriteButton } from '@/components/ui/favorite-button';
+import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -49,6 +51,32 @@ interface FavoriteItem {
   date?: string;
   category?: string;
   type: 'venue' | 'event' | 'marketplace' | 'news';
+}
+
+/**
+ * "Add to trip" affordance for saved venues/events. Bridges Saved → Trips so a
+ * favorite can flow into a plan. Marketplace/news aren't trip-addable, so this
+ * self-guards and renders nothing for them.
+ */
+function AddFavoriteToTripButton({ item }: { item: FavoriteItem }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  if (item.type !== 'venue' && item.type !== 'event') return null;
+  return (
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <Luggage size={12} className="mr-1" />
+        {t('trips.quietAdd.add', 'Add to a trip')}
+      </Button>
+      {open && (
+        <AddToTripDialog
+          open={open}
+          onClose={() => setOpen(false)}
+          entity={{ type: item.type, id: item.id, name: item.title, category: item.category ?? null }}
+        />
+      )}
+    </>
+  );
 }
 
 export default function Favorites() {
@@ -264,12 +292,15 @@ export default function Favorites() {
               ) : (
                 <div />
               )}
-              <Button asChild variant="outline" size="sm">
-                <LocalizedLink to={getItemUrl()}>
-                  <ExternalLink size={12} className="mr-1" />
-                  View
-                </LocalizedLink>
-              </Button>
+              <div className="flex items-center gap-2">
+                <AddFavoriteToTripButton item={item} />
+                <Button asChild variant="outline" size="sm">
+                  <LocalizedLink to={getItemUrl()}>
+                    <ExternalLink size={12} className="mr-1" />
+                    View
+                  </LocalizedLink>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -336,6 +367,7 @@ export default function Favorites() {
                       View Details
                     </LocalizedLink>
                   </Button>
+                  <AddFavoriteToTripButton item={item} />
                 </div>
               </div>
             </div>

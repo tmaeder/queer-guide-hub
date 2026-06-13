@@ -1578,7 +1578,9 @@
       "bookings": "Réservations",
       "tripInbox": "Boîte de réception voyages",
       "extension": "Extension Navigateur",
-      "footprint": "Footprint"
+      "footprint": "Footprint",
+      "messages": "[FR] Messages",
+      "mailbox": "[FR] Mailbox"
     },
     "modes": {
       "dating": "En quête d'amour",

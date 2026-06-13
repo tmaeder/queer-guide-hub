@@ -19,6 +19,7 @@ import {
   Home,
   Settings,
   Mail,
+  MessageCircle,
   Luggage,
   Footprints,
   Puzzle,
@@ -87,10 +88,11 @@ export const USER_MENU_ITEMS: NavItem[] = [
   { to: '/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
   { to: '/favorites', icon: Heart, labelKey: 'header.userMenu.favorites' },
   { to: '/profile/footprint', icon: Footprints, labelKey: 'header.userMenu.footprint' },
-  { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
-  { to: '/inbox', icon: Mail, labelKey: 'header.userMenu.inbox' },
+  { to: '/messages', icon: MessageCircle, labelKey: 'header.userMenu.messages' },
   { to: '/friends', icon: Users, labelKey: 'header.userMenu.friends' },
-  { to: '/my-groups', icon: UsersRound, labelKey: 'header.userMenu.myGroups' },
+  { to: '/groups?tab=mine', icon: UsersRound, labelKey: 'header.userMenu.myGroups' },
+  { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
+  { to: '/mailbox', icon: Mail, labelKey: 'header.userMenu.mailbox' },
   { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },
 ];
 

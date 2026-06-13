@@ -1574,7 +1574,9 @@
       "bookings": "予約",
       "tripInbox": "旅行の受信箱",
       "extension": "ブラウザ拡張機能",
-      "footprint": "Footprint"
+      "footprint": "Footprint",
+      "messages": "[JA] Messages",
+      "mailbox": "[JA] Mailbox"
     },
     "modes": {
       "dating": "恋人を探す",

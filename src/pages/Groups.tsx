@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GroupCard } from '@/components/groups/GroupCard';
@@ -28,6 +29,9 @@ export default function Groups() {
     leaveGroup,
     isLeaving,
   } = useGroups();
+  const [searchParams] = useSearchParams();
+  // /my-groups redirects here with ?tab=mine — land on the My Groups tab.
+  const initialTab = searchParams.get('tab') === 'mine' ? 'my-groups' : 'discover';
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showMyGroups, setShowMyGroups] = useState(false);
@@ -100,7 +104,7 @@ export default function Groups() {
           />
 
           <Tabs
-            defaultValue="discover"
+            defaultValue={initialTab}
             style={{ flexDirection: 'column', gap: '1.5rem' }}
             className="flex"
           >
