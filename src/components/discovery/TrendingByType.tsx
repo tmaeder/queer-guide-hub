@@ -10,6 +10,7 @@ interface Props {
 	city?: string;
 	limit?: number;
 	className?: string;
+	hideHeader?: boolean;
 }
 
 const TITLES: Record<Props["type"], string> = {
@@ -20,6 +21,6 @@ const TITLES: Record<Props["type"], string> = {
 	queer_village: "Trending neighborhoods",
 };
 
-export function TrendingByType({ type, city, limit = 10, className }: Props) {
-	return <TrendingStrip types={[type]} city={city} limit={limit} title={TITLES[type]} className={className} />;
+export function TrendingByType({ type, city, limit = 10, className, hideHeader }: Props) {
+	return <TrendingStrip types={[type]} city={city} limit={limit} title={TITLES[type]} className={className} hideHeader={hideHeader} />;
 }

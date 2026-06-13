@@ -71,7 +71,7 @@ interface Hit {
 	image_url?: string;
 }
 
-export function RecommendedForYou({ className, limit = 10 }: { className?: string; limit?: number }) {
+export function RecommendedForYou({ className, limit = 10, hideHeader }: { className?: string; limit?: number; hideHeader?: boolean }) {
 	const { user } = useAuth();
 	const [items, setItems] = useState<Hit[] | null>(null);
 	const [empty, setEmpty] = useState(false);
@@ -117,10 +117,12 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 
 	return (
 		<section className={className} aria-label="Recommended for you">
-			<h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-				<Sparkles className="h-5 w-5 text-foreground" />
-				Recommended for you
-			</h2>
+			{!hideHeader && (
+				<h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+					<Sparkles className="h-5 w-5 text-foreground" />
+					Recommended for you
+				</h2>
+			)}
 			<SkeletonCrossfade
 				loading={!items}
 				skeleton={

@@ -21,6 +21,8 @@ interface Props {
 	limit?: number;
 	title?: string;
 	className?: string;
+	/** Suppress the built-in heading when wrapped by an outer section (e.g. HomeSection). */
+	hideHeader?: boolean;
 }
 
 const TYPE_PATH: Record<string, string> = {
@@ -85,6 +87,7 @@ export function TrendingStrip({
 	limit = 10,
 	title = "Trending",
 	className,
+	hideHeader,
 }: Props) {
 	const [items, setItems] = useState<TrendItem[] | null>(null);
 	const [error, setError] = useState(false);
@@ -118,10 +121,12 @@ export function TrendingStrip({
 
 	return (
 		<section className={className} aria-label={headline}>
-			<h2 className="text-title font-semibold mb-4 flex items-center gap-2">
-				<TrendingUp className="h-5 w-5 text-foreground" />
-				{headline}
-			</h2>
+			{!hideHeader && (
+				<h2 className="text-title font-semibold mb-4 flex items-center gap-2">
+					<TrendingUp className="h-5 w-5 text-foreground" />
+					{headline}
+				</h2>
+			)}
 			<SkeletonCrossfade
 				loading={!items}
 				skeleton={

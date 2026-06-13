@@ -1493,6 +1493,29 @@
         "groups": "groups",
         "resources": "resources"
       }
+    },
+    "eyebrow": "[JA] Queer Guide",
+    "browseDirectory": "[JA] Browse the directory",
+    "planTrip": "[JA] Plan a trip",
+    "allVenues": "[JA] All venues",
+    "recentlyViewed": {
+      "eyebrow": "[JA] Recently viewed",
+      "title": "[JA] Pick up where you left off."
+    },
+    "trending": {
+      "eyebrow": "[JA] Trending now",
+      "venues": "[JA] Venues on the rise.",
+      "venuesNear": "[JA] Popular venues in {{city}}.",
+      "venuesDesc": "[JA] What the community is checking out this week."
+    },
+    "cta": {
+      "title": "[JA] Built by the community,",
+      "title2": "[JA] for the community.",
+      "subtitle": "[JA] Verified safe spaces, real reviews, no paywalls.",
+      "submit": "[JA] Add a venue",
+      "about": "[JA] Read the mission",
+      "invite": "[JA] Invite friends",
+      "join": "[JA] Join the community"
     }
   },
   "header": {

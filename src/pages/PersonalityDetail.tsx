@@ -1,4 +1,5 @@
 import { useParams } from 'react-router';
+import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -39,6 +40,14 @@ export default function PersonalityDetail() {
     staleTime: 60_000,
     queryFn: () => fetchPersonalityBySlug(slug!),
     retry: false,
+  });
+
+  // Note: deliberately NOT storing nationality — it's sensitive personal data
+  // and recently-viewed history lives in plaintext localStorage.
+  useTrackView({
+    type: 'personality',
+    slug: personality?.slug,
+    title: personality?.name,
   });
 
   useEffect(() => {

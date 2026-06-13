@@ -1,5 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -53,6 +54,11 @@ export default function MarketplaceItemDetail() {
   });
 
   const listing = data?.listing ?? null;
+  useTrackView({
+    type: 'marketplace',
+    slug: listing?.slug,
+    title: listing?.title,
+  });
   const reviews = data?.reviews ?? [];
 
   const productJsonLd = listing

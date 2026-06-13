@@ -1,6 +1,7 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import { useParams } from 'react-router';
+import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,11 @@ export default function HotelDetail() {
   );
 
   const hotel = primary ?? fallback ?? null;
+  useTrackView({
+    type: 'hotel',
+    slug: hotel?.slug,
+    title: hotel?.name,
+  });
   const loading = primaryLoading || (!primary && fallbackLoading);
   const { data: tripStatus } = useEntityTripStatus('hotel', hotel?.id);
 
