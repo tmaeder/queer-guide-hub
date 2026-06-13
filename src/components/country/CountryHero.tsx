@@ -111,9 +111,9 @@ export function CountryHero({ country, weatherData, onContentUpdated }: CountryH
         {place && (
           <p className="text-2xs font-semibold uppercase tracking-[0.18em] text-white/80">{place}</p>
         )}
-        <h1 className="flex items-center gap-4 text-hero font-bold leading-none text-white">
+        <h1 className="flex items-center gap-4 text-display font-bold leading-none text-white sm:text-hero">
           {country.flag_emoji && (
-            <span aria-hidden="true" className="text-display">
+            <span aria-hidden="true" className="text-headline sm:text-display">
               {country.flag_emoji}
             </span>
           )}

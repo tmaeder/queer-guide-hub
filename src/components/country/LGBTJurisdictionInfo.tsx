@@ -46,6 +46,14 @@ function classifyStatus(value: string | boolean | null | undefined, severeNegati
   if (value === false) return severeNegative ? 'severe' : 'no';
   const v = String(value ?? '').toLowerCase().trim();
   if (!v || v === 'no data' || v === 'unknown') return 'none';
+  // Negations must be caught before positive substrings: "not banned"
+  // (e.g. conversion therapy still legal) contains "banned" but is negative.
+  if (v.includes('criminal') || v.includes('prohibited')) {
+    return 'severe';
+  }
+  if (v.includes('not banned') || v.includes('not legal') || v.includes('no protection')) {
+    return severeNegative ? 'severe' : 'no';
+  }
   if (
     v.includes('legal') ||
     v === 'yes' ||
@@ -56,10 +64,7 @@ function classifyStatus(value: string | boolean | null | undefined, severeNegati
   ) {
     return 'yes';
   }
-  if (v.includes('criminal') || v.includes('prohibited') || v.includes('not banned')) {
-    return severeNegative || v.includes('criminal') ? 'severe' : 'no';
-  }
-  if (v === 'no') return severeNegative ? 'severe' : 'no';
+  if (v === 'no' || v.startsWith('no ')) return severeNegative ? 'severe' : 'no';
   if (v.includes('partial') || v.includes('limited') || v.includes('varies') || v.includes('civil union')) {
     return 'partial';
   }
