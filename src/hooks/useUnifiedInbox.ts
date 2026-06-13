@@ -37,7 +37,7 @@ export const useUnifiedInbox = (filter?: InboxItemType | 'all') => {
           date: e.email_date,
           isRead: e.is_read,
           isStarred: e.is_starred,
-          actionUrl: `/inbox/email/${e.id}`,
+          actionUrl: `/mailbox/email/${e.id}`,
           raw: e,
         });
       }

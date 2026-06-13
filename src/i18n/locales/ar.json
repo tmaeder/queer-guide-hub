@@ -1574,7 +1574,9 @@
       "bookings": "الحجوزات",
       "tripInbox": "بريد الرحلة",
       "extension": "إضافة المتصفح",
-      "footprint": "Footprint"
+      "footprint": "Footprint",
+      "messages": "[AR] Messages",
+      "mailbox": "[AR] Mailbox"
     },
     "modes": {
       "dating": "أبحث عن الحب",

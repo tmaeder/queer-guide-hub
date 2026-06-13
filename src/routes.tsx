@@ -171,7 +171,6 @@ const Inbox = lazyRetry(() => import('./pages/Inbox'));
 const Friends = lazyRetry(() => import('./pages/Friends'));
 const Groups = lazyRetry(() => import('./pages/Groups'));
 const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
-const MyGroups = lazyRetry(() => import('./pages/MyGroups'));
 const NotFound = lazyRetry(() => import('./pages/NotFound'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const Favorites = lazyRetry(() => import('./pages/Favorites'));
@@ -504,9 +503,14 @@ export const AppRoutes = () => {
                 <Route path="search" element={<SearchResults />} />
                 <Route path="groups" element={<Groups />} />
                 <Route path="groups/:groupId" element={<GroupDetail />} />
-                <Route path="my-groups" element={<MyGroups />} />
+                {/* /my-groups folded into the Groups page's "My Groups" tab. */}
+                <Route path="my-groups" element={<Navigate to="/groups?tab=mine" replace />} />
                 <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
-                <Route path="inbox" element={<Inbox />} />
+                {/* "Inbox" was email + notifications, never messages. Notifications now
+                  live in the header menu; the @queer.guide mailbox moved to /mailbox.
+                  /inbox now resolves to the real conversation hub. */}
+                <Route path="inbox" element={<Navigate to="/messages" replace />} />
+                <Route path="mailbox" element={<Inbox />} />
                 <Route path="messages" element={<Messages />} />
                 <Route path="friends" element={<Friends />} />
                 <Route path="favorites" element={<Favorites />} />

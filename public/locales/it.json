@@ -1574,7 +1574,9 @@
       "bookings": "Prenotazioni",
       "tripInbox": "Posta viaggi",
       "extension": "Estensione Browser",
-      "footprint": "Footprint"
+      "footprint": "Footprint",
+      "messages": "[IT] Messages",
+      "mailbox": "[IT] Mailbox"
     },
     "modes": {
       "dating": "In cerca d'amore",

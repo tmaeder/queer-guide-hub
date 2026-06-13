@@ -1574,7 +1574,9 @@
       "bookings": "예약",
       "tripInbox": "여행 수신함",
       "extension": "브라우저 확장 프로그램",
-      "footprint": "Footprint"
+      "footprint": "Footprint",
+      "messages": "[KO] Messages",
+      "mailbox": "[KO] Mailbox"
     },
     "modes": {
       "dating": "사랑을 찾아서",

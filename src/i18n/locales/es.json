@@ -1574,7 +1574,9 @@
       "bookings": "Reservas",
       "tripInbox": "Bandeja de viajes",
       "extension": "Extensión del Navegador",
-      "footprint": "Footprint"
+      "footprint": "Footprint",
+      "messages": "[ES] Messages",
+      "mailbox": "[ES] Mailbox"
     },
     "modes": {
       "dating": "Buscando el amor",

@@ -1602,7 +1602,9 @@
       "bookings": "Бронирования",
       "tripInbox": "Входящие поездок",
       "extension": "Расширение браузера",
-      "footprint": "Footprint"
+      "footprint": "Footprint",
+      "messages": "[RU] Messages",
+      "mailbox": "[RU] Mailbox"
     },
     "modes": {
       "dating": "Ищу отношения",

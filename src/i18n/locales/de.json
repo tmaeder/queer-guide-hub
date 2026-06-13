@@ -1574,7 +1574,9 @@
       "bookings": "Buchungen",
       "tripInbox": "Reise-Posteingang",
       "extension": "Browser-Erweiterung",
-      "footprint": "Footprint"
+      "footprint": "Footprint",
+      "messages": "[DE] Messages",
+      "mailbox": "[DE] Mailbox"
     },
     "modes": {
       "dating": "Auf der Suche nach Liebe",
