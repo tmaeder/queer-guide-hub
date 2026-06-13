@@ -1473,7 +1473,8 @@
       "next14": "다음 14일"
     },
     "news": {
-      "title": "최신 뉴스"
+      "title": "최신 뉴스",
+      "eyebrow": "[KO] Dispatches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1517,7 +1518,17 @@
       "invite": "[KO] Invite friends",
       "join": "[KO] Join the community"
     },
-    "subtitleShort": "[KO] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[KO] Verified safe places, real events, and the people behind them.",
+    "events": {
+      "eyebrow": "[KO] What's on",
+      "groups": {
+        "today": "[KO] Today",
+        "tomorrow": "[KO] Tomorrow",
+        "thisWeekend": "[KO] This weekend",
+        "thisWeek": "[KO] This week",
+        "later": "[KO] Later"
+      }
+    }
   },
   "header": {
     "signInSignUp": "로그인 / 회원가입",

@@ -14,6 +14,7 @@ import { SkeletonCrossfade } from "@/components/effects";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sparkles } from "lucide-react";
 import { getRandomFallbackImage } from "@/utils/fallbackImages";
+import { decodeHtmlEntities } from "@/lib/decodeHtmlEntities";
 import { isValidImageUrl } from "@/lib/images/resolveEntityImage";
 
 const SEARCH_URL =
@@ -39,27 +40,6 @@ function hitPath(type: string, slug: string): string | null {
 	return base ? `${base}/${slug}` : null;
 }
 
-const NAMED_ENTITIES: Record<string, string> = {
-	amp: "&",
-	lt: "<",
-	gt: ">",
-	quot: '"',
-	apos: "'",
-	nbsp: "\u00A0",
-};
-
-function decodeEntities(s: string): string {
-	return s.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, ent: string) => {
-		if (ent[0] === "#") {
-			const code =
-				ent[1] === "x" || ent[1] === "X"
-					? parseInt(ent.slice(2), 16)
-					: parseInt(ent.slice(1), 10);
-			return Number.isFinite(code) ? String.fromCodePoint(code) : match;
-		}
-		return NAMED_ENTITIES[ent.toLowerCase()] ?? match;
-	});
-}
 
 interface Hit {
 	id: string;
@@ -163,7 +143,7 @@ export function RecommendedForYou({ className, limit = 10, hideHeader }: { class
 											/>
 											<CardContent className="p-2">
 												<div className="text-sm font-medium truncate">
-													{decodeEntities(it.title!)}
+													{decodeHtmlEntities(it.title!)}
 												</div>
 												<div className="text-xs text-muted-foreground truncate">
 													{[it.city, it.country].filter(Boolean).join(", ")}
