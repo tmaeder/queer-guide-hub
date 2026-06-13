@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pronounDisplay } from '@/components/ui/pronoun-combobox';
+import { pronounDisplay } from '@/components/ui/pronoun-utils';
 
 describe('pronounDisplay', () => {
   it('renders a single set in full', () => {

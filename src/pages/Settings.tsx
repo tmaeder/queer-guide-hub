@@ -51,7 +51,7 @@ import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarC
 import { UsernamePanel } from '@/components/profile/UsernamePanel';
 import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
 import { userModeLabel } from '@/lib/userMode';
-import { pronounDisplay } from '@/components/ui/pronoun-combobox';
+import { pronounDisplay } from '@/components/ui/pronoun-utils';
 import { shortLocation } from '@/lib/shortLocation';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
