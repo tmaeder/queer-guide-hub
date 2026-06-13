@@ -1,4 +1,5 @@
 import { Heart, Users, Map, Smile, Handshake, Home } from 'lucide-react';
+import { USER_MODE_LABELS } from '@/lib/userMode';
 
 interface UserModeBadgeProps {
   mode: string;
@@ -6,12 +7,12 @@ interface UserModeBadgeProps {
 }
 
 const modeConfig = {
-  dating:      { icon: Heart,     label: 'Looking for Love',    bgcolor: 'rgba(236, 72, 153, 0.1)', color: 'hsl(var(--foreground))' },
-  friends:     { icon: Users,     label: 'Making Friends',      bgcolor: 'rgba(59, 130, 246, 0.1)', color: '#2563eb' },
-  exploration: { icon: Map,       label: 'Exploring',           bgcolor: 'rgba(34, 197, 94, 0.1)',  color: '#16a34a' },
-  fun:         { icon: Smile,     label: 'Here for Fun',        bgcolor: 'rgba(234, 179, 8, 0.1)',  color: '#ca8a04' },
-  networking:  { icon: Handshake, label: 'Networking',          bgcolor: 'hsl(var(--muted))',       color: 'hsl(var(--foreground))' },
-  community:   { icon: Home,      label: 'Building Community',  bgcolor: 'rgba(99, 102, 241, 0.1)', color: '#4f46e5' },
+  dating:      { icon: Heart,     label: USER_MODE_LABELS.dating,      bgcolor: 'rgba(236, 72, 153, 0.1)', color: 'hsl(var(--foreground))' },
+  friends:     { icon: Users,     label: USER_MODE_LABELS.friends,     bgcolor: 'rgba(59, 130, 246, 0.1)', color: '#2563eb' },
+  exploration: { icon: Map,       label: USER_MODE_LABELS.exploration, bgcolor: 'rgba(34, 197, 94, 0.1)',  color: '#16a34a' },
+  fun:         { icon: Smile,     label: USER_MODE_LABELS.fun,         bgcolor: 'rgba(234, 179, 8, 0.1)',  color: '#ca8a04' },
+  networking:  { icon: Handshake, label: USER_MODE_LABELS.networking,  bgcolor: 'hsl(var(--muted))',       color: 'hsl(var(--foreground))' },
+  community:   { icon: Home,      label: USER_MODE_LABELS.community,   bgcolor: 'rgba(99, 102, 241, 0.1)', color: '#4f46e5' },
 };
 
 const sizeClasses = {

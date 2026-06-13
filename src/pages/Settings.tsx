@@ -20,9 +20,15 @@ import {
   Check,
   Settings as SettingsIcon,
   ChevronRight,
+  ChevronDown,
   Luggage,
   FileText,
 } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeta } from '@/hooks/useMeta';
 import { useProfile } from '@/hooks/useProfile';
@@ -44,7 +50,9 @@ import { IdentityPreviewCard } from '@/components/profile/IdentityPreviewCard';
 import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarChooser';
 import { UsernamePanel } from '@/components/profile/UsernamePanel';
 import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
+import { userModeLabel } from '@/lib/userMode';
 import { pronounDisplay } from '@/components/ui/pronoun-combobox';
+import { shortLocation } from '@/lib/shortLocation';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
@@ -141,6 +149,58 @@ interface ContentProps {
   user: SupabaseUser;
 }
 
+type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error';
+
+/**
+ * Auto-save feedback. Rendered both in the page-bottom bar AND inside open
+ * sheets — sheets cover the bottom bar, and that's exactly where edits happen.
+ */
+function SaveStatusLine({
+  status,
+  onRetry,
+  onSignIn,
+}: {
+  status: SaveStatus;
+  onRetry: () => void;
+  onSignIn: () => void;
+}) {
+  return (
+    <div role="status" aria-live="polite" className="flex items-center justify-center gap-2 text-sm">
+      {status === 'saving' && (
+        <>
+          <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+          <span className="text-muted-foreground">Saving…</span>
+        </>
+      )}
+      {status === 'saved' && (
+        <>
+          <Check size={14} />
+          <span className="text-muted-foreground">All changes saved</span>
+        </>
+      )}
+      {status === 'unsaved' && (
+        <Badge variant="outline" className="rounded-element">Unsaved changes</Badge>
+      )}
+      {status === 'error' && (
+        <div className="flex items-center gap-4">
+          <Badge variant="destructive" className="rounded-element">Save failed</Badge>
+          <Button variant="outline" size="sm" onClick={onRetry} className="rounded-element">
+            Retry
+          </Button>
+        </div>
+      )}
+      {status === 'auth-error' && (
+        <div className="flex items-center gap-4">
+          <Badge variant="destructive" className="rounded-element">Session expired</Badge>
+          <Button variant="outline" size="sm" onClick={onSignIn} className="rounded-element">
+            Sign in
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Glanceable state row — never an input. Tap opens the focused editor sheet. */
 function SummaryCard({
   icon: Icon,
@@ -184,9 +244,7 @@ function ProfileSettingsContent({
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<ProfileFormData>(() => initFormData(profile));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<
-    'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error'
-  >('saved');
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   // ?section= deep links (and old ?tab= links) open the matching sheet.
   const SECTION_TO_SHEET: Record<string, SheetKind> = {
     profile: 'profile',
@@ -345,6 +403,7 @@ function ProfileSettingsContent({
         username={username}
         pronouns={formData.pronouns}
         pronounsVisibility={formData.privacy_settings.pronouns_visibility}
+        profileVisibility={formData.privacy_settings.profile_visibility}
         occupation={formData.occupation}
         bio={formData.bio}
         avatarUrl={px?.avatar_url}
@@ -362,7 +421,7 @@ function ProfileSettingsContent({
           icon={User}
           title="Profile"
           summary={
-            [formData.bio && 'bio', formData.location, formData.website && 'links']
+            [formData.bio && 'bio', shortLocation(formData.location), formData.website && 'links']
               .filter(Boolean)
               .join(' · ') || 'Bio, location, links'
           }
@@ -371,7 +430,7 @@ function ProfileSettingsContent({
         <SummaryCard
           icon={Heart}
           title="Identity & dating"
-          summary={`Mode: ${formData.user_mode}${formData.gender_identity ? ' · identity set' : ''}`}
+          summary={`${userModeLabel(formData.user_mode)}${formData.gender_identity ? ' · identity set' : ''}`}
           onOpen={() => setOpenSheet('dating')}
         />
         <SummaryCard
@@ -397,24 +456,36 @@ function ProfileSettingsContent({
       {/* Preferences — review-only mirror of in-context choices */}
       <PreferencesMirrorCard profile={profile} onUpdate={(u) => updateProfile(u as Partial<Profile>)} />
 
-      {/* Personal documents — deprecation notice + export window */}
+      {/* Personal documents — deprecation notice; the list itself is behind a disclosure */}
       <Card>
-        <CardContent className="pt-6 flex flex-col gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
-              <FileText size={18} aria-hidden="true" />
+        <CardContent className="pt-6">
+          <Collapsible>
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
+                <FileText size={18} aria-hidden="true" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold">Personal documents are going away</p>
+                <p className="text-sm text-muted-foreground">
+                  Removed on {DOCS_REMOVAL_DATE}. Download anything you want to keep — files are
+                  permanently deleted after that date. Trip documents are not affected.
+                </p>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" size="sm" className="rounded-element mt-4 group">
+                    Show my documents
+                    <ChevronDown
+                      size={14}
+                      className="ml-2 transition-transform group-data-[state=open]:rotate-180"
+                      aria-hidden="true"
+                    />
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold">Personal documents are going away</p>
-              <p className="text-sm text-muted-foreground">
-                This feature is being removed on {DOCS_REMOVAL_DATE}. Download anything you want to
-                keep before then — after that date your files and their records are permanently
-                deleted (they also disappear from backups within 35 days). Documents attached to
-                trips are not affected.
-              </p>
-            </div>
-          </div>
-          <DocumentsList tripId={null} embedded readOnly />
+            <CollapsibleContent className="mt-4">
+              <DocumentsList tripId={null} embedded readOnly />
+            </CollapsibleContent>
+          </Collapsible>
         </CardContent>
       </Card>
 
@@ -497,43 +568,30 @@ function ProfileSettingsContent({
             )}
           </div>
           </div>
+
+          {/* Auto-saving sheets cover the page-bottom status bar — repeat it here */}
+          {(openSheet === 'profile' ||
+            openSheet === 'dating' ||
+            openSheet === 'privacy') && (
+            <div className="sticky bottom-0 -mx-4 sm:-mx-6 -mb-8 mt-6 border-t border-border bg-background px-4 py-2">
+              <SaveStatusLine
+                status={saveStatus}
+                onRetry={() => handleSave(false)}
+                onSignIn={() => navigate('/auth')}
+              />
+            </div>
+          )}
         </SheetContent>
       </Sheet>
 
       {/* Sticky auto-save status bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-center gap-2 text-sm">
-          {saveStatus === 'saving' && (
-            <>
-              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-              <span className="text-muted-foreground">Saving…</span>
-            </>
-          )}
-          {saveStatus === 'saved' && (
-            <>
-              <Check size={14} />
-              <span className="text-muted-foreground">All changes saved</span>
-            </>
-          )}
-          {saveStatus === 'unsaved' && (
-            <Badge variant="outline" className="rounded-element">Unsaved changes</Badge>
-          )}
-          {saveStatus === 'error' && (
-            <Badge variant="destructive" className="rounded-element">Save failed</Badge>
-          )}
-          {saveStatus === 'auth-error' && (
-            <div className="flex items-center gap-4">
-              <Badge variant="destructive" className="rounded-element">Session expired</Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/auth')}
-                className="rounded-element"
-              >
-                Sign in
-              </Button>
-            </div>
-          )}
+        <div className="container mx-auto px-4 py-4">
+          <SaveStatusLine
+            status={saveStatus}
+            onRetry={() => handleSave(false)}
+            onSignIn={() => navigate('/auth')}
+          />
         </div>
       </div>
     </div>

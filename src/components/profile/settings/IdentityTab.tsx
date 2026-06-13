@@ -144,12 +144,12 @@ export function IdentityTab({ formData, onChange, onComingOutChange }: IdentityT
               </AlertDescription>
             </Alert>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField id="coming_out_family" label="Family" value={formData.coming_out_status.family} onChange={(v) => onComingOutChange('family', v)} options={COMING_OUT_OPTIONS} />
-              <SelectField id="coming_out_friends" label="Friends" value={formData.coming_out_status.friends} onChange={(v) => onComingOutChange('friends', v)} options={COMING_OUT_OPTIONS} />
+              <SelectField id="coming_out_family" label="Family" placeholder="Not answered" value={formData.coming_out_status.family} onChange={(v) => onComingOutChange('family', v)} options={COMING_OUT_OPTIONS} />
+              <SelectField id="coming_out_friends" label="Friends" placeholder="Not answered" value={formData.coming_out_status.friends} onChange={(v) => onComingOutChange('friends', v)} options={COMING_OUT_OPTIONS} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField id="coming_out_work" label="Work / School" value={formData.coming_out_status.work} onChange={(v) => onComingOutChange('work', v)} options={COMING_OUT_OPTIONS} />
-              <SelectField id="coming_out_public" label="Public" value={formData.coming_out_status.public} onChange={(v) => onComingOutChange('public', v)} options={COMING_OUT_OPTIONS} />
+              <SelectField id="coming_out_work" label="Work / School" placeholder="Not answered" value={formData.coming_out_status.work} onChange={(v) => onComingOutChange('work', v)} options={COMING_OUT_OPTIONS} />
+              <SelectField id="coming_out_public" label="Public" placeholder="Not answered" value={formData.coming_out_status.public} onChange={(v) => onComingOutChange('public', v)} options={COMING_OUT_OPTIONS} />
             </div>
           </div>
         </CardContent>

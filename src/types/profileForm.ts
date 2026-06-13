@@ -63,11 +63,14 @@ export interface ProfileFormData {
   user_mode: string;
 }
 
+// Unanswered, deliberately — the system must never assert a coming-out
+// status the user didn't state. '' renders as the select placeholder and is
+// only persisted as a real value once the user picks one.
 const DEFAULT_COMING_OUT: ComingOutStatus = {
-  family: 'not_out',
-  friends: 'not_out',
-  work: 'not_out',
-  public: 'not_out',
+  family: '',
+  friends: '',
+  work: '',
+  public: '',
 };
 
 const DEFAULT_PRIVACY: PrivacySettings = {

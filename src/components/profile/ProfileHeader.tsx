@@ -12,6 +12,7 @@ import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import { StatusBar } from '@/components/status/StatusBar';
 import { ScoreLevelChip } from '@/components/score/ScoreLevelChip';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { publicDisplayName } from '@/lib/displayName';
 import type { UserStatus } from '@/hooks/useStatus';
 
 interface ProfileHeaderProps {
@@ -39,7 +40,8 @@ export function ProfileHeader({
   onEditStatus,
 }: ProfileHeaderProps) {
   const navigate = useLocalizedNavigate();
-  const displayName = (profile.display_name as string) || 'Anonymous User';
+  // Never expose an email as the name — older rows had display_name = email.
+  const displayName = publicDisplayName(profile.display_name as string) || 'Anonymous User';
   const username = profile.username as string | undefined;
   const socialLinks = profile.social_links as Record<string, unknown> | undefined;
   const hasStatus =

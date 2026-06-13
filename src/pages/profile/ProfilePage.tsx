@@ -22,6 +22,7 @@ import { usePublicCommunityScore } from '@/hooks/usePublicCommunityScore';
 import { useToast } from '@/hooks/use-toast';
 import { useMeta } from '@/hooks/useMeta';
 import { useTranslation } from 'react-i18next';
+import { publicDisplayName } from '@/lib/displayName';
 
 const TABS = ['overview', 'travel', 'contributions', 'progress'] as const;
 type ProfileTab = (typeof TABS)[number];
@@ -76,8 +77,9 @@ export default function ProfilePage() {
 
   const handleShare = async () => {
     const url = window.location.href;
-    const title = `${profile?.display_name}'s profile`;
-    const text = profile?.bio || `${profile?.display_name} on queer.guide`;
+    const shareName = publicDisplayName(profile?.display_name as string | undefined);
+    const title = shareName ? `${shareName}'s profile` : 'A queer.guide profile';
+    const text = profile?.bio || (shareName ? `${shareName} on queer.guide` : 'A profile on queer.guide');
     if (navigator.share && navigator.canShare && navigator.canShare({ title, text, url })) {
       try {
         await navigator.share({ title, text, url });
@@ -130,7 +132,7 @@ export default function ProfilePage() {
         <div className="text-center py-12 flex flex-col items-center gap-4">
           <Shield size={48} className="text-muted-foreground" aria-hidden />
           <div>
-            <p className="text-base font-medium mb-2">{profile.display_name || 'Anonymous User'}</p>
+            <p className="text-base font-medium mb-2">{publicDisplayName(profile.display_name as string | undefined) || 'Anonymous User'}</p>
             <p className="text-sm text-muted-foreground">This profile is only visible to friends.</p>
           </div>
           <UserRelationshipActions targetUserId={profile.user_id} />

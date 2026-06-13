@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Eye, EyeOff, Pencil } from 'lucide-react';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import type { AvatarConfig } from '@/components/profile/AvatarBuilder';
+import { publicDisplayName } from '@/lib/displayName';
 import { cn } from '@/lib/utils';
 
 export type VisibilityLens = 'public' | 'friends' | 'private';
@@ -20,7 +21,7 @@ const LENS_ORDER: VisibilityLens[] = ['public', 'friends', 'private'];
  * Friends-visibility fields are only shown to accepted friends (server-enforced),
  * so the middle lens previews the friend view — not the whole community. */
 function visibleAt(vis: string | undefined, lens: VisibilityLens): boolean {
-  const v = vis ?? 'public';
+  const v = vis === 'friends' || vis === 'private' ? vis : 'public';
   if (lens === 'private') return true;
   if (lens === 'friends') return v === 'public' || v === 'friends';
   return v === 'public';
@@ -31,6 +32,8 @@ interface IdentityPreviewCardProps {
   username: string | null;
   pronouns: string;
   pronounsVisibility?: string;
+  /** privacy_settings.profile_visibility — gates name, occupation and bio in the lens preview. */
+  profileVisibility?: string;
   occupation: string;
   bio: string;
   avatarUrl?: string | null;
@@ -44,18 +47,23 @@ interface IdentityPreviewCardProps {
 
 /**
  * Live preview of the profile exactly as others see it. Tap an element to
- * edit it; the lens toggle previews public / community / only-you views so
- * privacy controls have a visible payoff.
+ * edit it; the lens toggle previews anyone / friends / only-you views so
+ * privacy controls have a visible payoff. Hidden-at-this-lens fields stay
+ * tappable but render dimmed with an EyeOff, so the preview never lies.
  */
 export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
   const [lens, setLens] = useState<VisibilityLens>('private');
 
-  const pronounsVisible = visibleAt(props.pronounsVisibility, lens);
+  const profileVisible = visibleAt(props.profileVisibility, lens);
+  const pronounsVisible = profileVisible && visibleAt(props.pronounsVisibility, lens);
+  const safeName = publicDisplayName(props.displayName);
   const hasPronouns = props.pronouns.trim().length > 0;
   const hasOccupation = props.occupation.trim().length > 0;
 
   const cycleLens = () =>
     setLens((l) => LENS_ORDER[(LENS_ORDER.indexOf(l) + 1) % LENS_ORDER.length]);
+
+  const hiddenCls = profileVisible ? '' : 'opacity-50';
 
   return (
     <Card className="rounded-container">
@@ -73,8 +81,9 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
               email={props.email}
               size="lg"
             />
-            <span className="absolute -bottom-1 -right-1 rounded-full border border-border bg-background p-1">
-              <Pencil size={10} aria-hidden="true" />
+            <span className="absolute -bottom-1 -right-1 rounded-full border border-border bg-background p-1.5">
+              <Pencil size={12} aria-hidden="true" />
+              <span className="sr-only">Edit avatar</span>
             </span>
           </button>
 
@@ -95,9 +104,17 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
           <button
             type="button"
             onClick={props.onEditProfile}
-            className="text-left font-semibold text-lg hover:underline underline-offset-4"
+            className={cn(
+              'text-left font-semibold text-lg hover:underline underline-offset-4',
+              hiddenCls,
+            )}
           >
-            {props.displayName || <span className="text-muted-foreground font-normal">Add your name</span>}
+            {safeName || (
+              <span className="text-muted-foreground font-normal">Add your name</span>
+            )}
+            {!profileVisible && (
+              <EyeOff size={12} className="ml-2 inline" aria-label="Hidden in this view" />
+            )}
           </button>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
@@ -137,9 +154,13 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
               <button
                 type="button"
                 onClick={props.onEditProfile}
-                className="hover:underline underline-offset-4"
+                className={cn(
+                  'inline-flex items-center gap-1 hover:underline underline-offset-4',
+                  hiddenCls,
+                )}
               >
                 · {props.occupation}
+                {!profileVisible && <EyeOff size={12} aria-label="Hidden in this view" />}
               </button>
             )}
           </div>
@@ -148,20 +169,40 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
             <button
               type="button"
               onClick={props.onEditProfile}
-              className="text-left text-sm mt-2 line-clamp-2 hover:underline underline-offset-4"
+              className={cn(
+                'text-left text-sm mt-2 line-clamp-2 hover:underline underline-offset-4',
+                hiddenCls,
+              )}
             >
               {props.bio}
             </button>
           )}
+
+          {!profileVisible && (
+            <p className="text-xs text-muted-foreground mt-2 inline-flex items-center gap-1.5">
+              <EyeOff size={12} aria-hidden="true" />
+              Your profile is hidden in this view — only your @username shows.
+            </p>
+          )}
         </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-muted-foreground">Profile completion</p>
-            <p className="text-xs text-muted-foreground">{props.completion}%</p>
+        {lens === 'private' && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-muted-foreground">Profile completion</p>
+              <p className="text-xs text-muted-foreground">{props.completion}%</p>
+            </div>
+            <Progress
+              value={props.completion}
+              className="h-1"
+              aria-label={`Profile ${props.completion} percent complete`}
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              Counts name, pronouns, location, photo, bio and the preferences that power your
+              search results.
+            </p>
           </div>
-          <Progress value={props.completion} className="h-1" aria-label={`Profile ${props.completion} percent complete`} />
-        </div>
+        )}
       </CardContent>
     </Card>
   );
