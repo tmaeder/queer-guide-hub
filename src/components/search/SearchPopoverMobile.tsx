@@ -100,7 +100,7 @@ export function SearchPopoverMobile({
   return (
     <>
       <div
-        className="flex items-center gap-2 border-b border-border px-4 py-2"
+        className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2"
         style={{ paddingTop: 'max(8px, env(safe-area-inset-top, 0px))' }}
       >
         <div className="flex h-11 min-w-0 flex-1 items-center rounded-element bg-muted pl-4 pr-2">
@@ -162,62 +162,66 @@ export function SearchPopoverMobile({
           {t('common.cancel', 'Cancel')}
         </button>
       </div>
-      {query.length === 0 ? (
-        <SearchPopoverEmpty
-          trending={trending}
-          source={discoverySource}
-          onSelectTrending={(hit) =>
-            onSelect({
-              id: hit.id,
-              name: (hit.title || hit.name || '') as string,
-              type: hit.type,
-              icon: () => null,
-              title: (hit.title || hit.name || '') as string,
-              subtitle: hit.city as string | undefined,
-              slug: hit.slug as string | undefined,
-            })
-          }
-          onBrowse={(path) => {
-            onClose();
-            navigate(path);
-          }}
-          onAsk={onAsk}
-          onExploreMap={onExploreMap}
-          onNearMe={onNearMe}
-          nearMeSupported={nearMeSupported}
-          nearMeLoading={nearMeLoading}
-          recents={recentSearches}
-          onSelectRecent={onSelectRecent}
-          onClearRecents={clearRecents}
-        />
-      ) : (
-        <>
-          <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
-          {showFilters && (
-            <Suspense fallback={null}>
-              <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
-            </Suspense>
-          )}
-          <SearchPopoverResults
-            query={query}
-            activeScope={activeScope}
-            suggestions={suggestions}
-            countsByType={countsByType}
-            loading={loading}
-            error={error}
-            focusedIndex={null}
-            onSelect={(s) => onSelect(s)}
-            onHover={() => undefined}
-            onPrefetch={onPrefetch}
-            onToggleFilters={onToggleFilters ?? (() => undefined)}
-            filtersOpen={showFilters}
-            activeFiltersCount={activeFiltersCount}
-            onSearchAll={onSearchAll}
-            onClearScope={() => setScope(null)}
+      <div className="flex min-h-0 flex-1 flex-col">
+        {query.length === 0 ? (
+          <SearchPopoverEmpty
+            fullHeight
+            trending={trending}
+            source={discoverySource}
+            onSelectTrending={(hit) =>
+              onSelect({
+                id: hit.id,
+                name: (hit.title || hit.name || '') as string,
+                type: hit.type,
+                icon: () => null,
+                title: (hit.title || hit.name || '') as string,
+                subtitle: hit.city as string | undefined,
+                slug: hit.slug as string | undefined,
+              })
+            }
+            onBrowse={(path) => {
+              onClose();
+              navigate(path);
+            }}
             onAsk={onAsk}
+            onExploreMap={onExploreMap}
+            onNearMe={onNearMe}
+            nearMeSupported={nearMeSupported}
+            nearMeLoading={nearMeLoading}
+            recents={recentSearches}
+            onSelectRecent={onSelectRecent}
+            onClearRecents={clearRecents}
           />
-        </>
-      )}
+        ) : (
+          <>
+            <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
+            {showFilters && (
+              <Suspense fallback={null}>
+                <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
+              </Suspense>
+            )}
+            <SearchPopoverResults
+              fullHeight
+              query={query}
+              activeScope={activeScope}
+              suggestions={suggestions}
+              countsByType={countsByType}
+              loading={loading}
+              error={error}
+              focusedIndex={null}
+              onSelect={(s) => onSelect(s)}
+              onHover={() => undefined}
+              onPrefetch={onPrefetch}
+              onToggleFilters={onToggleFilters ?? (() => undefined)}
+              filtersOpen={showFilters}
+              activeFiltersCount={activeFiltersCount}
+              onSearchAll={onSearchAll}
+              onClearScope={() => setScope(null)}
+              onAsk={onAsk}
+            />
+          </>
+        )}
+      </div>
     </>
   );
 }

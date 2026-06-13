@@ -10,6 +10,8 @@ import { SearchMapPeek } from './SearchMapPeek';
 
 export interface SearchPopoverEmptyProps {
   trending: SearchHit[];
+  /** Fill the parent (mobile full-screen sheet) instead of the desktop 560px cap. */
+  fullHeight?: boolean;
   /** Whether `trending` is the personalized recommendations feed or plain trending. */
   source?: 'recommended' | 'trending';
   onSelectTrending: (hit: SearchHit) => void;
@@ -41,6 +43,7 @@ function hitMarker(hit: SearchHit): EntityMapMarker | null {
 
 export function SearchPopoverEmpty({
   trending,
+  fullHeight = false,
   source = 'trending',
   onSelectTrending,
   onBrowse,
@@ -61,7 +64,10 @@ export function SearchPopoverEmpty({
     source === 'recommended' ? t('search.forYou', 'For you') : t('search.trending', 'Trending');
 
   return (
-    <div className="flex-1 overflow-y-auto" style={{ maxHeight: 560 }}>
+    <div
+      className="min-h-0 flex-1 overflow-y-auto"
+      style={fullHeight ? undefined : { maxHeight: 560 }}
+    >
       {recentItems.length > 0 && onSelectRecent && (
         <div className="flex flex-wrap items-center gap-1.5 border-b border-border px-4 py-2">
           <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />

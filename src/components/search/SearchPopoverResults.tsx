@@ -8,6 +8,8 @@ import { SearchResultRow } from './SearchResultRow';
 
 export interface SearchPopoverResultsProps {
   query: string;
+  /** Fill the parent (mobile full-screen sheet) instead of the desktop 460px cap. */
+  fullHeight?: boolean;
   activeScope: string | null;
   suggestions: SearchSuggestion[];
   countsByType: Record<string, number>;
@@ -28,6 +30,7 @@ export interface SearchPopoverResultsProps {
 
 export function SearchPopoverResults({
   query,
+  fullHeight = false,
   activeScope,
   suggestions,
   countsByType,
@@ -84,8 +87,8 @@ export function SearchPopoverResults({
       <div
         role="listbox"
         aria-label={t('search.results', 'Results')}
-        className="flex-1 overflow-y-auto"
-        style={{ maxHeight: 460 }}
+        className="min-h-0 flex-1 overflow-y-auto"
+        style={fullHeight ? undefined : { maxHeight: 460 }}
       >
         {error && (
           <div role="alert" className="border-b border-border p-4 text-sm text-destructive">

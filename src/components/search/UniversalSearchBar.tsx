@@ -537,7 +537,7 @@ export const UniversalSearchBar = ({
           // sheet anchors to the viewport, not the transformed wrapper.
           className={cn(
             'w-[var(--radix-popover-trigger-width)] overflow-hidden p-0',
-            isMobile && 'qg-mobile-search-overlay rounded-none',
+            isMobile && 'qg-mobile-search-overlay flex flex-col rounded-none',
           )}
           style={
             isMobile
