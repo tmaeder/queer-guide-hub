@@ -351,17 +351,6 @@ export const UniversalSearchBar = () => {
     focusInput();
   });
 
-  // Programmatic open — any in-page affordance (e.g. the homepage search cue)
-  // dispatches `qg:open-search` to open this single, shared search.
-  useEffect(() => {
-    const open = () => {
-      setIsOpen(true);
-      focusInput();
-    };
-    window.addEventListener('qg:open-search', open);
-    return () => window.removeEventListener('qg:open-search', open);
-  }, [focusInput]);
-
   // Auto-focus when popover opens (search mode only — Ask owns its own input).
   useEffect(() => {
     if (isOpen && mode === 'search') focusInput();

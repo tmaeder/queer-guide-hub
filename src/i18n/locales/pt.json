@@ -1517,11 +1517,7 @@
       "invite": "[PT] Invite friends",
       "join": "[PT] Join the community"
     },
-    "subtitleShort": "[PT] Verified safe places, real events, and the people behind them.",
-    "searchCue": {
-      "placeholder": "[PT] Search venues, events, people…",
-      "aria": "[PT] Search venues, events, people"
-    }
+    "subtitleShort": "[PT] Verified safe places, real events, and the people behind them."
   },
   "header": {
     "signInSignUp": "Entrar / Cadastrar",

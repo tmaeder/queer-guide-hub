@@ -6,7 +6,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentlyViewedRail } from '@/components/home/RecentlyViewedRail';
-import { HomeSearchCue } from '@/components/home/HomeSearchCue';
 
 const MapShell = React.lazy(() => import('@/components/map/MapShell'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -59,7 +58,6 @@ const Index = React.memo(() => {
                   'Verified safe places, real events, and the people behind them.',
                 )}
               </p>
-              <HomeSearchCue className="mt-6" />
             </div>
           </div>
         </div>
