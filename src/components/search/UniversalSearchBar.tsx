@@ -73,16 +73,7 @@ function getPlaceholder(
   return t('search.placeholders.universal', 'Search venues, events, people, places…');
 }
 
-interface UniversalSearchBarProps {
-  /** 'header' = compact bar in the app header (default); 'hero' = larger, bordered field for the homepage hero. */
-  variant?: 'header' | 'hero';
-  className?: string;
-}
-
-export const UniversalSearchBar = ({
-  variant = 'header',
-  className,
-}: UniversalSearchBarProps = {}) => {
+export const UniversalSearchBar = () => {
   const trackClickFromSearch = useTrackClick();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -360,6 +351,17 @@ export const UniversalSearchBar = ({
     focusInput();
   });
 
+  // Programmatic open — any in-page affordance (e.g. the homepage search cue)
+  // dispatches `qg:open-search` to open this single, shared search.
+  useEffect(() => {
+    const open = () => {
+      setIsOpen(true);
+      focusInput();
+    };
+    window.addEventListener('qg:open-search', open);
+    return () => window.removeEventListener('qg:open-search', open);
+  }, [focusInput]);
+
   // Auto-focus when popover opens (search mode only — Ask owns its own input).
   useEffect(() => {
     if (isOpen && mode === 'search') focusInput();
@@ -379,20 +381,16 @@ export const UniversalSearchBar = ({
     localStorage.removeItem('recent-searches');
   }, []);
 
-  const isHero = variant === 'hero';
   const placeholder = useMemo(
-    () =>
-      isHero
-        ? t('search.placeholders.universal', 'Search venues, events, people, places…')
-        : getPlaceholder(location.pathname, t, isMobile),
-    [isHero, location.pathname, t, isMobile],
+    () => getPlaceholder(location.pathname, t, isMobile),
+    [location.pathname, t, isMobile],
   );
 
-  const inputHeight = isHero ? (isMobile ? 52 : 56) : isMobile ? 48 : 40;
-  const iconSize = isHero ? 20 : isMobile ? 20 : 16;
+  const inputHeight = isMobile ? 48 : 40;
+  const iconSize = isMobile ? 20 : 16;
 
   return (
-    <div className={cn('min-w-0', isHero ? 'w-full' : 'flex-1', className)}>
+    <div className="min-w-0 flex-1">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverAnchor asChild>
           <div className="relative">
@@ -401,10 +399,7 @@ export const UniversalSearchBar = ({
               ref={searchBoxRef}
               role="search"
               aria-label="Site search"
-              className={cn(
-                'flex cursor-text items-center rounded-container bg-muted transition-colors hover:bg-accent',
-                isHero && 'border border-border',
-              )}
+              className="flex cursor-text items-center rounded-container bg-muted transition-colors hover:bg-accent"
               onClick={() => {
                 setIsOpen(true);
                 focusInput();
@@ -453,7 +448,7 @@ export const UniversalSearchBar = ({
                   autoComplete="off"
                   className="w-full border-0 bg-transparent pr-20 text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                   style={{
-                    fontSize: isHero ? '1.0625rem' : isMobile ? '1rem' : '0.875rem',
+                    fontSize: isMobile ? '1rem' : '0.875rem',
                     height: inputHeight,
                   }}
                 />

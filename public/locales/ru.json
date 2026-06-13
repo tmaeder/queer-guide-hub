@@ -1545,7 +1545,11 @@
       "invite": "[RU] Invite friends",
       "join": "[RU] Join the community"
     },
-    "subtitleShort": "[RU] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[RU] Verified safe places, real events, and the people behind them.",
+    "searchCue": {
+      "placeholder": "[RU] Search venues, events, people…",
+      "aria": "[RU] Search venues, events, people"
+    }
   },
   "header": {
     "signInSignUp": "Войти / Регистрация",

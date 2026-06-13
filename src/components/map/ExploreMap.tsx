@@ -209,6 +209,10 @@ export interface ExploreMapProps {
   favoriteIds?: Set<string>;
   /** When true, only saved points render (favorites layer). */
   savedOnly?: boolean;
+  /** Cooperative gestures: wheel-scroll passes through to the page (zoom needs
+   *  ⌘/ctrl+scroll, two fingers on touch). Use when the map is embedded above
+   *  page content (e.g. the homepage hero) so it doesn't trap page scroll. */
+  cooperativeGestures?: boolean;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -236,6 +240,7 @@ export const ExploreMap = ({
   onFetchingChange,
   favoriteIds,
   savedOnly = false,
+  cooperativeGestures = false,
 }: ExploreMapProps) => {
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
@@ -694,6 +699,8 @@ export const ExploreMap = ({
       center: initialCenter ?? viewport.center,
       zoom: initialZoom ?? viewport.zoom,
       attributionControl: false,
+      // Embedded above page content → let the page scroll; zoom needs a modifier.
+      cooperativeGestures,
     });
     // Assign immediately so the early-return at the top of this effect
     // bails on the next render rather than re-initialising the map.

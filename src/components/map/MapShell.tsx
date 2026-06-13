@@ -33,6 +33,9 @@ export interface MapShellProps {
   initialZoom?: number;
   /** Skip the auto-fly to visitor geolocation */
   skipAutoFly?: boolean;
+  /** Cooperative gestures — wheel-scroll passes through to the page (zoom needs
+   *  a modifier). Use when the shell is embedded above page content. */
+  cooperativeGestures?: boolean;
 }
 
 /**
@@ -52,6 +55,7 @@ export const MapShell = ({
   initialCenter,
   initialZoom,
   skipAutoFly,
+  cooperativeGestures,
 }: MapShellProps) => {
   const config: MapShellConfig = useMemo(
     () => ({ ...SURFACE_PRESETS[surface], ...configOverride }),
@@ -265,6 +269,7 @@ export const MapShell = ({
         onFetchingChange={showRail ? setFetching : undefined}
         favoriteIds={favoriteIds}
         savedOnly={savedActive}
+        cooperativeGestures={cooperativeGestures}
       />
 
       {showRail && (
@@ -282,6 +287,7 @@ export const MapShell = ({
 
       {config.showCommandBar !== false && (
         <CommandBar
+          showSearch={config.showSearch}
           lenses={config.lenses}
           lens={state.lens}
           onLensChange={setLens}
