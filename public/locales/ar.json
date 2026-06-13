@@ -2364,5 +2364,129 @@
       "addToTrip": "Add to trip",
       "signIn": "Sign in"
     }
+  },
+  "country": {
+    "loading": "[AR] Loading country…",
+    "planTrip": "[AR] Plan a trip to {{country}}",
+    "similar": "[AR] More destinations",
+    "notFound": {
+      "title": "[AR] Country not found",
+      "body": "[AR] The country you're looking for doesn't exist.",
+      "back": "[AR] Back to Places"
+    },
+    "breadcrumb": {
+      "places": "[AR] Places"
+    },
+    "hero": {
+      "capital": "[AR] Capital"
+    },
+    "verdict": {
+      "eyebrow": "[AR] For LGBTQ+ travelers",
+      "welcoming": "[AR] Welcoming",
+      "mixed": "[AR] Mixed",
+      "caution": "[AR] Use caution",
+      "dangerous": "[AR] Dangerous",
+      "equality": "[AR] Equality",
+      "fullBreakdown": "[AR] Full breakdown"
+    },
+    "facts": {
+      "capital": "[AR] Capital",
+      "population": "[AR] Population",
+      "equality": "[AR] Equality",
+      "languages": "[AR] Languages",
+      "currency": "[AR] Currency",
+      "cities": "[AR] Cities"
+    },
+    "section": {
+      "rights": "[AR] Rights & safety",
+      "cities": "[AR] Cities",
+      "venues": "[AR] Venues",
+      "events": "[AR] Events",
+      "travel": "[AR] Travel",
+      "stats": "[AR] In numbers",
+      "personalities": "[AR] Voices",
+      "nearby": "[AR] Nearby",
+      "news": "[AR] News",
+      "map": "[AR] Map"
+    },
+    "practical": {
+      "languages": "[AR] Languages",
+      "currency": "[AR] Currency",
+      "callingCode": "[AR] Calling code",
+      "tld": "[AR] Internet domain",
+      "driving": "[AR] Driving",
+      "drivesLeft": "[AR] Left-hand side",
+      "drivesRight": "[AR] Right-hand side",
+      "airports": "[AR] Major airports",
+      "government": "[AR] Government",
+      "nationalDay": "[AR] National day"
+    },
+    "stats": {
+      "gdpPerCapita": "[AR] GDP / capita",
+      "hdi": "[AR] HDI",
+      "lifeExpectancy": "[AR] Life expectancy",
+      "literacy": "[AR] Literacy",
+      "income": "[AR] Income level"
+    },
+    "cities": {
+      "emptyTitle": "[AR] No cities yet",
+      "emptyBody": "[AR] No cities are listed for this country yet."
+    },
+    "venues": {
+      "emptyTitle": "[AR] No venues yet",
+      "emptyBody": "[AR] Be the first to add a venue in {{country}}."
+    },
+    "events": {
+      "emptyTitle": "[AR] No upcoming events",
+      "emptyBody": "[AR] No events are scheduled for this country yet."
+    },
+    "travel": {
+      "activities": "[AR] Activities & tours",
+      "activitiesBody": "[AR] Experiences in {{country}}"
+    },
+    "news": {
+      "emptyTitle": "[AR] No local news yet",
+      "emptyBody": "[AR] No news articles are available for this country yet."
+    },
+    "rights": {
+      "title": "[AR] LGBTI rights overview",
+      "source": "[AR] ILGA World Database",
+      "updated": "[AR] Updated",
+      "noData": "[AR] No data",
+      "sameSexActivity": "[AR] Same-sex activity",
+      "penalty": "[AR] Penalty",
+      "deathPenalty": "[AR] death penalty possible",
+      "decriminalized": "[AR] Decriminalized",
+      "expression": "[AR] Freedom of expression",
+      "association": "[AR] Freedom of association",
+      "section": {
+        "criminalisation": "[AR] Criminalisation & freedoms",
+        "antiDiscrimination": "[AR] Anti-discrimination protection",
+        "criminalJustice": "[AR] Criminal justice",
+        "family": "[AR] Family & relationships",
+        "identity": "[AR] Identity & health"
+      },
+      "constitutional": "[AR] Constitutional",
+      "employment": "[AR] Employment",
+      "housing": "[AR] Housing",
+      "education": "[AR] Education",
+      "health": "[AR] Health",
+      "goodsServices": "[AR] Goods & services",
+      "bullying": "[AR] Bullying",
+      "hateCrime": "[AR] Hate crime laws",
+      "incitement": "[AR] Incitement prohibition",
+      "unions": "[AR] Same-sex unions",
+      "marriageSince": "[AR] Marriage since",
+      "civilUnionSince": "[AR] civil union since",
+      "adoption": "[AR] Adoption rights",
+      "genderRecognition": "[AR] Gender recognition",
+      "marker": "[AR] Marker",
+      "selfId": "[AR] Self-ID",
+      "requiresSurgery": "[AR] Requires surgery",
+      "requiresDiagnosis": "[AR] Requires diagnosis",
+      "conversionTherapy": "[AR] Conversion therapy",
+      "intersex": "[AR] Intersex bodily integrity",
+      "ilgaLink": "[AR] ILGA World Database"
+    }
   }
 }

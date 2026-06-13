@@ -2366,5 +2366,129 @@
       "addToTrip": "Add to trip",
       "signIn": "Sign in"
     }
+  },
+  "country": {
+    "loading": "[PT] Loading country…",
+    "planTrip": "[PT] Plan a trip to {{country}}",
+    "similar": "[PT] More destinations",
+    "notFound": {
+      "title": "[PT] Country not found",
+      "body": "[PT] The country you're looking for doesn't exist.",
+      "back": "[PT] Back to Places"
+    },
+    "breadcrumb": {
+      "places": "[PT] Places"
+    },
+    "hero": {
+      "capital": "[PT] Capital"
+    },
+    "verdict": {
+      "eyebrow": "[PT] For LGBTQ+ travelers",
+      "welcoming": "[PT] Welcoming",
+      "mixed": "[PT] Mixed",
+      "caution": "[PT] Use caution",
+      "dangerous": "[PT] Dangerous",
+      "equality": "[PT] Equality",
+      "fullBreakdown": "[PT] Full breakdown"
+    },
+    "facts": {
+      "capital": "[PT] Capital",
+      "population": "[PT] Population",
+      "equality": "[PT] Equality",
+      "languages": "[PT] Languages",
+      "currency": "[PT] Currency",
+      "cities": "[PT] Cities"
+    },
+    "section": {
+      "rights": "[PT] Rights & safety",
+      "cities": "[PT] Cities",
+      "venues": "[PT] Venues",
+      "events": "[PT] Events",
+      "travel": "[PT] Travel",
+      "stats": "[PT] In numbers",
+      "personalities": "[PT] Voices",
+      "nearby": "[PT] Nearby",
+      "news": "[PT] News",
+      "map": "[PT] Map"
+    },
+    "practical": {
+      "languages": "[PT] Languages",
+      "currency": "[PT] Currency",
+      "callingCode": "[PT] Calling code",
+      "tld": "[PT] Internet domain",
+      "driving": "[PT] Driving",
+      "drivesLeft": "[PT] Left-hand side",
+      "drivesRight": "[PT] Right-hand side",
+      "airports": "[PT] Major airports",
+      "government": "[PT] Government",
+      "nationalDay": "[PT] National day"
+    },
+    "stats": {
+      "gdpPerCapita": "[PT] GDP / capita",
+      "hdi": "[PT] HDI",
+      "lifeExpectancy": "[PT] Life expectancy",
+      "literacy": "[PT] Literacy",
+      "income": "[PT] Income level"
+    },
+    "cities": {
+      "emptyTitle": "[PT] No cities yet",
+      "emptyBody": "[PT] No cities are listed for this country yet."
+    },
+    "venues": {
+      "emptyTitle": "[PT] No venues yet",
+      "emptyBody": "[PT] Be the first to add a venue in {{country}}."
+    },
+    "events": {
+      "emptyTitle": "[PT] No upcoming events",
+      "emptyBody": "[PT] No events are scheduled for this country yet."
+    },
+    "travel": {
+      "activities": "[PT] Activities & tours",
+      "activitiesBody": "[PT] Experiences in {{country}}"
+    },
+    "news": {
+      "emptyTitle": "[PT] No local news yet",
+      "emptyBody": "[PT] No news articles are available for this country yet."
+    },
+    "rights": {
+      "title": "[PT] LGBTI rights overview",
+      "source": "[PT] ILGA World Database",
+      "updated": "[PT] Updated",
+      "noData": "[PT] No data",
+      "sameSexActivity": "[PT] Same-sex activity",
+      "penalty": "[PT] Penalty",
+      "deathPenalty": "[PT] death penalty possible",
+      "decriminalized": "[PT] Decriminalized",
+      "expression": "[PT] Freedom of expression",
+      "association": "[PT] Freedom of association",
+      "section": {
+        "criminalisation": "[PT] Criminalisation & freedoms",
+        "antiDiscrimination": "[PT] Anti-discrimination protection",
+        "criminalJustice": "[PT] Criminal justice",
+        "family": "[PT] Family & relationships",
+        "identity": "[PT] Identity & health"
+      },
+      "constitutional": "[PT] Constitutional",
+      "employment": "[PT] Employment",
+      "housing": "[PT] Housing",
+      "education": "[PT] Education",
+      "health": "[PT] Health",
+      "goodsServices": "[PT] Goods & services",
+      "bullying": "[PT] Bullying",
+      "hateCrime": "[PT] Hate crime laws",
+      "incitement": "[PT] Incitement prohibition",
+      "unions": "[PT] Same-sex unions",
+      "marriageSince": "[PT] Marriage since",
+      "civilUnionSince": "[PT] civil union since",
+      "adoption": "[PT] Adoption rights",
+      "genderRecognition": "[PT] Gender recognition",
+      "marker": "[PT] Marker",
+      "selfId": "[PT] Self-ID",
+      "requiresSurgery": "[PT] Requires surgery",
+      "requiresDiagnosis": "[PT] Requires diagnosis",
+      "conversionTherapy": "[PT] Conversion therapy",
+      "intersex": "[PT] Intersex bodily integrity",
+      "ilgaLink": "[PT] ILGA World Database"
+    }
   }
 }

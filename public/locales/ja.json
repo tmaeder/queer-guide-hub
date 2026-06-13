@@ -2364,5 +2364,129 @@
       "addToTrip": "Add to trip",
       "signIn": "Sign in"
     }
+  },
+  "country": {
+    "loading": "[JA] Loading country…",
+    "planTrip": "[JA] Plan a trip to {{country}}",
+    "similar": "[JA] More destinations",
+    "notFound": {
+      "title": "[JA] Country not found",
+      "body": "[JA] The country you're looking for doesn't exist.",
+      "back": "[JA] Back to Places"
+    },
+    "breadcrumb": {
+      "places": "[JA] Places"
+    },
+    "hero": {
+      "capital": "[JA] Capital"
+    },
+    "verdict": {
+      "eyebrow": "[JA] For LGBTQ+ travelers",
+      "welcoming": "[JA] Welcoming",
+      "mixed": "[JA] Mixed",
+      "caution": "[JA] Use caution",
+      "dangerous": "[JA] Dangerous",
+      "equality": "[JA] Equality",
+      "fullBreakdown": "[JA] Full breakdown"
+    },
+    "facts": {
+      "capital": "[JA] Capital",
+      "population": "[JA] Population",
+      "equality": "[JA] Equality",
+      "languages": "[JA] Languages",
+      "currency": "[JA] Currency",
+      "cities": "[JA] Cities"
+    },
+    "section": {
+      "rights": "[JA] Rights & safety",
+      "cities": "[JA] Cities",
+      "venues": "[JA] Venues",
+      "events": "[JA] Events",
+      "travel": "[JA] Travel",
+      "stats": "[JA] In numbers",
+      "personalities": "[JA] Voices",
+      "nearby": "[JA] Nearby",
+      "news": "[JA] News",
+      "map": "[JA] Map"
+    },
+    "practical": {
+      "languages": "[JA] Languages",
+      "currency": "[JA] Currency",
+      "callingCode": "[JA] Calling code",
+      "tld": "[JA] Internet domain",
+      "driving": "[JA] Driving",
+      "drivesLeft": "[JA] Left-hand side",
+      "drivesRight": "[JA] Right-hand side",
+      "airports": "[JA] Major airports",
+      "government": "[JA] Government",
+      "nationalDay": "[JA] National day"
+    },
+    "stats": {
+      "gdpPerCapita": "[JA] GDP / capita",
+      "hdi": "[JA] HDI",
+      "lifeExpectancy": "[JA] Life expectancy",
+      "literacy": "[JA] Literacy",
+      "income": "[JA] Income level"
+    },
+    "cities": {
+      "emptyTitle": "[JA] No cities yet",
+      "emptyBody": "[JA] No cities are listed for this country yet."
+    },
+    "venues": {
+      "emptyTitle": "[JA] No venues yet",
+      "emptyBody": "[JA] Be the first to add a venue in {{country}}."
+    },
+    "events": {
+      "emptyTitle": "[JA] No upcoming events",
+      "emptyBody": "[JA] No events are scheduled for this country yet."
+    },
+    "travel": {
+      "activities": "[JA] Activities & tours",
+      "activitiesBody": "[JA] Experiences in {{country}}"
+    },
+    "news": {
+      "emptyTitle": "[JA] No local news yet",
+      "emptyBody": "[JA] No news articles are available for this country yet."
+    },
+    "rights": {
+      "title": "[JA] LGBTI rights overview",
+      "source": "[JA] ILGA World Database",
+      "updated": "[JA] Updated",
+      "noData": "[JA] No data",
+      "sameSexActivity": "[JA] Same-sex activity",
+      "penalty": "[JA] Penalty",
+      "deathPenalty": "[JA] death penalty possible",
+      "decriminalized": "[JA] Decriminalized",
+      "expression": "[JA] Freedom of expression",
+      "association": "[JA] Freedom of association",
+      "section": {
+        "criminalisation": "[JA] Criminalisation & freedoms",
+        "antiDiscrimination": "[JA] Anti-discrimination protection",
+        "criminalJustice": "[JA] Criminal justice",
+        "family": "[JA] Family & relationships",
+        "identity": "[JA] Identity & health"
+      },
+      "constitutional": "[JA] Constitutional",
+      "employment": "[JA] Employment",
+      "housing": "[JA] Housing",
+      "education": "[JA] Education",
+      "health": "[JA] Health",
+      "goodsServices": "[JA] Goods & services",
+      "bullying": "[JA] Bullying",
+      "hateCrime": "[JA] Hate crime laws",
+      "incitement": "[JA] Incitement prohibition",
+      "unions": "[JA] Same-sex unions",
+      "marriageSince": "[JA] Marriage since",
+      "civilUnionSince": "[JA] civil union since",
+      "adoption": "[JA] Adoption rights",
+      "genderRecognition": "[JA] Gender recognition",
+      "marker": "[JA] Marker",
+      "selfId": "[JA] Self-ID",
+      "requiresSurgery": "[JA] Requires surgery",
+      "requiresDiagnosis": "[JA] Requires diagnosis",
+      "conversionTherapy": "[JA] Conversion therapy",
+      "intersex": "[JA] Intersex bodily integrity",
+      "ilgaLink": "[JA] ILGA World Database"
+    }
   }
 }

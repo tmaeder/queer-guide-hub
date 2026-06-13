@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import {
   Shield,
   ShieldAlert,
-  ShieldCheck,
   Skull,
   AlertTriangle,
   ChevronDown,
@@ -15,43 +14,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useTripSafety, type TripSafetyReport } from '@/hooks/useTripSafety';
+import { useRiskVisual } from '@/hooks/useRiskVisual';
 import { TripNewsSection } from './TripNewsSection';
 import { AiSafetyNarrativeCard } from './AiSafetyNarrativeCard';
 import { getScoreLabel, parseSsuSummary, getProtectionStatus } from '@/utils/equalityScore';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
 import { PerLegSafety } from './PerLegSafety';
-
-type OverallRisk = TripSafetyReport['overallRisk'];
-
-function useRiskVisual(risk: OverallRisk) {
-  const isDark =
-    typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-  const bg = {
-    low: isDark ? '#052e1a' : '#ecfdf5',
-    moderate: isDark ? '#3a2a06' : '#fffbeb',
-    high: isDark ? '#3f1515' : '#fef2f2',
-    critical: isDark ? '#2a0606' : '#fef2f2',
-  }[risk];
-  const fg = {
-    low: isDark ? '#34d399' : '#047857',
-    moderate: isDark ? '#fbbf24' : '#b45309',
-    high: isDark ? '#f87171' : '#b91c1c',
-    critical: isDark ? '#fca5a5' : '#7f1d1d',
-  }[risk];
-  const border = {
-    low: isDark ? '#064e3b' : '#a7f3d0',
-    moderate: isDark ? '#78350f' : '#fcd34d',
-    high: isDark ? '#7f1d1d' : '#fca5a5',
-    critical: isDark ? '#450a0a' : '#dc2626',
-  }[risk];
-  const Icon = {
-    low: ShieldCheck,
-    moderate: AlertTriangle,
-    high: ShieldAlert,
-    critical: Skull,
-  }[risk];
-  return { bg, fg, border, Icon };
-}
 
 interface Props {
   tripPlaces: TripPlace[];

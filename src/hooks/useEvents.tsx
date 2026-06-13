@@ -47,6 +47,7 @@ export function useEvents(autoFetch: boolean = true) {
     filters?: {
       city?: string;
       cities?: string[];
+      countryId?: string;
       eventType?: string;
       eventTypes?: string[];
       dateRange?: { start: string; end: string };
@@ -86,6 +87,7 @@ export function useEvents(autoFetch: boolean = true) {
         !filters?.isFree &&
         !filters?.sort &&
         !filters?.cities?.length &&
+        !filters?.countryId &&
         !filters?.eventTypes?.length &&
         !filters?.languages?.length &&
         !filters?.ageRestriction &&
@@ -188,6 +190,10 @@ export function useEvents(autoFetch: boolean = true) {
 
         if (filters?.isFree) {
           query = query.eq('is_free', true);
+        }
+
+        if (filters?.countryId) {
+          query = query.eq('country_id', filters.countryId);
         }
 
         if (filters?.cities?.length) {

@@ -2366,5 +2366,129 @@
       "addToTrip": "Add to trip",
       "signIn": "Sign in"
     }
+  },
+  "country": {
+    "loading": "[ES] Loading country…",
+    "planTrip": "[ES] Plan a trip to {{country}}",
+    "similar": "[ES] More destinations",
+    "notFound": {
+      "title": "[ES] Country not found",
+      "body": "[ES] The country you're looking for doesn't exist.",
+      "back": "[ES] Back to Places"
+    },
+    "breadcrumb": {
+      "places": "[ES] Places"
+    },
+    "hero": {
+      "capital": "[ES] Capital"
+    },
+    "verdict": {
+      "eyebrow": "[ES] For LGBTQ+ travelers",
+      "welcoming": "[ES] Welcoming",
+      "mixed": "[ES] Mixed",
+      "caution": "[ES] Use caution",
+      "dangerous": "[ES] Dangerous",
+      "equality": "[ES] Equality",
+      "fullBreakdown": "[ES] Full breakdown"
+    },
+    "facts": {
+      "capital": "[ES] Capital",
+      "population": "[ES] Population",
+      "equality": "[ES] Equality",
+      "languages": "[ES] Languages",
+      "currency": "[ES] Currency",
+      "cities": "[ES] Cities"
+    },
+    "section": {
+      "rights": "[ES] Rights & safety",
+      "cities": "[ES] Cities",
+      "venues": "[ES] Venues",
+      "events": "[ES] Events",
+      "travel": "[ES] Travel",
+      "stats": "[ES] In numbers",
+      "personalities": "[ES] Voices",
+      "nearby": "[ES] Nearby",
+      "news": "[ES] News",
+      "map": "[ES] Map"
+    },
+    "practical": {
+      "languages": "[ES] Languages",
+      "currency": "[ES] Currency",
+      "callingCode": "[ES] Calling code",
+      "tld": "[ES] Internet domain",
+      "driving": "[ES] Driving",
+      "drivesLeft": "[ES] Left-hand side",
+      "drivesRight": "[ES] Right-hand side",
+      "airports": "[ES] Major airports",
+      "government": "[ES] Government",
+      "nationalDay": "[ES] National day"
+    },
+    "stats": {
+      "gdpPerCapita": "[ES] GDP / capita",
+      "hdi": "[ES] HDI",
+      "lifeExpectancy": "[ES] Life expectancy",
+      "literacy": "[ES] Literacy",
+      "income": "[ES] Income level"
+    },
+    "cities": {
+      "emptyTitle": "[ES] No cities yet",
+      "emptyBody": "[ES] No cities are listed for this country yet."
+    },
+    "venues": {
+      "emptyTitle": "[ES] No venues yet",
+      "emptyBody": "[ES] Be the first to add a venue in {{country}}."
+    },
+    "events": {
+      "emptyTitle": "[ES] No upcoming events",
+      "emptyBody": "[ES] No events are scheduled for this country yet."
+    },
+    "travel": {
+      "activities": "[ES] Activities & tours",
+      "activitiesBody": "[ES] Experiences in {{country}}"
+    },
+    "news": {
+      "emptyTitle": "[ES] No local news yet",
+      "emptyBody": "[ES] No news articles are available for this country yet."
+    },
+    "rights": {
+      "title": "[ES] LGBTI rights overview",
+      "source": "[ES] ILGA World Database",
+      "updated": "[ES] Updated",
+      "noData": "[ES] No data",
+      "sameSexActivity": "[ES] Same-sex activity",
+      "penalty": "[ES] Penalty",
+      "deathPenalty": "[ES] death penalty possible",
+      "decriminalized": "[ES] Decriminalized",
+      "expression": "[ES] Freedom of expression",
+      "association": "[ES] Freedom of association",
+      "section": {
+        "criminalisation": "[ES] Criminalisation & freedoms",
+        "antiDiscrimination": "[ES] Anti-discrimination protection",
+        "criminalJustice": "[ES] Criminal justice",
+        "family": "[ES] Family & relationships",
+        "identity": "[ES] Identity & health"
+      },
+      "constitutional": "[ES] Constitutional",
+      "employment": "[ES] Employment",
+      "housing": "[ES] Housing",
+      "education": "[ES] Education",
+      "health": "[ES] Health",
+      "goodsServices": "[ES] Goods & services",
+      "bullying": "[ES] Bullying",
+      "hateCrime": "[ES] Hate crime laws",
+      "incitement": "[ES] Incitement prohibition",
+      "unions": "[ES] Same-sex unions",
+      "marriageSince": "[ES] Marriage since",
+      "civilUnionSince": "[ES] civil union since",
+      "adoption": "[ES] Adoption rights",
+      "genderRecognition": "[ES] Gender recognition",
+      "marker": "[ES] Marker",
+      "selfId": "[ES] Self-ID",
+      "requiresSurgery": "[ES] Requires surgery",
+      "requiresDiagnosis": "[ES] Requires diagnosis",
+      "conversionTherapy": "[ES] Conversion therapy",
+      "intersex": "[ES] Intersex bodily integrity",
+      "ilgaLink": "[ES] ILGA World Database"
+    }
   }
 }

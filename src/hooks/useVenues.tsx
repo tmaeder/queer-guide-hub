@@ -45,6 +45,7 @@ export function useVenues(autoFetch: boolean = true) {
   const fetchVenues = async (
     filters?: {
       city?: string;
+      countryId?: string;
       category?: string;
       tags?: string[];
       amenities?: string[];
@@ -167,6 +168,10 @@ export function useVenues(autoFetch: boolean = true) {
             .order('is_featured', { ascending: false })
             .order('created_at', { ascending: false });
           break;
+      }
+
+      if (filters?.countryId) {
+        query = query.eq('country_id', filters.countryId);
       }
 
       if (filters?.city) {

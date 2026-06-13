@@ -2364,5 +2364,129 @@
       "addToTrip": "Add to trip",
       "signIn": "Sign in"
     }
+  },
+  "country": {
+    "loading": "[KO] Loading country…",
+    "planTrip": "[KO] Plan a trip to {{country}}",
+    "similar": "[KO] More destinations",
+    "notFound": {
+      "title": "[KO] Country not found",
+      "body": "[KO] The country you're looking for doesn't exist.",
+      "back": "[KO] Back to Places"
+    },
+    "breadcrumb": {
+      "places": "[KO] Places"
+    },
+    "hero": {
+      "capital": "[KO] Capital"
+    },
+    "verdict": {
+      "eyebrow": "[KO] For LGBTQ+ travelers",
+      "welcoming": "[KO] Welcoming",
+      "mixed": "[KO] Mixed",
+      "caution": "[KO] Use caution",
+      "dangerous": "[KO] Dangerous",
+      "equality": "[KO] Equality",
+      "fullBreakdown": "[KO] Full breakdown"
+    },
+    "facts": {
+      "capital": "[KO] Capital",
+      "population": "[KO] Population",
+      "equality": "[KO] Equality",
+      "languages": "[KO] Languages",
+      "currency": "[KO] Currency",
+      "cities": "[KO] Cities"
+    },
+    "section": {
+      "rights": "[KO] Rights & safety",
+      "cities": "[KO] Cities",
+      "venues": "[KO] Venues",
+      "events": "[KO] Events",
+      "travel": "[KO] Travel",
+      "stats": "[KO] In numbers",
+      "personalities": "[KO] Voices",
+      "nearby": "[KO] Nearby",
+      "news": "[KO] News",
+      "map": "[KO] Map"
+    },
+    "practical": {
+      "languages": "[KO] Languages",
+      "currency": "[KO] Currency",
+      "callingCode": "[KO] Calling code",
+      "tld": "[KO] Internet domain",
+      "driving": "[KO] Driving",
+      "drivesLeft": "[KO] Left-hand side",
+      "drivesRight": "[KO] Right-hand side",
+      "airports": "[KO] Major airports",
+      "government": "[KO] Government",
+      "nationalDay": "[KO] National day"
+    },
+    "stats": {
+      "gdpPerCapita": "[KO] GDP / capita",
+      "hdi": "[KO] HDI",
+      "lifeExpectancy": "[KO] Life expectancy",
+      "literacy": "[KO] Literacy",
+      "income": "[KO] Income level"
+    },
+    "cities": {
+      "emptyTitle": "[KO] No cities yet",
+      "emptyBody": "[KO] No cities are listed for this country yet."
+    },
+    "venues": {
+      "emptyTitle": "[KO] No venues yet",
+      "emptyBody": "[KO] Be the first to add a venue in {{country}}."
+    },
+    "events": {
+      "emptyTitle": "[KO] No upcoming events",
+      "emptyBody": "[KO] No events are scheduled for this country yet."
+    },
+    "travel": {
+      "activities": "[KO] Activities & tours",
+      "activitiesBody": "[KO] Experiences in {{country}}"
+    },
+    "news": {
+      "emptyTitle": "[KO] No local news yet",
+      "emptyBody": "[KO] No news articles are available for this country yet."
+    },
+    "rights": {
+      "title": "[KO] LGBTI rights overview",
+      "source": "[KO] ILGA World Database",
+      "updated": "[KO] Updated",
+      "noData": "[KO] No data",
+      "sameSexActivity": "[KO] Same-sex activity",
+      "penalty": "[KO] Penalty",
+      "deathPenalty": "[KO] death penalty possible",
+      "decriminalized": "[KO] Decriminalized",
+      "expression": "[KO] Freedom of expression",
+      "association": "[KO] Freedom of association",
+      "section": {
+        "criminalisation": "[KO] Criminalisation & freedoms",
+        "antiDiscrimination": "[KO] Anti-discrimination protection",
+        "criminalJustice": "[KO] Criminal justice",
+        "family": "[KO] Family & relationships",
+        "identity": "[KO] Identity & health"
+      },
+      "constitutional": "[KO] Constitutional",
+      "employment": "[KO] Employment",
+      "housing": "[KO] Housing",
+      "education": "[KO] Education",
+      "health": "[KO] Health",
+      "goodsServices": "[KO] Goods & services",
+      "bullying": "[KO] Bullying",
+      "hateCrime": "[KO] Hate crime laws",
+      "incitement": "[KO] Incitement prohibition",
+      "unions": "[KO] Same-sex unions",
+      "marriageSince": "[KO] Marriage since",
+      "civilUnionSince": "[KO] civil union since",
+      "adoption": "[KO] Adoption rights",
+      "genderRecognition": "[KO] Gender recognition",
+      "marker": "[KO] Marker",
+      "selfId": "[KO] Self-ID",
+      "requiresSurgery": "[KO] Requires surgery",
+      "requiresDiagnosis": "[KO] Requires diagnosis",
+      "conversionTherapy": "[KO] Conversion therapy",
+      "intersex": "[KO] Intersex bodily integrity",
+      "ilgaLink": "[KO] ILGA World Database"
+    }
   }
 }
