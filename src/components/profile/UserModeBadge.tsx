@@ -14,6 +14,11 @@ const modeConfig = {
   community:   { icon: Home,      label: 'Building Community',  bgcolor: 'rgba(99, 102, 241, 0.1)', color: '#4f46e5' },
 };
 
+/** Plain-language label for a user_mode value — never show the raw enum. */
+export function userModeLabel(mode: string): string {
+  return modeConfig[mode as keyof typeof modeConfig]?.label ?? 'Exploring';
+}
+
 const sizeClasses = {
   sm: 'text-xs px-1.5 py-0.5',
   md: 'text-sm px-2 py-1',

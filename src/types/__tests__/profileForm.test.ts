@@ -20,11 +20,12 @@ describe('initFormData', () => {
     const data = initFormData(null);
     expect(data.display_name).toBe('');
     expect(data.user_mode).toBe('exploration');
+    // Unanswered by default — the system never asserts a coming-out status
     expect(data.coming_out_status).toEqual({
-      family: 'not_out',
-      friends: 'not_out',
-      work: 'not_out',
-      public: 'not_out',
+      family: '',
+      friends: '',
+      work: '',
+      public: '',
     });
     expect(data.privacy_settings.profile_visibility).toBe('public');
     expect(data.cultural_background).toEqual([]);
@@ -66,7 +67,7 @@ describe('initFormData', () => {
     expect(data.privacy_settings.profile_visibility).toBe('friends');
     expect(data.privacy_settings.email_visible).toBe(false); // default kept
     expect(data.coming_out_status.family).toBe('out');
-    expect(data.coming_out_status.work).toBe('not_out');
+    expect(data.coming_out_status.work).toBe(''); // unanswered, not asserted
   });
 
   it("falls back user_mode to 'exploration' when missing", () => {
