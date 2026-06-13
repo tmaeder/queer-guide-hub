@@ -37,30 +37,13 @@ const Index = React.memo(() => {
           </React.Suspense>
         </ErrorBoundary>
 
-        {/* Floating hero card — headline + the one search (opens the top bar).
-            Vertically centred: the discover map's chrome lives at the top
-            (command bar / quick filters / legend) and bottom (spotlight rail),
-            so the centre is the clear zone. Pointer-events pass through to the
-            map around the card. */}
-        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-4">
-          <div className="pointer-events-auto w-full max-w-xl">
-            <div className="rounded-container border border-border bg-background/85 px-6 py-6 backdrop-blur-md md:px-8 md:py-8">
-              <h1
-                className="text-headline-lg md:text-display font-bold leading-[1.05] tracking-tight text-foreground"
-                style={{ letterSpacing: '-0.03em' }}
-              >
-                {t('home.heroLine1', 'Queer venues,')} {t('home.heroLine2', 'events, and people.')}{' '}
-                {t('home.heroLine3', 'Worldwide.')}
-              </h1>
-              <p className="mt-4 text-sm md:text-base text-muted-foreground leading-[1.5]">
-                {t(
-                  'home.subtitleShort',
-                  'Verified safe places, real events, and the people behind them.',
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Headline kept for SEO + a11y only — visually hidden so the live map
+            is the unobstructed hero (no overlay card blocking the centre). */}
+        <h1 className="sr-only">
+          {t('home.heroLine1', 'Queer venues,')} {t('home.heroLine2', 'events, and people.')}{' '}
+          {t('home.heroLine3', 'Worldwide.')} —{' '}
+          {t('home.subtitleShort', 'Verified safe places, real events, and the people behind them.')}
+        </h1>
       </section>
 
       {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
