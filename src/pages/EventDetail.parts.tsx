@@ -241,7 +241,7 @@ export function EventHero({
   onSendEvent,
   showSendButton,
   heroImage,
-  locationLabel,
+  locationLabel: _locationLabel,
   onContentUpdated,
 }: HeroProps) {
   const { t } = useTranslation();
@@ -308,22 +308,24 @@ export function EventHero({
 
       {/* Editorial header */}
       <div className="mb-6">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          {eyebrow && (
-            <Eyebrow as="span" className="capitalize">
-              {eyebrow}
-            </Eyebrow>
-          )}
-          {event.festivals?.id && (
-            <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
-              <Music size={13} aria-hidden="true" />
-              Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
-            </span>
-          )}
-          {event.countries?.equality_score != null && (
-            <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
-          )}
-        </div>
+        {(eyebrow || event.festivals?.id || event.countries?.equality_score != null) && (
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {eyebrow && (
+              <Eyebrow as="span" className="capitalize">
+                {eyebrow}
+              </Eyebrow>
+            )}
+            {event.festivals?.id && (
+              <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
+                <Music size={13} aria-hidden="true" />
+                Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
+              </span>
+            )}
+            {event.countries?.equality_score != null && (
+              <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
+            )}
+          </div>
+        )}
 
         <h1
           className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline-lg"
@@ -378,8 +380,13 @@ export function EventHero({
         </div>
       </div>
 
-      {/* Fact bar */}
-      <div className="mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-element border border-border bg-border sm:grid-cols-4">
+      {/* Fact bar — 3 facts, or 4 when an age restriction applies. No padding
+          cell: the location already lives in the header above. */}
+      <div
+        className={`mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-element border border-border bg-border ${
+          ageRestriction ? 'sm:grid-cols-4' : 'sm:grid-cols-3'
+        }`}
+      >
         <FactCell icon={Calendar} label="Date" value={formatEventDate(event.start_date, event.end_date)} />
         <FactCell
           icon={Clock}
@@ -389,11 +396,7 @@ export function EventHero({
           title={event.timezone ? 'Toggle between event timezone and your local time' : undefined}
         />
         <FactCell icon={DollarSign} label="Price" value={getPriceDisplay(event)} />
-        {ageRestriction ? (
-          <FactCell icon={Users} label="Ages" value={ageRestriction} />
-        ) : (
-          <FactCell icon={MapPin} label="Where" value={cityName || locationLabel} />
-        )}
+        {ageRestriction && <FactCell icon={Users} label="Ages" value={ageRestriction} />}
       </div>
 
       {/* Actions — one primary, the rest quiet */}
