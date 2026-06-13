@@ -2407,5 +2407,129 @@
       "addToTrip": "Add to trip",
       "signIn": "Sign in"
     }
+  },
+  "country": {
+    "loading": "[RU] Loading country…",
+    "planTrip": "[RU] Plan a trip to {{country}}",
+    "similar": "[RU] More destinations",
+    "notFound": {
+      "title": "[RU] Country not found",
+      "body": "[RU] The country you're looking for doesn't exist.",
+      "back": "[RU] Back to Places"
+    },
+    "breadcrumb": {
+      "places": "[RU] Places"
+    },
+    "hero": {
+      "capital": "[RU] Capital"
+    },
+    "verdict": {
+      "eyebrow": "[RU] For LGBTQ+ travelers",
+      "welcoming": "[RU] Welcoming",
+      "mixed": "[RU] Mixed",
+      "caution": "[RU] Use caution",
+      "dangerous": "[RU] Dangerous",
+      "equality": "[RU] Equality",
+      "fullBreakdown": "[RU] Full breakdown"
+    },
+    "facts": {
+      "capital": "[RU] Capital",
+      "population": "[RU] Population",
+      "equality": "[RU] Equality",
+      "languages": "[RU] Languages",
+      "currency": "[RU] Currency",
+      "cities": "[RU] Cities"
+    },
+    "section": {
+      "rights": "[RU] Rights & safety",
+      "cities": "[RU] Cities",
+      "venues": "[RU] Venues",
+      "events": "[RU] Events",
+      "travel": "[RU] Travel",
+      "stats": "[RU] In numbers",
+      "personalities": "[RU] Voices",
+      "nearby": "[RU] Nearby",
+      "news": "[RU] News",
+      "map": "[RU] Map"
+    },
+    "practical": {
+      "languages": "[RU] Languages",
+      "currency": "[RU] Currency",
+      "callingCode": "[RU] Calling code",
+      "tld": "[RU] Internet domain",
+      "driving": "[RU] Driving",
+      "drivesLeft": "[RU] Left-hand side",
+      "drivesRight": "[RU] Right-hand side",
+      "airports": "[RU] Major airports",
+      "government": "[RU] Government",
+      "nationalDay": "[RU] National day"
+    },
+    "stats": {
+      "gdpPerCapita": "[RU] GDP / capita",
+      "hdi": "[RU] HDI",
+      "lifeExpectancy": "[RU] Life expectancy",
+      "literacy": "[RU] Literacy",
+      "income": "[RU] Income level"
+    },
+    "cities": {
+      "emptyTitle": "[RU] No cities yet",
+      "emptyBody": "[RU] No cities are listed for this country yet."
+    },
+    "venues": {
+      "emptyTitle": "[RU] No venues yet",
+      "emptyBody": "[RU] Be the first to add a venue in {{country}}."
+    },
+    "events": {
+      "emptyTitle": "[RU] No upcoming events",
+      "emptyBody": "[RU] No events are scheduled for this country yet."
+    },
+    "travel": {
+      "activities": "[RU] Activities & tours",
+      "activitiesBody": "[RU] Experiences in {{country}}"
+    },
+    "news": {
+      "emptyTitle": "[RU] No local news yet",
+      "emptyBody": "[RU] No news articles are available for this country yet."
+    },
+    "rights": {
+      "title": "[RU] LGBTI rights overview",
+      "source": "[RU] ILGA World Database",
+      "updated": "[RU] Updated",
+      "noData": "[RU] No data",
+      "sameSexActivity": "[RU] Same-sex activity",
+      "penalty": "[RU] Penalty",
+      "deathPenalty": "[RU] death penalty possible",
+      "decriminalized": "[RU] Decriminalized",
+      "expression": "[RU] Freedom of expression",
+      "association": "[RU] Freedom of association",
+      "section": {
+        "criminalisation": "[RU] Criminalisation & freedoms",
+        "antiDiscrimination": "[RU] Anti-discrimination protection",
+        "criminalJustice": "[RU] Criminal justice",
+        "family": "[RU] Family & relationships",
+        "identity": "[RU] Identity & health"
+      },
+      "constitutional": "[RU] Constitutional",
+      "employment": "[RU] Employment",
+      "housing": "[RU] Housing",
+      "education": "[RU] Education",
+      "health": "[RU] Health",
+      "goodsServices": "[RU] Goods & services",
+      "bullying": "[RU] Bullying",
+      "hateCrime": "[RU] Hate crime laws",
+      "incitement": "[RU] Incitement prohibition",
+      "unions": "[RU] Same-sex unions",
+      "marriageSince": "[RU] Marriage since",
+      "civilUnionSince": "[RU] civil union since",
+      "adoption": "[RU] Adoption rights",
+      "genderRecognition": "[RU] Gender recognition",
+      "marker": "[RU] Marker",
+      "selfId": "[RU] Self-ID",
+      "requiresSurgery": "[RU] Requires surgery",
+      "requiresDiagnosis": "[RU] Requires diagnosis",
+      "conversionTherapy": "[RU] Conversion therapy",
+      "intersex": "[RU] Intersex bodily integrity",
+      "ilgaLink": "[RU] ILGA World Database"
+    }
   }
 }

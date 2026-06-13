@@ -2350,5 +2350,129 @@
       "addToTrip": "Add to trip",
       "signIn": "Sign in"
     }
+  },
+  "country": {
+    "loading": "Loading country…",
+    "planTrip": "Plan a trip to {{country}}",
+    "similar": "More destinations",
+    "notFound": {
+      "title": "Country not found",
+      "body": "The country you're looking for doesn't exist.",
+      "back": "Back to Places"
+    },
+    "breadcrumb": {
+      "places": "Places"
+    },
+    "hero": {
+      "capital": "Capital"
+    },
+    "verdict": {
+      "eyebrow": "For LGBTQ+ travelers",
+      "welcoming": "Welcoming",
+      "mixed": "Mixed",
+      "caution": "Use caution",
+      "dangerous": "Dangerous",
+      "equality": "Equality",
+      "fullBreakdown": "Full breakdown"
+    },
+    "facts": {
+      "capital": "Capital",
+      "population": "Population",
+      "equality": "Equality",
+      "languages": "Languages",
+      "currency": "Currency",
+      "cities": "Cities"
+    },
+    "section": {
+      "rights": "Rights & safety",
+      "cities": "Cities",
+      "venues": "Venues",
+      "events": "Events",
+      "travel": "Travel",
+      "stats": "In numbers",
+      "personalities": "Voices",
+      "nearby": "Nearby",
+      "news": "News",
+      "map": "Map"
+    },
+    "practical": {
+      "languages": "Languages",
+      "currency": "Currency",
+      "callingCode": "Calling code",
+      "tld": "Internet domain",
+      "driving": "Driving",
+      "drivesLeft": "Left-hand side",
+      "drivesRight": "Right-hand side",
+      "airports": "Major airports",
+      "government": "Government",
+      "nationalDay": "National day"
+    },
+    "stats": {
+      "gdpPerCapita": "GDP / capita",
+      "hdi": "HDI",
+      "lifeExpectancy": "Life expectancy",
+      "literacy": "Literacy",
+      "income": "Income level"
+    },
+    "cities": {
+      "emptyTitle": "No cities yet",
+      "emptyBody": "No cities are listed for this country yet."
+    },
+    "venues": {
+      "emptyTitle": "No venues yet",
+      "emptyBody": "Be the first to add a venue in {{country}}."
+    },
+    "events": {
+      "emptyTitle": "No upcoming events",
+      "emptyBody": "No events are scheduled for this country yet."
+    },
+    "travel": {
+      "activities": "Activities & tours",
+      "activitiesBody": "Experiences in {{country}}"
+    },
+    "news": {
+      "emptyTitle": "No local news yet",
+      "emptyBody": "No news articles are available for this country yet."
+    },
+    "rights": {
+      "title": "LGBTI rights overview",
+      "source": "ILGA World Database",
+      "updated": "Updated",
+      "noData": "No data",
+      "sameSexActivity": "Same-sex activity",
+      "penalty": "Penalty",
+      "deathPenalty": "death penalty possible",
+      "decriminalized": "Decriminalized",
+      "expression": "Freedom of expression",
+      "association": "Freedom of association",
+      "section": {
+        "criminalisation": "Criminalisation & freedoms",
+        "antiDiscrimination": "Anti-discrimination protection",
+        "criminalJustice": "Criminal justice",
+        "family": "Family & relationships",
+        "identity": "Identity & health"
+      },
+      "constitutional": "Constitutional",
+      "employment": "Employment",
+      "housing": "Housing",
+      "education": "Education",
+      "health": "Health",
+      "goodsServices": "Goods & services",
+      "bullying": "Bullying",
+      "hateCrime": "Hate crime laws",
+      "incitement": "Incitement prohibition",
+      "unions": "Same-sex unions",
+      "marriageSince": "Marriage since",
+      "civilUnionSince": "civil union since",
+      "adoption": "Adoption rights",
+      "genderRecognition": "Gender recognition",
+      "marker": "Marker",
+      "selfId": "Self-ID",
+      "requiresSurgery": "Requires surgery",
+      "requiresDiagnosis": "Requires diagnosis",
+      "conversionTherapy": "Conversion therapy",
+      "intersex": "Intersex bodily integrity",
+      "ilgaLink": "ILGA World Database"
+    }
   }
 }
