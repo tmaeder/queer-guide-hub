@@ -361,9 +361,11 @@ export const UniversalSearchBar = ({
   });
 
   // Auto-focus when popover opens (search mode only — Ask owns its own input).
+  // On mobile the full-screen sheet renders its own field and focuses itself,
+  // so the hidden header input must NOT also grab focus (double keyboard).
   useEffect(() => {
-    if (isOpen && mode === 'search') focusInput();
-  }, [isOpen, mode, focusInput]);
+    if (isOpen && mode === 'search' && !isMobile) focusInput();
+  }, [isOpen, mode, isMobile, focusInput]);
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
 
@@ -451,15 +453,20 @@ export const UniversalSearchBar = ({
                     setIsOpen(true);
                   }}
                   autoComplete="off"
-                  className="w-full border-0 bg-transparent pr-20 text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
+                  className="w-full border-0 bg-transparent text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                   style={{
                     fontSize: isHero ? '1.0625rem' : isMobile ? '1rem' : '0.875rem',
                     height: inputHeight,
+                    // Reserve only the room the right-side adornments actually need,
+                    // so the placeholder no longer clips (mobile dropped the inline
+                    // mic — it lives in the open search sheet).
+                    paddingRight: query ? (isMobile ? 44 : 80) : isMobile ? 12 : 80,
                   }}
                 />
                 {!query && (
                   <span className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
-                    {voice.supported && (
+                    {/* Inline mic only on desktop; on mobile it lives in the open sheet so the collapsed bar stays roomy. */}
+                    {voice.supported && !isMobile && (
                       <Button
                         type="button"
                         variant="ghost"
@@ -547,7 +554,8 @@ export const UniversalSearchBar = ({
           align="start"
           onOpenAutoFocus={(e) => {
             e.preventDefault();
-            focusInput();
+            // Mobile sheet self-focuses its own field; desktop refocuses the bar.
+            if (!isMobile) focusInput();
           }}
           onCloseAutoFocus={(e) => {
             e.preventDefault();
@@ -603,10 +611,16 @@ export const UniversalSearchBar = ({
               onToggleFilters={() => setShowFilters(!showFilters)}
               activeFiltersCount={activeFiltersCount}
               onClose={() => setIsOpen(false)}
-              onClear={() => {
-                setQuery('');
-                focusInput();
+              onClear={() => setQuery('')}
+              placeholder={placeholder}
+              onQueryChange={(v) => {
+                setQuery(v);
+                if (mode === 'ask') setMode('search');
               }}
+              onInputKeyDown={handleKeyDown}
+              voiceSupported={voice.supported}
+              voiceListening={voice.listening}
+              onVoiceToggle={() => (voice.listening ? voice.stop() : voice.start())}
               onPrefetch={prefetchRoute}
               navigate={navigate}
               onAsk={enterAsk}

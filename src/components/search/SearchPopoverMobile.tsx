@@ -1,7 +1,7 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useRef, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SlidersHorizontal } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Loader2, Mic, Search, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import type { SearchFilters } from '@/hooks/useSearch';
@@ -32,6 +32,13 @@ export interface SearchPopoverMobileProps {
   activeFiltersCount?: number;
   onClose: () => void;
   onClear: () => void;
+  /** Live input wiring — the sheet owns the visible search field on mobile. */
+  placeholder: string;
+  onQueryChange: (v: string) => void;
+  onInputKeyDown: (e: KeyboardEvent) => void;
+  voiceSupported: boolean;
+  voiceListening: boolean;
+  onVoiceToggle: () => void;
   onPrefetch: (s: SearchSuggestion) => void;
   navigate: (path: string) => void;
   onAsk: () => void;
@@ -63,6 +70,12 @@ export function SearchPopoverMobile({
   activeFiltersCount = 0,
   onClose,
   onClear,
+  placeholder,
+  onQueryChange,
+  onInputKeyDown,
+  voiceSupported,
+  voiceListening,
+  onVoiceToggle,
   onPrefetch,
   navigate,
   onAsk,
@@ -75,45 +88,79 @@ export function SearchPopoverMobile({
   clearRecents,
 }: SearchPopoverMobileProps) {
   const { t } = useTranslation();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // The sheet owns the visible field on mobile — focus it on open so the user
+  // can see and control what they type (the header field sits behind the overlay).
+  useEffect(() => {
+    const id = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   return (
     <>
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
+      <div
+        className="flex items-center gap-2 border-b border-border px-4 py-2"
+        style={{ paddingTop: 'max(8px, env(safe-area-inset-top, 0px))' }}
+      >
+        <div className="flex h-11 min-w-0 flex-1 items-center rounded-element bg-muted pl-4 pr-2">
+          <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            onKeyDown={onInputKeyDown}
+            placeholder={placeholder}
+            aria-label={t('search.ariaLabel', 'Search Queer Guide')}
+            autoComplete="off"
+            enterKeyHint="search"
+            className="min-w-0 flex-1 border-0 bg-transparent px-2 text-base text-foreground outline-none placeholder:text-muted-foreground"
+          />
+          {loading && (
+            <Loader2 className="mr-1 h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
+          )}
+          {query ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClear();
+                inputRef.current?.focus();
+              }}
+              aria-label={t('common.clear', 'Clear')}
+              className="flex h-8 w-8 shrink-0 items-center justify-center text-muted-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          ) : (
+            voiceSupported && (
+              <button
+                type="button"
+                onClick={onVoiceToggle}
+                aria-pressed={voiceListening}
+                aria-label={
+                  voiceListening
+                    ? t('search.stopVoice', 'Stop voice search')
+                    : t('search.voice', 'Voice search')
+                }
+                className={cn(
+                  'flex h-8 w-8 shrink-0 items-center justify-center',
+                  voiceListening ? 'text-destructive' : 'text-muted-foreground',
+                )}
+              >
+                <Mic className="h-5 w-5" />
+              </button>
+            )
+          )}
+        </div>
         <button
           type="button"
           onClick={onClose}
-          className="-ml-2 px-2 py-1 text-sm font-medium text-foreground"
+          className="shrink-0 px-1 text-sm font-medium text-foreground"
           aria-label="Close search"
         >
           {t('common.cancel', 'Cancel')}
         </button>
-        <div className="flex items-center gap-1">
-          {query && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="px-2 py-1 text-sm text-muted-foreground"
-              aria-label="Clear search"
-            >
-              {t('common.clear', 'Clear')}
-            </button>
-          )}
-          {query && onToggleFilters && (
-            <button
-              type="button"
-              onClick={onToggleFilters}
-              className="relative -mr-2 px-2 py-1 text-foreground"
-              aria-label={t('search.filters', 'Search filters')}
-            >
-              <SlidersHorizontal size={20} />
-              {activeFiltersCount > 0 && (
-                <Badge variant="destructive" className="absolute -right-1 -top-1">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </button>
-          )}
-        </div>
       </div>
       {query.length === 0 ? (
         <SearchPopoverEmpty

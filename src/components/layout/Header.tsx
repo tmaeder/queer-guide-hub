@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Plus, Shield } from 'lucide-react';
+import { LogIn, LogOut, Plus, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -87,7 +87,7 @@ export function Header() {
         alt=""
         aria-hidden="true"
         tabIndex={-1}
-        className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
+        className="brightness-0 dark:invert transition-transform duration-150 active:scale-95"
         style={{ height: 28, width: 28 }}
       />
       <span className="hidden text-base font-semibold tracking-tight text-foreground md:inline">
@@ -143,17 +143,16 @@ export function Header() {
               </Avatar>
               {unreadCount > 0 && (
                 <span
-                  className="absolute inline-flex items-center justify-center bg-destructive text-destructive-foreground pl-1 pr-1"
+                  className="absolute inline-flex items-center justify-center rounded-badge bg-destructive text-destructive-foreground pl-1 pr-1"
                   style={{
-                    top: -4,
-                    right: -4,
-                    minWidth: '1.25rem',
-                    height: 20,
+                    top: -2,
+                    right: -2,
+                    minWidth: '1.125rem',
+                    height: 18,
                     fontSize: '10px',
                   }}
                 >
-                  <span className="absolute inset-0 animate-ping bg-destructive opacity-75" />
-                  {unreadCount}
+                  {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </Button>
@@ -247,6 +246,17 @@ export function Header() {
             </Button>
           </DropdownMenuContent>
         </DropdownMenu>
+      ) : isMobile ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setAuthDialogOpen(true)}
+          aria-label={t('header.signIn', 'Sign in')}
+          title={t('header.signIn', 'Sign in')}
+          style={{ height: 40, width: 40, padding: 0 }}
+        >
+          <LogIn size={20} />
+        </Button>
       ) : (
         <Button
           variant="ghost"
