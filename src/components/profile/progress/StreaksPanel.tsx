@@ -111,11 +111,11 @@ export function StreaksPanel() {
       )}
 
       <LocalizedLink
-        to="/favorites"
+        to="/me/saved"
         className="inline-flex items-center gap-2 text-13 text-muted-foreground hover:text-foreground"
       >
         <Bookmark size={14} aria-hidden />
-        Saved stories live in your favorites
+        Saved stories live in your saved items
         <ArrowRight size={14} aria-hidden />
       </LocalizedLink>
     </section>

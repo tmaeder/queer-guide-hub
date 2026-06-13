@@ -173,9 +173,6 @@ const Groups = lazyRetry(() => import('./pages/Groups'));
 const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
 const NotFound = lazyRetry(() => import('./pages/NotFound'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
-const Favorites = lazyRetry(() => import('./pages/Favorites'));
-
-const TripsPage = lazyRetry(() => import('./pages/trips/TripsPage'));
 const TripWorkspace = lazyRetry(() => import('./pages/trips/TripWorkspace'));
 const TripsDiscoverPage = lazyRetry(() => import('./pages/trips/TripsDiscoverPage'));
 const SharedTripPage = lazyRetry(() => import('./pages/trips/SharedTripPage'));
@@ -200,6 +197,12 @@ function SettingsRedirect() {
 function FootprintRedirect() {
   const { userId } = useParams<{ userId: string }>();
   return <Navigate to={`/user/${userId}/travel`} replace />;
+}
+
+/** /trips folded into the /me hub. Preserves ?cityId=… deep-link seeds from /travel. */
+function TripsHubRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/me/trips${location.search}`} replace />;
 }
 
 /** Routes table + per-route ErrorBoundary/Suspense/MotionPage and a11y main element */
@@ -453,14 +456,16 @@ export const AppRoutes = () => {
                 <Route path="places" element={<Places />} />
                 <Route path="travel" element={<Travel />} />
                 <Route path="travel/book" element={<TravelBook />} />
-                <Route path="trips" element={<TripsPage />} />
-                <Route path="trips/inbox" element={<Navigate to="/trips" replace />} />
+                {/* /trips list folded into the /me hub (Trips tab). The
+                  /trips/:id workspace + discover/shared stay top-level. */}
+                <Route path="trips" element={<TripsHubRedirect />} />
+                <Route path="trips/inbox" element={<Navigate to="/me/trips" replace />} />
                 <Route path="trips/discover" element={<TripsDiscoverPage />} />
                 <Route path="trips/shared/:token" element={<SharedTripPage />} />
                 <Route path="trips/:tripId/today" element={<TripSubrouteRedirect view="today" />} />
                 <Route path="trips/:tripId/booklet" element={<TripSubrouteRedirect view="booklet" />} />
                 <Route path="trips/:tripId" element={<TripWorkspace />} />
-                <Route path="bookings" element={<Navigate to="/trips" replace />} />
+                <Route path="bookings" element={<Navigate to="/me/trips" replace />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
                 <Route path="cities" element={<Cities />} />
@@ -513,7 +518,8 @@ export const AppRoutes = () => {
                 <Route path="mailbox" element={<Inbox />} />
                 <Route path="messages" element={<Messages />} />
                 <Route path="friends" element={<Friends />} />
-                <Route path="favorites" element={<Favorites />} />
+                {/* /favorites folded into the /me hub (Saved tab). */}
+                <Route path="favorites" element={<Navigate to="/me/saved" replace />} />
                 <Route path="feed" element={<Feed />} />
                 <Route path="community" element={<Navigate to="/feed" replace />} />
                 <Route path="me/:tab?" element={<ProfilePage />} />

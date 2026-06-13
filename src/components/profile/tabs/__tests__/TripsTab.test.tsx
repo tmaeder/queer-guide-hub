@@ -8,18 +8,24 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useTrips', () => ({
-  useTrips: () => ({ trips: [], loading: false }),
+  useTrips: () => ({ data: [], isLoading: false }),
   useTripMutations: () => ({ createTrip: vi.fn(), updateTrip: vi.fn(), deleteTrip: vi.fn() }),
 }));
 vi.mock('@/hooks/useTripSaves', () => ({ useMyTripSaves: () => ({ data: [], isLoading: false }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 
-import TripsPage from '../TripsPage';
+import { TripsTab } from '../TripsTab';
 
-describe('TripsPage', () => {
+describe('TripsTab', () => {
   it('renders without crashing', () => {
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-    const { container } = render(<MemoryRouter><QueryClientProvider client={qc}><TripsPage /></QueryClientProvider></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <QueryClientProvider client={qc}>
+          <TripsTab />
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });

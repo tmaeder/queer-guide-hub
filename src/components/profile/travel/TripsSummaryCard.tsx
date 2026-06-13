@@ -19,7 +19,7 @@ export function TripsSummaryCard() {
           Trips
         </CardTitle>
         <LocalizedLink
-          to="/trips"
+          to="/me/trips"
           className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:text-foreground"
         >
           All trips
