@@ -1448,8 +1448,19 @@
       "titleNear": "Upcoming Events Near You",
       "next14": "Next 14 days"
     },
+    "events": {
+      "eyebrow": "What's on",
+      "groups": {
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "thisWeekend": "This weekend",
+        "thisWeek": "This week",
+        "later": "Later"
+      }
+    },
     "news": {
-      "title": "Latest News"
+      "title": "Latest News",
+      "eyebrow": "Dispatches"
     },
     "eyebrow": "Queer Guide",
     "browseDirectory": "Browse the directory",

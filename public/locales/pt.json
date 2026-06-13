@@ -1473,7 +1473,8 @@
       "next14": "Próximos 14 dias"
     },
     "news": {
-      "title": "Últimas notícias"
+      "title": "Últimas notícias",
+      "eyebrow": "[PT] Dispatches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1517,7 +1518,17 @@
       "invite": "[PT] Invite friends",
       "join": "[PT] Join the community"
     },
-    "subtitleShort": "[PT] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[PT] Verified safe places, real events, and the people behind them.",
+    "events": {
+      "eyebrow": "[PT] What's on",
+      "groups": {
+        "today": "[PT] Today",
+        "tomorrow": "[PT] Tomorrow",
+        "thisWeekend": "[PT] This weekend",
+        "thisWeek": "[PT] This week",
+        "later": "[PT] Later"
+      }
+    }
   },
   "header": {
     "signInSignUp": "Entrar / Cadastrar",

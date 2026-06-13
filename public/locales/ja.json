@@ -1473,7 +1473,8 @@
       "next14": "今後14日間"
     },
     "news": {
-      "title": "最新ニュース"
+      "title": "最新ニュース",
+      "eyebrow": "[JA] Dispatches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1517,7 +1518,17 @@
       "invite": "[JA] Invite friends",
       "join": "[JA] Join the community"
     },
-    "subtitleShort": "[JA] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[JA] Verified safe places, real events, and the people behind them.",
+    "events": {
+      "eyebrow": "[JA] What's on",
+      "groups": {
+        "today": "[JA] Today",
+        "tomorrow": "[JA] Tomorrow",
+        "thisWeekend": "[JA] This weekend",
+        "thisWeek": "[JA] This week",
+        "later": "[JA] Later"
+      }
+    }
   },
   "header": {
     "signInSignUp": "ログイン / 新規登録",

@@ -1473,7 +1473,8 @@
       "next14": "Prossimi 14 giorni"
     },
     "news": {
-      "title": "Ultime notizie"
+      "title": "Ultime notizie",
+      "eyebrow": "[IT] Dispatches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1517,7 +1518,17 @@
       "invite": "[IT] Invite friends",
       "join": "[IT] Join the community"
     },
-    "subtitleShort": "[IT] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[IT] Verified safe places, real events, and the people behind them.",
+    "events": {
+      "eyebrow": "[IT] What's on",
+      "groups": {
+        "today": "[IT] Today",
+        "tomorrow": "[IT] Tomorrow",
+        "thisWeekend": "[IT] This weekend",
+        "thisWeek": "[IT] This week",
+        "later": "[IT] Later"
+      }
+    }
   },
   "header": {
     "signInSignUp": "Accedi / Registrati",

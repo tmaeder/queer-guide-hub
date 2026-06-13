@@ -1477,7 +1477,8 @@
       "next14": "Les 14 prochains jours"
     },
     "news": {
-      "title": "Actualités"
+      "title": "Actualités",
+      "eyebrow": "[FR] Dispatches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1521,7 +1522,17 @@
       "invite": "[FR] Invite friends",
       "join": "[FR] Join the community"
     },
-    "subtitleShort": "[FR] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[FR] Verified safe places, real events, and the people behind them.",
+    "events": {
+      "eyebrow": "[FR] What's on",
+      "groups": {
+        "today": "[FR] Today",
+        "tomorrow": "[FR] Tomorrow",
+        "thisWeekend": "[FR] This weekend",
+        "thisWeek": "[FR] This week",
+        "later": "[FR] Later"
+      }
+    }
   },
   "header": {
     "signInSignUp": "Connexion / Inscription",

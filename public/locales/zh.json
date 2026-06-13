@@ -1473,7 +1473,8 @@
       "next14": "未来14天"
     },
     "news": {
-      "title": "最新资讯"
+      "title": "最新资讯",
+      "eyebrow": "[ZH] Dispatches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1517,7 +1518,17 @@
       "invite": "[ZH] Invite friends",
       "join": "[ZH] Join the community"
     },
-    "subtitleShort": "[ZH] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[ZH] Verified safe places, real events, and the people behind them.",
+    "events": {
+      "eyebrow": "[ZH] What's on",
+      "groups": {
+        "today": "[ZH] Today",
+        "tomorrow": "[ZH] Tomorrow",
+        "thisWeekend": "[ZH] This weekend",
+        "thisWeek": "[ZH] This week",
+        "later": "[ZH] Later"
+      }
+    }
   },
   "header": {
     "signInSignUp": "登录 / 注册",

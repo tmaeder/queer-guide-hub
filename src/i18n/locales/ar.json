@@ -1473,7 +1473,8 @@
       "next14": "الأيام الـ14 القادمة"
     },
     "news": {
-      "title": "آخر الأخبار"
+      "title": "آخر الأخبار",
+      "eyebrow": "[AR] Dispatches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1517,7 +1518,17 @@
       "invite": "[AR] Invite friends",
       "join": "[AR] Join the community"
     },
-    "subtitleShort": "[AR] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[AR] Verified safe places, real events, and the people behind them.",
+    "events": {
+      "eyebrow": "[AR] What's on",
+      "groups": {
+        "today": "[AR] Today",
+        "tomorrow": "[AR] Tomorrow",
+        "thisWeekend": "[AR] This weekend",
+        "thisWeek": "[AR] This week",
+        "later": "[AR] Later"
+      }
+    }
   },
   "header": {
     "signInSignUp": "تسجيل الدخول / إنشاء حساب",
