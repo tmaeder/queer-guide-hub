@@ -85,8 +85,8 @@ export interface NavItem {
 }
 
 export const USER_MENU_ITEMS: NavItem[] = [
-  { to: '/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
-  { to: '/favorites', icon: Heart, labelKey: 'header.userMenu.favorites' },
+  { to: '/me/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
+  { to: '/me/saved', icon: Heart, labelKey: 'header.userMenu.favorites' },
   { to: '/profile/footprint', icon: Footprints, labelKey: 'header.userMenu.footprint' },
   { to: '/messages', icon: MessageCircle, labelKey: 'header.userMenu.messages' },
   { to: '/friends', icon: Users, labelKey: 'header.userMenu.friends' },

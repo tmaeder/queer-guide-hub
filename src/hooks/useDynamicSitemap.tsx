@@ -27,7 +27,7 @@ export function useDynamicSitemap() {
         { label: "Groups", to: "/groups" },
         { label: "My Groups", to: "/groups?tab=mine" },
         { label: "Feed", to: "/feed" },
-        { label: "Favorites", to: "/favorites" },
+        { label: "Saved", to: "/me/saved" },
         { label: "Search", to: "/search" },
         { label: "Personalities", to: "/personalities" },
         { label: "Places", to: "/places" },

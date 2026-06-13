@@ -9,12 +9,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { TripCard } from '@/components/trips/TripCard';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import type { GeoSelection } from '@/components/trips/create/CityCountryAutocomplete';
-import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { TripsInboxSection } from '@/components/trips/TripsInboxSection';
 import { EmptyTripsHero } from '@/components/trips/EmptyTripsHero';
-import { ColourfulText } from '@/components/effects/ColourfulText';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { NextTripStrip } from '@/components/trips/NextTripStrip';
 import { InspiredByYourTrips } from '@/components/trips/InspiredByYourTrips';
 import { EmptyTripsCleanupBanner } from '@/components/trips/EmptyTripsCleanupBanner';
@@ -24,15 +21,18 @@ import {
   type TripSortKey,
   type TripStatusFilter,
 } from '@/components/trips/TripsToolbar';
-import {
-  countTripsByStatus,
-  filterAndSortTrips,
-} from '@/components/trips/tripsFilters';
+import { countTripsByStatus, filterAndSortTrips } from '@/components/trips/tripsFilters';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function TripsPage() {
+/**
+ * The user's trips list + creation + travel inbox + templates. Rendered as the
+ * "Trips" tab of the /me hub — own-profile only. Folds in what used to be the
+ * standalone /trips page (the /trips/:id workspace stays its own route). Reads
+ * ?cityId=… deep-link seeds carried over from /travel via the /me/trips redirect.
+ */
+export function TripsTab() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
@@ -72,10 +72,7 @@ export default function TripsPage() {
   const [sortKey, setSortKey] = useState<TripSortKey>('recent');
   const [scopeEmptyIds, setScopeEmptyIds] = useState<Set<string> | null>(null);
 
-  const counts = useMemo(
-    () => countTripsByStatus(trips ?? [], savedIds),
-    [trips, savedIds],
-  );
+  const counts = useMemo(() => countTripsByStatus(trips ?? [], savedIds), [trips, savedIds]);
 
   const visibleTrips = useMemo(() => {
     const base = filterAndSortTrips(trips ?? [], search, statusFilter, sortKey, savedIds);
@@ -83,33 +80,19 @@ export default function TripsPage() {
     return base;
   }, [trips, search, statusFilter, sortKey, savedIds, scopeEmptyIds]);
 
-  if (!user) {
-    return <TripsSignedOutHero />;
-  }
+  if (!user) return null;
 
   const hasAnyTrips = (trips?.length ?? 0) > 0;
   const isFiltered = search.trim() !== '' || statusFilter !== 'all';
 
   return (
-    <div className="relative">
-      <SpotlightV2 anchor="top-center" intensity={0.10} />
-      <div className="container mx-auto py-8 md:py-12 px-4 relative">
+    <div className="pt-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h3 className="text-3xl md:text-4xl mb-1">
-            <ColourfulText text={t('trips.title')} />
-            {hasAnyTrips && (
-              <span
-                className="ml-4 text-muted-foreground font-medium tabular-nums"
-                style={{ fontSize: '0.65em' }}
-              >
-                · {trips?.length}
-              </span>
-            )}
-          </h3>
-          <p className="text-muted-foreground">{t('trips.subtitle')}</p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {t('trips.subtitle')}
+          {hasAnyTrips && <span className="ml-2 tabular-nums">· {trips?.length}</span>}
+        </p>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -133,8 +116,7 @@ export default function TripsPage() {
         </div>
       </div>
 
-      {/* Contextual capture: nudge travel prefs (feeds packing, safety, recs).
-          Self-hides when prefs are already set or dismissed for the session. */}
+      {/* Contextual capture: nudge travel prefs (feeds packing, safety, recs). */}
       <TravelPrefsPrompt />
 
       {hasAnyTrips && !isFiltered && <NextTripStrip trips={trips ?? []} />}
@@ -159,11 +141,7 @@ export default function TripsPage() {
               { count: scopeEmptyIds.size },
             )}
           </p>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setScopeEmptyIds(null)}
-          >
+          <Button size="sm" variant="outline" onClick={() => setScopeEmptyIds(null)}>
             {t('pages.trips.emptyTripsBanner.exitScope', 'Show all trips')}
           </Button>
         </div>
@@ -205,24 +183,21 @@ export default function TripsPage() {
         <EmptyTripsHero onCreate={() => setCreateOpen(true)} />
       )}
 
-      {!isLoading &&
-        !error &&
-        hasAnyTrips &&
-        visibleTrips.length === 0 && (
-          <EmptyState
-            icon={Map}
-            title={t('trips.filteredEmpty.title')}
-            description={t('trips.filteredEmpty.description')}
-            primaryAction={{
-              label: t('trips.filteredEmpty.cta'),
-              onClick: () => {
-                setSearch('');
-                setStatusFilter('all');
-              },
-              variant: 'outline',
-            }}
-          />
-        )}
+      {!isLoading && !error && hasAnyTrips && visibleTrips.length === 0 && (
+        <EmptyState
+          icon={Map}
+          title={t('trips.filteredEmpty.title')}
+          description={t('trips.filteredEmpty.description')}
+          primaryAction={{
+            label: t('trips.filteredEmpty.cta'),
+            onClick: () => {
+              setSearch('');
+              setStatusFilter('all');
+            },
+            variant: 'outline',
+          }}
+        />
+      )}
 
       {!isLoading && !error && visibleTrips.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -246,7 +221,6 @@ export default function TripsPage() {
         onClose={() => {
           setCreateOpen(false);
           if (seedGeo) {
-            // Clear deep-link seed so reopening doesn't re-trigger auto-open.
             setSearchParams(
               (prev) => {
                 ['cityId', 'cityName', 'countryId', 'countryName', 'countryCode', 'timezone', 'start', 'end'].forEach(
@@ -262,7 +236,6 @@ export default function TripsPage() {
         initialStart={seedStart}
         initialEnd={seedEnd}
       />
-      </div>
     </div>
   );
 }

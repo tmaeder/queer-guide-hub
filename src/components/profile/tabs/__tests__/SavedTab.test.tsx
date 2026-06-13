@@ -8,13 +8,19 @@ import { MemoryRouter } from 'react-router';
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
-vi.mock('@/hooks/usePageFetchers', () => ({ fetchAllUserFavorites: vi.fn().mockResolvedValue({ venues: [], events: [], cities: [], countries: [] }) }));
+vi.mock('@/hooks/usePageFetchers', () => ({
+  fetchAllUserFavorites: vi.fn().mockResolvedValue({ venues: [], events: [], marketplace: [], news: [] }),
+}));
 
-import Favorites from '../Favorites';
+import { SavedTab } from '../SavedTab';
 
-describe('Favorites', () => {
+describe('SavedTab', () => {
   it('renders without crashing', () => {
-    const { container } = render(<MemoryRouter><Favorites /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <SavedTab />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });

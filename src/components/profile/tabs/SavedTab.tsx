@@ -34,8 +34,6 @@ import { fetchAllUserFavorites } from '@/hooks/usePageFetchers';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
-import { AuthGate } from '@/components/layout/AuthGate';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -55,10 +53,10 @@ interface FavoriteItem {
 
 /**
  * "Add to trip" affordance for saved venues/events. Bridges Saved → Trips so a
- * favorite can flow into a plan. Marketplace/news aren't trip-addable, so this
+ * saved place can flow into a plan. Marketplace/news aren't trip-addable, so this
  * self-guards and renders nothing for them.
  */
-function AddFavoriteToTripButton({ item }: { item: FavoriteItem }) {
+function AddSavedToTripButton({ item }: { item: FavoriteItem }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   if (item.type !== 'venue' && item.type !== 'event') return null;
@@ -79,7 +77,12 @@ function AddFavoriteToTripButton({ item }: { item: FavoriteItem }) {
   );
 }
 
-export default function Favorites() {
+/**
+ * The user's saved items (venues, events, marketplace, news) across all types.
+ * Rendered as the "Saved" tab of the /me hub — own-profile only. Folds in what
+ * used to be the standalone /favorites page.
+ */
+export function SavedTab() {
   const { user } = useAuth();
   const { _t } = useTranslation();
   const navigate = useLocalizedNavigate();
@@ -121,7 +124,6 @@ export default function Favorites() {
         news: newsData,
       } = await fetchAllUserFavorites(user.id);
 
-      // Transform data
       const transformedFavorites = {
         venue:
           venueData?.map((venue) => ({
@@ -174,18 +176,19 @@ export default function Favorites() {
       };
       setFavorites(transformedFavorites);
     } catch (_error) {
-      toast({ title: 'Error', description: 'Failed to load favorites. Please try again.', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Failed to load saved items. Please try again.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
 
-  const getAllFavorites = () => {
-    return Object.values(favorites).flat();
-  };
-
-  const getEventCount = () => {
-    return favorites.event.length;
+  const getAllFavorites = () => Object.values(favorites).flat();
+  const getEventCount = () => favorites.event.length;
+  const getTotalCount = () =>
+    Object.values(favorites).reduce((total, items) => total + items.length, 0);
+  const getTabCount = (type: string) => {
+    if (type === 'all') return getTotalCount();
+    return favorites[type as keyof typeof favorites]?.length || 0;
   };
 
   const handleCalendarSubscription = async () => {
@@ -194,15 +197,6 @@ export default function Favorites() {
       setCalendarUrl(url);
       setCalendarDialogOpen(true);
     }
-  };
-
-  const getTotalCount = () => {
-    return Object.values(favorites).reduce((total, items) => total + items.length, 0);
-  };
-
-  const getTabCount = (type: string) => {
-    if (type === 'all') return getTotalCount();
-    return favorites[type as keyof typeof favorites]?.length || 0;
   };
 
   const renderFavoriteCard = (item: FavoriteItem) => {
@@ -293,7 +287,7 @@ export default function Favorites() {
                 <div />
               )}
               <div className="flex items-center gap-2">
-                <AddFavoriteToTripButton item={item} />
+                <AddSavedToTripButton item={item} />
                 <Button asChild variant="outline" size="sm">
                   <LocalizedLink to={getItemUrl()}>
                     <ExternalLink size={12} className="mr-1" />
@@ -367,7 +361,7 @@ export default function Favorites() {
                       View Details
                     </LocalizedLink>
                   </Button>
-                  <AddFavoriteToTripButton item={item} />
+                  <AddSavedToTripButton item={item} />
                 </div>
               </div>
             </div>
@@ -377,242 +371,232 @@ export default function Favorites() {
     );
   };
 
-  const headerSubtitle = loading
-    ? 'Loading your favorites...'
-    : `${getTotalCount()} items in your favorites`;
-
-  const headerActions =
-    !loading && getTotalCount() > 0 ? (
-      <>
-        {getEventCount() > 0 && (
-          <Button variant="outline" onClick={handleCalendarSubscription} disabled={calendarLoading}>
-            <CalendarDays size={16} />
-            Subscribe to Events Calendar
-          </Button>
-        )}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">View:</span>
-          <div className="flex items-center rounded-element">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-            >
-              <List size={16} />
-            </Button>
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-            >
-              <Grid size={16} />
-            </Button>
-          </div>
-        </div>
-      </>
-    ) : undefined;
-
   const gridClass =
     viewMode === 'grid'
       ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
       : 'flex flex-col gap-4';
 
   return (
-    <AuthGate title="Favorites" description="Please sign in to view your favorites">
-      <div className="container mx-auto py-8 px-4">
-        <PageHeader title="Favorites" subtitle={headerSubtitle} actions={headerActions} />
+    <div className="flex flex-col gap-6 pt-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">
+          {loading ? 'Loading your saved items…' : `${getTotalCount()} saved items`}
+        </p>
+        {!loading && getTotalCount() > 0 && (
+          <div className="flex items-center gap-2">
+            {getEventCount() > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCalendarSubscription}
+                disabled={calendarLoading}
+              >
+                <CalendarDays size={16} className="mr-1.5" />
+                Subscribe to Events Calendar
+              </Button>
+            )}
+            <div className="flex items-center rounded-element">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                aria-label="List view"
+              >
+                <List size={16} />
+              </Button>
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                aria-label="Grid view"
+              >
+                <Grid size={16} />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
 
-        {/* Calendar Subscription Dialog */}
-        <Dialog open={calendarDialogOpen} onOpenChange={setCalendarDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                <CalendarDays size={20} />
-                Subscribe to Your Events Calendar
-              </DialogTitle>
-              <DialogDescription>
-                Subscribe to your favorite events in any calendar application that supports iCal
-                feeds.
-              </DialogDescription>
-            </DialogHeader>
+      {/* Calendar Subscription Dialog */}
+      <Dialog open={calendarDialogOpen} onOpenChange={setCalendarDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              <CalendarDays size={20} />
+              Subscribe to Your Events Calendar
+            </DialogTitle>
+            <DialogDescription>
+              Subscribe to your saved events in any calendar application that supports iCal feeds.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="flex flex-col gap-4">
-              <div className="p-4 bg-accent rounded-element">
-                <p className="font-medium mb-2">Calendar Subscription URL:</p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 p-2 bg-background rounded-badge text-sm font-mono break-all">
-                    {calendarUrl}
-                  </code>
+          <div className="flex flex-col gap-4">
+            <div className="p-4 bg-accent rounded-element">
+              <p className="font-medium mb-2">Calendar Subscription URL:</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 p-2 bg-background rounded-badge text-sm font-mono break-all">
+                  {calendarUrl}
+                </code>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={copyCalendarFeedUrl}
+                  disabled={calendarLoading}
+                >
+                  <LinkIcon size={16} />
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Subscribe in Calendar App</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Copy the URL above and add it as a new calendar subscription in your preferred
+                    calendar app.
+                  </p>
+                  <div className="flex flex-col gap-2 text-sm">
+                    <div>
+                      <strong>Google Calendar:</strong> Settings &rarr; Add calendar &rarr; From URL
+                    </div>
+                    <div>
+                      <strong>Apple Calendar:</strong> File &rarr; New Calendar Subscription
+                    </div>
+                    <div>
+                      <strong>Outlook:</strong> Add calendar &rarr; Subscribe from web
+                    </div>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={copyCalendarFeedUrl}
                     disabled={calendarLoading}
                   >
-                    <LinkIcon size={16} />
+                    <LinkIcon size={16} className="mr-2" />
+                    Copy Subscription URL
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Download Calendar File</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Download a one-time .ics file that you can import into any calendar application.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Note: Downloaded files won't automatically update when you save new events. Use
+                    the subscription URL for automatic updates.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={downloadCalendarFile}
+                    disabled={calendarLoading}
+                  >
+                    <Download size={16} className="mr-2" />
+                    Download .ics File
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Content */}
+      {loading ? (
+        <PageLoadingState count={4} variant={viewMode === 'grid' ? 'card' : 'list'} />
+      ) : getTotalCount() === 0 ? (
+        <EmptyState
+          icon={Heart}
+          title="Nothing saved yet"
+          description="Heart the things you love and find them here."
+          mood="encouraging"
+          primaryAction={{
+            label: 'Browse Events',
+            onClick: () => navigate('/events'),
+          }}
+          secondaryAction={{
+            label: 'Browse Venues',
+            onClick: () => navigate('/venues'),
+            variant: 'outline',
+          }}
+        />
+      ) : (
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
+            {(() => {
+              const lineTab =
+                'h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none flex items-center gap-2';
+              return (
+                <>
+                  <TabsTrigger value="all" className={lineTab}>
+                    All ({getTabCount('all')})
+                  </TabsTrigger>
+                  <TabsTrigger value="venue" className={lineTab}>
+                    <MapPin size={12} />
+                    Venues ({getTabCount('venue')})
+                  </TabsTrigger>
+                  <TabsTrigger value="event" className={lineTab}>
+                    <Calendar size={12} />
+                    Events ({getTabCount('event')})
+                  </TabsTrigger>
+                  <TabsTrigger value="marketplace" className={lineTab}>
+                    <ShoppingBag size={12} />
+                    Marketplace ({getTabCount('marketplace')})
+                  </TabsTrigger>
+                  <TabsTrigger value="news" className={lineTab}>
+                    <Newspaper size={12} />
+                    News ({getTabCount('news')})
+                  </TabsTrigger>
+                </>
+              );
+            })()}
+          </TabsList>
+
+          <TabsContent value="all">
+            <div className={gridClass}>{getAllFavorites().map(renderFavoriteCard)}</div>
+          </TabsContent>
+
+          {Object.entries(favorites).map(([type, items]) => (
+            <TabsContent key={type} value={type}>
+              {type === 'marketplace' && items.length > 0 && (
+                <div className="mb-4 flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const ids = items.map((i) => i.id).join(',');
+                      const params = new URLSearchParams({ ids, title: 'My favorites' });
+                      const url = `${window.location.origin}/marketplace/share?${params.toString()}`;
+                      try {
+                        if (navigator.share) {
+                          await navigator.share({ title: 'My marketplace favorites', url });
+                        } else {
+                          await navigator.clipboard.writeText(url);
+                          toast({ title: 'Link copied', description: 'Share link copied to clipboard.' });
+                        }
+                      } catch {
+                        /* user cancelled */
+                      }
+                    }}
+                  >
+                    <LinkIcon size={14} className="mr-1.5" aria-hidden="true" />
+                    Share list
                   </Button>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Subscribe in Calendar App</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Copy the URL above and add it as a new calendar subscription in your preferred
-                      calendar app.
-                    </p>
-                    <div className="flex flex-col gap-2 text-sm">
-                      <div>
-                        <strong>Google Calendar:</strong> Settings &rarr; Add calendar &rarr; From URL
-                      </div>
-                      <div>
-                        <strong>Apple Calendar:</strong> File &rarr; New Calendar Subscription
-                      </div>
-                      <div>
-                        <strong>Outlook:</strong> Add calendar &rarr; Subscribe from web
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={copyCalendarFeedUrl}
-                      disabled={calendarLoading}
-                    >
-                      <LinkIcon size={16} className="mr-2" />
-                      Copy Subscription URL
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Download Calendar File</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Download a one-time .ics file that you can import into any calendar
-                      application.
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Note: Downloaded files won't automatically update when you add new favorites.
-                      Use the subscription URL for automatic updates.
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={downloadCalendarFile}
-                      disabled={calendarLoading}
-                    >
-                      <Download size={16} className="mr-2" />
-                      Download .ics File
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="text-xs text-muted-foreground">
-                <p>&bull; Only future events from your favorites will appear in the calendar</p>
-                <p>&bull; The calendar updates automatically when you add or remove event favorites</p>
-                <p>&bull; Calendar subscriptions are cached for up to 1 hour for better performance</p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Content */}
-        {loading ? (
-          <PageLoadingState count={4} variant={viewMode === 'grid' ? 'card' : 'list'} />
-        ) : getTotalCount() === 0 ? (
-          <EmptyState
-            icon={Heart}
-            title="Nothing saved yet"
-            description="Heart the things you love and find them here."
-            mood="encouraging"
-            primaryAction={{
-              label: 'Browse Events',
-              onClick: () => navigate('/events'),
-            }}
-            secondaryAction={{
-              label: 'Browse Venues',
-              onClick: () => navigate('/venues'),
-              variant: 'outline',
-            }}
-          />
-        ) : (
-          <div className="bg-background rounded-container p-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
-                {(() => {
-                  const lineTab =
-                    'h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none flex items-center gap-2';
-                  return (
-                    <>
-                      <TabsTrigger value="all" className={lineTab}>
-                        All ({getTabCount('all')})
-                      </TabsTrigger>
-                      <TabsTrigger value="venue" className={lineTab}>
-                        <MapPin size={12} />
-                        Venues ({getTabCount('venue')})
-                      </TabsTrigger>
-                      <TabsTrigger value="event" className={lineTab}>
-                        <Calendar size={12} />
-                        Events ({getTabCount('event')})
-                      </TabsTrigger>
-                      <TabsTrigger value="marketplace" className={lineTab}>
-                        <ShoppingBag size={12} />
-                        Marketplace ({getTabCount('marketplace')})
-                      </TabsTrigger>
-                      <TabsTrigger value="news" className={lineTab}>
-                        <Newspaper size={12} />
-                        News ({getTabCount('news')})
-                      </TabsTrigger>
-                    </>
-                  );
-                })()}
-              </TabsList>
-
-              <TabsContent value="all">
-                <div className={gridClass}>{getAllFavorites().map(renderFavoriteCard)}</div>
-              </TabsContent>
-
-              {Object.entries(favorites).map(([type, items]) => (
-                <TabsContent key={type} value={type}>
-                  {type === 'marketplace' && items.length > 0 && (
-                    <div className="mb-4 flex justify-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          const ids = items.map((i) => i.id).join(',');
-                          const params = new URLSearchParams({ ids, title: 'My favorites' });
-                          const url = `${window.location.origin}/marketplace/share?${params.toString()}`;
-                          try {
-                            if (navigator.share) {
-                              await navigator.share({ title: 'My marketplace favorites', url });
-                            } else {
-                              await navigator.clipboard.writeText(url);
-                              toast({ title: 'Link copied', description: 'Share link copied to clipboard.' });
-                            }
-                          } catch {
-                            /* user cancelled */
-                          }
-                        }}
-                      >
-                        <LinkIcon size={14} className="mr-1.5" aria-hidden="true" />
-                        Share list
-                      </Button>
-                    </div>
-                  )}
-                  <div className={gridClass}>{items.map(renderFavoriteCard)}</div>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </div>
-        )}
-      </div>
-    </AuthGate>
+              )}
+              <div className={gridClass}>{items.map(renderFavoriteCard)}</div>
+            </TabsContent>
+          ))}
+        </Tabs>
+      )}
+    </div>
   );
 }
