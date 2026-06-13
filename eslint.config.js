@@ -165,7 +165,6 @@ export default tseslint.config(
       "src/test/**",
       // Functional color scales (equality score 0–100, SDG indicators).
       "src/utils/equalityScore.ts",
-      "src/components/country/LGBTJurisdictionInfo.tsx",
       "src/components/country/SDGDataPanel.tsx",
       "src/components/country/SafetyAlertBanner.tsx",
       // Cities directory chip uses the equality-score functional scale dot.
@@ -174,6 +173,10 @@ export default tseslint.config(
       "src/pages/cities/CitiesMapPane.tsx",
       // Risk traffic-light (low/moderate/high/critical) for travel safety.
       "src/components/trips/TripSafetyBriefing.tsx",
+      // Shared risk traffic-light palette — the single home of the locked
+      // low/moderate/high/critical hex, consumed by TripSafetyBriefing +
+      // the country SafetyVerdict so the two surfaces can't drift.
+      "src/hooks/useRiskVisual.ts",
       // Categorical news/topic taxonomy palette (politics, health, sports…).
       "src/components/news/NewsCard.tsx",
       // Deterministic avatar gradient palette (12 distinct hues by user id).

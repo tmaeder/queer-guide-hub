@@ -6,11 +6,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentlyViewedRail } from '@/components/home/RecentlyViewedRail';
-import { HomeSearchCue } from '@/components/home/HomeSearchCue';
 
 const MapShell = React.lazy(() => import('@/components/map/MapShell'));
-const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
-const RegionalEventsCalendar = React.lazy(() => import('@/components/home/RegionalEventsCalendar'));
+const NewsMagazine = React.lazy(() => import('@/components/home/NewsMagazine'));
+const EventsAgenda = React.lazy(() => import('@/components/home/EventsAgenda'));
 
 // Hide the on-map search (the top-bar search is the single search) and keep the
 // landing URL clean (no ?lat&lng&z written as the visitor pans).
@@ -38,65 +37,55 @@ const Index = React.memo(() => {
           </React.Suspense>
         </ErrorBoundary>
 
-        {/* Floating hero card — headline + the one search (opens the top bar).
-            Vertically centred: the discover map's chrome lives at the top
-            (command bar / quick filters / legend) and bottom (spotlight rail),
-            so the centre is the clear zone. Pointer-events pass through to the
-            map around the card. */}
-        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-4">
-          <div className="pointer-events-auto w-full max-w-xl">
-            <div className="rounded-container border border-border bg-background/85 px-6 py-6 backdrop-blur-md md:px-8 md:py-8">
-              <h1
-                className="text-headline-lg md:text-display font-bold leading-[1.05] tracking-tight text-foreground"
-                style={{ letterSpacing: '-0.03em' }}
-              >
-                {t('home.heroLine1', 'Queer venues,')} {t('home.heroLine2', 'events, and people.')}{' '}
-                {t('home.heroLine3', 'Worldwide.')}
-              </h1>
-              <p className="mt-4 text-sm md:text-base text-muted-foreground leading-[1.5]">
-                {t(
-                  'home.subtitleShort',
-                  'Verified safe places, real events, and the people behind them.',
-                )}
-              </p>
-              <HomeSearchCue className="mt-6" />
-            </div>
-          </div>
-        </div>
+        {/* Headline kept for SEO + a11y only — visually hidden so the live map
+            is the unobstructed hero (no overlay card blocking the centre). */}
+        <h1 className="sr-only">
+          {t('home.heroLine1', 'Queer venues,')} {t('home.heroLine2', 'events, and people.')}{' '}
+          {t('home.heroLine3', 'Worldwide.')} —{' '}
+          {t('home.subtitleShort', 'Verified safe places, real events, and the people behind them.')}
+        </h1>
       </section>
 
       {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
       <RecentlyViewedRail />
 
-      {/* ── Events near you — live, functional discovery ─────────────── */}
-      <ErrorBoundary section="regional-calendar" fallback={null}>
+      {/* ── Events near you — live date-grouped agenda ───────────────── */}
+      <ErrorBoundary section="events-agenda" fallback={null}>
         <React.Suspense
           fallback={
             <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
               <div className="max-w-7xl mx-auto">
                 <Skeleton className="mb-8 h-9 w-64" />
-                <Skeleton className="h-72 w-full rounded-container" />
+                <div className="grid grid-cols-1 gap-x-10 gap-y-4 md:grid-cols-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full rounded-element" />
+                  ))}
+                </div>
               </div>
             </div>
           }
         >
-          <RegionalEventsCalendar />
+          <EventsAgenda />
         </React.Suspense>
       </ErrorBoundary>
 
-      {/* ── Latest news — feature + list ─────────────────────────────── */}
-      <ErrorBoundary section="latest-news" fallback={null}>
+      {/* ── Latest news — editorial magazine grid ────────────────────── */}
+      <ErrorBoundary section="news-magazine" fallback={null}>
         <React.Suspense
           fallback={
             <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-              <div className="max-w-7xl mx-auto">
-                <Skeleton className="mb-8 h-9 w-48" />
-                <Skeleton className="h-56 w-full rounded-container" />
+              <div className="max-w-7xl mx-auto grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
+                <Skeleton className="aspect-[16/10] w-full rounded-container" />
+                <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="aspect-[3/2] w-full rounded-element" />
+                  ))}
+                </div>
               </div>
             </div>
           }
         >
-          <LatestNewsSlider />
+          <NewsMagazine />
         </React.Suspense>
       </ErrorBoundary>
 

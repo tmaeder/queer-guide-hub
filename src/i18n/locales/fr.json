@@ -1477,7 +1477,8 @@
       "next14": "Les 14 prochains jours"
     },
     "news": {
-      "title": "Actualités"
+      "title": "Actualités",
+      "eyebrow": "[FR] Dispatches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1522,9 +1523,15 @@
       "join": "[FR] Join the community"
     },
     "subtitleShort": "[FR] Verified safe places, real events, and the people behind them.",
-    "searchCue": {
-      "placeholder": "[FR] Search venues, events, people…",
-      "aria": "[FR] Search venues, events, people"
+    "events": {
+      "eyebrow": "[FR] What's on",
+      "groups": {
+        "today": "[FR] Today",
+        "tomorrow": "[FR] Tomorrow",
+        "thisWeekend": "[FR] This weekend",
+        "thisWeek": "[FR] This week",
+        "later": "[FR] Later"
+      }
     }
   },
   "header": {
@@ -2373,6 +2380,130 @@
       "view": "View",
       "addToTrip": "Add to trip",
       "signIn": "Sign in"
+    }
+  },
+  "country": {
+    "loading": "[FR] Loading country…",
+    "planTrip": "[FR] Plan a trip to {{country}}",
+    "similar": "[FR] More destinations",
+    "notFound": {
+      "title": "[FR] Country not found",
+      "body": "[FR] The country you're looking for doesn't exist.",
+      "back": "[FR] Back to Places"
+    },
+    "breadcrumb": {
+      "places": "[FR] Places"
+    },
+    "hero": {
+      "capital": "[FR] Capital"
+    },
+    "verdict": {
+      "eyebrow": "[FR] For LGBTQ+ travelers",
+      "welcoming": "[FR] Welcoming",
+      "mixed": "[FR] Mixed",
+      "caution": "[FR] Use caution",
+      "dangerous": "[FR] Dangerous",
+      "equality": "[FR] Equality",
+      "fullBreakdown": "[FR] Full breakdown"
+    },
+    "facts": {
+      "capital": "[FR] Capital",
+      "population": "[FR] Population",
+      "equality": "[FR] Equality",
+      "languages": "[FR] Languages",
+      "currency": "[FR] Currency",
+      "cities": "[FR] Cities"
+    },
+    "section": {
+      "rights": "[FR] Rights & safety",
+      "cities": "[FR] Cities",
+      "venues": "[FR] Venues",
+      "events": "[FR] Events",
+      "travel": "[FR] Travel",
+      "stats": "[FR] In numbers",
+      "personalities": "[FR] Voices",
+      "nearby": "[FR] Nearby",
+      "news": "[FR] News",
+      "map": "[FR] Map"
+    },
+    "practical": {
+      "languages": "[FR] Languages",
+      "currency": "[FR] Currency",
+      "callingCode": "[FR] Calling code",
+      "tld": "[FR] Internet domain",
+      "driving": "[FR] Driving",
+      "drivesLeft": "[FR] Left-hand side",
+      "drivesRight": "[FR] Right-hand side",
+      "airports": "[FR] Major airports",
+      "government": "[FR] Government",
+      "nationalDay": "[FR] National day"
+    },
+    "stats": {
+      "gdpPerCapita": "[FR] GDP / capita",
+      "hdi": "[FR] HDI",
+      "lifeExpectancy": "[FR] Life expectancy",
+      "literacy": "[FR] Literacy",
+      "income": "[FR] Income level"
+    },
+    "cities": {
+      "emptyTitle": "[FR] No cities yet",
+      "emptyBody": "[FR] No cities are listed for this country yet."
+    },
+    "venues": {
+      "emptyTitle": "[FR] No venues yet",
+      "emptyBody": "[FR] Be the first to add a venue in {{country}}."
+    },
+    "events": {
+      "emptyTitle": "[FR] No upcoming events",
+      "emptyBody": "[FR] No events are scheduled for this country yet."
+    },
+    "travel": {
+      "activities": "[FR] Activities & tours",
+      "activitiesBody": "[FR] Experiences in {{country}}"
+    },
+    "news": {
+      "emptyTitle": "[FR] No local news yet",
+      "emptyBody": "[FR] No news articles are available for this country yet."
+    },
+    "rights": {
+      "title": "[FR] LGBTI rights overview",
+      "source": "[FR] ILGA World Database",
+      "updated": "[FR] Updated",
+      "noData": "[FR] No data",
+      "sameSexActivity": "[FR] Same-sex activity",
+      "penalty": "[FR] Penalty",
+      "deathPenalty": "[FR] death penalty possible",
+      "decriminalized": "[FR] Decriminalized",
+      "expression": "[FR] Freedom of expression",
+      "association": "[FR] Freedom of association",
+      "section": {
+        "criminalisation": "[FR] Criminalisation & freedoms",
+        "antiDiscrimination": "[FR] Anti-discrimination protection",
+        "criminalJustice": "[FR] Criminal justice",
+        "family": "[FR] Family & relationships",
+        "identity": "[FR] Identity & health"
+      },
+      "constitutional": "[FR] Constitutional",
+      "employment": "[FR] Employment",
+      "housing": "[FR] Housing",
+      "education": "[FR] Education",
+      "health": "[FR] Health",
+      "goodsServices": "[FR] Goods & services",
+      "bullying": "[FR] Bullying",
+      "hateCrime": "[FR] Hate crime laws",
+      "incitement": "[FR] Incitement prohibition",
+      "unions": "[FR] Same-sex unions",
+      "marriageSince": "[FR] Marriage since",
+      "civilUnionSince": "[FR] civil union since",
+      "adoption": "[FR] Adoption rights",
+      "genderRecognition": "[FR] Gender recognition",
+      "marker": "[FR] Marker",
+      "selfId": "[FR] Self-ID",
+      "requiresSurgery": "[FR] Requires surgery",
+      "requiresDiagnosis": "[FR] Requires diagnosis",
+      "conversionTherapy": "[FR] Conversion therapy",
+      "intersex": "[FR] Intersex bodily integrity",
+      "ilgaLink": "[FR] ILGA World Database"
     }
   }
 }

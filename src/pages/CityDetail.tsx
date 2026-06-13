@@ -283,7 +283,7 @@ export default function CityDetail() {
       {
         label: 'Equality',
         value:
-          city.countries?.equality_score != null ? `${city.countries.equality_score}/10` : null,
+          city.countries?.equality_score != null ? `${city.countries.equality_score}/100` : null,
       },
       { label: 'Language', value: city.local_language || null },
       { label: 'Currency', value: city.countries?.currency || null },

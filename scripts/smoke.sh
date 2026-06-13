@@ -42,7 +42,7 @@ check "trending field"       "$tr" '"trending":'
 
 echo "== /track =="
 tk=$(curl -sS -X POST "$SEARCH_URL/track" -H 'content-type: application/json' \
-	-d '{"session_id":"smoke-test","event_type":"click","entity_type":"venue","entity_id":"00000000-0000-0000-0000-000000000000","metadata":{"city":"berlin"}}')
+	-d '{"session_id":"smoke-test","event_type":"click","entity_type":"venue","entity_id":"00000000-0000-0000-0000-000000000000","metadata":{"source":"smoke"}}')
 check "track ok"             "$tk" '"ok":true'
 
 echo "== /feedback =="

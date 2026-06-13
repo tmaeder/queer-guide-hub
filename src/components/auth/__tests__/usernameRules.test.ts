@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { USERNAME_RE, usernameFormatError } from '@/components/auth/UsernameSelector';
+import { USERNAME_RE, usernameFormatError } from '@/components/auth/usernameRules';
 
 const valid = (v: string) => USERNAME_RE.test(v) && !/[._]{2}/.test(v);
 
