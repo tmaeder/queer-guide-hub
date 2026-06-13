@@ -50,7 +50,7 @@ import { IdentityPreviewCard } from '@/components/profile/IdentityPreviewCard';
 import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarChooser';
 import { UsernamePanel } from '@/components/profile/UsernamePanel';
 import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
-import { userModeLabel } from '@/components/profile/UserModeBadge';
+import { userModeLabel } from '@/lib/userMode';
 import { pronounDisplay } from '@/components/ui/pronoun-combobox';
 import { shortLocation } from '@/lib/shortLocation';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
