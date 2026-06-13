@@ -158,13 +158,16 @@ export function EntityDetailLayout({
           <div>
             {tabs.length > 0 && (
               <Tabs value={activeTab} onValueChange={handleTabChange}>
-                <TabsList>
-                  {tabs.map((tab) => (
-                    <TabsTrigger key={tab.id} value={tab.id}>
-                      {tab.label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+                {/* A lone tab is just chrome — render its panel directly. */}
+                {tabs.length > 1 && (
+                  <TabsList>
+                    {tabs.map((tab) => (
+                      <TabsTrigger key={tab.id} value={tab.id}>
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                )}
                 <AnimatePresence mode="wait" initial={false}>
                   {tabs.map((tab) =>
                     tab.id === activeTab ? (
