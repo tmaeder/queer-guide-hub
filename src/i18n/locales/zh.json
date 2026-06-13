@@ -1493,6 +1493,29 @@
         "groups": "groups",
         "resources": "resources"
       }
+    },
+    "eyebrow": "[ZH] Queer Guide",
+    "browseDirectory": "[ZH] Browse the directory",
+    "planTrip": "[ZH] Plan a trip",
+    "allVenues": "[ZH] All venues",
+    "recentlyViewed": {
+      "eyebrow": "[ZH] Recently viewed",
+      "title": "[ZH] Pick up where you left off."
+    },
+    "trending": {
+      "eyebrow": "[ZH] Trending now",
+      "venues": "[ZH] Venues on the rise.",
+      "venuesNear": "[ZH] Popular venues in {{city}}.",
+      "venuesDesc": "[ZH] What the community is checking out this week."
+    },
+    "cta": {
+      "title": "[ZH] Built by the community,",
+      "title2": "[ZH] for the community.",
+      "subtitle": "[ZH] Verified safe spaces, real reviews, no paywalls.",
+      "submit": "[ZH] Add a venue",
+      "about": "[ZH] Read the mission",
+      "invite": "[ZH] Invite friends",
+      "join": "[ZH] Join the community"
     }
   },
   "header": {
