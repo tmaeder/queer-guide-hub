@@ -16,13 +16,20 @@ import {
   Calendar,
   ChevronRight,
   User,
+  BookOpen,
+  ArrowRight,
+  Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Eyebrow } from '@/components/ui/Eyebrow';
+import { Image } from '@/components/ui/Image';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
+import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
+import { estimateReadingTime } from '@/lib/readingTime';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import {
   fetchNewsCategories,
@@ -67,6 +74,7 @@ interface NewsArticle {
   created_at: string;
   editorial_note?: string | null;
   is_editors_pick?: boolean | null;
+  image_attribution?: string | null;
 }
 
 interface DbCategory {
@@ -103,6 +111,7 @@ export default function NewsDetail() {
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
   const { isAdmin } = useAdminEditMode();
+  const isMobile = useIsMobile();
 
   // Mark the article as read once we have its id (drives streak + challenge progress).
   useEffect(() => {
@@ -331,22 +340,23 @@ export default function NewsDetail() {
       </div>
 
       {/* Hero image */}
-      {heroSrc && (
-        <div className="w-full h-40 md:h-60 rounded-container overflow-hidden mb-6">
-          <img
-            src={heroSrc}
-            alt={decodeHtmlEntities(article.title)}
-            role="presentation"
-            referrerPolicy="no-referrer"
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-cover"
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        </div>
-      )}
+      <figure className="group mb-6">
+        <Image
+          src={heroSrc}
+          alt={decodeHtmlEntities(article.title)}
+          heightPx={isMobile ? 220 : 360}
+          imageRole="hero"
+          rounded="container"
+          priority
+          fallbackEntityType="news"
+          fallbackKey={article.id}
+        />
+        {article.image_attribution && (
+          <figcaption className="mt-2 text-2xs text-muted-foreground">
+            {article.image_attribution}
+          </figcaption>
+        )}
+      </figure>
 
       {/* Title Row */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
@@ -411,6 +421,12 @@ export default function NewsDetail() {
                 <span>
                   {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
                 </span>
+              </div>
+            )}
+            {(contentText || excerptText) && (
+              <div className="flex items-center gap-1">
+                <BookOpen size={14} />
+                <span>{estimateReadingTime(contentText || excerptText)} min read</span>
               </div>
             )}
             {article.views_count > 0 && (
@@ -497,76 +513,57 @@ export default function NewsDetail() {
             </aside>
           )}
 
-          {/* Article Content Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('pages.newsDetail.article', 'Article')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Editable
-                contentType="news_articles"
-                recordId={article.id}
-                field={contentText || !excerptText ? 'content' : 'excerpt'}
-                value={contentText || excerptText || ''}
-                onSaved={(next) =>
-                  setArticle((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          [contentText || !excerptText ? 'content' : 'excerpt']: String(next ?? ''),
-                        }
-                      : prev,
-                  )
-                }
-                fieldOverride={{ type: 'textarea' }}
-                as="div"
-              >
-                {contentText ? (
-                  <p
-                    className="text-muted-foreground whitespace-pre-line"
-                    style={{ lineHeight: 1.8 }}
-                  >
-                    {contentText}
-                  </p>
-                ) : excerptText ? (
-                  <div>
-                    <p className="text-muted-foreground mb-4" style={{ lineHeight: 1.8 }}>
-                      {excerptText}
-                    </p>
-                    <p className="text-sm text-muted-foreground italic">
-                      To read the full article, click "Read Full Article" above.
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">
-                    This article is available on the original source. Click "Read Full Article" to
-                    read it.
-                  </p>
-                )}
-              </Editable>
-            </CardContent>
-          </Card>
-
-          {/* Read Full Article CTA Card */}
-          <Card>
-            <CardContent>
-              <div>
-                <p className="text-base font-semibold">Read the full article</p>
-                <p className="text-sm text-muted-foreground">
-                  {sourceName
-                    ? `Originally published on ${sourceName}`
-                    : 'View on the original source'}
+          {/* Article body — editorial prose, constrained measure, full-strength text */}
+          <article className="max-w-[68ch]">
+            <Editable
+              contentType="news_articles"
+              recordId={article.id}
+              field={contentText || !excerptText ? 'content' : 'excerpt'}
+              value={contentText || excerptText || ''}
+              onSaved={(next) =>
+                setArticle((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        [contentText || !excerptText ? 'content' : 'excerpt']: String(next ?? ''),
+                      }
+                    : prev,
+                )
+              }
+              fieldOverride={{ type: 'textarea' }}
+              as="div"
+            >
+              {contentText ? (
+                <p
+                  className="whitespace-pre-line text-body-lg text-foreground"
+                  style={{ lineHeight: 1.8 }}
+                >
+                  {contentText}
                 </p>
-              </div>
-              <Button
-                onClick={() => window.open(article.url, '_blank')}
-                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-              >
-                Open Article
-                <ExternalLink size={16} />
+              ) : excerptText ? (
+                <p className="text-body-lg text-foreground" style={{ lineHeight: 1.8 }}>
+                  {excerptText}
+                </p>
+              ) : (
+                <p className="text-body-lg italic text-muted-foreground">
+                  The full story lives on the original source.
+                </p>
+              )}
+            </Editable>
+
+            {/* Single source-attribution block — the one place to leave for the source */}
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+              <p className="text-sm text-muted-foreground">
+                {sourceName
+                  ? `Originally published by ${sourceName}.`
+                  : 'Read the original report at the source.'}
+              </p>
+              <Button onClick={() => window.open(article.url, '_blank')}>
+                Read full article
+                <ExternalLink size={16} className="ml-2" />
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </article>
 
           {/* Related Articles */}
           {relatedArticles.length > 0 && (
@@ -631,52 +628,8 @@ export default function NewsDetail() {
 
         {/* Sidebar */}
         <div className="flex flex-col gap-6">
-          {/* Article Info Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('pages.newsDetail.articleInfo', 'Article Info')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {article.published_at && (
-                <div className="flex items-center gap-4">
-                  <Calendar size={16} className="text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Published</p>
-                    <p className="font-medium">
-                      {format(new Date(article.published_at), 'MMMM d, yyyy')}
-                    </p>
-                  </div>
-                </div>
-              )}
-              {authorName && (
-                <div className="flex items-center gap-4">
-                  <User size={16} className="text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Author</p>
-                    <p className="font-medium">{authorName}</p>
-                  </div>
-                </div>
-              )}
-              {sourceName && (
-                <div className="flex items-center gap-4">
-                  <Newspaper size={16} className="text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Source</p>
-                    <p className="font-medium">{sourceName}</p>
-                  </div>
-                </div>
-              )}
-              {article.views_count > 0 && (
-                <div className="flex items-center gap-4">
-                  <Eye size={16} className="text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Views</p>
-                    <p className="font-medium">{article.views_count}</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Destination safety context — ties the story to where it happens */}
+          <DestinationSafetyCard countryIds={article.country_ids ?? []} />
 
           {/* Tags Card */}
           {tags.length > 0 && (
@@ -739,42 +692,62 @@ export default function NewsDetail() {
             </Card>
           )}
 
-          {/* Source Link Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('pages.newsDetail.links', 'Links')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button
-                variant="outline"
-                size="sm"
-                style={{ width: '100%', justifyContent: 'flex-start' }}
-                onClick={() => window.open(article.url, '_blank')}
-              >
-                <ExternalLink size={16} className="mr-2" />
-                Original Article
-              </Button>
-              {sourceUrl && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{ width: '100%', justifyContent: 'flex-start' }}
-                  onClick={() => window.open(sourceUrl, '_blank')}
-                >
-                  <Newspaper size={16} className="mr-2" />
-                  {sourceName || 'Source Website'}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          {/* Source Card */}
+          {(sourceName || sourceUrl) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Newspaper size={16} />
+                  Source
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {sourceName && <p className="mb-1 font-medium">{sourceName}</p>}
+                {article.published_at && (
+                  <p className="text-sm text-muted-foreground">
+                    {format(new Date(article.published_at), 'MMMM d, yyyy')}
+                    {authorName ? ` · ${authorName}` : ''}
+                  </p>
+                )}
+                {sourceUrl && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4 w-full justify-start"
+                    onClick={() => window.open(sourceUrl, '_blank')}
+                  >
+                    <Globe size={16} className="mr-2" />
+                    Visit {sourceName || 'source'}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
+      {story && (
+        <LocalizedLink
+          to={`/news/story/${story.slug}`}
+          className="mt-10 flex items-center justify-between gap-4 rounded-container border border-border p-4 no-underline transition-colors hover:bg-muted"
+        >
+          <span className="flex items-center gap-2">
+            <Layers size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span>
+              <Eyebrow as="span">Story · {story.article_count} articles</Eyebrow>
+              <span className="block font-semibold">{decodeHtmlEntities(story.title)}</span>
+            </span>
+          </span>
+          <ArrowRight size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+        </LocalizedLink>
+      )}
+
       <SimilarItems
         entity={{ type: 'news', id: article.id }}
-        className="mt-8"
+        className="mt-10"
         title="Related news"
       />
-      <MarketplaceRelated className="mt-10" />
+
+      <MarketplaceRelated className="mt-12" title="Shop LGBTQ+ brands" />
     </TracingBeam>
   );
 }

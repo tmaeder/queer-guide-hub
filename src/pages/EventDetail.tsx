@@ -3,12 +3,13 @@ import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Luggage, Ticket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
-import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
+import { FavoriteButton } from '@/components/ui/favorite-button';
 import { SendEventDialog } from '@/components/messaging/SendEventDialog';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import { useAuth } from '@/hooks/useAuth';
@@ -309,6 +310,7 @@ export default function EventDetail() {
             <EventSidebar
               event={event}
               venueRef={venueRef}
+              countryId={effectiveCountry?.id ?? event.country_id}
               onOrganizerClick={(organizer) =>
                 navigate(`/events?organizer=${encodeURIComponent(organizer)}`)
               }
@@ -345,13 +347,37 @@ export default function EventDetail() {
             eventPath={`/events/${event.slug || event.id}`}
           />
 
-          <div className="container mx-auto pb-8">
-            <div className="mt-6 flex flex-wrap gap-2 px-4">
-              <MarkVisitedButton entityType="event" entityId={event.id} kind="visited" />
-              <MarkVisitedButton entityType="event" entityId={event.id} kind="saved" />
-            </div>
-            <SimilarItems entity={{ type: 'event', id: event.id }} className="mt-8" />
+          <div className="container mx-auto px-4 pb-28 md:pb-12">
+            {cityName && (
+              <TrendingStrip
+                city={cityName}
+                types={['event']}
+                title={`More events in ${cityName}`}
+                className="mt-10"
+              />
+            )}
+            <SimilarItems entity={{ type: 'event', id: event.id }} className="mt-10" />
           </div>
+
+          {/* Sticky mobile action bar */}
+          {!isPast && (
+            <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 border-t border-border bg-background/95 p-4 backdrop-blur md:hidden">
+              {event.ticket_url ? (
+                <Button asChild className="flex-1">
+                  <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
+                    <Ticket size={16} className="mr-2" />
+                    Get Tickets
+                  </a>
+                </Button>
+              ) : (
+                <Button className="flex-1" onClick={() => setAddToTripOpen(true)}>
+                  <Luggage size={16} className="mr-2" />
+                  Add to Trip
+                </Button>
+              )}
+              <FavoriteButton itemId={event.id} type="event" size="md" />
+            </div>
+          )}
         </>
       )}
     </>
