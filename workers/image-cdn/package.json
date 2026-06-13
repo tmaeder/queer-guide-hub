@@ -12,5 +12,8 @@
   },
   "dependencies": {
     "jose": "^6.2.3"
+  },
+  "overrides": {
+    "esbuild": "0.28.1"
   }
 }
