@@ -70,11 +70,13 @@ describe("pgHybridSearch", () => {
 
 describe("pgAutocomplete", () => {
 	it("maps rows to suggestions (title_formatted is null on the pg path)", async () => {
-		const rows = [{ objectID: "v1", type: "venue", title: "Berghain", city: "Berlin", country: "DE", slug: "berghain" }];
+		const rows = [
+			{ objectID: "v1", type: "venue", title: "Berghain", city: "Berlin", country: "DE", slug: "berghain", imageUrl: "https://ext/raw.jpg", optimizedUrl: "https://r2/opt.webp", thumbnailUrl: "https://r2/thumb.webp" },
+		];
 		global.fetch = mockRpc({ search_autocomplete: rows }) as never;
 		const s = await pgAutocomplete(env, "berg", ["venue"], 8);
 		expect(s).toEqual([
-			{ id: "v1", type: "venue", title: "Berghain", title_formatted: null, city: "Berlin", country: "DE", slug: "berghain" },
+			{ id: "v1", type: "venue", title: "Berghain", title_formatted: null, city: "Berlin", country: "DE", slug: "berghain", image_url: "https://ext/raw.jpg", optimized_url: "https://r2/opt.webp", thumbnail_url: "https://r2/thumb.webp" },
 		]);
 	});
 

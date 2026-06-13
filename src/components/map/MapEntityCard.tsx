@@ -147,15 +147,17 @@ export function MapEntityCard({
       : point.type === 'events'
         ? [point.subtitle, point.venueName || point.city].filter(Boolean).join(' · ')
         : point.subtitle;
-  const hasImage = Boolean(point.image);
+  const hasImage = Boolean(point.image || point.optimizedImage || point.thumbImage);
 
   if (variant === 'hover') {
     return (
       <div className={`flex items-center gap-2 ${className ?? ''}`}>
-        {point.image && (
+        {hasImage && (
           <div className="h-9 w-9 shrink-0 overflow-hidden rounded-element">
             <Image
               imageUrl={point.image}
+              optimizedUrl={point.optimizedImage}
+              thumbnailUrl={point.thumbImage}
               alt=""
               aspect="square"
               imageRole="thumb"
@@ -186,6 +188,8 @@ export function MapEntityCard({
         <div className={`relative w-full ${isRail ? 'h-24' : 'h-28'}`}>
           <Image
             imageUrl={point.image}
+            optimizedUrl={point.optimizedImage}
+            thumbnailUrl={point.thumbImage}
             alt={point.name}
             aspect={isRail ? 'auto' : 'card'}
             heightPx={isRail ? 96 : 112}
