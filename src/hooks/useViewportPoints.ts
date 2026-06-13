@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Sentry from '@sentry/react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 import { isOpenNow } from '@/utils/openingHours';
@@ -129,6 +130,52 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 1, delayMs = 1000): 
 
 // ── Supabase fetchers ─────────────────────────────────────────────────────────
 
+interface OptimizedAsset {
+  optimized_url?: string;
+  thumbnail_url?: string;
+}
+
+/**
+ * Batch-resolve the best R2-mirrored asset (optimized/thumbnail, prefer cover)
+ * for a set of entity ids, mirroring useEntityImageAssets. The map's raw
+ * `images[0]` URLs are external hotlinks that often 401/404/ORB-block; the
+ * optimized copy is always reachable. Best-effort — never blocks the map.
+ */
+async function fetchOptimizedAssets(
+  entityType: 'venue' | 'event',
+  ids: string[],
+): Promise<Map<string, OptimizedAsset>> {
+  const map = new Map<string, OptimizedAsset>();
+  if (!ids.length) return map;
+  try {
+    const { data, error } = await untypedFrom('image_asset_links')
+      .select('entity_id, role, image_assets!inner(optimized_url, thumbnail_url, optimization_status, status)')
+      .eq('entity_type', entityType)
+      .in('entity_id', ids)
+      .eq('image_assets.status', 'active');
+    if (error || !data) return map;
+    type Row = {
+      entity_id: string;
+      role: string;
+      image_assets: { optimized_url: string | null; thumbnail_url: string | null; optimization_status: string | null };
+    };
+    for (const row of data as unknown as Row[]) {
+      const ia = row.image_assets;
+      if (!ia) continue;
+      if (ia.optimization_status !== 'optimized' && ia.optimization_status !== 'cdn_optimized') continue;
+      const existing = map.get(row.entity_id);
+      if (existing && row.role !== 'cover') continue; // prefer cover, else first wins
+      map.set(row.entity_id, {
+        optimized_url: ia.optimized_url ?? undefined,
+        thumbnail_url: ia.thumbnail_url ?? undefined,
+      });
+    }
+  } catch {
+    /* asset enrichment is optional — ignore failures */
+  }
+  return map;
+}
+
 async function fetchVenuesInBbox(
   bbox: Bbox,
   filters: ExploreMapFilters | undefined,
@@ -160,8 +207,14 @@ async function fetchVenuesInBbox(
   const { data, error } = await query;
   if (error) throw error;
 
+  const assets = await fetchOptimizedAssets(
+    'venue',
+    (data ?? []).map((v: Record<string, unknown>) => String(v.id)),
+  );
+
   return (data ?? []).map((v: Record<string, unknown>) => {
     const images = Array.isArray(v.images) ? (v.images as string[]) : [];
+    const asset = assets.get(String(v.id));
     const openNow = isOpenNow(v.hours);
     const featured = Boolean(v.is_featured);
     return {
@@ -183,6 +236,8 @@ async function fetchVenuesInBbox(
           category: v.category,
           featured,
           image: images[0] ?? undefined,
+          optimizedImage: asset?.optimized_url,
+          thumbImage: asset?.thumbnail_url,
           openNow,
           priceRange: typeof v.price_range === 'number' ? v.price_range : undefined,
         }),
@@ -236,6 +291,7 @@ async function fetchEventsInBbox(
   // Social-proof: going-count per event (best-effort; never blocks the map).
   const goingById = new Map<string, number>();
   const ids = rows.map((r) => String(r.e.id));
+  const assets = await fetchOptimizedAssets('event', ids);
   if (ids.length) {
     try {
       const { data: counts } = await supabase.rpc('event_attendee_counts', { event_ids: ids });
@@ -263,6 +319,7 @@ async function fetchEventsInBbox(
           endMs >= now) ||
         (!Number.isNaN(startMs) && startMs >= now && startMs - now < 24 * 60 * 60 * 1000);
       const featured = Boolean(e.is_featured);
+      const asset = assets.get(String(e.id));
       return {
         type: 'Feature' as const,
         geometry: { type: 'Point' as const, coordinates: [Number(lng), Number(lat)] },
@@ -282,6 +339,8 @@ async function fetchEventsInBbox(
             venueName: e.venues?.name,
             city: e.city,
             image: images[0] ?? undefined,
+            optimizedImage: asset?.optimized_url,
+            thumbImage: asset?.thumbnail_url,
             trustScore: typeof e.trust_score === 'number' ? e.trust_score : undefined,
             attendeeCount: goingById.get(String(e.id)),
           }),

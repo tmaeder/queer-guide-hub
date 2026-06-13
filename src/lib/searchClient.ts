@@ -33,6 +33,12 @@ export interface SearchHit {
 	location?: string;
 	city?: string;
 	description?: string;
+	/** Raw entity image URL (may hotlink-fail). */
+	image_url?: string | null;
+	/** R2-mirrored optimized copy from image_assets — always reachable. */
+	optimized_url?: string | null;
+	/** R2-mirrored thumbnail copy from image_assets. */
+	thumbnail_url?: string | null;
 	[key: string]: unknown;
 }
 

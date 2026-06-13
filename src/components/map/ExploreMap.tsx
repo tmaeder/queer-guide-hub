@@ -1281,14 +1281,18 @@ export const ExploreMap = ({
       let imageUrl = '';
       try {
         const meta = JSON.parse(String(props.meta ?? '{}'));
-        if (typeof meta.image === 'string' && /^https?:\/\//.test(meta.image)) {
-          imageUrl = encodeURI(meta.image);
-        }
+        // Prefer the reachable R2-mirrored copy over the raw external hotlink.
+        const best = [meta.thumbImage, meta.optimizedImage, meta.image].find(
+          (u) => typeof u === 'string' && /^https?:\/\//.test(u),
+        );
+        if (best) imageUrl = encodeURI(best as string);
       } catch {
         /* ignore */
       }
+      // referrerpolicy=no-referrer dodges publisher-CDN hotlink walls; onerror
+      // removes the node so a dead URL collapses cleanly (no broken-image glyph).
       const thumb = imageUrl
-        ? `<img src="${imageUrl}" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex:0 0 auto"/>`
+        ? `<img src="${imageUrl}" alt="" referrerpolicy="no-referrer" onerror="this.remove()" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex:0 0 auto"/>`
         : '';
       const html = `<div style="display:flex;gap:8px;align-items:center;font:13px system-ui;line-height:1.3;padding:2px 4px;max-width:220px">${thumb}<div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safeName}</div>${
         safeSub

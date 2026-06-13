@@ -102,6 +102,8 @@ function mapHit(h: Record<string, unknown>): Record<string, unknown> {
 		country: h.country as string | undefined,
 		_geoloc: geo ? { lat: geo.lat, lng: geo.lng } : undefined,
 		image_url: (h.imageUrl as string) ?? null,
+		optimized_url: (h.optimizedUrl as string) ?? null,
+		thumbnail_url: (h.thumbnailUrl as string) ?? null,
 		slug: h.slug as string | undefined,
 		start_date: h.start_date as number | string | undefined,
 		end_date: h.end_date as number | string | undefined,
@@ -182,6 +184,9 @@ export interface PgSuggestion {
 	city?: string;
 	country?: string;
 	slug?: string;
+	image_url?: string | null;
+	optimized_url?: string | null;
+	thumbnail_url?: string | null;
 }
 
 /**
@@ -210,5 +215,8 @@ export async function pgAutocomplete(
 		city: r.city as string | undefined,
 		country: r.country as string | undefined,
 		slug: r.slug as string | undefined,
+		image_url: (r.imageUrl as string) ?? null,
+		optimized_url: (r.optimizedUrl as string) ?? null,
+		thumbnail_url: (r.thumbnailUrl as string) ?? null,
 	}));
 }
