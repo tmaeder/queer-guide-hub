@@ -1544,7 +1544,8 @@
       "about": "[RU] Read the mission",
       "invite": "[RU] Invite friends",
       "join": "[RU] Join the community"
-    }
+    },
+    "subtitleShort": "[RU] Verified safe places, real events, and the people behind them."
   },
   "header": {
     "signInSignUp": "Войти / Регистрация",

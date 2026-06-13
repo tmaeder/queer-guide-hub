@@ -1516,7 +1516,8 @@
       "about": "[ES] Read the mission",
       "invite": "[ES] Invite friends",
       "join": "[ES] Join the community"
-    }
+    },
+    "subtitleShort": "[ES] Verified safe places, real events, and the people behind them."
   },
   "header": {
     "signInSignUp": "Iniciar sesión / Registrarse",

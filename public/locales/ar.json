@@ -1516,7 +1516,8 @@
       "about": "[AR] Read the mission",
       "invite": "[AR] Invite friends",
       "join": "[AR] Join the community"
-    }
+    },
+    "subtitleShort": "[AR] Verified safe places, real events, and the people behind them."
   },
   "header": {
     "signInSignUp": "تسجيل الدخول / إنشاء حساب",

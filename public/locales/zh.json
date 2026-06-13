@@ -1516,7 +1516,8 @@
       "about": "[ZH] Read the mission",
       "invite": "[ZH] Invite friends",
       "join": "[ZH] Join the community"
-    }
+    },
+    "subtitleShort": "[ZH] Verified safe places, real events, and the people behind them."
   },
   "header": {
     "signInSignUp": "登录 / 注册",
