@@ -42,11 +42,12 @@ export default function PersonalityDetail() {
     retry: false,
   });
 
+  // Note: deliberately NOT storing nationality — it's sensitive personal data
+  // and recently-viewed history lives in plaintext localStorage.
   useTrackView({
     type: 'personality',
     slug: personality?.slug,
     title: personality?.name,
-    country: personality?.nationality,
   });
 
   useEffect(() => {
