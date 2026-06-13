@@ -28,11 +28,8 @@ vi.mock('@/components/search/UniversalSearchBar', () => ({
 vi.mock('@/components/home/RecentlyViewedRail', () => ({
   RecentlyViewedRail: () => null,
 }));
-vi.mock('@/components/home/HomeTrendingRail', () => ({
-  HomeTrendingRail: () => null,
-}));
-vi.mock('@/components/discovery/RecommendedForYou', () => ({
-  RecommendedForYou: () => null,
+vi.mock('@/components/home/DestinationsFeature', () => ({
+  DestinationsFeature: () => null,
 }));
 
 import Index from '../Index';

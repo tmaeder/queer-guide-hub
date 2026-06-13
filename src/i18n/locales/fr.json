@@ -1520,7 +1520,8 @@
       "about": "[FR] Read the mission",
       "invite": "[FR] Invite friends",
       "join": "[FR] Join the community"
-    }
+    },
+    "subtitleShort": "[FR] Verified safe places, real events, and the people behind them."
   },
   "header": {
     "signInSignUp": "Connexion / Inscription",

@@ -1516,7 +1516,8 @@
       "about": "[PT] Read the mission",
       "invite": "[PT] Invite friends",
       "join": "[PT] Join the community"
-    }
+    },
+    "subtitleShort": "[PT] Verified safe places, real events, and the people behind them."
   },
   "header": {
     "signInSignUp": "Entrar / Cadastrar",

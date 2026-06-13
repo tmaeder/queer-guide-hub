@@ -1516,7 +1516,8 @@
       "about": "[KO] Read the mission",
       "invite": "[KO] Invite friends",
       "join": "[KO] Join the community"
-    }
+    },
+    "subtitleShort": "[KO] Verified safe places, real events, and the people behind them."
   },
   "header": {
     "signInSignUp": "로그인 / 회원가입",
