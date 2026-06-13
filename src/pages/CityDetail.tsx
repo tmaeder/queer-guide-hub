@@ -20,25 +20,18 @@ import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForCity } from '@/components/marketplace/MarketplaceForCity';
 import { CityLocalSupporterCaption } from '@/components/marketplace/CityLocalSupporterCaption';
 import { CityVenueGuidesRail } from '@/components/venues/VenueFeaturedInGuides';
-import { TracingBeam } from '@/components/effects/TracingBeam';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
-import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
-import {
-  EditorialDetailLayout,
-  IntroEssay,
-  KeyFactsStrip,
-  type KeyFact,
-  type SectionDef,
-} from '@/components/entity/editorial';
-import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
+import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { EditorialDetailLayout, type SectionDef } from '@/components/entity/editorial';
 import { CITY_SECTION_DEFS } from './city-detail/CitySectionDefs';
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
 import {
   CityHero,
+  CityAtAGlance,
   CityOverviewTab,
   CityRightsTab,
   CityVenuesTab,
@@ -46,14 +39,12 @@ import {
   CityTravelTab,
   CityNewsTab,
   CityMapTab,
-  CITY_TAB_DEFS,
-  formatPopulation,
 } from './CityDetail.parts';
 
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CityDetail() {
-  useTranslation();
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
@@ -212,30 +203,48 @@ export default function CityDetail() {
     { label: city.name },
   ];
 
+  const hasCoords =
+    typeof city.latitude === 'number' && typeof city.longitude === 'number';
+
+  const seeAll = (href: string) => (
+    <LocalizedLink
+      to={href}
+      className="group inline-flex items-center gap-1 text-13 font-medium text-muted-foreground transition-colors hover:text-foreground no-underline"
+    >
+      {t('cities.detail.seeAll', 'See all')}
+      <span className="transition-transform group-hover:translate-x-1" aria-hidden="true">
+        →
+      </span>
+    </LocalizedLink>
+  );
+
+  const citySlug = city.slug || String(city.id);
+
   const sectionContent: Record<string, React.ReactNode> = {
-    overview: (
-      <CityOverviewTab
-        city={city}
-        villages={villages}
-        villagesLoading={villagesLoading}
-        hasAirport={hasAirport}
-        effectiveIata={effectiveIata}
-        nearestAirport={nearestAirport}
-      />
-    ),
-    rights: (
-      <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />
-    ),
+    rights: <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />,
     venues: (
       <CityVenuesTab
         city={city}
         venues={venues}
         venuesLoading={venuesLoading}
+        villages={villages}
+        villagesLoading={villagesLoading}
         showCreateTrip={Boolean(user)}
         onCreateTrip={() => setCreateTripOpen(true)}
       />
     ),
     events: <CityEventsTab city={city} events={events} eventsLoading={eventsLoading} />,
+    map: hasCoords ? (
+      <CityMapTab city={city} ExploreMap={ExploreMap} Suspense={Suspense} />
+    ) : null,
+    personalities: (
+      <PersonalitiesForEntity
+        cityId={city.id}
+        countryId={city.countries?.id ?? null}
+        cityName={city.name}
+      />
+    ),
+    overview: <CityOverviewTab city={city} />,
     travel: (
       <CityTravelTab
         city={city}
@@ -245,14 +254,6 @@ export default function CityDetail() {
       />
     ),
     news: <CityNewsTab city={city} articles={articles} newsLoading={newsLoading} />,
-    map: <CityMapTab city={city} ExploreMap={ExploreMap} Suspense={Suspense} />,
-    personalities: (
-      <PersonalitiesForEntity
-        cityId={city.id}
-        countryId={city.countries?.id ?? null}
-        cityName={city.name}
-      />
-    ),
     nearby: (
       <NearbyTriptych
         cityId={city.id}
@@ -265,53 +266,44 @@ export default function CityDetail() {
     ),
   };
 
-  const tabs: EntityDetailTab[] = CITY_TAB_DEFS.map((def) => ({
+  const sectionAction: Record<string, React.ReactNode> = {
+    venues: seeAll(`/venues?city=${encodeURIComponent(city.name)}`),
+    events: seeAll(`/events?city=${encodeURIComponent(city.name)}`),
+  };
+
+  const sections: SectionDef[] = CITY_SECTION_DEFS.map((def) => ({
     id: def.id,
-    label: def.label,
+    label: def.heading,
+    kicker: def.kicker,
+    action: sectionAction[def.id],
     content: sectionContent[def.id] ?? null,
-  }));
+  })).filter((s) => s.content != null);
 
-  if (EDITORIAL_DETAIL_LAYOUT_ENABLED) {
-    const sections: SectionDef[] = CITY_SECTION_DEFS.map((def) => ({
-      id: def.id,
-      label: def.label,
-      content: sectionContent[def.id] ?? null,
-    }));
+  const planGeo = city.countries?.id
+    ? {
+        cityId: city.id,
+        cityName: city.name,
+        countryId: city.countries.id,
+        countryName: city.countries.name ?? '',
+        countryCode: city.countries.code ?? null,
+        timezone: city.timezone ?? null,
+      }
+    : null;
 
-    const facts: KeyFact[] = [
-      { label: 'Population', value: city.population ? formatPopulation(city.population) : null },
-      {
-        label: 'Equality',
-        value:
-          city.countries?.equality_score != null ? `${city.countries.equality_score}/10` : null,
-      },
-      { label: 'Language', value: city.local_language || null },
-      { label: 'Currency', value: city.countries?.currency || null },
-      { label: 'Timezone', value: city.timezone || null },
-      {
-        label: hasAirport ? 'Airport' : 'Nearest airport',
-        value: effectiveIata || null,
-      },
-    ];
-
-    const planGeo = city.countries?.id
-      ? {
-          cityId: city.id,
-          cityName: city.name,
-          countryId: city.countries.id,
-          countryName: city.countries.name ?? '',
-          countryCode: city.countries.code ?? null,
-          timezone: city.timezone ?? null,
-        }
-      : null;
-
-    return (
-      <>
-        <EditorialDetailLayout
-          loading={false}
-          error={null}
-          breadcrumbs={breadcrumbs}
-          banner={
+  return (
+    <>
+      <EditorialDetailLayout
+        loading={false}
+        error={null}
+        breadcrumbs={breadcrumbs}
+        banner={
+          <>
+            <SafetyAlertBanner
+              criminalization={
+                city.countries?.lgbti_criminalization as Record<string, unknown> | null | undefined
+              }
+              countryName={city.countries?.name || ''}
+            />
             <TripCoveringBanner
               target={{
                 type: 'city',
@@ -319,85 +311,43 @@ export default function CityDetail() {
                 countryId: city.countries?.id ?? null,
               }}
             />
-          }
-          header={
-            <div className="flex flex-col gap-8">
-              <CityHero
-                city={city}
-                imageUrl={imageUrl}
-                isFavorited={isFavorited(city.id)}
-                hasAirport={hasAirport}
-                effectiveIata={effectiveIata}
-                onFavoriteToggle={handleFavoriteToggle}
-                refetchCity={refetchCity}
-              />
-              <div className="flex flex-wrap gap-2">
-                <PlanTripFromHereButton
-                  initialGeo={planGeo}
-                  label={`Plan a trip to ${city.name}`}
-                />
-              </div>
-              <IntroEssay text={city.description} />
-              <KeyFactsStrip facts={facts} />
-            </div>
-          }
-          sections={sections}
-          footer={
-            <TracingBeam className="px-0 pb-8">
-              <TrendingStrip city={city.name} className="mt-8" />
-              <CityVenueGuidesRail cityId={city.id} />
-              <MarketplaceForCity cityName={city.name} />
-              <CityLocalSupporterCaption cityId={city.id} />
-              <SimilarItems
-                entity={{ type: 'city', id: city.id }}
-                className="mt-6"
-                title="Similar cities"
-                contentTypes={['city']}
-              />
-            </TracingBeam>
-          }
-          entityType="city"
-          entityId={city.id}
-        />
-        <CreateTripDialog open={createTripOpen} onClose={() => setCreateTripOpen(false)} />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <EntityDetailLayout
-        loading={false}
-        error={null}
-        breadcrumbs={breadcrumbs}
-        hero={
-          <CityHero
-            city={city}
-            imageUrl={imageUrl}
-            isFavorited={isFavorited(city.id)}
-            hasAirport={hasAirport}
-            effectiveIata={effectiveIata}
-            onFavoriteToggle={handleFavoriteToggle}
-            refetchCity={refetchCity}
-          />
+          </>
         }
-        tabs={tabs}
+        header={
+          <div className="flex flex-col gap-6">
+            <CityHero
+              city={city}
+              imageUrl={imageUrl}
+              isFavorited={isFavorited(city.id)}
+              onFavoriteToggle={handleFavoriteToggle}
+              refetchCity={refetchCity}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <PlanTripFromHereButton
+                initialGeo={planGeo}
+                label={t('cities.detail.planTrip', 'Plan a trip to {{city}}', { city: city.name })}
+              />
+            </div>
+            <CityAtAGlance city={city} hasAirport={hasAirport} effectiveIata={effectiveIata} />
+          </div>
+        }
+        sections={sections}
+        footer={
+          <div className="flex flex-col gap-12">
+            <TrendingStrip city={city.name} />
+            <CityVenueGuidesRail cityId={city.id} />
+            <MarketplaceForCity cityName={city.name} />
+            <CityLocalSupporterCaption cityId={city.id} />
+            <SimilarItems
+              entity={{ type: 'city', id: city.id }}
+              title="Similar cities"
+              contentTypes={['city']}
+            />
+          </div>
+        }
         entityType="city"
         entityId={city.id}
       />
-
-      <TracingBeam className="container mx-auto px-4 pb-8">
-        <TrendingStrip city={city.name} className="mt-8" />
-        <MarketplaceForCity cityName={city.name} />
-        <CityLocalSupporterCaption cityId={city.id} />
-        <SimilarItems
-          entity={{ type: 'city', id: city.id }}
-          className="mt-6"
-          title="Similar cities"
-          contentTypes={['city']}
-        />
-      </TracingBeam>
-
       <CreateTripDialog open={createTripOpen} onClose={() => setCreateTripOpen(false)} />
     </>
   );

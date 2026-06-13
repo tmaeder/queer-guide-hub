@@ -10,6 +10,8 @@ export type {
 export { formatPopulation } from './city-detail/types';
 export type { CityHeroProps } from './city-detail/CityHero';
 export { CityHero } from './city-detail/CityHero';
+export type { CityAtAGlanceProps } from './city-detail/CityAtAGlance';
+export { CityAtAGlance } from './city-detail/CityAtAGlance';
 export type { CityOverviewTabProps } from './city-detail/CityOverviewTab';
 export { CityOverviewTab } from './city-detail/CityOverviewTab';
 export type { CityRightsTabProps } from './city-detail/CityRightsTab';

@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CityTravelHub } from '@/components/travel/CityTravelHub';
 import { SimilarCities } from '@/components/personalization/SimilarCities';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import type { CityRelation, NearestAirportType } from './types';
 
 export interface CityTravelTabProps {
@@ -20,8 +19,7 @@ export function CityTravelTab({
   nearestAirport,
 }: CityTravelTabProps) {
   return (
-    <ScrollReveal direction="up">
-      <div className="flex flex-col gap-6 mt-6">
+    <div className="flex flex-col gap-6">
         <CityTravelHub
           destinationIata={effectiveIata}
           destinationCity={city.name}
@@ -113,7 +111,6 @@ export function CityTravelTab({
             </CardContent>
           </Card>
         </div>
-      </div>
-    </ScrollReveal>
+    </div>
   );
 }

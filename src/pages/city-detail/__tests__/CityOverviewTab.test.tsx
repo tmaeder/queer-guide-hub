@@ -1,22 +1,33 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+
+vi.mock('@/components/weather/WeatherForecast', () => ({ WeatherForecast: () => <div>weather</div> }));
 
 import { CityOverviewTab } from '../CityOverviewTab';
 
 describe('CityOverviewTab', () => {
-  it('renders without crashing', () => {
-    const { container } = render(
+  it('renders the description and city facts', () => {
+    render(
       <MemoryRouter>
         <CityOverviewTab
-          city={{ id: 'c1', name: 'Berlin' } as never}
-          villages={[]} villagesLoading={false} hasAirport={false} effectiveIata={null} nearestAirport={null}
+          city={
+            {
+              id: 'c1',
+              name: 'Berlin',
+              description: 'A creative capital.',
+              timezone: 'CET',
+              economy_sectors: ['Tech'],
+            } as never
+          }
         />
       </MemoryRouter>,
     );
-    expect(container).toBeTruthy();
+    expect(screen.getByText(/A creative capital/)).toBeInTheDocument();
+    expect(screen.getByText('Timezone')).toBeInTheDocument();
+    expect(screen.getByText('Tech')).toBeInTheDocument();
   });
 });

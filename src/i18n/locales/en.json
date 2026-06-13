@@ -2246,7 +2246,25 @@
     "emptyFiltered": "Try removing a filter or clearing the search.",
     "suggestTitle": "Missing a city?",
     "suggestLede": "Suggest one — adds to the directory after review.",
-    "suggestCta": "Suggest a city"
+    "suggestCta": "Suggest a city",
+    "detail": {
+      "seeAll": "See all",
+      "planTrip": "Plan a trip to {{city}}",
+      "glance": {
+        "safety": "Safety",
+        "safetyLink": "Jump to safety & rights",
+        "deathPenalty": "Death penalty",
+        "criminalized": "Criminalized",
+        "equalityTier": "{{tier}} equality",
+        "checkLaws": "Check local laws",
+        "rating": "LGBTQ+ rating",
+        "population": "Population",
+        "language": "Language",
+        "currency": "Currency",
+        "bestTime": "Best time",
+        "airport": "Airport"
+      }
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

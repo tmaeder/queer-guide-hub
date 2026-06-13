@@ -11,20 +11,15 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
 vi.mock('@/components/ui/loading', () => ({
   InlineLoading: (p: { text: string }) => <div>{p.text}</div>,
 }));
-vi.mock('@/components/country/EqualityScoreBadge', () => ({
-  default: (p: { score: number }) => <span data-testid="score">{p.score}</span>,
-}));
 vi.mock('@/components/country/LGBTJurisdictionInfo', () => ({
   default: () => <div data-testid="rights" />,
-}));
-vi.mock('@/components/animation/ScrollReveal', () => ({
-  ScrollReveal: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import { CityRightsTab } from '../CityRightsTab';
 
 const city = {
   name: 'Berlin',
+  safety_notes: 'Generally very safe.',
   countries: { name: 'Germany', equality_score: 80, slug: 'germany', id: 'co-de' },
 } as never;
 
@@ -41,10 +36,9 @@ describe('CityRightsTab', () => {
     expect(screen.getByText(/Rights data is not available/i)).toBeInTheDocument();
   });
 
-  it('renders heading + score badge + jurisdiction info', () => {
+  it('renders city safety notes + jurisdiction info', () => {
     render(inRouter(<CityRightsTab city={city} fullCountry={{ id: 'co-de' } as never} countryLoading={false} />));
-    expect(screen.getByRole('heading', { name: /LGBTI Rights/i })).toBeInTheDocument();
-    expect(screen.getByTestId('score')).toHaveTextContent('80');
+    expect(screen.getByText(/Generally very safe/i)).toBeInTheDocument();
     expect(screen.getByTestId('rights')).toBeInTheDocument();
   });
 });

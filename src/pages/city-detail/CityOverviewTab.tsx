@@ -1,426 +1,139 @@
 import type { ReactNode } from 'react';
-import {
-  MapPin,
-  Globe,
-  Users,
-  Calendar,
-  Star,
-  Clock,
-  Thermometer,
-  Mountain,
-  Phone,
-  Plane,
-  DollarSign,
-  GraduationCap,
-  Landmark,
-  Info,
-  Home,
-  ChevronDown,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import { VillageCard } from '@/components/villages/VillageCard';
 import { WeatherForecast } from '@/components/weather/WeatherForecast';
-import { LocationInfo } from '@/components/location/LocationInfo';
-import type { CityRelation, VillageRelation, NearestAirportType } from './types';
+import type { CityRelation } from './types';
 
 export interface CityOverviewTabProps {
   city: CityRelation;
-  villages: VillageRelation[];
-  villagesLoading: boolean;
-  hasAirport: boolean;
-  effectiveIata: string | null;
-  nearestAirport: NearestAirportType;
 }
 
-interface FactRowProps {
-  icon: React.ComponentType<{ style?: React.CSSProperties }>;
-  label: string;
-  value: ReactNode;
-  valueSize?: string;
-}
-
-function FactRow({ icon: Icon, label, value, valueSize }: FactRowProps) {
+function FactRow({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex items-center justify-between p-4 rounded-element bg-muted">
-      <div className="flex items-center gap-2">
-        <Icon style={{ height: 16, width: 16 }} className="text-muted-foreground" />
-        <span className="text-sm font-medium">{label}</span>
-      </div>
-      <span className="font-bold" style={valueSize ? { fontSize: valueSize } : undefined}>
-        {value}
-      </span>
+    <div className="flex items-baseline justify-between gap-4 border-b border-border/60 py-2.5 last:border-b-0">
+      <dt className="text-13 text-muted-foreground">{label}</dt>
+      <dd className="text-right text-15 font-medium text-foreground">{value}</dd>
     </div>
   );
 }
 
-export function CityOverviewTab({
-  city,
-  villages,
-  villagesLoading,
-  hasAirport,
-  effectiveIata,
-  nearestAirport,
-}: CityOverviewTabProps) {
+function ChipCluster({ heading, items }: { heading: string; items: string[] }) {
+  if (!items?.length) return null;
   return (
-    <div className="flex flex-col gap-6 mt-6">
-      <ScrollReveal direction="up">
-        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                <Globe size={20} />
-                About {city.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
-                {city.description ||
-                  `Venues, events, and neighborhoods in ${city.name}.`}
-              </p>
-            </CardContent>
-          </Card>
+    <div>
+      <h3 className="mb-3 text-title font-semibold tracking-tight">{heading}</h3>
+      <div className="flex flex-wrap gap-2">
+        {items.map((item, i) => (
+          <Badge key={`${item}-${i}`} variant="outline">
+            {item}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-          <Card>
-            <CardHeader>
-              <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                <Star size={20} />
-                Quick Facts
-              </CardTitle>
-            </CardHeader>
-            <CardContent style={{ flexDirection: 'column' }} className="flex gap-2">
-              {city.countries?.name && (
-                <FactRow icon={Globe} label="Country" value={city.countries.name} />
-              )}
-              {city.countries?.currency && (
-                <FactRow icon={DollarSign} label="Currency" value={city.countries.currency} />
-              )}
-              {city.local_language && (
-                <FactRow icon={Globe} label="Language" value={city.local_language} />
-              )}
-              {city.timezone && <FactRow icon={Clock} label="Timezone" value={city.timezone} />}
-              {city.best_time_to_visit && (
-                <FactRow
-                  icon={Calendar}
-                  label="Best Time"
-                  value={city.best_time_to_visit}
-                  valueSize="0.875rem"
-                />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </ScrollReveal>
+function DefinitionGrid({
+  heading,
+  entries,
+}: {
+  heading: string;
+  entries: [string, unknown][];
+}) {
+  if (!entries.length) return null;
+  return (
+    <div>
+      <h3 className="mb-3 text-title font-semibold tracking-tight">{heading}</h3>
+      <dl className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+        {entries.map(([key, value]) => (
+          <div
+            key={key}
+            className="flex items-baseline justify-between gap-4 border-b border-border/60 py-2"
+          >
+            <dt className="text-13 capitalize text-muted-foreground">{key.replace(/_/g, ' ')}</dt>
+            <dd className="text-right text-15 font-medium">{String(value)}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
 
-      <LocationInfo name={city.name} type="city" />
+/**
+ * The encyclopedic "About" section — every city field the headline strip doesn't
+ * already surface. A flat two-column reading layout (lead essay + facts aside),
+ * not the old card-in-card soup. No fact repeats what At-a-glance already shows.
+ */
+export function CityOverviewTab({ city }: CityOverviewTabProps) {
+  const facts: { label: string; value: ReactNode }[] = [];
+  const civicStatus = city.is_capital
+    ? 'Capital city'
+    : city.is_major_city
+      ? 'Major city'
+      : null;
+  if (civicStatus) facts.push({ label: 'Status', value: civicStatus });
+  if (city.region_name) facts.push({ label: 'Region', value: city.region_name });
+  if (city.timezone) facts.push({ label: 'Timezone', value: city.timezone });
+  if (city.founded_year) facts.push({ label: 'Founded', value: String(city.founded_year) });
+  if (city.area_km2) facts.push({ label: 'Area', value: `${city.area_km2} km²` });
+  if (city.elevation_m) facts.push({ label: 'Elevation', value: `${city.elevation_m} m` });
+  if (city.climate_type) facts.push({ label: 'Climate', value: city.climate_type });
+  if (city.mayor) facts.push({ label: 'Mayor', value: city.mayor });
+  if (typeof city.latitude === 'number' && typeof city.longitude === 'number')
+    facts.push({
+      label: 'Coordinates',
+      value: `${city.latitude.toFixed(3)}, ${city.longitude.toFixed(3)}`,
+    });
+  if (city.postal_codes?.length)
+    facts.push({ label: 'Postal codes', value: city.postal_codes.slice(0, 4).join(', ') });
+  if (city.area_codes?.length)
+    facts.push({ label: 'Area codes', value: city.area_codes.join(', ') });
 
-      {city.latitude && city.longitude && (
-        <WeatherForecast latitude={city.latitude} longitude={city.longitude} cityName={city.name} />
-      )}
+  const demographics = city.demographics ? Object.entries(city.demographics) : [];
+  const costOfLiving = city.cost_of_living ? Object.entries(city.cost_of_living) : [];
 
-      <Collapsible>
-        <CollapsibleTrigger asChild>
-          <Button variant="outline" size="sm">
-            <ChevronDown size={16} />
-            Show more details
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                  <Info size={20} />
-                  Basic Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
-                {city.population && (
-                  <FactRow
-                    icon={Users}
-                    label="Population"
-                    value={city.population.toLocaleString()}
-                  />
-                )}
-                {city.founded_year && (
-                  <FactRow icon={Calendar} label="Founded" value={String(city.founded_year)} />
-                )}
-                {city.area_km2 && (
-                  <FactRow icon={Mountain} label="Area" value={`${city.area_km2} km²`} />
-                )}
-                {city.elevation_m && (
-                  <FactRow icon={Mountain} label="Elevation" value={`${city.elevation_m} m`} />
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                  <Thermometer size={20} />
-                  Climate & Geography
-                </CardTitle>
-              </CardHeader>
-              <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
-                {city.climate_type && (
-                  <div className="p-4 rounded-element bg-muted">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Thermometer size={16} className="text-muted-foreground" />
-                      <span className="text-sm font-medium">Climate</span>
-                    </div>
-                    <span className="font-bold">{city.climate_type}</span>
-                  </div>
-                )}
-                {city.latitude && city.longitude && (
-                  <div className="p-4 rounded-element bg-muted">
-                    <div className="flex items-center gap-2 mb-1">
-                      <MapPin size={16} className="text-muted-foreground" />
-                      <span className="text-sm font-medium">Coordinates</span>
-                    </div>
-                    <span className="font-mono text-sm">
-                      {city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}
-                    </span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                  <Phone size={20} />
-                  Contact & Codes
-                </CardTitle>
-              </CardHeader>
-              <CardContent style={{ flexDirection: 'column' }} className="flex gap-4">
-                {city.postal_codes && city.postal_codes.length > 0 && (
-                  <div>
-                    <span className="text-sm font-medium mb-2 block">Postal Codes</span>
-                    <div className="flex flex-wrap gap-1">
-                      {city.postal_codes.slice(0, 3).map((code: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {code}
-                        </Badge>
-                      ))}
-                      {city.postal_codes.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{city.postal_codes.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {city.area_codes && city.area_codes.length > 0 && (
-                  <div>
-                    <span className="text-sm font-medium mb-2 block">Area Codes</span>
-                    <div className="flex flex-wrap gap-1">
-                      {city.area_codes.map((code: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          <Phone size={12} className="mr-1" />
-                          {code}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {effectiveIata && (
-                  <div className="p-4 rounded-element bg-muted">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Plane size={16} className="text-muted-foreground" />
-                      <span className="text-sm font-medium">
-                        {hasAirport ? 'Major Airport' : 'Nearest Airport'}
-                      </span>
-                    </div>
-                    <Badge variant="outline">{effectiveIata}</Badge>
-                    {!hasAirport && nearestAirport && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {nearestAirport.city_name} — {nearestAirport.distanceKm} km
-                      </p>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {city.demographics && Object.keys(city.demographics).length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                    <Users size={20} />
-                    Demographics & Population
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(city.demographics).map(([key, value]) => (
-                      <div key={key} className="p-4 rounded-element bg-muted">
-                        <span className="text-sm font-medium capitalize block mb-1">
-                          {key.replace(/_/g, ' ')}
-                        </span>
-                        <span className="font-bold">{String(value)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {city.economy_sectors && city.economy_sectors.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                      <DollarSign size={20} />
-                      Economy Sectors
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {city.economy_sectors.map((sector: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {sector}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              {city.cost_of_living && Object.keys(city.cost_of_living).length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                      <DollarSign size={20} />
-                      Cost of Living
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col gap-4">
-                      {Object.entries(city.cost_of_living).map(([key, value]) => (
-                        <div
-                          key={key}
-                          className="flex items-center justify-between p-4 rounded-element bg-muted"
-                        >
-                          <span className="text-sm font-medium capitalize">
-                            {key.replace(/_/g, ' ')}
-                          </span>
-                          <span className="font-bold">{String(value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            {city.universities && city.universities.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                    <GraduationCap size={20} />
-                    Universities & Education
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {city.universities.map((university: string, index: number) => (
-                      <div key={index} className="p-4 rounded-element bg-muted">
-                        <div className="flex items-center gap-2">
-                          <GraduationCap size={16} />
-                          <span className="font-medium text-sm">{university}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {city.notable_landmarks && city.notable_landmarks.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                      <Landmark size={20} />
-                      Notable Landmarks
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4">
-                      {city.notable_landmarks.map((landmark: string, index: number) => (
-                        <div key={index} className="p-4 rounded-element bg-muted">
-                          <div className="flex items-center gap-2">
-                            <Landmark size={16} />
-                            <span className="font-medium">{landmark}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              {city.sister_cities && city.sister_cities.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                      <Globe size={20} />
-                      Sister Cities
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4">
-                      {city.sister_cities.map((sisterCity: string, index: number) => (
-                        <div key={index} className="p-4 rounded-element bg-muted">
-                          <div className="flex items-center gap-2">
-                            <Globe size={16} />
-                            <span className="font-medium">{sisterCity}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </StaggerGrid>
+  return (
+    <div className="flex flex-col gap-12">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-[1.5fr_1fr] md:gap-12">
+        {/* Lead essay + cultural detail */}
+        <div className="flex flex-col gap-8">
+          <p className="text-body-lg leading-relaxed text-muted-foreground">
+            {city.description || `Venues, events, and neighborhoods in ${city.name}.`}
+          </p>
 
           {city.local_customs && (
-            <Card>
-              <CardHeader>
-                <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-                  <Info size={20} />
-                  Local Customs & Culture
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
-                  {city.local_customs}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </CollapsibleContent>
-      </Collapsible>
-
-      {!villagesLoading && villages.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-              <Home size={20} />
-              LGBTQ+ Neighborhoods
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {villages.map((village: VillageRelation) => (
-                <VillageCard key={village.id} village={village} />
-              ))}
+            <div>
+              <h3 className="mb-3 text-title font-semibold tracking-tight">Local customs</h3>
+              <p className="text-body-lg leading-relaxed text-muted-foreground">
+                {city.local_customs}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+          )}
+
+          <ChipCluster heading="Economy" items={city.economy_sectors ?? []} />
+          <ChipCluster heading="Universities" items={city.universities ?? []} />
+          <ChipCluster heading="Notable landmarks" items={city.notable_landmarks ?? []} />
+          <ChipCluster heading="Sister cities" items={city.sister_cities ?? []} />
+          <DefinitionGrid heading="Demographics" entries={demographics} />
+          <DefinitionGrid heading="Cost of living" entries={costOfLiving} />
+        </div>
+
+        {/* Facts aside */}
+        {facts.length > 0 && (
+          <aside className="md:sticky md:top-32 md:self-start">
+            <h3 className="mb-3 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
+              City facts
+            </h3>
+            <dl className="rounded-container border border-border/60 px-4 py-1">
+              {facts.map((f) => (
+                <FactRow key={f.label} label={f.label} value={f.value} />
+              ))}
+            </dl>
+          </aside>
+        )}
+      </div>
+
+      {typeof city.latitude === 'number' && typeof city.longitude === 'number' && (
+        <WeatherForecast latitude={city.latitude} longitude={city.longitude} cityName={city.name} />
       )}
     </div>
   );

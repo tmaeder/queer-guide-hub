@@ -1,34 +1,38 @@
-// Section definitions for the editorial CityDetail. Order is rendered top-to-bottom,
-// also drives the sticky section nav. Section IDs match the legacy CITY_TAB_DEFS ids
-// 1:1 so EditorialDetailLayout's ?tab=→?section= redirect stays clean.
+// Section definitions for the editorial CityDetail. Order is rendered top-to-bottom
+// and drives the sticky section nav. Section IDs match the legacy CITY_TAB_DEFS ids
+// 1:1 so EditorialDetailLayout's ?tab=→?section= redirect keeps old deep-links working.
+//
+// Order leads with the queer-travel jobs (safety → where to go → what's on → map →
+// voices) before the encyclopedic "About", then getting-there / news / nearby.
 
 export type CitySectionId =
-  | 'overview'
   | 'rights'
   | 'venues'
   | 'events'
+  | 'map'
   | 'personalities'
-  | 'news'
+  | 'overview'
   | 'travel'
-  | 'nearby'
-  | 'map';
+  | 'news'
+  | 'nearby';
 
 export interface CitySectionDef {
   id: CitySectionId;
+  /** Sticky-nav label — short. */
   label: string;
+  /** Editorial section heading — fuller voice. */
+  heading: string;
+  kicker: string;
 }
 
-// The seven legacy ids match CITY_TAB_DEFS 1:1 so the EditorialDetailLayout's
-// ?tab=→?section= redirect stays clean. The two new editorial bands
-// (#personalities, #nearby) are appended — they have no legacy tab.
 export const CITY_SECTION_DEFS: CitySectionDef[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'rights', label: 'Rights' },
-  { id: 'venues', label: 'Venues' },
-  { id: 'events', label: 'Events' },
-  { id: 'personalities', label: 'Voices' },
-  { id: 'news', label: 'News' },
-  { id: 'travel', label: 'Travel' },
-  { id: 'nearby', label: 'Nearby' },
-  { id: 'map', label: 'Map' },
+  { id: 'rights', label: 'Safety', heading: 'Safety & rights', kicker: 'Know before you go' },
+  { id: 'venues', label: 'Venues', heading: 'Where to go', kicker: 'Bars, clubs & spaces' },
+  { id: 'events', label: 'Events', heading: "What's on", kicker: 'Upcoming' },
+  { id: 'map', label: 'Map', heading: 'On the map', kicker: 'Explore' },
+  { id: 'personalities', label: 'Voices', heading: 'Voices', kicker: 'People & history' },
+  { id: 'overview', label: 'About', heading: 'About the city', kicker: 'Context' },
+  { id: 'travel', label: 'Travel', heading: 'Getting there', kicker: 'Plan the trip' },
+  { id: 'news', label: 'News', heading: 'In the news', kicker: 'Latest' },
+  { id: 'nearby', label: 'Nearby', heading: 'Nearby', kicker: 'Keep exploring' },
 ];
