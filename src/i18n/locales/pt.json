@@ -2284,7 +2284,25 @@
     "emptyFiltered": "Tente remover um filtro ou limpar a busca.",
     "suggestTitle": "Falta uma cidade?",
     "suggestLede": "Sugira uma — adicionada ao diretório após revisão.",
-    "suggestCta": "Sugerir uma cidade"
+    "suggestCta": "Sugerir uma cidade",
+    "detail": {
+      "seeAll": "[PT] See all",
+      "planTrip": "[PT] Plan a trip to {{city}}",
+      "glance": {
+        "safety": "[PT] Safety",
+        "safetyLink": "[PT] Jump to safety & rights",
+        "deathPenalty": "[PT] Death penalty",
+        "criminalized": "[PT] Criminalized",
+        "equalityTier": "[PT] {{tier}} equality",
+        "checkLaws": "[PT] Check local laws",
+        "rating": "[PT] LGBTQ+ rating",
+        "population": "[PT] Population",
+        "language": "[PT] Language",
+        "currency": "[PT] Currency",
+        "bestTime": "[PT] Best time",
+        "airport": "[PT] Airport"
+      }
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

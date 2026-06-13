@@ -2314,7 +2314,25 @@
     "emptyFiltered": "Попробуйте убрать фильтр или очистить поиск.",
     "suggestTitle": "Нет вашего города?",
     "suggestLede": "Предложите — добавим в каталог после проверки.",
-    "suggestCta": "Предложить город"
+    "suggestCta": "Предложить город",
+    "detail": {
+      "seeAll": "[RU] See all",
+      "planTrip": "[RU] Plan a trip to {{city}}",
+      "glance": {
+        "safety": "[RU] Safety",
+        "safetyLink": "[RU] Jump to safety & rights",
+        "deathPenalty": "[RU] Death penalty",
+        "criminalized": "[RU] Criminalized",
+        "equalityTier": "[RU] {{tier}} equality",
+        "checkLaws": "[RU] Check local laws",
+        "rating": "[RU] LGBTQ+ rating",
+        "population": "[RU] Population",
+        "language": "[RU] Language",
+        "currency": "[RU] Currency",
+        "bestTime": "[RU] Best time",
+        "airport": "[RU] Airport"
+      }
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

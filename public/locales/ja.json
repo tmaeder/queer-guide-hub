@@ -2282,7 +2282,25 @@
     "emptyFiltered": "フィルターを外すか、検索をクリアしてみてください。",
     "suggestTitle": "都市が見つかりませんか？",
     "suggestLede": "提案してください — 確認後にディレクトリに追加されます。",
-    "suggestCta": "都市を提案する"
+    "suggestCta": "都市を提案する",
+    "detail": {
+      "seeAll": "[JA] See all",
+      "planTrip": "[JA] Plan a trip to {{city}}",
+      "glance": {
+        "safety": "[JA] Safety",
+        "safetyLink": "[JA] Jump to safety & rights",
+        "deathPenalty": "[JA] Death penalty",
+        "criminalized": "[JA] Criminalized",
+        "equalityTier": "[JA] {{tier}} equality",
+        "checkLaws": "[JA] Check local laws",
+        "rating": "[JA] LGBTQ+ rating",
+        "population": "[JA] Population",
+        "language": "[JA] Language",
+        "currency": "[JA] Currency",
+        "bestTime": "[JA] Best time",
+        "airport": "[JA] Airport"
+      }
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

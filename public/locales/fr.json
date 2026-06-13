@@ -2288,7 +2288,25 @@
     "emptyFiltered": "Essayez d'enlever un filtre ou d'effacer la recherche.",
     "suggestTitle": "Une ville manque ?",
     "suggestLede": "Suggérez-la — ajoutée à l'annuaire après vérification.",
-    "suggestCta": "Suggérer une ville"
+    "suggestCta": "Suggérer une ville",
+    "detail": {
+      "seeAll": "[FR] See all",
+      "planTrip": "[FR] Plan a trip to {{city}}",
+      "glance": {
+        "safety": "[FR] Safety",
+        "safetyLink": "[FR] Jump to safety & rights",
+        "deathPenalty": "[FR] Death penalty",
+        "criminalized": "[FR] Criminalized",
+        "equalityTier": "[FR] {{tier}} equality",
+        "checkLaws": "[FR] Check local laws",
+        "rating": "[FR] LGBTQ+ rating",
+        "population": "[FR] Population",
+        "language": "[FR] Language",
+        "currency": "[FR] Currency",
+        "bestTime": "[FR] Best time",
+        "airport": "[FR] Airport"
+      }
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
