@@ -17,7 +17,7 @@ interface NavItem {
 const ITEMS: NavItem[] = [
   { to: '/', icon: Home, label: 'Home', matchPrefixes: ['/'] },
   { to: '/venues', icon: Search, label: 'Find', matchPrefixes: ['/venues', '/events', '/marketplace', '/places'] },
-  { to: '/me', icon: User, label: 'Me', authOnly: true, matchPrefixes: ['/me', '/profile'] },
+  { to: '/me', icon: User, label: 'Me', authOnly: true, matchPrefixes: ['/me', '/profile', '/user'] },
   { to: '/discover', icon: Compass, label: 'Discover', authOnly: true, matchPrefixes: ['/discover', '/intimate'] },
   { to: '/messages', icon: MessageCircle, label: 'Messages', authOnly: true, matchPrefixes: ['/messages'] },
 ];

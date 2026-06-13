@@ -50,6 +50,38 @@ const COMING_OUT_OPTIONS = [
   { value: 'not_applicable', label: 'Not applicable' },
 ];
 
+const ROMANTIC_ORIENTATION_OPTIONS = [
+  { value: 'heteroromantic', label: 'Heteroromantic' },
+  { value: 'homoromantic', label: 'Homoromantic' },
+  { value: 'biromantic', label: 'Biromantic' },
+  { value: 'panromantic', label: 'Panromantic' },
+  { value: 'aromantic', label: 'Aromantic' },
+  { value: 'demiromantic', label: 'Demiromantic' },
+  { value: 'greyromantic', label: 'Greyromantic' },
+  { value: 'queerplatonic', label: 'Queerplatonic' },
+  { value: 'questioning', label: 'Questioning' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+  { value: 'other', label: 'Other' },
+];
+
+const RELATIONSHIP_STATUS_OPTIONS = [
+  { value: 'single', label: 'Single' },
+  { value: 'taken', label: 'Taken' },
+  { value: 'its_complicated', label: "It's complicated" },
+  { value: 'open_to_explore', label: 'Open to explore' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+];
+
+const RELATIONSHIP_STYLE_OPTIONS = [
+  { value: 'monogamous', label: 'Monogamous' },
+  { value: 'polyamorous', label: 'Polyamorous' },
+  { value: 'relationship_anarchist', label: 'Relationship anarchist' },
+  { value: 'open_relationship', label: 'Open relationship' },
+  { value: 'swinging', label: 'Swinging' },
+  { value: 'exploring', label: 'Exploring' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+];
+
 interface IdentityTabProps {
   formData: ProfileFormData;
   onChange: (field: string, value: string) => void;
@@ -74,6 +106,24 @@ export function IdentityTab({ formData, onChange, onComingOutChange }: IdentityT
               <FormField id="disability_status" label="Disability Status" value={formData.disability_status} onChange={(v) => onChange('disability_status', v)} placeholder="Optional" />
             </div>
             <FormField id="neurodivergent_status" label="Neurodivergent Status" value={formData.neurodivergent_status} onChange={(v) => onChange('neurodivergent_status', v)} placeholder="Optional — e.g., ADHD, autism, dyslexia" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Relationships</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Dating and intimacy preferences live in the opt-in Intimate module below.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SelectField id="romantic_orientation" label="Romantic Orientation" value={formData.romantic_orientation} onChange={(v) => onChange('romantic_orientation', v)} options={ROMANTIC_ORIENTATION_OPTIONS} />
+              <SelectField id="current_relationship_status" label="Current Status" value={formData.current_relationship_status} onChange={(v) => onChange('current_relationship_status', v)} options={RELATIONSHIP_STATUS_OPTIONS} />
+            </div>
+            <SelectField id="relationship_style" label="Relationship Style" value={formData.relationship_style} onChange={(v) => onChange('relationship_style', v)} options={RELATIONSHIP_STYLE_OPTIONS} />
           </div>
         </CardContent>
       </Card>

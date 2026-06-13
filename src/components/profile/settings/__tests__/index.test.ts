@@ -5,7 +5,6 @@ describe('profile/settings barrel', () => {
   it('re-exports', () => {
     expect(tabs.BasicInfoTab).toBeDefined();
     expect(tabs.IdentityTab).toBeDefined();
-    expect(tabs.RelationshipsTab).toBeDefined();
     expect(tabs.PrivacyTab).toBeDefined();
   });
 });

@@ -14,7 +14,8 @@ test.describe('extension submission flow', () => {
 
   test('extension install page renders with both store links', async ({ page }) => {
     await page.goto('/extension');
-    await expect(page).toHaveTitle(/queer\.guide/i);
+    // Title is "Queer Guide — …" (brand spells it with a space).
+    await expect(page).toHaveTitle(/queer[\s.]?guide/i);
     // Page should mention either Chrome or Firefox / install
     const body = await page.locator('body').textContent();
     expect(body).toMatch(/chrome|firefox|install|extension/i);
@@ -24,8 +25,8 @@ test.describe('extension submission flow', () => {
     await page.goto('/submit/venue');
     // Either form renders, or auth gate kicks in — both are valid.
     const visible = await Promise.race([
-      page.getByRole('heading', { level: 1 }).waitFor({ timeout: 5000 }).then(() => true).catch(() => false),
-      page.getByRole('button', { name: /sign in|log in|continue/i }).waitFor({ timeout: 5000 }).then(() => true).catch(() => false),
+      page.getByRole('heading', { level: 1 }).first().waitFor({ timeout: 10_000 }).then(() => true).catch(() => false),
+      page.getByRole('button', { name: /sign in|log in|continue/i }).first().waitFor({ timeout: 10_000 }).then(() => true).catch(() => false),
     ]);
     expect(visible).toBe(true);
   });

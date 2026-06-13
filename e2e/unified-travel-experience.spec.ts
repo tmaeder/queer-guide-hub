@@ -7,19 +7,20 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('unified travel experience', () => {
-  test('/travel renders Browse/Plan mode switcher', async ({ page }) => {
+  // The Browse/Plan tablist was removed — /travel is now a single hub page
+  // (src/pages/Travel.tsx). Legacy ?mode= URLs are still accepted and
+  // normalised away (or redirected to the primary trip for mode=plan).
+  test('/travel renders the travel hub', async ({ page }) => {
     await page.goto('/travel');
-    await expect(page.getByRole('tablist', { name: /travel mode/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /browse/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /plan/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: /travel/i }),
+    ).toBeVisible({ timeout: 15_000 });
   });
 
-  test('mode switch updates ?mode= in URL', async ({ page }) => {
-    await page.goto('/travel');
-    await page.getByRole('tab', { name: /plan/i }).click();
-    await expect(page).toHaveURL(/[?&]mode=plan/);
-    await page.getByRole('tab', { name: /browse/i }).click();
-    await expect(page).toHaveURL(/[?&]mode=browse/);
+  test('legacy ?mode=browse is dropped from the URL', async ({ page }) => {
+    await page.goto('/travel?mode=browse');
+    await expect(page).not.toHaveURL(/[?&]mode=/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/travel/);
   });
 
   test('/hotels survives as transactional shortcut', async ({ page }) => {

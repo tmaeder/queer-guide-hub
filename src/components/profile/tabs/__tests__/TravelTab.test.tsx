@@ -88,14 +88,14 @@ vi.mock('@/hooks/useTrips', () => ({
   useTrips: () => ({ data: [{ id: 't1' }] }),
 }));
 
-import Footprint from '../Footprint';
+import { TravelTab } from '@/components/profile/tabs/TravelTab';
 
 function renderPage() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={qc}>
       <MemoryRouter>
-        <Footprint />
+        <TravelTab userId="u1" isOwnProfile />
       </MemoryRouter>
     </QueryClientProvider>,
   );
@@ -104,7 +104,6 @@ function renderPage() {
 describe('Footprint dashboard', () => {
   it('renders stats panel, badges, heatmap and return nudge', () => {
     renderPage();
-    expect(screen.getByText('Footprint')).toBeTruthy();
     expect(screen.getByTestId('footprint-stats')).toBeTruthy();
     expect(screen.getByTestId('footprint-badges')).toBeTruthy();
     expect(screen.getByTestId('footprint-heatmap')).toBeTruthy();

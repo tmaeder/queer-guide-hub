@@ -21,7 +21,7 @@ export function CompletionNudge({ percent, threshold = 80, className }: Completi
   if (percent >= threshold) return null;
   return (
     <LocalizedLink
-      to="/profile/settings"
+      to="/settings"
       className={cn(
         'flex items-center gap-4 rounded-container border border-border bg-card p-4 hover:bg-muted/30 transition-colors',
         className,

@@ -12,8 +12,11 @@ test.describe('@p1-1 /resources URL state', () => {
   });
 
   test('typing in search updates the URL', async ({ page }) => {
-    await page.goto('/resources');
+    // The pure overview (Help-first rework) has no filter bar — enter via
+    // ?q= so the search box renders, then type.
+    await page.goto('/resources?q=les');
     const search = page.getByRole('textbox', { name: /search resources/i }).first();
+    await expect(search).toBeVisible({ timeout: 15_000 });
     await search.fill('lesbian');
     await expect(page).toHaveURL(/\/resources\?.*q=lesbian/, { timeout: 5_000 });
   });

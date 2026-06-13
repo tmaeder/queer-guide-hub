@@ -33,9 +33,16 @@ test.describe('MapShell — discover surface (/map)', () => {
   test('renders command bar with search, lens picker, filter, layer, more', async ({ page }) => {
     const bar = page.locator('[data-testid=map-command-bar]');
     await expect(bar).toBeVisible();
+    // Search is collapsed to an icon button by default; the input only
+    // renders after clicking it (CommandBar.tsx).
+    const searchToggle = bar.locator('button[aria-label="Search this map"]');
+    await expect(searchToggle).toBeVisible();
+    await searchToggle.click();
     await expect(bar.locator('input[placeholder="Search this map"]')).toBeVisible();
     await expect(bar.locator('[role=radiogroup][aria-label="Map view"]')).toBeVisible();
-    await expect(bar.locator('button[aria-label="Filters"]')).toBeVisible();
+    // Filters renders twice (mobile Sheet + desktop Popover trigger) — only
+    // one is visible per breakpoint, and the label gains ", N active".
+    await expect(bar.locator('button[aria-label^="Filters"]:visible').first()).toBeVisible();
     await expect(bar.locator('button[aria-label="Layers"]')).toBeVisible();
     await expect(bar.locator('button[aria-label="More map options"]')).toBeVisible();
   });
@@ -62,18 +69,20 @@ test.describe('MapShell — discover surface (/map)', () => {
       .toBe('boundary');
   });
 
+  // The Queer-owned toggle left the panel — MapFiltersPanel now offers
+  // category chips / tags / near-me. Toggle the Bar category instead.
   test('Filter popover adds a chip and updates URL; clicking chip removes it', async ({ page }) => {
-    await page.click('button[aria-label="Filters"]');
-    const queerOwnedOpt = page.getByRole('button', { name: 'Queer-owned' }).first();
-    await queerOwnedOpt.click();
+    await page.locator('button[aria-label^="Filters"]:visible').first().click();
+    const barOpt = page.getByRole('button', { name: /^Bar$/ }).first();
+    await barOpt.click();
 
-    const chip = page.locator('[aria-label="Active filters"] button[aria-label*="Queer-owned"]');
+    const chip = page.locator('[aria-label="Active filters"] button', { hasText: 'Bar' }).first();
     await expect(chip).toBeVisible();
-    await expect(page).toHaveURL(/[?&]queer_owned=1/);
+    await expect(page).toHaveURL(/[?&]category=bar/);
 
     await chip.click();
     await expect(chip).toHaveCount(0);
-    await expect(page).not.toHaveURL(/[?&]queer_owned=/);
+    await expect(page).not.toHaveURL(/[?&]category=/);
   });
 });
 

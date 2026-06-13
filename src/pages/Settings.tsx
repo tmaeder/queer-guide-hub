@@ -18,13 +18,13 @@ import {
   Heart,
   Lock,
   Check,
-  Settings,
+  Settings as SettingsIcon,
   ChevronRight,
-  AtSign,
-  Sparkles,
+  Luggage,
   FileText,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useMeta } from '@/hooks/useMeta';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileData } from '@/hooks/useProfileData';
@@ -37,9 +37,9 @@ import { PushNotificationSettings } from '@/components/profile/PushNotificationS
 import { DocumentsList } from '@/components/trips/DocumentsList';
 import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
 import { IdentityTab } from '@/components/profile/settings/IdentityTab';
-import { RelationshipsTab } from '@/components/profile/settings/RelationshipsTab';
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { IntimateTab } from '@/components/profile/IntimateTab';
+import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { IdentityPreviewCard } from '@/components/profile/IdentityPreviewCard';
 import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarChooser';
 import { UsernamePanel } from '@/components/profile/UsernamePanel';
@@ -60,13 +60,14 @@ type ProfileX = Profile & {
   username_auto_assigned?: boolean | null;
 };
 
-type SheetKind = 'profile' | 'dating' | 'privacy' | 'account' | 'avatar' | null;
+type SheetKind = 'profile' | 'dating' | 'privacy' | 'travel' | 'account' | 'avatar' | null;
 
 /** Personal documents are removed after this date (T+30 export window). */
 const DOCS_REMOVAL_DATE = 'July 11, 2026';
 
-export default function ProfileSettings() {
+export default function Settings() {
   const navigate = useLocalizedNavigate();
+  useMeta({ title: 'Settings', noIndex: true });
   const { user, hasPasskey } = useAuth();
   const { updateProfile, refetchProfile } = useProfile();
   const { toast } = useToast();
@@ -170,18 +171,6 @@ function SummaryCard({
   );
 }
 
-const PROMPT_DISMISS_KEY = 'qg.settings.prompt.dismissed';
-const PROMPT_REDISPLAY_MS = 7 * 24 * 60 * 60 * 1000;
-
-function promptDismissed(kind: string): boolean {
-  try {
-    const raw = localStorage.getItem(`${PROMPT_DISMISS_KEY}.${kind}`);
-    return !!raw && Date.now() - Number(raw) < PROMPT_REDISPLAY_MS;
-  } catch {
-    return false;
-  }
-}
-
 function ProfileSettingsContent({
   profile,
   updateProfile,
@@ -198,22 +187,26 @@ function ProfileSettingsContent({
   const [saveStatus, setSaveStatus] = useState<
     'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error'
   >('saved');
-  // Old deep links (?tab=privacy etc.) open the matching sheet.
-  const LEGACY_TAB_TO_SHEET: Record<string, SheetKind> = {
+  // ?section= deep links (and old ?tab= links) open the matching sheet.
+  const SECTION_TO_SHEET: Record<string, SheetKind> = {
     profile: 'profile',
     basic: 'profile',
-    identity: 'profile',
+    identity: 'dating',
     account: 'account',
     notifications: 'account',
     privacy: 'privacy',
+    travel: 'travel',
     dating: 'dating',
     relationships: 'dating',
     intimate: 'dating',
+    avatar: 'avatar',
   };
   const [openSheet, setOpenSheet] = useState<SheetKind>(
-    () => LEGACY_TAB_TO_SHEET[searchParams.get('tab') ?? ''] ?? null,
+    () =>
+      SECTION_TO_SHEET[searchParams.get('section') ?? ''] ??
+      SECTION_TO_SHEET[searchParams.get('tab') ?? ''] ??
+      null,
   );
-  const [promptTick, setPromptTick] = useState(0);
 
   const profileCompletion = calculateCompletion(formData, profile);
 
@@ -291,15 +284,6 @@ function ProfileSettingsContent({
         romantic_orientation: formData.romantic_orientation,
         relationship_style: formData.relationship_style,
         current_relationship_status: formData.current_relationship_status,
-        romance_style: formData.romance_style,
-        physical_affection_preference: formData.physical_affection_preference,
-        sexual_frequency_preference: formData.sexual_frequency_preference,
-        communication_about_sex: formData.communication_about_sex,
-        sexual_exploration_openness: formData.sexual_exploration_openness,
-        sexual_health_status: formData.sexual_health_status,
-        kink_experience_level: formData.kink_experience_level,
-        bdsm_role: formData.bdsm_role,
-        jealousy_comfort_level: formData.jealousy_comfort_level,
         privacy_settings: formData.privacy_settings,
         user_mode: formData.user_mode,
       } as Partial<Profile>);
@@ -324,45 +308,8 @@ function ProfileSettingsContent({
     return () => clearTimeout(id);
   }, [formData, hasUnsavedChanges, handleSave, saveStatus]);
 
-  // ---- Prompt slot: one gap-driven nudge, priority username > avatar > pronouns
+  // Gap-driven nudges moved to the profile Overview (GapPromptCard).
   const username = px?.username ?? null;
-  let prompt: { kind: string; title: string; body: string; cta: string; sheet: SheetKind } | null =
-    null;
-  if (!username) {
-    prompt = {
-      kind: 'username',
-      title: 'Claim your @username',
-      body: 'Your permanent handle for mentions and your profile link.',
-      cta: 'Claim now',
-      sheet: 'account',
-    };
-  } else if (px?.avatar_auto_assigned && !promptDismissed('avatar')) {
-    prompt = {
-      kind: 'avatar',
-      title: 'Make your avatar yours',
-      body: 'We gave you a starter look. Upload a photo, import one, or build your own.',
-      cta: 'Choose avatar',
-      sheet: 'avatar',
-    };
-  } else if (formData.pronoun_tags.length === 0 && !promptDismissed('pronouns')) {
-    prompt = {
-      kind: 'pronouns',
-      title: 'Add your pronouns',
-      body: 'Optional, takes 30 seconds. You decide who sees them.',
-      cta: 'Add pronouns',
-      sheet: 'profile',
-    };
-  }
-  void promptTick;
-
-  const dismissPrompt = (kind: string) => {
-    try {
-      localStorage.setItem(`${PROMPT_DISMISS_KEY}.${kind}`, String(Date.now()));
-    } catch {
-      /* storage unavailable — prompt just stays */
-    }
-    setPromptTick((t) => t + 1);
-  };
 
   const privacySummary = [
     `Profile: ${formData.privacy_settings.profile_visibility || 'public'}`,
@@ -374,6 +321,7 @@ function ProfileSettingsContent({
     profile: 'Profile',
     dating: 'Identity & dating',
     privacy: 'Privacy & visibility',
+    travel: 'Travel preferences',
     account: 'Account',
     avatar: 'Your avatar',
   };
@@ -408,40 +356,6 @@ function ProfileSettingsContent({
         onEditAccount={() => setOpenSheet('account')}
       />
 
-      {/* Prompt slot — at most one gap-driven nudge, never a wall */}
-      {prompt && (
-        <Card className="rounded-container border-foreground/20">
-          <CardContent className="pt-6 flex items-start gap-4">
-            <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
-              {prompt.kind === 'username' ? (
-                <AtSign size={18} aria-hidden="true" />
-              ) : (
-                <Sparkles size={18} aria-hidden="true" />
-              )}
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold">{prompt.title}</p>
-              <p className="text-sm text-muted-foreground">{prompt.body}</p>
-              <div className="flex gap-2 mt-4">
-                <Button size="sm" className="rounded-element" onClick={() => setOpenSheet(prompt!.sheet)}>
-                  {prompt.cta}
-                </Button>
-                {prompt.kind !== 'username' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-element"
-                    onClick={() => dismissPrompt(prompt!.kind)}
-                  >
-                    Later
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* State-of-your-account — summaries, not inputs */}
       <div className="flex flex-col gap-2">
         <SummaryCard
@@ -467,7 +381,13 @@ function ProfileSettingsContent({
           onOpen={() => setOpenSheet('privacy')}
         />
         <SummaryCard
-          icon={Settings}
+          icon={Luggage}
+          title="Travel preferences"
+          summary="Budget, style, accessibility needs"
+          onOpen={() => setOpenSheet('travel')}
+        />
+        <SummaryCard
+          icon={SettingsIcon}
           title="Account"
           summary={username ? `@${username} · email, notifications` : 'Username, email, notifications'}
           onOpen={() => setOpenSheet('account')}
@@ -531,10 +451,11 @@ function ProfileSettingsContent({
                   onChange={handleInputChange}
                   onComingOutChange={handleComingOutChange}
                 />
-                <RelationshipsTab formData={formData} onChange={handleInputChange} />
                 <IntimateTab />
               </div>
             )}
+
+            {openSheet === 'travel' && <TravelPreferencesEditor />}
 
             {openSheet === 'privacy' && (
               <PrivacyTab

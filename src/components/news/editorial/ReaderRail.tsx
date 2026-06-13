@@ -33,7 +33,7 @@ export function ReaderRail() {
       <ReadingStreak />
       <SavedCount />
       <LocalizedLink
-        to="/news/me"
+        to="/me/progress"
         className="text-13 uppercase tracking-wider no-underline text-foreground hover:underline self-start"
       >
         Your full shelf →

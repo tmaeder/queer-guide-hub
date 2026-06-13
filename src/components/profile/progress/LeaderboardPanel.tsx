@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
-import { useMeta } from '@/hooks/useMeta';
 import {
   useCityLeaderboard,
   useGlobalLeaderboard,
@@ -9,18 +8,11 @@ import {
 } from '@/hooks/useVenuesV2Data';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy } from 'lucide-react';
 
-type Row = LeaderboardRow;
-
-const VenuesLeaderboard = () => {
+/** Global + home-city explorer rankings. Moved from VenuesLeaderboard. */
+export function LeaderboardPanel() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  useMeta({
-    title: 'Leaderboard',
-    description: 'Top explorers on Queer Guide.',
-    canonicalPath: '/venues/leaderboard',
-  });
 
   const { data: dp } = useDiscoveryProfile();
   const myCity = dp?.primary_city_id
@@ -31,17 +23,10 @@ const VenuesLeaderboard = () => {
   const { rows: cityRows, loading: loadingCity } = useCityLeaderboard(myCity?.id ?? null, 100);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 space-y-8">
-      <header>
-        <div className="flex items-center gap-2 mb-2">
-          <Trophy size={24} />
-          <h1 className="text-headline font-semibold">{t('venues.leaderboard.title', 'Leaderboard')}</h1>
-        </div>
-        <p className="text-muted-foreground">
-          {t('venues.leaderboard.subtitle', 'Top explorers ranked by venues visited.')}
-        </p>
-      </header>
-
+    <section aria-label="Leaderboard" className="flex flex-col gap-4">
+      <h2 className="text-title font-semibold">
+        {t('venues.leaderboard.title', 'Leaderboard')}
+      </h2>
       <Tabs defaultValue="global">
         <TabsList>
           <TabsTrigger value="global">{t('venues.leaderboard.tabs.global', 'Global')}</TabsTrigger>
@@ -60,16 +45,16 @@ const VenuesLeaderboard = () => {
           </TabsContent>
         )}
       </Tabs>
-    </div>
+    </section>
   );
-};
+}
 
 function Board({
   rows,
   loading,
   currentUserId,
 }: {
-  rows: Row[];
+  rows: LeaderboardRow[];
   loading: boolean;
   currentUserId: string | undefined;
 }) {
@@ -84,7 +69,11 @@ function Board({
     );
   }
   if (rows.length === 0) {
-    return <p className="text-muted-foreground">{t('venues.leaderboard.empty', 'No data yet — be the first to check in.')}</p>;
+    return (
+      <p className="text-muted-foreground">
+        {t('venues.leaderboard.empty', 'No data yet — be the first to check in.')}
+      </p>
+    );
   }
   return (
     <ol className="divide-y border rounded-container overflow-hidden bg-card">
@@ -115,5 +104,3 @@ function Board({
     </ol>
   );
 }
-
-export default VenuesLeaderboard;
