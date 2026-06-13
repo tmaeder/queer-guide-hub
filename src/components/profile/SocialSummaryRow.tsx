@@ -17,13 +17,13 @@ export function SocialSummaryRow({ userId, isOwnProfile, onPostsClick }: SocialS
       icon: Users,
       label: data?.friends === 1 ? 'friend' : 'friends',
       count: data?.friends ?? 0,
-      to: isOwnProfile ? '/friends' : undefined,
+      to: isOwnProfile ? '/community/friends' : undefined,
     },
     {
       icon: UsersRound,
       label: data?.groups === 1 ? 'group' : 'groups',
       count: data?.groups ?? 0,
-      to: isOwnProfile ? '/groups?tab=mine' : undefined,
+      to: isOwnProfile ? '/community/groups?tab=mine' : undefined,
     },
     {
       icon: MessageSquare,

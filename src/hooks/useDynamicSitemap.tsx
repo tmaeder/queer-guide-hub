@@ -22,18 +22,18 @@ export function useDynamicSitemap() {
         { label: "Venues", to: "/venues" },
         { label: "Events", to: "/events" },
         { label: "Marketplace", to: "/marketplace" },
-        { label: "Users", to: "/users" },
+        { label: "Members", to: "/community/members" },
         { label: "News", to: "/news" },
-        { label: "Groups", to: "/groups" },
-        { label: "My Groups", to: "/groups?tab=mine" },
-        { label: "Feed", to: "/feed" },
+        { label: "Groups", to: "/community/groups" },
+        { label: "My Groups", to: "/community/groups?tab=mine" },
+        { label: "Feed", to: "/community/feed" },
         { label: "Saved", to: "/me/saved" },
         { label: "Search", to: "/search" },
         { label: "Personalities", to: "/personalities" },
         { label: "Places", to: "/places" },
         { label: "Resources", to: "/resources" },
         { label: "Messages", to: "/messages" },
-        { label: "Friends", to: "/friends" },
+        { label: "Friends", to: "/community/friends" },
       ];
 
       const staticAboutLinks: SitemapLink[] = [
