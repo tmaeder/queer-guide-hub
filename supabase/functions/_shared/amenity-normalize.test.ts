@@ -15,6 +15,7 @@ const vocab = buildVocab([
   { slug: 'step-free-entrance', kind: 'accessibility', category_scope: ['all'] },
   { slug: 'clothing-optional', kind: 'queer', category_scope: ['sauna'] },
   { slug: 'lgbtq-owned', kind: 'queer', category_scope: ['all'] },
+  { slug: 'queer-friendly', kind: 'queer', category_scope: ['all'] },
 ])
 
 Deno.test('slugify normalizes punctuation/case', () => {
@@ -38,6 +39,10 @@ Deno.test('classifyTerm: accessibility split out', () => {
 Deno.test('classifyTerm: queer markers', () => {
   assertEquals(classifyTerm('clothing-optional-accepted', vocab), { kind: 'queer', slug: 'clothing-optional' })
   assertEquals(classifyTerm('lgbtq owned', vocab), { kind: 'queer', slug: 'lgbtq-owned' })
+  // bare-handle forms map to queer-friendly (kept in sync with normalize_venue_tags SQL vocab)
+  for (const h of ['lgbtq', 'lgbt', 'lgbtqia', 'queer', 'gay']) {
+    assertEquals(classifyTerm(h, vocab), { kind: 'queer', slug: 'queer-friendly' }, `expected ${h} -> queer-friendly`)
+  }
 })
 
 Deno.test('classifyTerm: scrape noise dropped', () => {

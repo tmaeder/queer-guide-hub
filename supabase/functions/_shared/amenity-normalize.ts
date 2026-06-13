@@ -98,6 +98,8 @@ const QUEER_ALIASES: Record<string, string> = {
   'lgbtq owned': 'lgbtq-owned', 'lgbt owned': 'lgbtq-owned', 'queer owned': 'lgbtq-owned',
   'gay owned': 'gay-owned', 'lesbian owned': 'lesbian-owned', 'trans owned': 'trans-owned',
   'gay friendly': 'queer-friendly', 'lgbtq friendly': 'queer-friendly', 'lgbt friendly': 'queer-friendly', 'queer friendly': 'queer-friendly',
+  // bare-handle forms scrapers emit — kept in sync with normalize_venue_tags() (migration 20260613120000)
+  'lgbtq': 'queer-friendly', 'lgbt': 'queer-friendly', 'lgbtqia': 'queer-friendly', 'queer': 'queer-friendly', 'gay': 'queer-friendly',
   'trans friendly': 'trans-friendly',
   'gay staff': 'lgbtq-staff', 'lgbtq staff': 'lgbtq-staff',
   'clothing optional': 'clothing-optional', 'clothing optional accepted': 'clothing-optional', 'nudism allowed': 'clothing-optional', 'naked': 'clothing-optional', 'nude': 'clothing-optional',
