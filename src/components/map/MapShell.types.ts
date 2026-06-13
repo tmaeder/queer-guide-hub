@@ -27,6 +27,10 @@ export interface MapShellConfig {
   layers: LayerType[];
   filters: MapFilterKey[];
   showCommandBar?: boolean;
+  /** Show the search field inside the command bar. Default true. Set false to
+   *  keep lens/filter/layer controls but drop the on-map search (e.g. the
+   *  homepage, where the global top-bar search is the single search). */
+  showSearch?: boolean;
   enableSearchThisArea?: boolean;
   enableUrlState?: boolean;
 }

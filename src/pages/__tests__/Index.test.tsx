@@ -20,16 +20,13 @@ vi.mock('@/hooks/useVisitorLocation', () => ({
   useVisitorLocation: () => ({ location: null, loading: false }),
 }));
 
-// Heavy children pull their own data/providers — stub them so this stays a
-// composition smoke test for Index itself.
-vi.mock('@/components/search/UniversalSearchBar', () => ({
-  UniversalSearchBar: () => <div data-testid="search-bar" />,
+// Heavy children pull their own data/providers (maplibre, etc.) — stub them so
+// this stays a composition smoke test for Index itself.
+vi.mock('@/components/map/MapShell', () => ({
+  default: () => <div data-testid="map-shell" />,
 }));
 vi.mock('@/components/home/RecentlyViewedRail', () => ({
   RecentlyViewedRail: () => null,
-}));
-vi.mock('@/components/home/DestinationsFeature', () => ({
-  DestinationsFeature: () => null,
 }));
 
 import Index from '../Index';

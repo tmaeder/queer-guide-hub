@@ -78,6 +78,9 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 interface CommandBarProps {
+  /** Render the search field. Default true. False keeps lens/filter/layer
+   *  controls but drops the on-map search (single search lives in the top bar). */
+  showSearch?: boolean;
   lenses: MapLens[];
   lens: MapLens;
   onLensChange: (lens: MapLens) => void;
@@ -103,6 +106,7 @@ interface CommandBarProps {
  * surface that renders <FilterChips> shows active chips.
  */
 export const CommandBar = ({
+  showSearch = true,
   lenses,
   lens,
   onLensChange,
@@ -200,8 +204,9 @@ export const CommandBar = ({
       )}
     >
       {/* Search — collapsed to an icon by default (no duplicate of the global
-          header search); expands inline on click or when a filter is active. */}
-      {!searchOpen ? (
+          header search); expands inline on click or when a filter is active.
+          Hidden entirely when showSearch=false (e.g. homepage uses the top-bar). */}
+      {showSearch && (!searchOpen ? (
         <Button
           variant="ghost"
           size="sm"
@@ -317,7 +322,7 @@ export const CommandBar = ({
           </Command>
         </PopoverContent>
       </Popover>
-      )}
+      ))}
 
       {/* Quick filters sit inline next to the view controls (replaces the old
           floating chip row); the bar stays content-width so there's no gap. */}

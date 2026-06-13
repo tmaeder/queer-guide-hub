@@ -1517,7 +1517,11 @@
       "invite": "[AR] Invite friends",
       "join": "[AR] Join the community"
     },
-    "subtitleShort": "[AR] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[AR] Verified safe places, real events, and the people behind them.",
+    "searchCue": {
+      "placeholder": "[AR] Search venues, events, people…",
+      "aria": "[AR] Search venues, events, people"
+    }
   },
   "header": {
     "signInSignUp": "تسجيل الدخول / إنشاء حساب",

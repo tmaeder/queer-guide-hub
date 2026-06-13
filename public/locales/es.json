@@ -1517,7 +1517,11 @@
       "invite": "[ES] Invite friends",
       "join": "[ES] Join the community"
     },
-    "subtitleShort": "[ES] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[ES] Verified safe places, real events, and the people behind them.",
+    "searchCue": {
+      "placeholder": "[ES] Search venues, events, people…",
+      "aria": "[ES] Search venues, events, people"
+    }
   },
   "header": {
     "signInSignUp": "Iniciar sesión / Registrarse",

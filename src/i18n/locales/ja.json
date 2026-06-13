@@ -1517,7 +1517,11 @@
       "invite": "[JA] Invite friends",
       "join": "[JA] Join the community"
     },
-    "subtitleShort": "[JA] Verified safe places, real events, and the people behind them."
+    "subtitleShort": "[JA] Verified safe places, real events, and the people behind them.",
+    "searchCue": {
+      "placeholder": "[JA] Search venues, events, people…",
+      "aria": "[JA] Search venues, events, people"
+    }
   },
   "header": {
     "signInSignUp": "ログイン / 新規登録",

@@ -1414,6 +1414,10 @@
     "heroLine3": "Worldwide.",
     "subtitle": "Verified safe places, real events, and the people behind them. Built by the community.",
     "subtitleShort": "Verified safe places, real events, and the people behind them.",
+    "searchCue": {
+      "placeholder": "Search venues, events, people…",
+      "aria": "Search venues, events, people"
+    },
     "browseVenues": "Browse Venues",
     "viewEvents": "View Events",
     "explore": "Browse",
