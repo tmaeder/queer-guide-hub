@@ -173,7 +173,14 @@ export function EditorialDetailLayout({
 
         <div>
           {sections.map((s) => (
-            <EditorialSection key={s.id} id={s.id} label={s.label} kicker={s.kicker}>
+            <EditorialSection
+              key={s.id}
+              id={s.id}
+              label={s.label}
+              kicker={s.kicker}
+              description={s.description}
+              action={s.action}
+            >
               {s.content}
             </EditorialSection>
           ))}

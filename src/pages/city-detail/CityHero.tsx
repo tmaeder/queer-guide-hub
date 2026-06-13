@@ -1,175 +1,109 @@
-import {
-  MapPin,
-  Globe,
-  Users,
-  Building,
-  Star,
-  Heart,
-  Clock,
-  Thermometer,
-  Plane,
-} from 'lucide-react';
+import { Heart, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { DetailHero } from '@/components/layout/DetailHero';
-import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
-import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import type { CityRelation } from './types';
-import { formatPopulation } from './types';
 
 export interface CityHeroProps {
   city: CityRelation;
   imageUrl: string;
   isFavorited: boolean;
-  hasAirport: boolean;
-  effectiveIata: string | null;
   onFavoriteToggle: () => void;
   refetchCity: () => void;
 }
 
+/**
+ * Cinematic full-bleed city hero. Photography is the hero; the title and a single
+ * line of editorial voice sit over a readability scrim (the one documented
+ * over-image exception to the monochrome rule). Admin / report / favorite live in
+ * a compact translucent cluster so they never compete with the title.
+ */
 export function CityHero({
   city,
   imageUrl,
   isFavorited,
-  hasAirport,
-  effectiveIata,
   onFavoriteToggle,
   refetchCity,
 }: CityHeroProps) {
+  const countryHref = city.countries
+    ? `/country/${city.countries.slug || city.countries.id}`
+    : null;
+
   return (
-    <>
-      <DetailHero imageUrl={imageUrl} alt={city.name} heightClassName="h-48 md:h-60" />
-
-      <SafetyAlertBanner
-        criminalization={
-          city.countries?.lgbti_criminalization as Record<string, unknown> | null | undefined
-        }
-        countryName={city.countries?.name || ''}
+    <div className="group relative h-[58vh] min-h-[380px] max-h-[600px] w-full overflow-hidden rounded-container ring-1 ring-border/60">
+      <img
+        src={imageUrl || getRandomFallbackImage()}
+        alt={city.name}
+        referrerPolicy="no-referrer"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
       />
+      <div className="pointer-events-none absolute inset-0 img-scrim-strong" aria-hidden="true" />
 
-      <div className="flex items-start justify-between gap-4 mb-2">
-        <div>
-          <div className="flex items-center gap-4 mb-1">
-            <h3 className="text-3xl lg:text-5xl font-bold text-foreground">
-              {city.countries?.flag_emoji && <>{city.countries.flag_emoji} </>}
-              <Editable
-                contentType="cities"
-                recordId={city.id}
-                field="name"
-                value={city.name}
-                onSaved={refetchCity}
-              >
-                {city.name}
-              </Editable>
-            </h3>
-            {city.countries?.equality_score != null && (
-              <EqualityScoreBadge score={city.countries.equality_score} size="md" />
-            )}
-          </div>
-          <p className="text-lg text-muted-foreground mb-2">
+      {/* Action cluster — top-right, on a neutral chip for legibility over photo. */}
+      <div className="absolute right-4 top-4 flex flex-wrap items-center gap-1 rounded-element bg-background/70 p-1 backdrop-blur">
+        <ReportButton contentType="cities" contentId={city.id} contentName={city.name} />
+        <AdminEditButton
+          contentType="cities"
+          contentId={city.id}
+          contentName={city.name}
+          currentData={city as Record<string, unknown>}
+          onSaved={() => refetchCity()}
+        />
+        {city.official_website && (
+          <Button variant="ghost" size="icon" asChild aria-label="Official website">
+            <a href={city.official_website} target="_blank" rel="noopener noreferrer">
+              <Globe size={18} />
+            </a>
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onFavoriteToggle}
+          aria-pressed={isFavorited}
+          aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          <Heart size={18} style={isFavorited ? { fill: 'currentColor' } : undefined} />
+        </Button>
+      </div>
+
+      {/* Title block — bottom-left, over the scrim. */}
+      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 md:p-12 text-white">
+        <div className="max-w-3xl">
+          <h1 className="text-headline-lg sm:text-display md:text-hero font-bold leading-[1.02] tracking-tight">
+            {city.countries?.flag_emoji && <span className="mr-2">{city.countries.flag_emoji}</span>}
+            <Editable
+              contentType="cities"
+              recordId={city.id}
+              field="name"
+              value={city.name}
+              onSaved={refetchCity}
+            >
+              {city.name}
+            </Editable>
+          </h1>
+          <p className="mt-2 text-body-lg text-white/85">
             {city.region_name && `${city.region_name}, `}
-            {city.countries ? (
+            {countryHref ? (
               <LocalizedLink
-                to={`/country/${city.countries.slug || city.countries.id}`}
-                style={{
-                  color: 'inherit',
-                  textDecorationColor: 'currentColor',
-                  textUnderlineOffset: '2px',
-                }}
-                className="underline"
+                to={countryHref}
+                className="text-white/85 underline decoration-white/40 underline-offset-4 transition-colors hover:text-white"
+                style={{ color: 'inherit' }}
               >
                 {city.countries.name}
               </LocalizedLink>
             ) : null}
           </p>
-        </div>
-
-        <div className="flex gap-2 flex-shrink-0 mt-2 flex-wrap">
-          <LocalizedLink
-            to={`/travel?city=${encodeURIComponent(city.slug || String(city.id))}`}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-2.5 text-sm font-bold tracking-tight text-background transition-opacity duration-300 hover:opacity-90 no-underline"
-          >
-            <Plane size={14} aria-hidden="true" />
-            Plan a trip in {city.name}
-          </LocalizedLink>
-          <ReportButton contentType="cities" contentId={city.id} contentName={city.name} />
-          <AdminEditButton
-            contentType="cities"
-            contentId={city.id}
-            contentName={city.name}
-            currentData={city as Record<string, unknown>}
-            onSaved={() => refetchCity()}
-          />
-          <Button variant="outline" size="sm" onClick={onFavoriteToggle}>
-            <Heart
-              style={{
-                height: 16,
-                width: 16,
-                marginRight: 6,
-                ...(isFavorited ? { fill: 'currentColor', color: 'inherit' } : {}),
-              }}
-            />
-            {isFavorited ? 'Favorited' : 'Favorite'}
-          </Button>
-          {city.official_website && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={city.official_website} target="_blank" rel="noopener noreferrer">
-                <Globe size={16} className="mr-1.5" />
-                Website
-              </a>
-            </Button>
+          {city.editorial_hook && (
+            <p className="mt-4 max-w-2xl text-15 leading-relaxed text-white/80 sm:text-body-lg">
+              {city.editorial_hook}
+            </p>
           )}
         </div>
       </div>
-
-      <div className="flex gap-2 flex-wrap mb-4">
-        {city.is_capital && (
-          <Badge variant="outline" className="gap-1">
-            <Building size={14} />
-            Capital City
-          </Badge>
-        )}
-        {city.is_major_city && (
-          <Badge variant="outline" className="gap-1">
-            <MapPin size={14} />
-            Major City
-          </Badge>
-        )}
-        {city.population && (
-          <Badge variant="outline" className="gap-1">
-            <Users size={14} />
-            {formatPopulation(city.population)}
-          </Badge>
-        )}
-        {city.timezone && (
-          <Badge variant="outline" className="gap-1">
-            <Clock size={14} />
-            {city.timezone}
-          </Badge>
-        )}
-        {effectiveIata && (
-          <Badge variant="outline" className="gap-1">
-            <Plane size={14} />
-            {hasAirport ? effectiveIata : `~${effectiveIata} (nearest)`}
-          </Badge>
-        )}
-        {city.climate_type && (
-          <Badge variant="outline" className="gap-1">
-            <Thermometer size={14} />
-            {city.climate_type}
-          </Badge>
-        )}
-        {city.lgbt_friendly_rating && (
-          <Badge variant="outline" className="gap-1">
-            <Star size={14} style={{ fill: 'currentColor', color: 'inherit' }} />
-            {city.lgbt_friendly_rating}/5 LGBTQ+ Friendly
-          </Badge>
-        )}
-      </div>
-    </>
+    </div>
   );
 }

@@ -2284,7 +2284,25 @@
     "emptyFiltered": "Prueba a quitar un filtro o borrar la búsqueda.",
     "suggestTitle": "¿Falta una ciudad?",
     "suggestLede": "Sugiere una — se añade al directorio tras revisión.",
-    "suggestCta": "Sugerir una ciudad"
+    "suggestCta": "Sugerir una ciudad",
+    "detail": {
+      "seeAll": "[ES] See all",
+      "planTrip": "[ES] Plan a trip to {{city}}",
+      "glance": {
+        "safety": "[ES] Safety",
+        "safetyLink": "[ES] Jump to safety & rights",
+        "deathPenalty": "[ES] Death penalty",
+        "criminalized": "[ES] Criminalized",
+        "equalityTier": "[ES] {{tier}} equality",
+        "checkLaws": "[ES] Check local laws",
+        "rating": "[ES] LGBTQ+ rating",
+        "population": "[ES] Population",
+        "language": "[ES] Language",
+        "currency": "[ES] Currency",
+        "bestTime": "[ES] Best time",
+        "airport": "[ES] Airport"
+      }
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

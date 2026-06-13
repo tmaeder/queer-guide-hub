@@ -2,7 +2,6 @@ import { FileText } from 'lucide-react';
 import { NewsCard } from '@/components/news/NewsCard';
 import { InlineLoading } from '@/components/ui/loading';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import type { CityRelation, ArticleRelation } from './types';
 
 export interface CityNewsTabProps {
@@ -12,26 +11,22 @@ export interface CityNewsTabProps {
 }
 
 export function CityNewsTab({ city, articles, newsLoading }: CityNewsTabProps) {
+  if (newsLoading) return <InlineLoading text="Loading news..." size="md" />;
+  if (articles.length === 0) {
+    return (
+      <EmptyState
+        icon={FileText}
+        title="No news available"
+        description={`Check back later for news about ${city.name}!`}
+        mood="neutral"
+      />
+    );
+  }
   return (
-    <ScrollReveal direction="up">
-    <div className="mt-6">
-      {newsLoading ? (
-        <InlineLoading text="Loading news..." size="md" />
-      ) : articles.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {articles.slice(0, 6).map((article: ArticleRelation) => (
-            <NewsCard key={article.id} article={article} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          icon={FileText}
-          title="No news available"
-          description={`Check back later for news about ${city.name}!`}
-          mood="neutral"
-        />
-      )}
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {articles.slice(0, 6).map((article: ArticleRelation) => (
+        <NewsCard key={article.id} article={article} />
+      ))}
     </div>
-    </ScrollReveal>
   );
 }

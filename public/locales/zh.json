@@ -2282,7 +2282,25 @@
     "emptyFiltered": "尝试移除筛选条件或清除搜索。",
     "suggestTitle": "缺少城市？",
     "suggestLede": "推荐一个 — 审核后添加到目录。",
-    "suggestCta": "推荐城市"
+    "suggestCta": "推荐城市",
+    "detail": {
+      "seeAll": "[ZH] See all",
+      "planTrip": "[ZH] Plan a trip to {{city}}",
+      "glance": {
+        "safety": "[ZH] Safety",
+        "safetyLink": "[ZH] Jump to safety & rights",
+        "deathPenalty": "[ZH] Death penalty",
+        "criminalized": "[ZH] Criminalized",
+        "equalityTier": "[ZH] {{tier}} equality",
+        "checkLaws": "[ZH] Check local laws",
+        "rating": "[ZH] LGBTQ+ rating",
+        "population": "[ZH] Population",
+        "language": "[ZH] Language",
+        "currency": "[ZH] Currency",
+        "bestTime": "[ZH] Best time",
+        "airport": "[ZH] Airport"
+      }
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

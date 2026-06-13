@@ -2282,7 +2282,25 @@
     "emptyFiltered": "필터를 제거하거나 검색을 지워보세요.",
     "suggestTitle": "도시가 누락되었나요?",
     "suggestLede": "도시를 제안하세요 — 검토 후 디렉토리에 추가됩니다.",
-    "suggestCta": "도시 제안하기"
+    "suggestCta": "도시 제안하기",
+    "detail": {
+      "seeAll": "[KO] See all",
+      "planTrip": "[KO] Plan a trip to {{city}}",
+      "glance": {
+        "safety": "[KO] Safety",
+        "safetyLink": "[KO] Jump to safety & rights",
+        "deathPenalty": "[KO] Death penalty",
+        "criminalized": "[KO] Criminalized",
+        "equalityTier": "[KO] {{tier}} equality",
+        "checkLaws": "[KO] Check local laws",
+        "rating": "[KO] LGBTQ+ rating",
+        "population": "[KO] Population",
+        "language": "[KO] Language",
+        "currency": "[KO] Currency",
+        "bestTime": "[KO] Best time",
+        "airport": "[KO] Airport"
+      }
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

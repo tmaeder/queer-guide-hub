@@ -2282,7 +2282,25 @@
     "emptyFiltered": "حاول إزالة عامل تصفية أو مسح البحث.",
     "suggestTitle": "هل تنقصك مدينة؟",
     "suggestLede": "اقترح واحدة — تُضاف إلى الدليل بعد المراجعة.",
-    "suggestCta": "اقترح مدينة"
+    "suggestCta": "اقترح مدينة",
+    "detail": {
+      "seeAll": "[AR] See all",
+      "planTrip": "[AR] Plan a trip to {{city}}",
+      "glance": {
+        "safety": "[AR] Safety",
+        "safetyLink": "[AR] Jump to safety & rights",
+        "deathPenalty": "[AR] Death penalty",
+        "criminalized": "[AR] Criminalized",
+        "equalityTier": "[AR] {{tier}} equality",
+        "checkLaws": "[AR] Check local laws",
+        "rating": "[AR] LGBTQ+ rating",
+        "population": "[AR] Population",
+        "language": "[AR] Language",
+        "currency": "[AR] Currency",
+        "bestTime": "[AR] Best time",
+        "airport": "[AR] Airport"
+      }
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
