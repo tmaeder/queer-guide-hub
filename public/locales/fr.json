@@ -1521,11 +1521,7 @@
       "invite": "[FR] Invite friends",
       "join": "[FR] Join the community"
     },
-    "subtitleShort": "[FR] Verified safe places, real events, and the people behind them.",
-    "searchCue": {
-      "placeholder": "[FR] Search venues, events, people…",
-      "aria": "[FR] Search venues, events, people"
-    }
+    "subtitleShort": "[FR] Verified safe places, real events, and the people behind them."
   },
   "header": {
     "signInSignUp": "Connexion / Inscription",
