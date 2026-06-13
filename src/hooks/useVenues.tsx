@@ -24,7 +24,8 @@ export function useVenues(autoFetch: boolean = true) {
         .select('id', { head: true, count: 'exact' })
         .neq('data_source', 'refuge-restrooms')
         .neq('review_status', 'archived')
-        .is('duplicate_of_id', null);
+        .is('duplicate_of_id', null)
+        .is('closed_at', null);
       if (!cancelled) setDatasetTotal(count ?? 0);
     })();
     return () => {
@@ -144,7 +145,8 @@ export function useVenues(autoFetch: boolean = true) {
         .select('*', { count: 'exact' })
         .neq('data_source', 'refuge-restrooms')
         .neq('review_status', 'archived')
-        .is('duplicate_of_id', null);
+        .is('duplicate_of_id', null)
+        .is('closed_at', null);
 
       // Server-side sort
       const sort = options?.sort ?? 'featured';
