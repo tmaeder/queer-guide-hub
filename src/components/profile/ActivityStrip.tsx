@@ -56,22 +56,31 @@ function relativeTime(iso: string): string {
 interface ActivityStripProps {
   className?: string;
   limit?: number;
+  /** Whose activity to show. Defaults to the signed-in user. */
+  userId?: string;
+  /** Render nothing (instead of an empty-state card) when there are no events.
+   *  Used when viewing another user — their feed is empty either because they
+   *  have none or because they haven't shared it; either way, show nothing. */
+  hideWhenEmpty?: boolean;
 }
 
 /**
- * Compact activity feed for own profile. Reads from user_activity_events
- * (self-RLS only — never reveals other users' activity). Live via Realtime.
+ * Compact recent-activity feed. Own feed by default; pass `userId` to show
+ * another user's — RLS (`can_view_user_activity`) only returns rows when they've
+ * opted in, so this never reveals private activity. Live via Realtime for self.
  */
-export function ActivityStrip({ className, limit = 8 }: ActivityStripProps) {
-  const { events, loading } = useRecentActivity(limit);
+export function ActivityStrip({ className, limit = 8, userId, hideWhenEmpty }: ActivityStripProps) {
+  const { events, loading } = useRecentActivity(limit, userId);
 
   if (loading) {
+    if (hideWhenEmpty) return null;
     return (
       <div className={cn('h-24 rounded-container border border-border bg-card animate-pulse', className)} />
     );
   }
 
   if (events.length === 0) {
+    if (hideWhenEmpty) return null;
     return (
       <div
         className={cn(
