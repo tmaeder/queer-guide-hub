@@ -873,16 +873,42 @@ export async function upsertPersonalityInternalNote(payload: {
 
 /** Favorites.tsx — fetch all favorite types for a user in parallel. */
 export async function fetchAllUserFavorites(userId: string) {
-  const [venueFavs, eventFavs, marketplaceFavs, newsFavs] = await Promise.all([
-    supabase.from('venue_favorites').select('venue_id').eq('user_id', userId),
-    supabase.from('event_favorites').select('event_id').eq('user_id', userId),
-    supabase.from('marketplace_favorites').select('listing_id').eq('user_id', userId),
-    supabase.from('news_favorites').select('article_id').eq('user_id', userId),
-  ]);
-  const venueIds = venueFavs.data?.map((f) => f.venue_id) ?? [];
-  const eventIds = eventFavs.data?.map((f) => f.event_id) ?? [];
-  const listingIds = marketplaceFavs.data?.map((f) => f.listing_id) ?? [];
-  const articleIds = newsFavs.data?.map((f) => f.article_id) ?? [];
+  // Collect saved ids per type. Prefer the unified `saved_items` view (one
+  // round-trip across all favorite tables); fall back to per-table reads if the
+  // view isn't reachable yet — e.g. the brief window between a frontend deploy
+  // and its companion migration applying. Writes still go per-table.
+  let venueIds: string[] = [];
+  let eventIds: string[] = [];
+  let listingIds: string[] = [];
+  let articleIds: string[] = [];
+
+  const savedView = await supabase
+    .from('saved_items' as 'venues')
+    .select('entity_type, entity_id')
+    .eq('user_id', userId);
+
+  if (!savedView.error && savedView.data) {
+    for (const row of savedView.data as unknown as Array<{
+      entity_type: string;
+      entity_id: string;
+    }>) {
+      if (row.entity_type === 'venue') venueIds.push(row.entity_id);
+      else if (row.entity_type === 'event') eventIds.push(row.entity_id);
+      else if (row.entity_type === 'marketplace') listingIds.push(row.entity_id);
+      else if (row.entity_type === 'news') articleIds.push(row.entity_id);
+    }
+  } else {
+    const [venueFavs, eventFavs, marketplaceFavs, newsFavs] = await Promise.all([
+      supabase.from('venue_favorites').select('venue_id').eq('user_id', userId),
+      supabase.from('event_favorites').select('event_id').eq('user_id', userId),
+      supabase.from('marketplace_favorites').select('listing_id').eq('user_id', userId),
+      supabase.from('news_favorites').select('article_id').eq('user_id', userId),
+    ]);
+    venueIds = venueFavs.data?.map((f) => f.venue_id) ?? [];
+    eventIds = eventFavs.data?.map((f) => f.event_id) ?? [];
+    listingIds = marketplaceFavs.data?.map((f) => f.listing_id) ?? [];
+    articleIds = newsFavs.data?.map((f) => f.article_id) ?? [];
+  }
 
   const [venueData, eventData, marketplaceData, newsData] = await Promise.all([
     venueIds.length
