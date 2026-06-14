@@ -51,7 +51,10 @@ export function OverviewTab({
         )
       )}
 
-      {ownView && <ActivityStrip />}
+      {/* Own activity always (incl. empty state); another user's only when they've
+          opted in — RLS returns rows only then, and hideWhenEmpty suppresses the
+          card otherwise so absence reads as "not shared", not "no activity". */}
+      <ActivityStrip userId={profile.user_id as string} hideWhenEmpty={!ownView} />
 
       <SecureProfileViewer
         profile={isOwnProfile ? previewFilterProfile(profile, lens) : profile}

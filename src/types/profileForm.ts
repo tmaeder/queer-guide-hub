@@ -20,6 +20,8 @@ export interface PrivacySettings {
   contributions_visibility?: string;
   /** public | community | private — who sees friends/groups counts (default community). */
   social_visibility?: string;
+  /** public | community | friends | private — who sees the recent-activity feed (default private). */
+  activity_visibility?: string;
   /** public | friends | private — who sees pronouns (default public). */
   pronouns_visibility?: string;
 }

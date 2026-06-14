@@ -104,6 +104,13 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
               value={normalizeVisibility(ps.social_visibility, 'community')}
               onChange={(v) => onPrivacyChange('social_visibility', v)}
             />
+            <VisibilityRow
+              id="activity_visibility"
+              label="Recent activity"
+              description="Who can see your recent activity feed (off by default)"
+              value={normalizeVisibility(ps.activity_visibility, 'private')}
+              onChange={(v) => onPrivacyChange('activity_visibility', v)}
+            />
             <SwitchField
               id="email_visible"
               label="Show Email"
