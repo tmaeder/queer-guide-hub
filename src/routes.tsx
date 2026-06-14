@@ -9,6 +9,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MotionPage } from '@/components/motion';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { submissionRegistry } from '@/config/submissionRegistry';
+import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
 
 const Index = lazyRetry(() => import('./pages/Index'));
 const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
@@ -196,16 +197,20 @@ function FootprintRedirect() {
   return <Navigate to={`/user/${userId}/travel`} replace />;
 }
 
-/** /trips folded into the /me hub. Preserves ?cityId=… deep-link seeds from /travel. */
-function TripsHubRedirect() {
+/**
+ * Locale-preserving redirect for the personal-layer route folds. A raw
+ * `<Navigate to="/me/trips">` drops the `/:locale?` prefix, so `/ar/trips`
+ * would bounce to the default-locale (LTR/English) hub — an i18n regression.
+ * This re-prefixes the current locale (mirroring LocalizedLink) and carries
+ * the source query string through, unless `to` already specifies one.
+ */
+function LocalizedRedirect({ to }: { to: string }) {
+  const { locale } = useParams<{ locale?: string }>();
   const location = useLocation();
-  return <Navigate to={`/me/trips${location.search}`} replace />;
-}
-
-/** /groups folded into the /community hub. Preserves ?tab=mine. */
-function GroupsHubRedirect() {
-  const location = useLocation();
-  return <Navigate to={`/community/groups${location.search}`} replace />;
+  const prefix =
+    locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
+  const search = to.includes('?') ? '' : location.search;
+  return <Navigate to={`${prefix}${to}${search}`} replace />;
 }
 
 /** Routes table + per-route ErrorBoundary/Suspense/MotionPage and a11y main element */
@@ -461,14 +466,14 @@ export const AppRoutes = () => {
                 <Route path="travel/book" element={<TravelBook />} />
                 {/* /trips list folded into the /me hub (Trips tab). The
                   /trips/:id workspace + discover/shared stay top-level. */}
-                <Route path="trips" element={<TripsHubRedirect />} />
-                <Route path="trips/inbox" element={<Navigate to="/me/trips" replace />} />
+                <Route path="trips" element={<LocalizedRedirect to="/me/trips" />} />
+                <Route path="trips/inbox" element={<LocalizedRedirect to="/me/trips" />} />
                 <Route path="trips/discover" element={<TripsDiscoverPage />} />
                 <Route path="trips/shared/:token" element={<SharedTripPage />} />
                 <Route path="trips/:tripId/today" element={<TripSubrouteRedirect view="today" />} />
                 <Route path="trips/:tripId/booklet" element={<TripSubrouteRedirect view="booklet" />} />
                 <Route path="trips/:tripId" element={<TripWorkspace />} />
-                <Route path="bookings" element={<Navigate to="/me/trips" replace />} />
+                <Route path="bookings" element={<LocalizedRedirect to="/me/trips" />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
                 <Route path="cities" element={<Cities />} />
@@ -476,7 +481,7 @@ export const AppRoutes = () => {
                 <Route path="city/:slug" element={<CityDetail />} />
                 <Route path="country/:slug" element={<CountryDetail />} />
                 {/* /users folded into the /community hub (Members tab). */}
-                <Route path="users" element={<Navigate to="/community/members" replace />} />
+                <Route path="users" element={<LocalizedRedirect to="/community/members" />} />
                 <Route path="personalities" element={<Personalities />} />
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
                 <Route path="quests" element={<Quests />} />
@@ -511,21 +516,21 @@ export const AppRoutes = () => {
                 <Route path="news/:slug" element={<NewsDetail />} />
                 <Route path="search" element={<SearchResults />} />
                 {/* /groups + /my-groups folded into the /community hub (Groups tab). */}
-                <Route path="groups" element={<GroupsHubRedirect />} />
+                <Route path="groups" element={<LocalizedRedirect to="/community/groups" />} />
                 <Route path="groups/:groupId" element={<GroupDetail />} />
-                <Route path="my-groups" element={<Navigate to="/community/groups?tab=mine" replace />} />
+                <Route path="my-groups" element={<LocalizedRedirect to="/community/groups?tab=mine" />} />
                 <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
                 {/* "Inbox" was email + notifications, never messages. Notifications now
                   live in the header menu; the @queer.guide mailbox moved to /mailbox.
                   /inbox now resolves to the real conversation hub. */}
-                <Route path="inbox" element={<Navigate to="/messages" replace />} />
+                <Route path="inbox" element={<LocalizedRedirect to="/messages" />} />
                 <Route path="mailbox" element={<Inbox />} />
                 <Route path="messages" element={<Messages />} />
                 {/* /favorites folded into the /me hub (Saved tab). */}
-                <Route path="favorites" element={<Navigate to="/me/saved" replace />} />
+                <Route path="favorites" element={<LocalizedRedirect to="/me/saved" />} />
                 {/* Feed, Members, Friends, Groups now live under the /community hub. */}
-                <Route path="feed" element={<Navigate to="/community/feed" replace />} />
-                <Route path="friends" element={<Navigate to="/community/friends" replace />} />
+                <Route path="feed" element={<LocalizedRedirect to="/community/feed" />} />
+                <Route path="friends" element={<LocalizedRedirect to="/community/friends" />} />
                 {/* Static per-tab routes (not community/:tab?) so the optional
                   /:locale? parent can't capture "community" as an unknown locale
                   and 404 — same reason /trips/discover is spelled out statically. */}
