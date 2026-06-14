@@ -1576,7 +1576,9 @@
       "extension": "ブラウザ拡張機能",
       "footprint": "Footprint",
       "messages": "[JA] Messages",
-      "mailbox": "[JA] Mailbox"
+      "mailbox": "[JA] Mailbox",
+      "you": "[JA] You",
+      "community": "[JA] Community"
     },
     "modes": {
       "dating": "恋人を探す",

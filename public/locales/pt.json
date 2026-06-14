@@ -1576,7 +1576,9 @@
       "extension": "Extensão do Navegador",
       "footprint": "Footprint",
       "messages": "[PT] Messages",
-      "mailbox": "[PT] Mailbox"
+      "mailbox": "[PT] Mailbox",
+      "you": "[PT] You",
+      "community": "[PT] Community"
     },
     "modes": {
       "dating": "Procurando Amor",

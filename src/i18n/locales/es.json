@@ -1576,7 +1576,9 @@
       "extension": "Extensión del Navegador",
       "footprint": "Footprint",
       "messages": "[ES] Messages",
-      "mailbox": "[ES] Mailbox"
+      "mailbox": "[ES] Mailbox",
+      "you": "[ES] You",
+      "community": "[ES] Community"
     },
     "modes": {
       "dating": "Buscando el amor",

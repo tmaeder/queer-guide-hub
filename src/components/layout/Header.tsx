@@ -186,7 +186,7 @@ export function Header() {
             <div className="my-2" />
 
             {userMenuItems.map((item) => {
-              const showBadge = item.to === '/me/trips' && inboxBadgeCount > 0;
+              const showBadge = item.to === '/me' && inboxBadgeCount > 0;
               return (
                 <Button
                   key={item.to}
