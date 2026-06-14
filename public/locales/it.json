@@ -1576,7 +1576,9 @@
       "extension": "Estensione Browser",
       "footprint": "Footprint",
       "messages": "[IT] Messages",
-      "mailbox": "[IT] Mailbox"
+      "mailbox": "[IT] Mailbox",
+      "you": "[IT] You",
+      "community": "[IT] Community"
     },
     "modes": {
       "dating": "In cerca d'amore",

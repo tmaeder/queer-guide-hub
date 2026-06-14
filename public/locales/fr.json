@@ -1580,7 +1580,9 @@
       "extension": "Extension Navigateur",
       "footprint": "Footprint",
       "messages": "[FR] Messages",
-      "mailbox": "[FR] Mailbox"
+      "mailbox": "[FR] Mailbox",
+      "you": "[FR] You",
+      "community": "[FR] Community"
     },
     "modes": {
       "dating": "En quête d'amour",

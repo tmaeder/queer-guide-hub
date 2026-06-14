@@ -1576,7 +1576,9 @@
       "extension": "浏览器扩展",
       "footprint": "Footprint",
       "messages": "[ZH] Messages",
-      "mailbox": "[ZH] Mailbox"
+      "mailbox": "[ZH] Mailbox",
+      "you": "[ZH] You",
+      "community": "[ZH] Community"
     },
     "modes": {
       "dating": "寻找爱情",

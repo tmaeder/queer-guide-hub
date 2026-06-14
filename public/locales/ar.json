@@ -1576,7 +1576,9 @@
       "extension": "إضافة المتصفح",
       "footprint": "Footprint",
       "messages": "[AR] Messages",
-      "mailbox": "[AR] Mailbox"
+      "mailbox": "[AR] Mailbox",
+      "you": "[AR] You",
+      "community": "[AR] Community"
     },
     "modes": {
       "dating": "أبحث عن الحب",

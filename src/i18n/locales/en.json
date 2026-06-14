@@ -1542,6 +1542,8 @@
       "help": "Crisis support"
     },
     "userMenu": {
+      "you": "You",
+      "community": "Community",
       "myTrips": "My Trips",
       "tripInbox": "Trip inbox",
       "bookings": "Bookings",

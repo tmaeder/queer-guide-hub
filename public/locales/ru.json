@@ -1604,7 +1604,9 @@
       "extension": "Расширение браузера",
       "footprint": "Footprint",
       "messages": "[RU] Messages",
-      "mailbox": "[RU] Mailbox"
+      "mailbox": "[RU] Mailbox",
+      "you": "[RU] You",
+      "community": "[RU] Community"
     },
     "modes": {
       "dating": "Ищу отношения",

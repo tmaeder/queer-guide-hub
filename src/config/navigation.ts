@@ -20,8 +20,7 @@ import {
   Settings,
   Mail,
   MessageCircle,
-  Luggage,
-  Footprints,
+  User,
   Puzzle,
   Info,
   Accessibility,
@@ -84,13 +83,14 @@ export interface NavItem {
   labelKey: string;
 }
 
+// Consolidated to mirror the hub IA + the mobile bottom nav (You · Community ·
+// Messages). The personal surfaces (Saved, Trips, Travel, Friends, Groups) are
+// tabs inside the /me and /community hubs, not separate menu rows — this is the
+// junk-drawer the redesign set out to retire.
 export const USER_MENU_ITEMS: NavItem[] = [
-  { to: '/me/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
-  { to: '/me/saved', icon: Heart, labelKey: 'header.userMenu.favorites' },
-  { to: '/profile/footprint', icon: Footprints, labelKey: 'header.userMenu.footprint' },
+  { to: '/me', icon: User, labelKey: 'header.userMenu.you' },
+  { to: '/community', icon: Users, labelKey: 'header.userMenu.community' },
   { to: '/messages', icon: MessageCircle, labelKey: 'header.userMenu.messages' },
-  { to: '/community/friends', icon: Users, labelKey: 'header.userMenu.friends' },
-  { to: '/community/groups?tab=mine', icon: UsersRound, labelKey: 'header.userMenu.myGroups' },
   { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
   { to: '/mailbox', icon: Mail, labelKey: 'header.userMenu.mailbox' },
   { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },

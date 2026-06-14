@@ -1576,7 +1576,9 @@
       "extension": "브라우저 확장 프로그램",
       "footprint": "Footprint",
       "messages": "[KO] Messages",
-      "mailbox": "[KO] Mailbox"
+      "mailbox": "[KO] Mailbox",
+      "you": "[KO] You",
+      "community": "[KO] Community"
     },
     "modes": {
       "dating": "사랑을 찾아서",

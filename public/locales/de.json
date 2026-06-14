@@ -1576,7 +1576,9 @@
       "extension": "Browser-Erweiterung",
       "footprint": "Footprint",
       "messages": "[DE] Messages",
-      "mailbox": "[DE] Mailbox"
+      "mailbox": "[DE] Mailbox",
+      "you": "[DE] You",
+      "community": "[DE] Community"
     },
     "modes": {
       "dating": "Auf der Suche nach Liebe",
