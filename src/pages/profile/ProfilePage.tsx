@@ -35,7 +35,7 @@ const OWN_ONLY_TABS: readonly ProfileTab[] = ['saved', 'trips', 'progress'];
  * Unified profile page. /me/:tab? renders the signed-in user; /user/:userId/:tab?
  * renders anyone (own mode when it's you). Progress is own-only.
  */
-export default function ProfilePage() {
+export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
   const { t } = useTranslation();
   const params = useParams<{ userId?: string; tab?: string }>();
   const navigate = useLocalizedNavigate();
@@ -57,7 +57,8 @@ export default function ProfilePage() {
   const [statusPickerOpen, setStatusPickerOpen] = useState(false);
   const [lens, setLens] = useState<ProfileLens>('you');
 
-  const requestedTab = (params.tab ?? 'overview') as ProfileTab;
+  // tabProp comes from the static /me/<tab> routes; params.tab from /user/:userId/:tab?.
+  const requestedTab = (tabProp ?? params.tab ?? 'overview') as ProfileTab;
   const ownView = isOwnProfile && lens === 'you';
   const tab: ProfileTab = TABS.includes(requestedTab)
     ? OWN_ONLY_TABS.includes(requestedTab) && !ownView

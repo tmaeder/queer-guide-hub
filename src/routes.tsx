@@ -539,7 +539,16 @@ export const AppRoutes = () => {
                 <Route path="community/members" element={<Community tab="members" />} />
                 <Route path="community/friends" element={<Community tab="friends" />} />
                 <Route path="community/groups" element={<Community tab="groups" />} />
-                <Route path="me/:tab?" element={<ProfilePage />} />
+                {/* Static per-tab routes (not me/:tab?) so the optional /:locale?
+                  parent can't capture "me" as an unknown locale and let a tab name
+                  that's also a top-level route (trips, travel) win the match → 404.
+                  Same fix as the /community hub above. */}
+                <Route path="me" element={<ProfilePage />} />
+                <Route path="me/saved" element={<ProfilePage tab="saved" />} />
+                <Route path="me/trips" element={<ProfilePage tab="trips" />} />
+                <Route path="me/travel" element={<ProfilePage tab="travel" />} />
+                <Route path="me/contributions" element={<ProfilePage tab="contributions" />} />
+                <Route path="me/progress" element={<ProfilePage tab="progress" />} />
                 <Route path="me/passport" element={<Navigate to="/me/progress" replace />} />
                 <Route path="me/missions" element={<Navigate to="/me/progress" replace />} />
                 <Route path="me/leaderboard" element={<Navigate to="/me/progress" replace />} />
