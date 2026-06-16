@@ -12,12 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Mail, HelpCircle, ChevronDown, ChevronRight, Send, Loader2 } from 'lucide-react';
+import { Mail, ChevronDown, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { ColourfulText } from '@/components/effects/ColourfulText';
-import { TracingBeam } from '@/components/effects/TracingBeam';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
 import { EDITORIAL_IMAGES } from '@/lib/editorialImages';
 
@@ -76,10 +74,7 @@ export default function Contact() {
 
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('contact-form', {
-        body: form,
-      });
-
+      const { data, error } = await supabase.functions.invoke('contact-form', { body: form });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
@@ -94,33 +89,34 @@ export default function Contact() {
   }
 
   return (
-    <div>
-      <div className="container mx-auto px-4 py-8 md:py-12">
+    <div className="px-4 sm:px-6 md:px-8 py-8 md:py-12">
+      <div className="max-w-6xl mx-auto">
         <EditorialHero
           eyebrow="Contact"
-          title={<ColourfulText text="Say hello." />}
+          title="Say hello."
           subtitle="Send us a question — partnership, safety, bug report, or just a thought. We read everything."
           image={EDITORIAL_IMAGES.contact.hero}
           imagePosition="side"
           decoration="none"
           height="md"
-          className="mb-12 md:mb-16"
         />
 
-        <div className="max-w-xl mx-auto mb-16">
-          {/* Contact Form */}
+        {/* Contact form — single centered column; it routes everything to the backend (no visible emails). */}
+        <div className="mt-16 md:mt-24 max-w-xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle>Send a Message</CardTitle>
+              <CardTitle>Send a message</CardTitle>
             </CardHeader>
             <CardContent>
               {submitted ? (
-                <div className="text-center py-8">
-                  <Mail size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
-                  <h3 className="text-lg font-semibold mb-2">Message Sent</h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    We'll respond as soon as possible.
-                  </p>
+                <div className="flex flex-col items-center gap-4 py-8 text-center">
+                  <Mail size={40} className="text-muted-foreground" aria-hidden="true" />
+                  <div>
+                    <h3 className="text-title font-semibold">Message sent</h3>
+                    <p className="mt-1 text-15 text-muted-foreground">
+                      We'll respond as soon as possible.
+                    </p>
+                  </div>
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -128,75 +124,66 @@ export default function Contact() {
                       setForm({ name: '', email: user?.email ?? '', category: '', message: '' });
                     }}
                   >
-                    Send Another
+                    Send another
                   </Button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit}>
-                  <div className="flex flex-col gap-6">
-                    <FloatingInput
-                      label="Name"
-                      value={form.name}
-                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                      required
-                    />
-                    <FloatingInput
-                      label="Email"
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                      required
-                    />
-                    <div className="flex flex-col gap-2">
-                      <Label id="contact-category-label">Category</Label>
-                      <Select
-                        value={form.category}
-                        onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
-                      >
-                        <SelectTrigger
-                          aria-labelledby="contact-category-label"
-                          aria-label="Category"
-                        >
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((c) => (
-                            <SelectItem key={c.value} value={c.value}>
-                              {c.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="message">Message</Label>
-                      <Textarea
-                        id="message"
-                        placeholder="How can we help?"
-                        value={form.message}
-                        onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                        required
-                        style={{ minHeight: 120 }}
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      disabled={
-                        submitting || !form.name || !form.email || !form.category || !form.message
-                      }
+                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                  <FloatingInput
+                    label="Name"
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    required
+                  />
+                  <FloatingInput
+                    label="Email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    required
+                  />
+                  <div className="flex flex-col gap-2">
+                    <Label id="contact-category-label">Category</Label>
+                    <Select
+                      value={form.category}
+                      onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
                     >
-                      {submitting ? (
-                        <Loader2
-                          size={16}
-                          style={{ animation: 'spin 1s linear infinite' }}
-                          className="mr-2"
-                        />
-                      ) : (
-                        <Send size={16} className="mr-2" />
-                      )}
-                      {submitting ? 'Sending...' : 'Send Message'}
-                    </Button>
+                      <SelectTrigger aria-labelledby="contact-category-label" aria-label="Category">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((c) => (
+                          <SelectItem key={c.value} value={c.value}>
+                            {c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="How can we help?"
+                      value={form.message}
+                      onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+                      required
+                      className="min-h-[120px]"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={
+                      submitting || !form.name || !form.email || !form.category || !form.message
+                    }
+                  >
+                    {submitting ? (
+                      <Loader2 size={16} className="mr-2 animate-spin" />
+                    ) : (
+                      <Send size={16} className="mr-2" />
+                    )}
+                    {submitting ? 'Sending…' : 'Send message'}
+                  </Button>
                 </form>
               )}
             </CardContent>
@@ -204,40 +191,36 @@ export default function Contact() {
         </div>
 
         {/* FAQ */}
-        <TracingBeam>
-          <section>
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <HelpCircle size={24} className="text-primary" />
-              Frequently Asked Questions
-            </h2>
-            <div className="flex flex-col gap-4">
-              {faqs.map((faq, index) => (
-                <Card key={index}>
-                  <Collapsible
-                    open={openFaq === index}
-                    onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}
-                  >
-                    <CollapsibleTrigger className="flex w-full flex-col gap-1.5 p-6 text-left">
-                      <div className="flex w-full items-center justify-between">
-                        <p className="font-semibold text-15">{faq.question}</p>
-                        {openFaq === index ? (
-                          <ChevronDown size={18} className="shrink-0" />
-                        ) : (
-                          <ChevronRight size={18} className="shrink-0" />
-                        )}
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground">{faq.answer}</p>
-                      </CardContent>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </Card>
-              ))}
-            </div>
-          </section>
-        </TracingBeam>
+        <section className="mt-16 md:mt-24 border-t border-border pt-12 md:pt-16">
+          <h2 className="text-headline md:text-display font-bold">Frequently asked questions</h2>
+          <div className="mt-8 flex flex-col gap-2 max-w-3xl">
+            {faqs.map((faq, index) => (
+              <Collapsible
+                key={faq.question}
+                open={openFaq === index}
+                onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}
+                className="rounded-container border border-border bg-card"
+              >
+                <CollapsibleTrigger className="flex w-full items-center justify-between gap-4 p-4 text-left">
+                  <span className="font-semibold text-15">{faq.question}</span>
+                  <ChevronDown
+                    size={18}
+                    className={
+                      'shrink-0 text-muted-foreground transition-transform ' +
+                      (openFaq === index ? 'rotate-180' : '')
+                    }
+                    aria-hidden="true"
+                  />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <p className="px-4 pb-4 text-15 leading-[1.6] text-muted-foreground">
+                    {faq.answer}
+                  </p>
+                </CollapsibleContent>
+              </Collapsible>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );

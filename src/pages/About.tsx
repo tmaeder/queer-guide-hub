@@ -17,24 +17,16 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 import { Timeline } from '@/components/effects/Timeline';
-import { LampEffect } from '@/components/effects/LampEffect';
-import { ShineButton } from '@/components/effects/ShineButton';
-import { HoverBorderGradient } from '@/components/effects/HoverBorderGradient';
-import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
-import { EDITORIAL_IMAGES } from '@/lib/editorialImages';
+import { EDITORIAL_IMAGES, type EditorialImage } from '@/lib/editorialImages';
 
 interface FeatureItem {
   icon: typeof MapPin;
   title: string;
   description: string;
   link: string;
-  image?: { src: string; alt: string; fallback?: string; credit?: string };
+  image?: EditorialImage;
   colSpan?: 1 | 2;
 }
 
@@ -75,37 +67,32 @@ const featuresBase = [
   },
 ] as const;
 
+const differentiators = [
+  {
+    label: 'Community-verified',
+    body: 'Every venue is reviewed by real LGBTQ+ people, not algorithms.',
+  },
+  {
+    label: 'Safety-first',
+    body: 'We flag safety info, local laws, and rights so you know before you go.',
+  },
+  {
+    label: 'Always free',
+    body: 'No paywalls, no premium tiers. This platform belongs to everyone.',
+  },
+  {
+    label: 'Global reach',
+    body: 'From Berlin to Bangkok, São Paulo to Sydney — and growing every day.',
+  },
+];
+
 const values = [
-  {
-    icon: Heart,
-    title: 'Inclusivity',
-    description: 'Every identity, every background, every story belongs here.',
-  },
-  {
-    icon: Shield,
-    title: 'Safety',
-    description: 'Safe spaces online and offline — always our top priority.',
-  },
-  {
-    icon: Users,
-    title: 'Community',
-    description: 'Meaningful connections between individuals and organizations worldwide.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Authenticity',
-    description: 'Be yourself. We built this place so you never have to hide.',
-  },
-  {
-    icon: HandHeart,
-    title: 'Accessibility',
-    description: 'A platform for everyone — highlighting spaces that prioritize access.',
-  },
-  {
-    icon: Globe,
-    title: 'Growth',
-    description: 'Always evolving, always listening. Built on your feedback.',
-  },
+  { icon: Heart, title: 'Inclusivity', description: 'Every identity, every background, every story belongs here.' },
+  { icon: Shield, title: 'Safety', description: 'Safe spaces online and offline — always our top priority.' },
+  { icon: Users, title: 'Community', description: 'Meaningful connections between individuals and organizations worldwide.' },
+  { icon: Sparkles, title: 'Authenticity', description: 'Be yourself. We built this place so you never have to hide.' },
+  { icon: HandHeart, title: 'Accessibility', description: 'A platform for everyone — highlighting spaces that prioritize access.' },
+  { icon: Globe, title: 'Growth', description: 'Always evolving, always listening. Built on your feedback.' },
 ];
 
 const team = [
@@ -129,9 +116,15 @@ const team = [
   },
 ];
 
+const getInvolved = [
+  { icon: MapPin, title: 'Add Venues', desc: 'Know a safe spot? Share it.', link: '/venues/new' },
+  { icon: Calendar, title: 'Create Events', desc: 'Organize community gatherings.', link: '/events/new' },
+  { icon: MessageCircle, title: 'Join Discussions', desc: 'Your voice matters here.', link: '/groups' },
+  { icon: Megaphone, title: 'Spread the Word', desc: 'Tell someone who needs this.', link: '/about' },
+];
+
 export default function About() {
   const { stats, loading } = useConsolidatedStats();
-  const isMobile = useIsMobile();
 
   const statItems = useMemo(
     () => [
@@ -143,15 +136,11 @@ export default function About() {
     [stats],
   );
 
-  // Inject images into Venues + Community tiles (matches the bento rhythm).
+  // Inject imagery into the Venues + Community tiles (matches the bento rhythm).
   const aboutExtras = EDITORIAL_IMAGES.about.extras ?? [];
   const features: FeatureItem[] = featuresBase.map((f) => {
-    if (f.title === 'Venues' && aboutExtras[0]) {
-      return { ...f, image: aboutExtras[0], colSpan: 2 };
-    }
-    if (f.title === 'Community' && aboutExtras[2]) {
-      return { ...f, image: aboutExtras[2], colSpan: 2 };
-    }
+    if (f.title === 'Venues' && aboutExtras[0]) return { ...f, image: aboutExtras[0], colSpan: 2 };
+    if (f.title === 'Community' && aboutExtras[2]) return { ...f, image: aboutExtras[2], colSpan: 2 };
     return f;
   });
 
@@ -159,273 +148,158 @@ export default function About() {
     <div className="min-h-screen">
       {/* Hero */}
       <section className="px-4 sm:px-6 md:px-8 pt-8 md:pt-12">
-        <EditorialHero
-          eyebrow="About us"
-          title="Built by queers, for everyone."
-          subtitle="Queer Guide connects LGBTQ+ people and allies with safe venues, vibrant events, and communities that get you — wherever you are in the world."
-          image={EDITORIAL_IMAGES.about.hero}
-          imagePosition="cover"
-          decoration="grid"
-          height="lg"
-        />
+        <div className="max-w-6xl mx-auto">
+          <EditorialHero
+            eyebrow="About us"
+            title="Built by queers, for everyone."
+            subtitle="Queer Guide connects LGBTQ+ people and allies with safe venues, vibrant events, and communities that get you — wherever you are in the world."
+            image={EDITORIAL_IMAGES.about.hero}
+            imagePosition="cover"
+            decoration="grid"
+            height="lg"
+          />
+        </div>
       </section>
 
-      {/* Stats Strip */}
-      <div className="py-10 md:py-14 mt-12 md:mt-16 px-4 sm:px-6 md:px-8 bg-foreground text-background">
-        <StaggerGrid stagger={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {statItems.map((stat, i) => (
-            <div key={i} className="text-center">
-              <div
-                className="font-bold leading-[1.1] text-display sm:text-5xl md:text-hero"
-                style={{
-                  letterSpacing: '-0.03em',
-                }}
-              >
-                {loading || typeof stat.value !== 'number' || stat.value <= 0 ? (
-                  '—'
-                ) : (
-                  <AnimatedCounter value={stat.value} suffix="+" />
-                )}
+      {/* Stats strip */}
+      <div className="mt-12 md:mt-16 bg-foreground text-background">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-10 md:py-14">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8">
+            {statItems.map((stat) => (
+              <div key={stat.label}>
+                <div className="font-bold leading-[1.05] tracking-tight text-display md:text-hero">
+                  {loading || typeof stat.value !== 'number' || stat.value <= 0
+                    ? '—'
+                    : `${stat.value.toLocaleString()}+`}
+                </div>
+                <p className="mt-1 font-medium uppercase tracking-label text-xs2 text-background/60">
+                  {stat.label}
+                </p>
               </div>
-              <p
-                className="text-muted-foreground mt-1 font-medium uppercase text-xs2"
-                style={{ letterSpacing: '0.02em' }}
-              >
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </StaggerGrid>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Our Story */}
-      <ScrollReveal direction="up">
-        <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
-          <h2 className="font-bold mb-6 md:mb-8 text-headline md:text-4xl">Our Story</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            <div className="flex flex-col gap-6">
-              <p className="text-muted-foreground leading-[1.8] text-body-lg">
+      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-10 md:gap-16">
+          <div>
+            <h2 className="font-bold text-headline md:text-display">Our story</h2>
+            <div className="mt-6 flex flex-col gap-6 max-w-prose">
+              <p className="text-body-lg leading-[1.8] text-muted-foreground">
                 Finding a queer-friendly bar shouldn't require a group chat, three Reddit threads,
-                and a leap of faith. We started Queer Guide because we were tired of guessing
-                which spaces were actually safe — and which just slapped a rainbow on their logo in
-                June.
+                and a leap of faith. We started Queer Guide because we were tired of guessing which
+                spaces were actually safe — and which just slapped a rainbow on their logo in June.
               </p>
-              <p className="text-muted-foreground leading-[1.8] text-body-lg">
+              <p className="text-body-lg leading-[1.8] text-muted-foreground">
                 What began as a personal list of trusted venues has grown into a global platform —
                 verified by the community, powered by real experiences, and always free to use.
                 Whether you're traveling solo, moving to a new city, or just looking for your people
                 on a Friday night, we've got you.
               </p>
             </div>
-
-            <div
-              className="p-6 md:p-8 flex flex-col gap-6 dark:bg-background"
-              style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
-            >
-              <h6 className="font-bold text-lg">What makes us different</h6>
-              <div className="flex flex-col gap-4">
-                <p className="text-muted-foreground leading-[1.7]">
-                  <span className="font-semibold text-foreground">Community-verified</span> — Every
-                  venue is reviewed by real LGBTQ+ people, not algorithms.
-                </p>
-                <p className="text-muted-foreground leading-[1.7]">
-                  <span className="font-semibold text-foreground">Safety-first</span> — We flag
-                  safety info, local laws, and rights so you know before you go.
-                </p>
-                <p className="text-muted-foreground leading-[1.7]">
-                  <span className="font-semibold text-foreground">Always free</span> — No paywalls,
-                  no premium tiers. This platform belongs to everyone.
-                </p>
-                <p className="text-muted-foreground leading-[1.7]">
-                  <span className="font-semibold text-foreground">Global reach</span> — From Berlin
-                  to Bangkok, São Paulo to Sydney — and growing every day.
-                </p>
-              </div>
-            </div>
           </div>
-        </section>
-      </ScrollReveal>
 
-      {/* What We Offer — BentoGrid with inset imagery */}
-      <section
-        className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
-        style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
-      >
-        <h2 className="font-bold mb-8 md:mb-10 text-headline md:text-4xl">What We Offer</h2>
+          <div className="bg-muted dark:bg-card border border-border rounded-container p-6 md:p-8">
+            <h3 className="font-bold text-title">What makes us different</h3>
+            <dl className="mt-6 flex flex-col gap-4">
+              {differentiators.map((d) => (
+                <div key={d.label}>
+                  <dt className="font-semibold text-foreground">{d.label}</dt>
+                  <dd className="text-15 leading-[1.6] text-muted-foreground">{d.body}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </section>
 
-        <BentoGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:grid-cols-4">
-          {features.map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <BentoGridItem
+      {/* What We Offer */}
+      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24 bg-muted/40 dark:bg-card/30 border-y border-border">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-bold text-headline md:text-display">What we offer</h2>
+          <p className="mt-4 text-body-lg leading-[1.6] text-muted-foreground max-w-prose">
+            Five ways to find your people — and the spaces that welcome them.
+          </p>
+
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {features.map((feature) => (
+              <LocalizedLink
                 key={feature.title}
-                colSpan={feature.colSpan ?? 1}
-                className="rounded-container p-0 overflow-hidden"
+                to={feature.link}
+                className={
+                  'group block rounded-container overflow-hidden border border-border bg-card text-foreground no-underline transition-colors hover:bg-accent ' +
+                  (feature.colSpan === 2 ? 'sm:col-span-2' : '')
+                }
               >
-                <LocalizedLink
-                  to={feature.link}
-                  className="no-underline block h-full text-foreground"
-                >
-                  {feature.image ? (
-                    <FeatureImageTile
-                      title={feature.title}
-                      description={feature.description}
-                      Icon={Icon}
-                      image={feature.image}
-                    />
-                  ) : (
-                    <div className="flex flex-col gap-4 p-6 md:p-8 h-full">
-                      <p className="font-bold text-base md:text-body-lg flex items-center gap-2">
-                        <Icon
-                          style={{ width: 18, height: 18 }}
-                          className="shrink-0"
-                          aria-hidden="true"
-                        />
-                        {feature.title}
-                      </p>
-                      <p className="text-sm text-muted-foreground leading-[1.6]">
-                        {feature.description}
-                      </p>
-                    </div>
-                  )}
-                </LocalizedLink>
-              </BentoGridItem>
-            );
-          })}
-        </BentoGrid>
+                {feature.image ? (
+                  <FeatureImageTile
+                    title={feature.title}
+                    description={feature.description}
+                    Icon={feature.icon}
+                    image={feature.image}
+                  />
+                ) : (
+                  <div className="flex h-full flex-col gap-2 p-6 md:p-8">
+                    <feature.icon size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <p className="font-bold text-body-lg">{feature.title}</p>
+                    <p className="text-15 leading-[1.6] text-muted-foreground">{feature.description}</p>
+                  </div>
+                )}
+              </LocalizedLink>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Our Values */}
-      <ScrollReveal direction="up">
-        <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
-          <h2 className="font-bold mb-8 md:mb-10 text-headline md:text-4xl">Our Values</h2>
+      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-bold text-headline md:text-display">What we value</h2>
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
+            {values.map((value) => (
+              <div key={value.title} className="flex flex-col gap-2">
+                <p className="font-bold flex items-center gap-2">
+                  <value.icon size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+                  {value.title}
+                </p>
+                <p className="text-15 leading-[1.6] text-muted-foreground">{value.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {values.map((value) => {
-              const Icon = value.icon;
-              return (
-                <div key={value.title} className="flex flex-col gap-2">
-                  <p className="font-bold flex items-center gap-2">
-                    <Icon
-                      style={{ width: 18, height: 18 }}
-                      className="shrink-0"
-                      aria-hidden="true"
-                    />
-                    {value.title}
-                  </p>
-                  <p className="text-sm text-muted-foreground leading-[1.6]">{value.description}</p>
-                </div>
-              );
-            })}
-          </StaggerGrid>
-        </section>
-      </ScrollReveal>
-
-      {/* Community */}
-      <ScrollReveal direction="up">
-        <section
-          className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
-          style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
-        >
-          <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">The People Behind It</h2>
-          <p className="text-muted-foreground mb-8 md:mb-10 text-body-lg leading-[1.7] max-w-[600px]">
-            Queer Guide isn't run by a corporation — it's powered by passionate community
-            members who volunteer their time and energy.
+      {/* The People Behind It */}
+      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24 bg-muted/40 dark:bg-card/30 border-y border-border">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-bold text-headline md:text-display">The people behind it</h2>
+          <p className="mt-4 text-body-lg leading-[1.6] text-muted-foreground max-w-prose">
+            Queer Guide isn't run by a corporation — it's powered by community members who volunteer
+            their time and energy.
           </p>
-
-          <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
             {team.map((member) => (
-              <Card key={member.name} style={{ height: '100%' }}>
-                <CardContent
-                  style={{ padding: isMobile ? 20 : 28, flexDirection: 'column' }}
-                  className="flex gap-2"
-                >
+              <Card key={member.name} className="h-full">
+                <CardContent className="flex flex-col gap-2 p-6 md:p-8">
                   <p className="font-bold">{member.name}</p>
-                  <p className="text-sm font-semibold text-foreground">{member.role}</p>
-                  <p className="text-sm text-muted-foreground leading-[1.6]">
-                    {member.description}
+                  <p className="text-13 font-semibold uppercase tracking-label text-muted-foreground">
+                    {member.role}
                   </p>
+                  <p className="text-15 leading-[1.6] text-muted-foreground">{member.description}</p>
                 </CardContent>
               </Card>
             ))}
-          </StaggerGrid>
-        </section>
-      </ScrollReveal>
-
-      {/* Get Involved CTA */}
-      <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8 bg-foreground text-background">
-        <ScrollReveal direction="up">
-          <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">Get Involved</h2>
-          <p className="text-background/80 mb-8 md:mb-10 text-body-lg leading-[1.7] max-w-[600px]">
-            This platform grows because people like you contribute. Here's how you can help.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10 md:mb-12">
-            {[
-              {
-                icon: MapPin,
-                title: 'Add Venues',
-                desc: 'Know a safe spot? Share it.',
-                link: '/venues/new',
-              },
-              {
-                icon: Calendar,
-                title: 'Create Events',
-                desc: 'Organize community gatherings.',
-                link: '/events/new',
-              },
-              {
-                icon: MessageCircle,
-                title: 'Join Discussions',
-                desc: 'Your voice matters here.',
-                link: '/groups',
-              },
-              {
-                icon: Megaphone,
-                title: 'Spread the Word',
-                desc: 'Tell someone who needs this.',
-                link: '/about',
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.title} className="flex flex-col gap-2">
-                  <p className="font-bold flex items-center gap-2">
-                    <Icon
-                      style={{ width: 18, height: 18 }}
-                      className="shrink-0"
-                      aria-hidden="true"
-                    />
-                    {item.title}
-                  </p>
-                  <p className="text-sm text-background/75 leading-[1.6]">{item.desc}</p>
-                </div>
-              );
-            })}
           </div>
-
-          <div className="flex gap-4 flex-wrap">
-            <LocalizedLink to="/venues" className="no-underline">
-              <Button size="lg">
-                Browse Venues
-                <ArrowRight size={18} className="ml-2" aria-hidden="true" />
-              </Button>
-            </LocalizedLink>
-            <LocalizedLink to="/donate" style={{ color: 'inherit' }} className="no-underline">
-              <Button variant="outline" size="lg" style={{ color: 'inherit' }}>
-                Support Us
-              </Button>
-            </LocalizedLink>
-          </div>
-        </ScrollReveal>
+        </div>
       </section>
 
-      {/* Timeline — How we got here */}
-      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">How we got here</h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl">
+      {/* Timeline */}
+      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-bold text-headline md:text-display">How we got here</h2>
+          <p className="mt-4 text-body-lg leading-[1.6] text-muted-foreground max-w-prose">
             A side-project that became a global directory.
           </p>
         </div>
@@ -435,8 +309,8 @@ export default function About() {
               title: '2021',
               content: (
                 <p className="text-muted-foreground leading-relaxed">
-                  A side-project. Three contributors, one spreadsheet, big ambitions. We started
-                  with a list of safe bars across five European cities — shared on a Telegram group.
+                  A side-project. Three contributors, one spreadsheet, big ambitions. We started with
+                  a list of safe bars across five European cities — shared on a Telegram group.
                 </p>
               ),
             },
@@ -472,35 +346,70 @@ export default function About() {
         />
       </section>
 
-      {/* Lamp CTA */}
-      <LampEffect className="min-h-[26rem] py-12">
-        <h2 className="text-center text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-          Help us write the next chapter.
-        </h2>
-        <p className="mt-4 text-center text-muted-foreground max-w-xl">
-          Every verified entry has a story behind it. Add yours.
-        </p>
-        <div className="mt-6 flex flex-wrap gap-4 justify-center">
-          <LocalizedLink to="/submit" className="no-underline">
-            <ShineButton>Submit a venue</ShineButton>
-          </LocalizedLink>
-          <LocalizedLink to="/donate" className="no-underline">
-            <HoverBorderGradient>Support us</HoverBorderGradient>
-          </LocalizedLink>
+      {/* Closing CTA — get involved */}
+      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24 bg-foreground text-background">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-bold text-headline md:text-display max-w-2xl">
+            Help us write the next chapter.
+          </h2>
+          <p className="mt-4 text-body-lg leading-[1.7] text-background/75 max-w-2xl">
+            This platform grows because people like you contribute. Every verified entry has a story
+            behind it — add yours.
+          </p>
+
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
+            {getInvolved.map((item) => (
+              <LocalizedLink
+                key={item.title}
+                to={item.link}
+                className="group flex flex-col gap-1.5 text-background no-underline"
+              >
+                <p className="font-bold flex items-center gap-2">
+                  <item.icon size={18} className="shrink-0" aria-hidden="true" />
+                  {item.title}
+                </p>
+                <p className="text-15 leading-[1.6] text-background/70">{item.desc}</p>
+              </LocalizedLink>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-wrap gap-2">
+            <LocalizedLink to="/submit" className="no-underline">
+              <Button
+                size="lg"
+                className="bg-background text-foreground hover:bg-background/90 hover:opacity-100"
+              >
+                Submit a venue
+                <ArrowRight size={18} className="ml-1" aria-hidden="true" />
+              </Button>
+            </LocalizedLink>
+            <LocalizedLink to="/donate" className="no-underline">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-background/40 bg-transparent text-background hover:bg-background/10 hover:text-background"
+              >
+                Support us
+              </Button>
+            </LocalizedLink>
+          </div>
         </div>
-      </LampEffect>
+      </section>
     </div>
   );
 }
 
-interface FeatureImageTileProps {
+function FeatureImageTile({
+  title,
+  description,
+  Icon,
+  image,
+}: {
   title: string;
   description: string;
   Icon: typeof MapPin;
-  image: { src: string; alt: string; fallback?: string; credit?: string };
-}
-
-function FeatureImageTile({ title, description, Icon, image }: FeatureImageTileProps) {
+  image: EditorialImage;
+}) {
   const [src, setSrc] = useState(image.src);
   const [errored, setErrored] = useState(false);
   return (
@@ -515,7 +424,7 @@ function FeatureImageTile({ title, description, Icon, image }: FeatureImageTileP
           if (image.fallback) setSrc(image.fallback);
           setErrored(true);
         }}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
       />
       {!errored && image.credit && (
         <span
@@ -527,14 +436,14 @@ function FeatureImageTile({ title, description, Icon, image }: FeatureImageTileP
       )}
       <div
         aria-hidden
-        className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/15 to-black/65 dark:from-black/35 dark:to-black/[0.78]"
+        className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/20 to-black/70"
       />
       <div className="relative z-[1] flex h-full flex-col justify-end gap-2 p-6 md:p-8 text-white">
-        <p className="font-bold text-base md:text-body-lg flex items-center gap-2">
-          <Icon style={{ width: 18, height: 18 }} className="shrink-0" aria-hidden="true" />
+        <p className="font-bold text-body-lg flex items-center gap-2">
+          <Icon size={18} className="shrink-0" aria-hidden="true" />
           {title}
         </p>
-        <p className="text-sm text-white/90 leading-[1.6] max-w-[420px]">{description}</p>
+        <p className="text-15 leading-[1.6] text-white/85 max-w-[420px]">{description}</p>
       </div>
     </div>
   );

@@ -80,24 +80,27 @@ function extractSections(html: string): {
 
 // Body HTML styling — applied via a scoped CSS class (descendant selectors).
 const HTML_BODY_CSS = `
-.qg-cms-body h1 { font-size: 2rem; font-weight: 700; margin-top: 0; margin-bottom: 1rem; line-height: 1.2; }
-.qg-cms-body h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; line-height: 1.25; }
-.qg-cms-body h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; line-height: 1.3; }
-.qg-cms-body p { font-size: 1rem; line-height: 1.8; margin-bottom: 1rem; }
-.qg-cms-body ul, .qg-cms-body ol { padding-left: 1.5rem; margin-bottom: 1rem; }
-.qg-cms-body li { margin-bottom: 0.375rem; line-height: 1.7; }
-.qg-cms-body blockquote { border-left: 3px solid hsl(var(--border)); padding-left: 1rem; margin-left: 0; font-style: italic; color: hsl(var(--muted-foreground)); margin: 1rem 0; }
-.qg-cms-body a { color: inherit; text-decoration: underline; }
-.qg-cms-body a:hover { opacity: 0.85; }
-.qg-cms-body img { max-width: 100%; height: auto; margin: 1rem 0; }
-.qg-cms-body pre { background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground)); padding: 1rem; overflow: auto; margin: 1rem 0; font-size: 0.875rem; }
-.qg-cms-body code { background-color: hsl(var(--accent)); padding: 0.125rem 0.375rem; font-size: 0.875em; }
-.qg-cms-body table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+.qg-cms-body { max-width: 72ch; }
+.qg-cms-body h1 { font-size: 2.5rem; font-weight: 700; margin-top: 0; margin-bottom: 1rem; line-height: 1.1; letter-spacing: -0.02em; }
+.qg-cms-body h2 { font-size: 1.75rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 0.75rem; line-height: 1.2; letter-spacing: -0.01em; }
+.qg-cms-body h2 + p, .qg-cms-body h3 + p { margin-top: 0; }
+.qg-cms-body h3 { font-size: 1.375rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; line-height: 1.3; }
+.qg-cms-body p { font-size: 1.0625rem; line-height: 1.75; margin-bottom: 1rem; color: hsl(var(--foreground)); }
+.qg-cms-body ul, .qg-cms-body ol { padding-left: 1.25rem; margin-bottom: 1rem; }
+.qg-cms-body li { margin-bottom: 0.5rem; line-height: 1.7; font-size: 1.0625rem; }
+.qg-cms-body li::marker { color: hsl(var(--muted-foreground)); }
+.qg-cms-body blockquote { border-left: 2px solid hsl(var(--foreground)); padding-left: 1rem; margin: 1.5rem 0; font-style: italic; color: hsl(var(--muted-foreground)); }
+.qg-cms-body a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.qg-cms-body a:hover { opacity: 0.7; }
+.qg-cms-body img { max-width: 100%; height: auto; margin: 1.5rem 0; border-radius: 0.5rem; }
+.qg-cms-body pre { background-color: hsl(var(--muted)); color: hsl(var(--foreground)); padding: 1rem; overflow: auto; margin: 1.5rem 0; font-size: 0.875rem; border-radius: 0.5rem; }
+.qg-cms-body code { background-color: hsl(var(--accent)); padding: 0.125rem 0.375rem; font-size: 0.875em; border-radius: 0.25rem; }
+.qg-cms-body table { border-collapse: collapse; width: 100%; margin: 1.5rem 0; font-size: 0.9375rem; }
 .qg-cms-body th, .qg-cms-body td { border: 1px solid hsl(var(--border)); padding: 0.5rem 0.75rem; text-align: left; }
-.qg-cms-body th { background-color: hsl(var(--accent)); font-weight: 600; }
-.qg-cms-body hr { border-color: hsl(var(--border)); margin: 1.5rem 0; }
+.qg-cms-body th { background-color: hsl(var(--muted)); font-weight: 600; }
+.qg-cms-body hr { border: none; border-top: 1px solid hsl(var(--border)); margin: 2rem 0; }
 .qg-cms-body strong { font-weight: 600; }
-.qg-cms-body .legal-intro { font-size: 1.0625rem; color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem; }
+.qg-cms-body .legal-intro { font-size: 1.1875rem; line-height: 1.6; color: hsl(var(--muted-foreground)); margin-bottom: 2rem; }
 .qg-cms-body--legal h1 { display: none; }
 .qg-cms-body--no-title h1:first-child { display: none; }
 `;
@@ -330,15 +333,18 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
       {/* Accessibility page embeds the live settings panel so it isn't a dead end. */}
       {slug === 'accessibility' && (
-        <section className="mt-10" aria-label="Accessibility settings">
-          <h2 className="mb-6 text-2xl font-bold">Your accessibility settings</h2>
+        <section className="mt-12 border-t border-border pt-10 md:mt-16" aria-label="Accessibility settings">
+          <h2 className="text-headline font-bold">Your accessibility settings</h2>
+          <p className="mt-2 mb-6 max-w-prose text-15 leading-[1.6] text-muted-foreground">
+            These apply instantly and are saved to this device.
+          </p>
           <AccessibilityControls />
         </section>
       )}
 
       {childPages.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-4 text-xl font-bold">Related Pages</h2>
+          <h2 className="mb-4 text-title font-bold">Related Pages</h2>
           <div className="flex flex-col gap-4">
             {childPages.map((child) => (
               <ChildPageCard key={child.slug} page={child} />
