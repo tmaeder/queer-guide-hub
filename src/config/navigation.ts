@@ -92,7 +92,6 @@ export const USER_MENU_ITEMS: NavItem[] = [
   { to: '/community', icon: Users, labelKey: 'header.userMenu.community' },
   { to: '/messages', icon: MessageCircle, labelKey: 'header.userMenu.messages' },
   { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
-  { to: '/mailbox', icon: Mail, labelKey: 'header.userMenu.mailbox' },
   { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },
 ];
 

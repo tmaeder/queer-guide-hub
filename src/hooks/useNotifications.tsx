@@ -13,7 +13,7 @@ export const useNotifications = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   // Stable per-hook-instance id. Multiple components (Header, NotificationBell,
-  // NotificationList, useUnifiedInbox) call this hook simultaneously; a shared
+  // NotificationList) call this hook simultaneously; a shared
   // topic name would return the SAME channel from the realtime client, and the
   // second `.on('postgres_changes', …)` after `.subscribe()` would throw. See D2.
   const instanceId = useId();

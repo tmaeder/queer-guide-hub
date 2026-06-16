@@ -2521,5 +2521,25 @@
       "intersex": "[JA] Intersex bodily integrity",
       "ilgaLink": "[JA] ILGA World Database"
     }
+  },
+  "inbox": {
+    "title": "[JA] Inbox",
+    "filter": {
+      "all": "[JA] All",
+      "chats": "[JA] Chats",
+      "mail": "[JA] Mail",
+      "alerts": "[JA] Alerts"
+    },
+    "compose": {
+      "label": "[JA] Compose",
+      "message": "[JA] New message",
+      "email": "[JA] New email"
+    },
+    "notification": {
+      "open": "[JA] Open"
+    },
+    "openInbox": "[JA] Open inbox",
+    "markAlertsRead": "[JA] Mark alerts read",
+    "unread": "[JA] Unread"
   }
 }

@@ -1,35 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DOMPurify from 'dompurify';
+import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Send,
   MoreVertical,
-  Search,
-  Plus,
   MessageCircle,
   Smile,
   Check,
   CheckCheck,
   Clock,
   Eye,
+  ChevronLeft,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import {
-  useMessaging,
-  type Conversation,
-  type Message,
-  type TypingIndicator,
-} from '@/hooks/useMessaging';
+import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
-import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useSearchParams } from 'react-router';
 import { IntimateMatchThread } from '@/components/messaging/IntimateMatchThread';
+import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
+import { InboxRailItem } from '@/components/messaging/InboxRailItem';
+import { MailDetail } from '@/components/messaging/MailDetail';
+import { NotificationDetailCard } from '@/components/messaging/NotificationDetailCard';
+import { ComposeChooser } from '@/components/messaging/ComposeChooser';
+import { ComposeEmail } from '@/components/inbox/ComposeEmail';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 interface MessageItemProps {
   message: Message;
@@ -187,103 +188,6 @@ const TypingIndicatorComponent = ({ typingUsers }: TypingIndicatorProps) => {
         <div className="w-1 h-1 bg-primary rounded-full" />
         <div className="w-1 h-1 bg-primary rounded-full" />
       </div>
-    </div>
-  );
-};
-
-interface ConversationListProps {
-  conversations: Conversation[];
-  selectedConversation: string | null;
-  onSelectConversation: (conversationId: string) => void;
-  currentUserId: string;
-}
-
-const ConversationList = ({
-  conversations,
-  selectedConversation,
-  onSelectConversation,
-  currentUserId,
-}: ConversationListProps) => {
-  const getConversationTitle = (conversation: Conversation) => {
-    if (conversation.conversation_type === 'group') {
-      return conversation.title || 'Group Chat';
-    }
-
-    // For direct messages, show the other participant's name
-    const otherParticipant = conversation.participants?.find((p) => p.user_id !== currentUserId);
-    return otherParticipant?.profile?.display_name || 'Unknown User';
-  };
-
-  const getConversationAvatar = (conversation: Conversation) => {
-    if (conversation.conversation_type === 'group') {
-      return null; // Could show group avatar
-    }
-
-    const otherParticipant = conversation.participants?.find((p) => p.user_id !== currentUserId);
-    return otherParticipant?.profile?.avatar_url;
-  };
-
-  const getOtherParticipant = (conversation: Conversation) => {
-    if (conversation.conversation_type === 'group') {
-      return null;
-    }
-
-    return conversation.participants?.find((p) => p.user_id !== currentUserId);
-  };
-
-  return (
-    <div className="flex flex-col gap-2">
-      {conversations.map((conversation) => (
-        <Card
-          key={conversation.id}
-          style={{
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            ...(selectedConversation === conversation.id
-              ? { boxShadow: '0 0 0 2px hsl(var(--primary))', borderColor: 'hsl(var(--primary))' }
-              : {}),
-          }}
-          onClick={() => onSelectConversation(conversation.id)}
-        >
-          <CardContent className="p-4">
-            <div style={{ alignItems: 'center', minHeight: 48 }} className="flex gap-4">
-              <Avatar>
-                <AvatarImage src={getConversationAvatar(conversation) || ''} />
-                <AvatarFallback>{getConversationTitle(conversation).charAt(0)}</AvatarFallback>
-              </Avatar>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-                      {getConversationTitle(conversation)}
-                    </p>
-                    {getOtherParticipant(conversation)?.profile?.user_mode && (
-                      <UserModeBadge
-                        mode={getOtherParticipant(conversation)?.profile?.user_mode || ''}
-                        size="sm"
-                      />
-                    )}
-                  </div>
-                  {conversation.last_message_at && (
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(conversation.last_message_at), {
-                        addSuffix: true,
-                      })}
-                    </span>
-                  )}
-                </div>
-
-                {conversation.last_message && (
-                  <p className="text-sm text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
-                    {conversation.last_message.content}
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
     </div>
   );
 };
@@ -483,22 +387,22 @@ const MessageInput = ({
   );
 };
 
-export interface MessagingInterfaceProps {
-  /**
-   * Restrict the conversation list to a subset of conversation_type values.
-   * Omit (or pass empty array) for the full unfiltered inbox.
-   * Recognised values today: 'direct' | 'group' | 'match' | 'system' | 'trip'.
-   */
-  typeFilter?: readonly string[];
+interface ChatViewProps {
+  conversationId: string;
+  onBack: () => void;
 }
 
-export const MessagingInterface = ({ typeFilter }: MessagingInterfaceProps = {}) => {
+/**
+ * The live chat detail pane: header, optional match ribbon, message list,
+ * typing indicator, reactions, and composer. Owns its own useMessaging instance
+ * (per-instance realtime channel topics), so it can be mounted on demand from
+ * the unified inbox switch without disturbing the rail.
+ */
+const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   const { user } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
   const {
     conversations,
     messages,
-    loading,
     sendingMessage,
     typingUsers,
     fetchMessages,
@@ -509,308 +413,347 @@ export const MessagingInterface = ({ typeFilter }: MessagingInterfaceProps = {})
     stopTypingIndicator,
   } = useMessaging();
 
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [prefilledMessage, setPrefilledMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const scrollToBottom = () => {
+  const currentMessages = messages[conversationId] || [];
+  const currentTypingUsers = typingUsers[conversationId] || [];
+
+  useEffect(() => {
+    void fetchMessages(conversationId);
+    void markAsRead(conversationId);
+  }, [conversationId, fetchMessages, markAsRead]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, [currentMessages.length]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, selectedConversation]);
-
-  // Handle URL parameters to auto-select conversation
-  useEffect(() => {
-    const conversationId = searchParams.get('conversation');
-    if (conversationId && conversations.length > 0) {
-      const conversation = conversations.find((c) => c.id === conversationId);
-      if (conversation && selectedConversation !== conversationId) {
-        // eslint-disable-next-line react-hooks/immutability -- handleSelectConversation declared below; effect fires after render so binding is initialized.
-        handleSelectConversation(conversationId);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleSelectConversation is stable, re-run on searchParams/conversations/selectedConversation
-  }, [searchParams, conversations, selectedConversation]);
-
-  // Auto-focus input when conversation is selected
-  useEffect(() => {
-    if (selectedConversation && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-    }
-  }, [selectedConversation]);
-
-  const handleSelectConversation = async (conversationId: string) => {
-    setSelectedConversation(conversationId);
-
-    // Update URL without causing navigation
-    setSearchParams({ conversation: conversationId }, { replace: true });
-
-    await fetchMessages(conversationId);
-    await markAsRead(conversationId);
-  };
+    const timer = setTimeout(() => inputRef.current?.focus(), 100);
+    return () => clearTimeout(timer);
+  }, [conversationId]);
 
   const handleSendMessage = async (content: string) => {
-    if (selectedConversation) {
-      await sendMessage(selectedConversation, content);
-      await stopTypingIndicator(selectedConversation);
-    }
+    await sendMessage(conversationId, content);
+    await stopTypingIndicator(conversationId);
   };
 
   const handleReaction = async (messageId: string, emoji: string) => {
     await addReaction(messageId, emoji);
   };
 
-  const handleTyping = () => {
-    if (selectedConversation) {
-      sendTypingIndicator(selectedConversation);
-    }
-  };
+  const conv = conversations.find((c) => c.id === conversationId);
+  const otherParticipant = conv?.participants?.find((p) => p.user_id !== user?.id);
 
-  const handleStopTyping = () => {
-    if (selectedConversation) {
-      stopTypingIndicator(selectedConversation);
-    }
-  };
+  return (
+    <>
+      {/* Chat Header */}
+      <div
+        className="p-4 md:p-4 border-b"
+        style={{
+          backgroundColor: 'rgba(var(--background-rgb), 0.5)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Back button for mobile */}
+            <Button
+              variant="ghost"
+              size="sm"
+              style={{ height: 36, width: 36 }}
+              className="p-0 md:hidden"
+              onClick={onBack}
+            >
+              <svg
+                style={{ height: 20, width: 20 }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </Button>
 
-  const filteredConversations = conversations.filter((conv) => {
-    if (typeFilter && typeFilter.length > 0 && !typeFilter.includes(conv.conversation_type)) {
-      return false;
-    }
-    if (!searchQuery) return true;
+            <div className="relative">
+              <Avatar style={{ height: 40, width: 40 }}>
+                <AvatarImage src={otherParticipant?.profile?.avatar_url || ''} />
+                <AvatarFallback>
+                  {otherParticipant?.profile?.display_name?.charAt(0) || 'C'}
+                </AvatarFallback>
+              </Avatar>
+              <div
+                className="rounded-full absolute"
+                style={{
+                  bottom: -2,
+                  right: -2,
+                  width: 12,
+                  height: 12,
+                  backgroundColor: 'hsl(var(--foreground))',
+                  border: '2px solid var(--background)',
+                }}
+              ></div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap">
+                {otherParticipant?.profile?.display_name || 'Unknown User'}
+              </p>
+              <p className="text-sm text-foreground">Online</p>
+            </div>
+          </div>
 
-    const title =
-      conv.conversation_type === 'group'
-        ? conv.title
-        : conv.participants?.find((p) => p.user_id !== user?.id)?.profile?.display_name;
-
-    return title?.toLowerCase().includes(searchQuery.toLowerCase());
-  });
-
-  const currentMessages = selectedConversation ? messages[selectedConversation] || [] : [];
-  const currentTypingUsers = selectedConversation ? typingUsers[selectedConversation] || [] : [];
-
-  if (loading) {
-    return (
-      <div style={{ alignItems: 'center', justifyContent: 'center', height: 384 }} className="flex">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading messages...</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-element p-0"
+            style={{ height: 36, width: 36 }}
+          >
+            <MoreVertical size={16} />
+          </Button>
         </div>
       </div>
-    );
-  }
+
+      {/* Match thread ribbon — only for conversation_type='match' */}
+      {conv?.conversation_type === 'match' && (
+        <div className="px-4 pt-4 md:px-4 md:pt-4">
+          <IntimateMatchThread
+            conversationId={conversationId}
+            hasMessages={currentMessages.length > 0}
+            onPickOpeningMove={(prompt) => setPrefilledMessage(prompt)}
+          />
+        </div>
+      )}
+
+      {/* Messages */}
+      <ScrollArea
+        style={{
+          flex: 1,
+          background:
+            'linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), var(--background))',
+        }}
+      >
+        <div className="p-4 md:p-4">
+          {currentMessages.length === 0 ? (
+            <div className="text-center py-8">
+              <MessageCircle
+                size={48}
+                style={{ margin: '0 auto 16px' }}
+                className="text-muted-foreground"
+              />
+              <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
+            </div>
+          ) : (
+            <div>
+              {currentMessages.map((message) => (
+                <MessageItem
+                  key={message.id}
+                  message={message}
+                  isOwn={message.sender_id === user?.id}
+                  onReaction={handleReaction}
+                />
+              ))}
+
+              <TypingIndicatorComponent typingUsers={currentTypingUsers} />
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+
+      {/* Message Input */}
+      <MessageInput
+        onSend={handleSendMessage}
+        onTyping={() => sendTypingIndicator(conversationId)}
+        onStopTyping={() => stopTypingIndicator(conversationId)}
+        disabled={sendingMessage}
+        inputRef={inputRef}
+        prefilledMessage={prefilledMessage}
+      />
+    </>
+  );
+};
+
+export interface MessagingInterfaceProps {
+  /**
+   * Active inbox filter for the merged rail (chats + mail + notifications).
+   * Defaults to 'all'.
+   */
+  filter?: InboxFilter;
+}
+
+export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => {
+  const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { items, loading } = useInboxFeed(filter ?? 'all');
+  const navigate = useLocalizedNavigate();
+  const [composeEmailOpen, setComposeEmailOpen] = useState(false);
+
+  const [selected, setSelected] = useState<InboxItem | null>(null);
+
+  // Deep-link: preselect a chat when ?conversation=<id> is present, or a mail
+  // item when ?email=<id> is present, once the matching item has loaded into
+  // the feed.
+  useEffect(() => {
+    if (selected) return;
+    const conversationId = searchParams.get('conversation');
+    if (conversationId) {
+      const match = items.find((i) => i.id === `conv_${conversationId}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time deep-link preselect once the matching item loads into the feed; documented exemption from the eslint.config.js staged-ratchet plan.
+      if (match) setSelected(match);
+      return;
+    }
+    const emailId = searchParams.get('email');
+    if (emailId) {
+      const match = items.find((i) => i.id === `mail_${emailId}`);
+      if (match) setSelected(match);
+    }
+  }, [searchParams, items, selected]);
+
+  // Reset selection when the filter chip changes. Skip the very first render so
+  // the deep-link effect above can still establish its initial selection before
+  // we'd accidentally null it out (both effects fire on mount; the hasMounted
+  // guard ensures we only reset on *subsequent* filter changes driven by user
+  // interaction).
+  const hasMountedRef = useRef(false);
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    setSelected(null);
+    if (searchParams.has('conversation') || searchParams.has('email')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('conversation');
+      next.delete('email');
+      setSearchParams(next, { replace: true });
+    }
+    // searchParams intentionally omitted — we only want to react to filter changes,
+    // not re-run every time the URL changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
+  const handleSelect = (item: InboxItem) => {
+    setSelected(item);
+    const next = new URLSearchParams(searchParams);
+    if (item.kind === 'chat') {
+      next.set('conversation', item.id.replace('conv_', ''));
+      next.delete('email');
+    } else if (item.kind === 'mail') {
+      next.set('email', item.id.replace('mail_', ''));
+      next.delete('conversation');
+    } else {
+      // notification (or anything else) carries no deep-link param
+      next.delete('conversation');
+      next.delete('email');
+    }
+    setSearchParams(next, { replace: true });
+  };
+
+  const handleBack = () => {
+    setSelected(null);
+    if (searchParams.has('conversation') || searchParams.has('email')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('conversation');
+      next.delete('email');
+      setSearchParams(next, { replace: true });
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] overflow-hidden bg-background">
-      {/* Conversation List - Full width on mobile, 1/3 on desktop */}
+      {/* Email compose sheet */}
+      <Sheet open={composeEmailOpen} onOpenChange={setComposeEmailOpen}>
+        <SheetContent side="bottom">
+          <SheetHeader className="mb-4">
+            <SheetTitle>{t('inbox.compose.email', { defaultValue: 'New email' })}</SheetTitle>
+          </SheetHeader>
+          <ComposeEmail onSent={() => setComposeEmailOpen(false)} onCancel={() => setComposeEmailOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
+      {/* Merged inbox rail - full width on mobile, 1/3 on desktop */}
       <div
-        className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r flex-col`}
+        className={`${selected ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r flex-col`}
         style={{ backgroundColor: 'rgba(var(--background-rgb), 0.5)' }}
       >
-        <div className="p-4 md:p-4 border-b">
-          <div className="flex items-center justify-between mb-4 md:mb-4">
-            <h6 className="font-semibold text-lg md:text-base">Messages</h6>
-            <Button size="sm" variant="outline" className="rounded-element" style={{ height: 36 }}>
-              <Plus size={16} className="mr-2" />
-              <span className="hidden sm:inline">New</span>
-            </Button>
-          </div>
-
-          <div className="relative">
-            <Search
-              style={{ left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16 }}
-              className="absolute text-muted-foreground"
-            />
-            <Input
-              placeholder="Search conversations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="rounded-element"
-              style={{ paddingLeft: 40, height: 44 }}
-            />
-          </div>
+        {/* Rail header */}
+        <div className="flex items-center justify-between px-4 py-2 border-b">
+          <span className="text-sm font-medium text-foreground">
+            {t('inbox.title', { defaultValue: 'Inbox' })}
+          </span>
+          <ComposeChooser
+            onNewMessage={() => navigate('/community/members')}
+            onNewEmail={() => setComposeEmailOpen(true)}
+          />
         </div>
-
         <ScrollArea style={{ flex: 1 }}>
-          <div className="p-4 md:p-4">
-            {filteredConversations.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageCircle
-                  size={48}
-                  style={{ margin: '0 auto 16px' }}
-                  className="text-muted-foreground"
-                />
-                <p className="text-muted-foreground">No conversations yet</p>
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4 animate-spin" />
+                <p className="text-muted-foreground">
+                  {t('inbox.loading', { defaultValue: 'Loading…' })}
+                </p>
               </div>
-            ) : (
-              <ConversationList
-                conversations={filteredConversations}
-                selectedConversation={selectedConversation}
-                onSelectConversation={handleSelectConversation}
-                currentUserId={user?.id || ''}
+            </div>
+          ) : items.length === 0 ? (
+            <div className="text-center py-8">
+              <MessageCircle
+                size={48}
+                style={{ margin: '0 auto 16px' }}
+                className="text-muted-foreground"
               />
-            )}
-          </div>
+              <p className="text-muted-foreground">
+                {t('inbox.empty', { defaultValue: 'Nothing here yet.' })}
+              </p>
+            </div>
+          ) : (
+            <div>
+              {items.map((item) => (
+                <InboxRailItem
+                  key={item.id}
+                  item={item}
+                  active={selected?.id === item.id}
+                  onSelect={handleSelect}
+                />
+              ))}
+            </div>
+          )}
         </ScrollArea>
       </div>
 
-      {/* Chat Area - Full width on mobile when conversation selected */}
-      <div className={`flex-1 flex-col ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
-        {selectedConversation ? (
-          <>
-            {/* Chat Header */}
-            <div
-              className="p-4 md:p-4 border-b"
-              style={{
-                backgroundColor: 'rgba(var(--background-rgb), 0.5)',
-                backdropFilter: 'blur(8px)',
-              }}
+      {/* Right pane - per-kind detail */}
+      <div className={`flex-1 flex-col ${selected ? 'flex' : 'hidden md:flex'}`}>
+        {/* Shared mobile-only back control for mail + notification kinds.
+            Chat already renders its own back button inside ChatView. */}
+        {selected && selected.kind !== 'chat' && (
+          <div className="md:hidden border-b p-4">
+            <button
+              onClick={handleBack}
+              aria-label={t('common.back', { defaultValue: 'Back' })}
+              className="flex items-center gap-2 text-sm text-muted-foreground"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {/* Back button for mobile */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    style={{ height: 36, width: 36 }}
-                    className="p-0"
-                    onClick={() => setSelectedConversation(null)}
-                  >
-                    <svg
-                      style={{ height: 20, width: 20 }}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
-                  </Button>
-
-                  <div className="relative">
-                    <Avatar style={{ height: 40, width: 40 }}>
-                      <AvatarImage
-                        src={
-                          conversations
-                            .find((c) => c.id === selectedConversation)
-                            ?.participants?.find((p) => p.user_id !== user?.id)?.profile
-                            ?.avatar_url || ''
-                        }
-                      />
-                      <AvatarFallback>
-                        {conversations
-                          .find((c) => c.id === selectedConversation)
-                          ?.participants?.find((p) => p.user_id !== user?.id)
-                          ?.profile?.display_name?.charAt(0) || 'C'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div
-                      className="rounded-full absolute"
-                      style={{
-                        bottom: -2,
-                        right: -2,
-                        width: 12,
-                        height: 12,
-                        backgroundColor: 'hsl(var(--foreground))',
-                        border: '2px solid var(--background)',
-                      }}
-                    ></div>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                      {conversations
-                        .find((c) => c.id === selectedConversation)
-                        ?.participants?.find((p) => p.user_id !== user?.id)?.profile
-                        ?.display_name || 'Unknown User'}
-                    </p>
-                    <p className="text-sm text-foreground">Online</p>
-                  </div>
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-element p-0"
-                  style={{ height: 36, width: 36 }}
-                >
-                  <MoreVertical size={16} />
-                </Button>
-              </div>
-            </div>
-
-            {/* Match thread ribbon — only for conversation_type='match' */}
-            {(() => {
-              const conv = conversations.find((c) => c.id === selectedConversation);
-              if (conv?.conversation_type !== 'match') return null;
-              return (
-                <div className="px-4 pt-4 md:px-4 md:pt-4">
-                  <IntimateMatchThread
-                    conversationId={selectedConversation!}
-                    hasMessages={currentMessages.length > 0}
-                    onPickOpeningMove={(prompt) => setPrefilledMessage(prompt)}
-                  />
-                </div>
-              );
-            })()}
-
-            {/* Messages */}
-            <ScrollArea
-              style={{
-                flex: 1,
-                background:
-                  'linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), var(--background))',
-              }}
-            >
-              <div className="p-4 md:p-4">
-                {currentMessages.length === 0 ? (
-                  <div className="text-center py-8">
-                    <MessageCircle
-                      size={48}
-                      style={{ margin: '0 auto 16px' }}
-                      className="text-muted-foreground"
-                    />
-                    <p className="text-muted-foreground">
-                      No messages yet. Start the conversation!
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    {currentMessages.map((message) => (
-                      <MessageItem
-                        key={message.id}
-                        message={message}
-                        isOwn={message.sender_id === user?.id}
-                        onReaction={handleReaction}
-                      />
-                    ))}
-
-                    <TypingIndicatorComponent typingUsers={currentTypingUsers} />
-                    <div ref={messagesEndRef} />
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-
-            {/* Message Input */}
-            <MessageInput
-              onSend={handleSendMessage}
-              onTyping={handleTyping}
-              onStopTyping={handleStopTyping}
-              disabled={sendingMessage}
-              inputRef={inputRef}
-              prefilledMessage={prefilledMessage}
-            />
-          </>
+              <ChevronLeft className="h-4 w-4" />
+              {t('common.back', { defaultValue: 'Back' })}
+            </button>
+          </div>
+        )}
+        {selected?.kind === 'chat' ? (
+          <ChatView
+            key={selected.id}
+            conversationId={selected.id.replace('conv_', '')}
+            onBack={handleBack}
+          />
+        ) : selected?.kind === 'mail' ? (
+          <MailDetail key={selected.id} emailId={selected.id.replace('mail_', '')} />
+        ) : selected?.kind === 'notification' ? (
+          <NotificationDetailCard item={selected} />
         ) : (
           <div
             className="flex-1 flex items-center justify-center"
@@ -825,9 +768,13 @@ export const MessagingInterface = ({ typeFilter }: MessagingInterfaceProps = {})
                 style={{ margin: '0 auto 16px' }}
                 className="text-muted-foreground"
               />
-              <h6 className="text-lg font-medium mb-2">Select a conversation</h6>
+              <h6 className="text-lg font-medium mb-2">
+                {t('inbox.selectPrompt.title', { defaultValue: 'Select an item' })}
+              </h6>
               <p className="text-muted-foreground text-sm md:text-base">
-                Choose a conversation from the list to start messaging
+                {t('inbox.selectPrompt.body', {
+                  defaultValue: 'Choose a message, email, or alert from the list.',
+                })}
               </p>
             </div>
           </div>

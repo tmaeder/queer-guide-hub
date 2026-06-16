@@ -68,6 +68,23 @@ export const useMailbox = () => {
     [user, selectedFolder],
   );
 
+  const fetchEmailById = useCallback(
+    async (emailId: string): Promise<MailboxEmail | null> => {
+      if (!user) return null;
+      const { data, error } = await mailboxTable()
+        .select('*')
+        .eq('id', emailId)
+        .eq('owner_id', user.id)
+        .single();
+      if (error) {
+        console.error('Error fetching email:', error);
+        return null;
+      }
+      return data as unknown as MailboxEmail;
+    },
+    [user],
+  );
+
   const fetchUnreadCount = useCallback(async () => {
     if (!user) return;
     try {
@@ -284,6 +301,7 @@ export const useMailbox = () => {
     loading,
     sending,
     fetchEmails,
+    fetchEmailById,
     markRead,
     toggleStar,
     moveToFolder,

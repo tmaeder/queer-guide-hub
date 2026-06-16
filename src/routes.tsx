@@ -167,7 +167,6 @@ const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUser
 const Community = lazyRetry(() => import('./pages/Community'));
 
 const Messages = lazyRetry(() => import('./pages/Messages'));
-const Inbox = lazyRetry(() => import('./pages/Inbox'));
 const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
 const NotFound = lazyRetry(() => import('./pages/NotFound'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
@@ -524,7 +523,7 @@ export const AppRoutes = () => {
                   live in the header menu; the @queer.guide mailbox moved to /mailbox.
                   /inbox now resolves to the real conversation hub. */}
                 <Route path="inbox" element={<LocalizedRedirect to="/messages" />} />
-                <Route path="mailbox" element={<Inbox />} />
+                <Route path="mailbox" element={<LocalizedRedirect to="/messages" />} />
                 <Route path="messages" element={<Messages />} />
                 {/* /favorites folded into the /me hub (Saved tab). */}
                 <Route path="favorites" element={<LocalizedRedirect to="/me/saved" />} />

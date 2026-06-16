@@ -2553,5 +2553,25 @@
       "intersex": "[RU] Intersex bodily integrity",
       "ilgaLink": "[RU] ILGA World Database"
     }
+  },
+  "inbox": {
+    "title": "[RU] Inbox",
+    "filter": {
+      "all": "[RU] All",
+      "chats": "[RU] Chats",
+      "mail": "[RU] Mail",
+      "alerts": "[RU] Alerts"
+    },
+    "compose": {
+      "label": "[RU] Compose",
+      "message": "[RU] New message",
+      "email": "[RU] New email"
+    },
+    "notification": {
+      "open": "[RU] Open"
+    },
+    "openInbox": "[RU] Open inbox",
+    "markAlertsRead": "[RU] Mark alerts read",
+    "unread": "[RU] Unread"
   }
 }

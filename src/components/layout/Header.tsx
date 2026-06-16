@@ -23,8 +23,8 @@ import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useNotifications } from '@/hooks/useNotifications';
 import { lazyOptional } from '@/utils/lazyRetry';
+import { useInboxFeed } from '@/hooks/useInboxFeed';
 // lazyOptional (not plain lazy): a failed chunk fetch retries once, then
 // renders nothing instead of bubbling a `vite:preloadError` that the
 // global handler in main.tsx would turn into a full-page reload. Opening
@@ -50,7 +50,7 @@ export function Header() {
 
   const { user, signOut } = useAuth();
   const { profile, updateProfile } = useProfile();
-  const { unreadCount } = useNotifications();
+  const { unreadCount } = useInboxFeed('all');
   const { isAdmin, isModerator } = useAdminRoles();
   const inboxBadgeCount = useInboxBadge();
 
