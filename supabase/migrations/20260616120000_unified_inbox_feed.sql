@@ -1,15 +1,13 @@
 -- Unified inbox feed: merge conversations + mailbox_emails + notifications
 
 -- Supporting indexes (regular, non-concurrent — runs inside migration txn)
-CREATE INDEX IF NOT EXISTS idx_messages_conv_created
-  ON public.messages (conversation_id, created_at DESC);
+-- idx_messages_conv_created dropped: RPCs only do PK lookup (WHERE m.id = c.last_message_id), not range scans on messages.
+-- idx_conv_participants_user dropped: baseline already has idx_conversation_participants_user_id on (user_id) which covers cp.user_id = p_user.
 CREATE INDEX IF NOT EXISTS idx_mailbox_owner_inbox
   ON public.mailbox_emails (owner_id, created_at DESC)
   WHERE folder = 'inbox' AND deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_notifications_user_created
   ON public.notifications (user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_conv_participants_user
-  ON public.conversation_participants (user_id, conversation_id);
 
 -- Normalized feed
 CREATE OR REPLACE FUNCTION public.get_inbox_feed(
@@ -57,6 +55,7 @@ BEGIN
       FROM public.conversation_participants cp2
       JOIN public.profiles p ON p.user_id = cp2.user_id
       WHERE cp2.conversation_id = c.id AND cp2.user_id <> p_user
+      ORDER BY cp2.joined_at
       LIMIT 1
     ) op ON true
     WHERE cp.user_id = p_user
