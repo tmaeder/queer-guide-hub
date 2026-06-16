@@ -5,8 +5,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-vi.mock('@/hooks/useNotifications', () => ({
-  useNotifications: () => ({ markAllAsRead: vi.fn() }),
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: { rpc: vi.fn().mockResolvedValue({ data: null, error: null }) },
 }));
 vi.mock('@/hooks/useInboxFeed', () => ({
   useInboxFeed: () => ({ items: [], loading: false, unreadCount: 0 }),

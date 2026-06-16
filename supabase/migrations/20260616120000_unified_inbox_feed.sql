@@ -9,6 +9,9 @@ CREATE INDEX IF NOT EXISTS idx_mailbox_owner_inbox
 CREATE INDEX IF NOT EXISTS idx_notifications_user_created
   ON public.notifications (user_id, created_at DESC);
 
+-- Per-user "last viewed post engagement" marker (post_likes/post_comments have no per-row read flag)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS post_engagement_seen_at timestamptz;
+
 -- Normalized feed
 CREATE OR REPLACE FUNCTION public.get_inbox_feed(
   p_user uuid,
@@ -36,7 +39,10 @@ BEGIN
   END IF;
 
   RETURN QUERY
-  WITH chat AS (
+  WITH me AS (
+    SELECT post_engagement_seen_at FROM public.profiles WHERE user_id = p_user
+  ),
+  chat AS (
     SELECT
       'conv_' || c.id::text                         AS id,
       'chat'::text                                   AS kind,
@@ -91,12 +97,79 @@ BEGIN
     FROM public.notifications n
     WHERE n.user_id = p_user
   ),
+  grp AS (
+    SELECT
+      'group_' || gn.id::text                         AS id,
+      'notification'::text                            AS kind,
+      gn.notification_type                            AS subtype,
+      COALESCE(tb.display_name, 'Someone') ||
+        CASE gn.notification_type
+          WHEN 'mention' THEN ' mentioned you'
+          WHEN 'new_post' THEN ' posted in your group'
+          WHEN 'new_announcement' THEN ' posted an announcement'
+          WHEN 'new_poll' THEN ' created a poll'
+          WHEN 'post_liked' THEN ' liked your post'
+          WHEN 'comment_liked' THEN ' liked your comment'
+          ELSE ' sent you a notification'
+        END                                           AS title,
+      COALESCE(gn.content, '')                        AS preview,
+      tb.avatar_url                                   AS avatar_url,
+      gn.created_at                                   AS ts,
+      (gn.read_at IS NULL)                            AS unread,
+      '/groups/' || gn.group_id::text
+        || COALESCE('?post=' || gn.related_post_id::text, '') AS open_target
+    FROM public.group_notifications gn
+    LEFT JOIN public.profiles tb ON tb.user_id = gn.triggered_by_user_id
+    WHERE gn.user_id = p_user
+  ),
+  plike AS (
+    SELECT
+      'like_' || pl.id::text                          AS id,
+      'notification'::text                            AS kind,
+      'post_like'::text                               AS subtype,
+      COALESCE(lk.display_name, 'Someone') || ' liked your post' AS title,
+      ''::text                                        AS preview,
+      lk.avatar_url                                   AS avatar_url,
+      pl.created_at                                   AS ts,
+      (pl.created_at > COALESCE((SELECT post_engagement_seen_at FROM me), '1970-01-01'::timestamptz)) AS unread,
+      '/community/feed'                               AS open_target
+    FROM public.post_likes pl
+    JOIN public.community_posts cp ON cp.id = pl.post_id
+    LEFT JOIN public.profiles lk ON lk.user_id = pl.user_id
+    WHERE cp.user_id = p_user AND pl.user_id <> p_user
+    ORDER BY pl.created_at DESC
+    LIMIT 20
+  ),
+  pcmt AS (
+    SELECT
+      'comment_' || pco.id::text                      AS id,
+      'notification'::text                            AS kind,
+      'post_comment'::text                            AS subtype,
+      COALESCE(cm.display_name, 'Someone') || ' commented on your post' AS title,
+      SUBSTRING(COALESCE(pco.content,'') FROM 1 FOR 100) AS preview,
+      cm.avatar_url                                   AS avatar_url,
+      pco.created_at                                  AS ts,
+      (pco.created_at > COALESCE((SELECT post_engagement_seen_at FROM me), '1970-01-01'::timestamptz)) AS unread,
+      '/community/feed'                               AS open_target
+    FROM public.post_comments pco
+    JOIN public.community_posts cp ON cp.id = pco.post_id
+    LEFT JOIN public.profiles cm ON cm.user_id = pco.user_id
+    WHERE cp.user_id = p_user AND pco.user_id <> p_user
+    ORDER BY pco.created_at DESC
+    LIMIT 20
+  ),
   unioned AS (
     SELECT * FROM chat   WHERE p_filter IN ('all','chats')
     UNION ALL
     SELECT * FROM mail   WHERE p_filter IN ('all','mail')
     UNION ALL
     SELECT * FROM notif  WHERE p_filter IN ('all','alerts')
+    UNION ALL
+    SELECT * FROM grp    WHERE p_filter IN ('all','alerts')
+    UNION ALL
+    SELECT * FROM plike  WHERE p_filter IN ('all','alerts')
+    UNION ALL
+    SELECT * FROM pcmt   WHERE p_filter IN ('all','alerts')
   )
   SELECT u.id, u.kind, u.subtype, u.title, u.preview, u.avatar_url,
          u.ts, u.unread, u.open_target
@@ -130,9 +203,36 @@ BEGIN
          AND e.deleted_at IS NULL AND e.is_read = false)
   + (SELECT count(*) FROM public.notifications n
        WHERE n.user_id = p_user AND n.read = false)
+  + (SELECT count(*) FROM public.group_notifications gn
+       WHERE gn.user_id = p_user AND gn.read_at IS NULL)
+  + (SELECT count(*) FROM public.post_likes pl
+       JOIN public.community_posts cp ON cp.id = pl.post_id
+       WHERE cp.user_id = p_user AND pl.user_id <> p_user
+         AND pl.created_at > COALESCE(
+           (SELECT post_engagement_seen_at FROM public.profiles WHERE user_id = p_user),
+           '1970-01-01'::timestamptz))
+  + (SELECT count(*) FROM public.post_comments pco
+       JOIN public.community_posts cp ON cp.id = pco.post_id
+       WHERE cp.user_id = p_user AND pco.user_id <> p_user
+         AND pco.created_at > COALESCE(
+           (SELECT post_engagement_seen_at FROM public.profiles WHERE user_id = p_user),
+           '1970-01-01'::timestamptz))
   INTO v_count;
 
   RETURN COALESCE(v_count, 0);
 END $$;
 
 GRANT EXECUTE ON FUNCTION public.get_inbox_unread_count(uuid) TO authenticated;
+
+-- Mark all ALERT sources read (notifications + group activity + post engagement). Does NOT touch chats/mail.
+CREATE OR REPLACE FUNCTION public.mark_all_alerts_read()
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  UPDATE public.notifications SET read = true WHERE user_id = auth.uid() AND read = false;
+  UPDATE public.group_notifications SET read_at = now() WHERE user_id = auth.uid() AND read_at IS NULL;
+  UPDATE public.profiles SET post_engagement_seen_at = now() WHERE user_id = auth.uid();
+END $$;
+
+GRANT EXECUTE ON FUNCTION public.mark_all_alerts_read() TO authenticated;
