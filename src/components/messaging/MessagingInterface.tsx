@@ -596,14 +596,23 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
 
   const [selected, setSelected] = useState<InboxItem | null>(null);
 
-  // Deep-link: preselect a chat when ?conversation=<id> is present and the
-  // matching chat item has loaded into the feed.
+  // Deep-link: preselect a chat when ?conversation=<id> is present, or a mail
+  // item when ?email=<id> is present, once the matching item has loaded into
+  // the feed.
   useEffect(() => {
+    if (selected) return;
     const conversationId = searchParams.get('conversation');
-    if (!conversationId || selected) return;
-    const match = items.find((i) => i.id === `conv_${conversationId}`);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time deep-link preselect once the matching chat item loads into the feed; documented exemption from the eslint.config.js staged-ratchet plan.
-    if (match) setSelected(match);
+    if (conversationId) {
+      const match = items.find((i) => i.id === `conv_${conversationId}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time deep-link preselect once the matching item loads into the feed; documented exemption from the eslint.config.js staged-ratchet plan.
+      if (match) setSelected(match);
+      return;
+    }
+    const emailId = searchParams.get('email');
+    if (emailId) {
+      const match = items.find((i) => i.id === `mail_${emailId}`);
+      if (match) setSelected(match);
+    }
   }, [searchParams, items, selected]);
 
   // Reset selection when the filter chip changes. Skip the very first render so
@@ -618,9 +627,10 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
       return;
     }
     setSelected(null);
-    if (searchParams.has('conversation')) {
+    if (searchParams.has('conversation') || searchParams.has('email')) {
       const next = new URLSearchParams(searchParams);
       next.delete('conversation');
+      next.delete('email');
       setSearchParams(next, { replace: true });
     }
     // searchParams intentionally omitted — we only want to react to filter changes,
@@ -630,21 +640,27 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
 
   const handleSelect = (item: InboxItem) => {
     setSelected(item);
+    const next = new URLSearchParams(searchParams);
     if (item.kind === 'chat') {
-      setSearchParams({ conversation: item.id.replace('conv_', '') }, { replace: true });
-    } else if (searchParams.has('conversation')) {
-      // Fix 3: clear stale ?conversation param when opening a non-chat item
-      const next = new URLSearchParams(searchParams);
+      next.set('conversation', item.id.replace('conv_', ''));
+      next.delete('email');
+    } else if (item.kind === 'mail') {
+      next.set('email', item.id.replace('mail_', ''));
       next.delete('conversation');
-      setSearchParams(next, { replace: true });
+    } else {
+      // notification (or anything else) carries no deep-link param
+      next.delete('conversation');
+      next.delete('email');
     }
+    setSearchParams(next, { replace: true });
   };
 
   const handleBack = () => {
     setSelected(null);
-    if (searchParams.has('conversation')) {
+    if (searchParams.has('conversation') || searchParams.has('email')) {
       const next = new URLSearchParams(searchParams);
       next.delete('conversation');
+      next.delete('email');
       setSearchParams(next, { replace: true });
     }
   };

@@ -98,6 +98,21 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
         },
         invalidate,
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'group_notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        invalidate,
+      )
+      // post_likes/post_comments carry the actor's user_id (liker/commenter), not
+      // the recipient (the post author), so there's no filterable recipient column —
+      // subscribe broadly and let the per-user query refetch reconcile.
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_likes' }, invalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_comments' }, invalidate)
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
