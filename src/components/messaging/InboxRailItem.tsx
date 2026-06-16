@@ -1,4 +1,5 @@
 import { MessageCircle, Mail, Bell } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { InboxItem } from '@/hooks/useInboxFeed';
 
@@ -13,6 +14,7 @@ export function InboxRailItem({
   active: boolean;
   onSelect: (item: InboxItem) => void;
 }) {
+  const { t } = useTranslation();
   const Icon = KIND_ICON[item.kind];
   return (
     <button
@@ -28,7 +30,13 @@ export function InboxRailItem({
           <span className={cn('truncate text-15', item.unread && 'font-semibold')}>
             {item.title}
           </span>
-          {item.unread && <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />}
+          {item.unread && (
+              <span
+                className="h-2 w-2 shrink-0 rounded-full bg-foreground"
+                role="status"
+                aria-label={t('inbox.unread', { defaultValue: 'Unread' })}
+              />
+            )}
         </span>
         <span className="block truncate text-13 text-muted-foreground">{item.preview}</span>
       </span>

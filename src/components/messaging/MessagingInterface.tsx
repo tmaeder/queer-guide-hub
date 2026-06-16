@@ -15,6 +15,7 @@ import {
   CheckCheck,
   Clock,
   Eye,
+  ChevronLeft,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
@@ -599,10 +600,37 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
     if (match) setSelected(match);
   }, [searchParams, items, selected]);
 
+  // Reset selection when the filter chip changes. Skip the very first render so
+  // the deep-link effect above can still establish its initial selection before
+  // we'd accidentally null it out (both effects fire on mount; the hasMounted
+  // guard ensures we only reset on *subsequent* filter changes driven by user
+  // interaction).
+  const hasMountedRef = useRef(false);
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    setSelected(null);
+    if (searchParams.has('conversation')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('conversation');
+      setSearchParams(next, { replace: true });
+    }
+    // searchParams intentionally omitted — we only want to react to filter changes,
+    // not re-run every time the URL changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
   const handleSelect = (item: InboxItem) => {
     setSelected(item);
     if (item.kind === 'chat') {
       setSearchParams({ conversation: item.id.replace('conv_', '') }, { replace: true });
+    } else if (searchParams.has('conversation')) {
+      // Fix 3: clear stale ?conversation param when opening a non-chat item
+      const next = new URLSearchParams(searchParams);
+      next.delete('conversation');
+      setSearchParams(next, { replace: true });
     }
   };
 
@@ -660,6 +688,20 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
 
       {/* Right pane - per-kind detail */}
       <div className={`flex-1 flex-col ${selected ? 'flex' : 'hidden md:flex'}`}>
+        {/* Shared mobile-only back control for mail + notification kinds.
+            Chat already renders its own back button inside ChatView. */}
+        {selected && selected.kind !== 'chat' && (
+          <div className="md:hidden border-b p-4">
+            <button
+              onClick={handleBack}
+              aria-label={t('common.back', { defaultValue: 'Back' })}
+              className="flex items-center gap-2 text-sm text-muted-foreground"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              {t('common.back', { defaultValue: 'Back' })}
+            </button>
+          </div>
+        )}
         {selected?.kind === 'chat' ? (
           <ChatView
             key={selected.id}
