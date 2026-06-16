@@ -27,6 +27,10 @@ import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInbox
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
 import { MailDetail } from '@/components/messaging/MailDetail';
 import { NotificationDetailCard } from '@/components/messaging/NotificationDetailCard';
+import { ComposeChooser } from '@/components/messaging/ComposeChooser';
+import { ComposeEmail } from '@/components/inbox/ComposeEmail';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 interface MessageItemProps {
   message: Message;
@@ -587,6 +591,8 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { items, loading } = useInboxFeed(filter ?? 'all');
+  const navigate = useLocalizedNavigate();
+  const [composeEmailOpen, setComposeEmailOpen] = useState(false);
 
   const [selected, setSelected] = useState<InboxItem | null>(null);
 
@@ -645,11 +651,31 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
 
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] overflow-hidden bg-background">
+      {/* Email compose sheet */}
+      <Sheet open={composeEmailOpen} onOpenChange={setComposeEmailOpen}>
+        <SheetContent side="bottom">
+          <SheetHeader className="mb-4">
+            <SheetTitle>{t('inbox.compose.email', { defaultValue: 'New email' })}</SheetTitle>
+          </SheetHeader>
+          <ComposeEmail onSent={() => setComposeEmailOpen(false)} onCancel={() => setComposeEmailOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
       {/* Merged inbox rail - full width on mobile, 1/3 on desktop */}
       <div
         className={`${selected ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r flex-col`}
         style={{ backgroundColor: 'rgba(var(--background-rgb), 0.5)' }}
       >
+        {/* Rail header */}
+        <div className="flex items-center justify-between px-4 py-2 border-b">
+          <span className="text-sm font-medium text-foreground">
+            {t('inbox.title', { defaultValue: 'Inbox' })}
+          </span>
+          <ComposeChooser
+            onNewMessage={() => navigate('/community/members')}
+            onNewEmail={() => setComposeEmailOpen(true)}
+          />
+        </div>
         <ScrollArea style={{ flex: 1 }}>
           {loading ? (
             <div className="flex items-center justify-center py-16">
