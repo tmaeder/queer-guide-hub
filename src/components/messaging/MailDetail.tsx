@@ -7,10 +7,9 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 /**
- * Self-contained email reader + inline reply, shared by the unified inbox rail
- * (MessagingInterface) and the standalone mailbox page (UnifiedInbox). Loads a
- * single email by id directly so it does not depend on the caller's folder
- * selection, and replies via useMailbox.sendEmail.
+ * Self-contained email reader + inline reply, used by the unified inbox rail
+ * (MessagingInterface). Loads a single email by id directly so it does not
+ * depend on the caller's folder selection, and replies via useMailbox.sendEmail.
  */
 export function MailDetail({ emailId }: { emailId: string }) {
   const { t } = useTranslation();

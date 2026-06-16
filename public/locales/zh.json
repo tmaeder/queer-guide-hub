@@ -2521,5 +2521,25 @@
       "intersex": "[ZH] Intersex bodily integrity",
       "ilgaLink": "[ZH] ILGA World Database"
     }
+  },
+  "inbox": {
+    "title": "[ZH] Inbox",
+    "filter": {
+      "all": "[ZH] All",
+      "chats": "[ZH] Chats",
+      "mail": "[ZH] Mail",
+      "alerts": "[ZH] Alerts"
+    },
+    "compose": {
+      "label": "[ZH] Compose",
+      "message": "[ZH] New message",
+      "email": "[ZH] New email"
+    },
+    "notification": {
+      "open": "[ZH] Open"
+    },
+    "openInbox": "[ZH] Open inbox",
+    "markAlertsRead": "[ZH] Mark alerts read",
+    "unread": "[ZH] Unread"
   }
 }

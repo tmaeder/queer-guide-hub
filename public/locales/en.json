@@ -1,4 +1,24 @@
 {
+  "inbox": {
+    "title": "Inbox",
+    "filter": {
+      "all": "All",
+      "chats": "Chats",
+      "mail": "Mail",
+      "alerts": "Alerts"
+    },
+    "compose": {
+      "label": "Compose",
+      "message": "New message",
+      "email": "New email"
+    },
+    "notification": {
+      "open": "Open"
+    },
+    "openInbox": "Open inbox",
+    "markAlertsRead": "Mark alerts read",
+    "unread": "Unread"
+  },
   "eventTypes": {
     "party": "Party",
     "festival": "Festival",
@@ -141,6 +161,7 @@
     }
   },
   "common": {
+    "back": "Back",
     "contentInLanguage": "In {{lang}}",
     "loadMore": "Load More",
     "tryAgain": "Try Again",
