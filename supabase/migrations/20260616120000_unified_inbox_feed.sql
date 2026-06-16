@@ -13,6 +13,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_created
 CREATE OR REPLACE FUNCTION public.get_inbox_feed(
   p_user uuid,
   p_cursor timestamptz DEFAULT NULL,
+  p_cursor_id text DEFAULT NULL,
   p_filter text DEFAULT 'all',
   p_limit int DEFAULT 30
 )
@@ -100,12 +101,12 @@ BEGIN
   SELECT u.id, u.kind, u.subtype, u.title, u.preview, u.avatar_url,
          u.ts, u.unread, u.open_target
   FROM unioned u
-  WHERE p_cursor IS NULL OR u.ts < p_cursor
-  ORDER BY u.ts DESC
+  WHERE p_cursor IS NULL OR (u.ts, u.id) < (p_cursor, p_cursor_id)
+  ORDER BY u.ts DESC, u.id DESC
   LIMIT GREATEST(p_limit, 1);
 END $$;
 
-GRANT EXECUTE ON FUNCTION public.get_inbox_feed(uuid, timestamptz, text, int) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_inbox_feed(uuid, timestamptz, text, text, int) TO authenticated;
 
 -- Single unread count for the badge
 CREATE OR REPLACE FUNCTION public.get_inbox_unread_count(p_user uuid)

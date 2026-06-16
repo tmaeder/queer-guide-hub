@@ -31,11 +31,12 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
   const feed = useInfiniteQuery({
     queryKey: feedKey(user?.id, filter),
     enabled: !!user,
-    initialPageParam: null as string | null,
+    initialPageParam: null as { ts: string; id: string } | null,
     queryFn: async ({ pageParam }) => {
-      const { data, error } = await supabase.rpc('get_inbox_feed' as never, {
+      const { data, error } = await supabase.rpc('get_inbox_feed', {
         p_user: user!.id,
-        p_cursor: pageParam,
+        p_cursor: pageParam?.ts ?? null,
+        p_cursor_id: pageParam?.id ?? null,
         p_filter: filter,
         p_limit: PAGE,
       } as never);
@@ -43,7 +44,9 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
       return (data ?? []) as InboxItem[];
     },
     getNextPageParam: (last: InboxItem[]) =>
-      last.length === PAGE ? last[last.length - 1].ts : undefined,
+      last.length === PAGE
+        ? { ts: last[last.length - 1].ts, id: last[last.length - 1].id }
+        : undefined,
   });
 
   const countQuery = useQuery({
@@ -54,7 +57,10 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
       const { data, error } = await supabase.rpc('get_inbox_unread_count' as never, {
         p_user: user!.id,
       } as never);
-      if (error) return 0;
+      if (error) {
+        console.error('get_inbox_unread_count failed', error);
+        return 0;
+      }
       return (data as number) ?? 0;
     },
   });
@@ -67,6 +73,9 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
     };
     const channel = supabase
       .channel(`inbox-feed:${user.id}:${instanceId}`)
+      // messages/conversations carry no direct user_id column to filter on, so we
+      // subscribe broadly and let the per-user query refetch reconcile; mailbox/
+      // notifications are user-filtered.
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, invalidate)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, invalidate)
       .on(
