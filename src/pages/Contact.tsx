@@ -12,16 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import {
-  Mail,
-  Clock,
-  MessageCircle,
-  Shield,
-  Bug,
-  ChevronDown,
-  Send,
-  Loader2,
-} from 'lucide-react';
+import { Mail, ChevronDown, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,11 +20,11 @@ import { EditorialHero } from '@/components/editorial/EditorialHero';
 import { EDITORIAL_IMAGES } from '@/lib/editorialImages';
 
 const categories = [
-  { value: 'support', label: 'Email Support', icon: Mail, email: 'support@queer.guide', responseTime: '24 hours' },
-  { value: 'safety', label: 'Safety & Moderation', icon: Shield, email: 'safety@queer.guide', responseTime: '6 hours' },
-  { value: 'partnerships', label: 'Partnerships', icon: MessageCircle, email: 'partnerships@queer.guide', responseTime: '48 hours' },
-  { value: 'bugs', label: 'Bug Reports', icon: Bug, email: 'bugs@queer.guide', responseTime: '72 hours' },
-  { value: 'other', label: 'Other', icon: Mail, email: 'support@queer.guide', responseTime: '48 hours' },
+  { value: 'support', label: 'Email Support' },
+  { value: 'safety', label: 'Safety & Moderation' },
+  { value: 'partnerships', label: 'Partnerships' },
+  { value: 'bugs', label: 'Bug Reports' },
+  { value: 'other', label: 'Other' },
 ];
 
 const faqs = [
@@ -55,7 +46,7 @@ const faqs = [
   {
     question: 'How can I become a local ambassador?',
     answer:
-      "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Contact us through partnerships@queer.guide if you're interested.",
+      "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Reach out through the contact form above if you're interested.",
   },
   {
     question: 'Is my personal information secure?',
@@ -110,8 +101,8 @@ export default function Contact() {
           height="md"
         />
 
-        <div className="mt-16 md:mt-24 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-start">
-          {/* Contact Form */}
+        {/* Contact form — single centered column; it routes everything to the backend (no visible emails). */}
+        <div className="mt-16 md:mt-24 max-w-xl mx-auto">
           <Card>
             <CardHeader>
               <CardTitle>Send a message</CardTitle>
@@ -197,48 +188,6 @@ export default function Contact() {
               )}
             </CardContent>
           </Card>
-
-          {/* Contact Methods + Info */}
-          <div className="flex flex-col gap-4">
-            <h2 className="text-title font-bold">Direct contact</h2>
-            {categories
-              .filter((c) => c.value !== 'other')
-              .map((method) => (
-                <div
-                  key={method.value}
-                  className="flex items-start gap-4 rounded-container border border-border bg-card p-4"
-                >
-                  <method.icon size={20} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-15">{method.label}</p>
-                    <div className="mt-1 flex items-center justify-between gap-2">
-                      <a href={`mailto:${method.email}`} className="text-15 text-foreground">
-                        {method.email}
-                      </a>
-                      <span className="shrink-0 text-13 text-muted-foreground">
-                        ~{method.responseTime}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-            <div className="flex flex-col gap-2 rounded-container border border-border bg-muted/50 p-4">
-              <div className="flex items-center gap-2">
-                <Clock size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-                <p className="text-15">
-                  <strong className="font-semibold">Response time</strong> — within 24 hours
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-                <p className="text-15">
-                  <strong className="font-semibold">Safety first</strong> — priority support for
-                  safety concerns
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* FAQ */}

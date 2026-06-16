@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useId, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -39,6 +39,10 @@ export const useCommunityPosts = (userId?: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  // Unique per hook instance. Feed and CreatePostDialog both call this hook on
+  // the signed-in feed; a shared static channel topic made the second mount call
+  // `.on()` on an already-subscribed channel, which throws and crashed the page.
+  const instanceId = useId();
 
   const {
     data,
@@ -249,7 +253,7 @@ export const useCommunityPosts = (userId?: string) => {
   // Set up real-time subscriptions
   useEffect(() => {
     const channel = supabase
-      .channel('community-posts-changes')
+      .channel(`community-posts-changes-${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -288,7 +292,7 @@ export const useCommunityPosts = (userId?: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, instanceId]);
 
   return {
     posts,
