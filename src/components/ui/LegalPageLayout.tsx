@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { List, ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
 import type { EditorialImage } from '@/lib/editorialImages';
 
@@ -42,6 +43,7 @@ export const LegalPageLayout = ({
       }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [sections]);
 
@@ -51,7 +53,7 @@ export const LegalPageLayout = ({
   };
 
   return (
-    <div className="container mx-auto py-8 px-4" style={{ maxWidth: 1100 }}>
+    <div className="container mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
       {heroImage ? (
         <EditorialHero
           eyebrow={eyebrow ?? 'Legal'}
@@ -64,70 +66,54 @@ export const LegalPageLayout = ({
           className="mb-6"
         />
       ) : (
-        <>
-          <h3 className="text-3xl font-bold mb-1">{title}</h3>
-          {subtitle && <p className="text-base text-muted-foreground mb-2 max-w-xl">{subtitle}</p>}
-        </>
+        <header className="mb-2">
+          <h1 className="font-bold text-headline-lg md:text-display">{title}</h1>
+          {subtitle && (
+            <p className="mt-2 max-w-2xl text-body-lg leading-[1.6] text-muted-foreground">
+              {subtitle}
+            </p>
+          )}
+        </header>
       )}
       {lastUpdated && (
-        <span
-          className="text-xs mb-8 block"
-          style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}
-        >
-          Last updated {lastUpdated}
-        </span>
+        <p className="mb-8 mt-4 text-13 text-muted-foreground/70">Last updated {lastUpdated}</p>
       )}
 
-      <div className="flex flex-col md:flex-row md:gap-8 items-start mt-6">
+      <div className="mt-6 flex flex-col items-start md:flex-row md:gap-12">
         {/* Sidebar TOC — desktop */}
-        <div
-          className="hidden md:block sticky flex-shrink-0"
-          style={{ top: 80, minWidth: 200, maxWidth: 240 }}
-        >
-          <div className="bg-background p-4">
-            <span
-              className="text-xs font-semibold mb-2 px-2 block uppercase tracking-wider"
-              style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}
-            >
-              On this page
-            </span>
-            <nav aria-label="Table of contents">
-              {sections.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => scrollToSection(s.id)}
-                  className="block w-full text-left px-2 py-1 transition-colors hover:text-foreground"
-                  style={{
-                    border: 'none',
-                    borderLeft: `2px solid ${activeSection === s.id ? 'hsl(var(--foreground))' : 'transparent'}`,
-                    backgroundColor: 'transparent',
-                    color:
-                      activeSection === s.id
-                        ? 'hsl(var(--foreground))'
-                        : 'hsl(var(--muted-foreground))',
-                    fontWeight: activeSection === s.id ? 600 : 400,
-                    fontSize: '0.8125rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {s.title}
-                </button>
-              ))}
-            </nav>
-          </div>
+        <div className="sticky top-20 hidden w-56 flex-shrink-0 md:block">
+          <p className="mb-2 text-13 font-semibold uppercase tracking-label text-muted-foreground/70">
+            On this page
+          </p>
+          <nav aria-label="Table of contents" className="flex flex-col">
+            {sections.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => scrollToSection(s.id)}
+                className={cn(
+                  'border-l-2 px-2 py-1.5 text-left text-13 leading-snug transition-colors',
+                  activeSection === s.id
+                    ? 'border-foreground font-semibold text-foreground'
+                    : 'border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground',
+                )}
+              >
+                {s.title}
+              </button>
+            ))}
+          </nav>
         </div>
 
         {/* Mobile TOC */}
-        <div className="block md:hidden w-full mb-6">
+        <div className="mb-6 block w-full md:hidden">
           <Button
             variant="outline"
             onClick={() => setTocOpen(!tocOpen)}
-            style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}
+            className="flex w-full justify-between"
             aria-expanded={tocOpen}
             aria-label="Table of contents"
           >
-            <span style={{ alignItems: 'center' }} className="flex gap-2">
+            <span className="flex items-center gap-2">
               <List size={16} />
               {activeSection
                 ? `${sections.findIndex((s) => s.id === activeSection) + 1} of ${sections.length} sections`
@@ -136,24 +122,18 @@ export const LegalPageLayout = ({
             {tocOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </Button>
           {tocOpen && (
-            <div className="mt-2 bg-background p-4">
+            <div className="mt-2 flex flex-col rounded-element border border-border bg-card p-2">
               {sections.map((s) => (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => scrollToSection(s.id)}
-                  className="block w-full text-left px-2 py-1.5 transition-colors hover:text-foreground"
-                  style={{
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    fontSize: '0.875rem',
-                    color:
-                      activeSection === s.id
-                        ? 'hsl(var(--foreground))'
-                        : 'hsl(var(--muted-foreground))',
-                    fontWeight: activeSection === s.id ? 600 : 400,
-                    cursor: 'pointer',
-                  }}
+                  className={cn(
+                    'rounded-element px-2 py-2 text-left text-15 transition-colors',
+                    activeSection === s.id
+                      ? 'font-semibold text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
                 >
                   {s.title}
                 </button>
@@ -163,13 +143,13 @@ export const LegalPageLayout = ({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {children}
 
-          <div className="mt-12 pt-6 border-t border-border">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-12 border-t border-border pt-6">
+            <p className="text-15 text-muted-foreground">
               Questions? We're real humans at{' '}
-              <a href="mailto:legal@queer.guide" className="hover:opacity-85 text-foreground">
+              <a href="mailto:legal@queer.guide" className="text-foreground hover:opacity-85">
                 legal@queer.guide
               </a>
             </p>
