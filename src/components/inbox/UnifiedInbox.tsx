@@ -21,7 +21,7 @@ import { useUnifiedInbox, type InboxItemType } from '@/hooks/useUnifiedInbox';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
 import { useAuth } from '@/hooks/useAuth';
 import { type MailboxFolder } from '@/hooks/useMailbox';
-import { EmailView } from './EmailView';
+import { MailDetail } from '@/components/messaging/MailDetail';
 import { ComposeEmail } from './ComposeEmail';
 import { MailboxSettings } from './MailboxSettings';
 import { InboxItemList } from './InboxItemList';
@@ -120,18 +120,7 @@ export const UnifiedInbox = () => {
           <ChevronLeft className="h-4 w-4 mr-1" /> Back
         </Button>
         {selectedItem?.type === 'email' ? (
-          <EmailView
-            email={selectedItem.raw}
-            onReply={(email) => setSearchParams({ compose: 'true', replyTo: email.id })}
-            onDelete={(id) => {
-              mailbox.moveToFolder(id, 'trash');
-              clearSelection();
-            }}
-            onArchive={(id) => {
-              mailbox.moveToFolder(id, 'archive');
-              clearSelection();
-            }}
-          />
+          <MailDetail emailId={selectedEmailId} />
         ) : (
           <Card className="p-6">
             <h6 className="text-base font-semibold">{selectedItem?.title}</h6>

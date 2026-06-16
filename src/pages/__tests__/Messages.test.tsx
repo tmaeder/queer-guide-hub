@@ -11,6 +11,9 @@ vi.mock('react-i18next', () => ({
 vi.mock('@/components/messaging/MessagingInterface', () => ({
   MessagingInterface: () => <div data-testid="msg-iface" />,
 }));
+vi.mock('@/components/messaging/InboxFilterChips', () => ({
+  InboxFilterChips: () => <div data-testid="inbox-filter-chips" />,
+}));
 vi.mock('@/components/layout/AuthGate', () => ({
   AuthGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
