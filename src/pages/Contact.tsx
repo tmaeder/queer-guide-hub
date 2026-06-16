@@ -12,63 +12,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import {
-  Mail,
-  Clock,
-  MessageCircle,
-  Shield,
-  Bug,
-  HelpCircle,
-  ChevronDown,
-  ChevronRight,
-  Send,
-  Loader2,
-} from 'lucide-react';
+import { Mail, HelpCircle, ChevronDown, ChevronRight, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ColourfulText } from '@/components/effects/ColourfulText';
-import { WobbleCard } from '@/components/effects/WobbleCard';
 import { TracingBeam } from '@/components/effects/TracingBeam';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
 import { EDITORIAL_IMAGES } from '@/lib/editorialImages';
 
 const categories = [
-  {
-    value: 'support',
-    label: 'Email Support',
-    icon: Mail,
-    email: 'support@queer.guide',
-    responseTime: '24 hours',
-  },
-  {
-    value: 'safety',
-    label: 'Safety & Moderation',
-    icon: Shield,
-    email: 'safety@queer.guide',
-    responseTime: '6 hours',
-  },
-  {
-    value: 'partnerships',
-    label: 'Partnerships',
-    icon: MessageCircle,
-    email: 'partnerships@queer.guide',
-    responseTime: '48 hours',
-  },
-  {
-    value: 'bugs',
-    label: 'Bug Reports',
-    icon: Bug,
-    email: 'bugs@queer.guide',
-    responseTime: '72 hours',
-  },
-  {
-    value: 'other',
-    label: 'Other',
-    icon: Mail,
-    email: 'support@queer.guide',
-    responseTime: '48 hours',
-  },
+  { value: 'support', label: 'Email Support' },
+  { value: 'safety', label: 'Safety & Moderation' },
+  { value: 'partnerships', label: 'Partnerships' },
+  { value: 'bugs', label: 'Bug Reports' },
+  { value: 'other', label: 'Other' },
 ];
 
 const faqs = [
@@ -90,7 +48,7 @@ const faqs = [
   {
     question: 'How can I become a local ambassador?',
     answer:
-      "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Contact us through partnerships@queer.guide if you're interested.",
+      "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Reach out through the contact form above if you're interested.",
   },
   {
     question: 'Is my personal information secure?',
@@ -149,7 +107,7 @@ export default function Contact() {
           className="mb-12 md:mb-16"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+        <div className="max-w-xl mx-auto mb-16">
           {/* Contact Form */}
           <Card>
             <CardHeader>
@@ -243,55 +201,6 @@ export default function Contact() {
               )}
             </CardContent>
           </Card>
-
-          {/* Contact Methods + Info */}
-          <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-bold">Direct Contact</h2>
-            {categories
-              .filter((c) => c.value !== 'other')
-              .map((method) => (
-                <WobbleCard key={method.value}>
-                  <Card>
-                    <CardContent>
-                      <div className="flex items-start gap-4">
-                        <method.icon
-                          style={{ width: 20, height: 20 }}
-                          className="text-primary shrink-0 mt-0.5"
-                        />
-                        <div className="flex-1">
-                          <p className="font-semibold text-15">{method.label}</p>
-                          <div className="flex items-center justify-between mt-1">
-                            <a href={`mailto:${method.email}`} className="text-sm text-primary">
-                              {method.email}
-                            </a>
-                            <span className="text-xs text-muted-foreground">
-                              ~{method.responseTime}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </WobbleCard>
-              ))}
-
-            <Card>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <Clock size={18} className="text-primary" />
-                  <p className="text-sm">
-                    <strong>Response Time</strong> — within 24 hours
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Shield size={18} className="text-primary" />
-                  <p className="text-sm">
-                    <strong>Safety First</strong> — priority support for safety concerns
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
 
         {/* FAQ */}
