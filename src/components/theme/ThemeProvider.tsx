@@ -56,8 +56,8 @@ export function ThemeProvider({
     root.classList.remove("light", "dark");
     root.classList.add(resolvedMode);
 
-    // Update theme-color meta tags for browser chrome
-    const themeColor = resolvedMode === "dark" ? "#0a0a0a" : "#ffffff";
+    // Update theme-color meta tags for browser chrome (OLED in dark)
+    const themeColor = resolvedMode === "dark" ? "#050505" : "#ffffff";
     document
       .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
       .forEach((meta) => {

@@ -17,7 +17,7 @@
 
     <!-- PWA Manifest & Meta -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-48.png">
@@ -28,21 +28,24 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Sync theme before paint. Reads the same localStorage key the
-         ThemeProvider uses and applies the .light/.dark class to <html>
-         immediately, so the first paint matches the user's saved choice.
-         Without this the page rendered as light first, then flipped to
-         dark when React hydrated. -->
+         ThemeProvider uses ('queer-guide-theme') and applies the
+         .light/.dark class to <html> immediately, so the first paint
+         matches the user's saved choice. Default is DARK (Ethereal Glass
+         OLED identity, 2026-06-17) — only an explicit 'light' choice or a
+         'system' pref resolving to light renders light. -->
     <script>
       (function () {
+        var resolved = 'dark';
         try {
-          var saved = localStorage.getItem('ui-theme');
-          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var resolved = saved === 'dark' || saved === 'light'
-            ? saved
-            : (prefersDark ? 'dark' : 'light');
-          document.documentElement.classList.remove('light', 'dark');
-          document.documentElement.classList.add(resolved);
-        } catch (e) { /* private mode or no localStorage — fall back to light */ }
+          var saved = localStorage.getItem('queer-guide-theme');
+          var prefersDark = !window.matchMedia || window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (saved === 'light') resolved = 'light';
+          else if (saved === 'dark') resolved = 'dark';
+          else if (saved === 'system') resolved = prefersDark ? 'dark' : 'light';
+          else resolved = 'dark'; // no saved pref → dark by default
+        } catch (e) { /* private mode or no localStorage — stay dark */ }
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add(resolved);
       })();
     </script>
 

@@ -367,10 +367,11 @@
 }
 
 .dark {
-  --background: 0 0% 4%;
+  /* OLED canvas (Ethereal Glass identity) — page sits at 2%, cards lift to 5%. */
+  --background: 0 0% 2%;
   --foreground: 0 0% 96%;
 
-  --card: 0 0% 4%;
+  --card: 0 0% 5%;
   --card-foreground: 0 0% 96%;
 
   --popover: 0 0% 7%;
