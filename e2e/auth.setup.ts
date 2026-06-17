@@ -15,9 +15,13 @@ setup('authenticate as admin', async ({ page }) => {
   }
 
   await page.goto('/auth');
-  await page.locator('#email').fill(email);
+  // The sign-in form: email is a FloatingInput (type=email, no #email id),
+  // password keeps #password. Scope the submit to the <form> so the header's
+  // own "Sign in" button doesn't match.
+  const form = page.locator('form');
+  await page.locator('input[type="email"]').first().fill(email);
   await page.locator('#password').fill(password);
-  await page.getByRole('button', { name: /^sign in$/i }).click();
+  await form.getByRole('button', { name: /^sign in$/i }).click();
 
   await page.waitForURL((url) => !url.pathname.startsWith('/auth'), { timeout: 30_000 });
   await page.goto('/admin');

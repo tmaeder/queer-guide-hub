@@ -68,3 +68,5 @@ types/
 
 # Local test-user credentials (not for commit)
 .claude-test-user.json
+node_modules
+playwright/.auth/
