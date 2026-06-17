@@ -2573,5 +2573,84 @@
     "openInbox": "[RU] Open inbox",
     "markAlertsRead": "[RU] Mark alerts read",
     "unread": "[RU] Unread"
+  },
+  "extension": {
+    "signInGate": {
+      "title": "[RU] Sign in to install the extension",
+      "subtitle": "[RU] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
+      "cta": "[RU] Sign in"
+    },
+    "heading": {
+      "title": "[RU] queer.guide capture",
+      "subtitle": "[RU] Browser extension that turns any webpage into a structured suggestion for our moderators."
+    },
+    "badge": {
+      "installed": "[RU] Installed"
+    },
+    "captures": {
+      "label": "[RU] Captures",
+      "venues": "[RU] Venues",
+      "events": "[RU] Events",
+      "hotels": "[RU] Hotels",
+      "marketplace": "[RU] Marketplace",
+      "news": "[RU] News"
+    },
+    "connect": {
+      "title": "[RU] Connect this browser",
+      "detected": "[RU] Extension",
+      "installed": "[RU] is installed in this browser.",
+      "body": "[RU] Sign your queer.guide session into the extension so you can submit content from any webpage.",
+      "signInPrompt": "[RU] Sign in to your queer.guide account to connect this browser and start submitting.",
+      "signedInAs": "[RU] Signed in as",
+      "cta": "[RU] Connect",
+      "connecting": "[RU] Connecting…",
+      "done": {
+        "title": "[RU] Connected.",
+        "body": "[RU] Open the extension popup on any page to capture content for queer.guide."
+      }
+    },
+    "steps": {
+      "title": "[RU] Install in 3 steps",
+      "s1": {
+        "title": "[RU] Download the latest build",
+        "body": "[RU] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
+        "download": "[RU] Download .zip",
+        "note": "[RU] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+      },
+      "s2": {
+        "title": "[RU] Load it in Chrome",
+        "l1": "[RU] Open chrome://extensions in a new tab.",
+        "l2": "[RU] Toggle Developer mode on (top right).",
+        "l3": "[RU] Click Load unpacked and pick the unzipped folder.",
+        "l4": "[RU] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
+        "note": "[RU] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+      },
+      "s3": {
+        "title": "[RU] Reload this page and Connect",
+        "body": "[RU] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+      },
+      "dev": {
+        "label": "[RU] Want to build it yourself or contribute?",
+        "cta": "[RU] Build instructions"
+      }
+    },
+    "highlights": {
+      "smart": {
+        "title": "[RU] Smart capture",
+        "body": "[RU] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+      },
+      "privacy": {
+        "title": "[RU] Privacy-first",
+        "body": "[RU] Only runs when you click. No host permissions, no background tracking."
+      },
+      "review": {
+        "title": "[RU] Always reviewed",
+        "body": "[RU] Submissions land in a moderation queue, never live until approved."
+      }
+    },
+    "bug": {
+      "label": "[RU] Found a bug?",
+      "cta": "[RU] open an issue"
+    }
   }
 }

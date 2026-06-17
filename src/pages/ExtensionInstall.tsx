@@ -18,8 +18,20 @@ import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
 import { supabase } from "@/integrations/supabase/client";
 
 const RELEASE_ZIP_URL = "/extension/queer-guide-extension.zip";
+// Kept in step with the deployed zip by the `sync-extension-zip` CI workflow,
+// which rebuilds public/extension/queer-guide-extension.zip on every manifest bump.
+const RELEASE_VERSION = "1.0.2";
+const RELEASE_SIZE = "~780 KB";
 const DEV_BUILD_DOC =
   "https://github.com/tmaeder/queer-guide-hub/tree/main/extension#build--install-developer-mode";
+
+const CAPTURE_TYPES = [
+  { key: "venues", fallback: "Venues" },
+  { key: "events", fallback: "Events" },
+  { key: "hotels", fallback: "Hotels" },
+  { key: "marketplace", fallback: "Marketplace" },
+  { key: "news", fallback: "News" },
+] as const;
 
 interface ExtMeta {
   id: string;
@@ -85,21 +97,9 @@ export default function ExtensionInstall() {
     }
   }
 
-  if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-12 max-w-2xl text-center">
-        <h1 className="text-2xl font-semibold mb-4">{t("extension.signInGate.title", "Sign in to install the extension")}</h1>
-        <p className="text-muted-foreground mb-6">
-          {t("extension.signInGate.subtitle", "The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.")}
-        </p>
-        <Button onClick={() => navigate("/auth")}>{t("extension.signInGate.cta", "Sign in")}</Button>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-10 max-w-3xl">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-4">
         <Puzzle className="h-8 w-8" />
         <div>
           <h1 className="text-3xl font-bold">{t("extension.heading.title", "queer.guide capture")}</h1>
@@ -112,13 +112,17 @@ export default function ExtensionInstall() {
         </div>
       </div>
 
+      <Captures />
+
       {ext ? (
         <ConnectCard
           status={status}
           ext={ext}
           onConnect={connect}
           errorMsg={errorMsg}
-          userEmail={user.email ?? null}
+          signedIn={!!user}
+          userEmail={user?.email ?? null}
+          onSignIn={() => navigate("/auth")}
         />
       ) : (
         <InstallSteps />
@@ -147,13 +151,17 @@ function ConnectCard({
   ext,
   onConnect,
   errorMsg,
+  signedIn,
   userEmail,
+  onSignIn,
 }: {
   status: ConnectStatus;
   ext: ExtMeta;
   onConnect: () => void;
   errorMsg: string | null;
+  signedIn: boolean;
   userEmail: string | null;
+  onSignIn: () => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -175,7 +183,7 @@ function ConnectCard({
               {t("extension.connect.done.body", "Open the extension popup on any page to capture content for queer.guide.")}
             </p>
           </div>
-        ) : (
+        ) : signedIn ? (
           <>
             <p className="text-muted-foreground">
               {t("extension.connect.body", "Sign your queer.guide session into the extension so you can submit content from any webpage.")}
@@ -189,6 +197,13 @@ function ConnectCard({
             {status === "error" && errorMsg && (
               <p className="text-xs text-destructive">{errorMsg}</p>
             )}
+          </>
+        ) : (
+          <>
+            <p className="text-muted-foreground">
+              {t("extension.connect.signInPrompt", "Sign in to your queer.guide account to connect this browser and start submitting.")}
+            </p>
+            <Button onClick={onSignIn}>{t("extension.signInGate.cta", "Sign in")}</Button>
           </>
         )}
       </CardContent>
@@ -208,12 +223,15 @@ function InstallSteps() {
           <p className="text-sm text-muted-foreground mb-4">
             {t("extension.steps.s1.body", "We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.")}
           </p>
-          <Button asChild>
-            <a href={RELEASE_ZIP_URL} target="_blank" rel="noreferrer">
-              <Download className="h-4 w-4 mr-2" />
-              {t("extension.steps.s1.download", "Download .zip")}
-            </a>
-          </Button>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Button asChild>
+              <a href={RELEASE_ZIP_URL} download target="_blank" rel="noreferrer">
+                <Download className="h-4 w-4 mr-2" />
+                {t("extension.steps.s1.download", "Download .zip")}
+              </a>
+            </Button>
+            <span className="text-xs text-muted-foreground">v{RELEASE_VERSION} · {RELEASE_SIZE}</span>
+          </div>
           <p className="text-xs text-muted-foreground mt-2">
             {t("extension.steps.s1.note", "Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension).")}
           </p>
@@ -246,6 +264,20 @@ function InstallSteps() {
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+function Captures() {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-wrap items-center gap-2 mb-6">
+      <span className="text-sm text-muted-foreground">{t("extension.captures.label", "Captures")}:</span>
+      {CAPTURE_TYPES.map(({ key, fallback }) => (
+        <Badge key={key} variant="secondary">
+          {t(`extension.captures.${key}`, fallback)}
+        </Badge>
+      ))}
+    </div>
   );
 }
 
