@@ -21,6 +21,10 @@ const buttonVariants = cva(
         destructive: "bg-destructive text-destructive-foreground hover:opacity-90",
         // Aceternity-style soft surface — subtle bg, hairline border.
         soft: "bg-muted text-foreground border border-border/60 hover:bg-accent",
+        // Restrained berry brand accent — the one chromatic emphasis. Reserve
+        // for the SINGLE primary conversion action on a surface (Join, Add
+        // venue, homepage CTA). Everything else stays monochrome.
+        accent: "bg-accent-brand text-accent-brand-foreground hover:opacity-90",
         // Legacy aliases retained for compat. Slated for removal next major
         // (2026-05-19) — both collapse to `default`. Use variant="default".
         secondary: "bg-foreground text-background hover:opacity-85",
@@ -48,7 +52,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading = false, disabled, children, ...props }, ref) => {
     if (import.meta.env?.DEV && (variant === "secondary" || variant === "brand")) {
       console.warn(
-        `[Button] variant="${variant}" is deprecated (2026-05-19) and collapses to "default". Update to variant="default" before the next major release.`,
+        `[Button] variant="${variant}" is deprecated (2026-05-19) and collapses to "default". Update to variant="default" (or "accent" for the berry brand CTA) before the next major release.`,
       )
     }
     const Comp = asChild ? Slot : "button"
