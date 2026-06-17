@@ -123,10 +123,10 @@ export function EditorialDetailLayout({
   }
 
   return (
-    <div className="dark ether-canvas mesh-orbs ether-grain min-h-screen">
+    <>
       <motion.div
         style={{ scaleX, transformOrigin: '0%' }}
-        className="fixed top-0 left-0 right-0 h-[2px] bg-orb-violet z-[1200]"
+        className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
       />
       <div className="container mx-auto px-4 py-8" data-testid="editorial-detail-layout">
         {breadcrumbs && breadcrumbs.length > 0 ? (
@@ -188,7 +188,7 @@ export function EditorialDetailLayout({
 
         {footer ? <div className="mt-12">{footer}</div> : null}
       </div>
-    </div>
+    </>
   );
 }
 
