@@ -14,8 +14,10 @@
 
 @theme {
   /* ── Font families ─────────────────────────────────────────────── */
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  /* Ethereal Glass reskin (2026-06-17): Geist body + Clash Display headings.
+     Inter retained only as a metric-compatible fallback during rollout. */
+  --font-sans: 'Geist', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Clash Display', 'Geist', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* ── Custom font sizes ─────────────────────────────────────────── */
@@ -139,6 +141,13 @@
      stay monochrome black/white. */
   --color-accent-brand: hsl(var(--accent-brand));
   --color-accent-brand-foreground: hsl(var(--accent-brand-foreground));
+
+  /* ── Ethereal Glass — mesh orb + glass surface palette (2026-06-17) ──────
+     The reskin's chromatic identity: a violet and an emerald glow that
+     bloom behind OLED-black glass. Wired as tokens so utilities generate. */
+  --color-orb-violet: hsl(var(--orb-violet));
+  --color-orb-emerald: hsl(var(--orb-emerald));
+  --color-ether: hsl(var(--ether));
 }
 
 /* ── Self-hosted fonts (Inter only) ───────────────────────────────────
@@ -219,6 +228,41 @@
     U+A720-A7FF;
 }
 
+/* ── Ethereal Glass reskin — Geist (body) + Clash Display (headings) ──────
+   Both self-hosted variable woff2. Geist replaces Inter as `--font-sans`;
+   Clash Display is the wide geometric grotesk display face. */
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist/geist-latin-wght-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist/geist-latin-ext-wght-normal.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Clash Display';
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url('/fonts/clash-display/clash-display-variable.woff2') format('woff2');
+}
+
 /* ── CSS Variables — Strict Monochrome (Black & White only) ──────────
    Only neutrals + a single semantic destructive red. The --cat-* family
    are aliased to --foreground as documented placeholders for any future
@@ -257,6 +301,11 @@
      L 38% on white passes WCAG AA for white text (contrast ~5.0:1). */
   --accent-brand: 330 45% 38%;
   --accent-brand-foreground: 0 0% 100%;
+
+  /* Ethereal Glass — orb glows + OLED canvas (resolve in light too). */
+  --ether: 0 0% 2%;
+  --orb-violet: 270 72% 56%;
+  --orb-emerald: 158 64% 46%;
 
   /* Success / info collapse to neutral foreground — differentiated by icon + label, not color. */
   --success: 0 0% 4%;
@@ -350,6 +399,11 @@
   --accent-brand: 330 55% 62%;
   --accent-brand-foreground: 0 0% 4%;
 
+  /* Ethereal Glass — OLED canvas + glowing orbs (dark identity). */
+  --ether: 0 0% 2%;
+  --orb-violet: 270 72% 56%;
+  --orb-emerald: 158 64% 46%;
+
   --success: 0 0% 96%;
   --success-foreground: 0 0% 4%;
 
@@ -442,7 +496,7 @@
 }
 
 html {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -560,10 +614,110 @@ h1, h2, .font-display {
   letter-spacing: -0.03em;
 }
 
-/* Heroes get the tightest tracking — Space Grotesk reads wide at scale. */
+/* Heroes get the tightest tracking — wide display grotesk reads loose at scale. */
 .text-hero-xl, .text-hero {
   font-family: var(--font-display);
   letter-spacing: -0.04em;
+}
+
+/* ── Ethereal Glass system (2026-06-17 reskin) ──────────────────────────
+   OLED canvas, blooming mesh orbs, double-bezel machined-glass cards, and a
+   fixed film-grain overlay. GPU-safe: only transform/opacity/filter animate;
+   backdrop-blur lives on fixed/contained surfaces, grain is pointer-events
+   none. `prefers-reduced-motion` neutralises the drift. */
+
+.ether-canvas {
+  background-color: hsl(var(--ether));
+  color: hsl(0 0% 96%);
+  position: relative;
+  isolation: isolate;
+}
+
+/* Blooming radial mesh — two orbs that slowly drift behind the glass. */
+.mesh-orbs::before,
+.mesh-orbs::after {
+  content: '';
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: -1;
+  will-change: transform;
+}
+.mesh-orbs::before {
+  width: 46vw;
+  height: 46vw;
+  top: -12vw;
+  left: -8vw;
+  background: radial-gradient(circle, hsl(var(--orb-violet) / 0.9), transparent 68%);
+  animation: orb-drift-a 24s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+.mesh-orbs::after {
+  width: 40vw;
+  height: 40vw;
+  bottom: -14vw;
+  right: -6vw;
+  background: radial-gradient(circle, hsl(var(--orb-emerald) / 0.85), transparent 66%);
+  animation: orb-drift-b 28s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+@keyframes orb-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(6vw, 5vw, 0) scale(1.12); }
+}
+@keyframes orb-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.05); }
+  to   { transform: translate3d(-5vw, -4vw, 0) scale(0.95); }
+}
+
+/* Fixed film-grain — physical texture over the OLED black. */
+.ether-grain::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Double-bezel glass — machined aluminium tray holding a glass plate. */
+.glass-shell {
+  background: hsl(0 0% 100% / 0.04);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  border-radius: 2rem;
+  padding: 0.375rem;
+  backdrop-filter: blur(24px);
+}
+.glass-core {
+  background: hsl(0 0% 100% / 0.03);
+  border: 1px solid hsl(0 0% 100% / 0.06);
+  border-radius: calc(2rem - 0.375rem);
+  box-shadow: inset 0 1px 1px hsl(0 0% 100% / 0.12);
+}
+
+/* Eyebrow pill — microscopic uppercase tag above mega headings. */
+.ether-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid hsl(0 0% 100% / 0.12);
+  background: hsl(0 0% 100% / 0.04);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(0 0% 80%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh-orbs::before,
+  .mesh-orbs::after {
+    animation: none;
+  }
 }
 
 /* ── Legacy gradient utilities — now flat solid ────────────────────── */
