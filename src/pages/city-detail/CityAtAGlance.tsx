@@ -75,8 +75,8 @@ export function CityAtAGlance({ city, hasAirport, effectiveIata }: CityAtAGlance
     });
 
   return (
-    <div className="rounded-container border border-border/60 p-4 sm:p-6">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="glass-shell">
+      <div className="glass-core grid grid-cols-2 gap-x-6 gap-y-6 p-6 sm:grid-cols-3 sm:p-8 lg:grid-cols-6">
         <a
           href="#rights"
           className="col-span-2 block no-underline sm:col-span-1"
