@@ -38,6 +38,7 @@ const NotificationList = lazyOptional(() =>
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { USER_MENU_ITEMS as userMenuItems, USER_MODES as userModes } from '@/config/navigation';
+import { cn } from '@/lib/utils';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -187,18 +188,25 @@ export function Header() {
 
             {userMenuItems.map((item) => {
               const showBadge = item.to === '/me' && inboxBadgeCount > 0;
+              const active =
+                location.pathname === item.to ||
+                location.pathname.startsWith(`${item.to}/`);
               return (
                 <Button
                   key={item.to}
                   variant="ghost"
                   size="sm"
+                  aria-current={active ? 'page' : undefined}
                   style={{
                     alignItems: 'center',
                     justifyContent: 'flex-start',
                     width: '100%',
                     padding: '8px 12px',
                   }}
-                  className="flex gap-2"
+                  className={cn(
+                    'flex gap-2',
+                    active && 'text-accent-brand font-semibold',
+                  )}
                   onClick={() => navigate(item.to)}
                 >
                   <item.icon style={{ width: 16, height: 16 }} />

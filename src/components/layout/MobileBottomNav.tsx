@@ -66,10 +66,16 @@ export function MobileBottomNav() {
                 to={item.to}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex h-14 flex-col items-center justify-center gap-0.5 text-2xs',
-                  active ? 'text-foreground' : 'text-muted-foreground',
+                  'relative flex h-14 flex-col items-center justify-center gap-0.5 text-2xs transition-colors',
+                  active ? 'text-accent-brand' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-6 top-0 h-0.5 rounded-badge bg-accent-brand"
+                  />
+                )}
                 <Icon className={cn('h-5 w-5', active && 'stroke-[2.25]')} aria-hidden />
                 <span>{item.label}</span>
               </LocalizedLink>
