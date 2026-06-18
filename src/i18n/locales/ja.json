@@ -2021,7 +2021,8 @@
       "emptyDescription": "最初のグループを作成しましょう。",
       "createGroup": "グループを作成",
       "mostPopular": "最も人気のグループ",
-      "noPopular": "人気のグループはまだありません。"
+      "noPopular": "人気のグループはまだありません。",
+      "eyebrow": "[JA] Community"
     },
     "groupDetail": {
       "signInRequired": "グループの詳細を見るにはログインしてください。"
@@ -2060,7 +2061,8 @@
       "clearSearch": "Clear search",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
-      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
+      "eyebrow": "[JA] Community"
     },
     "notFound": {
       "title": "ページが見つかりません",
@@ -2101,6 +2103,23 @@
         "scopeNote": "空の下書きを{{count}}件表示中。不要なものを削除してください。",
         "exitScope": "すべての旅行を表示"
       }
+    },
+    "members": {
+      "eyebrow": "[JA] Community",
+      "title": "[JA] Members",
+      "subtitle": "[JA] People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "[JA] member",
+      "members": "[JA] members",
+      "visible": "[JA] visible",
+      "upsellTitle": "[JA] See the full community",
+      "upsellBody": "[JA] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "[JA] Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "[JA] Community",
+      "title": "[JA] Friends",
+      "subtitle": "[JA] Manage your connections",
+      "gate": "[JA] Please sign in to view your friends."
     }
   },
   "settings": {

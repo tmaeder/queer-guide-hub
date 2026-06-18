@@ -1,21 +1,22 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GroupCard } from '@/components/groups/GroupCard';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { GroupFilters } from '@/components/groups/GroupFilters';
 import { useGroups } from '@/hooks/useGroups';
+import { useAuth } from '@/hooks/useAuth';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Users, Search, TrendingUp } from 'lucide-react';
-import { AuthGate } from '@/components/layout/AuthGate';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { ColourfulText } from '@/components/effects/ColourfulText';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
 
 export default function Groups() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const navigate = useLocalizedNavigate();
   const {
     groups,
     userGroups,
@@ -31,11 +32,12 @@ export default function Groups() {
   } = useGroups();
   const [searchParams] = useSearchParams();
   // /my-groups redirects here with ?tab=mine — land on the My Groups tab.
-  const initialTab = searchParams.get('tab') === 'mine' ? 'my-groups' : 'discover';
+  const initialTab = searchParams.get('tab') === 'mine' && user ? 'my-groups' : 'discover';
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showMyGroups, setShowMyGroups] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const filteredGroups = useMemo(() => {
     let filtered = showMyGroups ? userGroups : groups;
@@ -86,54 +88,59 @@ export default function Groups() {
   );
 
   return (
-    <AuthGate
-      title={t('pages.groups.title', 'Community Groups')}
-      description="Please sign in to view and join community groups."
-    >
-      <div className="relative">
-        <SpotlightV2 anchor="top-center" intensity={0.1} />
-        <div className="container mx-auto py-12 md:py-20 px-4 flex flex-col gap-6 relative">
-          <PageHeader
-            title={<ColourfulText text={t('pages.groups.title', 'Community Groups')} />}
-            subtitle={t(
-              'pages.groups.subtitle',
-              'Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces.',
-            )}
-            center
-            actions={<CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />}
-          />
+    <div className="container mx-auto py-12 md:py-20 px-4 flex flex-col gap-6 relative">
+      <PageHeader
+        title={t('pages.groups.title', 'Community Groups')}
+        subtitle={t(
+          'pages.groups.subtitle',
+          'Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces.',
+        )}
+        center
+        actions={
+          user ? (
+            <CreateGroupDialog
+              onCreateGroup={createGroup}
+              isCreating={isCreating}
+              open={createOpen}
+              onOpenChange={setCreateOpen}
+            />
+          ) : undefined
+        }
+      />
 
-          <Tabs
-            defaultValue={initialTab}
-            style={{ flexDirection: 'column', gap: '1.5rem' }}
+      <Tabs
+        defaultValue={initialTab}
+        style={{ flexDirection: 'column', gap: '1.5rem' }}
+        className="flex"
+      >
+        <TabsList
+          style={{ width: '100%', gridTemplateColumns: user ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}
+          className="grid"
+        >
+          <TabsTrigger
+            value="discover"
+            style={{ alignItems: 'center', gap: '0.5rem' }}
+            className="flex font-bold"
+          >
+            <Search size={16} /> {t('pages.groups.discover', 'Find groups')}
+          </TabsTrigger>
+          {user && (
+            <TabsTrigger
+              value="my-groups"
+              style={{ alignItems: 'center', gap: '0.5rem' }}
+              className="flex"
+            >
+              <Users size={16} /> {t('pages.groups.myGroups', 'My Groups')} ({userGroups.length})
+            </TabsTrigger>
+          )}
+          <TabsTrigger
+            value="popular"
+            style={{ alignItems: 'center', gap: '0.5rem' }}
             className="flex"
           >
-            <TabsList
-              style={{ width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}
-              className="grid"
-            >
-              <TabsTrigger
-                value="discover"
-                style={{ alignItems: 'center', gap: '0.5rem' }}
-                className="flex font-bold"
-              >
-                <Search size={16} /> {t('pages.groups.discover', 'Find groups')}
-              </TabsTrigger>
-              <TabsTrigger
-                value="my-groups"
-                style={{ alignItems: 'center', gap: '0.5rem' }}
-                className="flex"
-              >
-                <Users size={16} /> {t('pages.groups.myGroups', 'My Groups')} ({userGroups.length})
-              </TabsTrigger>
-              <TabsTrigger
-                value="popular"
-                style={{ alignItems: 'center', gap: '0.5rem' }}
-                className="flex"
-              >
-                <TrendingUp size={16} /> {t('pages.groups.popular', 'Popular')}
-              </TabsTrigger>
-            </TabsList>
+            <TrendingUp size={16} /> {t('pages.groups.popular', 'Popular')}
+          </TabsTrigger>
+        </TabsList>
 
             <TabsContent
               value="discover"
@@ -177,7 +184,6 @@ export default function Groups() {
                     }}
                   />
                 ) : (
-                  // TODO(polish): primary action is a no-op; wire to CreateGroupDialog open state
                   <EmptyState
                     icon={Users}
                     title={t('pages.groups.emptyTitle', 'No groups here yet')}
@@ -186,10 +192,17 @@ export default function Groups() {
                       'Be the spark — create the first group and bring people together.',
                     )}
                     mood="encouraging"
-                    primaryAction={{
-                      label: t('pages.groups.createGroup', 'Create a Group'),
-                      onClick: () => {},
-                    }}
+                    primaryAction={
+                      user
+                        ? {
+                            label: t('pages.groups.createGroup', 'Create a Group'),
+                            onClick: () => setCreateOpen(true),
+                          }
+                        : {
+                            label: t('common.signIn', 'Sign in'),
+                            onClick: () => navigate('/auth'),
+                          }
+                    }
                   />
                 )
               ) : (
@@ -198,6 +211,7 @@ export default function Groups() {
                     <GroupCard
                       key={group.id}
                       group={group}
+                      isAuthenticated={!!user}
                       onJoin={joinGroup}
                       onRequestJoin={(id) => requestJoin({ groupId: id })}
                       onLeave={leaveGroup}
@@ -216,7 +230,6 @@ export default function Groups() {
               className="flex"
             >
               {userGroups.length === 0 ? (
-                // TODO(polish): primary action is a no-op; wire to CreateGroupDialog open state
                 <EmptyState
                   icon={Users}
                   title={t('pages.groups.emptyTitle', 'No groups here yet')}
@@ -227,7 +240,7 @@ export default function Groups() {
                   mood="encouraging"
                   primaryAction={{
                     label: t('pages.groups.createGroup', 'Create a Group'),
-                    onClick: () => {},
+                    onClick: () => setCreateOpen(true),
                   }}
                 />
               ) : (
@@ -267,6 +280,7 @@ export default function Groups() {
                         <GroupCard
                           key={group.id}
                           group={group}
+                          isAuthenticated={!!user}
                           onJoin={joinGroup}
                           onRequestJoin={(id) => requestJoin({ groupId: id })}
                           onLeave={leaveGroup}
@@ -281,8 +295,6 @@ export default function Groups() {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
-    </AuthGate>
+    </div>
   );
 }
