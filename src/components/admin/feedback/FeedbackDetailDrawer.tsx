@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Link2, Ban, RotateCcw, Plus } from 'lucide-react';
+import { X, Link2, Ban, RotateCcw, Plus, Sparkles } from 'lucide-react';
 import { Github } from '@/components/icons/brand';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -273,6 +273,34 @@ export function FeedbackDetailDrawer({
             onAssign={onAssign}
             onResolutionChange={onResolutionChange}
           />
+
+          {/* AI triage suggestion (from feedback-autotriage) */}
+          {item.autotriage?.summary && (
+            <div className="mb-4 rounded-element border border-border bg-muted/40 p-2">
+              <div className="flex items-center gap-1.5 mb-1 text-xs2 font-semibold text-muted-foreground">
+                <Sparkles size={12} />
+                AI triage
+                {item.autotriage.is_probably_spam && (
+                  <Badge variant="outline" className="ml-1">possible spam</Badge>
+                )}
+              </div>
+              <p className="text-13 text-foreground mb-2">{item.autotriage.summary}</p>
+              <div className="flex flex-wrap items-center gap-1.5 text-xs2 text-muted-foreground">
+                {item.autotriage.category && <span>category: {item.autotriage.category}</span>}
+                <span>· suggested {priorityFor(item.autotriage.suggested_priority).label}</span>
+                {item.autotriage.suggested_priority !== (item.priority ?? 2) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-6 px-2 text-xs2"
+                    onClick={() => onPriorityChange(item.autotriage!.suggested_priority)}
+                  >
+                    Apply
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           <p className="text-sm whitespace-pre-wrap mb-4 text-muted-foreground">

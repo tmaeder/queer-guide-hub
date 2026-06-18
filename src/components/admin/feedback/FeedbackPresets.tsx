@@ -1,7 +1,7 @@
-import { Inbox, User, Clock, Bot, CircleSlash2 } from 'lucide-react';
+import { Inbox, User, Clock, Bot, CircleSlash2, AlarmClock } from 'lucide-react';
 import type { FeedbackUrlState } from '@/hooks/useFeedbackUrlState';
 
-type PresetId = 'all' | 'mine' | 'overdue' | 'with-claude' | 'unresolved';
+type PresetId = 'all' | 'mine' | 'overdue' | 'with-claude' | 'unresolved' | 'stale';
 
 interface Props {
   state: FeedbackUrlState;
@@ -33,6 +33,10 @@ export function FeedbackPresets({ state, update, clearFilters, currentUserId }: 
       case 'unresolved':
         update({ status: null, showDuplicates: false, showSpam: false });
         break;
+      case 'stale':
+        // Items the nightly flag_stale_feedback automation labelled (open >30d).
+        update({ label: 'stale' });
+        break;
       case 'all':
       default:
         break;
@@ -45,6 +49,7 @@ export function FeedbackPresets({ state, update, clearFilters, currentUserId }: 
     { id: 'overdue', label: 'Overdue', icon: Clock },
     { id: 'with-claude', label: 'With Claude', icon: Bot },
     { id: 'unresolved', label: 'Unresolved', icon: CircleSlash2 },
+    { id: 'stale', label: 'Stale', icon: AlarmClock },
   ];
 
   return (
@@ -76,6 +81,7 @@ function detectActivePreset(
   currentUserId: string | null,
 ): PresetId {
   if (state.withClaude) return 'with-claude';
+  if (state.label === 'stale') return 'stale';
   if (currentUserId && state.assignee === currentUserId) return 'mine';
   return 'all';
 }
