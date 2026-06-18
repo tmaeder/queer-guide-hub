@@ -98,6 +98,25 @@ test.describe('/messages — unified inbox (signed in)', () => {
     'Requires a signed-in session (E2E_ADMIN_EMAIL / E2E_STORAGE_STATE).',
   );
 
+  // Pre-seed cookie consent so the fixed bottom banner never mounts — it
+  // otherwise races page load and intercepts clicks on the Send buttons.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem(
+          'queer-guide-cookie-consent',
+          JSON.stringify({
+            preferences: { necessary: true, functional: true, analytics: true, marketing: true },
+            version: '1.0',
+            timestamp: new Date(0).toISOString(),
+          }),
+        );
+      } catch {
+        /* storage unavailable — fall back to dismissConsent */
+      }
+    });
+  });
+
   test('renders the two-pane shell: header, rail, compose, filter tabs', async ({ page }) => {
     await gotoInbox(page);
     await expect(page.getByRole('heading', { name: 'Messages' })).toBeVisible();
