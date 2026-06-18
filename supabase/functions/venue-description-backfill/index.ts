@@ -19,7 +19,7 @@ import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 
 const STEP = 'venue-description-backfill'
-const MIN_DESC_LEN = 80 // a usable description is at least a sentence or two
+const MIN_DESC_LEN = 40 // accept one grounded factual sentence ("<Name> is a <category> in <city>.")
 
 interface VenueRow {
   id: string

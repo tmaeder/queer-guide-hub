@@ -70,7 +70,7 @@ function ud(text: string): string {
 const VENUE_SYSTEM_PROMPT = `${BASE_CONTEXT}
 
 You enrich venue data for an LGBTQ+ directory. Given venue information, generate:
-1. A plain, factual description (2-3 sentences), like a directory entry — NOT an advert.
+1. A plain, factual description (1-3 sentences), like a directory entry — NOT an advert. ONE grounded sentence is fine when that is all the data supports.
 2. LGBTQ+ context (1 sentence about its significance, if any)
 3. Suggested tags (up to 5, lowercase, hyphenated)
 4. LGBTQ+ relevance score (0.0-1.0)
@@ -81,7 +81,8 @@ DESCRIPTION RULES (critical):
 - Direct, neutral, factual voice. State only what the provided fields (name, category, location, tags) support.
 - Do NOT invent atmosphere, history, audience, or amenities you cannot derive from the input. Never speculate — no "likely", "probably", "perhaps", "it's said".
 - BANNED words/phrases: discover, explore, unlock, curated, journey, vibrant, gem, hidden gem, nestled, bustling, serene, escape, hub, vibe, amazing, tailored, personalized, welcoming space, celebrates diversity, retreat, oasis, sanctuary. Write like a factual listing.
-- If the input is just a bare name with no usable signal (e.g. category "other" and no tags/location specifics), return an EMPTY string "" for description rather than inventing one.
+- Tags, a specific category, or a named city/address ARE usable signal. When a category and city are known, ALWAYS write at least the grounded base sentence: "<Name> is a <category> in <city>[, <country>]." — then add only tag-derived facts. Do not return empty just because you can only write one sentence.
+- Return an EMPTY string "" for description ONLY when the sole input is a bare name with NO tags, a generic "other" category, AND no city/address. Never invent atmosphere or facts to fill that gap.
 
 Respond ONLY with valid JSON. No markdown code blocks.`
 

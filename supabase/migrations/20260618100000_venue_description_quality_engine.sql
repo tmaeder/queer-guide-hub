@@ -28,6 +28,11 @@ AS $function$
     AND (v.description IS NULL OR length(btrim(v.description)) < 40)
     AND length(coalesce(v.name, '')) > 1
     AND (v.city IS NOT NULL OR v.address IS NOT NULL)
+    -- only fillable venues: bare-name 'other' stubs (mostly misfiled events/prides) have
+    -- no groundable signal, so the LLM correctly returns empty — don't waste calls on them
+    AND (coalesce(array_length(v.tags,1),0) > 0
+         OR v.category IS DISTINCT FROM 'other'
+         OR v.website IS NOT NULL)
   ORDER BY
     v.lgbti_relevance_score DESC NULLS LAST,  -- queer-relevant venues users see first
     v.quality_score ASC NULLS FIRST,
@@ -145,8 +150,8 @@ DO $$ BEGIN
         'Content-Type','application/json',
         'X-Webhook-Secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='amenity_quality_webhook_secret')
       ),
-      body := '{"batch_limit":40}'::jsonb,
-      timeout_milliseconds := 120000
+      body := '{"batch_limit":12}'::jsonb,  -- small: ~12 sequential CF AI calls fit the edge wall-clock
+      timeout_milliseconds := 150000
     );
   $cron$);
 

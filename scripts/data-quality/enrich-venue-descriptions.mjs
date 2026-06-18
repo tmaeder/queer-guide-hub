@@ -3,7 +3,7 @@
 //
 // Drives the deployed `venue-description-backfill` edge function in a loop until the
 // description-less backlog is drained (or --max is hit). The edge fn is the perpetual
-// path (daily cron `venue_description_backfill`, batch 40); this script is for a fast
+// path (daily cron `venue_description_backfill`, batch 12); this script is for a fast
 // initial backfill of the ~17.9k venues that have no description.
 //
 // It calls the edge fn from Postgres via pg_net (so the internal secret never leaves
@@ -16,7 +16,7 @@
 // Usage:
 //   node scripts/data-quality/enrich-venue-descriptions.mjs --dry-run     # preview
 //   node scripts/data-quality/enrich-venue-descriptions.mjs               # live, full drain
-//   node scripts/data-quality/enrich-venue-descriptions.mjs --batch 40 --max 2000
+//   node scripts/data-quality/enrich-venue-descriptions.mjs --batch 12 --max 2000
 
 import { execFileSync } from 'node:child_process'
 
@@ -24,7 +24,7 @@ const PROJECT = 'xqeacpakadqfxjxjcewc'
 const FN_URL = `https://${PROJECT}.supabase.co/functions/v1/venue-description-backfill`
 const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
-const BATCH = Number(args[args.indexOf('--batch') + 1]) || 40
+const BATCH = Number(args[args.indexOf('--batch') + 1]) || 12 // ~12 sequential CF AI calls fit the edge wall-clock
 const MAX = Number(args[args.indexOf('--max') + 1]) || Infinity
 
 function token() {
