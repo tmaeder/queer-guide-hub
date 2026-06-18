@@ -34,16 +34,27 @@ function token() {
 }
 const TOKEN = token()
 
-async function sql(query) {
-  const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      'Content-Type': 'application/json',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-    },
-    body: JSON.stringify({ query }),
-  })
+async function sql(query, attempt = 0) {
+  let res
+  try {
+    res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      },
+      body: JSON.stringify({ query }),
+    })
+  } catch (e) {
+    // network blip — retry
+    if (attempt < 5) { await sleep(3000 * (attempt + 1)); return sql(query, attempt + 1) }
+    throw e
+  }
+  // Transient gateway errors (Cloudflare/Supabase 5xx, 429) — retry with backoff.
+  if ((res.status >= 500 || res.status === 429) && attempt < 5) {
+    await sleep(3000 * (attempt + 1)); return sql(query, attempt + 1)
+  }
   if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 300)}`)
   return res.json()
 }

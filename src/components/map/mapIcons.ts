@@ -15,6 +15,10 @@ import {
   Accessibility,
   Landmark,
   Globe,
+  Coffee,
+  ShoppingBag,
+  Trees,
+  VenetianMask,
   type LucideIcon,
 } from 'lucide-react';
 import type { LayerType } from '@/hooks/useExploreMapData';
@@ -24,8 +28,12 @@ const VENUE_CATEGORY_ICONS: Record<string, LucideIcon> = {
   bar: Wine,
   club: Music,
   restaurant: UtensilsCrossed,
+  cafe: Coffee,
   hotel: Hotel,
   sauna: Flame,
+  shop: ShoppingBag,
+  outdoor: Trees,
+  cruising: VenetianMask,
   community_center: Users,
   'event-venue': Calendar,
   event_venue: Calendar,
