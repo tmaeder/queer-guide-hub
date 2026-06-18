@@ -133,8 +133,8 @@ describe('calculateCompletion', () => {
     data.bio = 'queer dev';
     const profile = {
       interests: ['leather', 'artsy'],
-      travel_preferences: { budget_level: 'mid' },
-      accessibility_needs: 'wheelchair',
+      // accessibility_needs lives inside travel_preferences, not a top-level column
+      travel_preferences: { budget_level: 'mid', accessibility_needs: ['wheelchair'] },
     } as never;
     expect(calculateCompletion(data, profile)).toBe(40);
   });
@@ -159,8 +159,7 @@ describe('calculateCompletion', () => {
     const profile = {
       avatar_url: 'https://x/a.png',
       interests: ['leather'],
-      travel_preferences: { budget_level: 'mid' },
-      accessibility_needs: 'none',
+      travel_preferences: { budget_level: 'mid', accessibility_needs: ['step-free'] },
     } as never;
     expect(calculateCompletion(data, profile)).toBe(100);
   });
