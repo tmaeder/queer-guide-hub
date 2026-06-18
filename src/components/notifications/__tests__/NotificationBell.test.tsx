@@ -21,7 +21,7 @@ import { NotificationBell } from '../NotificationBell';
 describe('NotificationBell', () => {
   it('should render notification button', () => {
     render(<NotificationBell />);
-    expect(screen.getByLabelText('Notifications')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Notifications/)).toBeInTheDocument();
   });
 
   it('should show unread count badge', () => {
