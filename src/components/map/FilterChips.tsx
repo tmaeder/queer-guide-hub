@@ -1,6 +1,8 @@
 import React from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { tweens } from '@/lib/motion';
 import type { MapShellFilters } from './MapShell.types';
 
 interface FilterChipsProps {
@@ -50,22 +52,29 @@ function buildChips(filters: MapShellFilters): Chip[] {
  * Returns `null` when no chips so callers can avoid rendering an empty bar.
  */
 export const FilterChips = ({ filters, onRemove, onClearAll, className }: FilterChipsProps) => {
+  const reduced = useReducedMotion() ?? false;
   const chips = buildChips(filters);
   if (chips.length === 0) return null;
   return (
     <div className={cn('flex flex-wrap items-center gap-1.5', className)} aria-label="Active filters">
+      <AnimatePresence initial={false}>
       {chips.map((c) => (
-        <button
+        <motion.button
           key={c.key}
           type="button"
           onClick={() => onRemove(c.key)}
+          initial={reduced ? false : { opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+          transition={reduced ? { duration: 0 } : tweens.fast}
           className="h-8 inline-flex items-center gap-1 rounded-full border border-border bg-background px-4 text-xs text-foreground hover:bg-muted focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           aria-label={`Remove filter: ${c.label}`}
         >
           <span>{c.label}</span>
           <X size={12} aria-hidden="true" />
-        </button>
+        </motion.button>
       ))}
+      </AnimatePresence>
       {onClearAll && chips.length > 1 && (
         <button
           type="button"
