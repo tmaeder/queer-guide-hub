@@ -22,8 +22,16 @@ export interface PrivacySettings {
   social_visibility?: string;
   /** public | community | friends | private — who sees the recent-activity feed (default private). */
   activity_visibility?: string;
-  /** public | friends | private — who sees pronouns (default public). */
+  // Per-field gates — source of truth for get_public_profile_safe (string model,
+  // not the dead *_public booleans). Tiers: public | community | friends | private.
+  /** Who sees pronouns (default public — core identity expression). */
   pronouns_visibility?: string;
+  /** Who sees location (default public). */
+  location_visibility?: string;
+  /** Who sees website + social links (default friends). */
+  contact_visibility?: string;
+  /** Who sees interests, occupation, education (default community). */
+  interests_visibility?: string;
 }
 
 export interface ProfileFormData {
@@ -85,6 +93,9 @@ const DEFAULT_PRIVACY: PrivacySettings = {
   coming_out_visibility: 'private',
   appear_in_recognition: false,
   pronouns_visibility: 'public',
+  location_visibility: 'public',
+  contact_visibility: 'friends',
+  interests_visibility: 'community',
 };
 
 function str(val: unknown): string {
@@ -174,6 +185,11 @@ export function isValidDob(dateStr: string): boolean {
  * that powers search/trips/recs. Dead identity fields (gender, orientation,
  * relationship_style) deliberately do NOT count, so nudges point users at data
  * that actually improves their experience. (2026-06-06 profile rethink.)
+ *
+ * This is the optimistic in-form preview. The DB is the source of truth — the
+ * SQL scorer compute_profile_completion_score() (migration
+ * 20260618110000_profile_completion_trigger.sql) writes profile_completion_percentage
+ * on every save; keep the two weightings in sync.
  */
 export function calculateCompletion(data: ProfileFormData, profile?: Profile | null): number {
   const p = (profile ?? {}) as Record<string, unknown>;
@@ -185,10 +201,14 @@ export function calculateCompletion(data: ProfileFormData, profile?: Profile | n
   };
   const ratio = (items: unknown[]) => items.filter(has).length / items.length;
 
+  // accessibility_needs lives inside travel_preferences jsonb, not a top-level column.
+  const accessibilityNeeds = (p.travel_preferences as Record<string, unknown> | undefined)
+    ?.accessibility_needs;
+
   // Core (50%): the "You" surface shown across the app.
   const core = [data.display_name, data.pronouns, data.location, data.languages, p.avatar_url];
   // Signal (40%): personalization that powers search / trips / recommendations.
-  const signal = [p.interests, p.travel_preferences, p.accessibility_needs, data.bio];
+  const signal = [p.interests, p.travel_preferences, accessibilityNeeds, data.bio];
   // Extras (10%): nice-to-have context.
   const extras = [data.first_name, data.occupation];
 
