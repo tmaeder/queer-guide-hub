@@ -144,17 +144,10 @@ export function Header() {
               </Avatar>
               {unreadCount > 0 && (
                 <span
-                  className="absolute inline-flex items-center justify-center bg-destructive text-destructive-foreground pl-1 pr-1"
-                  style={{
-                    top: -4,
-                    right: -4,
-                    minWidth: '1.25rem',
-                    height: 20,
-                    fontSize: '10px',
-                  }}
+                  aria-hidden="true"
+                  className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-2xs font-medium leading-none text-background"
                 >
-                  <span className="absolute inset-0 animate-ping bg-destructive opacity-75" />
-                  {unreadCount}
+                  {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
             </Button>
