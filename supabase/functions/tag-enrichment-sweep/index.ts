@@ -317,18 +317,13 @@ Deno.serve(async (req) => {
     // no body — defaults
   }
 
-  // Worst tags first, restricted to those missing a fillable content dimension.
-  // Needs computed from live columns (not the possibly-stale quality_breakdown)
-  // so reruns before the nightly recompute don't re-pick handled tags.
-  const { data: tags, error } = await supabase
-    .from('unified_tags')
-    .select('id,name,description,image_url,wikidata_id,wikipedia_url,is_sensitive,is_adult')
-    .eq('status', 'active')
-    .or(
-      'description.is.null,image_url.is.null,and(wikidata_id.is.null,wikipedia_url.is.null)',
-    )
-    .order('quality_score', { ascending: true, nullsFirst: true })
-    .limit(batchLimit)
+  // Worst tags first, restricted to those with an AUTO-FILLABLE gap remaining
+  // (tags_due_for_content excludes review-gated-only tags — sensitive
+  // descriptions, already-queued suggestions — so each run advances instead of
+  // re-burning the window on tags that can no longer auto-apply anything).
+  const { data: tags, error } = await supabase.rpc('tags_due_for_content', {
+    p_limit: batchLimit,
+  })
 
   if (error) {
     return new Response(JSON.stringify({ success: false, error: error.message }), {
