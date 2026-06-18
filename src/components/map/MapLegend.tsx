@@ -36,7 +36,7 @@ export function MapLegend({ lens, layers, pridePalette }: MapLegendProps) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Show map legend"
-        className="absolute bottom-10 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-border bg-background/90 px-4 py-1.5 text-13 text-foreground backdrop-blur hover:bg-background"
+        className="absolute bottom-10 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-border bg-background/95 px-4 py-1.5 text-13 text-foreground backdrop-blur-md hover:bg-background"
       >
         <Info className="h-3.5 w-3.5" aria-hidden />
         Legend
@@ -45,7 +45,7 @@ export function MapLegend({ lens, layers, pridePalette }: MapLegendProps) {
   }
 
   return (
-    <div className="absolute bottom-10 left-3 z-10 w-56 rounded-container border border-border bg-background/95 p-4 backdrop-blur">
+    <div className="absolute bottom-10 left-3 z-10 w-56 rounded-container border border-border bg-background/95 p-4 backdrop-blur-md">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-13 font-semibold text-foreground">What you're seeing</span>
         <button
@@ -94,7 +94,7 @@ export function MapLegend({ lens, layers, pridePalette }: MapLegendProps) {
         <div className="mt-2 border-t border-border pt-2">
           <div className="mb-1 text-2xs text-muted-foreground">Density of queer life</div>
           <div
-            className="h-2 w-full rounded-full"
+            className="h-2 w-full rounded-badge"
             style={{
               backgroundImage: pridePalette
                 ? 'linear-gradient(to right, rgba(0,77,255,0.3), rgba(0,128,38,0.4), rgba(255,237,0,0.5), rgba(255,140,0,0.55), rgba(228,3,3,0.6))'

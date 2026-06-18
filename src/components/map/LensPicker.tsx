@@ -53,7 +53,7 @@ export const LensPicker = ({ lenses, value, onChange, className }: LensPickerPro
               onChange(lens);
             }}
             className={cn(
-              'inline-flex items-center justify-center h-7 w-7 rounded-[6px] transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+              'inline-flex items-center justify-center h-7 w-7 rounded-badge transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
               active
                 ? 'bg-background text-foreground'
                 : 'text-muted-foreground hover:text-foreground',

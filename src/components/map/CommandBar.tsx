@@ -199,7 +199,7 @@ export const CommandBar = ({
         // Content-width pill anchored top-left — NOT full-width, so wide screens
         // don't get a huge empty gap between the left controls and the right.
         // Caps at the viewport and scrolls horizontally if it ever overflows.
-        'absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-element border border-border bg-background h-11 px-2 max-w-[calc(100%-1.5rem)] overflow-x-auto',
+        'absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-element border border-border bg-background/95 backdrop-blur-md h-11 px-2 max-w-[calc(100%-1.5rem)] overflow-x-auto',
         className,
       )}
     >
@@ -227,7 +227,7 @@ export const CommandBar = ({
       >
         <PopoverTrigger asChild>
           <div
-            className="relative w-56 shrink-0"
+            className="relative w-56 shrink-0 rounded-element focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1"
             role="combobox"
             aria-expanded={popoverOpen}
             aria-controls="map-shell-listbox"
@@ -490,9 +490,9 @@ export const CommandBar = ({
               <button
                 type="button"
                 onClick={() => { onGeolocate(); setMoreOpen(false); }}
-                className="flex items-center gap-2.5 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
+                className="flex items-center gap-2 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
               >
-                <Locate size={15} aria-hidden="true" className="text-muted-foreground" />
+                <Locate size={16} aria-hidden="true" className="text-muted-foreground" />
                 <span>My location</span>
               </button>
             )}
@@ -500,9 +500,9 @@ export const CommandBar = ({
               <button
                 type="button"
                 onClick={() => { onFitBounds(); setMoreOpen(false); }}
-                className="flex items-center gap-2.5 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
+                className="flex items-center gap-2 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
               >
-                <Maximize2 size={15} aria-hidden="true" className="text-muted-foreground" />
+                <Maximize2 size={16} aria-hidden="true" className="text-muted-foreground" />
                 <span>Fit to results</span>
               </button>
             )}
@@ -510,9 +510,9 @@ export const CommandBar = ({
               <button
                 type="button"
                 onClick={() => { onShare(); setMoreOpen(false); }}
-                className="flex items-center gap-2.5 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
+                className="flex items-center gap-2 h-9 px-2 rounded-element text-sm hover:bg-muted text-left"
               >
-                <Share2 size={15} aria-hidden="true" className="text-muted-foreground" />
+                <Share2 size={16} aria-hidden="true" className="text-muted-foreground" />
                 <span>Share view</span>
               </button>
             )}
