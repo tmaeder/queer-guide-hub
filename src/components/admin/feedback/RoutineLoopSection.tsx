@@ -41,7 +41,11 @@ import {
 } from '@/hooks/useStoryRoutine';
 
 const RETEST_KINDS: RetestKind[] = ['typecheck', 'lint', 'unit', 'e2e', 'targeted'];
-const RUNNERS: RoutineRunner[] = ['mock', 'local', 'github_actions', 'webhook', 'api'];
+// Only runners with a real implementation are offered. `api` and `webhook` were
+// never implemented (every `api` dispatch failed with "not_implemented"), so they
+// are removed to stop dead-end runs. `local` (feedback-fix skill / local daemon)
+// is the canonical path; `mock` stays for dry testing.
+const RUNNERS: RoutineRunner[] = ['local', 'mock', 'github_actions'];
 
 interface Props {
   story: FeedbackStory;
@@ -69,7 +73,7 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
 
   const [editing, setEditing] = useState(false);
   const [promptDraft, setPromptDraft] = useState('');
-  const [runner, setRunner] = useState<RoutineRunner>('mock');
+  const [runner, setRunner] = useState<RoutineRunner>('local');
   const [followupReason, setFollowupReason] = useState('');
   const [archiveReason, setArchiveReason] = useState('');
 
