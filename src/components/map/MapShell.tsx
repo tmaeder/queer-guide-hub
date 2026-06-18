@@ -1,5 +1,8 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { tweens } from '@/lib/motion';
+import { distance } from '@/lib/animation';
 import { ExploreMap } from './ExploreMap';
 import { CommandBar } from './CommandBar';
 import { FilterChips } from './FilterChips';
@@ -62,6 +65,7 @@ export const MapShell = ({
     [surface, configOverride],
   );
 
+  const reducedMotion = useReducedMotion() ?? false;
   const { state, setLens, setLayers, setFilters, setViewport } = useMapShellState(config);
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -311,21 +315,29 @@ export const MapShell = ({
 
       {/* Quick filters now live inside the command bar; only the active-filter
           chips render below it, and only when something is applied. */}
-      {config.showCommandBar !== false &&
-        (Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
-          <div className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5">
-            <PreferenceChips
-              chips={prefChips}
-              onToggle={togglePrefChip}
-              onForget={forgetPrefChip}
-            />
-            <FilterChips
-              filters={exposedFilters}
-              onRemove={removeFilter}
-              onClearAll={() => setFilters({})}
-            />
-          </div>
-        )}
+      <AnimatePresence initial={false}>
+        {config.showCommandBar !== false &&
+          (Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
+            <motion.div
+              initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
+              transition={reducedMotion ? { duration: 0 } : tweens.fast}
+              className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5"
+            >
+              <PreferenceChips
+                chips={prefChips}
+                onToggle={togglePrefChip}
+                onForget={forgetPrefChip}
+              />
+              <FilterChips
+                filters={exposedFilters}
+                onRemove={removeFilter}
+                onClearAll={() => setFilters({})}
+              />
+            </motion.div>
+          )}
+      </AnimatePresence>
     </div>
   );
 };

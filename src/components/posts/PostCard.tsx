@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { easing } from '@/lib/motion';
+import { duration } from '@/lib/animation';
 import { MotionCard as Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -50,6 +53,7 @@ interface PostCardProps {
 
 export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCardProps) => {
   const { user } = useAuth();
+  const reduced = useReducedMotion() ?? false;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showComments, setShowComments] = useState(false);
 
@@ -398,11 +402,22 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         </div>
 
         {/* Comments Section */}
-        {showComments && user && (
-          <div className="pt-4 border-t border-border">
-            <CommentsSection postId={post.id} />
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {showComments && user && (
+            <motion.div
+              key="comments"
+              initial={reduced ? false : { height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
+              transition={reduced ? { duration: 0 } : { duration: duration.fast, ease: easing.smooth }}
+              className="overflow-hidden"
+            >
+              <div className="pt-4 border-t border-border">
+                <CommentsSection postId={post.id} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </CardContent>
 
       {/* Delete Confirmation Dialog */}

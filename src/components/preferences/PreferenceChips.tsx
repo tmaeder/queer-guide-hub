@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Accessibility, ChevronDown } from 'lucide-react';
+import { tweens } from '@/lib/motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +29,7 @@ const LONG_PRESS_MS = 500;
  */
 export function PreferenceChips({ chips, onToggle, onForget, className }: PreferenceChipsProps) {
   const { t } = useTranslation();
+  const reduced = useReducedMotion() ?? false;
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const pressTimer = useRef<ReturnType<typeof setTimeout>>();
   const longPressed = useRef(false);
@@ -51,9 +54,14 @@ export function PreferenceChips({ chips, onToggle, onForget, className }: Prefer
       <span className="text-2xs uppercase tracking-wider text-muted-foreground">
         {t('prefs.chips.yours', 'Yours')}
       </span>
+      <AnimatePresence initial={false}>
       {chips.map((chip) => (
-        <span
+        <motion.span
           key={chip.id}
+          initial={reduced ? false : { opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+          transition={reduced ? { duration: 0 } : tweens.fast}
           className="inline-flex items-stretch overflow-hidden rounded-badge border border-border"
         >
           <button
@@ -111,8 +119,9 @@ export function PreferenceChips({ chips, onToggle, onForget, className }: Prefer
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </span>
+        </motion.span>
       ))}
+      </AnimatePresence>
     </div>
   );
 }
