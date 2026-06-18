@@ -13,7 +13,14 @@
 
 -- ---------------------------------------------------------------------------
 -- 1. Work-list selector: venues missing a usable description, highest-value first.
+--    Excludes venues already tried-and-skipped (no groundable signal) so a drain
+--    terminates instead of re-serving the same un-fillable rows forever. Uses the
+--    enrichment_log rows the fn already writes (no extra venue writes).
 -- ---------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS enrichment_log_desc_skipped_idx
+  ON public.enrichment_log (entity_id)
+  WHERE step = 'venue-description-backfill' AND status = 'skipped';
+
 CREATE OR REPLACE FUNCTION public.venues_due_for_description(p_limit integer DEFAULT 40)
  RETURNS TABLE(id uuid, name text, category text, description text, address text, city text, country text, tags text[])
  LANGUAGE sql
@@ -33,6 +40,10 @@ AS $function$
     AND (coalesce(array_length(v.tags,1),0) > 0
          OR v.category IS DISTINCT FROM 'other'
          OR v.website IS NOT NULL)
+    AND NOT EXISTS (
+      SELECT 1 FROM public.enrichment_log el
+      WHERE el.entity_id = v.id AND el.step = 'venue-description-backfill' AND el.status = 'skipped'
+    )
   ORDER BY
     v.lgbti_relevance_score DESC NULLS LAST,  -- queer-relevant venues users see first
     v.quality_score ASC NULLS FIRST,
