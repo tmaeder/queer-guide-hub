@@ -1578,7 +1578,8 @@
       "messages": "[ZH] Messages",
       "mailbox": "[ZH] Mailbox",
       "you": "[ZH] You",
-      "community": "[ZH] Community"
+      "community": "[ZH] Community",
+      "viewProfile": "[ZH] View public profile"
     },
     "modes": {
       "dating": "寻找爱情",
@@ -1605,6 +1606,10 @@
       "community": "[ZH] Community",
       "shop": "[ZH] Shop & Read",
       "support": "[ZH] Support"
+    },
+    "notifications": {
+      "label": "[ZH] Notifications",
+      "unread": "[ZH] Notifications, {{count}} unread"
     }
   },
   "pages": {

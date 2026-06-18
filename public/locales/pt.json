@@ -1578,7 +1578,8 @@
       "messages": "[PT] Messages",
       "mailbox": "[PT] Mailbox",
       "you": "[PT] You",
-      "community": "[PT] Community"
+      "community": "[PT] Community",
+      "viewProfile": "[PT] View public profile"
     },
     "modes": {
       "dating": "Procurando Amor",
@@ -1605,6 +1606,10 @@
       "community": "[PT] Community",
       "shop": "[PT] Shop & Read",
       "support": "[PT] Support"
+    },
+    "notifications": {
+      "label": "[PT] Notifications",
+      "unread": "[PT] Notifications, {{count}} unread"
     }
   },
   "pages": {

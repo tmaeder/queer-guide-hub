@@ -1578,7 +1578,8 @@
       "messages": "[DE] Messages",
       "mailbox": "[DE] Mailbox",
       "you": "[DE] You",
-      "community": "[DE] Community"
+      "community": "[DE] Community",
+      "viewProfile": "[DE] View public profile"
     },
     "modes": {
       "dating": "Auf der Suche nach Liebe",
@@ -1605,6 +1606,10 @@
       "community": "[DE] Community",
       "shop": "[DE] Shop & Read",
       "support": "[DE] Support"
+    },
+    "notifications": {
+      "label": "[DE] Notifications",
+      "unread": "[DE] Notifications, {{count}} unread"
     }
   },
   "pages": {

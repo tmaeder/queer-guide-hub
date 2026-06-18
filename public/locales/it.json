@@ -1578,7 +1578,8 @@
       "messages": "[IT] Messages",
       "mailbox": "[IT] Mailbox",
       "you": "[IT] You",
-      "community": "[IT] Community"
+      "community": "[IT] Community",
+      "viewProfile": "[IT] View public profile"
     },
     "modes": {
       "dating": "In cerca d'amore",
@@ -1605,6 +1606,10 @@
       "community": "[IT] Community",
       "shop": "[IT] Shop & Read",
       "support": "[IT] Support"
+    },
+    "notifications": {
+      "label": "[IT] Notifications",
+      "unread": "[IT] Notifications, {{count}} unread"
     }
   },
   "pages": {

@@ -1578,7 +1578,8 @@
       "messages": "[ES] Messages",
       "mailbox": "[ES] Mailbox",
       "you": "[ES] You",
-      "community": "[ES] Community"
+      "community": "[ES] Community",
+      "viewProfile": "[ES] View public profile"
     },
     "modes": {
       "dating": "Buscando el amor",
@@ -1605,6 +1606,10 @@
       "community": "[ES] Community",
       "shop": "[ES] Shop & Read",
       "support": "[ES] Support"
+    },
+    "notifications": {
+      "label": "[ES] Notifications",
+      "unread": "[ES] Notifications, {{count}} unread"
     }
   },
   "pages": {

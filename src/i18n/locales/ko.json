@@ -1578,7 +1578,8 @@
       "messages": "[KO] Messages",
       "mailbox": "[KO] Mailbox",
       "you": "[KO] You",
-      "community": "[KO] Community"
+      "community": "[KO] Community",
+      "viewProfile": "[KO] View public profile"
     },
     "modes": {
       "dating": "사랑을 찾아서",
@@ -1605,6 +1606,10 @@
       "community": "[KO] Community",
       "shop": "[KO] Shop & Read",
       "support": "[KO] Support"
+    },
+    "notifications": {
+      "label": "[KO] Notifications",
+      "unread": "[KO] Notifications, {{count}} unread"
     }
   },
   "pages": {

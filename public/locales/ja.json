@@ -1578,7 +1578,8 @@
       "messages": "[JA] Messages",
       "mailbox": "[JA] Mailbox",
       "you": "[JA] You",
-      "community": "[JA] Community"
+      "community": "[JA] Community",
+      "viewProfile": "[JA] View public profile"
     },
     "modes": {
       "dating": "恋人を探す",
@@ -1605,6 +1606,10 @@
       "community": "[JA] Community",
       "shop": "[JA] Shop & Read",
       "support": "[JA] Support"
+    },
+    "notifications": {
+      "label": "[JA] Notifications",
+      "unread": "[JA] Notifications, {{count}} unread"
     }
   },
   "pages": {
