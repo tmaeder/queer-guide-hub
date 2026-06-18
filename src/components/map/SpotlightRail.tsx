@@ -54,7 +54,7 @@ export function SpotlightRail({
   if (loading && total === 0) {
     return (
       <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
-        <div className="pointer-events-auto w-[min(960px,100%)] rounded-container border border-border bg-background/95 p-2 backdrop-blur">
+        <div className="pointer-events-auto w-[min(960px,100%)] rounded-container border border-border bg-background/95 p-2 backdrop-blur-md">
           <div className="px-1 pb-1.5">
             <span className="inline-block h-4 w-28 animate-pulse rounded-badge bg-muted" />
           </div>
@@ -78,7 +78,7 @@ export function SpotlightRail({
         <button
           type="button"
           onClick={() => setCollapsed(false)}
-          className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-border bg-background/90 px-4 py-1.5 text-13 text-foreground backdrop-blur hover:bg-background"
+          className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-border bg-background/95 px-4 py-1.5 text-13 text-foreground backdrop-blur-md hover:bg-background"
         >
           <Sparkles className="h-3.5 w-3.5" aria-hidden />
           {countLabel}
@@ -90,7 +90,7 @@ export function SpotlightRail({
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
-      <div className="pointer-events-auto w-[min(960px,100%)] rounded-container border border-border bg-background/95 p-2 backdrop-blur">
+      <div className="pointer-events-auto w-[min(960px,100%)] rounded-container border border-border bg-background/95 p-2 backdrop-blur-md">
         <div className="flex items-center justify-between px-1 pb-1.5">
           <span className="inline-flex items-center gap-1.5 text-13 font-medium text-foreground">
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
