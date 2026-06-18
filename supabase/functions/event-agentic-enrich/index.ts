@@ -12,12 +12,12 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { researchEnrichEventFromPage, type EventMoatEnrichment } from '../_shared/ai-enrichment.ts'
 
 const DEFAULT_BATCH_LIMIT = 8
-const DEFAULT_DAILY_CAP = 60        // drain untouched URL-events once each (self-
-                                    // terminating via the not-recently-attempted
-                                    // selector). Moat arrays rarely appear on source
-                                    // pages, so this enriches description/safety/
-                                    // lineup, not accessibility/target_groups.
+const DEFAULT_DAILY_CAP = 120       // raised from 60 to drain the ~400 URL-less
+                                    // upcoming backlog within ~a week. Hourly cron
+                                    // × 8/batch caps real spend; the circuit
+                                    // breaker bounds LLM cost on top.
 const GET_TIMEOUT = 10_000
+const SEARCH_TIMEOUT = 8_000
 const MAX_BODY_BYTES = 500_000
 const AUTO_APPLY_CONFIDENCE = 0.8
 const STEP = 'agentic-enrich'
@@ -69,11 +69,64 @@ function htmlToText(html: string): string {
     .trim()
 }
 
+// Domains that are never "the event's own page" — search aggregators, socials,
+// generic ticketing search results. We want the official/listing page to ground on.
+const DISCOVERY_BLOCKLIST = [
+  'duckduckgo.com', 'google.', 'bing.com', 'facebook.com', 'instagram.com',
+  'twitter.com', 'x.com', 'youtube.com', 'tiktok.com', 'pinterest.', 'reddit.com',
+  'linkedin.com', 'amazon.', 'tripadvisor.', 'yelp.com',
+]
+
+// Discover the event's official/listing page via DuckDuckGo HTML search when the
+// event has no stored URL. Best-effort: returns the first organic non-blocked
+// https result, or null. The caller still grounds extraction in the page and only
+// writes the URL back on high confidence, so a wrong guess self-corrects.
+async function discoverEventUrl(title: string, city?: string, country?: string): Promise<string | null> {
+  const q = [title, city, country].filter(Boolean).join(' ').trim()
+  if (q.length < 4) return null
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), SEARCH_TIMEOUT)
+  try {
+    const resp = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`, {
+      method: 'GET', signal: controller.signal, redirect: 'follow',
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; QueerGuide-EventEnrich/1.0)', 'Accept': 'text/html' },
+    })
+    if (!resp.ok) return null
+    const html = await resp.text()
+    // DDG HTML wraps each result href as //duckduckgo.com/l/?uddg=<encoded-url>&...
+    const re = /href="(?:https?:)?\/\/duckduckgo\.com\/l\/\?uddg=([^"&]+)/g
+    let m: RegExpExecArray | null
+    let scanned = 0
+    while ((m = re.exec(html)) && scanned < 15) {
+      scanned++
+      let url: string
+      try { url = decodeURIComponent(m[1]) } catch { continue }
+      if (!/^https?:\/\//i.test(url)) continue
+      let host: string
+      try { host = new URL(url).hostname.toLowerCase() } catch { continue }
+      if (DISCOVERY_BLOCKLIST.some(b => host.includes(b))) continue
+      return url
+    }
+    return null
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 // Non-empty array helper.
 function arr(v: unknown): string[] | null {
   if (!Array.isArray(v)) return null
   const out = v.filter(x => typeof x === 'string' && x.trim()).map(x => (x as string).trim())
   return out.length ? out : null
+}
+
+// Clean a scalar string field — the LLM sometimes emits the literal "null"/"n/a"
+// as a string, which must not be written as real data.
+function cleanStr(v: unknown): string | null {
+  const t = typeof v === 'string' ? v.trim() : ''
+  return t && !/^(null|n\/a|none|unknown|tbd)$/i.test(t) ? t : null
 }
 
 Deno.serve(async (req: Request) => {
@@ -108,7 +161,7 @@ Deno.serve(async (req: Request) => {
   // recent past. Excludes the shared WNBR homepage (no per-event moat info).
   let query = supabase
     .from('events')
-    .select('id, title, description, city, country, country_id, venue_name, website, ticket_url, accessibility_attributes, target_groups, age_restriction, trust_score, lgbti_relevance_score, enrichment_status')
+    .select('id, title, description, city, country, country_id, venue_name, website, ticket_url, accessibility_attributes, target_groups, age_restriction, trust_score, lgbti_relevance_score, enrichment_status, field_provenance')
     .is('duplicate_of_id', null)
   if (eventIds?.length) {
     query = query.in('id', eventIds)
@@ -131,11 +184,17 @@ Deno.serve(async (req: Request) => {
 
   for (const ev of events) {
     const started = Date.now()
-    const target = ev.website || ev.ticket_url
+    let target = ev.website || ev.ticket_url
+    // No stored URL → discover the official page via web search (grounding source).
+    let discovered = false
+    if (!target) {
+      target = await discoverEventUrl(ev.title, ev.city, ev.country) || undefined
+      discovered = !!target
+    }
     let status = 'skipped'
     try {
       const pageText = target ? await fetchText(target) : null
-      if (!pageText) { skipped++; results.push({ id: ev.id, status: 'no_page' }); await logStep(supabase, ev.id, status, started, dryRun); continue }
+      if (!pageText) { skipped++; results.push({ id: ev.id, status: discovered ? 'discovered_no_page' : 'no_page' }); await logStep(supabase, ev.id, status, started, dryRun); continue }
 
       // Destination safety context. Legality is derived from the canonical
       // lgbti_criminalization jsonb (the legacy lgbt_legal_status text column was
@@ -173,13 +232,24 @@ Deno.serve(async (req: Request) => {
       // Build the auto-apply update — only fill EMPTY fields, never overwrite curated data.
       const update: Record<string, unknown> = {}
       if (highConf) {
-        if (ai.description && (!ev.description || ev.description.length < 80)) update.description = ai.description
+        if (cleanStr(ai.description) && (!ev.description || ev.description.length < 80)) update.description = cleanStr(ai.description)
         if (arr(ai.accessibility_attributes) && (!ev.accessibility_attributes?.length)) update.accessibility_attributes = arr(ai.accessibility_attributes)
-        if (ai.accessibility_notes) update.accessibility_notes = ai.accessibility_notes
+        if (cleanStr(ai.accessibility_notes)) update.accessibility_notes = cleanStr(ai.accessibility_notes)
         if (arr(ai.target_groups) && (!ev.target_groups?.length)) update.target_groups = arr(ai.target_groups)
-        if (ai.age_restriction && !ev.age_restriction) update.age_restriction = ai.age_restriction
+        if (cleanStr(ai.age_restriction) && !ev.age_restriction) update.age_restriction = cleanStr(ai.age_restriction)
         if (typeof ai.lgbtq_relevance_score === 'number' && ev.lgbti_relevance_score == null)
           update.lgbti_relevance_score = Math.max(0, Math.min(1, ai.lgbtq_relevance_score))
+        // Write back a web-discovered URL only on high confidence (the page
+        // grounded a good extraction → it really is this event's page). Stored as
+        // website (not ticket_url — we can't assert it sells tickets). Stamped in
+        // field_provenance so liveness-checker + corroboration can trust it.
+        if (discovered && target && !ev.website && !ev.ticket_url) {
+          update.website = target
+          update.field_provenance = {
+            ...(ev.field_provenance ?? {}),
+            website: { value: target, confidence, source: 'llm+web', at: new Date().toISOString() },
+          }
+        }
       }
       // Always stash the full extraction (incl. safety_notes/dress_code/lineup) for audit + admin.
       const enrichmentStatus = { ...(ev.enrichment_status ?? {}), agentic: { at: new Date().toISOString(), confidence, ...ai } }
