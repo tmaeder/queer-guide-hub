@@ -35,7 +35,7 @@ function renderValue(field: string, value: unknown) {
  * with their citations. Nothing here is public until an admin approves.
  */
 export function CityReviewQueue() {
-  const { data: rows, isLoading, decide, batchApproveSafe } = useCityReviewQueue();
+  const { data: rows, isLoading, decide, batchApproveSafe, batchApproveCitedRatings } = useCityReviewQueue();
   const [busy, setBusy] = useState<string | null>(null);
 
   const act = async (id: string, action: 'approve' | 'reject', tier?: string) => {
@@ -57,11 +57,21 @@ export function CityReviewQueue() {
   };
 
   const safeCount = (rows ?? []).filter((r) => r.field === 'safety_notes' && r.proposed_value?.risk_tier === 'low').length;
+  const citedRatingCount = (rows ?? []).filter((r) => r.field === 'lgbt_friendly_rating' && (r.citations ?? []).length > 0).length;
 
   const runBatch = async () => {
     try {
       const n = await batchApproveSafe.mutateAsync();
       toast.success(`Batch approved ${n} safe-tier safety note${n === 1 ? '' : 's'}`);
+    } catch (e) {
+      toast.error(`Error: ${(e as Error).message}`);
+    }
+  };
+
+  const runBatchRatings = async () => {
+    try {
+      const n = await batchApproveCitedRatings.mutateAsync();
+      toast.success(`Batch approved ${n} cited rating${n === 1 ? '' : 's'}`);
     } catch (e) {
       toast.error(`Error: ${(e as Error).message}`);
     }
@@ -75,11 +85,18 @@ export function CityReviewQueue() {
             <ShieldAlert size={16} />
             Review queue — safety-sensitive fields
           </span>
-          {safeCount > 0 && (
-            <Button size="sm" variant="outline" disabled={batchApproveSafe.isPending} onClick={runBatch}>
-              <Check size={14} className="mr-1" /> Approve {safeCount} safe-tier
-            </Button>
-          )}
+          <span className="flex items-center gap-2">
+            {citedRatingCount > 0 && (
+              <Button size="sm" variant="outline" disabled={batchApproveCitedRatings.isPending} onClick={runBatchRatings}>
+                <Check size={14} className="mr-1" /> Approve {citedRatingCount} cited rating{citedRatingCount === 1 ? '' : 's'}
+              </Button>
+            )}
+            {safeCount > 0 && (
+              <Button size="sm" variant="outline" disabled={batchApproveSafe.isPending} onClick={runBatch}>
+                <Check size={14} className="mr-1" /> Approve {safeCount} safe-tier
+              </Button>
+            )}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

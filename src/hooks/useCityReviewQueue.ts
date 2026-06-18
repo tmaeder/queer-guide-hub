@@ -62,5 +62,15 @@ export function useCityReviewQueue() {
     onSuccess: invalidate,
   });
 
-  return { ...query, decide, batchApproveSafe };
+  // Approve every open lgbt_friendly_rating row that is cited + non-criminalizing.
+  const batchApproveCitedRatings = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('batch_approve_cited_city_ratings');
+      if (error) throw error;
+      return (data as { approved?: number } | null)?.approved ?? 0;
+    },
+    onSuccess: invalidate,
+  });
+
+  return { ...query, decide, batchApproveSafe, batchApproveCitedRatings };
 }

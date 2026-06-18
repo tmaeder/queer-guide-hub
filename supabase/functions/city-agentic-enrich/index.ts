@@ -1,9 +1,10 @@
 // city-agentic-enrich — the queer moat. For thin / low-completeness cities, fetch
 // grounding sources (Wikipedia extract + official site) and extract queer-aware
 // travel fields. Hybrid-by-confidence for NARRATIVE fields (auto-fill empty cols at
-// >=0.8). SAFETY-SENSITIVE fields (lgbt_friendly_rating, editorial_hook) are ALWAYS
-// routed to city_review_queue — never auto-published — and the rating is only queued
-// when backed by citations. safety_notes is composed deterministically elsewhere
+// >=0.8). editorial_hook (non-safety copy) auto-publishes for EXPLICITLY-SAFE
+// destinations (legal === true) at >=0.8 + citations; otherwise it is review-gated.
+// lgbt_friendly_rating is ALWAYS routed to city_review_queue — never auto-published —
+// and only queued when backed by citations. safety_notes is composed deterministically elsewhere
 // (compose_safety_note / city safety backfill). LLM-gated: circuit-broken + per-day cap.
 //
 // Auth: X-Webhook-Secret (cron) or admin/service-role. Body: { batch_limit?, dry_run?, city_ids?, daily_cap? }.
@@ -92,7 +93,7 @@ Deno.serve(async (req: Request) => {
 
   let query = supabase
     .from('cities')
-    .select('id, name, slug, region_name, description, best_time_to_visit, local_customs, official_website, completeness_score, enrichment_status, country_id, countries(name, equality_score, lgbti_criminalization)')
+    .select('id, name, slug, region_name, description, best_time_to_visit, local_customs, editorial_hook, field_provenance, official_website, completeness_score, enrichment_status, country_id, countries(name, equality_score, lgbti_criminalization)')
     .is('duplicate_of_id', null)
   if (cityIds?.length) {
     query = query.in('id', cityIds)
@@ -172,7 +173,25 @@ Deno.serve(async (req: Request) => {
       }
       // safety_notes is no longer LLM-generated — it is composed deterministically by
       // the SQL compose_safety_note() / city safety backfill (migration 20260608000001).
-      if (ai.editorial_hook) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: citations.filter(x => x?.field === 'editorial_hook' || x?.field === 'hook') })
+      //
+      // editorial_hook is non-safety editorial copy. Auto-publish it for EXPLICITLY-SAFE
+      // destinations (legal === true) at high confidence with grounding citations, into an
+      // empty column only. Criminalizing / unknown-legal / low-conf / uncited → review queue.
+      const crimForHook = (co?.lgbti_criminalization ?? {}) as Record<string, unknown>
+      const isExplicitlySafe = crimForHook.legal === true
+      if (ai.editorial_hook) {
+        const hookCite = citations.filter(x => x?.field === 'editorial_hook' || x?.field === 'hook')
+        const hasExistingHook = typeof c.editorial_hook === 'string' && c.editorial_hook.trim().length > 0
+        if (highConf && citations.length > 0 && isExplicitlySafe && !hasExistingHook) {
+          update.editorial_hook = String(ai.editorial_hook).slice(0, 120)
+          update.field_provenance = {
+            ...((c.field_provenance ?? {}) as Record<string, unknown>),
+            editorial_hook: { source: 'llm', confidence, at: new Date().toISOString(), citations: hookCite.length ? hookCite : citations },
+          }
+        } else {
+          gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: hookCite })
+        }
+      }
 
       if (gatedProposals.length) update.needs_attention = true
 
