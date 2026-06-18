@@ -8,8 +8,6 @@ import {
   Users,
   PenSquare,
   Search,
-  Heart,
-  MessageCircle,
   AlertTriangle,
   RefreshCw,
   Home,
@@ -65,15 +63,6 @@ export default function Feed() {
     return filteredPosts;
   }, [filteredPosts, activeTab]);
 
-  const totalLikes = useMemo(
-    () => posts.reduce((sum, post) => sum + (post.likes_count || 0), 0),
-    [posts],
-  );
-  const totalComments = useMemo(
-    () => posts.reduce((sum, post) => sum + (post.comments_count || 0), 0),
-    [posts],
-  );
-
   return (
     <div className="container mx-auto py-8 px-4">
       <PageHeader
@@ -123,37 +112,6 @@ export default function Feed() {
         </div>
       ) : (
         <>
-          {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <Users className="h-6 w-6 mx-auto mb-2" />
-                <h5 className="text-2xl font-bold">{posts.length}</h5>
-                <p className="text-sm text-muted-foreground">
-                  {t('pages.feed.activePosts', 'Active Posts')}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <Heart className="h-6 w-6 mx-auto mb-2 text-foreground" />
-                <h5 className="text-2xl font-bold">{totalLikes}</h5>
-                <p className="text-sm text-muted-foreground">
-                  {t('pages.feed.totalLikes', 'Total Likes')}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <MessageCircle className="h-6 w-6 mx-auto mb-2 text-foreground" />
-                <h5 className="text-2xl font-bold">{totalComments}</h5>
-                <p className="text-sm text-muted-foreground">
-                  {t('pages.feed.comments', 'Comments')}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Create Post / Sign-in CTA */}
           <Card className="mb-6">
             <CardContent className="p-4">

@@ -14,7 +14,6 @@ import { StartConversationButton } from '@/components/messaging/StartConversatio
 import { useSOS } from '@/hooks/useSOS';
 import { useTranslation } from 'react-i18next';
 import { AuthGate } from '@/components/layout/AuthGate';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   AlertDialog,
@@ -73,14 +72,20 @@ export default function Friends() {
   });
 
   return (
-    <AuthGate title="Friends" description="Please sign in to view your friends.">
+    <AuthGate
+      title={t('pages.friends.title', 'Friends')}
+      description={t('pages.friends.gate', 'Please sign in to view your friends.')}
+    >
       <div className="container mx-auto py-6 px-4">
         <div className="flex flex-col gap-6">
-          <PageHeader
-            title="Friends"
-            subtitle="Manage your connections"
-            actions={
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-headline-lg font-bold text-foreground">
+                {t('pages.friends.title', 'Friends')}
+              </h1>
+              <p className="text-muted-foreground">{t('pages.friends.subtitle', 'Manage your connections')}</p>
+            </div>
+            <div className="flex items-center gap-2">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -117,12 +122,11 @@ export default function Friends() {
                 <Badge variant="secondary">
                   <div className="flex items-center gap-2">
                     <Users size={16} />
-                    {friends.length} Friends
+                    {friends.length} {t('pages.friends.title', 'Friends')}
                   </div>
                 </Badge>
               </div>
-            }
-          />
+            </div>
 
           <Tabs defaultValue="friends" style={{ width: '100%' }}>
             <TabsList style={{ width: '100%', gridTemplateColumns: '1fr 1fr' }} className="grid">

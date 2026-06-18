@@ -2053,7 +2053,8 @@
       "emptyDescription": "Создай первую.",
       "createGroup": "Создать группу",
       "mostPopular": "Самые популярные группы",
-      "noPopular": "Популярные группы пока недоступны."
+      "noPopular": "Популярные группы пока недоступны.",
+      "eyebrow": "[RU] Community"
     },
     "groupDetail": {
       "signInRequired": "Войди, чтобы увидеть подробности группы."
@@ -2092,7 +2093,8 @@
       "clearSearch": "Clear search",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
-      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
+      "eyebrow": "[RU] Community"
     },
     "notFound": {
       "title": "Страница не найдена",
@@ -2133,6 +2135,23 @@
         "scopeNote": "Показано {{count}} пустых черновиков. Удалите ненужные.",
         "exitScope": "Показать все путешествия"
       }
+    },
+    "members": {
+      "eyebrow": "[RU] Community",
+      "title": "[RU] Members",
+      "subtitle": "[RU] People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "[RU] member",
+      "members": "[RU] members",
+      "visible": "[RU] visible",
+      "upsellTitle": "[RU] See the full community",
+      "upsellBody": "[RU] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "[RU] Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "[RU] Community",
+      "title": "[RU] Friends",
+      "subtitle": "[RU] Manage your connections",
+      "gate": "[RU] Please sign in to view your friends."
     }
   },
   "settings": {

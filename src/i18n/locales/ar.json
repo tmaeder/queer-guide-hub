@@ -2021,7 +2021,8 @@
       "emptyDescription": "أنشئ الأولى.",
       "createGroup": "إنشاء مجموعة",
       "mostPopular": "المجموعات الأكثر شعبية",
-      "noPopular": "لا توجد مجموعات شائعة متاحة بعد."
+      "noPopular": "لا توجد مجموعات شائعة متاحة بعد.",
+      "eyebrow": "[AR] Community"
     },
     "groupDetail": {
       "signInRequired": "يرجى تسجيل الدخول لعرض تفاصيل المجموعة."
@@ -2060,7 +2061,8 @@
       "clearSearch": "Clear search",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
-      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
+      "eyebrow": "[AR] Community"
     },
     "notFound": {
       "title": "الصفحة غير موجودة",
@@ -2101,6 +2103,23 @@
         "scopeNote": "عرض {{count}} مسودات فارغة. احذف ما لا تحتاجه.",
         "exitScope": "عرض جميع الرحلات"
       }
+    },
+    "members": {
+      "eyebrow": "[AR] Community",
+      "title": "[AR] Members",
+      "subtitle": "[AR] People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "[AR] member",
+      "members": "[AR] members",
+      "visible": "[AR] visible",
+      "upsellTitle": "[AR] See the full community",
+      "upsellBody": "[AR] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "[AR] Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "[AR] Community",
+      "title": "[AR] Friends",
+      "subtitle": "[AR] Manage your connections",
+      "gate": "[AR] Please sign in to view your friends."
     }
   },
   "settings": {

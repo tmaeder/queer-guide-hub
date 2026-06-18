@@ -2023,7 +2023,8 @@
       "emptyDescription": "Crie o primeiro.",
       "createGroup": "Criar um grupo",
       "mostPopular": "Grupos mais populares",
-      "noPopular": "Ainda não há grupos populares disponíveis."
+      "noPopular": "Ainda não há grupos populares disponíveis.",
+      "eyebrow": "[PT] Community"
     },
     "groupDetail": {
       "signInRequired": "Faça login para ver os detalhes do grupo."
@@ -2062,7 +2063,8 @@
       "clearSearch": "Clear search",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
-      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
+      "eyebrow": "[PT] Community"
     },
     "notFound": {
       "title": "Página não encontrada",
@@ -2103,6 +2105,23 @@
         "scopeNote": "Mostrando {{count}} rascunhos vazios. Exclua os que não precisar.",
         "exitScope": "Mostrar todas as viagens"
       }
+    },
+    "members": {
+      "eyebrow": "[PT] Community",
+      "title": "[PT] Members",
+      "subtitle": "[PT] People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "[PT] member",
+      "members": "[PT] members",
+      "visible": "[PT] visible",
+      "upsellTitle": "[PT] See the full community",
+      "upsellBody": "[PT] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "[PT] Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "[PT] Community",
+      "title": "[PT] Friends",
+      "subtitle": "[PT] Manage your connections",
+      "gate": "[PT] Please sign in to view your friends."
     }
   },
   "settings": {

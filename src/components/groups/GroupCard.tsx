@@ -42,6 +42,8 @@ const GroupCardFixture = () => (
 interface GroupCardProps {
   group?: Group;
   loading?: boolean;
+  /** When false, the join/request action becomes a sign-in prompt. Default true. */
+  isAuthenticated?: boolean;
   onJoin?: (groupId: string) => void;
   onLeave?: (groupId: string) => void;
   onRequestJoin?: (groupId: string) => void;
@@ -54,6 +56,7 @@ interface GroupCardProps {
 export const GroupCard = ({
   group,
   loading = false,
+  isAuthenticated = true,
   onJoin,
   onLeave,
   onRequestJoin,
@@ -175,7 +178,16 @@ export const GroupCard = ({
             </LocalizedLink>
           </Button>
 
-          {!group.is_member ? (
+          {!isAuthenticated ? (
+            <Button asChild size="sm">
+              <LocalizedLink to="/auth">
+                <span className="flex items-center">
+                  <UserPlus size={16} className="mr-2" />
+                  Sign in to join
+                </span>
+              </LocalizedLink>
+            </Button>
+          ) : !group.is_member ? (
             group.is_private ? (
               group.has_pending_request ? (
                 <Button disabled variant="outline" size="sm">

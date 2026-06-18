@@ -2008,6 +2008,7 @@
       }
     },
     "groups": {
+      "eyebrow": "Community",
       "title": "Community Groups",
       "subtitle": "Find people, share experiences, build community.",
       "discover": "Browse",
@@ -2038,7 +2039,25 @@
       "emptyDescription": "Start by joining existing groups or create your own!",
       "browseGroups": "Browse Groups"
     },
+    "members": {
+      "eyebrow": "Community",
+      "title": "Members",
+      "subtitle": "People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "member",
+      "members": "members",
+      "visible": "visible",
+      "upsellTitle": "See the full community",
+      "upsellBody": "Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "Community",
+      "title": "Friends",
+      "subtitle": "Manage your connections",
+      "gate": "Please sign in to view your friends."
+    },
     "feed": {
+      "eyebrow": "Community",
       "activePosts": "Active Posts",
       "totalLikes": "Total Likes",
       "comments": "Comments",

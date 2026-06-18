@@ -2021,7 +2021,8 @@
       "emptyDescription": "创建第一个。",
       "createGroup": "创建小组",
       "mostPopular": "最热门小组",
-      "noPopular": "暂无热门小组。"
+      "noPopular": "暂无热门小组。",
+      "eyebrow": "[ZH] Community"
     },
     "groupDetail": {
       "signInRequired": "请登录以查看小组详情。"
@@ -2060,7 +2061,8 @@
       "clearSearch": "Clear search",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
-      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
+      "eyebrow": "[ZH] Community"
     },
     "notFound": {
       "title": "页面未找到",
@@ -2101,6 +2103,23 @@
         "scopeNote": "显示{{count}}个空草稿。删除您不需要的。",
         "exitScope": "显示所有旅行"
       }
+    },
+    "members": {
+      "eyebrow": "[ZH] Community",
+      "title": "[ZH] Members",
+      "subtitle": "[ZH] People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "[ZH] member",
+      "members": "[ZH] members",
+      "visible": "[ZH] visible",
+      "upsellTitle": "[ZH] See the full community",
+      "upsellBody": "[ZH] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "[ZH] Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "[ZH] Community",
+      "title": "[ZH] Friends",
+      "subtitle": "[ZH] Manage your connections",
+      "gate": "[ZH] Please sign in to view your friends."
     }
   },
   "settings": {
