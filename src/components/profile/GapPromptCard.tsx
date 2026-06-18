@@ -72,7 +72,7 @@ export function GapPromptCard({ profile }: GapPromptCardProps) {
   };
 
   return (
-    <Card className="rounded-container border-foreground/20">
+    <Card className="rounded-container border-border/60">
       <CardContent className="pt-6 flex items-start gap-4">
         <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
           {prompt.kind === 'username' ? (

@@ -5,7 +5,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -36,23 +35,20 @@ export const NotificationBell = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+        >
           {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
           {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              style={{
-                top: -8,
-                right: -8,
-                height: 20,
-                width: 20,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              className="absolute p-0 flex text-xs"
+            <span
+              aria-hidden="true"
+              className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-2xs font-medium leading-none text-background"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
-            </Badge>
+            </span>
           )}
         </Button>
       </DropdownMenuTrigger>
