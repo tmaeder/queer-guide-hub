@@ -35,7 +35,12 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
     }
 
     try {
-      await sendEmail(to.trim(), subject.trim(), body, replyTo?.id);
+      await sendEmail({
+        to: to.trim(),
+        subject: subject.trim(),
+        body_text: body,
+        in_reply_to_email_id: replyTo?.id,
+      });
       onSent?.();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to send email');

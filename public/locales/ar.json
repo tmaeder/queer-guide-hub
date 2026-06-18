@@ -2021,7 +2021,8 @@
       "emptyDescription": "أنشئ الأولى.",
       "createGroup": "إنشاء مجموعة",
       "mostPopular": "المجموعات الأكثر شعبية",
-      "noPopular": "لا توجد مجموعات شائعة متاحة بعد."
+      "noPopular": "لا توجد مجموعات شائعة متاحة بعد.",
+      "eyebrow": "[AR] Community"
     },
     "groupDetail": {
       "signInRequired": "يرجى تسجيل الدخول لعرض تفاصيل المجموعة."
@@ -2060,7 +2061,8 @@
       "clearSearch": "Clear search",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
-      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
+      "eyebrow": "[AR] Community"
     },
     "notFound": {
       "title": "الصفحة غير موجودة",
@@ -2101,6 +2103,23 @@
         "scopeNote": "عرض {{count}} مسودات فارغة. احذف ما لا تحتاجه.",
         "exitScope": "عرض جميع الرحلات"
       }
+    },
+    "members": {
+      "eyebrow": "[AR] Community",
+      "title": "[AR] Members",
+      "subtitle": "[AR] People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "[AR] member",
+      "members": "[AR] members",
+      "visible": "[AR] visible",
+      "upsellTitle": "[AR] See the full community",
+      "upsellBody": "[AR] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "[AR] Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "[AR] Community",
+      "title": "[AR] Friends",
+      "subtitle": "[AR] Manage your connections",
+      "gate": "[AR] Please sign in to view your friends."
     }
   },
   "settings": {
@@ -2541,5 +2560,84 @@
     "openInbox": "[AR] Open inbox",
     "markAlertsRead": "[AR] Mark alerts read",
     "unread": "[AR] Unread"
+  },
+  "extension": {
+    "signInGate": {
+      "title": "[AR] Sign in to install the extension",
+      "subtitle": "[AR] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
+      "cta": "[AR] Sign in"
+    },
+    "heading": {
+      "title": "[AR] queer.guide capture",
+      "subtitle": "[AR] Browser extension that turns any webpage into a structured suggestion for our moderators."
+    },
+    "badge": {
+      "installed": "[AR] Installed"
+    },
+    "captures": {
+      "label": "[AR] Captures",
+      "venues": "[AR] Venues",
+      "events": "[AR] Events",
+      "hotels": "[AR] Hotels",
+      "marketplace": "[AR] Marketplace",
+      "news": "[AR] News"
+    },
+    "connect": {
+      "title": "[AR] Connect this browser",
+      "detected": "[AR] Extension",
+      "installed": "[AR] is installed in this browser.",
+      "body": "[AR] Sign your queer.guide session into the extension so you can submit content from any webpage.",
+      "signInPrompt": "[AR] Sign in to your queer.guide account to connect this browser and start submitting.",
+      "signedInAs": "[AR] Signed in as",
+      "cta": "[AR] Connect",
+      "connecting": "[AR] Connecting…",
+      "done": {
+        "title": "[AR] Connected.",
+        "body": "[AR] Open the extension popup on any page to capture content for queer.guide."
+      }
+    },
+    "steps": {
+      "title": "[AR] Install in 3 steps",
+      "s1": {
+        "title": "[AR] Download the latest build",
+        "body": "[AR] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
+        "download": "[AR] Download .zip",
+        "note": "[AR] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+      },
+      "s2": {
+        "title": "[AR] Load it in Chrome",
+        "l1": "[AR] Open chrome://extensions in a new tab.",
+        "l2": "[AR] Toggle Developer mode on (top right).",
+        "l3": "[AR] Click Load unpacked and pick the unzipped folder.",
+        "l4": "[AR] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
+        "note": "[AR] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+      },
+      "s3": {
+        "title": "[AR] Reload this page and Connect",
+        "body": "[AR] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+      },
+      "dev": {
+        "label": "[AR] Want to build it yourself or contribute?",
+        "cta": "[AR] Build instructions"
+      }
+    },
+    "highlights": {
+      "smart": {
+        "title": "[AR] Smart capture",
+        "body": "[AR] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+      },
+      "privacy": {
+        "title": "[AR] Privacy-first",
+        "body": "[AR] Only runs when you click. No host permissions, no background tracking."
+      },
+      "review": {
+        "title": "[AR] Always reviewed",
+        "body": "[AR] Submissions land in a moderation queue, never live until approved."
+      }
+    },
+    "bug": {
+      "label": "[AR] Found a bug?",
+      "cta": "[AR] open an issue"
+    }
   }
 }

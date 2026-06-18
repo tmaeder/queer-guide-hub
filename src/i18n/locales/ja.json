@@ -2021,7 +2021,8 @@
       "emptyDescription": "最初のグループを作成しましょう。",
       "createGroup": "グループを作成",
       "mostPopular": "最も人気のグループ",
-      "noPopular": "人気のグループはまだありません。"
+      "noPopular": "人気のグループはまだありません。",
+      "eyebrow": "[JA] Community"
     },
     "groupDetail": {
       "signInRequired": "グループの詳細を見るにはログインしてください。"
@@ -2060,7 +2061,8 @@
       "clearSearch": "Clear search",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
-      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
+      "eyebrow": "[JA] Community"
     },
     "notFound": {
       "title": "ページが見つかりません",
@@ -2101,6 +2103,23 @@
         "scopeNote": "空の下書きを{{count}}件表示中。不要なものを削除してください。",
         "exitScope": "すべての旅行を表示"
       }
+    },
+    "members": {
+      "eyebrow": "[JA] Community",
+      "title": "[JA] Members",
+      "subtitle": "[JA] People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "[JA] member",
+      "members": "[JA] members",
+      "visible": "[JA] visible",
+      "upsellTitle": "[JA] See the full community",
+      "upsellBody": "[JA] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "[JA] Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "[JA] Community",
+      "title": "[JA] Friends",
+      "subtitle": "[JA] Manage your connections",
+      "gate": "[JA] Please sign in to view your friends."
     }
   },
   "settings": {
@@ -2541,5 +2560,84 @@
     "openInbox": "[JA] Open inbox",
     "markAlertsRead": "[JA] Mark alerts read",
     "unread": "[JA] Unread"
+  },
+  "extension": {
+    "signInGate": {
+      "title": "[JA] Sign in to install the extension",
+      "subtitle": "[JA] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
+      "cta": "[JA] Sign in"
+    },
+    "heading": {
+      "title": "[JA] queer.guide capture",
+      "subtitle": "[JA] Browser extension that turns any webpage into a structured suggestion for our moderators."
+    },
+    "badge": {
+      "installed": "[JA] Installed"
+    },
+    "captures": {
+      "label": "[JA] Captures",
+      "venues": "[JA] Venues",
+      "events": "[JA] Events",
+      "hotels": "[JA] Hotels",
+      "marketplace": "[JA] Marketplace",
+      "news": "[JA] News"
+    },
+    "connect": {
+      "title": "[JA] Connect this browser",
+      "detected": "[JA] Extension",
+      "installed": "[JA] is installed in this browser.",
+      "body": "[JA] Sign your queer.guide session into the extension so you can submit content from any webpage.",
+      "signInPrompt": "[JA] Sign in to your queer.guide account to connect this browser and start submitting.",
+      "signedInAs": "[JA] Signed in as",
+      "cta": "[JA] Connect",
+      "connecting": "[JA] Connecting…",
+      "done": {
+        "title": "[JA] Connected.",
+        "body": "[JA] Open the extension popup on any page to capture content for queer.guide."
+      }
+    },
+    "steps": {
+      "title": "[JA] Install in 3 steps",
+      "s1": {
+        "title": "[JA] Download the latest build",
+        "body": "[JA] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
+        "download": "[JA] Download .zip",
+        "note": "[JA] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+      },
+      "s2": {
+        "title": "[JA] Load it in Chrome",
+        "l1": "[JA] Open chrome://extensions in a new tab.",
+        "l2": "[JA] Toggle Developer mode on (top right).",
+        "l3": "[JA] Click Load unpacked and pick the unzipped folder.",
+        "l4": "[JA] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
+        "note": "[JA] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+      },
+      "s3": {
+        "title": "[JA] Reload this page and Connect",
+        "body": "[JA] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+      },
+      "dev": {
+        "label": "[JA] Want to build it yourself or contribute?",
+        "cta": "[JA] Build instructions"
+      }
+    },
+    "highlights": {
+      "smart": {
+        "title": "[JA] Smart capture",
+        "body": "[JA] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+      },
+      "privacy": {
+        "title": "[JA] Privacy-first",
+        "body": "[JA] Only runs when you click. No host permissions, no background tracking."
+      },
+      "review": {
+        "title": "[JA] Always reviewed",
+        "body": "[JA] Submissions land in a moderation queue, never live until approved."
+      }
+    },
+    "bug": {
+      "label": "[JA] Found a bug?",
+      "cta": "[JA] open an issue"
+    }
   }
 }

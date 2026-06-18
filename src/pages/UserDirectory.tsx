@@ -15,7 +15,7 @@ import { UserDirectoryFilters } from '@/components/user-directory/UserDirectoryF
 import { UserDirectoryGrid } from '@/components/user-directory/UserDirectoryGrid';
 
 const UserDirectory = () => {
-  useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
   const [filters, setFilters] = useState<UserFilters>(defaultUserFilters);
@@ -108,16 +108,19 @@ const UserDirectory = () => {
   return (
     <div className="container mx-auto py-8 px-4 flex flex-col gap-8">
       <header className="border border-border rounded-container p-8 text-center flex flex-col gap-4 bg-background">
-        <h1 className="text-display font-bold text-foreground">Members</h1>
+        <h1 className="text-display font-bold text-foreground">{t('pages.members.title', 'Members')}</h1>
         <p className="text-body-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          People, connections, and networks within the inclusive LGBTQ+ community.
+          {t(
+            'pages.members.subtitle',
+            'People, connections, and networks within the inclusive LGBTQ+ community.',
+          )}
         </p>
         {!isLoading && !isError && (
           <div className="flex flex-wrap justify-center gap-2 text-13">
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-badge font-medium">
               <Users className="h-4 w-4" />
-              {memberCount} {memberCount === 1 ? 'member' : 'members'}
-              {!user && ' visible'}
+              {memberCount} {memberCount === 1 ? t('pages.members.member', 'member') : t('pages.members.members', 'members')}
+              {!user && ` ${t('pages.members.visible', 'visible')}`}
             </span>
           </div>
         )}
@@ -126,13 +129,17 @@ const UserDirectory = () => {
       {!user && (
         <Card>
           <CardContent className="pt-6 flex flex-col gap-4 text-center items-center">
-            <p className="font-semibold text-foreground">See the full community</p>
+            <p className="font-semibold text-foreground">
+              {t('pages.members.upsellTitle', 'See the full community')}
+            </p>
             <p className="text-sm text-muted-foreground max-w-md">
-              Public profiles are listed here. Sign in to see bios, locations, interests, and to
-              start a conversation.
+              {t(
+                'pages.members.upsellBody',
+                'Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.',
+              )}
             </p>
             <Button onClick={() => navigate('/auth')} className="self-center">
-              Sign in to browse
+              {t('pages.members.signInToBrowse', 'Sign in to browse')}
             </Button>
           </CardContent>
         </Card>

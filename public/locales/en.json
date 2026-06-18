@@ -2008,6 +2008,7 @@
       }
     },
     "groups": {
+      "eyebrow": "Community",
       "title": "Community Groups",
       "subtitle": "Find people, share experiences, build community.",
       "discover": "Browse",
@@ -2038,7 +2039,25 @@
       "emptyDescription": "Start by joining existing groups or create your own!",
       "browseGroups": "Browse Groups"
     },
+    "members": {
+      "eyebrow": "Community",
+      "title": "Members",
+      "subtitle": "People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "member",
+      "members": "members",
+      "visible": "visible",
+      "upsellTitle": "See the full community",
+      "upsellBody": "Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "Community",
+      "title": "Friends",
+      "subtitle": "Manage your connections",
+      "gate": "Please sign in to view your friends."
+    },
     "feed": {
+      "eyebrow": "Community",
       "activePosts": "Active Posts",
       "totalLikes": "Total Likes",
       "comments": "Comments",
@@ -2516,6 +2535,85 @@
       "conversionTherapy": "Conversion therapy",
       "intersex": "Intersex bodily integrity",
       "ilgaLink": "ILGA World Database"
+    }
+  },
+  "extension": {
+    "signInGate": {
+      "title": "Sign in to install the extension",
+      "subtitle": "The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
+      "cta": "Sign in"
+    },
+    "heading": {
+      "title": "queer.guide capture",
+      "subtitle": "Browser extension that turns any webpage into a structured suggestion for our moderators."
+    },
+    "badge": {
+      "installed": "Installed"
+    },
+    "captures": {
+      "label": "Captures",
+      "venues": "Venues",
+      "events": "Events",
+      "hotels": "Hotels",
+      "marketplace": "Marketplace",
+      "news": "News"
+    },
+    "connect": {
+      "title": "Connect this browser",
+      "detected": "Extension",
+      "installed": "is installed in this browser.",
+      "body": "Sign your queer.guide session into the extension so you can submit content from any webpage.",
+      "signInPrompt": "Sign in to your queer.guide account to connect this browser and start submitting.",
+      "signedInAs": "Signed in as",
+      "cta": "Connect",
+      "connecting": "Connecting…",
+      "done": {
+        "title": "Connected.",
+        "body": "Open the extension popup on any page to capture content for queer.guide."
+      }
+    },
+    "steps": {
+      "title": "Install in 3 steps",
+      "s1": {
+        "title": "Download the latest build",
+        "body": "We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
+        "download": "Download .zip",
+        "note": "Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+      },
+      "s2": {
+        "title": "Load it in Chrome",
+        "l1": "Open chrome://extensions in a new tab.",
+        "l2": "Toggle Developer mode on (top right).",
+        "l3": "Click Load unpacked and pick the unzipped folder.",
+        "l4": "The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
+        "note": "Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+      },
+      "s3": {
+        "title": "Reload this page and Connect",
+        "body": "Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+      },
+      "dev": {
+        "label": "Want to build it yourself or contribute?",
+        "cta": "Build instructions"
+      }
+    },
+    "highlights": {
+      "smart": {
+        "title": "Smart capture",
+        "body": "Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+      },
+      "privacy": {
+        "title": "Privacy-first",
+        "body": "Only runs when you click. No host permissions, no background tracking."
+      },
+      "review": {
+        "title": "Always reviewed",
+        "body": "Submissions land in a moderation queue, never live until approved."
+      }
+    },
+    "bug": {
+      "label": "Found a bug?",
+      "cta": "open an issue"
     }
   }
 }

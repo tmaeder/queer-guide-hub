@@ -2023,7 +2023,8 @@
       "emptyDescription": "Crea il primo.",
       "createGroup": "Crea un gruppo",
       "mostPopular": "Gruppi più popolari",
-      "noPopular": "Ancora nessun gruppo popolare disponibile."
+      "noPopular": "Ancora nessun gruppo popolare disponibile.",
+      "eyebrow": "[IT] Community"
     },
     "groupDetail": {
       "signInRequired": "Accedi per vedere i dettagli del gruppo."
@@ -2062,7 +2063,8 @@
       "clearSearch": "Clear search",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
-      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
+      "eyebrow": "[IT] Community"
     },
     "notFound": {
       "title": "Pagina non trovata",
@@ -2103,6 +2105,23 @@
         "scopeNote": "Mostro {{count}} bozze vuote. Elimina quelle che non ti servono.",
         "exitScope": "Mostra tutti i viaggi"
       }
+    },
+    "members": {
+      "eyebrow": "[IT] Community",
+      "title": "[IT] Members",
+      "subtitle": "[IT] People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "[IT] member",
+      "members": "[IT] members",
+      "visible": "[IT] visible",
+      "upsellTitle": "[IT] See the full community",
+      "upsellBody": "[IT] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "[IT] Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "[IT] Community",
+      "title": "[IT] Friends",
+      "subtitle": "[IT] Manage your connections",
+      "gate": "[IT] Please sign in to view your friends."
     }
   },
   "settings": {
@@ -2543,5 +2562,84 @@
     "openInbox": "[IT] Open inbox",
     "markAlertsRead": "[IT] Mark alerts read",
     "unread": "[IT] Unread"
+  },
+  "extension": {
+    "signInGate": {
+      "title": "[IT] Sign in to install the extension",
+      "subtitle": "[IT] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
+      "cta": "[IT] Sign in"
+    },
+    "heading": {
+      "title": "[IT] queer.guide capture",
+      "subtitle": "[IT] Browser extension that turns any webpage into a structured suggestion for our moderators."
+    },
+    "badge": {
+      "installed": "[IT] Installed"
+    },
+    "captures": {
+      "label": "[IT] Captures",
+      "venues": "[IT] Venues",
+      "events": "[IT] Events",
+      "hotels": "[IT] Hotels",
+      "marketplace": "[IT] Marketplace",
+      "news": "[IT] News"
+    },
+    "connect": {
+      "title": "[IT] Connect this browser",
+      "detected": "[IT] Extension",
+      "installed": "[IT] is installed in this browser.",
+      "body": "[IT] Sign your queer.guide session into the extension so you can submit content from any webpage.",
+      "signInPrompt": "[IT] Sign in to your queer.guide account to connect this browser and start submitting.",
+      "signedInAs": "[IT] Signed in as",
+      "cta": "[IT] Connect",
+      "connecting": "[IT] Connecting…",
+      "done": {
+        "title": "[IT] Connected.",
+        "body": "[IT] Open the extension popup on any page to capture content for queer.guide."
+      }
+    },
+    "steps": {
+      "title": "[IT] Install in 3 steps",
+      "s1": {
+        "title": "[IT] Download the latest build",
+        "body": "[IT] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
+        "download": "[IT] Download .zip",
+        "note": "[IT] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+      },
+      "s2": {
+        "title": "[IT] Load it in Chrome",
+        "l1": "[IT] Open chrome://extensions in a new tab.",
+        "l2": "[IT] Toggle Developer mode on (top right).",
+        "l3": "[IT] Click Load unpacked and pick the unzipped folder.",
+        "l4": "[IT] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
+        "note": "[IT] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+      },
+      "s3": {
+        "title": "[IT] Reload this page and Connect",
+        "body": "[IT] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+      },
+      "dev": {
+        "label": "[IT] Want to build it yourself or contribute?",
+        "cta": "[IT] Build instructions"
+      }
+    },
+    "highlights": {
+      "smart": {
+        "title": "[IT] Smart capture",
+        "body": "[IT] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+      },
+      "privacy": {
+        "title": "[IT] Privacy-first",
+        "body": "[IT] Only runs when you click. No host permissions, no background tracking."
+      },
+      "review": {
+        "title": "[IT] Always reviewed",
+        "body": "[IT] Submissions land in a moderation queue, never live until approved."
+      }
+    },
+    "bug": {
+      "label": "[IT] Found a bug?",
+      "cta": "[IT] open an issue"
+    }
   }
 }

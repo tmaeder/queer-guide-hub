@@ -2021,7 +2021,8 @@
       "emptyDescription": "创建第一个。",
       "createGroup": "创建小组",
       "mostPopular": "最热门小组",
-      "noPopular": "暂无热门小组。"
+      "noPopular": "暂无热门小组。",
+      "eyebrow": "[ZH] Community"
     },
     "groupDetail": {
       "signInRequired": "请登录以查看小组详情。"
@@ -2060,7 +2061,8 @@
       "clearSearch": "Clear search",
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
-      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again."
+      "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
+      "eyebrow": "[ZH] Community"
     },
     "notFound": {
       "title": "页面未找到",
@@ -2101,6 +2103,23 @@
         "scopeNote": "显示{{count}}个空草稿。删除您不需要的。",
         "exitScope": "显示所有旅行"
       }
+    },
+    "members": {
+      "eyebrow": "[ZH] Community",
+      "title": "[ZH] Members",
+      "subtitle": "[ZH] People, connections, and networks within the inclusive LGBTQ+ community.",
+      "member": "[ZH] member",
+      "members": "[ZH] members",
+      "visible": "[ZH] visible",
+      "upsellTitle": "[ZH] See the full community",
+      "upsellBody": "[ZH] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
+      "signInToBrowse": "[ZH] Sign in to browse"
+    },
+    "friends": {
+      "eyebrow": "[ZH] Community",
+      "title": "[ZH] Friends",
+      "subtitle": "[ZH] Manage your connections",
+      "gate": "[ZH] Please sign in to view your friends."
     }
   },
   "settings": {
@@ -2541,5 +2560,84 @@
     "openInbox": "[ZH] Open inbox",
     "markAlertsRead": "[ZH] Mark alerts read",
     "unread": "[ZH] Unread"
+  },
+  "extension": {
+    "signInGate": {
+      "title": "[ZH] Sign in to install the extension",
+      "subtitle": "[ZH] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
+      "cta": "[ZH] Sign in"
+    },
+    "heading": {
+      "title": "[ZH] queer.guide capture",
+      "subtitle": "[ZH] Browser extension that turns any webpage into a structured suggestion for our moderators."
+    },
+    "badge": {
+      "installed": "[ZH] Installed"
+    },
+    "captures": {
+      "label": "[ZH] Captures",
+      "venues": "[ZH] Venues",
+      "events": "[ZH] Events",
+      "hotels": "[ZH] Hotels",
+      "marketplace": "[ZH] Marketplace",
+      "news": "[ZH] News"
+    },
+    "connect": {
+      "title": "[ZH] Connect this browser",
+      "detected": "[ZH] Extension",
+      "installed": "[ZH] is installed in this browser.",
+      "body": "[ZH] Sign your queer.guide session into the extension so you can submit content from any webpage.",
+      "signInPrompt": "[ZH] Sign in to your queer.guide account to connect this browser and start submitting.",
+      "signedInAs": "[ZH] Signed in as",
+      "cta": "[ZH] Connect",
+      "connecting": "[ZH] Connecting…",
+      "done": {
+        "title": "[ZH] Connected.",
+        "body": "[ZH] Open the extension popup on any page to capture content for queer.guide."
+      }
+    },
+    "steps": {
+      "title": "[ZH] Install in 3 steps",
+      "s1": {
+        "title": "[ZH] Download the latest build",
+        "body": "[ZH] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
+        "download": "[ZH] Download .zip",
+        "note": "[ZH] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+      },
+      "s2": {
+        "title": "[ZH] Load it in Chrome",
+        "l1": "[ZH] Open chrome://extensions in a new tab.",
+        "l2": "[ZH] Toggle Developer mode on (top right).",
+        "l3": "[ZH] Click Load unpacked and pick the unzipped folder.",
+        "l4": "[ZH] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
+        "note": "[ZH] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+      },
+      "s3": {
+        "title": "[ZH] Reload this page and Connect",
+        "body": "[ZH] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+      },
+      "dev": {
+        "label": "[ZH] Want to build it yourself or contribute?",
+        "cta": "[ZH] Build instructions"
+      }
+    },
+    "highlights": {
+      "smart": {
+        "title": "[ZH] Smart capture",
+        "body": "[ZH] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+      },
+      "privacy": {
+        "title": "[ZH] Privacy-first",
+        "body": "[ZH] Only runs when you click. No host permissions, no background tracking."
+      },
+      "review": {
+        "title": "[ZH] Always reviewed",
+        "body": "[ZH] Submissions land in a moderation queue, never live until approved."
+      }
+    },
+    "bug": {
+      "label": "[ZH] Found a bug?",
+      "cta": "[ZH] open an issue"
+    }
   }
 }

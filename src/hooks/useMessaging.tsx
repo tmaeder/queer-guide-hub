@@ -134,7 +134,7 @@ export const useMessaging = () => {
         const { data, error } = await supabase
           .from('messages')
           .select(
-            '*, sender:profiles!messages_sender_id_profiles_user_id_fkey(display_name, avatar_url)',
+            '*, sender:profiles!messages_sender_id_profiles_user_id_fkey(display_name, avatar_url), reactions:message_reactions(*)',
           )
           .eq('conversation_id', conversationId)
           .order('created_at', { ascending: true });

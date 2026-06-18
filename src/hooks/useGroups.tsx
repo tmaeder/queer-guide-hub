@@ -33,11 +33,27 @@ export const useGroups = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all visible groups (public + private, via RLS) with user membership + pending request flag.
+  // Fetch visible groups. Signed-out visitors get public groups only (read-only
+  // discovery — community_groups is publicly readable via RLS); signed-in users
+  // get public + private (via RLS) annotated with membership + pending-request.
   const { data: groups = [], isLoading } = useQuery({
-    queryKey: ['groups', user?.id],
+    queryKey: ['groups', user?.id ?? null],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id) {
+        const { data: rows, error } = await supabase
+          .from('community_groups')
+          .select('*')
+          .eq('is_private', false)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        return (rows ?? []).map((group) => ({
+          ...group,
+          is_member: false,
+          has_pending_request: false,
+        }));
+      }
 
       const [{ data: rows, error }, { data: pending, error: pendingError }] = await Promise.all([
         supabase
@@ -71,7 +87,6 @@ export const useGroups = () => {
         };
       });
     },
-    enabled: !!user,
   });
 
   // Fetch user's groups

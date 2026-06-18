@@ -19,12 +19,25 @@ interface CreateGroupDialogProps {
     tags?: string[];
   }) => void;
   isCreating?: boolean;
+  /** Controlled open state. When provided, the parent owns visibility. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Hide the built-in "Create Group" trigger (for external/empty-state openers). */
+  hideTrigger?: boolean;
 }
 export const CreateGroupDialog = ({
   onCreateGroup,
-  isCreating
+  isCreating,
+  open: openProp,
+  onOpenChange,
+  hideTrigger = false
 }: CreateGroupDialogProps) => {
-  const [open, setOpen] = useState(false);
+  const [openInternal, setOpenInternal] = useState(false);
+  const open = openProp ?? openInternal;
+  const setOpen = (next: boolean) => {
+    onOpenChange?.(next);
+    if (openProp === undefined) setOpenInternal(next);
+  };
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -59,12 +72,14 @@ export const CreateGroupDialog = ({
     setOpen(false);
   };
   return <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus size={16} className="mr-2" />
-          Create Group
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus size={16} className="mr-2" />
+            Create Group
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
