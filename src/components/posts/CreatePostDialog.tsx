@@ -35,6 +35,7 @@ import {
   Plus,
   AtSign,
   Hash,
+  Loader2,
 } from 'lucide-react';
 import { useCommunityPosts, CreatePostData } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
@@ -447,6 +448,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               Cancel
             </Button>
             <Button onClick={handleSubmit} disabled={!content.trim() || isCreatingPost}>
+              {isCreatingPost && <Loader2 className="h-4 w-4 animate-spin" />}
               {isCreatingPost ? 'Posting...' : 'Post'}
             </Button>
           </div>

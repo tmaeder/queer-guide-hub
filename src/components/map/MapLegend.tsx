@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Info, X, Star, Radio } from 'lucide-react';
+import { tweens } from '@/lib/motion';
+import { distance } from '@/lib/animation';
 import {
   LAYER_COLORS,
   PRIDE_LAYER_COLORS,
@@ -26,26 +29,37 @@ const LABEL: Record<string, string> = Object.fromEntries(
  */
 export function MapLegend({ lens, layers, pridePalette }: MapLegendProps) {
   const [open, setOpen] = useState(false);
+  const reduced = useReducedMotion() ?? false;
   const palette = pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS;
   const showHeat = lens === 'density' || lens === 'combined';
   const showPins = lens !== 'density' && lens !== 'boundary';
 
-  if (!open) {
-    return (
-      <button
+  return (
+    <AnimatePresence initial={false} mode="wait">
+    {!open ? (
+      <motion.button
+        key="btn"
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Show map legend"
+        initial={reduced ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={reduced ? { duration: 0 } : tweens.fast}
         className="absolute bottom-10 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-border bg-background/95 px-4 py-1.5 text-13 text-foreground backdrop-blur-md hover:bg-background"
       >
         <Info className="h-3.5 w-3.5" aria-hidden />
         Legend
-      </button>
-    );
-  }
-
-  return (
-    <div className="absolute bottom-10 left-3 z-10 w-56 rounded-container border border-border bg-background/95 p-4 backdrop-blur-md">
+      </motion.button>
+    ) : (
+    <motion.div
+      key="panel"
+      initial={reduced ? false : { opacity: 0, scale: 0.96, y: distance.sm }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: distance.sm }}
+      transition={reduced ? { duration: 0 } : tweens.fast}
+      style={{ originY: 1, originX: 0 }}
+      className="absolute bottom-10 left-3 z-10 w-56 rounded-container border border-border bg-background/95 p-4 backdrop-blur-md">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-13 font-semibold text-foreground">What you're seeing</span>
         <button
@@ -108,7 +122,9 @@ export function MapLegend({ lens, layers, pridePalette }: MapLegendProps) {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
+    )}
+    </AnimatePresence>
   );
 }
 

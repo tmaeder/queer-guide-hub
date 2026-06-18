@@ -73,6 +73,23 @@ export const useComments = (postId: string) => {
     enabled: !!postId,
   });
 
+  // Optimistically flip a comment's heart fill + count so liking feels instant,
+  // before the server round-trip settles. onError restores the snapshot.
+  const patchCommentLike = (commentId: string, liked: boolean) => {
+    queryClient.setQueryData<PostComment[]>(['post-comments', postId], (prev) => {
+      if (!prev) return prev;
+      return prev.map((c) =>
+        c.id === commentId
+          ? {
+              ...c,
+              user_liked: liked,
+              likes_count: Math.max(0, (c.likes_count ?? 0) + (liked ? 1 : -1)),
+            }
+          : c,
+      );
+    });
+  };
+
   // Create comment mutation
   const createCommentMutation = useMutation({
     mutationFn: async (commentData: CreateCommentData) => {
@@ -131,6 +148,17 @@ export const useComments = (postId: string) => {
       // Increment likes count
       await supabase.rpc('increment_comment_likes', { comment_id: commentId });
     },
+    onMutate: async (commentId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['post-comments', postId] });
+      const snapshot = queryClient.getQueryData(['post-comments', postId]);
+      patchCommentLike(commentId, true);
+      return { snapshot };
+    },
+    onError: (_err, _commentId, ctx) => {
+      if (ctx?.snapshot !== undefined) {
+        queryClient.setQueryData(['post-comments', postId], ctx.snapshot);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post-comments', postId] });
     },
@@ -151,6 +179,17 @@ export const useComments = (postId: string) => {
 
       // Decrement likes count
       await supabase.rpc('decrement_comment_likes', { comment_id: commentId });
+    },
+    onMutate: async (commentId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['post-comments', postId] });
+      const snapshot = queryClient.getQueryData(['post-comments', postId]);
+      patchCommentLike(commentId, false);
+      return { snapshot };
+    },
+    onError: (_err, _commentId, ctx) => {
+      if (ctx?.snapshot !== undefined) {
+        queryClient.setQueryData(['post-comments', postId], ctx.snapshot);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post-comments', postId] });
