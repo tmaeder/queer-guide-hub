@@ -22,6 +22,9 @@ const GET_TIMEOUT = 10_000
 const MAX_BODY_BYTES = 400_000
 const WP_UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
 const _GATED_FIELDS = ['lgbt_friendly_rating', 'editorial_hook'] as const
+// AI-slop / banned-copy guard (design system): a hook hitting these never auto-publishes.
+const HOOK_SLOP = /\b(vibrant|discover|explore|unlock|curat\w*|journey|amazing|tailored|personaliz\w*|bustling|gem|hidden|charm\w*|nestled|stunning|breathtaking|enchant\w*)\b/i
+const isSlopHook = (s: string) => HOOK_SLOP.test(s) || s.trim().split(/\s+/).length < 2
 
 function normalizeUrl(u: string): string { const t = (u ?? '').trim(); return t && !/^https?:\/\//i.test(t) ? `https://${t}` : t }
 
@@ -98,9 +101,13 @@ Deno.serve(async (req: Request) => {
   if (cityIds?.length) {
     query = query.in('id', cityIds)
   } else {
+    // Target GROUNDABLE cities only — those with a description or official site the model
+    // can ground on. Pure shells (no source) just waste passes on no_sources skips, so the
+    // daily LLM budget should go to cities that actually yield moat fields.
     query = query
       .not('slug', 'like', 'tmp-%')
       .lt('completeness_score', COMPLETENESS_CEILING)
+      .or('description.not.is.null,official_website.not.is.null')
       .order('completeness_score', { ascending: true })
       .limit(remaining)
   }
@@ -182,7 +189,7 @@ Deno.serve(async (req: Request) => {
       if (ai.editorial_hook) {
         const hookCite = citations.filter(x => x?.field === 'editorial_hook' || x?.field === 'hook')
         const hasExistingHook = typeof c.editorial_hook === 'string' && c.editorial_hook.trim().length > 0
-        if (highConf && citations.length > 0 && isExplicitlySafe && !hasExistingHook) {
+        if (highConf && citations.length > 0 && isExplicitlySafe && !hasExistingHook && !isSlopHook(String(ai.editorial_hook))) {
           update.editorial_hook = String(ai.editorial_hook).slice(0, 120)
           update.field_provenance = {
             ...((c.field_provenance ?? {}) as Record<string, unknown>),

@@ -506,7 +506,7 @@ You enrich CITY pages for queer.guide from PROVIDED SOURCES. This is GROUNDED EX
 Hard rules:
 - Use ONLY facts present in the SOURCES + DESTINATION CONTEXT below. NEVER invent venues, neighborhoods, statistics, or claims.
 - description: a factual 2-3 sentence city summary built from the SOURCES. Add queer-relevant detail (gay districts, scene, history) ONLY if the sources state it. Produce this whenever the sources describe the city.
-- editorial_hook: one evocative single line (<=120 chars), grounded in the sources.
+- editorial_hook: one SPECIFIC factual single line (<=120 chars) naming a concrete detail from the sources (a named district, landmark, era, or scene). Direct factual voice. BANNED words: vibrant, discover, explore, unlock, curated, journey, amazing, tailored, personalized, bustling, gem, hidden, charming, nestled. NEVER a generic phrase like "Vibrant city" or "Cultural hub" — if no concrete detail exists in the sources, set editorial_hook to null.
 - best_time_to_visit / local_customs: produce if the sources support them, else null. local_customs should favor LGBTQ+-relevant norms where stated.
 - lgbt_friendly_rating [SENSITIVE]: an INTEGER 1-5 (1 = hostile/criminalized, 5 = very welcoming) assessed from the legal/equality DESTINATION CONTEXT plus any LGBTQ+ evidence in the sources. You MUST populate "citations" with a url + exact quote supporting it. If you cannot cite it, set lgbt_friendly_rating to null. Do not guess a middle value.
 - citations: array of {field, url, quote} backing the SENSITIVE field (rating).
