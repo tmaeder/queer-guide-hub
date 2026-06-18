@@ -73,6 +73,9 @@ export default {
 		const url = new URL(request.url);
 		if (request.method === "OPTIONS") return new Response(null, { status: 204 });
 
+		// Public health check (no auth) — used by the post-deploy smoke job.
+		if (url.pathname === "/health") return jres({ ok: true, ts: Date.now() });
+
 		// Auth.
 		const tok = request.headers.get("X-QG-Token");
 		if (tok !== env.INGEST_TOKEN) return jres({ error: "unauthorized" }, 401);

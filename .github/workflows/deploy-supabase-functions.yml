@@ -71,13 +71,12 @@ jobs:
           deno-version: v2.x
 
       - name: Run edge function tests
-        # Gate the deploy on the deno test suite under
-        # supabase/functions/_tests. Matches the ci.yml edge-fn-tests
-        # invocation (same files, same flags) so a PR that passes CI
-        # also clears the deploy gate. The other 6 tests under
-        # _tests/ need per-file triage before they can be added here.
+        # Gate the deploy on the full deno test suite under
+        # supabase/functions/_tests (whole dir, type-checked). Matches the
+        # ci.yml edge-fn-tests invocation so a PR that passes CI also
+        # clears the deploy gate.
         working-directory: supabase/functions/_tests
-        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts
+        run: deno test --allow-net --allow-env --allow-read
 
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v2

@@ -1,3 +1,8 @@
+/* eslint-disable queerguide/no-supabase-from-in-pages --
+   TODO(tech-debt): extract the inline supabase.from() ingestion-rules CRUD
+   into a dedicated src/hooks/useIngestionRules hook, then drop this disable.
+   Suppressed here so the rest of the file stays under full lint coverage
+   instead of the whole file being ignored. */
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';

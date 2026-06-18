@@ -12,6 +12,12 @@ updates:
       npm:
         patterns: ['*']
         update-types: [minor, patch]
+    ignore:
+      # zxcvbn is deliberately pinned to 3.x — 4.x breaks PasswordStrengthMeter
+      # and the concurrent 3.x+4.x major PRs previously corrupted package.json
+      # (duplicate keys → lockfile desync, CI red). Block the major bump.
+      - dependency-name: '@zxcvbn-ts/*'
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: npm
     directory: /scraper
@@ -30,6 +36,11 @@ updates:
       npm:
         patterns: ['*']
         update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /workers/assistant
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
 
   - package-ecosystem: npm
     directory: /workers/image-cdn

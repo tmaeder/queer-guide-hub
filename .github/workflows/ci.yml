@@ -120,12 +120,10 @@ jobs:
             exit 1
           fi
 
-  # Deno tests for supabase/functions. Mirrors pipeline-health.yml's
-  # known-working invocation exactly: same Deno version, same test
-  # files, same flags. The other 6 test files under _tests/ need
-  # per-file triage in a follow-up — they fail fast in CI (probably
-  # transitive import or env-var issues) and the goal of this PR is
-  # to get the existing CI-tested suites running on every PR.
+  # Deno tests for supabase/functions. Runs the WHOLE _tests/ directory
+  # with type-checking on, so new test files are picked up automatically
+  # (no hardcoded file list to maintain). All suites were triaged green
+  # 2026-06-18 (118 passing, env-dependent cases self-skip via `ignore`).
   edge-fn-tests:
     runs-on: ubuntu-latest
     steps:
@@ -135,4 +133,4 @@ jobs:
           deno-version: v2.x
       - name: Run deno unit tests
         working-directory: supabase/functions/_tests
-        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts
+        run: deno test --allow-net --allow-env --allow-read

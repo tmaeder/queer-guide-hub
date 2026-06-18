@@ -74,3 +74,36 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: bash scripts/smoke.sh
+
+  # Post-deploy health check for the assistant worker. It serves a public
+  # GET /health returning {"ok":true}. Mirrors the search smoke gate.
+  smoke-assistant:
+    needs: [deploy-assistant]
+    if: always() && needs.deploy-assistant.result == 'success'
+    runs-on: ubuntu-latest
+    env:
+      ASSISTANT_URL: ${{ vars.ASSISTANT_URL || 'https://assistant.queer.guide' }}
+    steps:
+      - name: Check /health
+        run: |
+          set -euo pipefail
+          echo "GET $ASSISTANT_URL/health"
+          curl -sSf --retry 5 --retry-delay 10 --retry-all-errors "$ASSISTANT_URL/health" | tee /dev/stderr | grep -q '"ok":true'
+          echo "  ✓ assistant health ok"
+
+  # Post-deploy health check for the ingest worker. The ingest worker has
+  # no public custom domain, so this only runs when an INGEST_URL repo
+  # variable is configured (e.g. its workers.dev URL). GET /health is public.
+  smoke-ingest:
+    needs: [deploy-ingest]
+    if: always() && needs.deploy-ingest.result == 'success' && vars.INGEST_URL != ''
+    runs-on: ubuntu-latest
+    env:
+      INGEST_URL: ${{ vars.INGEST_URL }}
+    steps:
+      - name: Check /health
+        run: |
+          set -euo pipefail
+          echo "GET $INGEST_URL/health"
+          curl -sSf --retry 5 --retry-delay 10 --retry-all-errors "$INGEST_URL/health" | tee /dev/stderr | grep -q '"ok":true'
+          echo "  ✓ ingest health ok"

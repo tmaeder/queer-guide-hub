@@ -124,7 +124,7 @@ export function parseSafetyRelevance(raw: string): SafetyRelevanceResult {
     return v;
   };
 
-  const flagsIn = Array.isArray(parsed.safety_flags) ? parsed.safety_flags : [];
+  const flagsIn: unknown[] = Array.isArray(parsed.safety_flags) ? parsed.safety_flags : [];
   const flags = flagsIn
     .filter(
       (f: unknown): f is Record<string, unknown> =>

@@ -25,7 +25,7 @@ jobs:
 
       - name: Run Deno unit tests
         working-directory: supabase/functions/_tests
-        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts
+        run: deno test --allow-net --allow-env --allow-read
 
       - name: Check pipeline health
         if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}

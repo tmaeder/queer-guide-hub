@@ -23,15 +23,11 @@ export default tseslint.config(
       "dist",
       "coverage",
       "src/integrations/supabase/types.ts",
-      // Pre-existing botched-merge artifacts — files have parsing errors
-      // unrelated to this branch. Tracked in
-      // docs/audits/2026-05-events-audit/follow-ups.md.
-      "functions/_middleware.ts",
-      "functions/sitemap-places.xml.ts",
-      "scripts/seo-check.mjs",
-      "supabase/functions/pipeline-review-gate/index.ts",
-      "supabase/functions/pipeline-apply-rules/index.ts",
-      "src/pages/AdminIngestionRules.tsx",
+      // (2026-06-18) The former "botched-merge parse error" ignore block was
+      // stale — those files now parse and lint clean, so they are linted
+      // again. AdminIngestionRules.tsx still has known no-supabase-from-in-pages
+      // violations; those are suppressed in-file with a TODO to extract the
+      // queries into a hook, rather than blanket-ignoring the whole file.
       // Absorbed repos — not linted here
       "Dev/**",
       "client-sdk/**",
