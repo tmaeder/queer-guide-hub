@@ -20,9 +20,35 @@ export function sectionVisible(
 }
 
 /**
+ * Resolve a field's effective visibility tier from privacy_settings.
+ * String *_visibility key is the source of truth; legacy *_public boolean is the
+ * non-regressive fallback. Mirrors SQL resolve_profile_field_visibility().
+ */
+function resolveFieldVis(
+  ps: Record<string, unknown>,
+  stringKey: string,
+  boolKey: string,
+  fallback: string,
+): string {
+  const s = ps[stringKey];
+  if (typeof s === 'string' && s) return s;
+  const b = ps[boolKey];
+  if (typeof b === 'boolean') return b ? 'public' : 'private';
+  return fallback;
+}
+
+/** Whether a tier shows under a preview lens. 'friends' is server-only (never previews). */
+function tierVisible(tier: string, lens: ProfileLens): boolean {
+  if (tier === 'public') return true;
+  if (tier === 'community') return lens === 'community';
+  return false;
+}
+
+/**
  * Owner "view as" preview: strips the own full profile down to what
  * get_public_profile_safe would return to that audience. Mirrors the RPC's
- * rules — keep the two in sync (supabase/migrations/*profile_visibility*).
+ * rules — keep the two in sync
+ * (supabase/migrations/20260618100000_profile_field_visibility_reconcile.sql).
  */
 export function previewFilterProfile(
   profile: Record<string, unknown>,
@@ -42,24 +68,26 @@ export function previewFilterProfile(
     user_mode: profile.user_mode,
     privacy_settings: ps,
   };
-  if (ps.location_public === true) out.location = profile.location;
-  if (ps.pronouns_public === true) out.pronouns = profile.pronouns;
-  if (ps.contact_public === true) {
+  if (tierVisible(resolveFieldVis(ps, 'location_visibility', 'location_public', 'public'), lens)) {
+    out.location = profile.location;
+  }
+  if (tierVisible(resolveFieldVis(ps, 'pronouns_visibility', 'pronouns_public', 'public'), lens)) {
+    out.pronouns = profile.pronouns;
+  }
+  if (tierVisible(resolveFieldVis(ps, 'contact_visibility', 'contact_public', 'friends'), lens)) {
     out.website = profile.website;
     out.social_links = profile.social_links;
   }
-  if (ps.interests_public === true) {
+  if (tierVisible(resolveFieldVis(ps, 'interests_visibility', 'interests_public', 'community'), lens)) {
     out.interests = profile.interests;
     out.occupation = profile.occupation;
     out.education = profile.education;
   }
-  const identityVis = (ps.identity_visibility as string) ?? 'friends';
-  if (identityVis === 'public' || (identityVis === 'community' && lens === 'community')) {
+  if (tierVisible((ps.identity_visibility as string) ?? 'friends', lens)) {
     out.gender_identity = profile.gender_identity;
     out.sexual_orientation = profile.sexual_orientation;
   }
-  const relVis = (ps.relationships_visibility as string) ?? 'friends';
-  if (relVis === 'public' || (relVis === 'community' && lens === 'community')) {
+  if (tierVisible((ps.relationships_visibility as string) ?? 'friends', lens)) {
     out.current_relationship_status = profile.current_relationship_status;
   }
   return out;
