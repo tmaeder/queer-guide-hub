@@ -6,7 +6,7 @@ import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { ExternalLink, Loader2, MapPin } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
@@ -246,6 +246,19 @@ export const ExploreMap = ({
   const { toast } = useToast();
   const prefersReducedMotion = useReducedMotion();
 
+  // Ambient "where am I" hint shown as a subtle inline map chip rather than a
+  // global toast — auto-fades, never stacks with action/error toasts.
+  const [locationHint, setLocationHint] = useState<string | null>(null);
+  const locationHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showLocationHint = useCallback((label: string) => {
+    setLocationHint(label);
+    if (locationHintTimer.current) clearTimeout(locationHintTimer.current);
+    locationHintTimer.current = setTimeout(() => setLocationHint(null), 4000);
+  }, []);
+  useEffect(() => () => {
+    if (locationHintTimer.current) clearTimeout(locationHintTimer.current);
+  }, []);
+
   // ── Map refs ─────────────────────────────────────────────────────────────
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -406,11 +419,8 @@ export const ExploreMap = ({
     userGeoFiredRef.current = true;
     setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
     flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
-    toast({
-      title: 'Showing your area',
-      description: visitorGeo.city ?? undefined,
-    });
-  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter, toast]);
+    showLocationHint(visitorGeo.city ? `Showing ${visitorGeo.city}` : 'Showing your area');
+  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter, showLocationHint]);
 
   useEffect(() => {
     if (skipAutoFly || initialCenter || fallbackFiredRef.current) return;
@@ -419,10 +429,7 @@ export const ExploreMap = ({
       fallbackFiredRef.current = true;
       setViewport({ center: FALLBACK_CENTER, zoom: FALLBACK_ZOOM });
       flyToLocation(FALLBACK_CENTER[0], FALLBACK_CENTER[1], FALLBACK_ZOOM);
-      toast({
-        title: 'Showing Berlin',
-        description: 'Search to change',
-      });
+      showLocationHint('Showing Berlin');
     }, 2500);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1616,6 +1623,15 @@ export const ExploreMap = ({
               : ''}
         </span>
       </div>
+
+      {/* Ambient location hint — subtle inline chip (was a global toast).
+          Bottom-left, clear of the bottom-right results pill + top-right nav. */}
+      {locationHint && (
+        <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/85 px-4 py-1.5 pointer-events-none animate-fade-in">
+          <MapPin className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+          <span className="text-xs text-muted-foreground">{locationHint}</span>
+        </div>
+      )}
 
       {/* Queer-voiced empty state (MapShell only). Shows when the area has no
           points and we're not mid-fetch — warmer than a hidden zero pill. */}
