@@ -1606,7 +1606,8 @@
       "messages": "[RU] Messages",
       "mailbox": "[RU] Mailbox",
       "you": "[RU] You",
-      "community": "[RU] Community"
+      "community": "[RU] Community",
+      "viewProfile": "[RU] View public profile"
     },
     "modes": {
       "dating": "Ищу отношения",
@@ -1633,6 +1634,10 @@
       "community": "[RU] Community",
       "shop": "[RU] Shop & Read",
       "support": "[RU] Support"
+    },
+    "notifications": {
+      "label": "[RU] Notifications",
+      "unread": "[RU] Notifications, {{count}} unread"
     }
   },
   "pages": {

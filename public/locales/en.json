@@ -1577,7 +1577,12 @@
       "friends": "Friends",
       "myGroups": "My Groups",
       "accessibility": "Accessibility",
-      "extension": "Browser Extension"
+      "extension": "Browser Extension",
+      "viewProfile": "View public profile"
+    },
+    "notifications": {
+      "label": "Notifications",
+      "unread": "Notifications, {{count}} unread"
     },
     "modes": {
       "dating": "Looking for Love",

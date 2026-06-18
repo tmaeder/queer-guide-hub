@@ -1578,7 +1578,8 @@
       "messages": "[AR] Messages",
       "mailbox": "[AR] Mailbox",
       "you": "[AR] You",
-      "community": "[AR] Community"
+      "community": "[AR] Community",
+      "viewProfile": "[AR] View public profile"
     },
     "modes": {
       "dating": "أبحث عن الحب",
@@ -1605,6 +1606,10 @@
       "community": "[AR] Community",
       "shop": "[AR] Shop & Read",
       "support": "[AR] Support"
+    },
+    "notifications": {
+      "label": "[AR] Notifications",
+      "unread": "[AR] Notifications, {{count}} unread"
     }
   },
   "pages": {

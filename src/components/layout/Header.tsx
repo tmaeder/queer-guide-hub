@@ -1,15 +1,7 @@
-import { useState, useCallback, Suspense } from 'react';
+import { useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { LogOut, Plus, Shield } from 'lucide-react';
+import { LogOut, Plus, Shield, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -17,28 +9,19 @@ import { AuthDialog } from '@/components/auth/AuthDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { lazyOptional } from '@/utils/lazyRetry';
-import { useInboxFeed } from '@/hooks/useInboxFeed';
-// lazyOptional (not plain lazy): a failed chunk fetch retries once, then
-// renders nothing instead of bubbling a `vite:preloadError` that the
-// global handler in main.tsx would turn into a full-page reload. Opening
-// the menu must never reload the page just because the notifications
-// chunk is briefly unreachable.
-const NotificationList = lazyOptional(() =>
-  import('@/components/notifications/NotificationList').then((m) => ({
-    default: m.NotificationList,
-  })),
-);
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { useInboxBadge } from '@/hooks/useInboxBadge';
-import { USER_MENU_ITEMS as userMenuItems, USER_MODES as userModes } from '@/config/navigation';
-import { cn } from '@/lib/utils';
+import { USER_MENU_ITEMS as userMenuItems } from '@/config/navigation';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -50,10 +33,8 @@ export function Header() {
   const { t } = useTranslation();
 
   const { user, signOut } = useAuth();
-  const { profile, updateProfile } = useProfile();
-  const { unreadCount } = useInboxFeed('all');
+  const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
-  const inboxBadgeCount = useInboxBadge();
 
   const avatarSrc =
     profile?.avatar_url ||
@@ -72,11 +53,9 @@ export function Header() {
   }, [location.pathname, t]);
   const submitCta = getSubmitCta();
 
-  const handleModeChange = async (mode: string) => {
-    await updateProfile({
-      user_mode: mode as 'dating' | 'friends' | 'exploration' | 'fun' | 'networking' | 'community',
-    });
-  };
+  const displayName = (profile?.display_name as string | null) || null;
+  const username = (profile?.username as string | null) || null;
+  const avatarInitial = (displayName || user?.email || 'U').charAt(0).toUpperCase();
 
   // ── Render ──────────────────────────────────────────────────────────────
 
@@ -123,6 +102,12 @@ export function Header() {
         </Button>
       )}
 
+      {user && (
+        <span className="hidden md:inline-flex">
+          <NotificationBell />
+        </span>
+      )}
+
       {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -130,122 +115,80 @@ export function Header() {
               variant="ghost"
               size="sm"
               style={{ height: 40, width: 40 }}
-              className="relative p-0"
+              className="p-0"
               aria-label={t('header.openUserMenu', 'Open user menu')}
             >
               <Avatar style={{ height: 36, width: 36 }}>
-                <AvatarImage
-                  src={avatarSrc}
-                  alt={(profile?.display_name || 'Your account') as string}
-                />
-                <AvatarFallback>
-                  {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
-                </AvatarFallback>
+                <AvatarImage src={avatarSrc} alt={displayName || 'Your account'} />
+                <AvatarFallback>{avatarInitial}</AvatarFallback>
               </Avatar>
-              {unreadCount > 0 && (
-                <span
-                  aria-hidden="true"
-                  className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-2xs font-medium leading-none text-background"
-                >
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" style={{ width: 320, zIndex: 50 }} className="p-4">
-            <div className="mb-4">
-              <Select value={profile?.user_mode || 'community'} onValueChange={handleModeChange}>
-                <SelectTrigger style={{ width: '100%' }}>
-                  <SelectValue placeholder="Select mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  {userModes.map((mode) => (
-                    <SelectItem key={mode.value} value={mode.value}>
-                      <div className="flex items-center gap-2">
-                        <mode.icon style={{ width: 16, height: 16 }} />
-                        <span>{t(mode.labelKey)}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <DropdownMenuContent align="end" style={{ width: 280, zIndex: 50 }}>
+            {/* Identity — leads the menu, links to the private /me hub */}
+            <DropdownMenuLabel className="p-0 font-normal">
+              <LocalizedLink
+                to="/me"
+                className="flex items-center gap-2 rounded-element p-2 no-underline"
+              >
+                <Avatar style={{ height: 36, width: 36 }}>
+                  <AvatarImage src={avatarSrc} alt="" />
+                  <AvatarFallback>{avatarInitial}</AvatarFallback>
+                </Avatar>
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-semibold">
+                    {displayName || t('header.userMenu.you', 'You')}
+                  </span>
+                  {username ? (
+                    <span className="truncate font-mono text-2xs text-muted-foreground">
+                      @{username}
+                    </span>
+                  ) : user.email ? (
+                    <span className="truncate text-2xs text-muted-foreground">{user.email}</span>
+                  ) : null}
+                </span>
+              </LocalizedLink>
+            </DropdownMenuLabel>
 
-            <div className="mb-4">
-              <Suspense fallback={null}>
-                <NotificationList />
-              </Suspense>
-            </div>
+            <DropdownMenuSeparator />
 
-            <div className="my-2" />
+            <DropdownMenuItem asChild>
+              <LocalizedLink to={`/user/${user.id}`} className="flex gap-2 no-underline">
+                <UserRound size={16} />
+                <span>{t('header.userMenu.viewProfile', 'View public profile')}</span>
+              </LocalizedLink>
+            </DropdownMenuItem>
 
-            {userMenuItems.map((item) => {
-              const showBadge = item.to === '/me' && inboxBadgeCount > 0;
-              const active =
-                location.pathname === item.to ||
-                location.pathname.startsWith(`${item.to}/`);
-              return (
-                <Button
-                  key={item.to}
-                  variant="ghost"
-                  size="sm"
-                  aria-current={active ? 'page' : undefined}
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                    width: '100%',
-                    padding: '8px 12px',
-                  }}
-                  className={cn(
-                    'flex gap-2',
-                    active && 'text-accent-brand font-semibold',
-                  )}
-                  onClick={() => navigate(item.to)}
-                >
-                  <item.icon style={{ width: 16, height: 16 }} />
-                  <span className="text-sm flex-1 text-left">{t(item.labelKey)}</span>
-                  {showBadge && (
-                    <Badge variant="default" className="h-5" style={{ fontSize: '0.7rem' }}>
-                      {inboxBadgeCount}
-                    </Badge>
-                  )}
-                </Button>
-              );
-            })}
+            {userMenuItems.map((item) => (
+              <DropdownMenuItem asChild key={item.to}>
+                <LocalizedLink to={item.to} className="flex gap-2 no-underline">
+                  <item.icon size={16} />
+                  <span>{t(item.labelKey)}</span>
+                </LocalizedLink>
+              </DropdownMenuItem>
+            ))}
 
             {(isAdmin || isModerator) && (
               <>
-                <div className="my-2" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                    width: '100%',
-                    padding: '8px 12px',
-                  }}
-                  className="flex gap-2"
-                  onClick={() => navigate('/admin')}
-                >
-                  <Shield size={16} />
-                  <span className="text-sm">{t('header.adminConsole', 'Admin Console')}</span>
-                </Button>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <LocalizedLink to="/admin" className="flex gap-2 no-underline">
+                    <Shield size={16} />
+                    <span>{t('header.adminConsole', 'Admin Console')}</span>
+                  </LocalizedLink>
+                </DropdownMenuItem>
               </>
             )}
 
-            <div className="my-2" />
+            <DropdownMenuSeparator />
 
-            <Button
-              variant="ghost"
-              size="sm"
-              style={{ width: '100%', justifyContent: 'flex-start' }}
-              className="text-destructive"
-              onClick={signOut}
+            <DropdownMenuItem
+              onSelect={() => signOut()}
+              className="flex gap-2 text-destructive focus:text-destructive"
             >
-              <LogOut size={16} className="mr-2" />
-              {t('header.signOut', 'Sign Out')}
-            </Button>
+              <LogOut size={16} />
+              <span>{t('header.signOut', 'Sign Out')}</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (

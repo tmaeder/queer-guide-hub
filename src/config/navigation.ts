@@ -19,8 +19,6 @@ import {
   Home,
   Settings,
   Mail,
-  MessageCircle,
-  User,
   Puzzle,
   Info,
   Accessibility,
@@ -83,15 +81,13 @@ export interface NavItem {
   labelKey: string;
 }
 
-// Consolidated to mirror the hub IA + the mobile bottom nav (You · Community ·
-// Messages). The personal surfaces (Saved, Trips, Travel, Friends, Groups) are
-// tabs inside the /me and /community hubs, not separate menu rows — this is the
-// junk-drawer the redesign set out to retire.
+// Account-scoped rows only. Navigation destinations (You · Community ·
+// Messages) live in the desktop nav, the mobile bottom nav, and the
+// notification bell — the account menu no longer duplicates them. Identity,
+// "View public profile", Admin and Sign out are rendered inline in the Header
+// because they need user.id / role gating.
 export const USER_MENU_ITEMS: NavItem[] = [
-  { to: '/me', icon: User, labelKey: 'header.userMenu.you' },
-  { to: '/community', icon: Users, labelKey: 'header.userMenu.community' },
-  { to: '/messages', icon: MessageCircle, labelKey: 'header.userMenu.messages' },
-  { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
+  { to: '/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
   { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },
 ];
 

@@ -1,15 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-vi.mock('@/hooks/useNotifications', () => ({
-  useNotifications: () => ({ unreadCount: 5 }),
-}));
-
-vi.mock('@/hooks/useProfile', () => ({
-  useProfile: () => ({
-    profile: { user_mode: 'exploration' },
-    updateProfile: vi.fn(),
-  }),
+vi.mock('@/hooks/useInboxFeed', () => ({
+  useInboxFeed: () => ({ unreadCount: 5, items: [], loading: false }),
 }));
 
 vi.mock('./NotificationList', () => ({
@@ -27,5 +20,10 @@ describe('NotificationBell', () => {
   it('should show unread count badge', () => {
     render(<NotificationBell />);
     expect(screen.getByText('5')).toBeInTheDocument();
+  });
+
+  it('should not render a mode selector', () => {
+    render(<NotificationBell />);
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 });
