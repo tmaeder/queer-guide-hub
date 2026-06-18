@@ -64,9 +64,20 @@ export interface FeedbackAuditEntry {
   at: string;
 }
 
+export interface FeedbackAutotriage {
+  category: string | null;
+  summary: string;
+  suggested_priority: number;
+  suggested_labels: string[];
+  is_probably_spam: boolean;
+  model: string;
+  at: string;
+}
+
 export interface FeedbackSubmission {
   id: string;
   data: FeedbackData;
+  autotriage?: FeedbackAutotriage | null;
   submitted_at: string;
   feedback_status: string;
   reviewer_notes?: string | null;

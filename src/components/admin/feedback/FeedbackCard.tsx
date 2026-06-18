@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Clock, AlertTriangle, Layers } from 'lucide-react';
+import { Clock, AlertTriangle, Layers, Sparkles } from 'lucide-react';
 import { Github } from '@/components/icons/brand';
 import { feedbackCategoryMap } from '@/config/feedbackCategories';
 import { timeAgo } from '@/utils/timezone';
@@ -367,6 +367,21 @@ export function FeedbackCard({
                 </span>
               </TooltipTrigger>
               <TooltipContent>{(item.labels ?? []).join(', ')}</TooltipContent>
+            </Tooltip>
+          )}
+
+          {item.autotriage?.summary && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Sparkles
+                  style={{ width: 10, height: 10 }}
+                  className="shrink-0 text-muted-foreground"
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                {`AI: ${item.autotriage.summary}`}
+                {item.autotriage.is_probably_spam ? ' · flagged possible spam' : ''}
+              </TooltipContent>
             </Tooltip>
           )}
 

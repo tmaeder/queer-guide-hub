@@ -364,6 +364,9 @@ verify_jwt = false
 [functions.feedback-embed]
 verify_jwt = false
 
+[functions.feedback-autotriage]
+verify_jwt = false
+
 # Cron-invoked functions (called via net.http_post with service-role bearer)
 [functions.enrich-logos]
 verify_jwt = false

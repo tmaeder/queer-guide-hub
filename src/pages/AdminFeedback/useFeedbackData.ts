@@ -30,9 +30,9 @@ import type { ApiErrorSubmission } from '@/components/admin/feedback/claudePromp
 import type { FeedbackUrlState } from '@/hooks/useFeedbackUrlState';
 
 const FEEDBACK_COLUMNS =
-  'id,data,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at,priority,labels,assignee_id,duplicate_of,is_spam,resolution,resolved_at,notify_submitter';
+  'id,data,autotriage,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at,priority,labels,assignee_id,duplicate_of,is_spam,resolution,resolved_at,notify_submitter';
 const API_ERROR_COLUMNS =
-  'id,data,fingerprint,occurrence_count,last_seen_at,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at,priority,labels,assignee_id,duplicate_of,is_spam,resolution,resolved_at,notify_submitter';
+  'id,data,autotriage,fingerprint,occurrence_count,last_seen_at,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at,priority,labels,assignee_id,duplicate_of,is_spam,resolution,resolved_at,notify_submitter';
 
 export function useFeedbackData(state: FeedbackUrlState) {
   const { user } = useAuth();
@@ -122,14 +122,14 @@ export function useFeedbackData(state: FeedbackUrlState) {
 
   const filteredItems = useMemo(() => {
     const q = state.q.trim().toLowerCase();
-    const viewingSpam = state.tab === 'triage';
     return items.filter((it) => {
-      if (viewingSpam) {
-        if (!it.is_spam) return false;
-      } else {
-        if (it.is_spam && !state.showSpam) return false;
-        if (it.duplicate_of && !state.showDuplicates) return false;
-      }
+      // Spam + duplicates are hidden by default on every tab; the showSpam /
+      // showDuplicates toggles in the filter bar reveal them for review. (The
+      // old code special-cased the triage tab to show ONLY spam — a leftover
+      // from when there was a separate ?tab=spam view — which made the main
+      // triage board render empty whenever there was no spam.)
+      if (it.is_spam && !state.showSpam) return false;
+      if (it.duplicate_of && !state.showDuplicates) return false;
 
       const d = it.data || ({} as FeedbackSubmission['data']);
       if (q) {
