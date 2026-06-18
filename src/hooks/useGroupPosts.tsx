@@ -104,6 +104,23 @@ export const useGroupPosts = (groupId: string) => {
     enabled: !!user && !!groupId,
   });
 
+  // Optimistically flip the heart fill + count for one post so liking feels
+  // instant, before the server round-trip settles. onError restores the snapshot.
+  const patchGroupLike = (postId: string, liked: boolean) => {
+    queryClient.setQueryData<typeof posts>(['group-posts', groupId], (prev) => {
+      if (!prev) return prev;
+      return prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              user_liked: liked,
+              likes_count: Math.max(0, (p.likes_count ?? 0) + (liked ? 1 : -1)),
+            }
+          : p,
+      );
+    });
+  };
+
   // Fetch group members for @mentions and member list
   const { data: groupMembers = [] } = useQuery({
     queryKey: ['group-members', groupId],
@@ -200,6 +217,17 @@ export const useGroupPosts = (groupId: string) => {
 
       if (error) throw error;
     },
+    onMutate: async (postId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['group-posts', groupId] });
+      const snapshot = queryClient.getQueryData(['group-posts', groupId]);
+      patchGroupLike(postId, true);
+      return { snapshot };
+    },
+    onError: (_err, _postId, ctx) => {
+      if (ctx?.snapshot !== undefined) {
+        queryClient.setQueryData(['group-posts', groupId], ctx.snapshot);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
     },
@@ -217,6 +245,17 @@ export const useGroupPosts = (groupId: string) => {
         .eq('user_id', user.id);
 
       if (error) throw error;
+    },
+    onMutate: async (postId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['group-posts', groupId] });
+      const snapshot = queryClient.getQueryData(['group-posts', groupId]);
+      patchGroupLike(postId, false);
+      return { snapshot };
+    },
+    onError: (_err, _postId, ctx) => {
+      if (ctx?.snapshot !== undefined) {
+        queryClient.setQueryData(['group-posts', groupId], ctx.snapshot);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });

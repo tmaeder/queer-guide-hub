@@ -46,7 +46,6 @@ interface CommentItemProps {
   onUnlike: (commentId: string) => void;
   onDelete: (commentId: string) => void;
   onReply: (commentId: string, username: string) => void;
-  isLiking: boolean;
 }
 
 const CommentItem = ({
@@ -55,7 +54,6 @@ const CommentItem = ({
   onUnlike,
   onDelete,
   onReply,
-  isLiking,
 }: CommentItemProps) => {
   const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -119,9 +117,10 @@ const CommentItem = ({
               variant="ghost"
               size="sm"
               onClick={handleLikeToggle}
-              disabled={isLiking || !user}
+              disabled={!user}
             >
               <Heart
+                className="transition-transform group-active:scale-90"
                 style={{
                   width: 12,
                   height: 12,
@@ -207,7 +206,6 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
     likeComment,
     unlikeComment,
     deleteComment,
-    isLikingComment,
   } = useComments(postId);
 
   const [newComment, setNewComment] = useState('');
@@ -375,7 +373,6 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                   onUnlike={unlikeComment}
                   onDelete={deleteComment}
                   onReply={handleReply}
-                  isLiking={isLikingComment}
                 />
               ))}
             </div>
