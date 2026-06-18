@@ -1,188 +1,78 @@
-import * as React from "react"
+import * as React from 'react';
+import { toast as sonnerToast, type ExternalToast } from 'sonner';
+import { hapticTrigger } from '@/hooks/useHaptics';
 
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@/components/ui/toast"
-import { hapticTrigger } from "@/hooks/useHaptics"
+/**
+ * Compatibility shim: the app historically had TWO toast systems mounted at
+ * once — this shadcn/radix `useToast` and Sonner. They drew the same surface
+ * two different ways. This hook now delegates to Sonner so there is exactly
+ * ONE renderer, while keeping the `toast({ title, description, variant })`
+ * API that ~270 call sites already use. No call-site migration required.
+ *
+ * `variant: 'destructive'` → `sonnerToast.error` (Sonner injects the error
+ * icon; we stay strictly B&W per the design system — no richColors hue).
+ */
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+type ToastInput = {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  variant?: string;
+  action?: ExternalToast['action'];
+  duration?: number;
+  id?: string | number;
+  [key: string]: unknown;
+};
 
-type ToasterToast = ToastProps & {
-  id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
-}
-let count = 0
+export type ToastReturn = {
+  id: string;
+  dismiss: () => void;
+  update: (props: ToastInput) => void;
+};
 
-function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER
-  return count.toString()
-}
+function toast(props: ToastInput = {}): ToastReturn {
+  const { title, description, variant, action, duration } = props;
 
-type ActionType = typeof actionTypes
-
-type Action =
-  | {
-      type: ActionType["ADD_TOAST"]
-      toast: ToasterToast
-    }
-  | {
-      type: ActionType["UPDATE_TOAST"]
-      toast: Partial<ToasterToast>
-    }
-  | {
-      type: ActionType["DISMISS_TOAST"]
-      toastId?: ToasterToast["id"]
-    }
-  | {
-      type: ActionType["REMOVE_TOAST"]
-      toastId?: ToasterToast["id"]
-    }
-
-interface State {
-  toasts: ToasterToast[]
-}
-
-const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
-
-const addToRemoveQueue = (toastId: string) => {
-  if (toastTimeouts.has(toastId)) {
-    return
-  }
-
-  const timeout = setTimeout(() => {
-    toastTimeouts.delete(toastId)
-    dispatch({
-      type: "REMOVE_TOAST",
-      toastId: toastId,
-    })
-  }, TOAST_REMOVE_DELAY)
-
-  toastTimeouts.set(toastId, timeout)
-}
-
-export const reducer = (state: State, action: Action): State => {
-  switch (action.type) {
-    case "ADD_TOAST":
-      return {
-        ...state,
-        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
-      }
-
-    case "UPDATE_TOAST":
-      return {
-        ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === action.toast.id ? { ...t, ...action.toast } : t
-        ),
-      }
-
-    case "DISMISS_TOAST": {
-      const { toastId } = action
-
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
-      if (toastId) {
-        addToRemoveQueue(toastId)
-      } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id)
-        })
-      }
-
-      return {
-        ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === toastId || toastId === undefined
-            ? {
-                ...t,
-                open: false,
-              }
-            : t
-        ),
-      }
-    }
-    case "REMOVE_TOAST":
-      if (action.toastId === undefined) {
-        return {
-          ...state,
-          toasts: [],
-        }
-      }
-      return {
-        ...state,
-        toasts: state.toasts.filter((t) => t.id !== action.toastId),
-      }
-  }
-}
-
-const listeners: Array<(state: State) => void> = []
-
-let memoryState: State = { toasts: [] }
-
-function dispatch(action: Action) {
-  memoryState = reducer(memoryState, action)
-  listeners.forEach((listener) => {
-    listener(memoryState)
-  })
-}
-
-type Toast = Omit<ToasterToast, "id">
-
-function toast({ ...props }: Toast) {
-  const id = genId()
-
-  const variant = (props as Record<string, unknown>).variant as string | undefined;
   if (variant === 'destructive') hapticTrigger('error');
   else hapticTrigger('nudge');
 
-  const update = (props: ToasterToast) =>
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast: { ...props, id },
-    })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+  const hasTitle = title != null && title !== '';
+  const message = (hasTitle ? title : description) ?? '';
 
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
-    },
-  })
+  const options: ExternalToast = {};
+  if (duration != null) options.duration = duration;
+  if (action != null) options.action = action;
+  // Only attach description when we also have a distinct title, so a
+  // description-only toast isn't rendered twice.
+  if (hasTitle && description != null) options.description = description;
+
+  const id =
+    variant === 'destructive'
+      ? sonnerToast.error(message, options)
+      : sonnerToast(message, options);
 
   return {
-    id: id,
-    dismiss,
-    update,
-  }
+    id: String(id),
+    dismiss: () => sonnerToast.dismiss(id),
+    update: (next: ToastInput) =>
+      sonnerToast(next.title ?? message, {
+        ...options,
+        id,
+        description:
+          next.title != null && next.description != null
+            ? next.description
+            : options.description,
+      }),
+  };
 }
 
 function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
-
-  React.useEffect(() => {
-    listeners.push(setState)
-    return () => {
-      const index = listeners.indexOf(setState)
-      if (index > -1) {
-        listeners.splice(index, 1)
-      }
-    }
-  }, [state])
-
+  // `toasts` is retained (always empty) for any legacy consumer that still
+  // destructures it; Sonner owns the actual render queue now.
   return {
-    ...state,
+    toasts: [] as never[],
     toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
-  }
+    dismiss: (toastId?: string) => sonnerToast.dismiss(toastId),
+  };
 }
 
-export { useToast, toast }
+export { useToast, toast };

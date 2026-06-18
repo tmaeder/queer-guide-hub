@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Cookie, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { CookiePreferencesDialog } from './CookiePreferencesDialog';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -14,57 +13,48 @@ export function CookieConsentBanner() {
 
   return (
     <>
+      {/* Slim, monochrome bottom bar — flush to the viewport edge, sits at the
+          sticky layer (below toasts/modals), aligned to the overlay surface
+          tokens (hairline border + translucent bg + blur). */}
       <div
-        className="fixed z-[60] bg-background p-4 bottom-0 right-0 left-0 md:bottom-4 md:right-4 md:left-auto md:max-w-[480px]"
-        style={{
-          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
-        }}
+        role="region"
+        aria-label="Cookie settings"
+        className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] border-t border-border/60 bg-background/95 backdrop-blur-md"
       >
-        <Card style={{ maxWidth: 896, margin: '0 auto' }} className="p-4 md:p-6">
-          <div className="flex items-start gap-2 md:gap-4">
-            <Cookie size={24} className="text-muted-foreground mt-1 shrink-0" />
-            <div className="flex-1 flex flex-col gap-2 md:gap-4">
-              <div>
-                <p className="text-base font-semibold mb-2">Cookie Settings</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  We use cookies to keep you signed in and remember your preferences — and, only if
-                  you allow it, to measure basic, anonymous usage so we can improve. No ad trackers.
-                  No data selling. You can manage your choices or read more in our{' '}
-                  <LocalizedLink to="/legal" className="underline hover:text-foreground">
-                    Legal Hub
-                  </LocalizedLink>
-                  , including our{' '}
-                  <LocalizedLink to="/privacy" className="underline hover:text-foreground">
-                    Privacy Policy
-                  </LocalizedLink>{' '}
-                  and{' '}
-                  <LocalizedLink to="/cookies" className="underline hover:text-foreground">
-                    Cookie Policy
-                  </LocalizedLink>
-                  .
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2 md:gap-4">
-                <Button onClick={acceptAll} size="sm">
-                  Accept All
-                </Button>
-                <Button onClick={acceptNecessary} variant="outline" size="sm">
-                  Necessary Only
-                </Button>
-                <Button
-                  onClick={() => setShowPreferences(true)}
-                  variant="ghost"
-                  size="sm"
-                  style={{ display: 'inline-flex', gap: 8 }}
-                >
-                  <Settings size={16} />
-                  Customize
-                </Button>
-              </div>
-            </div>
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6">
+          <div className="flex items-start gap-2 md:items-center">
+            <Cookie size={18} className="mt-0.5 shrink-0 text-muted-foreground md:mt-0" />
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              We use cookies to keep you signed in and remember your preferences — and, only with
+              your consent, to measure anonymous usage. No ad trackers, no data selling. See our{' '}
+              <LocalizedLink to="/legal" className="underline hover:text-foreground">
+                Legal Hub
+              </LocalizedLink>
+              ,{' '}
+              <LocalizedLink to="/privacy" className="underline hover:text-foreground">
+                Privacy
+              </LocalizedLink>{' '}
+              and{' '}
+              <LocalizedLink to="/cookies" className="underline hover:text-foreground">
+                Cookie Policy
+              </LocalizedLink>
+              .
+            </p>
           </div>
-        </Card>
+
+          <div className="flex shrink-0 flex-wrap items-center gap-2 md:ml-auto">
+            <Button onClick={() => setShowPreferences(true)} variant="ghost" size="sm" className="gap-2">
+              <Settings size={16} />
+              Customize
+            </Button>
+            <Button onClick={acceptNecessary} variant="outline" size="sm">
+              Necessary Only
+            </Button>
+            <Button onClick={acceptAll} size="sm">
+              Accept All
+            </Button>
+          </div>
+        </div>
       </div>
 
       <CookiePreferencesDialog open={showPreferences} onOpenChange={setShowPreferences} />

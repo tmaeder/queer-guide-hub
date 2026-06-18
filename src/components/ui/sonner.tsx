@@ -16,9 +16,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
       // Avoids the dark-mode white-on-red contrast fail (~3.96:1)
       // that richColors produced on destructive toasts.
       closeButton
+      style={{ zIndex: 'var(--z-toast)' }}
       toastOptions={{
         classNames: {
-          toast: 'group toast',
+          // Match the normalized overlay surface (dialogs / popovers):
+          // rounded-container, hairline border, translucent popover bg + blur.
+          toast:
+            'group toast rounded-container border border-border/60 bg-popover/95 backdrop-blur-md text-popover-foreground',
           description: 'group-[.toast]:text-muted-foreground',
           actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
           cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',

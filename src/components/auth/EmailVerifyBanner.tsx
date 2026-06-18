@@ -25,7 +25,7 @@ export function EmailVerifyBanner() {
   return (
     <div
       role="status"
-      className="relative z-10 border-b border-border bg-muted/60 text-sm"
+      className="relative z-10 border-b border-border/60 bg-muted/60 text-sm"
     >
       <div className="container mx-auto px-4 py-2 flex flex-wrap items-center gap-4">
         <Mail className="w-4 h-4 flex-shrink-0" aria-hidden />
