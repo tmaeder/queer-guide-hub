@@ -31,6 +31,17 @@ Reply with ONLY a number 0.00-1.00, or the word UNKNOWN. Nothing else.`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+
+  // Gate: X-Webhook-Secret (cron, reuses amenity_quality webhook secret), internal
+  // secret, or service-role bearer. No frontend calls this fn. verify_jwt=false.
+  const webhook = Deno.env.get('AMENITY_QUALITY_WEBHOOK_SECRET')
+  const internal = Deno.env.get('INTERNAL_INVOKE_SECRET')
+  const svc = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const okWebhook = !!webhook && req.headers.get('X-Webhook-Secret') === webhook
+  const okInternal = !!internal && req.headers.get('x-internal-secret') === internal
+  const okService = !!svc && req.headers.get('Authorization') === `Bearer ${svc}`
+  if (!okWebhook && !okInternal && !okService) return json({ error: 'unauthorized' }, 401)
+
   try {
     const { entity_type, batch_size = 25 } = await req.json().catch(() => ({}))
     const cfg = CFG[entity_type as string]

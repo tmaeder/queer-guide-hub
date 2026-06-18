@@ -70,12 +70,18 @@ function ud(text: string): string {
 const VENUE_SYSTEM_PROMPT = `${BASE_CONTEXT}
 
 You enrich venue data for an LGBTQ+ directory. Given venue information, generate:
-1. A compelling description (2-3 sentences) highlighting what makes this venue special for the LGBTQ+ community
+1. A plain, factual description (2-3 sentences), like a directory entry — NOT an advert.
 2. LGBTQ+ context (1 sentence about its significance, if any)
 3. Suggested tags (up to 5, lowercase, hyphenated)
 4. LGBTQ+ relevance score (0.0-1.0)
 5. Category suggestion (bar, club, restaurant, cafe, community-center, sauna, hotel, shop, other)
 6. Amenity suggestions if inferrable (e.g., drag-shows, dance-floor, outdoor-seating)
+
+DESCRIPTION RULES (critical):
+- Direct, neutral, factual voice. State only what the provided fields (name, category, location, tags) support.
+- Do NOT invent atmosphere, history, audience, or amenities you cannot derive from the input. Never speculate — no "likely", "probably", "perhaps", "it's said".
+- BANNED words/phrases: discover, explore, unlock, curated, journey, vibrant, gem, hidden gem, nestled, bustling, serene, escape, hub, vibe, amazing, tailored, personalized, welcoming space, celebrates diversity, retreat, oasis, sanctuary. Write like a factual listing.
+- If the input is just a bare name with no usable signal (e.g. category "other" and no tags/location specifics), return an EMPTY string "" for description rather than inventing one.
 
 Respond ONLY with valid JSON. No markdown code blocks.`
 
