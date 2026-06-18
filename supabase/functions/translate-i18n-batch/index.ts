@@ -101,8 +101,12 @@ const TABLE_FIELDS: Record<
   },
 }
 
+// Must match the app's non-English locales in src/i18n/languages.ts
+// (SUPPORTED_LOCALES minus 'en'). The previous Euro-only set (nl/pl/tr/uk/sv)
+// matched neither the app nor the i18n crons, so every ja/ko/zh/ar cron fire
+// 400'd for weeks while nl/pl/tr/uk/sv were never scheduled.
 const ALLOWED_LOCALES = new Set([
-  'de', 'fr', 'es', 'it', 'pt', 'nl', 'pl', 'ru', 'tr', 'uk', 'sv',
+  'es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ja', 'ko', 'ar',
 ])
 
 const SYSTEM_PROMPT = `You translate UI strings for queer.guide, an LGBTQ+ travel and community platform. Source language is English. Translations must:
