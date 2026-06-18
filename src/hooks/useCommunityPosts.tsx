@@ -136,6 +136,44 @@ export const useCommunityPosts = (userId?: string) => {
     [data],
   );
 
+  type InfinitePosts = { pages: Page[]; pageParams: unknown[] };
+
+  // Patch the target post across every cached infinite-query page so the heart
+  // fill + count flip immediately, before the server round-trip settles.
+  const patchLike = (postId: string, liked: boolean) => {
+    queryClient.setQueriesData<InfinitePosts>(
+      { queryKey: ['community-posts'] },
+      (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          pages: prev.pages.map((page) => ({
+            ...page,
+            posts: page.posts.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    user_liked: liked,
+                    likes_count: Math.max(0, (p.likes_count ?? 0) + (liked ? 1 : -1)),
+                  }
+                : p,
+            ),
+          })),
+        };
+      },
+    );
+  };
+
+  // Snapshot every matching cache entry so onError can restore exactly.
+  const snapshotPosts = () =>
+    queryClient.getQueriesData<InfinitePosts>({ queryKey: ['community-posts'] });
+
+  const restorePosts = (
+    snapshot: ReturnType<typeof snapshotPosts>,
+  ) => {
+    snapshot.forEach(([key, value]) => queryClient.setQueryData(key, value));
+  };
+
   // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: async (postData: CreatePostData) => {
@@ -195,6 +233,15 @@ export const useCommunityPosts = (userId?: string) => {
       // Increment likes count
       await supabase.rpc('increment_post_likes', { post_id: postId });
     },
+    onMutate: async (postId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['community-posts'] });
+      const snapshot = snapshotPosts();
+      patchLike(postId, true);
+      return { snapshot };
+    },
+    onError: (_err, _postId, ctx) => {
+      if (ctx?.snapshot) restorePosts(ctx.snapshot);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-posts'] });
     },
@@ -215,6 +262,15 @@ export const useCommunityPosts = (userId?: string) => {
 
       // Decrement likes count
       await supabase.rpc('decrement_post_likes', { post_id: postId });
+    },
+    onMutate: async (postId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['community-posts'] });
+      const snapshot = snapshotPosts();
+      patchLike(postId, false);
+      return { snapshot };
+    },
+    onError: (_err, _postId, ctx) => {
+      if (ctx?.snapshot) restorePosts(ctx.snapshot);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-posts'] });

@@ -213,7 +213,7 @@ export const GroupPostCard = ({
                   style={post.user_liked ? { color: 'hsl(var(--foreground))' } : undefined}
                 >
                   <span className="flex items-center gap-2">
-                    <Heart style={{ width: 16, height: 16, ...(post.user_liked && { fill: 'currentColor' }) }} />
+                    <Heart className="transition-transform group-active:scale-90" style={{ width: 16, height: 16, ...(post.user_liked && { fill: 'currentColor' }) }} />
                     <span>{post.likes_count}</span>
                   </span>
                 </Button>

@@ -48,7 +48,7 @@ interface PostCardProps {
   isLiking?: boolean;
 }
 
-export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCardProps) => {
+export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) => {
   const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -362,10 +362,11 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               variant="ghost"
               size="sm"
               onClick={handleLikeToggle}
-              disabled={isLiking || !user}
+              disabled={!user}
               style={post.user_liked ? { color: 'hsl(var(--foreground))' } : {}}
             >
               <Heart
+                className="transition-transform group-active:scale-90"
                 style={{
                   height: 16,
                   width: 16,
