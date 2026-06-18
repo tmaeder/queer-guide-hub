@@ -1,0 +1,4 @@
+# Local secrets for `wrangler dev`. Copy to `.dev.vars` and fill in. Never commit `.dev.vars`.
+SUPABASE_URL=https://xqeacpakadqfxjxjcewc.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=   # service-role key (bypasses RLS, server-only)
+INBOX_ENCRYPTION_KEY=        # 32-byte base64 secret for AES-GCM (raw_body_encrypted)

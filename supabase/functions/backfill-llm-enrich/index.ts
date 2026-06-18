@@ -109,8 +109,8 @@ Deno.serve(async (req) => {
   const supabase = getServiceClient()
 
   const secret = req.headers.get('x-webhook-secret')
-  const expected = Deno.env.get('WEBHOOK_SECRET') || 'meilisearch-sync-webhook-2026'
-  if (secret !== expected) return errorResponse('Unauthorized', 401, req)
+  const expected = Deno.env.get('WEBHOOK_SECRET')
+  if (!expected || secret !== expected) return errorResponse('Unauthorized', 401, req)
 
   try {
     const body = await req.json().catch(() => ({}))

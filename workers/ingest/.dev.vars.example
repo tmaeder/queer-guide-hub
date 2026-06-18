@@ -1,0 +1,4 @@
+# Local secrets for `wrangler dev`. Copy to `.dev.vars` and fill in. Never commit `.dev.vars`.
+SUPABASE_URL=https://xqeacpakadqfxjxjcewc.supabase.co
+SUPABASE_SERVICE_KEY=
+INGEST_TOKEN=   # random 32+ bytes; shared with the Supabase webhook + backfill caller

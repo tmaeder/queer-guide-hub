@@ -1,13 +1,20 @@
 # Meilisearch → Postgres + Cloudflare migration & search-assistant plan
 
-**Status:** Proposal / planning
+**Status:** ✅ Completed (code-side cutover 2026-06-07) — historical record.
 **Branch:** `claude/meilisearch-cloudflare-migration-03DFP`
 **Scope:** Replace self-hosted Meilisearch with a Postgres (pgvector + FTS) + Cloudflare Workers
 combination, preserve and deepen personalization, add a grounded conversational concierge
 assistant, and fold in a set of relevance/safety/observability enhancements.
 
-This doc is strategic. The numbered `01–06` series in this directory describes the **current**
-Meili-based search-intelligence design; this plan describes the move **off** it.
+> **Outcome:** The Postgres engine (`search_documents` + `search_hybrid` RPC) is live and served by
+> the `search-proxy` Worker. Meili sync triggers/crons, the `meilisearch-sync` edge function, the
+> `meilisearch/` ops dir, and the Meili worker code were all removed. `SEARCH_BACKEND` remains as a
+> fallback flag only; the sole open item is the external Infomaniak node shutdown (not code).
+> This document is retained for design rationale; treat the present state — not the future tense
+> below — as authoritative.
+
+This doc is strategic. The numbered `01–06` series in this directory describes the legacy
+Meili-based search-intelligence design; this plan described the move **off** it (now done).
 
 ---
 

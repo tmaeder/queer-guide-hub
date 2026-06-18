@@ -14,7 +14,7 @@ The global platform for LGBTQ+ travel, community, and safe spaces at [queer.guid
 | **Routing & Data** | TanStack Router + Query + Table |
 | **Backend** | Supabase (PostgreSQL 17.4, Auth, Storage, Edge Functions) |
 | **Hosting** | Cloudflare Pages + Cloudflare Workers |
-| **Search** | Self-hosted Meilisearch (hybrid keyword + semantic), pgvector, CF Workers AI (bge embeddings, reranker) via AI Gateway |
+| **Search** | Postgres hybrid search (`search_documents` tsvector + pgvector HNSW + PostGIS), RRF keyword/vector fusion in SQL, CF Workers AI embeddings via AI Gateway. Served by the `search-proxy` Worker. (Meilisearch decommissioned code-side 2026-06-07; remains only as a `SEARCH_BACKEND` fallback flag pending the external node shutdown.) |
 | **Maps** | MapLibre GL, Protomaps basemaps, Mapbox geocoding |
 | **AI** | Anthropic Claude (Haiku — relevance gating), OpenAI GPT-4o-mini (tagging, enrichment) |
 | **Workflows** | pgmq + workflow-dispatcher (24 workflow definitions) |
@@ -28,24 +28,23 @@ The global platform for LGBTQ+ travel, community, and safe spaces at [queer.guid
 ```
 src/                       # React app (~90 pages, feature-grouped components)
 supabase/
-├── functions/             # 180 Deno Edge Functions
-└── migrations/            # 315 PostgreSQL migrations
+├── functions/             # 212 Deno Edge Functions (+ _shared, _tests)
+└── migrations/            # 597 PostgreSQL migrations
 workers/
 ├── geo/                   # CF Worker: geocoding proxy
 ├── image-cdn/             # CF Worker: image transform + cache layer
 ├── image-ingest/          # CF Worker: image mirror/dedup → R2
 ├── ingest/                # CF Worker: search-intelligence ingest pipeline
-├── search-proxy/          # CF Worker: Meilisearch proxy with synonym injection
+├── search-proxy/          # CF Worker: Postgres search proxy (RPC-backed, synonym injection)
 ├── snapshot-archiver/     # CF Worker: admin/editorial snapshot archival
 ├── submit/                # CF Worker: extension submissions → ingestion_staging
 └── trip-inbox/            # CF Worker: trip-planning inbox ingestion
 scraper/                   # Node.js scraping pipeline (Cheerio + Playwright)
-meilisearch/               # Self-hosted Meili config (Docker Compose, Caddy, index scripts)
 extension/                 # Chrome extension (MV3, React 19) — user venue/event submissions
 e2e/                       # Playwright E2E tests
 scripts/                   # Operational scripts
 docs/                      # Architecture docs, ADRs, runbooks
-.github/workflows/         # 28 GitHub Actions (CI, scraper crons, Meili ops, e2e nightly)
+.github/workflows/         # 36 GitHub Actions (CI, scraper crons, e2e nightly)
 ```
 
 ## Local Development
@@ -80,14 +79,14 @@ Hybrid (keyword + semantic) personalized search with reranking. Full design in [
 
 ```
 Frontend ──► search-proxy (CF Worker)
-                ├── AI Gateway → Workers AI (bge embed + reranker)
-                ├── Meilisearch (multi-search, facets, geo, synonyms)
-                └── Supabase RPC (pgvector ANN + bias signal + popular)
+                ├── AI Gateway → Workers AI (embeddings)
+                └── Supabase RPC: search_hybrid (RRF keyword + vector fusion,
+                    facets, geo, target-group filter, recency decay)
 
-Supabase ──DB trigger──► meilisearch-sync (edge fn) ──► Meili upsert
+Supabase ──entity + content_embeddings triggers──► search_documents (kept fresh in-DB)
 ```
 
-Indexes: venues, events, cities, countries, news, marketplace, personalities, tags, queer_villages.
+Entity types: venues, events, cities, countries, news, marketplace, personalities, tags, queer_villages.
 
 ### Ingestion Pipelines
 

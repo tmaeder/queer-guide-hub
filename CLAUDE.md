@@ -36,7 +36,7 @@ queer-guide-hub/
 └── e2e/                  # Playwright e2e specs
 ```
 
-**Frontend stack:** React 19, Vite 6, TypeScript 5.8, Tailwind, shadcn/ui, TanStack Query/Router/Table, MapLibre GL, Tiptap editor, i18next (11 langs), Recharts, react-force-graph-2d
+**Frontend stack:** React 19, Vite 8, TypeScript 6, Tailwind, shadcn/ui, TanStack Query/Router/Table, MapLibre GL, Tiptap editor, i18next (11 langs), Recharts, react-force-graph-2d
 
 **Backend:** Supabase (PostgreSQL 17.4, Auth, Storage, Edge Functions), Cloudflare Pages + Workers, GitHub Actions (scraper cron)
 
@@ -71,24 +71,10 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 213
-- **Edge functions:** 201
-- **Migrations:** 595
-- **Migrations:** 581
-- **Migrations:** 574
-- **Migrations:** 575
-- **Migrations:** 576
-- **Migrations:** 572
-- **Migrations:** 568
-- **Migrations:** 564
-- **Migrations:** 562
-- **Migrations:** 555
-- **Edge functions:** 204
-- **Migrations:** 553
-- **Edge functions:** 203
-- **Migrations:** 548
-- **Migrations:** 541
-- **Migrations:** 547
+- **Edge functions:** 212 deployable (214 dirs incl `_shared`/`_tests`)
+- **Migrations:** 597
+
+> These counts grow constantly. Verify with `ls supabase/functions | grep -vc '^_'` and `ls supabase/migrations | wc -l` rather than trusting this line. (The prior 18-line merge-artifact block was collapsed 2026-06-18.)
 
 ## Infrastructure
 

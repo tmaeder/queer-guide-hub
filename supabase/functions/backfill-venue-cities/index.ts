@@ -544,8 +544,8 @@ Deno.serve(async (req) => {
     const supabase = getServiceClient()
     const isAdmin = await requireAdmin(req, supabase).catch(() => false)
     const webhookSecret = req.headers.get('x-webhook-secret')
-    const expectedSecret = Deno.env.get('WEBHOOK_SECRET') || 'meilisearch-sync-webhook-2026'
-    const isWebhook = webhookSecret === expectedSecret
+    const expectedSecret = Deno.env.get('WEBHOOK_SECRET')
+    const isWebhook = !!expectedSecret && webhookSecret === expectedSecret
 
     if (!isAdmin && !isWebhook) {
       return errorResponse('Unauthorized', 401, req)
