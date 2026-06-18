@@ -70,6 +70,34 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
               onChange={(v) => onPrivacyChange('profile_visibility', v)}
             />
             <VisibilityRow
+              id="pronouns_visibility"
+              label="Pronouns"
+              description="Who can see your pronouns"
+              value={normalizeVisibility(ps.pronouns_visibility, 'public')}
+              onChange={(v) => onPrivacyChange('pronouns_visibility', v)}
+            />
+            <VisibilityRow
+              id="location_visibility"
+              label="Location"
+              description="Who can see your location"
+              value={normalizeVisibility(ps.location_visibility, 'public')}
+              onChange={(v) => onPrivacyChange('location_visibility', v)}
+            />
+            <VisibilityRow
+              id="contact_visibility"
+              label="Links & contact"
+              description="Who can see your website and social links"
+              value={normalizeVisibility(ps.contact_visibility, 'friends')}
+              onChange={(v) => onPrivacyChange('contact_visibility', v)}
+            />
+            <VisibilityRow
+              id="interests_visibility"
+              label="Interests & work"
+              description="Who can see your interests, occupation, education"
+              value={normalizeVisibility(ps.interests_visibility, 'community')}
+              onChange={(v) => onPrivacyChange('interests_visibility', v)}
+            />
+            <VisibilityRow
               id="identity_visibility"
               label="Identity Information"
               description="Who can see gender, orientation, chosen family"
@@ -111,20 +139,9 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
               value={normalizeVisibility(ps.activity_visibility, 'private')}
               onChange={(v) => onPrivacyChange('activity_visibility', v)}
             />
-            <SwitchField
-              id="email_visible"
-              label="Show Email"
-              description="Display your email on your profile"
-              checked={!!ps.email_visible}
-              onChange={(v) => onPrivacyChange('email_visible', v)}
-            />
-            <SwitchField
-              id="phone_visible"
-              label="Show Phone"
-              description="Display your phone number on your profile"
-              checked={!!ps.phone_visible}
-              onChange={(v) => onPrivacyChange('phone_visible', v)}
-            />
+            <p className="text-xs text-muted-foreground">
+              Your email and phone number are never shown on your public profile.
+            </p>
             <SwitchField
               id="appear_in_recognition"
               label="Appear in annual recognition page"
