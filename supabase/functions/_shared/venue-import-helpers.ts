@@ -100,49 +100,6 @@ export async function getOrCreateVenueCategory(
   return null
 }
 
-export async function getOrCreateAmenity(
-  supabase: SupabaseClient,
-  amenityName: string,
-  amenitySlug: string,
-  source: string = 'import'
-) {
-  const { data: existing } = await supabase
-    .from('venue_amenities')
-    .select('id')
-    .eq('slug', amenitySlug)
-    .maybeSingle()
-
-  if (existing) {
-    return existing.id
-  }
-
-  // Determine icon based on slug (merged from all import sources)
-  let icon = 'MapPin'
-  if (amenitySlug.includes('wifi')) icon = 'Wifi'
-  else if (amenitySlug.includes('parking')) icon = 'Car'
-  else if (amenitySlug.includes('wheelchair') || amenitySlug.includes('accessible')) icon = 'Accessibility'
-  else if (amenitySlug.includes('outdoor')) icon = 'Trees'
-  else if (amenitySlug.includes('phone')) icon = 'Phone'
-
-  const { data: newAmenity, error } = await supabase
-    .from('venue_amenities')
-    .insert({
-      name: amenityName,
-      slug: amenitySlug,
-      description: `Auto-created from ${source} import`,
-      icon
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newAmenity) {
-    console.log(`Created new amenity: ${amenityName}`)
-    return newAmenity.id
-  }
-
-  return null
-}
-
 export async function getOrCreateService(
   supabase: SupabaseClient,
   serviceName: string,

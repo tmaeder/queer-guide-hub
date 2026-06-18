@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 /**
  * DUP-4 hook for the simple admin taxonomy CRUD pattern shared across
- * event_amenities, event_services, event_types, venue_amenities,
+ * event_amenities, event_services, event_types,
  * venue_categories, venue_services, accessibility_attributes,
  * target_groups, etc.
  *

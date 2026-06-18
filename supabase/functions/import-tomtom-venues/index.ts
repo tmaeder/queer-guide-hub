@@ -1,7 +1,7 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
-import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateAmenity, getOrCreateService } from '../_shared/venue-import-helpers.ts'
+import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateService } from '../_shared/venue-import-helpers.ts'
 
 interface TomTomPOI {
   id: string
@@ -120,7 +120,6 @@ async function mapVenueCategory(supabase: SupabaseClient, classifications: unkno
 }
 
 async function mapAmenitiesAndServices(supabase: unknown, poi: TomTomPOI, searchTerm: string) {
-  const amenityIds = []
   const serviceIds = []
   const amenityNames = []
   const serviceNames = []
@@ -128,20 +127,14 @@ async function mapAmenitiesAndServices(supabase: unknown, poi: TomTomPOI, search
   // Basic amenities from POI data
   if (poi.poi.phone) {
     amenityNames.push('Phone Service')
-    const amenityId = await getOrCreateAmenity(supabase, 'Phone Service', 'phone-service', 'TomTom')
-    if (amenityId) amenityIds.push(amenityId)
   }
 
   if (poi.poi.url) {
     amenityNames.push('WiFi')
-    const amenityId = await getOrCreateAmenity(supabase, 'WiFi', 'wifi', 'TomTom')
-    if (amenityId) amenityIds.push(amenityId)
   }
 
   if (poi.entryPoints && poi.entryPoints.length > 1) {
     amenityNames.push('Multiple Entrances')
-    const amenityId = await getOrCreateAmenity(supabase, 'Multiple Entrances', 'multiple-entrances', 'TomTom')
-    if (amenityId) amenityIds.push(amenityId)
   }
 
   // Services based on search term and classification
@@ -171,11 +164,10 @@ async function mapAmenitiesAndServices(supabase: unknown, poi: TomTomPOI, search
     if (socialId) serviceIds.push(socialId)
   }
 
-  return { 
-    amenityIds, 
-    serviceIds, 
-    amenityNames, 
-    serviceNames 
+  return {
+    serviceIds,
+    amenityNames,
+    serviceNames
   }
 }
 
@@ -289,7 +281,7 @@ Deno.serve(async (req) => {
               const { categorySlug, _categoryId } = await mapVenueCategory(supabase, poi.poi.classifications, searchTerm)
 
               // Map amenities and services
-              const { _amenityIds, _serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, poi, searchTerm)
+              const { _serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, poi, searchTerm)
 
               // Add search term specific tags
               const enhancedTags = ['lgbt-friendly']
