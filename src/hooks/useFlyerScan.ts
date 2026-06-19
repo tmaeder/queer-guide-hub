@@ -6,7 +6,8 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { extractFileContent, isAcceptedFile } from '@/lib/fileExtractors';
+import { isAcceptedFile } from '@/lib/fileExtractors';
+import { extractFileContent } from '@/lib/extractFileContent';
 import {
   validateFile,
   toUploadError,
