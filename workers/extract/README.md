@@ -19,10 +19,12 @@ GET /health → { ok: true }
 
 - `crawl:true` adds `links` — same-origin candidate pages (`flat`, capped 200) for
   discovery, plus `external`.
-- `render:true` is **Phase 4** (Cloudflare Browser Rendering for SPAs) — currently 501.
+- `render:true` renders the page via Cloudflare Browser Rendering (the `[browser]`
+  binding) before cleaning — for SPAs/JS-rendered pages. 501s if the binding is absent.
 
 Guards: SSRF (private/loopback/link-local hosts blocked, re-checked post-redirect),
-3 MB HTML cap, 8 s fetch timeout, html/xml content-type only.
+6 MB HTML cap (covers heavy news/magazine homepages), 10 s fetch timeout,
+html/xml content-type only.
 
 ## How it works
 
