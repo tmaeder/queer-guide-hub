@@ -33,6 +33,7 @@ import { TagCategorizer } from '@/components/admin/TagCategorizer';
 import { TagQualityPanel } from '@/components/admin/TagQualityPanel';
 import { TagSuggestionsReviewPanel } from '@/components/admin/TagSuggestionsReviewPanel';
 import { SensitiveTagReviewPanel } from '@/components/admin/SensitiveTagReviewPanel';
+import { AdultTagFalsePositivePanel } from '@/components/admin/AdultTagFalsePositivePanel';
 import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
 import TagMergeCandidates from '@/components/admin/TagMergeCandidates';
 import { TagImageUpload } from '@/components/admin/TagImageUpload';
@@ -452,6 +453,7 @@ export default function AdminTags() {
         <>
           <TagQualityPanel />
           <SensitiveTagReviewPanel />
+          <AdultTagFalsePositivePanel />
           <TagSuggestionsReviewPanel />
           <div className="mb-6">
             <TagCategorizer />
