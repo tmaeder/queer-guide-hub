@@ -2661,5 +2661,25 @@
       "label": "[ES] Found a bug?",
       "cta": "[ES] open an issue"
     }
+  },
+  "breadcrumb": {
+    "home": "[ES] Home",
+    "venues": "[ES] Venues",
+    "events": "[ES] Events",
+    "hotels": "[ES] Hotels",
+    "villages": "[ES] Queer villages",
+    "marketplace": "[ES] Marketplace",
+    "resources": "[ES] Resources",
+    "personalities": "[ES] People",
+    "news": "[ES] News",
+    "places": "[ES] Places",
+    "cities": "[ES] Cities",
+    "quests": "[ES] Quests",
+    "groups": "[ES] Groups",
+    "trips": "[ES] Trips",
+    "help": "[ES] Help",
+    "pride": "[ES] Pride",
+    "contributors": "[ES] Contributors",
+    "wishlists": "[ES] Wishlists"
   }
 }

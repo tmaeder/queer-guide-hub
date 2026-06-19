@@ -2659,5 +2659,25 @@
       "label": "[ZH] Found a bug?",
       "cta": "[ZH] open an issue"
     }
+  },
+  "breadcrumb": {
+    "home": "[ZH] Home",
+    "venues": "[ZH] Venues",
+    "events": "[ZH] Events",
+    "hotels": "[ZH] Hotels",
+    "villages": "[ZH] Queer villages",
+    "marketplace": "[ZH] Marketplace",
+    "resources": "[ZH] Resources",
+    "personalities": "[ZH] People",
+    "news": "[ZH] News",
+    "places": "[ZH] Places",
+    "cities": "[ZH] Cities",
+    "quests": "[ZH] Quests",
+    "groups": "[ZH] Groups",
+    "trips": "[ZH] Trips",
+    "help": "[ZH] Help",
+    "pride": "[ZH] Pride",
+    "contributors": "[ZH] Contributors",
+    "wishlists": "[ZH] Wishlists"
   }
 }

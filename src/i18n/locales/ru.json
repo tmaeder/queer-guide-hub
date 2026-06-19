@@ -2691,5 +2691,25 @@
       "label": "[RU] Found a bug?",
       "cta": "[RU] open an issue"
     }
+  },
+  "breadcrumb": {
+    "home": "[RU] Home",
+    "venues": "[RU] Venues",
+    "events": "[RU] Events",
+    "hotels": "[RU] Hotels",
+    "villages": "[RU] Queer villages",
+    "marketplace": "[RU] Marketplace",
+    "resources": "[RU] Resources",
+    "personalities": "[RU] People",
+    "news": "[RU] News",
+    "places": "[RU] Places",
+    "cities": "[RU] Cities",
+    "quests": "[RU] Quests",
+    "groups": "[RU] Groups",
+    "trips": "[RU] Trips",
+    "help": "[RU] Help",
+    "pride": "[RU] Pride",
+    "contributors": "[RU] Contributors",
+    "wishlists": "[RU] Wishlists"
   }
 }
