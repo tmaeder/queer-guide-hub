@@ -590,22 +590,24 @@ async function countryDetail(env: Env, slug: string, pathname: string): Promise<
     'countries',
     'slug',
     slug,
-    'id,name,slug,code,description,image_url,capital,latitude,longitude,equality_score,lgbt_legal_status,lgbt_rights_status,lgbti_same_sex_unions,population,updated_at',
+    'id,name,slug,code,description,editorial_hook,editorial_long,image_url,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,updated_at',
   );
   if (!row) return null;
 
   const name = stringField(row, 'name') ?? slug;
-  const description = stringField(row, 'description') ?? '';
+  // Prefer the editorial long-form (richer, queer-specific) over the bare description.
+  const description = stringField(row, 'editorial_long') ?? stringField(row, 'description') ?? '';
+  const hook = stringField(row, 'editorial_hook');
   const image = stringField(row, 'image_url');
-  const legal = stringField(row, 'lgbt_legal_status');
   const unions = stringField(row, 'lgbti_same_sex_unions');
   const capital = stringField(row, 'capital');
 
   const meta: RouteMeta = {
     title: truncate(`LGBTQ+ rights & travel — ${name}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(
-      description ||
-        `LGBTQ+ legal status, safety, venues and travel guide for ${name}. ${legal ? `Legal status: ${legal}.` : ''}`,
+      hook ||
+        description ||
+        `LGBTQ+ legal status, safety, venues and travel guide for ${name}.`,
       MAX_DESC,
     ),
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
@@ -615,7 +617,6 @@ async function countryDetail(env: Env, slug: string, pathname: string): Promise<
     <article>
       <h1>LGBTQ+ guide to ${escape(name)}</h1>
       ${capital ? `<p><strong>Capital:</strong> ${escape(capital)}</p>` : ''}
-      ${legal ? `<p><strong>LGBTQ+ legal status:</strong> ${escape(legal)}</p>` : ''}
       ${unions ? `<p><strong>Same-sex unions:</strong> ${escape(unions)}</p>` : ''}
       ${description ? paragraphsHtml(description) : `<p>Country profile, legal status and travel notes for ${escape(name)}.</p>`}
       <section><h2>Plan your trip</h2><p>Read the <a href="/travel">global travel safety guide</a>, browse <a href="/places">cities and queer villages</a>, and check <a href="/help-hotlines">crisis hotlines</a> before you go.</p></section>

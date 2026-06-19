@@ -41,6 +41,7 @@ import {
   Flag,
   Award,
   CopyCheck,
+  ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -158,6 +159,12 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'personalities',
       },
       {
+        id: 'personality-quality',
+        label: 'Personality quality',
+        icon: ShieldCheck,
+        route: '/admin/content/personality-quality',
+      },
+      {
         id: 'cities',
         label: 'Cities',
         icon: MapPin,
@@ -184,6 +191,12 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Home,
         route: '/admin/content/queer_villages',
         countTable: 'queer_villages',
+      },
+      {
+        id: 'village-quality',
+        label: 'Village quality',
+        icon: ShieldCheck,
+        route: '/admin/content/village-quality',
       },
       {
         id: 'marketplace',

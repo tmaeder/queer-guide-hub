@@ -8,6 +8,7 @@ import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { OverviewTab } from '@/components/profile/tabs/OverviewTab';
 import { ContributionsTab } from '@/components/profile/tabs/ContributionsTab';
+import { GroupsTab } from '@/components/profile/tabs/GroupsTab';
 import { TravelTab } from '@/components/profile/tabs/TravelTab';
 import { ProgressTab } from '@/components/profile/tabs/ProgressTab';
 import { SavedTab } from '@/components/profile/tabs/SavedTab';
@@ -26,7 +27,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { useTranslation } from 'react-i18next';
 import { publicDisplayName } from '@/lib/displayName';
 
-const TABS = ['overview', 'saved', 'trips', 'travel', 'contributions', 'progress'] as const;
+const TABS = ['overview', 'saved', 'trips', 'travel', 'groups', 'contributions', 'progress'] as const;
 type ProfileTab = (typeof TABS)[number];
 /** Tabs that expose private personal data — only the owner viewing as themselves. */
 const OWN_ONLY_TABS: readonly ProfileTab[] = ['saved', 'trips', 'progress'];
@@ -224,6 +225,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
                     ] as const)
                   : []),
                 ['travel', t('profile.tabs.travel', 'Travel')],
+                ['groups', t('profile.tabs.groups', 'Groups')],
                 ['contributions', t('profile.tabs.contributions', 'Contributions')],
                 ...(ownView ? ([['progress', t('profile.tabs.progress', 'Progress')]] as const) : []),
               ] as ReadonlyArray<readonly [string, string]>
@@ -262,6 +264,15 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
 
           <TabsContent value="travel">
             <TravelTab userId={profile.user_id} isOwnProfile={ownView} />
+          </TabsContent>
+
+          <TabsContent value="groups">
+            <GroupsTab
+              userId={profile.user_id}
+              isOwnProfile={isOwnProfile}
+              lens={lens}
+              privacySettings={(profile.privacy_settings ?? {}) as Record<string, unknown>}
+            />
           </TabsContent>
 
           <TabsContent value="contributions">

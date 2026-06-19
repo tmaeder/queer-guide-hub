@@ -35,6 +35,7 @@ import { GroupPostCard } from '@/components/groups/GroupPostCard';
 import { CreatePostDialog } from '@/components/groups/CreatePostDialog';
 import { GroupMembersList } from '@/components/groups/GroupMembersList';
 import { AddMemberDialog } from '@/components/groups/AddMemberDialog';
+import { InviteFriendsDialog } from '@/components/groups/InviteFriendsDialog';
 import { CreateGroupEventDialog } from '@/components/groups/CreateGroupEventDialog';
 import { GroupEventCard } from '@/components/groups/GroupEventCard';
 import { useTranslation } from 'react-i18next';
@@ -280,6 +281,8 @@ export default function GroupDetail() {
                     {isLeaving ? 'Leaving...' : 'Leave Group'}
                   </Button>
                 )}
+
+                {group.is_member && <InviteFriendsDialog groupId={group.id} />}
 
                 {canManage && (
                   <Button variant="outline" onClick={() => setActiveTab('members')}>

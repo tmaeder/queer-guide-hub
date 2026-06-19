@@ -75,7 +75,6 @@ const MapPage = lazyRetry(() => import('./pages/Map'));
 const AdminVenues = lazy(() => import('./pages/AdminVenues'));
 const AdminDuplicates = lazy(() => import('./pages/AdminDuplicates'));
 const AdminVenueCategories = lazy(() => import('./pages/AdminVenueCategories'));
-const AdminVenueAmenities = lazy(() => import('./pages/AdminVenueAmenities'));
 const AdminVenueServices = lazy(() => import('./pages/AdminVenueServices'));
 const AdminEventTypes = lazy(() => import('./pages/AdminEventTypes'));
 const AdminEventAmenities = lazy(() => import('./pages/AdminEventAmenities'));
@@ -85,6 +84,7 @@ const AdminTargetGroups = lazy(() => import('./pages/AdminTargetGroups'));
 const AdminProfessions = lazy(() => import('./pages/AdminProfessions'));
 const AdminEvents = lazy(() => import('./pages/AdminEvents'));
 const AdminCityQuality = lazy(() => import('./pages/AdminCityQuality'));
+const AdminPersonalityQuality = lazy(() => import('./pages/AdminPersonalityQuality'));
 const AdminVenueQuality = lazy(() => import('./pages/AdminVenueQuality'));
 const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
 const AdminMarketplaceQuality = lazy(() => import('./pages/AdminMarketplaceQuality'));
@@ -114,6 +114,7 @@ const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'))
 // New admin pages
 const AdminHotels = lazy(() => import('./pages/AdminHotels'));
 const AdminQueerVillages = lazy(() => import('./pages/AdminQueerVillages'));
+const AdminVillageQuality = lazy(() => import('./pages/AdminVillageQuality'));
 const AdminReview = lazy(() => import('./pages/AdminReview'));
 const AdminInbox = lazy(() => import('./pages/AdminInbox'));
 const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
@@ -168,6 +169,7 @@ const Community = lazyRetry(() => import('./pages/Community'));
 
 const Messages = lazyRetry(() => import('./pages/Messages'));
 const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
+const GroupInviteAccept = lazyRetry(() => import('./pages/GroupInviteAccept'));
 const NotFound = lazyRetry(() => import('./pages/NotFound'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const TripWorkspace = lazyRetry(() => import('./pages/trips/TripWorkspace'));
@@ -343,7 +345,9 @@ export const AppRoutes = () => {
 
                 {/* Content type admin pages */}
                 <Route path="content/venue-quality" element={<AdminVenueQuality />} />
+                <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
+                <Route path="content/village-quality" element={<AdminVillageQuality />} />
                 <Route path="hotels" element={<AdminHotels />} />
                 <Route path="villages" element={<AdminQueerVillages />} />
 
@@ -356,7 +360,6 @@ export const AppRoutes = () => {
                 {/* Settings -- taxonomy management pages */}
                 <Route path="settings" element={<AdminTags />} />
                 <Route path="settings/venue-categories" element={<AdminVenueCategories />} />
-                <Route path="settings/venue-amenities" element={<AdminVenueAmenities />} />
                 <Route path="settings/venue-services" element={<AdminVenueServices />} />
                 <Route path="settings/event-types" element={<AdminEventTypes />} />
                 <Route path="settings/event-amenities" element={<AdminEventAmenities />} />
@@ -386,10 +389,6 @@ export const AppRoutes = () => {
                 <Route
                   path="venue-categories"
                   element={<Navigate to="/admin/settings/venue-categories" replace />}
-                />
-                <Route
-                  path="venue-amenities"
-                  element={<Navigate to="/admin/settings/venue-amenities" replace />}
                 />
                 <Route
                   path="venue-services"
@@ -516,6 +515,7 @@ export const AppRoutes = () => {
                 <Route path="search" element={<SearchResults />} />
                 {/* /groups + /my-groups folded into the /community hub (Groups tab). */}
                 <Route path="groups" element={<LocalizedRedirect to="/community/groups" />} />
+                <Route path="groups/invite/:token" element={<GroupInviteAccept />} />
                 <Route path="groups/:groupId" element={<GroupDetail />} />
                 <Route path="my-groups" element={<LocalizedRedirect to="/community/groups?tab=mine" />} />
                 <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
