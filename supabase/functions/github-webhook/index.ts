@@ -86,7 +86,7 @@ interface GhPayload {
   comment?: GhComment;
   pull_request?: GhPullRequest;
   workflow_run?: GhWorkflowRun;
-  repository?: { full_name: string };
+  repository?: { full_name: string; default_branch?: string };
   sender?: { login: string };
 }
 
@@ -188,7 +188,22 @@ Deno.serve(async (req) => {
 async function handleWorkflowRun(svc: SupabaseClient, payload: GhPayload): Promise<Response> {
   const wr = payload.workflow_run!;
   const repo = payload.repository?.full_name ?? 'unknown';
-  const fingerprint = `gh-actions:${repo}:${wr.name}:${wr.head_branch}`;
+  const defaultBranch = payload.repository?.default_branch ?? 'main';
+
+  // Only persist CI failures on the default branch. Failures on ephemeral
+  // branches (claude/*, dependabot/*, feature PRs) are the PR author's concern
+  // and self-resolve when the branch is deleted — but the success event never
+  // fires for a deleted branch, so they used to pile up as permanent api_error
+  // rows (~300 on the board). The branch is dropped from the fingerprint so
+  // re-runs/attempts on the default branch dedupe to one row.
+  const fingerprint = `gh-actions:${repo}:${wr.name}`;
+
+  if (wr.head_branch !== defaultBranch) {
+    return json({
+      success: true,
+      skipped: `workflow_run_on_non_default_branch:${wr.head_branch}`,
+    });
+  }
 
   if (wr.conclusion === 'failure' || wr.conclusion === 'timed_out') {
     const { error } = await svc.rpc('upsert_api_error', {

@@ -3,10 +3,18 @@
  * the Supabase Management API and surfaces them as `api_error` rows so they
  * show up alongside runtime errors in /admin/feedback → API Errors kanban.
  *
- * Policy:
- *   - Security findings: ALL levels (ERROR, WARN, INFO) — security matters.
- *   - Performance findings: only WARN + ERROR; INFO (e.g. unused_index) is
- *     too noisy to surface as a ticket — run the advisor manually for those.
+ * Policy (the board is for actionable tickets, not the full lint backlog):
+ *   - INFO: never surfaced (both types).
+ *   - Performance: only ERROR. WARN (multiple_permissive_policies,
+ *     auth_rls_initplan, duplicate_index, …) is optimization backlog, not a
+ *     runtime error — it flooded the board, so it's dropped here.
+ *   - Security ERROR: always surfaced.
+ *   - Security WARN: surfaced EXCEPT a denylist of known false-positive floods
+ *     for this project — our SECURITY DEFINER RPCs deliberately self-gate
+ *     (requireInternalOrAdmin / has_role / RLS-aware bodies) and search_path is
+ *     bulk-managed, so the advisor flags ~370 of them without any being
+ *     actionable. Everything else (rls_policy_always_true, security_definer_view,
+ *     auth_insufficient_mfa_options, …) still surfaces.
  *
  * Each finding uses the advisor's stable `cache_key` as the fingerprint so
  * repeat runs deduplicate. Findings that disappear between runs auto-resolve
@@ -103,13 +111,24 @@ Deno.serve(async (req) => {
     return json({ error: (err as Error).message }, 502);
   }
 
-  // 2. Filter — perf INFO is too noisy.
+  // 2. Filter to high-signal findings only (see policy in the file header).
+  //    Known false-positive security WARN floods for this project — our
+  //    SECURITY DEFINER RPCs self-gate and search_path is bulk-managed.
+  const SECURITY_WARN_NOISE = new Set([
+    'authenticated_security_definer_function_executable',
+    'anon_security_definer_function_executable',
+    'function_search_path_mutable',
+  ]);
+  const keepLint = (l: AdvisorLint, type: 'security' | 'performance'): boolean => {
+    if (l.level === 'INFO') return false;
+    if (type === 'performance') return l.level === 'ERROR';
+    if (l.level === 'ERROR') return true; // always surface security errors
+    return !SECURITY_WARN_NOISE.has(l.name); // security WARN: drop known floods
+  };
   const kept = [
     ...security.map((l) => ({ lint: l, type: 'security' as const })),
-    ...performance
-      .filter((l) => l.level !== 'INFO')
-      .map((l) => ({ lint: l, type: 'performance' as const })),
-  ];
+    ...performance.map((l) => ({ lint: l, type: 'performance' as const })),
+  ].filter(({ lint, type }) => keepLint(lint, type));
 
   // 3. Upsert each finding as an api_error row.
   const liveFingerprints = new Set<string>();
