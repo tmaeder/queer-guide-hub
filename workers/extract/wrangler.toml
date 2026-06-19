@@ -19,9 +19,10 @@ FETCH_TIMEOUT_MS = "8000"
 #   INTERNAL_SECRET - must equal Supabase INTERNAL_INVOKE_SECRET. Callers send it
 #                     as the X-Internal-Secret header.
 
-# Phase 4 (SPA rendering) adds a Browser Rendering binding here:
-# [browser]
-# binding = "BROWSER"
+# Browser Rendering — powers render:true (SPA / JS-rendered pages). Low per-account
+# concurrent-session cap; render is opt-in and circuit-broken on the caller side.
+[browser]
+binding = "BROWSER"
 
 [observability]
 enabled = true

@@ -95,8 +95,11 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
       // Idempotency: already processed in a prior run.
       if (n.extraction_meta) { alreadyDone++; continue }
 
+      // News rows carry `url`; venue/event rows carry `website`. Accept both.
       const url = String(
         n.url ??
+        n.website ??
+        n.source_url ??
         (Array.isArray(n.urls) ? (n.urls as unknown[])[0] : '') ??
         '',
       ).trim()

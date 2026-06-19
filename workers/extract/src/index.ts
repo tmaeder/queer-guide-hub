@@ -12,11 +12,15 @@
 import { cleanHtml } from './clean';
 import { hasInternalSecret } from './auth';
 import { assertPublicHttpUrl, UnsafeUrlError } from './ssrf';
+import { renderHtml } from './render';
 
 interface Env {
   INTERNAL_SECRET?: string;
   MAX_HTML_BYTES?: string;
   FETCH_TIMEOUT_MS?: string;
+  // Cloudflare Browser Rendering binding (Phase 4). Present only once the
+  // [browser] binding is added in wrangler.toml; render:true 501s without it.
+  BROWSER?: Fetcher;
 }
 
 const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide/bot)';
@@ -95,16 +99,22 @@ export default {
       throw e;
     }
 
-    if (body.render) {
-      // Phase 4 — Cloudflare Browser Rendering binding not yet wired.
-      return json({ error: 'render not enabled (phase 4)' }, 501);
+    const wantRender = body.render === true;
+    if (wantRender && !env.BROWSER) {
+      // [browser] binding not provisioned on this deploy.
+      return json({ error: 'render not enabled (no BROWSER binding)' }, 501);
     }
 
     const maxBytes = Number(env.MAX_HTML_BYTES ?? '3000000');
     const timeoutMs = Number(env.FETCH_TIMEOUT_MS ?? '8000');
+    const method = wantRender ? 'render' : 'fetch';
 
     try {
-      const { html, finalUrl } = await fetchHtml(target, maxBytes, timeoutMs);
+      const { html, finalUrl } = wantRender
+        ? await renderHtml(env.BROWSER!, target.toString())
+        : await fetchHtml(target, maxBytes, timeoutMs);
+      // Re-validate the post-redirect/navigation host against the SSRF guard.
+      assertPublicHttpUrl(finalUrl);
       const result = cleanHtml(html, finalUrl, { crawl: body.crawl === true });
       return json({
         url: body.url,
@@ -112,12 +122,13 @@ export default {
         markdown: result.markdown,
         meta: result.meta,
         links: body.crawl ? result.links : undefined,
-        method: 'fetch',
+        method,
         contentMethod: result.contentMethod,
         charCount: result.charCount,
       });
     } catch (e) {
-      return json({ error: (e as Error).message, method: 'fetch' }, 502);
+      if (e instanceof UnsafeUrlError) return json({ error: e.message, method }, 400);
+      return json({ error: (e as Error).message, method }, 502);
     }
   },
 };

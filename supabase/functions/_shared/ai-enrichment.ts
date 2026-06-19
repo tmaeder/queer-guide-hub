@@ -205,7 +205,7 @@ function extractBalancedObject(s: string): string | null {
 
 export async function enrichVenueWithAI(
   supabase: SupabaseClient,
-  venue: { name: string; description?: string; address?: string; city?: string; country?: string; category?: string; tags?: string[] },
+  venue: { name: string; description?: string; address?: string; city?: string; country?: string; category?: string; tags?: string[]; pageMarkdown?: string },
 ): Promise<VenueEnrichment | null> {
   if (!(await isOpenAIAvailable(supabase))) return null
 
@@ -217,6 +217,7 @@ City: ${ud(venue.city || 'N/A')}
 Country: ${ud(venue.country || 'N/A')}
 Category: ${ud(venue.category || 'N/A')}
 ${venue.tags?.length ? `Existing tags: ${ud(venue.tags.join(', '))}` : ''}
+${venue.pageMarkdown ? `\nVenue website content (ground your description in this; do not invent):\n${ud(venue.pageMarkdown.slice(0, 1500))}` : ''}
 
 Respond with JSON:
 {"description": "...", "lgbtq_context": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "category_suggestion": "...", "amenity_suggestions": [...]}`
@@ -245,7 +246,7 @@ Respond with JSON:
 
 export async function enrichEventWithAI(
   supabase: SupabaseClient,
-  event: { title: string; description?: string; city?: string; country?: string; event_type?: string; venue_name?: string },
+  event: { title: string; description?: string; city?: string; country?: string; event_type?: string; venue_name?: string; pageMarkdown?: string },
 ): Promise<EventEnrichment | null> {
   if (!(await isOpenAIAvailable(supabase))) return null
 
@@ -256,6 +257,7 @@ City: ${ud(event.city || 'N/A')}
 Country: ${ud(event.country || 'N/A')}
 Venue: ${ud(event.venue_name || 'N/A')}
 Current type: ${ud(event.event_type || 'N/A')}
+${event.pageMarkdown ? `\nEvent page content (ground your description in this; do not invent):\n${ud(event.pageMarkdown.slice(0, 1500))}` : ''}
 
 Respond with JSON:
 {"description": "...", "event_type": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "target_audience": "..."}`

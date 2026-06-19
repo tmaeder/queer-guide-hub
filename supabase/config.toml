@@ -273,6 +273,9 @@ verify_jwt = false
 [functions.source-rss-news]
 verify_jwt = false
 
+[functions.source-crawl-seed]
+verify_jwt = false
+
 [functions.source-spartacus]
 verify_jwt = false
 

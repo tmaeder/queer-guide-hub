@@ -9,6 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@cloudflare/puppeteer": "^1.0.6",
     "cheerio": "^1.0.0",
     "node-html-markdown": "^1.3.0"
   },
