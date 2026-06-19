@@ -2075,7 +2075,22 @@
       "title": "Página não encontrada",
       "description": "A página que você procura não existe ou foi movida.",
       "goBack": "Voltar",
-      "returnHome": "Voltar ao início"
+      "returnHome": "Voltar ao início",
+      "suggestionsLabel": "Or jump to",
+      "didYouMean": "Did you mean",
+      "recentlyViewed": "Pick up where you left off",
+      "searchPlaceholder": "Search venues, events, cities…",
+      "kind": {
+        "venue": "We couldn't find that venue.",
+        "event": "We couldn't find that event.",
+        "city": "We couldn't find that city.",
+        "country": "We couldn't find that country.",
+        "personality": "We couldn't find that person.",
+        "hotel": "We couldn't find that hotel.",
+        "village": "We couldn't find that place.",
+        "marketplace": "We couldn't find that product.",
+        "news": "We couldn't find that article."
+      }
     },
     "bookings": {
       "signIn": "Faça login para ver as reservas",

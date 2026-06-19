@@ -8,17 +8,16 @@ import { supabase } from '@/integrations/supabase/client';
  * Returns the new slug, or null when there's no redirect.
  *
  * Deliberately uses a plain effect (not react-query) so the 404 page renders
- * even outside a QueryClientProvider (early-boot / isolated tests).
+ * even outside a QueryClientProvider (early-boot / isolated tests). State is
+ * only set from the async callback — the return is derived so we never call
+ * setState synchronously in the effect body, and a stale result for a previous
+ * slug is ignored.
  */
 export function useVenueSlugRedirect(oldSlug: string | null): string | null {
-  const [newSlug, setNewSlug] = useState<string | null>(null);
+  const [resolved, setResolved] = useState<{ key: string; slug: string } | null>(null);
 
   useEffect(() => {
-    if (!oldSlug) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setNewSlug(null);
-      return;
-    }
+    if (!oldSlug) return;
     let cancelled = false;
     (async () => {
       try {
@@ -33,7 +32,7 @@ export function useVenueSlugRedirect(oldSlug: string | null): string | null {
           .select('slug')
           .eq('id', redirect.venue_id)
           .maybeSingle();
-        if (!cancelled && venue?.slug) setNewSlug(venue.slug);
+        if (!cancelled && venue?.slug) setResolved({ key: oldSlug, slug: venue.slug });
       } catch {
         /* best-effort — no redirect on failure */
       }
@@ -43,5 +42,6 @@ export function useVenueSlugRedirect(oldSlug: string | null): string | null {
     };
   }, [oldSlug]);
 
-  return newSlug;
+  // Derived: only surface a result that matches the current slug.
+  return oldSlug && resolved?.key === oldSlug ? resolved.slug : null;
 }

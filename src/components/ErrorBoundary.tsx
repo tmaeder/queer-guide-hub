@@ -181,7 +181,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
         {/* Pick up where you left off — pure localStorage, no providers needed. */}
         {recent.length > 0 && (
           <div className="mt-10">
-            <p className="text-xs2 font-medium uppercase tracking-[0.14em] text-muted-foreground mb-4 flex items-center gap-2">
+            <p className="text-xs2 font-medium uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
               <Clock size={14} aria-hidden="true" />
               Pick up where you left off
             </p>
@@ -190,7 +190,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
                 <a
                   key={`${item.type}:${item.slug}`}
                   href={recentlyViewedHref(item)}
-                  className="flex flex-col gap-1 rounded-element border border-border bg-background px-4 py-3 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
+                  className="flex flex-col gap-1 rounded-element border border-border bg-background px-4 py-4 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
                 >
                   <span className="text-15 font-medium text-foreground truncate">{item.title}</span>
                   {(item.city || item.country) && (
@@ -206,7 +206,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
 
         {/* Static jump-links. */}
         <div className="mt-12 border-t border-border pt-8">
-          <p className="text-xs2 font-medium uppercase tracking-[0.14em] text-muted-foreground mb-4">
+          <p className="text-xs2 font-medium uppercase tracking-widest text-muted-foreground mb-4">
             Or jump to
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

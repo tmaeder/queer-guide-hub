@@ -106,17 +106,6 @@ async function mapAmenitiesAndServices(supabase: unknown, venue: FoursquareVenue
       } else if (featureName.includes('credit') || featureName.includes('card')) {
         amenityName = 'Accepts Credit Cards'
         _amenitySlug = 'accepts-credit-cards'
-
-      if (featureName.includes('wifi') || featureName.includes('internet')) {
-        amenityName = 'WiFi'
-      } else if (featureName.includes('parking')) {
-        amenityName = 'Parking'
-      } else if (featureName.includes('wheelchair') || featureName.includes('accessible')) {
-        amenityName = 'Wheelchair Accessible'
-      } else if (featureName.includes('outdoor') || featureName.includes('patio')) {
-        amenityName = 'Outdoor Seating'
-      } else if (featureName.includes('credit') || featureName.includes('card')) {
-        amenityName = 'Accepts Credit Cards'
       }
 
       if (amenityName) {

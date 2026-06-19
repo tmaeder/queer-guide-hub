@@ -148,7 +148,7 @@ const NotFound = () => {
         {/* "Did you mean?" fuzzy matches for the failed slug. */}
         {suggestions.length > 0 && (
           <div className="mt-10">
-            <p className="text-xs2 font-medium uppercase tracking-[0.14em] text-muted-foreground mb-4 flex items-center gap-2">
+            <p className="text-xs2 font-medium uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
               <Search size={14} aria-hidden="true" />
               {t('pages.notFound.didYouMean', 'Did you mean')}
             </p>
@@ -163,7 +163,7 @@ const NotFound = () => {
                   <LocalizedLink
                     key={`${hit.type}:${hit.id}`}
                     to={href}
-                    className="flex items-center justify-between gap-2 rounded-element border border-border bg-background px-4 py-3 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
+                    className="flex items-center justify-between gap-2 rounded-element border border-border bg-background px-4 py-4 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
                   >
                     <span className="text-15 font-medium text-foreground truncate">
                       {hit.title || hit.name}
@@ -183,7 +183,7 @@ const NotFound = () => {
         {/* Pick up where you left off — anon + auth (localStorage). */}
         {recent.length > 0 && (
           <div className="mt-10">
-            <p className="text-xs2 font-medium uppercase tracking-[0.14em] text-muted-foreground mb-4 flex items-center gap-2">
+            <p className="text-xs2 font-medium uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
               <Clock size={14} aria-hidden="true" />
               {t('pages.notFound.recentlyViewed', 'Pick up where you left off')}
             </p>
@@ -192,7 +192,7 @@ const NotFound = () => {
                 <LocalizedLink
                   key={`${item.type}:${item.slug}`}
                   to={recentlyViewedHref(item)}
-                  className="flex flex-col gap-1 rounded-element border border-border bg-background px-4 py-3 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
+                  className="flex flex-col gap-1 rounded-element border border-border bg-background px-4 py-4 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
                 >
                   <span className="text-15 font-medium text-foreground truncate">{item.title}</span>
                   {(item.city || item.country) && (
@@ -211,7 +211,7 @@ const NotFound = () => {
 
         {/* Static fallback jump-links. */}
         <div className="mt-12 border-t border-border pt-8">
-          <p className="text-xs2 font-medium uppercase tracking-[0.14em] text-muted-foreground mb-4">
+          <p className="text-xs2 font-medium uppercase tracking-widest text-muted-foreground mb-4">
             {t('pages.notFound.suggestionsLabel', 'Or jump to')}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

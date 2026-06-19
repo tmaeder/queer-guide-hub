@@ -2090,6 +2090,7 @@
       "suggestionsLabel": "Or jump to",
       "didYouMean": "Did you mean",
       "recentlyViewed": "Pick up where you left off",
+      "searchPlaceholder": "Search venues, events, cities…",
       "kind": {
         "venue": "We couldn't find that venue.",
         "event": "We couldn't find that event.",
@@ -2100,8 +2101,7 @@
         "village": "We couldn't find that place.",
         "marketplace": "We couldn't find that product.",
         "news": "We couldn't find that article."
-      },
-      "searchPlaceholder": "Search venues, events, cities…"
+      }
     },
     "bookings": {
       "signIn": "Sign in to view bookings",
