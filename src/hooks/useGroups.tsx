@@ -15,6 +15,9 @@ export interface Group {
   created_at: string;
   updated_at: string;
   tags?: string[];
+  featured?: boolean;
+  city?: string | null;
+  last_activity_at?: string | null;
   user_role?: string;
   is_member?: boolean;
   has_pending_request?: boolean;

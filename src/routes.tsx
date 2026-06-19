@@ -169,6 +169,7 @@ const Community = lazyRetry(() => import('./pages/Community'));
 
 const Messages = lazyRetry(() => import('./pages/Messages'));
 const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
+const GroupInviteAccept = lazyRetry(() => import('./pages/GroupInviteAccept'));
 const NotFound = lazyRetry(() => import('./pages/NotFound'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const TripWorkspace = lazyRetry(() => import('./pages/trips/TripWorkspace'));
@@ -514,6 +515,7 @@ export const AppRoutes = () => {
                 <Route path="search" element={<SearchResults />} />
                 {/* /groups + /my-groups folded into the /community hub (Groups tab). */}
                 <Route path="groups" element={<LocalizedRedirect to="/community/groups" />} />
+                <Route path="groups/invite/:token" element={<GroupInviteAccept />} />
                 <Route path="groups/:groupId" element={<GroupDetail />} />
                 <Route path="my-groups" element={<LocalizedRedirect to="/community/groups?tab=mine" />} />
                 <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
