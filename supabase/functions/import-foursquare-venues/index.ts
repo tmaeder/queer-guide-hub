@@ -89,23 +89,17 @@ async function mapAmenitiesAndServices(supabase: unknown, venue: FoursquareVenue
     for (const feature of venue.features) {
       const featureName = feature.name.toLowerCase()
       let amenityName = ''
-      let amenitySlug = ''
-      
+
       if (featureName.includes('wifi') || featureName.includes('internet')) {
         amenityName = 'WiFi'
-        amenitySlug = 'wifi'
       } else if (featureName.includes('parking')) {
         amenityName = 'Parking'
-        amenitySlug = 'parking'
       } else if (featureName.includes('wheelchair') || featureName.includes('accessible')) {
         amenityName = 'Wheelchair Accessible'
-        amenitySlug = 'wheelchair-accessible'
       } else if (featureName.includes('outdoor') || featureName.includes('patio')) {
         amenityName = 'Outdoor Seating'
-        amenitySlug = 'outdoor-seating'
       } else if (featureName.includes('credit') || featureName.includes('card')) {
         amenityName = 'Accepts Credit Cards'
-        amenitySlug = 'accepts-credit-cards'
       }
 
       if (amenityName) {
