@@ -37,9 +37,11 @@ export async function extractContent(
   opts: { url: string; render?: boolean; crawl?: boolean },
 ): Promise<ExtractResult | null> {
   const base = Deno.env.get('EXTRACT_WORKER_URL')
-  const secret = Deno.env.get('INTERNAL_INVOKE_SECRET')
+  // Dedicated secret for the extract worker handshake, decoupled from the global
+  // pipeline INTERNAL_INVOKE_SECRET (falls back to it if the dedicated one is unset).
+  const secret = Deno.env.get('EXTRACT_WORKER_SECRET') ?? Deno.env.get('INTERNAL_INVOKE_SECRET')
   if (!base || !secret) {
-    console.warn('extract-client: EXTRACT_WORKER_URL or INTERNAL_INVOKE_SECRET unset — skipping')
+    console.warn('extract-client: EXTRACT_WORKER_URL or EXTRACT_WORKER_SECRET unset — skipping')
     return null
   }
 
