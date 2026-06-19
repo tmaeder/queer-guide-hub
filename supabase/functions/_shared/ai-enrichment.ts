@@ -562,6 +562,85 @@ Respond with JSON using these keys (null where unknown):
 }
 
 // ---------------------------------------------------------------------------
+// Queer village moat enrichment (Village Truth Engine)
+// ---------------------------------------------------------------------------
+
+export interface VillageMoatEnrichment {
+  description?: string             // queer-aware factual 1-2 sentences  [REVIEW-GATED]
+  history?: string                 // queer-specific neighborhood history  [REVIEW-GATED]
+  editorial_hook?: string          // one evocative sourced line (<=120)  [REVIEW-GATED]
+  notable_landmarks?: string[]     // grounded place names  [auto-apply to empty >=0.8]
+  citations?: { field: string; url: string; quote: string }[]
+  confidence?: number              // 0.0-1.0 how well sources supported the extraction
+}
+
+const VILLAGE_MOAT_KEYS = ['description', 'history', 'editorial_hook', 'notable_landmarks', 'citations', 'confidence']
+
+const VILLAGE_MOAT_SYSTEM_PROMPT = `${BASE_CONTEXT}
+
+You enrich QUEER NEIGHBORHOOD (gayborhood) pages for queer.guide from PROVIDED SOURCES. This is GROUNDED EXTRACTION, not creative writing.
+
+Hard rules:
+- Use ONLY facts present in the SOURCES + CONTEXT below. NEVER invent venues, bars, events, dates, or claims.
+- The existing Wikipedia text often describes the neighborhood generically with NO LGBTQ+ angle. Your job is to surface the QUEER significance that IS in the sources (gay/lesbian/trans history, scene, landmarks, why it matters to LGBTQ+ people) — never to fabricate it. If the sources contain no queer-specific facts, return nulls for history/description rather than inventing.
+- history: a factual neighborhood history (3-5 sentences) that foregrounds its LGBTQ+ significance where the sources support it, keeping the verifiable geographic facts. Null if no queer facts are present in the sources.
+- description: a tight 1-2 sentence summary leading with the queer angle. Null if unsupported.
+- editorial_hook: one evocative single line (<=120 chars), grounded in the sources.
+- notable_landmarks: array of specific landmark / venue names ONLY if named in the sources. Omit otherwise. Never invent.
+- citations: array of {field, url, quote} backing the queer claims in history/description.
+- confidence: 0.0-1.0 how well the sources supported the queer extraction.
+
+Respond ONLY with valid JSON. No markdown code blocks.`
+
+/**
+ * Extract queer-village moat fields grounded in fetched source text + the venues
+ * linked to the village. Caller handles circuit-breaking and review-gating: every
+ * narrative field (history/description/editorial_hook) is an overwrite of existing
+ * content and MUST route through village_review_queue; notable_landmarks may auto-fill
+ * an empty column at confidence >= 0.8.
+ */
+export async function researchEnrichVillageFromSources(
+  supabase: SupabaseClient,
+  input: { name: string; city?: string; country?: string; existingHistory?: string; venueNames?: string[]; sources: { url: string; text: string }[] },
+): Promise<VillageMoatEnrichment | null> {
+  if (!(await isOpenAIAvailable(supabase))) return null
+  const blocks = (input.sources || [])
+    .filter(s => (s.text || '').trim().length > 60)
+    .slice(0, 2)
+    .map(s => `SOURCE ${ud(s.url)}:\n${ud((s.text || '').slice(0, 4000))}`)
+  if (blocks.length === 0) return null
+
+  const venueList = (input.venueNames || []).slice(0, 25).join(', ')
+  const userPrompt = `Neighborhood: ${ud(input.name)} | City: ${ud(input.city || 'N/A')} | Country: ${ud(input.country || 'N/A')}
+${input.existingHistory ? `Existing (generic) history: ${ud(input.existingHistory.slice(0, 1200))}` : ''}
+${venueList ? `LGBTQ+ venues we list in this neighborhood (evidence of an active queer scene): ${ud(venueList)}` : ''}
+
+SOURCES:
+${blocks.join('\n\n')}
+
+Respond with JSON using these keys (null where unknown):
+{"description":"...","history":"...","editorial_hook":"...","notable_landmarks":["..."],"citations":[{"field":"...","url":"...","quote":"..."}],"confidence":0.0}`
+
+  try {
+    const result = await chatCompletion(supabase, {
+      messages: [
+        { role: 'system', content: VILLAGE_MOAT_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.2,
+      max_tokens: 900,
+      response_format: { type: 'json_object' },
+    })
+    // CF Workers AI sometimes returns `response` already parsed as an object; coerce.
+    const raw = typeof result.content === 'string' ? result.content : JSON.stringify(result.content ?? '')
+    return parseAIResponse<VillageMoatEnrichment>(raw, VILLAGE_MOAT_KEYS)
+  } catch (err) {
+    console.error('Village moat enrichment failed:', (err as Error).message)
+    return null
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Venue amenity extraction (Amenity Truth Engine)
 // ---------------------------------------------------------------------------
 
