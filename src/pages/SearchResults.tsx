@@ -93,6 +93,7 @@ export default function SearchResults() {
     types: searchParams.get('types')?.split(',').filter(Boolean) || [],
     location: searchParams.get('location') || undefined,
     categories: searchParams.get('categories')?.split(',').filter(Boolean) || undefined,
+    tags: searchParams.get('tags')?.split(',').filter(Boolean) || undefined,
     cluster_ids: searchParams.get('clusters')?.split(',').filter(Boolean) || undefined,
     lat: initialLat,
     lng: initialLng,
@@ -153,6 +154,7 @@ export default function SearchResults() {
       if (next.types?.length) params.set('types', next.types.join(','));
       if (next.location) params.set('location', next.location);
       if (next.categories?.length) params.set('categories', next.categories.join(','));
+      if (next.tags?.length) params.set('tags', next.tags.join(','));
       if (next.cluster_ids?.length) params.set('clusters', next.cluster_ids.join(','));
       if (next.lat != null && next.lng != null) {
         params.set('lat', String(next.lat));
@@ -172,6 +174,16 @@ export default function SearchResults() {
       writeParams(next, sortId);
     },
     [writeParams, sortId],
+  );
+
+  // Tag chip on a result card → refine the current search by that tag.
+  const handleTagRefine = useCallback(
+    (tag: string) => {
+      const current = filters.tags ?? [];
+      if (current.includes(tag)) return;
+      handleFiltersChange({ ...filters, tags: [...current, tag] });
+    },
+    [filters, handleFiltersChange],
   );
 
   const handleScopeChange = useCallback(
@@ -500,6 +512,8 @@ export default function SearchResults() {
                   view={effectiveView === 'grid' ? 'grid' : 'list'}
                   query={query}
                   onSelect={navigateToResult}
+                  onTagClick={handleTagRefine}
+                  activeTags={filters.tags}
                 />
               ))}
             </div>

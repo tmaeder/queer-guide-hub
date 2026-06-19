@@ -22,7 +22,7 @@ import { useAssistant } from '@/hooks/useAssistant';
 import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
 import type { AssistantCard } from '@/lib/assistantClient';
-import { ROUTE_HREFS } from '@/lib/searchRoutes';
+import { ROUTE_HREFS, tagHref } from '@/lib/searchRoutes';
 import { SearchPopoverDesktop } from './SearchPopoverDesktop';
 import { SearchPopoverMobile } from './SearchPopoverMobile';
 import { SearchAskPanel } from './SearchAskPanel';
@@ -40,7 +40,10 @@ const SCOPE_IDS = [
 
 function prefetchRoute(suggestion: SearchSuggestion) {
   const slug = suggestion.slug || suggestion.id;
-  const href = ROUTE_HREFS[suggestion.type]?.(slug);
+  const href =
+    suggestion.type === 'tag'
+      ? tagHref(suggestion.name || suggestion.title || '')
+      : ROUTE_HREFS[suggestion.type]?.(slug);
   if (!href) return;
   try {
     const link = document.createElement('link');
@@ -218,12 +221,11 @@ export const UniversalSearchBar = () => {
       }
       const slug = suggestion.slug || suggestion.id;
       const href = ROUTE_HREFS[suggestion.type]?.(slug);
-      if (href) {
+      if (suggestion.type === 'tag') {
+        // Tags route by NAME to the glossary (the /resources lookup is name-keyed).
+        navigate(tagHref(suggestion.name || suggestion.title || ''));
+      } else if (href) {
         navigate(href);
-      } else if (suggestion.type === 'tag') {
-        navigate(
-          `/resources/${(suggestion.name || '').replace(/[^\w\s-]/g, '').replace(/\s+/g, '%20')}`,
-        );
       } else if (suggestion.type === 'user') {
         navigate(`/user/${suggestion.id}`);
       } else if (suggestion.type === 'group') {
@@ -260,7 +262,8 @@ export const UniversalSearchBar = () => {
       const slug = (card.slug as string) || card.objectID;
       const href = ROUTE_HREFS[card.type]?.(slug);
       setIsOpen(false);
-      if (href) navigate(href);
+      if (card.type === 'tag') navigate(tagHref(card.title ?? ''));
+      else if (href) navigate(href);
       else navigate(`/search?q=${encodeURIComponent(card.title ?? '')}`);
     },
     [navigate],
