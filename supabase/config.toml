@@ -442,6 +442,9 @@ verify_jwt = false
 [functions.pipeline-enrich-country-editorial]
 verify_jwt = false
 
+[functions.pipeline-enrich-country-stats]
+verify_jwt = false
+
 [functions.personality-extract-from-bio]
 verify_jwt = false
 
