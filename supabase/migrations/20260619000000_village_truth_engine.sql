@@ -743,11 +743,12 @@ SELECT cron.schedule('village_completeness_recompute', '35 3 * * *', 'SELECT pub
 SELECT cron.schedule('village_trust_recompute',        '50 3 * * *', 'SELECT public.run_village_trust_recompute();');
 SELECT cron.schedule('village_coverage_radar',         '30 4 * * 1', 'SELECT public.run_village_coverage_radar();');
 
--- ===== 15. cron: gated edge enrich (Vault secret village_quality_webhook_secret) =====
--- Weekly grounded queer enrichment. Until vault secret village_quality_webhook_secret AND
--- env VILLAGE_QUALITY_WEBHOOK_SECRET both exist, the POST returns 401 and no-ops.
---   select vault.create_secret('<secret>', 'village_quality_webhook_secret', 'Village Truth Engine cron auth');
---   supabase secrets set VILLAGE_QUALITY_WEBHOOK_SECRET=<secret>
+-- ===== 15. cron: agentic edge enrich (internal-secret gated) =====
+-- Weekly grounded queer enrichment over live villages. pipeline-enrich-village is
+-- verify_jwt=false and self-gates via requireInternalOrAdmin, so the cron presents
+-- the vault internal_invoke_secret as X-Internal-Secret (house pattern). The job is
+-- registered but the run only does work once OpenAI/CF AI is available; everything it
+-- proposes is review-gated, so this is safe to leave scheduled.
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM cron.job WHERE jobname='village_agentic_enrich') THEN PERFORM cron.unschedule('village_agentic_enrich'); END IF;
 END $$;
@@ -757,7 +758,7 @@ SELECT cron.schedule('village_agentic_enrich', '40 5 * * 0',
     url := 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/pipeline-enrich-village',
     headers := jsonb_build_object(
       'Content-Type','application/json',
-      'X-Webhook-Secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='village_quality_webhook_secret')
+      'X-Internal-Secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='internal_invoke_secret')
     ),
     body := jsonb_build_object('mode','agentic','batch_limit',8),
     timeout_milliseconds := 30000
