@@ -467,7 +467,7 @@ export function PersonalityOverview({
         )}
 
         <RelatedContent personality={personality} />
-        {/* "Similar Personalities" now renders once, via <SimilarItems> in
+        {/* "Similar Personalities" renders once, via <SimilarItems> in
             PersonalityDetail (discovery engine, public-indexed source). The old
             get_similar_personalities card was a second, unfiltered surface that
             surfaced duplicates + off-topic matches — removed. */}
