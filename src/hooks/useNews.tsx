@@ -83,10 +83,12 @@ export const useNews = () => {
         .not('published_at', 'is', null)
         .not('content', 'is', null)
         .neq('content', '')
-        .or('quality_score.is.null,quality_score.gte.50')
-        // Hide articles flagged or rejected by the news quality pipeline.
-        // Legacy rows (quality_status NULL) and approved ones (passed) stay visible.
-        .or('quality_status.is.null,quality_status.eq.passed')
+        // Approved (passed) rows are always visible — status is the authority, even
+        // for short "brief" digests scoring under 50. Legacy null-status rows keep the
+        // quality_score>=50 guard. Review/rejected stay hidden.
+        .or(
+          'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
+        )
         // Hide rows that the canonical_url-dedup pass marked as duplicates of
         // an older row (Group A4).
         .is('duplicate_of_id', null)
@@ -288,8 +290,9 @@ export const useNews = () => {
         .not('published_at', 'is', null)
         .not('content', 'is', null)
         .neq('content', '')
-        .or('quality_score.is.null,quality_score.gte.50')
-        .or('quality_status.is.null,quality_status.eq.passed')
+        .or(
+          'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
+        )
         .is('duplicate_of_id', null)
         .order('published_at', { ascending: false })
         .limit(5);
@@ -339,8 +342,9 @@ export const useNews = () => {
         .not('published_at', 'is', null)
         .not('content', 'is', null)
         .neq('content', '')
-        .or('quality_score.is.null,quality_score.gte.50')
-        .or('quality_status.is.null,quality_status.eq.passed')
+        .or(
+          'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
+        )
         .is('duplicate_of_id', null) as unknown as T;
 
     try {

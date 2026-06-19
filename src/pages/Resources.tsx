@@ -264,8 +264,10 @@ export default function Resources() {
   // in the bug report's Stack Adaptation note.
   const tagDetailMeta = useMemo(() => {
     if (viewMode !== 'tag-detail' || !selectedTag) return null;
+    const longFirst = selectedTag.long_description?.trim().split(/\n{2,}/)[0]?.trim();
     const desc =
       selectedTag.description?.trim() ||
+      (longFirst ? longFirst.slice(0, 200) : '') ||
       `${selectedTag.name} — Queer Guide resource term and related content.`;
     const slug = selectedTag.slug || encodeURIComponent(selectedTag.name);
     const jsonLd: Record<string, unknown> = {
@@ -274,8 +276,14 @@ export default function Resources() {
       name: selectedTag.name,
       description: desc,
       url: `https://queer.guide/resources/${slug}`,
+      inDefinedTermSet: {
+        '@type': 'DefinedTermSet',
+        name: 'Queer Guide Glossary',
+        url: 'https://queer.guide/resources',
+      },
     };
     if (selectedTag.image_url) jsonLd.image = selectedTag.image_url;
+    if (selectedTag.wikipedia_url) jsonLd.sameAs = selectedTag.wikipedia_url;
     return {
       title: selectedTag.name,
       description: desc,

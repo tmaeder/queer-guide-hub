@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type CentralizedTag } from '@/hooks/useCentralizedTags';
 import { RelatedTagsCard } from '@/components/tags/RelatedTagsCard';
@@ -9,7 +9,30 @@ import {
 import { useSafeMode } from '@/providers/SafeModeProvider';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
-import { ArrowLeft, ChevronRight } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { ArrowLeft, ChevronRight, ChevronDown, ExternalLink, Network } from 'lucide-react';
+
+const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
+
+/**
+ * Pull a small set of human-readable key/value facts out of `scientific_data`
+ * (Wolfram/Wikidata enrichment). We only surface flat primitive entries — the
+ * blob can hold nested objects we don't want to dump raw. Restrained on purpose
+ * (wiki-dense was explicitly not the chosen direction).
+ */
+function extractFacts(data: Record<string, unknown> | null | undefined): [string, string][] {
+  if (!data || typeof data !== 'object') return [];
+  const out: [string, string][] = [];
+  for (const [key, value] of Object.entries(data)) {
+    if (value == null) continue;
+    if (typeof value === 'object') continue;
+    const label = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    out.push([label, String(value)]);
+    if (out.length >= 6) break;
+  }
+  return out;
+}
 
 interface ResourceTagDetailProps {
   selectedTag: CentralizedTag;
@@ -63,6 +86,9 @@ export function ResourceTagDetail({
     ...(selectedTag.categories?.map((c) => c.parent_name ?? null) ?? []),
   ];
   const isAdult = tagCategoryNames.some((n) => safeMode.isAdultCategory(n));
+
+  const facts = extractFacts(selectedTag.scientific_data);
+  const [graphOpen, setGraphOpen] = React.useState(false);
 
   return (
     <TagDetailWithGate
@@ -164,14 +190,62 @@ export function ResourceTagDetail({
         </div>
       )}
 
-      {selectedTag.description ? (
-        <p className="text-muted-foreground mb-6" style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.9rem' }}>
+      {selectedTag.image_url && selectedTag.image_attribution && (
+        <p className="text-xs text-muted-foreground -mt-4 mb-6" style={{ maxWidth: 680 }}>
+          {selectedTag.image_attribution}
+        </p>
+      )}
+
+      {/* Definition lede + long-form explanation */}
+      {selectedTag.description && (
+        <p className="mb-4" style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.95rem' }}>
           {selectedTag.description}
         </p>
-      ) : (
-        <p className="text-muted-foreground mb-6 italic" style={{ fontSize: '0.85rem', opacity: 0.6 }}>
+      )}
+
+      {!selectedTag.description && !selectedTag.long_description && (
+        <p className="text-muted-foreground mb-4 italic" style={{ fontSize: '0.85rem', opacity: 0.6 }}>
           {t('resources.tagDetail.noDefinition')}
         </p>
+      )}
+
+      {selectedTag.long_description && (
+        <div
+          className="text-muted-foreground mb-6 flex flex-col gap-4"
+          style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.9rem' }}
+        >
+          {selectedTag.long_description
+            .split(/\n{2,}/)
+            .map((para, i) => para.trim() && <p key={i}>{para.trim()}</p>)}
+        </div>
+      )}
+
+      {/* Facts (Wikidata / Wolfram) — restrained key/value list */}
+      {facts.length > 0 && (
+        <dl
+          className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-6 border-t pt-4"
+          style={{ maxWidth: 680 }}
+        >
+          {facts.map(([label, value]) => (
+            <div key={label} className="flex justify-between gap-4 border-b py-1">
+              <dt className="text-sm text-muted-foreground">{label}</dt>
+              <dd className="text-sm font-medium text-right">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {/* Learn more */}
+      {selectedTag.wikipedia_url && (
+        <a
+          href={selectedTag.wikipedia_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-medium mb-8 no-underline hover:text-primary"
+        >
+          {t('resources.tagDetail.readOnWikipedia', 'Read on Wikipedia')}
+          <ExternalLink size={14} />
+        </a>
       )}
 
       {/* Content grid */}
@@ -183,6 +257,32 @@ export function ResourceTagDetail({
             sourceCategory={primary?.name}
             onTagClick={(t) => onTagClick({ name: t.name, id: t.id } as CentralizedTag)}
           />
+
+          <Collapsible open={graphOpen} onOpenChange={setGraphOpen}>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary">
+              <Network size={14} />
+              {t('resources.tagDetail.viewAsGraph', 'View as graph')}
+              <ChevronDown
+                size={14}
+                className="transition-transform"
+                style={{ transform: graphOpen ? 'rotate(180deg)' : undefined }}
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="rounded-container border overflow-hidden mt-4" style={{ height: 420 }}>
+                {graphOpen && (
+                  <Suspense fallback={<PageLoadingState count={1} />}>
+                    <TagRelationshipGraph
+                      categoryFilter={primary?.id ?? null}
+                      onTagClick={(tag) =>
+                        onTagClick({ name: tag.name, id: tag.id } as CentralizedTag)
+                      }
+                    />
+                  </Suspense>
+                )}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       </div>
     </div>
