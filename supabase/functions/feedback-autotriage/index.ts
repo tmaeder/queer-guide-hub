@@ -104,10 +104,15 @@ Deno.serve(async (req) => {
   try { body = req.method === 'POST' ? ((await req.json()) as BodyShape) : {}; } catch { body = {}; }
 
   const limit = Math.min(Math.max(1, body.limit ?? 50), 200);
+  // Sweep mode: only triage OPEN items. Already-resolved (done) submissions —
+  // e.g. the ~2.7k auto-closed api_errors — never need triage, so skip them to
+  // avoid burning LLM spend on closed work. Explicit submission_ids bypass this
+  // (targeted backfill triages whatever is asked).
   let query = supabase
     .from('community_submissions')
     .select('id,content_type,data,labels')
     .is('autotriage', null)
+    .neq('feedback_status', 'done')
     .in('content_type', ['feedback', 'api_error'])
     .limit(limit);
   if (body.submission_ids?.length) {

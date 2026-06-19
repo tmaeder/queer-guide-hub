@@ -41,6 +41,7 @@ import {
   Flag,
   Award,
   CopyCheck,
+  ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -156,6 +157,12 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Users,
         route: '/admin/content/personalities',
         countTable: 'personalities',
+      },
+      {
+        id: 'personality-quality',
+        label: 'Personality quality',
+        icon: ShieldCheck,
+        route: '/admin/content/personality-quality',
       },
       {
         id: 'cities',
