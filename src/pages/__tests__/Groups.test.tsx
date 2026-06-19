@@ -19,6 +19,9 @@ vi.mock('@/hooks/useGroups', () => ({
 }));
 vi.mock('@/components/layout/AuthGate', () => ({ AuthGate: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
+vi.mock('@/hooks/useRecommendedGroups', () => ({
+  useRecommendedGroups: () => ({ groups: [], isLoading: false, isEmpty: true }),
+}));
 
 import Groups from '../Groups';
 

@@ -74,6 +74,8 @@ queer-guide-hub/
 - **Edge functions:** 215
 - **Edge functions:** 201
 - **Migrations:** 609
+- **Migrations:** 603
+- **Migrations:** 609
 - **Migrations:** 596
 - **Migrations:** 601
 - **Migrations:** 599
