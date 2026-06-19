@@ -58,7 +58,7 @@ describe('PersonalityDetail.parts', () => {
   it('hides the boilerplate description "About" card when a bio is present', () => {
     render(
       <MemoryRouter>
-        <PersonalityOverview personality={makePersonality()} similarPersonalities={[]} />
+        <PersonalityOverview personality={makePersonality()} />
       </MemoryRouter>,
     );
     expect(screen.queryByText('About')).toBeNull();
@@ -70,10 +70,7 @@ describe('PersonalityDetail.parts', () => {
   it('still shows the description card when there is no bio to supersede it', () => {
     render(
       <MemoryRouter>
-        <PersonalityOverview
-          personality={makePersonality({ bio: null })}
-          similarPersonalities={[]}
-        />
+        <PersonalityOverview personality={makePersonality({ bio: null })} />
       </MemoryRouter>,
     );
     expect(screen.getByText('About')).toBeTruthy();
