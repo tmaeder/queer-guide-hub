@@ -65,13 +65,18 @@ cd workers/submit && npx wrangler deploy
 Auto-apply on merge to `main` via CI `db push`. To apply early, use MCP
 `apply_migration` with the **same version** as the committed file (CI then skips):
 
-- `20260619180000_extract_worker_circuit_breakers.sql` — seeds `deepcrawl_extract` + `cf_browser_render`
+- `20260619183000_extract_worker_circuit_breakers.sql` — seeds `deepcrawl_extract` + `cf_browser_render`
 - `20260619181000_extract_node_venue_event_dags.sql` — splices `extract` into venue + event DAGs
 - `20260619182000_register_crawl_seed_node.sql` — registers the crawl-seed node type
 
 > Ordering: deploy the updated `pipeline-extract-fulltext` (step 4) **before** the
 > `20260619181000` DAG migration, or a venue/event run would invoke the old news-only
 > function with a `target_table` it ignores.
+
+> Version note: the circuit-breakers migration was renamed `…180000…` → `…183000…`
+> because PR #1709 independently took `20260619180000`. Two files sharing a 14-digit
+> version break `db push` file↔history matching, so always pick a unique version when
+> branches collide.
 
 ## 6. Verify on production
 
