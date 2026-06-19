@@ -48,6 +48,7 @@ export const ALL_INDEXES = [
 	"personalities",
 	"tags",
 	"queer_villages",
+	"groups",
 	"hotels",
 	"festivals",
 ];
