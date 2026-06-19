@@ -11,11 +11,10 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 // in description_i18n (under its source-lang key + _original) for reversibility
 // and locale serving.
 //
-// LLM: prefers Claude Haiku (ANTHROPIC_API_KEY) if configured, else falls back to
-// Cloudflare Workers AI (CF_ACCOUNT_ID + CF_AI_API_TOKEN, native /ai/run endpoint
-// — the /ai/v1 compat endpoint hangs on JSON mode; response can be string|object
-// so we coerce). NOTE: ANTHROPIC_API_KEY is currently NOT set project-wide (which
-// also disables the marketplace-relevance pipeline gate), so this runs on Workers AI.
+// LLM: Cloudflare Workers AI is the primary provider (CF_ACCOUNT_ID + CF_AI_API_TOKEN,
+// native /ai/run endpoint — the /ai/v1 compat endpoint hangs on JSON mode; response
+// can be string|object so we coerce). Anthropic Haiku is only a fallback if CF creds
+// are absent. (ANTHROPIC_API_KEY is not configured project-wide anyway.)
 //
 // Body: { merchant_domain?, batch_size?, dry_run? }
 // ============================================================
@@ -48,13 +47,15 @@ async function callWorkersAI(acct: string, token: string, title: string, source:
 }
 
 async function enhance(title: string, source: string): Promise<{ description: string; source_lang: string }> {
-  const anthropic = Deno.env.get('ANTHROPIC_API_KEY')
+  // Cloudflare Workers AI is the primary provider; Anthropic is only a fallback
+  // if CF creds are absent.
   const acct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
   const cfToken = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
+  const anthropic = Deno.env.get('ANTHROPIC_API_KEY')
   let raw = ''
-  if (anthropic) raw = await callAnthropic(anthropic, title, source)
-  else if (acct && cfToken) raw = await callWorkersAI(acct, cfToken, title, source)
-  else throw new Error('no LLM configured (need ANTHROPIC_API_KEY or CF_ACCOUNT_ID+CF_AI_API_TOKEN)')
+  if (acct && cfToken) raw = await callWorkersAI(acct, cfToken, title, source)
+  else if (anthropic) raw = await callAnthropic(anthropic, title, source)
+  else throw new Error('no LLM configured (need CF_ACCOUNT_ID+CF_AI_API_TOKEN or ANTHROPIC_API_KEY)')
   const s = coerce(raw)
   const match = s.match(/\{[\s\S]*\}/)
   if (!match) throw new Error('non-json LLM response: ' + s.slice(0, 80))
