@@ -96,7 +96,10 @@ Deno.serve(async (req: Request) => {
     .eq('shell_status', 'real')
     .is('editorial_hook', null)
     .order('content_completeness_score', { ascending: false, nullsFirst: false })
-    .limit(batchSize * 2)
+    // Wide window: already-queued countries stay hook-null and rank high (good data,
+    // held for review), so a small window starves fresh candidates. Fetch all hook-null
+    // rows and let the post-filter below drop already-handled ones before slicing.
+    .limit(300)
   if (countryIds?.length) q = q.in('id', countryIds)
 
   const { data: rows, error } = await q
