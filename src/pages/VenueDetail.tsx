@@ -217,7 +217,6 @@ export default function VenueDetail() {
               reviews={reviews}
               venueEvents={venueEvents}
               averageRating={averageRating}
-              navigate={navigate}
               onContentUpdated={refetch}
               t={t}
             />

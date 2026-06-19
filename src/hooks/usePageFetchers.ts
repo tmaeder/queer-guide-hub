@@ -332,13 +332,30 @@ export async function fetchAllProfessions(): Promise<string[]> {
 
 /** Resources.tsx — fetch tag by name + category assignments + parent names. */
 export async function fetchTagWithCategories(name: string) {
-  const { data } = await supabase
-    .from('unified_tags')
-    .select('*')
-    .ilike('name', name)
-    .eq('status', 'active')
-    .limit(1)
-    .maybeSingle();
+  // Tag URLs use the slug (the value stored in entity `tags[]` columns), e.g.
+  // "bear-bar". Resolve by slug first, then fall back to a name match so older
+  // name-based links keep working.
+  let data: Record<string, unknown> | null = null;
+  {
+    const res = await supabase
+      .from('unified_tags')
+      .select('*')
+      .eq('slug', name.toLowerCase())
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle();
+    data = res.data as Record<string, unknown> | null;
+  }
+  if (!data) {
+    const res = await supabase
+      .from('unified_tags')
+      .select('*')
+      .ilike('name', name)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle();
+    data = res.data as Record<string, unknown> | null;
+  }
   if (!data) return null;
 
   const tag = data as { id: string };

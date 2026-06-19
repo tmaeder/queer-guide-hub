@@ -200,10 +200,7 @@ export default function PersonalityDetail() {
         tabs={tabs}
         sidebar={
           personality ? (
-            <PersonalitySidebar
-              personality={personality}
-              onTagClick={(tag) => navigate(`/personalities?tag=${encodeURIComponent(tag)}`)}
-            />
+            <PersonalitySidebar personality={personality} />
           ) : null
         }
         entityType="personality"
