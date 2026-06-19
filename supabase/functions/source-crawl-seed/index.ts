@@ -57,8 +57,10 @@ Deno.serve(withErrorReporting('source-crawl-seed', async (req) => {
     // 1. Discover same-origin candidate links from the seed.
     const seedExtract = await extractContent(supabase, { url: seedUrl, crawl: true, render })
     if (!seedExtract) {
-      // Worker down / circuit open — non-fatal skip so a DAG run doesn't fail.
-      return jsonResponse({ success: true, skipped: true, reason: 'extract worker unavailable', items: 0 }, 200, req)
+      // No result for the seed: worker down / circuit open, OR the seed page
+      // failed to fetch (too large, blocked, non-HTML). Non-fatal skip so a DAG
+      // run doesn't fail.
+      return jsonResponse({ success: true, skipped: true, reason: 'seed extraction returned no result (worker unavailable, or seed too large/blocked)', seed: seedUrl, items: 0 }, 200, req)
     }
 
     const seedHost = host(seedUrl)

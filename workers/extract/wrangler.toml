@@ -12,8 +12,10 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 # Comma-separated host allowlist is NOT used here — any public http(s) URL is
 # fetchable; SSRF guard blocks private/loopback/link-local ranges. See src/ssrf.ts.
-MAX_HTML_BYTES = "3000000"
-FETCH_TIMEOUT_MS = "8000"
+# 6 MB covers heavy news/magazine homepages (e.g. them.us ~3.5 MB) used as crawl
+# seeds; cheerio parse of that stays well within the Worker memory limit.
+MAX_HTML_BYTES = "6000000"
+FETCH_TIMEOUT_MS = "10000"
 
 # Secrets (set via `wrangler secret put NAME`):
 #   INTERNAL_SECRET - must equal Supabase INTERNAL_INVOKE_SECRET. Callers send it
