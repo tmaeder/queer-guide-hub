@@ -1,0 +1,32 @@
+name = "queer-guide-worker-extract"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Internal extraction service: fetch a URL, return cleaned markdown + metadata +
+# a same-origin links tree. Called server-to-server by Supabase edge functions
+# (pipeline-extract-fulltext, source-crawl-seed) and the submit worker — never by
+# end users. Gated by X-Internal-Secret (same secret pg_cron/workflow-dispatcher
+# already send to edge functions).
+
+[vars]
+# Comma-separated host allowlist is NOT used here — any public http(s) URL is
+# fetchable; SSRF guard blocks private/loopback/link-local ranges. See src/ssrf.ts.
+MAX_HTML_BYTES = "3000000"
+FETCH_TIMEOUT_MS = "8000"
+
+# Secrets (set via `wrangler secret put NAME`):
+#   INTERNAL_SECRET - must equal Supabase INTERNAL_INVOKE_SECRET. Callers send it
+#                     as the X-Internal-Secret header.
+
+# Phase 4 (SPA rendering) adds a Browser Rendering binding here:
+# [browser]
+# binding = "BROWSER"
+
+[observability]
+enabled = true
+
+# Custom domain added via dashboard; listed for reproducibility.
+[[routes]]
+pattern = "extract.queer.guide"
+custom_domain = true

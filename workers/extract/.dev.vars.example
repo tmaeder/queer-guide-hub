@@ -1,0 +1,2 @@
+# Copy to .dev.vars for local `wrangler dev`. Must match Supabase INTERNAL_INVOKE_SECRET.
+INTERNAL_SECRET=dev-internal-secret

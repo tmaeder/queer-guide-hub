@@ -323,15 +323,18 @@ Respond with JSON:
 
 export async function enrichNewsWithAI(
   supabase: SupabaseClient,
-  article: { title: string; content?: string; excerpt?: string; url?: string },
+  article: { title: string; content?: string; excerpt?: string; url?: string; pageMarkdown?: string },
 ): Promise<NewsEnrichment | null> {
   if (!(await isOpenAIAvailable(supabase))) return null
 
-  const textContent = article.content || article.excerpt || ''
+  // Prefer the cleaned full-page markdown (from the extract worker) when present
+  // — it preserves structure and is the LLM-lean payload. Fall back to the RSS
+  // content/excerpt stub. Cap to keep the prompt within token headroom.
+  const textContent = article.pageMarkdown || article.content || article.excerpt || ''
 
   const userPrompt = `Analyse this news article:
 Title: ${ud(article.title)}
-Content: ${ud(textContent.slice(0, 800))}
+Content: ${ud(textContent.slice(0, 2000))}
 URL: ${ud(article.url || 'N/A')}
 
 Keep "summary" under 40 words. Respond with ONLY this JSON, nothing before or after:
