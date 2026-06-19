@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatNewsTag } from '@/lib/newsTags';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag } from 'lucide-react';
@@ -506,7 +507,7 @@ export const NewsFilters = ({
                     className="cursor-pointer"
                     onClick={() => handleTagToggle(tag)}
                   >
-                    {tag}
+                    {formatNewsTag(tag)}
                   </Badge>
                 ))}
               </div>
