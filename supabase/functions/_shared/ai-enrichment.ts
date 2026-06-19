@@ -205,7 +205,7 @@ function extractBalancedObject(s: string): string | null {
 
 export async function enrichVenueWithAI(
   supabase: SupabaseClient,
-  venue: { name: string; description?: string; address?: string; city?: string; country?: string; category?: string; tags?: string[] },
+  venue: { name: string; description?: string; address?: string; city?: string; country?: string; category?: string; tags?: string[]; pageMarkdown?: string },
 ): Promise<VenueEnrichment | null> {
   if (!(await isOpenAIAvailable(supabase))) return null
 
@@ -217,6 +217,7 @@ City: ${ud(venue.city || 'N/A')}
 Country: ${ud(venue.country || 'N/A')}
 Category: ${ud(venue.category || 'N/A')}
 ${venue.tags?.length ? `Existing tags: ${ud(venue.tags.join(', '))}` : ''}
+${venue.pageMarkdown ? `\nVenue website content (ground your description in this; do not invent):\n${ud(venue.pageMarkdown.slice(0, 1500))}` : ''}
 
 Respond with JSON:
 {"description": "...", "lgbtq_context": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "category_suggestion": "...", "amenity_suggestions": [...]}`
@@ -245,7 +246,7 @@ Respond with JSON:
 
 export async function enrichEventWithAI(
   supabase: SupabaseClient,
-  event: { title: string; description?: string; city?: string; country?: string; event_type?: string; venue_name?: string },
+  event: { title: string; description?: string; city?: string; country?: string; event_type?: string; venue_name?: string; pageMarkdown?: string },
 ): Promise<EventEnrichment | null> {
   if (!(await isOpenAIAvailable(supabase))) return null
 
@@ -256,6 +257,7 @@ City: ${ud(event.city || 'N/A')}
 Country: ${ud(event.country || 'N/A')}
 Venue: ${ud(event.venue_name || 'N/A')}
 Current type: ${ud(event.event_type || 'N/A')}
+${event.pageMarkdown ? `\nEvent page content (ground your description in this; do not invent):\n${ud(event.pageMarkdown.slice(0, 1500))}` : ''}
 
 Respond with JSON:
 {"description": "...", "event_type": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "target_audience": "..."}`
@@ -323,15 +325,18 @@ Respond with JSON:
 
 export async function enrichNewsWithAI(
   supabase: SupabaseClient,
-  article: { title: string; content?: string; excerpt?: string; url?: string },
+  article: { title: string; content?: string; excerpt?: string; url?: string; pageMarkdown?: string },
 ): Promise<NewsEnrichment | null> {
   if (!(await isOpenAIAvailable(supabase))) return null
 
-  const textContent = article.content || article.excerpt || ''
+  // Prefer the cleaned full-page markdown (from the extract worker) when present
+  // — it preserves structure and is the LLM-lean payload. Fall back to the RSS
+  // content/excerpt stub. Cap to keep the prompt within token headroom.
+  const textContent = article.pageMarkdown || article.content || article.excerpt || ''
 
   const userPrompt = `Analyse this news article:
 Title: ${ud(article.title)}
-Content: ${ud(textContent.slice(0, 800))}
+Content: ${ud(textContent.slice(0, 2000))}
 URL: ${ud(article.url || 'N/A')}
 
 Keep "summary" under 40 words. Respond with ONLY this JSON, nothing before or after:

@@ -35,6 +35,10 @@ export interface Env {
   SUPABASE_ANON_KEY: string;
   SUPABASE_JWT_SECRET: string;
   AI_GATEWAY_NAME?: string;
+  // Internal extract worker (workers/extract) for the SPA render fallback in
+  // /render. Optional — without them the static JSON-LD/OG passes still run.
+  EXTRACT_WORKER_URL?: string;
+  INTERNAL_SECRET?: string;
 }
 
 export default {
@@ -400,7 +404,10 @@ async function handleRender(request: Request, env: Env, cors: HeadersInit): Prom
   const parsed = RenderBody.safeParse(raw);
   if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
 
-  const items = await renderAndExtract(parsed.data.url);
+  const items = await renderAndExtract(parsed.data.url, {
+    extractWorkerUrl: env.EXTRACT_WORKER_URL,
+    internalSecret: env.INTERNAL_SECRET,
+  });
   return json({ items }, 200, cors);
 }
 

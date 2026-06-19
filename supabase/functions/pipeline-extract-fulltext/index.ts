@@ -1,20 +1,41 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { extractArticle } from '../_shared/news-quality/extract.ts'
+import { extractContent } from '../_shared/extract-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
-// Pipeline Extract Full-Text (News) — fetch the source URL and recover the full
-// article body + metadata that RSS truncates. Runs AFTER pipeline-normalize and
-// BEFORE pipeline-sanitize-news, so every downstream stage (sanitize, AI enrich,
-// quality-enhance, validate, score) reasons over full text instead of stubs.
+// Pipeline Extract Full-Text — fetch the source URL and recover the full body +
+// metadata + cleaned markdown that RSS truncates. Runs AFTER pipeline-normalize
+// and BEFORE pipeline-sanitize-news, so every downstream stage (sanitize, AI
+// enrich, quality-enhance, validate, score) reasons over full text instead of stubs.
+//
+// Primary path: the self-hosted deepcrawl extract worker → cleaned markdown +
+// plain-text body + metadata. Fallback (worker down / circuit open): the local
+// readability-lite extractArticle(). The markdown is stashed in
+// normalized_data.markdown for the enrich stage's LLM prompt.
 //
 // Idempotent: skips rows that already carry normalized_data.extraction_meta.
 // Conservative: only replaces content when extraction yields materially MORE
 // text than the RSS payload; never blanks an article on failure.
+//
+// Defaults to news_articles for back-compat; target_table is overridable via the
+// node config so the same node can serve venue/event/place DAGs (Phase 2).
 
 const FETCH_TIMEOUT_MS = 8000
 const MAX_HTML_BYTES = 3_000_000
 const MIN_GAIN_RATIO = 1.2   // require extracted ≥ 1.2× the RSS length to swap
 const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide/bot)'
+
+// Strip markdown syntax to a plain-text body for the content swap + gain check.
+// Downstream sanitize/validate operate on plain text; markdown is kept separately.
+function markdownToText(md: string): string {
+  return md
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')        // images
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')      // links → text
+    .replace(/^#{1,6}\s+/gm, '')                  // headings
+    .replace(/[*_`>]/g, '')                       // emphasis / quote / code marks
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
 
 async function fetchHtml(url: string): Promise<string | null> {
   const controller = new AbortController()
@@ -48,11 +69,12 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
     const pipelineRunId = body.pipeline_run_id as string | undefined
     const batchSize     = Math.min(50, body.batch_size ?? 15)
     const dryRun        = body.dry_run === true
+    const targetTable   = (body.target_table as string | undefined) ?? 'news_articles'
 
     let q = supabase
       .from('ingestion_staging')
       .select('id, normalized_data')
-      .eq('target_table', 'news_articles')
+      .eq('target_table', targetTable)
       .eq('enrichment_status', 'pending')
       .not('normalized_data', 'is', null)
       .order('created_at', { ascending: true })
@@ -73,8 +95,11 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
       // Idempotency: already processed in a prior run.
       if (n.extraction_meta) { alreadyDone++; continue }
 
+      // News rows carry `url`; venue/event rows carry `website`. Accept both.
       const url = String(
         n.url ??
+        n.website ??
+        n.source_url ??
         (Array.isArray(n.urls) ? (n.urls as unknown[])[0] : '') ??
         '',
       ).trim()
@@ -84,26 +109,58 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
       const rssContent = String(n.content ?? n.description ?? '')
 
       try {
-        const html = await fetchHtml(url)
-        const art = html ? extractArticle(html, url) : null
+        // Primary: the extract worker (cleaned markdown + plain-text body + meta).
+        const ext = await extractContent(supabase, { url })
+
+        // Fallback: local readability-lite when the worker is down / circuit open.
+        let bodyText: string
+        let extractMethod: string
+        let markdown: string | null = null
+        let metaAuthor: string | null = null
+        let metaPublished: string | null = null
+        let metaImage: string | null = null
+        let metaLang: string | null = null
+
+        if (ext) {
+          markdown = ext.markdown || null
+          bodyText = ext.markdown ? markdownToText(ext.markdown) : ''
+          extractMethod = `worker:${ext.method}`
+          metaAuthor = ext.meta.author
+          metaPublished = ext.meta.publishedAt
+          metaImage = ext.meta.image
+          metaLang = ext.meta.lang
+        } else {
+          const html = await fetchHtml(url)
+          const art = html ? extractArticle(html, url) : null
+          bodyText = art?.content ?? ''
+          extractMethod = art ? `local:${art.method}` : 'fetch_failed'
+          metaAuthor = art?.author ?? null
+          metaPublished = art?.publishedAt ?? null
+          metaImage = art?.imageUrl ?? null
+          metaLang = art?.lang ?? null
+        }
 
         const meta: Record<string, unknown> = {
-          method: art?.method ?? 'fetch_failed',
+          method: extractMethod,
           run_at: new Date().toISOString(),
           original_length: rssContent.length,
-          extracted_length: art?.charCount ?? 0,
+          extracted_length: bodyText.length,
+          has_markdown: !!markdown,
           applied: false,
         }
 
         const merged: Record<string, unknown> = { ...n }
 
+        // Stash cleaned markdown for the enrich stage regardless of the body swap.
+        if (markdown) merged.markdown = markdown
+
         // Swap in full text only when it's a clear gain over the RSS stub.
         if (
-          art && art.content &&
-          art.content.length > rssContent.length * MIN_GAIN_RATIO &&
-          art.content.length >= 250
+          bodyText &&
+          bodyText.length > rssContent.length * MIN_GAIN_RATIO &&
+          bodyText.length >= 250
         ) {
-          merged.content = art.content
+          merged.content = bodyText
           meta.applied = true
           extracted++
         } else {
@@ -111,14 +168,12 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
         }
 
         // Backfill thin/empty metadata from the page even when body wasn't swapped.
-        if (art) {
-          if (art.author && !n.author) merged.author = art.author
-          if (art.publishedAt && !n.published_at) merged.published_at = art.publishedAt
-          if (art.imageUrl && !n.image_url && !(Array.isArray(n.images) && n.images.length)) {
-            merged.image_url = art.imageUrl
-          }
-          if (art.lang && !n.lang) merged.lang = art.lang
+        if (metaAuthor && !n.author) merged.author = metaAuthor
+        if (metaPublished && !n.published_at) merged.published_at = metaPublished
+        if (metaImage && !n.image_url && !(Array.isArray(n.images) && n.images.length)) {
+          merged.image_url = metaImage
         }
+        if (metaLang && !n.lang) merged.lang = metaLang
 
         merged.extraction_meta = meta
 

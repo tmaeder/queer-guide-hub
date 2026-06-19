@@ -56,6 +56,8 @@ Deno.serve(withErrorReporting('pipeline-enrich-venue', async (req) => {
             country:     String(loc.country ?? ''),
             category:    String(n.category ?? n.venue_type ?? ''),
             tags:        (n.tags ?? []) as string[],
+            // Cleaned website markdown from pipeline-extract-fulltext, when present.
+            pageMarkdown: typeof n.markdown === 'string' ? n.markdown : undefined,
           }))
       } catch (e) {
         aiError = e instanceof CircuitOpenError ? `circuit_open:${e.apiName}` : (e as Error).message
