@@ -59,6 +59,8 @@ Deno.serve(withErrorReporting('pipeline-enrich-events', async (req) => {
             country:     String(loc.country ?? ''),
             event_type:  String(n.event_type ?? n.category ?? ''),
             venue_name:  String(n.venue_name ?? ''),
+            // Cleaned event-page markdown from pipeline-extract-fulltext, when present.
+            pageMarkdown: typeof n.markdown === 'string' ? n.markdown : undefined,
           }))
       } catch (e) {
         aiError = e instanceof CircuitOpenError ? `circuit_open:${e.apiName}` : (e as Error).message
