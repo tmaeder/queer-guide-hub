@@ -42,6 +42,7 @@ import {
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { formatNewsTag } from '@/lib/newsTags';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
@@ -650,7 +651,7 @@ export default function NewsDetail() {
                       className="text-xs cursor-pointer"
                       onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
                     >
-                      {tag}
+                      {formatNewsTag(tag)}
                     </Badge>
                   ))}
                 </div>

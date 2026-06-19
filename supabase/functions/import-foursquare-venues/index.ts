@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts'
-import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateAmenity, getOrCreateService } from '../_shared/venue-import-helpers.ts'
+import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateService } from '../_shared/venue-import-helpers.ts'
 
 // Input validation schema
 interface VenueImportRequest {
@@ -80,7 +80,6 @@ async function mapVenueCategory(supabase: unknown, categoryName: string) {
 }
 
 async function mapAmenitiesAndServices(supabase: unknown, venue: FoursquareVenue, categoryName: string) {
-  const amenityIds = []
   const serviceIds = []
   const amenityNames = []
   const serviceNames = []
@@ -111,8 +110,6 @@ async function mapAmenitiesAndServices(supabase: unknown, venue: FoursquareVenue
 
       if (amenityName) {
         amenityNames.push(amenityName)
-        const amenityId = await getOrCreateAmenity(supabase, amenityName, amenitySlug)
-        if (amenityId) amenityIds.push(amenityId)
       }
     }
   }
@@ -158,7 +155,7 @@ async function mapAmenitiesAndServices(supabase: unknown, venue: FoursquareVenue
     if (socialId) serviceIds.push(socialId)
   }
 
-  return { amenityIds, serviceIds, amenityNames, serviceNames }
+  return { serviceIds, amenityNames, serviceNames }
 }
 
 interface FoursquareVenue {
@@ -408,7 +405,7 @@ Deno.serve(async (req) => {
               const { categorySlug, categoryId: _venueCategoryId } = await mapVenueCategory(supabase, venueCategoryName)
 
               // Map amenities and services
-              const { _amenityIds, _serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, venue, venueCategoryName)
+              const { _serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, venue, venueCategoryName)
 
               // Process photos from Foursquare
               const imageUrls = venue.photos?.slice(0, 3).map(photo => {

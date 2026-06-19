@@ -75,7 +75,6 @@ const MapPage = lazyRetry(() => import('./pages/Map'));
 const AdminVenues = lazy(() => import('./pages/AdminVenues'));
 const AdminDuplicates = lazy(() => import('./pages/AdminDuplicates'));
 const AdminVenueCategories = lazy(() => import('./pages/AdminVenueCategories'));
-const AdminVenueAmenities = lazy(() => import('./pages/AdminVenueAmenities'));
 const AdminVenueServices = lazy(() => import('./pages/AdminVenueServices'));
 const AdminEventTypes = lazy(() => import('./pages/AdminEventTypes'));
 const AdminEventAmenities = lazy(() => import('./pages/AdminEventAmenities'));
@@ -360,7 +359,6 @@ export const AppRoutes = () => {
                 {/* Settings -- taxonomy management pages */}
                 <Route path="settings" element={<AdminTags />} />
                 <Route path="settings/venue-categories" element={<AdminVenueCategories />} />
-                <Route path="settings/venue-amenities" element={<AdminVenueAmenities />} />
                 <Route path="settings/venue-services" element={<AdminVenueServices />} />
                 <Route path="settings/event-types" element={<AdminEventTypes />} />
                 <Route path="settings/event-amenities" element={<AdminEventAmenities />} />
@@ -390,10 +388,6 @@ export const AppRoutes = () => {
                 <Route
                   path="venue-categories"
                   element={<Navigate to="/admin/settings/venue-categories" replace />}
-                />
-                <Route
-                  path="venue-amenities"
-                  element={<Navigate to="/admin/settings/venue-amenities" replace />}
                 />
                 <Route
                   path="venue-services"
