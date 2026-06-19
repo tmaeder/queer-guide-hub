@@ -117,15 +117,29 @@ interface SearchResponse {
 
 const FORBIDDEN_FACET_KEYS = new Set(['undefined', 'null', '']);
 
-/** P2-10: never let `undefined`/`null`/empty surface as a facet bucket label. */
-function sanitiseFacets(input: FacetDistribution | undefined): FacetDistribution {
-  if (!input) return {};
+/**
+ * Normalise the worker's facet distribution into `{ facet: { value: count } }`.
+ * The search-proxy emits each facet as an ordered ARRAY (`[{value,count}]`, from
+ * its personalized reorderFacets) — older/object-shaped payloads are still
+ * accepted. P2-10: never let `undefined`/`null`/empty surface as a bucket label.
+ */
+function sanitiseFacets(input: unknown): FacetDistribution {
+  if (!input || typeof input !== 'object') return {};
   const out: FacetDistribution = {};
-  for (const [facet, values] of Object.entries(input)) {
+  for (const [facet, values] of Object.entries(input as Record<string, unknown>)) {
     out[facet] = {};
-    for (const [v, c] of Object.entries(values || {})) {
-      const key = FORBIDDEN_FACET_KEYS.has(v) ? 'Other' : v;
-      out[facet][key] = (out[facet][key] || 0) + c;
+    const pairs: Array<[unknown, unknown]> = Array.isArray(values)
+      ? values.map((e) => [
+          (e as { value?: unknown })?.value,
+          (e as { count?: unknown })?.count,
+        ])
+      : Object.entries((values as Record<string, unknown>) || {});
+    for (const [v, c] of pairs) {
+      if (v == null) continue;
+      const label = String(v);
+      const key = FORBIDDEN_FACET_KEYS.has(label) ? 'Other' : label;
+      const n = typeof c === 'number' ? c : Number(c) || 0;
+      out[facet][key] = (out[facet][key] || 0) + n;
     }
   }
   return out;
