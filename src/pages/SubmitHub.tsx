@@ -206,9 +206,7 @@ function SubmitTypeCard({ type, onClick, featured = false }: SubmitTypeCardProps
           <Icon size={20} aria-hidden="true" />
         </div>
         <div className="flex flex-1 flex-col">
-          <p className="text-title font-semibold leading-tight">
-            {t('pages.submit.cardTitle', 'Submit {{label}}', { label: type.label })}
-          </p>
+          <p className="text-title font-semibold leading-tight">Submit {type.label}</p>
           <p className="mt-2 text-sm leading-[1.5] text-muted-foreground">{type.description}</p>
           <div className="mt-4 flex items-center gap-1.5 text-sm font-semibold sm:mt-auto sm:pt-4">
             {t('pages.submit.getStarted', 'Get started')}
