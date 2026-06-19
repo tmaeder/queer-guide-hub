@@ -13,6 +13,7 @@ import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { safeText } from '@/utils/safeDisplay';
+import { formatNewsTag } from '@/lib/newsTags';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import type { NewsCategory } from '@/hooks/useNews';
@@ -144,7 +145,8 @@ export const NewsCard = ({
       ? article.category
       : null;
   const firstUsableTag = tags.find((t) => !isHiddenCategory(t));
-  const fallbackCategoryFromTag = !displayCategory && firstUsableTag ? firstUsableTag : null;
+  const fallbackCategoryFromTag =
+    !displayCategory && firstUsableTag ? formatNewsTag(firstUsableTag) : null;
   const categoryDisplay = displayCategory
     ? getCategoryLabel(displayCategory)
     : fallbackCategoryFromTag;
