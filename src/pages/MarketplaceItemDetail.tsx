@@ -196,7 +196,7 @@ export default function MarketplaceItemDetail() {
 
   const breadcrumbs = listing
     ? [
-        { label: 'Marketplace', href: '/marketplace' },
+        { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
         ...(listing.category ? [{ label: listing.category }] : []),
         { label: listing.title },
       ]

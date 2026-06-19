@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { breadcrumbJsonLd } from '@/lib/breadcrumbJsonLd';
 import { useNews } from '@/hooks/useNews';
 import type { NewsCategory } from '@/hooks/useNews';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
@@ -233,6 +234,13 @@ export default function NewsArchive() {
   const metaDescription = activeCategoryName
     ? `Browse and filter all ${activeCategoryName.toLowerCase()} news from the LGBTQ+ community worldwide.`
     : 'Browse and filter all LGBTQ+ news and stories from around the world.';
+  const breadcrumbSchema = breadcrumbJsonLd([
+    { label: 'Home', href: '/' },
+    { label: 'News', href: '/news' },
+    ...(activeCategoryName
+      ? [{ label: activeCategoryName, href: `/news/all?category=${activeCategory}` }]
+      : []),
+  ]);
   useMeta({
     title: metaTitle,
     description: metaDescription,
@@ -248,24 +256,7 @@ export default function NewsArchive() {
           : 'https://queer.guide/news',
         isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
       },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://queer.guide' },
-          { '@type': 'ListItem', position: 2, name: 'News', item: 'https://queer.guide/news' },
-          ...(activeCategoryName
-            ? [
-                {
-                  '@type': 'ListItem',
-                  position: 3,
-                  name: activeCategoryName,
-                  item: `https://queer.guide/news/all?category=${activeCategory}`,
-                },
-              ]
-            : []),
-        ],
-      },
+      ...(breadcrumbSchema ? [breadcrumbSchema] : []),
     ],
   });
 

@@ -20,7 +20,7 @@ import {
 } from './PersonalityDetail.parts';
 
 export default function PersonalityDetail() {
-  useTranslation();
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const [countryId, setCountryId] = useState<string | null>(null);
@@ -155,7 +155,7 @@ export default function PersonalityDetail() {
         loading={isLoading}
         error={error as Error | null}
         breadcrumbs={[
-          { label: 'Personalities', href: '/personalities' },
+          { label: t('breadcrumb.personalities', 'People'), href: '/personalities' },
           ...(personality ? [{ label: personality.name }] : []),
         ]}
         hero={

@@ -22,6 +22,7 @@ import { EventCard } from '@/components/events/EventCard';
 import { EntityMap } from '@/components/map/EntityMap';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import type { ReactNode } from 'react';
+import type { TFunction } from 'i18next';
 import type { Database } from '@/integrations/supabase/types';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -53,8 +54,10 @@ export type VillageWithRelations = {
 type VillageVenue = Venue;
 type VillageEvent = Event;
 
-export function buildVillageBreadcrumbs(village: VillageWithRelations) {
-  const crumbs: { label: ReactNode; href?: string }[] = [{ label: 'Villages', href: '/villages' }];
+export function buildVillageBreadcrumbs(village: VillageWithRelations, t: TFunction) {
+  const crumbs: { label: ReactNode; href?: string }[] = [
+    { label: t('breadcrumb.villages', 'Queer villages'), href: '/villages' },
+  ];
   if (village.countries) {
     crumbs.push({
       label: village.countries.name,

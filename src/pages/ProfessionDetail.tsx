@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { usePersonalitiesByProfession } from '@/hooks/usePageFetchers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +19,7 @@ interface ProfessionData {
 }
 
 export default function ProfessionDetail() {
+  const { t } = useTranslation();
   const { professionName } = useParams<{ professionName: string }>();
   const navigate = useLocalizedNavigate();
   const [professionData, setProfessionData] = useState<ProfessionData | null>(null);
@@ -59,6 +62,15 @@ export default function ProfessionDetail() {
   const handleBack = () => {
     navigate('/resources');
   };
+
+  useBreadcrumbs(
+    professionData
+      ? [
+          { label: t('breadcrumb.resources', 'Resources'), href: '/resources' },
+          { label: professionData.name },
+        ]
+      : null,
+  );
 
   if (loading) {
     return (
@@ -105,17 +117,11 @@ export default function ProfessionDetail() {
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={handleBack} className="shrink-0">
-            <ArrowLeft size={16} className="mr-2" />
-            Back
-          </Button>
-          <div className="flex items-center gap-4">
-            <User size={32} className="text-primary" />
-            <h4 className="text-2xl font-bold">{professionData.name}</h4>
-            <Badge variant="secondary">
-              {professionData.totalCount} {professionData.totalCount === 1 ? 'person' : 'people'}
-            </Badge>
-          </div>
+          <User size={32} className="text-primary" />
+          <h4 className="text-2xl font-bold">{professionData.name}</h4>
+          <Badge variant="secondary">
+            {professionData.totalCount} {professionData.totalCount === 1 ? 'person' : 'people'}
+          </Badge>
         </div>
 
         {/* Stats Overview */}
