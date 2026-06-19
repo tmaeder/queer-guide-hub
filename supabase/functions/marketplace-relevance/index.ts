@@ -19,20 +19,40 @@ Also flag sensitivity: "nsfw" (explicit adult), "medical" (HIV, gender-affirming
 
 Return ONLY JSON, no markdown.`
 
+// Coerce CF Workers AI result (.result.response can be a string OR an object).
+function coerceText(x: unknown): string {
+  if (typeof x === 'string') return x
+  if (x && typeof x === 'object') {
+    const o = x as Record<string, unknown>
+    return String(o.response ?? o.text ?? JSON.stringify(o))
+  }
+  return String(x ?? '')
+}
+
 async function validateRelevance(item: { title: string; description: string; brand?: string; category?: string; tags?: string[] }): Promise<RelevanceResult> {
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY')
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
-  const userPrompt = `Product: ${item.title}\nBrand: ${item.brand || 'N/A'}\nCategory: ${item.category || 'N/A'}\nTags: ${(item.tags || []).join(', ')}\nDescription: ${(item.description || '').slice(0, 800)}\n\nReturn JSON: {"queer_relevant":boolean,"confidence":0-1,"reasoning":"brief","suggested_tags":["..."],"sensitivity_flags":[{"category":"legal|medical|nsfw","confidence":0-1,"severity":"low|medium|high","indicators":["terms"]}]}`
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 512, system: SYSTEM_PROMPT, messages: [{ role: 'user', content: userPrompt }] }),
-  })
-  if (!res.ok) throw new Error(`Claude ${res.status}: ${await res.text()}`)
-  const data = await res.json()
-  const text = data.content?.[0]?.text || '{}'
+  // Cloudflare Workers AI (primary). ANTHROPIC_API_KEY is not configured project-wide,
+  // and CF is the chosen provider. Native /ai/run endpoint (the /ai/v1 compat endpoint
+  // hangs on JSON mode); coerce the string|object response before parsing.
+  const acct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
+  const cfToken = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
+  if (!acct || !cfToken) throw new Error('CF Workers AI not configured (CF_ACCOUNT_ID + CF_AI_API_TOKEN)')
+  const model = Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+  const userPrompt = `Product: ${item.title}\nBrand: ${item.brand || 'N/A'}\nCategory: ${item.category || 'N/A'}\nTags: ${(item.tags || []).join(', ')}\nDescription: ${(item.description || '').slice(0, 800)}\n\nReturn ONLY minified JSON: {"queer_relevant":boolean,"confidence":0-1,"reasoning":"brief","suggested_tags":["..."],"sensitivity_flags":[{"category":"legal|medical|nsfw","confidence":0-1,"severity":"low|medium|high","indicators":["terms"]}]}`
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 45000)
+  let data: unknown
+  try {
+    const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acct}/ai/run/${model}`, {
+      method: 'POST', signal: ctrl.signal,
+      headers: { Authorization: `Bearer ${cfToken}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: userPrompt }], max_tokens: 512 }),
+    })
+    if (!res.ok) throw new Error(`workers-ai ${res.status}: ${(await res.text()).slice(0, 150)}`)
+    data = await res.json()
+  } finally { clearTimeout(timer) }
+  const text = coerceText((data as { result?: { response?: unknown } })?.result?.response ?? (data as { result?: unknown })?.result)
   const match = text.match(/\{[\s\S]*\}/)
-  if (!match) throw new Error('non-json Claude response')
+  if (!match) throw new Error('non-json LLM response')
   const parsed = JSON.parse(match[0])
   return {
     queer_relevant: !!parsed.queer_relevant,
