@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Link2, Ban, RotateCcw, Plus, Sparkles } from 'lucide-react';
+import { X, Link2, Ban, RotateCcw, Plus, Sparkles, Lightbulb } from 'lucide-react';
 import { Github } from '@/components/icons/brand';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,6 +67,7 @@ interface Props {
   onRecordHandoff: (target: HandoffTarget) => void;
   onUpdateHandoff: (handoffId: string, status: HandoffStatus) => void;
   isRecordingHandoff: boolean;
+  onPromoteToRoadmap?: () => void;
 }
 
 export function FeedbackDetailDrawer({
@@ -104,6 +105,7 @@ export function FeedbackDetailDrawer({
   onRecordHandoff,
   onUpdateHandoff,
   isRecordingHandoff,
+  onPromoteToRoadmap,
 }: Props) {
   const [localNotes, setLocalNotes] = useState('');
   const [newLabel, setNewLabel] = useState('');
@@ -191,6 +193,19 @@ export function FeedbackDetailDrawer({
             onMerge={onMergeDuplicate}
             onDismiss={onDismissDuplicate}
           />
+
+          {onPromoteToRoadmap &&
+            ['idea', 'improvement', 'content-idea'].includes(item.data.category) && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="mb-4 w-full"
+                onClick={onPromoteToRoadmap}
+              >
+                <Lightbulb className="h-4 w-4" />
+                <span className="ml-1">Promote to roadmap</span>
+              </Button>
+            )}
 
           {isForwarded && item.feedback_status !== 'done' && (
             <div

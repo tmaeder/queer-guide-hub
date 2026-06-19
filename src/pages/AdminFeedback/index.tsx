@@ -12,10 +12,13 @@ import type { StoryStatus } from '@/components/admin/feedback/types';
 import { formatClaudePrompt } from '@/components/admin/feedback/claudePrompts';
 import { TriageTab } from './TriageTab';
 import { StoriesTab } from './StoriesTab';
+import { RoadmapTab } from './RoadmapTab';
+import { usePromoteToRoadmap } from '@/hooks/useRoadmap';
 import { useAdminFeedbackController } from './useAdminFeedbackController';
 
 export default function AdminFeedback() {
   const c = useAdminFeedbackController();
+  const promoteToRoadmap = usePromoteToRoadmap();
 
   if (c.isLoading || c.errorsLoading) {
     return (
@@ -25,10 +28,7 @@ export default function AdminFeedback() {
     );
   }
 
-  const tabIdx =
-    c.state.tab === 'triage' ? 1 : c.state.tab === 'analytics' ? 2 : 0;
-  const tabValue: 'stories' | 'triage' | 'analytics' =
-    tabIdx === 1 ? 'triage' : tabIdx === 2 ? 'analytics' : 'stories';
+  const tabValue = c.state.tab;
 
   return (
     <div className="p-4 sm:p-6">
@@ -52,13 +52,14 @@ export default function AdminFeedback() {
       <Tabs
         value={tabValue}
         onValueChange={(v) =>
-          c.update({ tab: v as 'stories' | 'triage' | 'analytics' })
+          c.update({ tab: v as 'stories' | 'triage' | 'analytics' | 'roadmap' })
         }
         className="mb-4"
       >
         <TabsList>
           <TabsTrigger value="stories">{`Stories (${c.stories.length})`}</TabsTrigger>
           <TabsTrigger value="triage">{`Triage (${c.totalVisibleCount})`}</TabsTrigger>
+          <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
       </Tabs>
@@ -135,6 +136,8 @@ export default function AdminFeedback() {
           onDismissSuggestion={(id) => c.dismissStorySuggestion.mutate(id)}
         />
       )}
+
+      {tabValue === 'roadmap' && <RoadmapTab />}
 
       {tabValue === 'analytics' && (
         <AnalyticsTab items={c.items} voteCounts={c.votesMap} />
@@ -337,6 +340,17 @@ export default function AdminFeedback() {
           }
         }}
         isRecordingHandoff={c.recordHandoff.isPending}
+        onPromoteToRoadmap={() => {
+          if (!c.selected) return;
+          promoteToRoadmap.mutate([c.selected.id], {
+            onSuccess: () => {
+              c.toast({ title: 'Promoted to roadmap', description: 'Shape it in the Roadmap tab.' });
+              c.update({ sel: null, tab: 'roadmap' });
+            },
+            onError: (e: Error) =>
+              c.toast({ title: 'Promote failed', description: e.message, variant: 'destructive' }),
+          });
+        }}
       />
 
       <FeedbackCommandPalette
