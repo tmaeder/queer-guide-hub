@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 vi.mock('@/components/groups/GroupCard', () => ({ GroupCard: () => null }));
 vi.mock('@/components/groups/CreateGroupDialog', () => ({ CreateGroupDialog: () => null }));
@@ -19,12 +20,20 @@ vi.mock('@/hooks/useGroups', () => ({
 }));
 vi.mock('@/components/layout/AuthGate', () => ({ AuthGate: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
+vi.mock('@/hooks/useRecommendedGroups', () => ({
+  useRecommendedGroups: () => ({ groups: [], isLoading: false, isEmpty: true }),
+}));
 
 import Groups from '../Groups';
 
 describe('Groups', () => {
   it('renders without crashing', () => {
-    const { container } = render(<MemoryRouter><Groups /></MemoryRouter>);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter><Groups /></MemoryRouter>
+      </QueryClientProvider>,
+    );
     expect(container).toBeTruthy();
   });
 });

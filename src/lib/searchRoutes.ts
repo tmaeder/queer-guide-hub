@@ -18,6 +18,8 @@ export const ROUTE_HREFS: Record<string, (slug: string) => string> = {
   queer_village: (s) => `/villages/${s}`,
   news: (s) => `/news/${s}`,
   tag: (s) => `/tags/${s}`,
+  // Groups have no slug — `s` is the group id (SearchResults falls back to objectID).
+  group: (s) => `/groups/${s}`,
 };
 
 export interface EntityRef {

@@ -193,6 +193,12 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'queer_villages',
       },
       {
+        id: 'village-quality',
+        label: 'Village quality',
+        icon: ShieldCheck,
+        route: '/admin/content/village-quality',
+      },
+      {
         id: 'marketplace',
         label: 'Marketplace',
         icon: ShoppingBag,
