@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMarketplace, type MarketplaceFiltersInput, type MarketplaceSort } from '@/hooks/useMarketplace';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { MarketplaceCard } from './MarketplaceCard';
 import { AffiliateDisclosure } from './AffiliateDisclosure';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,9 @@ export function MarketplaceFilteredView({
     }
   }, [listings, page]);
 
+  const listingIds = useMemo(() => accumulated.map((l) => l.id), [accumulated]);
+  const { assets } = useEntityImageAssets('marketplace_listing', listingIds);
+
   const totalPages = Math.ceil(total / pageSize);
   const canLoadMore = page < totalPages - 1;
 
@@ -122,7 +126,7 @@ export function MarketplaceFilteredView({
           <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
             {accumulated.map((listing, index) => (
               <div key={listing.id}>
-                <MarketplaceCard listing={listing} priority={index < 8} />
+                <MarketplaceCard listing={listing} imageAsset={assets.get(listing.id)} priority={index < 8} />
               </div>
             ))}
           </StaggerGrid>
