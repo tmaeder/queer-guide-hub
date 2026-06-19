@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { isAcceptedFile, extractFileContent, MAX_FILE_SIZE_BYTES } from '../fileExtractors';
+import { isAcceptedFile, MAX_FILE_SIZE_BYTES } from '../fileExtractors';
+import { extractFileContent } from '../extractFileContent';
 import { UploadErrorException } from '../uploadErrors';
 
 // extractFileContent and internal functions need Canvas/PDF/mammoth — tested via integration.
