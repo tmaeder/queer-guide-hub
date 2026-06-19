@@ -50,16 +50,60 @@ async function searchQid(name) {
   return null
 }
 
-async function getImages(qids) {
-  const map = new Map()
+const commonsUrl = file => `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file.replace(/ /g, '_'))}?width=500`
+// preferred sitelink wikis (en first, then the franchise languages)
+const WIKI_PREF = ['en', 'es', 'fr', 'it', 'pt', 'de', 'nl', 'th', 'sv', 'fil', 'ceb']
+
+// Fetch each entity's P18 image AND its Wikipedia sitelinks (title per lang).
+async function getEntityMedia(qids) {
+  const map = new Map() // qid -> { p18, sitelinks: [{lang,title}] }
   for (let i = 0; i < qids.length; i += 50) {
     const batch = qids.slice(i, i + 50)
-    const url = WD + '?' + new URLSearchParams({ action: 'wbgetentities', format: 'json', props: 'claims', ids: batch.join('|') })
-    const j = await fetchCached(url, 'p18_' + createHash('md5').update(batch.join('|')).digest('hex'))
+    const url = WD + '?' + new URLSearchParams({ action: 'wbgetentities', format: 'json', props: 'claims|sitelinks', ids: batch.join('|') })
+    const j = await fetchCached(url, 'media_' + createHash('md5').update(batch.join('|')).digest('hex'))
     for (const qid of batch) {
-      const file = j?.entities?.[qid]?.claims?.P18?.[0]?.mainsnak?.datavalue?.value
-      if (file) map.set(qid, `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file.replace(/ /g, '_'))}?width=500`)
+      const ent = j?.entities?.[qid]
+      if (!ent) continue
+      const p18 = ent.claims?.P18?.[0]?.mainsnak?.datavalue?.value || null
+      const sitelinks = Object.entries(ent.sitelinks || {})
+        .filter(([k]) => k.endsWith('wiki') && !k.includes('wikiquote') && !k.includes('commons'))
+        .map(([k, v]) => ({ lang: k.replace(/wiki$/, ''), title: v.title }))
+      map.set(qid, { p18, sitelinks })
     }
+  }
+  return map
+}
+
+// Lead image (pageimages) from a specific language Wikipedia, batched by lang.
+async function pageImagesByLang(lang, titles) {
+  const out = new Map()
+  for (let i = 0; i < titles.length; i += 40) {
+    const batch = titles.slice(i, i + 40)
+    const url = `https://${lang}.wikipedia.org/w/api.php?` + new URLSearchParams({
+      action: 'query', format: 'json', formatversion: '2', prop: 'pageimages',
+      piprop: 'thumbnail', pithumbsize: '500', titles: batch.join('|'), redirects: '1',
+    })
+    const j = await fetchCached(url, `pi_${lang}_` + createHash('md5').update(batch.join('|')).digest('hex'))
+    for (const p of j?.query?.pages ?? []) if (p.thumbnail?.source) out.set(p.title, p.thumbnail.source)
+  }
+  return out
+}
+
+async function getImages(qids) {
+  const media = await getEntityMedia(qids)
+  const map = new Map()
+  // 1) Wikidata P18 (best)
+  for (const [qid, m] of media) if (m.p18) map.set(qid, commonsUrl(m.p18))
+  // 2) fallback: lead image from a sitelinked Wikipedia article (any language)
+  const need = [...media].filter(([qid]) => !map.has(qid))
+  const byLang = new Map() // lang -> [{qid,title}]
+  for (const [qid, m] of need) {
+    const pick = WIKI_PREF.map(l => m.sitelinks.find(s => s.lang === l)).find(Boolean) || m.sitelinks[0]
+    if (pick) { if (!byLang.has(pick.lang)) byLang.set(pick.lang, []); byLang.get(pick.lang).push({ qid, title: pick.title }) }
+  }
+  for (const [lang, items] of byLang) {
+    const imgs = await pageImagesByLang(lang, items.map(x => x.title))
+    for (const it of items) { const img = imgs.get(it.title); if (img) map.set(it.qid, img) }
   }
   return map
 }
