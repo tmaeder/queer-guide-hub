@@ -5,8 +5,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
-vi.mock('@/hooks/useNews', () => ({
-  useNews: () => ({ articles: [], loading: false, error: null }),
+vi.mock('@/hooks/useLatestNews', () => ({
+  useLatestNews: () => ({ articles: [], loading: false, error: null }),
 }));
 vi.mock('@/hooks/useEntityImageAssets', () => ({
   useEntityImageAssets: () => ({ assets: new Map() }),

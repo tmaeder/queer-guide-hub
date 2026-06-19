@@ -12,7 +12,6 @@ import { submissionRegistry } from '@/config/submissionRegistry';
 import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
 
 const Index = lazyRetry(() => import('./pages/Index'));
-const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
 const VenueDetail = lazyRetry(() => import('./pages/VenueDetail'));
 const VenueGuides = lazyRetry(() => import('./pages/VenueGuides'));
@@ -196,6 +195,19 @@ function SettingsRedirect() {
 function FootprintRedirect() {
   const { userId } = useParams<{ userId: string }>();
   return <Navigate to={`/user/${userId}/travel`} replace />;
+}
+
+/**
+ * The legacy /tags/:slug stub is retired — the canonical glossary surface is
+ * /resources/:tagName. Redirect through, preserving the locale prefix (the
+ * `/:locale?` capture would otherwise be dropped, bouncing non-EN visitors to
+ * the default locale).
+ */
+function TagSlugRedirect() {
+  const { slug, locale } = useParams<{ slug: string; locale?: string }>();
+  const prefix =
+    locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
+  return <Navigate to={`${prefix}/resources/${slug ?? ''}`} replace />;
 }
 
 /**
@@ -492,7 +504,7 @@ export const AppRoutes = () => {
                 <Route path="ressources" element={<Navigate to="/resources" replace />} />
                 <Route path="ressources/:tagName" element={<Navigate to="/resources" replace />} />
                 <Route path="tags" element={<Navigate to="/resources" replace />} />
-                <Route path="tags/:slug" element={<TagDetail />} />
+                <Route path="tags/:slug" element={<TagSlugRedirect />} />
                 <Route path="donate" element={<Donate />} />
                 <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
                 <Route path="about" element={<About />} />
