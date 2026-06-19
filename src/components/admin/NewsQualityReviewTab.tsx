@@ -308,6 +308,22 @@ export default function NewsQualityReviewTab() {
     onError: (e: Error) => toast.error(`Toggle failed: ${e.message}`),
   });
 
+  // Bulk-publish the safe slice of the review backlog (relevant + complete + real
+  // body + no hard editorial blocker). Reversible via unbatch_approve_safe_news.
+  const batchApprove = useMutation({
+    mutationFn: async () => {
+      const { data, error: e } = await sb.rpc('batch_approve_safe_news', {});
+      if (e) throw e;
+      return data as { approved: number; examined: number };
+    },
+    onSuccess: (d) => {
+      toast.success(`Published ${d?.approved ?? 0} safe articles`);
+      qc.invalidateQueries({ queryKey: ['news-quality-review'] });
+      qc.invalidateQueries({ queryKey: ['news-quality-health'] });
+    },
+    onError: (e: Error) => toast.error(`Batch approve failed: ${e.message}`),
+  });
+
   if (isLoading) {
     return (
       <div className="p-8 text-center">
@@ -401,13 +417,27 @@ export default function NewsQualityReviewTab() {
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-wrap items-center gap-2">
         <Badge variant="outline" className="border-border text-foreground">
           Review: {counts.review}
         </Badge>
         <Badge variant="outline" className="border-destructive text-destructive">
           Rejected: {counts.rejected}
         </Badge>
+        <Button
+          size="sm"
+          variant="outline"
+          className="ml-auto"
+          onClick={() => batchApprove.mutate()}
+          disabled={batchApprove.isPending}
+        >
+          {batchApprove.isPending ? (
+            <Loader2 size={16} className="mr-2 animate-spin" />
+          ) : (
+            <CheckCircle2 size={16} className="mr-2" />
+          )}
+          Publish all safe
+        </Button>
       </div>
 
       {(!rows || rows.length === 0) && (

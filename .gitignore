@@ -70,3 +70,6 @@ types/
 .claude-test-user.json
 node_modules
 playwright/.auth/
+
+# Drag Race import scrape cache/output (regenerable)
+scripts/data-quality/out-dragrace/
