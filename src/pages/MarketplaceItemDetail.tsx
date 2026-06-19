@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
 import { useMeta } from '@/hooks/useMeta';
@@ -223,28 +224,40 @@ export default function MarketplaceItemDetail() {
     : [];
 
   return (
-    <EntityDetailLayout
-      loading={isLoading}
-      error={(error as Error | null) ?? null}
-      breadcrumbs={breadcrumbs}
-      hero={
-        listing ? (
-          <MarketplaceHero
-            listing={listing}
-            reviewsCount={reviews.length}
-            averageRating={averageRating}
-            isFavorited={isFavorited}
-            onToggleFavorite={handleToggleFavorite}
-            onShare={handleShare}
-            heroImage={heroImage}
-            onContentUpdated={refetch}
+    <>
+      <EntityDetailLayout
+        loading={isLoading}
+        error={(error as Error | null) ?? null}
+        breadcrumbs={breadcrumbs}
+        hero={
+          listing ? (
+            <MarketplaceHero
+              listing={listing}
+              reviewsCount={reviews.length}
+              averageRating={averageRating}
+              isFavorited={isFavorited}
+              onToggleFavorite={handleToggleFavorite}
+              onShare={handleShare}
+              heroImage={heroImage}
+              onContentUpdated={refetch}
+            />
+          ) : null
+        }
+        tabs={tabs}
+        sidebar={listing ? <MarketplaceSidebar listing={listing} t={t} /> : undefined}
+        entityType="marketplace_listing"
+        entityId={listing?.id}
+      />
+      {listing && (
+        <div className="container mx-auto px-4 pb-12">
+          <MoreLikeThisByTag
+            entityType="marketplace"
+            entityId={listing.id}
+            title="Related by tag"
+            className="mt-8"
           />
-        ) : null
-      }
-      tabs={tabs}
-      sidebar={listing ? <MarketplaceSidebar listing={listing} t={t} /> : undefined}
-      entityType="marketplace_listing"
-      entityId={listing?.id}
-    />
+        </div>
+      )}
+    </>
   );
 }

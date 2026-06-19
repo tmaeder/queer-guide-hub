@@ -17,6 +17,7 @@ import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TagChipRow } from '@/components/tags/TagChipRow';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Image } from '@/components/ui/Image';
@@ -655,6 +656,8 @@ export function VenueOverview({
           </Editable>
         </section>
       )}
+
+      <MoreLikeThisByTag entityType="venue" entityId={venue.id} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { MarketplaceForVillage } from '@/components/marketplace/MarketplaceForVillage';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { useToast } from '@/hooks/use-toast';
@@ -237,6 +238,12 @@ export default function QueerVillageDetail() {
                 <MarkVisitedButton entityType="village" entityId={village.id} kind="saved" />
               </div>
               <SimilarItems entity={{ type: 'queer_village', id: village.id }} />
+              <MoreLikeThisByTag
+                entityType="queer_village"
+                entityId={village.id}
+                title="Related by tag"
+                className="mt-8"
+              />
             </div>
           }
           entityType="queer_village"

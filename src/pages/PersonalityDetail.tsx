@@ -7,6 +7,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { EntityDetailLayout } from '@/components/entity/EntityDetailLayout';
 import { usePersonalities, type Personality } from '@/hooks/usePersonalities';
 import { toast } from '@/hooks/use-toast';
@@ -211,6 +212,12 @@ export default function PersonalityDetail() {
           <SimilarItems
             entity={{ type: 'personality', id: personality.id }}
             contentTypes={['personality']}
+            className="mt-8"
+          />
+          <MoreLikeThisByTag
+            entityType="personality"
+            entityId={personality.id}
+            title="Related by tag"
             className="mt-8"
           />
         </div>
