@@ -2,12 +2,14 @@ import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GroupCard } from '@/components/groups/GroupCard';
+import { GroupDiscoveryRail } from '@/components/groups/GroupDiscoveryRail';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { GroupFilters } from '@/components/groups/GroupFilters';
 import { useGroups } from '@/hooks/useGroups';
+import { useRecommendedGroups } from '@/hooks/useRecommendedGroups';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Users, Search, TrendingUp } from 'lucide-react';
+import { Users, Search, TrendingUp, Sparkles, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -78,6 +80,27 @@ export default function Groups() {
 
   const hasActiveFilters = !!searchQuery || selectedTags.length > 0 || activeFilters.length > 0;
 
+  const { groups: recommendedGroups, isLoading: recsLoading, isEmpty: recsEmpty } =
+    useRecommendedGroups(12);
+
+  const featuredGroups = useMemo(
+    () => groups.filter((g) => g.featured && !g.is_private).slice(0, 12),
+    [groups],
+  );
+
+  const trendingGroups = useMemo(
+    () =>
+      [...groups]
+        .filter((g) => !g.is_private)
+        .sort(
+          (a, b) =>
+            new Date(b.last_activity_at ?? b.created_at).getTime() -
+            new Date(a.last_activity_at ?? a.created_at).getTime(),
+        )
+        .slice(0, 12),
+    [groups],
+  );
+
   const popularGroups = useMemo(
     () =>
       [...groups]
@@ -86,6 +109,16 @@ export default function Groups() {
         .slice(0, 6),
     [groups],
   );
+
+  const railHandlers = {
+    isAuthenticated: !!user,
+    onJoin: joinGroup,
+    onRequestJoin: (id: string) => requestJoin({ groupId: id }),
+    onLeave: leaveGroup,
+    isJoining,
+    isRequesting,
+    isLeaving,
+  };
 
   return (
     <div className="container mx-auto py-12 md:py-20 px-4 flex flex-col gap-6 relative">
@@ -158,14 +191,14 @@ export default function Groups() {
                 onTagsChange={setSelectedTags}
               />
 
-              {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <GroupCard key={i} loading />
-                  ))}
-                </div>
-              ) : filteredGroups.length === 0 ? (
-                hasActiveFilters ? (
+              {hasActiveFilters ? (
+                isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <GroupCard key={i} loading />
+                    ))}
+                  </div>
+                ) : filteredGroups.length === 0 ? (
                   <EmptyState
                     icon={Search}
                     title={t('pages.groups.noMatchTitle', 'No groups match your search')}
@@ -184,43 +217,112 @@ export default function Groups() {
                     }}
                   />
                 ) : (
-                  <EmptyState
-                    icon={Users}
-                    title={t('pages.groups.emptyTitle', 'No groups here yet')}
-                    description={t(
-                      'pages.groups.emptyDescription',
-                      'Be the spark — create the first group and bring people together.',
-                    )}
-                    mood="encouraging"
-                    primaryAction={
-                      user
-                        ? {
-                            label: t('pages.groups.createGroup', 'Create a Group'),
-                            onClick: () => setCreateOpen(true),
-                          }
-                        : {
-                            label: t('common.signIn', 'Sign in'),
-                            onClick: () => navigate('/auth'),
-                          }
-                    }
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredGroups.map((group) => (
+                      <GroupCard
+                        key={group.id}
+                        group={group}
+                        isAuthenticated={!!user}
+                        onJoin={joinGroup}
+                        onRequestJoin={(id) => requestJoin({ groupId: id })}
+                        onLeave={leaveGroup}
+                        isJoining={isJoining}
+                        isRequesting={isRequesting}
+                        isLeaving={isLeaving}
+                      />
+                    ))}
+                  </div>
                 )
-              ) : (
+              ) : isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredGroups.map((group) => (
-                    <GroupCard
-                      key={group.id}
-                      group={group}
-                      isAuthenticated={!!user}
-                      onJoin={joinGroup}
-                      onRequestJoin={(id) => requestJoin({ groupId: id })}
-                      onLeave={leaveGroup}
-                      isJoining={isJoining}
-                      isRequesting={isRequesting}
-                      isLeaving={isLeaving}
-                    />
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <GroupCard key={i} loading />
                   ))}
                 </div>
+              ) : groups.length === 0 ? (
+                <EmptyState
+                  icon={Users}
+                  title={t('pages.groups.emptyTitle', 'No groups here yet')}
+                  description={t(
+                    'pages.groups.emptyDescription',
+                    'Be the spark — create the first group and bring people together.',
+                  )}
+                  mood="encouraging"
+                  primaryAction={
+                    user
+                      ? {
+                          label: t('pages.groups.createGroup', 'Create a Group'),
+                          onClick: () => setCreateOpen(true),
+                        }
+                      : {
+                          label: t('common.signIn', 'Sign in'),
+                          onClick: () => navigate('/auth'),
+                        }
+                  }
+                />
+              ) : (
+                <>
+                  {user && (
+                    <GroupDiscoveryRail
+                      title={t('pages.groups.forYou', 'For you')}
+                      icon={Sparkles}
+                      groups={recommendedGroups}
+                      loading={recsLoading}
+                      {...railHandlers}
+                      emptyState={
+                        recsEmpty ? (
+                          <EmptyState
+                            icon={Sparkles}
+                            title={t('pages.groups.forYouEmptyTitle', 'Nothing tailored yet')}
+                            description={t(
+                              'pages.groups.forYouEmptyDescription',
+                              "Join a group or two and we'll start finding your people.",
+                            )}
+                            mood="encouraging"
+                          />
+                        ) : undefined
+                      }
+                    />
+                  )}
+
+                  {featuredGroups.length > 0 && (
+                    <GroupDiscoveryRail
+                      title={t('pages.groups.featured', 'Featured')}
+                      icon={Star}
+                      groups={featuredGroups}
+                      {...railHandlers}
+                    />
+                  )}
+
+                  <GroupDiscoveryRail
+                    title={t('pages.groups.trending', 'Trending this week')}
+                    icon={TrendingUp}
+                    groups={trendingGroups}
+                    {...railHandlers}
+                  />
+
+                  <div className="flex flex-col gap-4">
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                      <Users className="h-5 w-5 text-foreground" />
+                      {t('pages.groups.allGroups', 'All groups')}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {groups.map((group) => (
+                        <GroupCard
+                          key={group.id}
+                          group={group}
+                          isAuthenticated={!!user}
+                          onJoin={joinGroup}
+                          onRequestJoin={(id) => requestJoin({ groupId: id })}
+                          onLeave={leaveGroup}
+                          isJoining={isJoining}
+                          isRequesting={isRequesting}
+                          isLeaving={isLeaving}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
             </TabsContent>
 
