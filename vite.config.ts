@@ -148,86 +148,55 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // React core MUST be in its own chunk to avoid circular deps
-          if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) {
-            return 'vendor';
-          }
-          if (id.includes('node_modules/react-router-dom/') || id.includes('node_modules/react-router/') || id.includes('node_modules/@remix-run/')) {
-            return 'router';
-          }
-          if (id.includes('node_modules/date-fns/')) {
-            return 'utils';
-          }
-          if (id.includes('node_modules/react-force-graph') || id.includes('node_modules/force-graph') || id.includes('node_modules/d3-')) {
-            return 'graph';
-          }
-          if (id.includes('node_modules/exceljs/')) {
-            return 'exceljs';
-          }
-          if (id.includes('node_modules/maplibre-gl/') || id.includes('node_modules/@protomaps/')) {
-            return 'maplibre';
-          }
-          if (id.includes('node_modules/@tiptap/') || id.includes('node_modules/lowlight/') || id.includes('node_modules/prosemirror-') || id.includes('node_modules/highlight.js/')) {
-            return 'tiptap';
-          }
-          if (id.includes('node_modules/hls.js/')) {
-            return 'hls';
-          }
-          if (id.includes('node_modules/pdfjs-dist/')) {
-            return 'pdfjs';
-          }
-          if (id.includes('node_modules/mammoth/')) {
-            return 'mammoth';
-          }
-          if (id.includes('node_modules/gsap/')) {
-            return 'gsap';
-          }
-          if (id.includes('node_modules/boneyard-js/')) {
-            return 'boneyard';
-          }
-          if (id.includes('node_modules/@sentry/')) {
-            return 'sentry';
-          }
-          if (id.includes('node_modules/i18next') || id.includes('node_modules/react-i18next/')) {
-            return 'i18n';
-          }
-          if (
-            id.includes('node_modules/framer-motion/') ||
-            id.includes('node_modules/motion/') ||
-            id.includes('node_modules/motion-dom/') ||
-            id.includes('node_modules/motion-utils/')
-          ) {
-            return 'framer-motion';
-          }
-          if (id.includes('node_modules/@radix-ui/')) {
-            return 'radix';
-          }
-          if (
-            id.includes('node_modules/@tanstack/react-query') ||
-            id.includes('node_modules/@tanstack/query-')
-          ) {
-            return 'react-query';
-          }
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'lucide';
-          }
-          if (id.includes('node_modules/@supabase/')) {
-            return 'supabase';
-          }
-          if (id.includes('node_modules/recharts/') || id.includes('node_modules/victory-vendor/')) {
-            return 'recharts';
-          }
-          if (id.includes('node_modules/@xyflow/')) {
-            return 'xyflow';
-          }
-          if (id.includes('node_modules/@dnd-kit/')) {
-            return 'dnd-kit';
-          }
-          // Keep scheduler with React
-          if (id.includes('node_modules/scheduler/')) {
-            return 'vendor';
-          }
+        // Vendor chunking via rolldown's native `advancedChunks` (replaces the
+        // old `manualChunks` callback). We MUST use advancedChunks (not
+        // manualChunks) because the Vite/rolldown `__vitePreload` runtime helper
+        // is a virtual module (`\0vite/preload-helper.js`) emitted natively by
+        // rolldown — it does NOT pass through `manualChunks`. Left to itself
+        // rolldown parked the helper inside the first lazy chunk it landed in
+        // (`pdfjs`), and since EVERY chunk that does a dynamic import() imports
+        // the helper, the entry then statically pulled that 428KB pdfjs chunk
+        // onto the critical path of every page. The first group below re-homes
+        // the helper into `vendor` (already modulepreloaded).
+        //
+        // Groups are matched by `test` (regex on module id). Equal priority →
+        // lower array index wins, so this list preserves the exact order of the
+        // former manualChunks if-chain (e.g. d3-* → `graph` before `recharts`).
+        // minSize/minShareCount floors force every matched module into its group
+        // regardless of size or how many entries use it (manualChunks semantics).
+        advancedChunks: {
+          minSize: 0,
+          minModuleSize: 0,
+          minShareCount: 1,
+          groups: [
+            // __vitePreload helper → vendor (must win, hence highest priority)
+            { name: 'vendor', test: /preload-helper/, priority: 100 },
+            // React core MUST be in its own chunk to avoid circular deps
+            { name: 'vendor', test: /node_modules\/react(-dom)?\// },
+            { name: 'router', test: /node_modules\/(react-router-dom|react-router|@remix-run)\// },
+            { name: 'utils', test: /node_modules\/date-fns\// },
+            { name: 'graph', test: /node_modules\/(react-force-graph|force-graph|d3-)/ },
+            { name: 'exceljs', test: /node_modules\/exceljs\// },
+            { name: 'maplibre', test: /node_modules\/(maplibre-gl|@protomaps)\// },
+            { name: 'tiptap', test: /node_modules\/(@tiptap|lowlight|prosemirror-|highlight\.js)\// },
+            { name: 'hls', test: /node_modules\/hls\.js\// },
+            { name: 'pdfjs', test: /node_modules\/pdfjs-dist\// },
+            { name: 'mammoth', test: /node_modules\/mammoth\// },
+            { name: 'gsap', test: /node_modules\/gsap\// },
+            { name: 'boneyard', test: /node_modules\/boneyard-js\// },
+            { name: 'sentry', test: /node_modules\/@sentry\// },
+            { name: 'i18n', test: /node_modules\/(i18next|react-i18next)/ },
+            { name: 'framer-motion', test: /node_modules\/(framer-motion|motion|motion-dom|motion-utils)\// },
+            { name: 'radix', test: /node_modules\/@radix-ui\// },
+            { name: 'react-query', test: /node_modules\/@tanstack\/(react-query|query-)/ },
+            { name: 'lucide', test: /node_modules\/lucide-react\// },
+            { name: 'supabase', test: /node_modules\/@supabase\// },
+            { name: 'recharts', test: /node_modules\/(recharts|victory-vendor)\// },
+            { name: 'xyflow', test: /node_modules\/@xyflow\// },
+            { name: 'dnd-kit', test: /node_modules\/@dnd-kit\// },
+            // Keep scheduler with React
+            { name: 'vendor', test: /node_modules\/scheduler\// },
+          ],
         },
         // Optimize for Cloudflare Pages
         assetFileNames: (assetInfo) => {

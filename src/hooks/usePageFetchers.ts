@@ -443,8 +443,9 @@ export async function fetchNewsArticleBySlugOrId<T = unknown>(slug: string): Pro
     .is('duplicate_of_id', null)
     .not('content', 'is', null)
     .neq('content', '')
-    .or('quality_score.is.null,quality_score.gte.50')
-    .or('quality_status.is.null,quality_status.eq.passed')
+    .or(
+      'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
+    )
     .maybeSingle();
   if (!data && !error && UUID_RE.test(slug)) {
     const fb = await supabase
@@ -454,8 +455,9 @@ export async function fetchNewsArticleBySlugOrId<T = unknown>(slug: string): Pro
       .is('duplicate_of_id', null)
       .not('content', 'is', null)
       .neq('content', '')
-      .or('quality_score.is.null,quality_score.gte.50')
-      .or('quality_status.is.null,quality_status.eq.passed')
+      .or(
+        'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
+      )
       .maybeSingle();
     data = fb.data;
     error = fb.error;
@@ -501,8 +503,9 @@ export async function fetchRelatedNewsArticles<T = unknown>(
     .not('published_at', 'is', null)
     .not('content', 'is', null)
     .neq('content', '')
-    .or('quality_score.is.null,quality_score.gte.50')
-    .or('quality_status.is.null,quality_status.eq.passed')
+    .or(
+      'quality_status.eq.passed,and(quality_status.is.null,or(quality_score.is.null,quality_score.gte.50))',
+    )
     .order('published_at', { ascending: false })
     .limit(4);
   return (data ?? []) as T[];

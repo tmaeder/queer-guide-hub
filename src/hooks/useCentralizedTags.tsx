@@ -43,8 +43,18 @@ export interface CentralizedTag {
   category?: string;
   categories?: TagCategoryInfo[];
   description?: string;
+  /** Long-form editorial body shown on the tag detail page (wiki/guide voice). */
+  long_description?: string | null;
+  short_description?: string | null;
   usage_count: number;
   image_url?: string;
+  /** Attribution / source for the hero image (license compliance caption). */
+  image_attribution?: string | null;
+  image_source?: string | null;
+  /** External knowledge links surfaced as "Learn more" / facts. */
+  wikipedia_url?: string | null;
+  wikidata_id?: string | null;
+  scientific_data?: Record<string, unknown> | null;
   slug: string;
   status?: string;
   seo_indexable?: boolean;
