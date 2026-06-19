@@ -11,7 +11,8 @@ import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { ArrowLeft, ChevronRight, ChevronDown, ExternalLink, Network } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronDown, ExternalLink, Network, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
@@ -246,6 +247,21 @@ export function ResourceTagDetail({
           {t('resources.tagDetail.readOnWikipedia', 'Read on Wikipedia')}
           <ExternalLink size={14} />
         </a>
+      )}
+
+      {/* Bridge into search — everything across the site tagged with this term. */}
+      {selectedTag.slug && (
+        <div className="mb-8">
+          <Button
+            variant="accent"
+            onClick={() => onNavigate(`/search?tags=${encodeURIComponent(selectedTag.slug)}`)}
+          >
+            <Search size={16} />
+            {t('resources.tagDetail.searchTagged', 'Search everything tagged {{name}}', {
+              name: selectedTag.name,
+            })}
+          </Button>
+        </div>
       )}
 
       {/* Content grid */}

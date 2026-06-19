@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { CalendarIcon, MapPin, DollarSign, X, Layers, Users } from 'lucide-react';
+import { CalendarIcon, MapPin, DollarSign, X, Layers, Users, Tag } from 'lucide-react';
+import { formatNewsTag } from '@/lib/newsTags';
 import { SearchFilters, FacetDistribution } from '@/hooks/useSearch';
 import { trackSearchUx } from '@/lib/searchClient';
 import { useTopicClusters } from '@/hooks/useTopicClusters';
@@ -45,10 +46,10 @@ const ALL_KEYS: SearchFilterKey[] = [
 const FACET_GROUPS: Array<{ facet: string; label: string }> = [
   { facet: 'category', label: 'Category' },
   { facet: 'subcategory', label: 'Subcategory' },
-  { facet: 'tags', label: 'Tags' },
 ];
 const MAX_FACET_VALUES = 8;
 const MAX_TARGET_GROUPS = 12;
+const MAX_TAGS = 12;
 
 export const SearchFiltersPanel = ({
   filters,
@@ -91,6 +92,14 @@ export const SearchFiltersPanel = ({
     if (!isActive) void trackSearchUx('facet_apply', { facet: 'target_groups', value });
   };
 
+  const toggleTag = (value: string) => {
+    const current = filters.tags ?? [];
+    const isActive = current.includes(value);
+    const next = isActive ? current.filter((v) => v !== value) : [...current, value];
+    onFiltersChange({ ...filters, tags: next.length ? next : undefined });
+    if (!isActive) void trackSearchUx('facet_apply', { facet: 'tags', value });
+  };
+
   const toggleCluster = (clusterId: string) => {
     const current = filters.cluster_ids ?? [];
     const next = current.includes(clusterId)
@@ -104,6 +113,11 @@ export const SearchFiltersPanel = ({
     .sort((a, b) => b[1] - a[1])
     .slice(0, MAX_TARGET_GROUPS);
 
+  const tagValues = Object.entries(facets?.tags ?? {})
+    .filter(([, c]) => c > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_TAGS);
+
   const hasAny =
     !!filters.location ||
     !!filters.priceRange ||
@@ -112,6 +126,7 @@ export const SearchFiltersPanel = ({
     !!filters.featured ||
     (filters.categories?.length ?? 0) > 0 ||
     (filters.target_groups?.length ?? 0) > 0 ||
+    (filters.tags?.length ?? 0) > 0 ||
     (filters.cluster_ids?.length ?? 0) > 0;
 
   return (
@@ -238,6 +253,32 @@ export const SearchFiltersPanel = ({
                   onClick={() => toggleTargetGroup(value)}
                 >
                   {value.replace(/_/g, ' ')}
+                  <span className="ml-1 opacity-60">{count}</span>
+                </Badge>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Tags (content tags drill-down) */}
+      {tagValues.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <Label className="flex items-center gap-1 text-sm font-medium">
+            <Tag className="h-3.5 w-3.5" />
+            {t('search.filter.tags', 'Tags')}
+          </Label>
+          <div className="flex flex-wrap gap-1">
+            {tagValues.map(([value, count]) => {
+              const active = filters.tags?.includes(value);
+              return (
+                <Badge
+                  key={value}
+                  variant={active ? 'default' : 'secondary'}
+                  className="cursor-pointer text-xs"
+                  onClick={() => toggleTag(value)}
+                >
+                  {formatNewsTag(value)}
                   <span className="ml-1 opacity-60">{count}</span>
                 </Badge>
               );

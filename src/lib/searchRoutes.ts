@@ -17,10 +17,22 @@ export const ROUTE_HREFS: Record<string, (slug: string) => string> = {
   // Route is /villages/:slug (NOT /queer-villages — that path 404s).
   queer_village: (s) => `/villages/${s}`,
   news: (s) => `/news/${s}`,
-  tag: (s) => `/tags/${s}`,
+  // NB: `tag` is deliberately NOT here — the glossary route /resources/:tagName
+  // is NAME-keyed (fetchTagWithCategories ilike('name', …)), but ROUTE_HREFS
+  // builders only receive the slug. Route tags via `tagHref(name)` / hrefForEntity
+  // instead, which use the tag's name. (The old /tags/:slug redirect fed the slug
+  // into the name lookup and 404'd every multi-word tag.)
   // Groups have no slug — `s` is the group id (SearchResults falls back to objectID).
   group: (s) => `/groups/${s}`,
 };
+
+/**
+ * Tags resolve to the glossary by NAME, lowercased (the /resources/:tagName page
+ * canonicalises case and matches unified_tags.name, not slug).
+ */
+export function tagHref(name: string): string {
+  return `/resources/${encodeURIComponent((name || '').toLowerCase())}`;
+}
 
 export interface EntityRef {
   type: string;
@@ -40,6 +52,8 @@ export function hrefForEntity({ type, slug, title, isCountry }: EntityRef): stri
   const id = resolveType(type) ?? type;
   const key = slug || '';
   if (id === 'city' && isCountry) return `/country/${key}`;
+  // Tags route by name (see tagHref) — the glossary lookup is name-keyed.
+  if (id === 'tag') return tagHref(title || key);
   const build = ROUTE_HREFS[id];
   if (build && key) return build(key);
   // Types without a dedicated detail route (hotels, festivals, travel, …)
