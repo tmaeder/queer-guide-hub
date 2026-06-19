@@ -54,19 +54,6 @@ export type PersonalityWithBirthCity = Personality & {
   death_city?: PersonalityDeathCity | null;
 };
 
-export interface SimilarPersonality {
-  id: string;
-  slug?: string | null;
-  name: string;
-  profession: string | null;
-  nationality: string | null;
-  image_url: string | null;
-  is_living: boolean;
-  birth_date: string | null;
-  death_date: string | null;
-  description: string | null;
-  similarity: number;
-}
 
 // Imports may write structured objects into fields/achievements (e.g.
 // {"parties": [...]}, {"type": "award_detail", "text": "..."}). The detail
@@ -406,11 +393,9 @@ function RelatedContent({ personality }: { personality: Personality }) {
 
 export function PersonalityOverview({
   personality,
-  similarPersonalities,
   onContentUpdated,
 }: {
   personality: Personality;
-  similarPersonalities: SimilarPersonality[];
   onContentUpdated?: () => void;
 }) {
   return (
@@ -483,52 +468,6 @@ export function PersonalityOverview({
         )}
 
         <RelatedContent personality={personality} />
-
-        {similarPersonalities.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Similar Personalities</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {similarPersonalities.map((similar) => (
-                  <LocalizedLink
-                    key={similar.id}
-                    to={`/personalities/${similar.slug || similar.id}`}
-                    className="flex items-center gap-4 p-4 rounded no-underline text-inherit transition-all hover:bg-muted"
-                  >
-                    <Avatar style={{ height: 40, width: 40 }} className="shrink-0">
-                      <AvatarImage
-                        src={similar.image_url || ''}
-                        alt={similar.name}
-                        style={{ objectFit: 'cover' }}
-                      />
-                      <AvatarFallback className="text-xs">
-                        {getInitials(similar.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p
-                        className="font-semibold text-sm overflow-hidden whitespace-nowrap"
-                        style={{ textOverflow: 'ellipsis' }}
-                      >
-                        {similar.name}
-                      </p>
-                      {similar.profession && (
-                        <p
-                          className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap"
-                          style={{ textOverflow: 'ellipsis' }}
-                        >
-                          {similar.profession}
-                        </p>
-                      )}
-                    </div>
-                  </LocalizedLink>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </ScrollReveal>
   );

@@ -11,11 +11,9 @@ import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { EntityDetailLayout } from '@/components/entity/EntityDetailLayout';
 import { usePersonalities, type Personality } from '@/hooks/usePersonalities';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useCountryIdByName } from '@/hooks/usePageFetchers';
 import { useTranslation } from 'react-i18next';
 import {
-  type SimilarPersonality,
   PersonalityHero,
   PersonalityOverview,
   PersonalitySidebar,
@@ -26,7 +24,6 @@ export default function PersonalityDetail() {
   useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
-  const [similarPersonalities, setSimilarPersonalities] = useState<SimilarPersonality[]>([]);
   const [countryId, setCountryId] = useState<string | null>(null);
   const { incrementViews } = usePersonalities(false);
 
@@ -99,25 +96,6 @@ export default function PersonalityDetail() {
   }, [resolvedCountryId]);
 
   useEffect(() => {
-    if (!personality?.id) return;
-    let cancelled = false;
-    (async () => {
-      const { data: similarData } = await supabase.rpc('get_similar_personalities', {
-        personality_uuid: personality.id,
-        result_limit: 6,
-        min_similarity: 0.3,
-      });
-      if (!cancelled && similarData) setSimilarPersonalities(similarData as SimilarPersonality[]);
-    })().catch(() => {
-      // get_similar_personalities failure is non-critical; SimilarItems below
-      // provides the same discovery surface via a separate mechanism.
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [personality?.id]);
-
-  useEffect(() => {
     if (personality?.id) {
       incrementViews(personality.id);
     }
@@ -166,11 +144,7 @@ export default function PersonalityDetail() {
           id: 'overview',
           label: 'Overview',
           content: (
-            <PersonalityOverview
-              personality={personality}
-              similarPersonalities={similarPersonalities}
-              onContentUpdated={refetch}
-            />
+            <PersonalityOverview personality={personality} onContentUpdated={refetch} />
           ),
         },
       ]

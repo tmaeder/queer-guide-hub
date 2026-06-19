@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { CalendarIcon, MapPin, DollarSign, X, Layers, Users, Tag } from 'lucide-react';
+import { formatNewsTag } from '@/lib/newsTags';
 import { SearchFilters, FacetDistribution } from '@/hooks/useSearch';
-import { normalizeTagName } from '@/utils/tagNormalization';
 import { trackSearchUx } from '@/lib/searchClient';
 import { useTopicClusters } from '@/hooks/useTopicClusters';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
@@ -49,7 +49,7 @@ const FACET_GROUPS: Array<{ facet: string; label: string }> = [
 ];
 const MAX_FACET_VALUES = 8;
 const MAX_TARGET_GROUPS = 12;
-const MAX_TAG_VALUES = 12;
+const MAX_TAGS = 12;
 
 export const SearchFiltersPanel = ({
   filters,
@@ -113,17 +113,10 @@ export const SearchFiltersPanel = ({
     .sort((a, b) => b[1] - a[1])
     .slice(0, MAX_TARGET_GROUPS);
 
-  // Tag facet — selected tags first, then by count, so active ones stay visible.
-  const activeTags = new Set(filters.tags ?? []);
   const tagValues = Object.entries(facets?.tags ?? {})
     .filter(([, c]) => c > 0)
-    .sort((a, b) => {
-      const aActive = activeTags.has(a[0]) ? 1 : 0;
-      const bActive = activeTags.has(b[0]) ? 1 : 0;
-      if (aActive !== bActive) return bActive - aActive;
-      return b[1] - a[1];
-    })
-    .slice(0, MAX_TAG_VALUES);
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_TAGS);
 
   const hasAny =
     !!filters.location ||
@@ -268,7 +261,7 @@ export const SearchFiltersPanel = ({
         </div>
       )}
 
-      {/* Tags facet */}
+      {/* Tags (content tags drill-down) */}
       {tagValues.length > 0 && (
         <div className="flex flex-col gap-2">
           <Label className="flex items-center gap-1 text-sm font-medium">
@@ -276,17 +269,20 @@ export const SearchFiltersPanel = ({
             {t('search.filter.tags', 'Tags')}
           </Label>
           <div className="flex flex-wrap gap-1">
-            {tagValues.map(([value, count]) => (
-              <Badge
-                key={value}
-                variant={activeTags.has(value) ? 'default' : 'secondary'}
-                className="cursor-pointer text-xs"
-                onClick={() => toggleTag(value)}
-              >
-                {normalizeTagName(value.replace(/[-_]+/g, ' '))}
-                <span className="ml-1 opacity-60">{count}</span>
-              </Badge>
-            ))}
+            {tagValues.map(([value, count]) => {
+              const active = filters.tags?.includes(value);
+              return (
+                <Badge
+                  key={value}
+                  variant={active ? 'default' : 'secondary'}
+                  className="cursor-pointer text-xs"
+                  onClick={() => toggleTag(value)}
+                >
+                  {formatNewsTag(value)}
+                  <span className="ml-1 opacity-60">{count}</span>
+                </Badge>
+              );
+            })}
           </div>
         </div>
       )}

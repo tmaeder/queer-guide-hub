@@ -177,6 +177,16 @@ export default function SearchResults() {
     [writeParams, sortId],
   );
 
+  // Tag chip on a result card → refine the current search by that tag.
+  const handleTagRefine = useCallback(
+    (tag: string) => {
+      const current = filters.tags ?? [];
+      if (current.includes(tag)) return;
+      handleFiltersChange({ ...filters, tags: [...current, tag] });
+    },
+    [filters, handleFiltersChange],
+  );
+
   const handleScopeChange = useCallback(
     (scope: string | null) => {
       const next = { ...filters, types: scope ? [scope] : [] };
@@ -503,6 +513,8 @@ export default function SearchResults() {
                   view={effectiveView === 'grid' ? 'grid' : 'list'}
                   query={query}
                   onSelect={navigateToResult}
+                  onTagClick={handleTagRefine}
+                  activeTags={filters.tags}
                 />
               ))}
             </div>

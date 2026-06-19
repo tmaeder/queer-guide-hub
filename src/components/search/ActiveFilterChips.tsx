@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { SearchFilters } from '@/hooks/useSearch';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
-import { normalizeTagName } from '@/utils/tagNormalization';
+import { formatNewsTag } from '@/lib/newsTags';
 
 interface ActiveFilterChipsProps {
   filters: SearchFilters;
@@ -74,7 +74,7 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
   (filters.tags ?? []).forEach((tag) => {
     chips.push({
       key: `tag:${tag}`,
-      label: normalizeTagName(tag.replace(/[-_]+/g, ' ')),
+      label: formatNewsTag(tag),
       onRemove: () =>
         onFiltersChange({
           ...filters,
