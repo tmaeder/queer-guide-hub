@@ -46,6 +46,8 @@ export interface SearchFilters {
   cluster_ids?: string[];
   /** Audience tags (lesbian, trans, …) — search_hybrid any-of facet match. */
   target_groups?: string[];
+  /** Content tag slugs (bear-bar, drag, …) — search_hybrid any-of facet match. */
+  tags?: string[];
   priceRange?: [number, number];
   dateRange?: [Date, Date];
   rating?: number;
@@ -78,6 +80,7 @@ export function toWorkerFilters(
   if (filters.categories?.length) out.categories = filters.categories;
   if (filters.cluster_ids?.length) out.cluster_ids = filters.cluster_ids;
   if (filters.target_groups?.length) out.target_groups = filters.target_groups;
+  if (filters.tags?.length) out.tags = filters.tags;
   if (filters.featured) out.featured = true;
   if (filters.free) out.is_free = true;
   if (filters.lat != null) out.lat = filters.lat;

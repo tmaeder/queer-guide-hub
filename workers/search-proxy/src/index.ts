@@ -306,6 +306,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			is_featured: mergedFilters.featured || undefined,
 			is_free: mergedFilters.is_free,
 			target_groups: mergedFilters.target_groups,
+			tags: mergedFilters.tags,
 		},
 		lat: mergedFilters.lat ?? null,
 		lng: mergedFilters.lng ?? null,

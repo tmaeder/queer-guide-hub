@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { CalendarIcon, MapPin, DollarSign, X, Layers, Users } from 'lucide-react';
+import { CalendarIcon, MapPin, DollarSign, X, Layers, Users, Tag } from 'lucide-react';
 import { SearchFilters, FacetDistribution } from '@/hooks/useSearch';
+import { normalizeTagName } from '@/utils/tagNormalization';
 import { trackSearchUx } from '@/lib/searchClient';
 import { useTopicClusters } from '@/hooks/useTopicClusters';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
@@ -45,10 +46,10 @@ const ALL_KEYS: SearchFilterKey[] = [
 const FACET_GROUPS: Array<{ facet: string; label: string }> = [
   { facet: 'category', label: 'Category' },
   { facet: 'subcategory', label: 'Subcategory' },
-  { facet: 'tags', label: 'Tags' },
 ];
 const MAX_FACET_VALUES = 8;
 const MAX_TARGET_GROUPS = 12;
+const MAX_TAG_VALUES = 12;
 
 export const SearchFiltersPanel = ({
   filters,
@@ -91,6 +92,14 @@ export const SearchFiltersPanel = ({
     if (!isActive) void trackSearchUx('facet_apply', { facet: 'target_groups', value });
   };
 
+  const toggleTag = (value: string) => {
+    const current = filters.tags ?? [];
+    const isActive = current.includes(value);
+    const next = isActive ? current.filter((v) => v !== value) : [...current, value];
+    onFiltersChange({ ...filters, tags: next.length ? next : undefined });
+    if (!isActive) void trackSearchUx('facet_apply', { facet: 'tags', value });
+  };
+
   const toggleCluster = (clusterId: string) => {
     const current = filters.cluster_ids ?? [];
     const next = current.includes(clusterId)
@@ -104,6 +113,18 @@ export const SearchFiltersPanel = ({
     .sort((a, b) => b[1] - a[1])
     .slice(0, MAX_TARGET_GROUPS);
 
+  // Tag facet — selected tags first, then by count, so active ones stay visible.
+  const activeTags = new Set(filters.tags ?? []);
+  const tagValues = Object.entries(facets?.tags ?? {})
+    .filter(([, c]) => c > 0)
+    .sort((a, b) => {
+      const aActive = activeTags.has(a[0]) ? 1 : 0;
+      const bActive = activeTags.has(b[0]) ? 1 : 0;
+      if (aActive !== bActive) return bActive - aActive;
+      return b[1] - a[1];
+    })
+    .slice(0, MAX_TAG_VALUES);
+
   const hasAny =
     !!filters.location ||
     !!filters.priceRange ||
@@ -112,6 +133,7 @@ export const SearchFiltersPanel = ({
     !!filters.featured ||
     (filters.categories?.length ?? 0) > 0 ||
     (filters.target_groups?.length ?? 0) > 0 ||
+    (filters.tags?.length ?? 0) > 0 ||
     (filters.cluster_ids?.length ?? 0) > 0;
 
   return (
@@ -242,6 +264,29 @@ export const SearchFiltersPanel = ({
                 </Badge>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Tags facet */}
+      {tagValues.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <Label className="flex items-center gap-1 text-sm font-medium">
+            <Tag className="h-3.5 w-3.5" />
+            {t('search.filter.tags', 'Tags')}
+          </Label>
+          <div className="flex flex-wrap gap-1">
+            {tagValues.map(([value, count]) => (
+              <Badge
+                key={value}
+                variant={activeTags.has(value) ? 'default' : 'secondary'}
+                className="cursor-pointer text-xs"
+                onClick={() => toggleTag(value)}
+              >
+                {normalizeTagName(value.replace(/[-_]+/g, ' '))}
+                <span className="ml-1 opacity-60">{count}</span>
+              </Badge>
+            ))}
           </div>
         </div>
       )}

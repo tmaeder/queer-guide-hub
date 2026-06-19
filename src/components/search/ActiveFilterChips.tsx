@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { SearchFilters } from '@/hooks/useSearch';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
+import { normalizeTagName } from '@/utils/tagNormalization';
 
 interface ActiveFilterChipsProps {
   filters: SearchFilters;
@@ -66,6 +67,18 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
         onFiltersChange({
           ...filters,
           target_groups: (filters.target_groups ?? []).filter((x) => x !== g),
+        }),
+    });
+  });
+
+  (filters.tags ?? []).forEach((tag) => {
+    chips.push({
+      key: `tag:${tag}`,
+      label: normalizeTagName(tag.replace(/[-_]+/g, ' ')),
+      onRemove: () =>
+        onFiltersChange({
+          ...filters,
+          tags: (filters.tags ?? []).filter((x) => x !== tag),
         }),
     });
   });

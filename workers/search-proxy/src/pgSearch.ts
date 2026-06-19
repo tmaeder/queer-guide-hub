@@ -32,6 +32,7 @@ export interface PgSearchArgs {
 		is_featured?: boolean;
 		is_free?: boolean;
 		target_groups?: string[];
+		tags?: string[];
 	};
 	lat?: number | null;
 	lng?: number | null;
@@ -130,6 +131,7 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 	if (typeof args.filters?.is_featured === "boolean") pFilters.is_featured = args.filters.is_featured;
 	if (typeof args.filters?.is_free === "boolean") pFilters.is_free = args.filters.is_free;
 	if (args.filters?.target_groups && args.filters.target_groups.length) pFilters.target_groups = args.filters.target_groups;
+	if (args.filters?.tags && args.filters.tags.length) pFilters.tags = args.filters.tags;
 
 	const pContentTypes = args.contentTypes && args.contentTypes.length ? args.contentTypes : null;
 	const offset = Math.max(0, args.page) * args.hitsPerPage;
