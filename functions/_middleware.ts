@@ -49,7 +49,7 @@ import { homepageJsonLd } from './_lib/jsonLd';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
-import { resolveDetailRoute, isDetailPath } from './_lib/detail';
+import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
 import { resolveLandingRoute } from './_lib/landing';
 import {
   applySecurityHeaders,
@@ -243,6 +243,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // *looks like* a detail route — for non-detail paths a null detail just
   // means "no override needed" and the SPA renders normally.
   if (!detail && isDetailPath(basePath)) {
+    // Renamed-venue 301 before the hard 404 — keeps link equity for merged slugs.
+    const redirectTarget = await resolveSlugRedirect(env, basePath);
+    if (redirectTarget) {
+      const location = locale ? localizedUrl(locale, redirectTarget) : canonicalUrl(redirectTarget);
+      return new Response(null, {
+        status: 301,
+        headers: {
+          Location: location,
+          'Cache-Control': 'public, s-maxage=3600, max-age=600',
+        },
+      });
+    }
     const notFound = new Response(notFoundHtml(basePath), {
       status: 404,
       headers: {

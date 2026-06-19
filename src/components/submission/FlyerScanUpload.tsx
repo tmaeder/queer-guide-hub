@@ -128,7 +128,7 @@ export function FlyerScanUpload({
       <Card>
         <CardContent>
           <div className="flex items-start gap-4">
-            <AlertCircle size={20} style={{ color: '#ef4444' }} className="shrink-0 mt-0.5" />
+            <AlertCircle size={20} className="shrink-0 mt-0.5 text-destructive" />
             <div className="flex-1">
               <p className="text-sm font-semibold mb-1">{t('submission.errors.title')}</p>
               <p className="text-xs text-muted-foreground whitespace-pre-line">{errorCopy}</p>
@@ -164,17 +164,13 @@ export function FlyerScanUpload({
       <Card>
         <CardContent>
           <div className="flex flex-col items-center gap-4 py-2">
-            <Loader2
-              className="animate-spin h-8 w-8"
-              style={{ color: 'hsl(var(--foreground))' }}
-              aria-label="Loading"
-            />
+            <Loader2 className="animate-spin h-8 w-8 text-foreground" aria-label="Loading" />
             <p className="text-sm font-medium">{progressText}</p>
             {totalFiles > 1 && (
               <div className="w-full h-1 bg-muted rounded overflow-hidden">
                 <div
-                  className="h-full transition-[width]"
-                  style={{ width: `${pct}%`, backgroundColor: 'hsl(var(--foreground))' }}
+                  className="h-full bg-foreground transition-[width]"
+                  style={{ width: `${pct}%` }}
                 />
               </div>
             )}
@@ -227,7 +223,8 @@ export function FlyerScanUpload({
           </div>
         </div>
       )}
-      <Card
+      <button
+        type="button"
         onClick={() => fileInputRef.current?.click()}
         onDragOver={(e: React.DragEvent) => {
           e.preventDefault();
@@ -235,8 +232,8 @@ export function FlyerScanUpload({
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
+        className="group/drop w-full rounded-container border-2 border-dashed border-border bg-card px-6 py-10 text-center transition-colors duration-200 hover:border-foreground/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
       >
-      <CardContent>
         <input
           ref={fileInputRef}
           type="file"
@@ -246,33 +243,29 @@ export function FlyerScanUpload({
           onChange={handleInputChange}
           className="hidden"
         />
-        <div className="flex items-center gap-4">
-          <div
-            className="w-10 h-10 rounded-element flex items-center justify-center shrink-0"
-            style={{ backgroundColor: 'hsl(var(--muted))' }}
-          >
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex h-12 w-12 items-center justify-center rounded-element bg-muted text-foreground transition-colors group-hover/drop:bg-foreground group-hover/drop:text-background">
             {isMobile ? (
-              <Camera size={20} style={{ color: 'hsl(var(--foreground))' }} />
+              <Camera size={22} aria-hidden="true" />
             ) : (
-              <Upload size={20} style={{ color: 'hsl(var(--foreground))' }} />
+              <Upload size={22} aria-hidden="true" />
             )}
           </div>
           <div>
             <p className="text-sm font-semibold">
               {isMobile ? 'Scan a flyer' : 'Upload flyers or documents'}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               {isMobile
                 ? 'Take a photo or choose files to auto-fill the form'
                 : 'Drag & drop or click to upload images, PDFs, or documents'}
             </p>
           </div>
           {!isMobile && (
-            <FileText
-              size={16}
-              style={{ color: '#9ca3af', marginLeft: 'auto' }}
-              className="shrink-0"
-            />
+            <p className="flex items-center gap-1.5 text-2xs text-muted-foreground">
+              <FileText size={13} aria-hidden="true" className="shrink-0" />
+              JPG, PNG, PDF, DOCX or TXT
+            </p>
           )}
         </div>
         {rejectionMessage && (
@@ -280,18 +273,15 @@ export function FlyerScanUpload({
           <div
             role="alert"
             aria-live="polite"
-            className="flex items-start gap-2 mt-4"
+            className="mt-4 flex items-start justify-center gap-2 text-left"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <AlertCircle size={16} style={{ color: '#ef4444' }} className="shrink-0 mt-0.5" />
-            <p className="text-xs" style={{ color: '#ef4444' }}>
-              {rejectionMessage}
-            </p>
+            <AlertCircle size={16} className="mt-0.5 shrink-0 text-destructive" />
+            <p className="text-xs text-destructive">{rejectionMessage}</p>
           </div>
         )}
-      </CardContent>
-      </Card>
+      </button>
     </div>
   );
 }

@@ -2073,7 +2073,22 @@
       "title": "页面未找到",
       "description": "你寻找的页面不存在或已被移动。",
       "goBack": "返回",
-      "returnHome": "返回首页"
+      "returnHome": "返回首页",
+      "suggestionsLabel": "Or jump to",
+      "didYouMean": "Did you mean",
+      "recentlyViewed": "Pick up where you left off",
+      "searchPlaceholder": "Search venues, events, cities…",
+      "kind": {
+        "venue": "We couldn't find that venue.",
+        "event": "We couldn't find that event.",
+        "city": "We couldn't find that city.",
+        "country": "We couldn't find that country.",
+        "personality": "We couldn't find that person.",
+        "hotel": "We couldn't find that hotel.",
+        "village": "We couldn't find that place.",
+        "marketplace": "We couldn't find that product.",
+        "news": "We couldn't find that article."
+      }
     },
     "bookings": {
       "signIn": "登录以查看预订",

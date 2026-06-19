@@ -135,7 +135,7 @@ describe('FlyerScanUpload — rejection feedback', () => {
     const { onFilesSelected } = renderIdle();
     const exe = makeFile('virus.exe', 'application/octet-stream');
 
-    const dropTarget = getFileInput().closest('div')?.parentElement as HTMLElement;
+    const dropTarget = getFileInput().closest('button') as HTMLElement;
     expect(dropTarget).toBeTruthy();
     fireEvent.drop(dropTarget, {
       dataTransfer: { files: [exe], items: [], types: [] },
