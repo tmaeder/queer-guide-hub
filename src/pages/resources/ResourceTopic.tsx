@@ -22,6 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { TOPIC_HUBS } from '@/pages/resources/topics.config';
+import { resolvePublisherName } from '@/lib/publisherName';
 import { ChevronLeft, ChevronRight, FileText, Newspaper } from 'lucide-react';
 
 // Render a Lucide icon by name without binding a per-render component
@@ -167,8 +168,10 @@ export default function ResourceTopic() {
                     className="block rounded-container border border-border p-4 hover:bg-foreground/[0.03] no-underline text-inherit"
                   >
                     <p className="font-semibold text-sm line-clamp-2">{n.title}</p>
-                    {n.publisher_name && (
-                      <p className="mt-1 text-xs2 text-muted-foreground">{n.publisher_name}</p>
+                    {resolvePublisherName({ publisherName: n.publisher_name }) && (
+                      <p className="mt-1 text-xs2 text-muted-foreground">
+                        {resolvePublisherName({ publisherName: n.publisher_name })}
+                      </p>
                     )}
                   </LocalizedLink>
                 </li>

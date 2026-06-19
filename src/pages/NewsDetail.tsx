@@ -43,6 +43,7 @@ import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/u
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { formatNewsTag } from '@/lib/newsTags';
+import { resolvePublisherName } from '@/lib/publisherName';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
@@ -192,7 +193,13 @@ export default function NewsDetail() {
         if (data.source_id) {
           fetchNewsSourceById(data.source_id).then((src) => {
             if (src) {
-              setSourceName(data.publisher_name || src.name || '');
+              setSourceName(
+                resolvePublisherName({
+                  publisherName: data.publisher_name,
+                  url: data.url,
+                  sourceName: src.name,
+                }),
+              );
               setSourceUrl(src.url || '');
             }
           });

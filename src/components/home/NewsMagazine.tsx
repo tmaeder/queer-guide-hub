@@ -9,6 +9,7 @@ import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { decodeHtmlEntities } from '@/lib/decodeHtmlEntities';
+import { resolvePublisherName } from '@/lib/publisherName';
 
 type Article = {
   id: string;
@@ -21,7 +22,7 @@ type Article = {
 };
 
 function meta(a: Article, dateFmt: string): string {
-  return [a.publisher_name, format(new Date(a.published_at), dateFmt)]
+  return [resolvePublisherName({ publisherName: a.publisher_name }), format(new Date(a.published_at), dateFmt)]
     .filter(Boolean)
     .join(' · ');
 }
