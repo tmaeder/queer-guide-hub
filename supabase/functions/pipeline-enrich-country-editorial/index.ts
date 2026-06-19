@@ -87,14 +87,19 @@ Deno.serve(async (req: Request) => {
   const countryIds: string[] | null = Array.isArray(body.country_ids) ? body.country_ids : null
 
   // Candidates: countries missing the editorial hook, never already published/queued.
-  // Best-grounded first (richer countries auto-publish; sparse territories fall to review).
+  // Best-grounded first (richer countries auto-publish; sparse ones fall to review).
+  // Skip non-serviceable territories (shell_status) — they have no LGBTQ+ content to write about.
   let q = supabase
     .from('countries')
     .select('id, name, capital, population, currency, languages, equality_score, description, enrichment_status, lgbti_criminalization, lgbti_same_sex_unions, regions(name)')
     .is('duplicate_of_id', null)
+    .eq('shell_status', 'real')
     .is('editorial_hook', null)
     .order('content_completeness_score', { ascending: false, nullsFirst: false })
-    .limit(batchSize * 2)
+    // Wide window: already-queued countries stay hook-null and rank high (good data,
+    // held for review), so a small window starves fresh candidates. Fetch all hook-null
+    // rows and let the post-filter below drop already-handled ones before slicing.
+    .limit(300)
   if (countryIds?.length) q = q.in('id', countryIds)
 
   const { data: rows, error } = await q
