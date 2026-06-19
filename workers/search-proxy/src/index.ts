@@ -306,6 +306,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			is_featured: mergedFilters.featured || undefined,
 			is_free: mergedFilters.is_free,
 			target_groups: mergedFilters.target_groups,
+			tags: mergedFilters.tags,
 		},
 		lat: mergedFilters.lat ?? null,
 		lng: mergedFilters.lng ?? null,
@@ -841,7 +842,7 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 		// Default to a broad set so the typeahead surfaces all content types,
 		// not just venues. Diversified round-robin below keeps any one type from
 		// monopolising the slots.
-		indexes = ["venues", "events", "cities", "countries", "personalities", "news", "marketplace", "queer_villages", "groups"];
+		indexes = ["venues", "events", "cities", "countries", "personalities", "news", "marketplace", "queer_villages", "groups", "tags"];
 	}
 
 	// Bug #9: 800ms hard timeout on autocomplete. Falls back to popular-cities
