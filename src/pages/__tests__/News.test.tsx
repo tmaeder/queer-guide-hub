@@ -9,6 +9,39 @@ vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/hooks/useEditorsPick', () => ({ useEditorsPick: () => null }));
 vi.mock('@/hooks/useNewsStories', () => ({ useNewsStories: () => ({ stories: [], heroes: [] }) }));
 vi.mock('@/hooks/useEntityImageAssets', () => ({ useEntityImageAssets: () => ({ assets: new Map() }) }));
+vi.mock('@/hooks/useRealtimeNewsInserts', () => ({
+  useRealtimeNewsInserts: () => ({ count: 0, reset: vi.fn() }),
+}));
+vi.mock('@/hooks/useFollowedTopics', () => ({
+  useFollowedTopics: () => ({
+    followed: [],
+    isFollowed: () => false,
+    toggle: vi.fn(),
+    follow: vi.fn(),
+    unfollow: vi.fn(),
+    clear: vi.fn(),
+  }),
+}));
+vi.mock('@/hooks/usePersonalizedNews', () => ({
+  usePersonalizedNews: () => ({ ranked: [], hasSignals: false }),
+}));
+vi.mock('@/hooks/useNewsDensity', () => ({
+  useNewsDensity: () => ({ density: 'comfortable', setDensity: vi.fn(), toggle: vi.fn() }),
+}));
+vi.mock('@/hooks/useTopicLastVisit', () => ({
+  useTopicLastVisit: () => ({ lastVisit: () => null, markVisited: vi.fn() }),
+}));
+vi.mock('@/hooks/useUserTravelPreferences', () => ({
+  useUserTravelPreferences: () => ({ data: null }),
+}));
+vi.mock('@/components/news/feed/NewsTabsBar', () => ({ NewsTabsBar: () => null }));
+vi.mock('@/components/news/feed/NewsControlBar', () => ({
+  NewsControlBar: () => null,
+  applyNewsControls: (list: unknown[]) => list,
+}));
+vi.mock('@/components/news/feed/ForYouFeed', () => ({ ForYouFeed: () => null }));
+vi.mock('@/components/news/feed/LatestFeed', () => ({ LatestFeed: () => null }));
+vi.mock('@/components/news/feed/TopicsBrowser', () => ({ TopicsBrowser: () => null }));
 
 vi.mock('@/hooks/useNews', () => ({
   useNews: () => ({

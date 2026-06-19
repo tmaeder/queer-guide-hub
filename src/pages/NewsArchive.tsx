@@ -9,14 +9,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { NewsCard } from '@/components/news/NewsCard';
 import { NewsFilters } from '@/components/news/NewsFilters';
 import { PageHero, spansForPreset } from '@/components/discovery';
-
-const NEWS_SPAN_CLASS: Record<string, string> = {
-  sm: 'col-span-12 md:col-span-6 xl:col-span-4',
-  md: 'col-span-12 md:col-span-6 xl:col-span-4',
-  lg: 'col-span-12 md:col-span-6 xl:col-span-6',
-  wide: 'col-span-12 xl:col-span-8',
-  tall: 'col-span-12 md:col-span-6 xl:col-span-4 row-span-2',
-};
+import { NEWS_SPAN_CLASS } from '@/components/news/feed/FeedGrid';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useNews } from '@/hooks/useNews';
 import type { NewsCategory } from '@/hooks/useNews';
 import { useNewsStories } from '@/hooks/useNewsStories';
@@ -6,6 +7,12 @@ import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMeta } from '@/hooks/useMeta';
 import { useEditorsPick } from '@/hooks/useEditorsPick';
 import { useRealtimeNewsInserts } from '@/hooks/useRealtimeNewsInserts';
+import { useFollowedTopics } from '@/hooks/useFollowedTopics';
+import { usePersonalizedNews } from '@/hooks/usePersonalizedNews';
+import { useNewsDensity } from '@/hooks/useNewsDensity';
+import { useTopicLastVisit } from '@/hooks/useTopicLastVisit';
+import { useUserTravelPreferences } from '@/hooks/useUserTravelPreferences';
+import { formatNewsTag } from '@/lib/newsTags';
 import type { Tables } from '@/integrations/supabase/types';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -16,22 +23,24 @@ import { IssueMasthead } from '@/components/news/editorial/IssueMasthead';
 import { LeadStory } from '@/components/news/editorial/LeadStory';
 import { AboveTheFold } from '@/components/news/editorial/AboveTheFold';
 import { LiveTicker } from '@/components/news/editorial/LiveTicker';
-import { SectionBand } from '@/components/news/editorial/SectionBand';
 import { StoryCollectionsBand } from '@/components/news/editorial/StoryCollectionsBand';
 import { WeekInReview } from '@/components/news/editorial/WeekInReview';
 import { ReaderRail } from '@/components/news/editorial/ReaderRail';
 import { NewStoriesPill } from '@/components/news/editorial/NewStoriesPill';
+import { NewsTabsBar, type NewsTab } from '@/components/news/feed/NewsTabsBar';
+import {
+  NewsControlBar,
+  applyNewsControls,
+  type NewsTopic,
+  type NewsSort,
+} from '@/components/news/feed/NewsControlBar';
+import { ForYouFeed } from '@/components/news/feed/ForYouFeed';
+import { LatestFeed } from '@/components/news/feed/LatestFeed';
+import { TopicsBrowser } from '@/components/news/feed/TopicsBrowser';
 
 type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 
-// Section dek copy keyed by category slug. Falls back to the category description.
-const SECTION_DEK: Record<string, string> = {
-  rights: 'Law, politics, and the moving line of what queer people can do where.',
-  pride: 'Marches, festivals, and the public face of community.',
-  culture: 'Books, film, music, and how queer stories get told.',
-  health: 'Bodies, minds, and the systems meant to care for them.',
-  community: 'How queer people build, organize, and care for each other.',
-};
+const VALID_TABS: NewsTab[] = ['for-you', 'latest', 'topics'];
 
 export default function News() {
   const { t } = useTranslation();
@@ -43,6 +52,7 @@ export default function News() {
     loading,
     getFeaturedArticles,
     fetchArticles,
+    incrementViews,
   } = useNews();
   const { count: newCount, reset: resetNewCount } = useRealtimeNewsInserts();
 
@@ -52,13 +62,39 @@ export default function News() {
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // ---- Tab + controls state -------------------------------------------------
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab: NewsTab = (VALID_TABS as string[]).includes(tabParam ?? '')
+    ? (tabParam as NewsTab)
+    : 'for-you';
+  const setActiveTab = (tab: NewsTab) => {
+    const next = new URLSearchParams(searchParams);
+    if (tab === 'for-you') next.delete('tab');
+    else next.set('tab', tab);
+    setSearchParams(next, { replace: false });
+  };
+
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<string>('');
+  const [sort, setSort] = useState<NewsSort>('latest');
+  const { density, setDensity } = useNewsDensity();
+  const { followed, isFollowed, toggle: toggleFollow } = useFollowedTopics();
+  const { lastVisit, markVisited } = useTopicLastVisit();
+  const { data: travelPrefs } = useUserTravelPreferences();
+
+  const toggleTopicFilter = (slug: string) =>
+    setSelectedTopics((prev) =>
+      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
+    );
+
   const [featured, setFeatured] = useState<Article[]>([]);
   const editorsPick = useEditorsPick();
 
   useMeta({
     title: 'News',
     description:
-      'LGBTQ+ news from around the world. Editorial-led front page with live updates, sections, and story collections.',
+      'LGBTQ+ news from around the world. A personalized, editorial-led front page with live updates, topic follows, and story collections.',
     canonicalPath: '/news',
   });
 
@@ -70,16 +106,13 @@ export default function News() {
     })();
   }, [loading, getFeaturedArticles]);
 
-  const { stories, heroArticles: storyHeroes } = useNewsStories({
-    minArticles: 2,
-    limit: 6,
-  });
+  const { stories, heroArticles: storyHeroes } = useNewsStories({ minArticles: 2, limit: 6 });
 
-  // ---- Derivations ----------------------------------------------------------
+  // ---- Crown derivations (unchanged) ---------------------------------------
   const leadArticle: Article | undefined = featured[0];
 
   const topStory: Article | undefined = useMemo(() => {
-    // eslint-disable-next-line react-hooks/purity -- Date.now() used inside useMemo to compute a relative cutoff; recomputes when `articles` changes which is the intended cadence.
+    // eslint-disable-next-line react-hooks/purity -- Date.now() computes a relative cutoff; recomputes when `articles` changes, the intended cadence.
     const twentyFourHrs = Date.now() - 24 * 60 * 60 * 1000;
     return [...articles]
       .filter(
@@ -92,8 +125,6 @@ export default function News() {
       .sort((a, b) => (b.views_count ?? 0) - (a.views_count ?? 0))[0] as Article | undefined;
   }, [articles, leadArticle?.id, editorsPick?.id]);
 
-  // Pick up to 4 sections from `categories`, skipping the lead/pick/topStory
-  // categories aren't unique so we just take the first 4 active ones.
   const sectionCats = useMemo(() => categories.slice(0, 4), [categories]);
 
   const articlesByCategory = useMemo(() => {
@@ -114,7 +145,6 @@ export default function News() {
     return map;
   }, [articles, sectionCats, leadArticle?.id, editorsPick?.id, topStory?.id]);
 
-  // Image assets for everything visible above the section folds.
   const visibleIds = useMemo(() => {
     const ids = new Set<string>();
     if (leadArticle) ids.add(leadArticle.id);
@@ -155,26 +185,96 @@ export default function News() {
     >[];
   }, [articles]);
 
+  const lastUpdatedAt = useMemo(() => {
+    let max = 0;
+    let iso: string | null = null;
+    for (const a of articles) {
+      const ts = a.published_at ? new Date(a.published_at as string).getTime() : 0;
+      if (ts > max) {
+        max = ts;
+        iso = a.published_at as string;
+      }
+    }
+    return iso;
+  }, [articles]);
+
+  // ---- Topics + feed derivations -------------------------------------------
+  // Trending news topics computed from the loaded articles' normalized tags —
+  // guaranteed news-relevant (vs the global unified_tags catalog, which mixes in
+  // venue/marketplace noise), and free (no extra query).
+  const trendingNewsTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const a of articles) {
+      for (const tag of ((a.tags as string[] | undefined) ?? [])) {
+        const slug = String(tag).toLowerCase();
+        counts.set(slug, (counts.get(slug) ?? 0) + 1);
+      }
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([slug]) => slug);
+  }, [articles]);
+
+  const topics: NewsTopic[] = useMemo(() => {
+    const seen = new Set<string>();
+    const list: NewsTopic[] = [];
+    for (const c of categories) {
+      if (!seen.has(c.slug)) {
+        seen.add(c.slug);
+        list.push({ slug: c.slug, label: c.name });
+      }
+    }
+    for (const slug of trendingNewsTags) {
+      if (!seen.has(slug)) {
+        seen.add(slug);
+        list.push({ slug, label: formatNewsTag(slug) });
+      }
+    }
+    return list.slice(0, 16);
+  }, [categories, trendingNewsTags]);
+
+  const candidates = articles as unknown as Array<Record<string, unknown> & { id: string }>;
+  const { ranked, hasSignals } = usePersonalizedNews(candidates, followed);
+
+  const forYouArticles = useMemo(
+    () =>
+      applyNewsControls(ranked, {
+        selectedTopics,
+        selectedCountry,
+        sort: sort === 'most-read' ? 'most-read' : 'ranked',
+      }),
+    [ranked, selectedTopics, selectedCountry, sort],
+  );
+
+  const latestArticles = useMemo(
+    () => applyNewsControls(candidates, { selectedTopics, selectedCountry, sort }),
+    [candidates, selectedTopics, selectedCountry, sort],
+  );
+
+  const handleViewArticle = (id: string) => incrementViews(id);
+
   return (
     <div className="min-h-screen relative">
       <div className="container mx-auto px-4 pt-12 md:pt-16 pb-24">
         <IssueMasthead
           totalArticles={totalArticles ?? articles.length}
           sourceCount={sources.length}
+          lastUpdatedAt={lastUpdatedAt}
         />
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-12 xl:gap-16">
           <main className="min-w-0">
             <NewStoriesPill count={newCount} onRefresh={handleRefreshNew} />
+
+            {/* ── Editorial crown (always rendered, SEO-rich) ── */}
             <LeadStory
               article={leadArticle}
               sourcesMap={sourcesMap}
               categoriesMap={categoriesMap}
               imageAsset={leadArticle ? assets.get(leadArticle.id) : undefined}
             />
-
             <LiveTicker articles={tickerArticles} />
-
             <AboveTheFold
               topStory={topStory}
               editorsPick={editorsPick ?? undefined}
@@ -183,46 +283,89 @@ export default function News() {
               assets={assets}
             />
 
-            {sectionCats.map((cat) => {
-              const items = articlesByCategory.get(cat.slug) ?? [];
-              if (items.length === 0) return null;
-              return (
-                <SectionBand
-                  key={cat.id}
-                  category={cat}
-                  articles={items}
-                  sourcesMap={sourcesMap}
-                  categoriesMap={categoriesMap}
-                  assets={assets}
-                  dek={SECTION_DEK[cat.slug] ?? cat.description ?? undefined}
-                />
-              );
-            })}
+            {/* ── Tabs + sticky controls + feed body ── */}
+            <NewsTabsBar value={activeTab} onChange={setActiveTab} />
+            <NewsControlBar
+              topics={topics}
+              selectedTopics={selectedTopics}
+              onToggleTopicFilter={toggleTopicFilter}
+              isFollowed={isFollowed}
+              onToggleFollow={toggleFollow}
+              selectedCountry={selectedCountry}
+              onCountryChange={setSelectedCountry}
+              homeCountryId={travelPrefs?.home_country_id}
+              sort={sort}
+              onSortChange={setSort}
+              density={density}
+              onDensityChange={setDensity}
+            />
 
-            {stories.length > 0 && (
-              <StoryCollectionsBand
-                stories={stories as Parameters<typeof StoryCollectionsBand>[0]['stories']}
-                heroes={storyHeroes as Parameters<typeof StoryCollectionsBand>[0]['heroes']}
+            {activeTab === 'for-you' && (
+              <ForYouFeed
+                articles={forYouArticles}
+                hasSignals={hasSignals}
+                density={density}
+                sourcesMap={sourcesMap}
+                categoriesMap={categoriesMap}
+                onViewArticle={handleViewArticle}
+              />
+            )}
+            {activeTab === 'latest' && (
+              <LatestFeed
+                articles={latestArticles}
+                density={density}
+                newCount={newCount}
+                onShowNew={handleRefreshNew}
+                sourcesMap={sourcesMap}
+                categoriesMap={categoriesMap}
+                onViewArticle={handleViewArticle}
+              />
+            )}
+            {activeTab === 'topics' && (
+              <TopicsBrowser
+                topics={topics}
+                selectedTopics={selectedTopics}
+                isFollowed={isFollowed}
+                onToggleFollow={toggleFollow}
+                onToggleFilter={toggleTopicFilter}
+                articles={candidates}
+                lastVisit={lastVisit}
+                markVisited={markVisited}
+                sectionCats={sectionCats}
+                articlesByCategory={articlesByCategory}
+                sourcesMap={sourcesMap}
+                categoriesMap={categoriesMap}
+                assets={assets}
               />
             )}
 
-            <WeekInReview articles={articles as Article[]} sourceCount={sources.length} />
+            {/* ── Shared editorial closers ── */}
+            <div className="mt-16">
+              {stories.length > 0 && (
+                <StoryCollectionsBand
+                  stories={stories as Parameters<typeof StoryCollectionsBand>[0]['stories']}
+                  heroes={storyHeroes as Parameters<typeof StoryCollectionsBand>[0]['heroes']}
+                />
+              )}
 
-            <div className="border-t border-border pt-8 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-              <div>
-                <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Looking for more?
-                </p>
-                <p className="text-base mt-1 m-0">
-                  The full archive has every story, every filter.
-                </p>
+              <WeekInReview articles={articles as Article[]} sourceCount={sources.length} />
+
+              <div className="border-t border-border pt-8 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+                <div>
+                  <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">
+                    Looking for more?
+                  </p>
+                  <p className="text-base mt-1 m-0">
+                    The full archive has every story, every filter.
+                  </p>
+                </div>
+                <LocalizedLink to="/news/all" className="no-underline">
+                  <Button variant="outline" className="gap-2">
+                    {t('pages.news.openArchive', 'Open archive')}
+                    <ArrowRight size={16} />
+                  </Button>
+                </LocalizedLink>
               </div>
-              <LocalizedLink to="/news/all" className="no-underline">
-                <Button variant="outline" className="gap-2">
-                  {t('pages.news.openArchive', 'Open archive')}
-                  <ArrowRight size={16} />
-                </Button>
-              </LocalizedLink>
             </div>
           </main>
 
