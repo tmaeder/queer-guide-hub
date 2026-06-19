@@ -5,6 +5,7 @@
 // installErrorBuffer() listener in feedbackContext.
 
 import { toast } from '@/hooks/use-toast';
+import { fileError, type AutoFileKind } from '@/utils/autoFileError';
 
 let installed = false;
 let lastSurfaceAt = 0;
@@ -21,8 +22,7 @@ function isNoisy(message: string): boolean {
   return NOISY_PATTERNS.some((re) => re.test(message));
 }
 
-function surface(message: string) {
-  if (isNoisy(message)) return;
+function surface() {
   const now = Date.now();
   // One toast per 8s — prevents storming the UI when a render loops.
   if (now - lastSurfaceAt < 8000) return;
@@ -38,20 +38,33 @@ function surface(message: string) {
   }
 }
 
+/** Shared path for both listeners: skip noise once, then toast + file. */
+function report(kind: AutoFileKind, name: string, message: string) {
+  if (isNoisy(message)) return;
+  surface();
+  fileError({
+    kind,
+    error: { name, message },
+    routePath: typeof window !== 'undefined' ? window.location.pathname : '/',
+  });
+}
+
 export function installGlobalErrorSurfacing(): void {
   if (installed || typeof window === 'undefined') return;
   installed = true;
 
   window.addEventListener('unhandledrejection', (event) => {
-    const reason = event.reason as { message?: string } | string | undefined;
+    const reason = event.reason as { name?: string; message?: string } | string | undefined;
     const message =
       typeof reason === 'string'
         ? reason
         : reason?.message || 'Unhandled promise rejection';
-    surface(message);
+    const name = typeof reason === 'object' && reason?.name ? reason.name : 'UnhandledRejection';
+    report('unhandled_rejection', name, message);
   });
 
   window.addEventListener('error', (event) => {
-    surface(event.message || 'Uncaught error');
+    const name = (event.error as { name?: string } | undefined)?.name || 'Error';
+    report('window_error', name, event.message || 'Uncaught error');
   });
 }

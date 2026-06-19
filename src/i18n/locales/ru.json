@@ -2105,7 +2105,22 @@
       "title": "Страница не найдена",
       "description": "Страница, которую ты ищешь, не существует или была перемещена.",
       "goBack": "Назад",
-      "returnHome": "На главную"
+      "returnHome": "На главную",
+      "suggestionsLabel": "Or jump to",
+      "didYouMean": "Did you mean",
+      "recentlyViewed": "Pick up where you left off",
+      "searchPlaceholder": "Search venues, events, cities…",
+      "kind": {
+        "venue": "We couldn't find that venue.",
+        "event": "We couldn't find that event.",
+        "city": "We couldn't find that city.",
+        "country": "We couldn't find that country.",
+        "personality": "We couldn't find that person.",
+        "hotel": "We couldn't find that hotel.",
+        "village": "We couldn't find that place.",
+        "marketplace": "We couldn't find that product.",
+        "news": "We couldn't find that article."
+      }
     },
     "bookings": {
       "signIn": "Войди, чтобы увидеть бронирования",

@@ -888,6 +888,45 @@ export function isDetailPath(pathname: string): boolean {
   return matchDetailPath(pathname) !== null;
 }
 
+/**
+ * Renamed-venue redirect. A merged/renamed venue leaves its old slug in
+ * `venue_slug_redirects` (old_slug → venue_id). When a `/venues/:slug` row is
+ * missing, check for a redirect and return the venue's CURRENT `/venues/:slug`
+ * path so the middleware can emit a real 301 (keeps SEO link equity). Returns
+ * the de-localised target path, or null if no redirect exists. Venues are the
+ * only public entity with a slug-redirect table + a public detail route.
+ */
+export async function resolveSlugRedirect(
+  env: Env,
+  pathname: string,
+): Promise<string | null> {
+  if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
+    return null;
+  }
+  const m = matchDetailPath(pathname);
+  if (!m) return null;
+  const [, kindRaw, rawSlug] = m;
+  if (!kindRaw.startsWith('venue')) return null;
+  const slug = decodeURIComponent(rawSlug);
+  try {
+    const redirectRows = await fetchRows(
+      env,
+      'venue_slug_redirects',
+      'venue_id',
+      `old_slug=eq.${encodeURIComponent(slug)}`,
+      1,
+    );
+    const venueId = stringField(redirectRows[0] ?? {}, 'venue_id');
+    if (!venueId) return null;
+    const venueRows = await fetchRows(env, 'venues', 'slug', `id=eq.${venueId}`, 1);
+    const newSlug = stringField(venueRows[0] ?? {}, 'slug');
+    if (!newSlug || newSlug === slug) return null;
+    return `/venues/${newSlug}`;
+  } catch {
+    return null;
+  }
+}
+
 export async function resolveDetailRoute(
   env: Env,
   pathname: string,

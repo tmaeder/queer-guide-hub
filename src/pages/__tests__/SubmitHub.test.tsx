@@ -56,10 +56,10 @@ beforeEach(() => {
 });
 
 describe('SubmitHub', () => {
-  it('renders sign-in tip and no scan hero when signed-out', () => {
+  it('renders sign-in prompt and no scan hero when signed-out', () => {
     useAuthMock.mockReturnValue({ user: null });
     render(<SubmitHub />);
-    expect(screen.getByText(/Sign in or create an account/)).toBeInTheDocument();
+    expect(screen.getByText(/An account lets you scan a flyer/)).toBeInTheDocument();
     expect(screen.queryByTestId('scan-hero')).toBeNull();
   });
 
