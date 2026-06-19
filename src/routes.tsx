@@ -114,6 +114,7 @@ const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'))
 // New admin pages
 const AdminHotels = lazy(() => import('./pages/AdminHotels'));
 const AdminQueerVillages = lazy(() => import('./pages/AdminQueerVillages'));
+const AdminVillageQuality = lazy(() => import('./pages/AdminVillageQuality'));
 const AdminReview = lazy(() => import('./pages/AdminReview'));
 const AdminInbox = lazy(() => import('./pages/AdminInbox'));
 const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
@@ -346,6 +347,7 @@ export const AppRoutes = () => {
                 <Route path="content/venue-quality" element={<AdminVenueQuality />} />
                 <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
+                <Route path="content/village-quality" element={<AdminVillageQuality />} />
                 <Route path="hotels" element={<AdminHotels />} />
                 <Route path="villages" element={<AdminQueerVillages />} />
 
