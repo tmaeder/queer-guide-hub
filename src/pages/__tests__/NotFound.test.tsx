@@ -12,6 +12,12 @@ vi.mock('@/components/seo/NotFoundMeta', () => ({ NotFoundMeta: () => null }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
 }));
+// RecommendedForYou pulls useAuth + a network fetch; not under test here.
+vi.mock('@/components/discovery/RecommendedForYou', () => ({ RecommendedForYou: () => null }));
+// Search proxy + slug-redirect lookups are best-effort side effects.
+vi.mock('@/lib/searchClient', () => ({ fetchAutocomplete: () => Promise.resolve([]) }));
+vi.mock('@/hooks/useVenueSlugRedirect', () => ({ useVenueSlugRedirect: () => null }));
+vi.mock('@/utils/autoFileError', () => ({ fileError: () => {} }));
 
 import NotFound from '../NotFound';
 

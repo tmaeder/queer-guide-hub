@@ -2079,7 +2079,22 @@
       "title": "Page introuvable",
       "description": "La page que tu cherches n'existe pas ou a été déplacée.",
       "goBack": "Retour",
-      "returnHome": "Retour à l'accueil"
+      "returnHome": "Retour à l'accueil",
+      "suggestionsLabel": "Or jump to",
+      "didYouMean": "Did you mean",
+      "recentlyViewed": "Pick up where you left off",
+      "searchPlaceholder": "Search venues, events, cities…",
+      "kind": {
+        "venue": "We couldn't find that venue.",
+        "event": "We couldn't find that event.",
+        "city": "We couldn't find that city.",
+        "country": "We couldn't find that country.",
+        "personality": "We couldn't find that person.",
+        "hotel": "We couldn't find that hotel.",
+        "village": "We couldn't find that place.",
+        "marketplace": "We couldn't find that product.",
+        "news": "We couldn't find that article."
+      }
     },
     "bookings": {
       "signIn": "Connecte-toi pour voir tes réservations",
