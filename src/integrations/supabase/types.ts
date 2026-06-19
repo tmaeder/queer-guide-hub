@@ -24130,6 +24130,10 @@ export type Database = {
       }
       reap_stuck_pipeline_runs: { Args: never; Returns: number }
       reap_stuck_workflow_runs: { Args: never; Returns: number }
+      record_event_admin_feedback: {
+        Args: { p_clear_attention?: boolean; p_event_id: string; p_value?: number }
+        Returns: undefined
+      }
       recommend_event_guides: {
         Args: { p_limit?: number; p_user_id: string }
         Returns: {

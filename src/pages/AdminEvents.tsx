@@ -46,8 +46,9 @@ import { EventQualityPanel } from '@/components/admin/EventQualityPanel';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
-import { Edit, Trash2, Calendar as CalendarIcon, MapPin, Star } from 'lucide-react';
+import { Edit, Trash2, Calendar as CalendarIcon, MapPin, Star, BadgeCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
 interface EventRow {
@@ -340,6 +341,21 @@ export default function AdminEvents() {
     }
   };
 
+  const handleVerifyEvent = async (event: EventRow) => {
+    try {
+      const { error } = await supabase.rpc('record_event_admin_feedback', {
+        p_event_id: event.id,
+        p_value: 1.0,
+        p_clear_attention: true,
+      });
+      if (error) throw new Error(error.message);
+      toast.success('Event verified — admin feedback recorded');
+      invalidateTable();
+    } catch (error: unknown) {
+      toast.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
   const handleExportExcel = async () => {
     const columns: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Title', accessor: (r) => r.title },
@@ -592,6 +608,7 @@ export default function AdminEvents() {
       ],
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEditEvent },
+        { key: 'verify', label: 'Verify', icon: BadgeCheck, onClick: handleVerifyEvent },
         {
           key: 'delete',
           label: 'Delete',
