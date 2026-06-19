@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
-import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateAmenity, getOrCreateService } from '../_shared/venue-import-helpers.ts';
+import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateService } from '../_shared/venue-import-helpers.ts';
 
 interface TripAdvisorLocation {
   location_id: string;
@@ -59,7 +59,6 @@ async function mapVenueCategoryAndAmenities(supabase: SupabaseClient, venue: Tri
   
   const amenityNames = []
   const serviceNames = []
-  const amenityIds = []
   const serviceIds = []
 
   // Determine category based on keyword and venue data
@@ -91,14 +90,10 @@ async function mapVenueCategoryAndAmenities(supabase: SupabaseClient, venue: Tri
   // Basic amenities
   if (venue.phone) {
     amenityNames.push('Phone Service')
-    const amenityId = await getOrCreateAmenity(supabase, 'Phone Service', 'phone-service', 'TripAdvisor')
-    if (amenityId) amenityIds.push(amenityId)
   }
 
   if (venue.website) {
     amenityNames.push('WiFi')
-    const amenityId = await getOrCreateAmenity(supabase, 'WiFi', 'wifi', 'TripAdvisor')
-    if (amenityId) amenityIds.push(amenityId)
   }
 
   // Create services
@@ -113,7 +108,6 @@ async function mapVenueCategoryAndAmenities(supabase: SupabaseClient, venue: Tri
     categoryId,
     amenityNames,
     serviceNames,
-    amenityIds,
     serviceIds
   }
 }
@@ -253,7 +247,7 @@ Deno.serve(async (req) => {
               const _cityId = await getOrCreateCity(supabase, cityName, countryCode, parseFloat(venue.latitude), parseFloat(venue.longitude))
 
               // Map category, amenities, and services
-              const { category, _categoryId, amenityNames, serviceNames, _amenityIds, _serviceIds } = await mapVenueCategoryAndAmenities(supabase, venue, keyword)
+              const { category, _categoryId, amenityNames, serviceNames, _serviceIds } = await mapVenueCategoryAndAmenities(supabase, venue, keyword)
 
               // Download and store photos
               const imageUrls: string[] = [];
