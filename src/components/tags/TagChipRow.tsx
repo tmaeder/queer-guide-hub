@@ -17,6 +17,8 @@ export interface TagChipRowProps {
   max?: number;
   size?: 'sm' | 'default';
   icon?: boolean;
+  /** Render chips as non-interactive spans — required inside card links. */
+  linkless?: boolean;
   /**
    * Overflow behavior. `'expand'` reveals the rest inline (detail pages).
    * A string href makes "+N more" link there (cards). Default: inert "+N".
@@ -37,6 +39,7 @@ export function TagChipRow({
   max = 12,
   size = 'default',
   icon = false,
+  linkless = false,
   more,
   className,
 }: TagChipRowProps) {
@@ -51,7 +54,7 @@ export function TagChipRow({
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>
       {visible.map((item) => (
-        <TagChip key={item.tag} {...item} size={size} icon={icon} />
+        <TagChip key={item.tag} {...item} size={size} icon={icon} linkless={linkless} />
       ))}
       {hidden > 0 &&
         (more === 'expand' ? (

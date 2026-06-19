@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { type CentralizedTag } from '@/hooks/useCentralizedTags';
 import { RelatedTagsCard } from '@/components/tags/RelatedTagsCard';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
+import { FollowTagButton } from '@/components/tags/FollowTagButton';
 import {
   getCategoryShortName,
 } from '@/components/resources/categoryMeta';
@@ -195,6 +196,14 @@ export function ResourceTagDetail({
           {selectedTag.image_attribution}
         </p>
       )}
+
+      <div className="mb-6">
+        <FollowTagButton
+          tagId={selectedTag.id}
+          tagName={selectedTag.name}
+          tagSlug={selectedTag.slug}
+        />
+      </div>
 
       {/* Definition lede + long-form explanation */}
       {selectedTag.description && (

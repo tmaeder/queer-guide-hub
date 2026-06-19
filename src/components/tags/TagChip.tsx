@@ -17,6 +17,8 @@ export interface TagChipProps {
   removable?: boolean;
   /** Selected-facet state (filled vs outline). */
   active?: boolean;
+  /** Render as a non-interactive span (use inside card links — nested <a> is invalid HTML). */
+  linkless?: boolean;
   onRemove?: () => void;
   className?: string;
 }
@@ -44,6 +46,7 @@ export function TagChip({
   icon = false,
   removable = false,
   active = false,
+  linkless = false,
   onRemove,
   className,
 }: TagChipProps) {
@@ -68,6 +71,14 @@ export function TagChip({
       )}
     </>
   );
+
+  if (linkless) {
+    return (
+      <span className={base} data-tag-slug={tag}>
+        {content}
+      </span>
+    );
+  }
 
   if (removable) {
     return (

@@ -210,7 +210,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
                   </p>
                 )}
                 {event.tags && event.tags.length > 0 && (
-                  <TagChipRow tags={event.tags} max={2} size="sm" className="mt-2" />
+                  <TagChipRow tags={event.tags} max={2} size="sm" linkless className="mt-2" />
                 )}
                 <SocialSignalBar
                   className="mt-2"
