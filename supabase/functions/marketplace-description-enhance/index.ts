@@ -25,8 +25,14 @@ const client = () => createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('S
 
 const SYSTEM_PROMPT = `You rewrite e-commerce product descriptions for the queer.guide marketplace. Given a product title and its source description (often German), return ONE concise, factual ENGLISH paragraph (40-480 characters) describing what the product IS and its key real features. RULES: translate to natural English if not English; REMOVE size charts, care/washing instructions, shipping/returns/payment, material composition tables, SKU/article numbers, store policy, and marketing slop (discover, curated, elevate, premium experience, must-have); keep adult/fetish wording factual, plain, neutral; do NOT invent sizes, materials, measurements, brands, or claims not in the source; if already clean English just tighten it. Return ONLY minified JSON, no markdown: {"description":"...","source_lang":"de|en|fr|other"}`
 
-// deno-lint-ignore no-explicit-any
-function coerce(x: any): string { return typeof x === 'string' ? x : (x && typeof x === 'object' ? (x.response ?? x.text ?? JSON.stringify(x)) : String(x ?? '')) }
+function coerce(x: unknown): string {
+  if (typeof x === 'string') return x
+  if (x && typeof x === 'object') {
+    const o = x as Record<string, unknown>
+    return String(o.response ?? o.text ?? JSON.stringify(o))
+  }
+  return String(x ?? '')
+}
 
 async function callAnthropic(apiKey: string, title: string, source: string): Promise<string> {
   const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' }, body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, system: SYSTEM_PROMPT, messages: [{ role: 'user', content: `Title: ${title}\nSource:\n${(source || '').slice(0, 1500)}` }] }) })
@@ -52,7 +58,7 @@ async function enhance(title: string, source: string): Promise<{ description: st
   const acct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
   const cfToken = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
   const anthropic = Deno.env.get('ANTHROPIC_API_KEY')
-  let raw = ''
+  let raw: string
   if (acct && cfToken) raw = await callWorkersAI(acct, cfToken, title, source)
   else if (anthropic) raw = await callAnthropic(anthropic, title, source)
   else throw new Error('no LLM configured (need CF_ACCOUNT_ID+CF_AI_API_TOKEN or ANTHROPIC_API_KEY)')
