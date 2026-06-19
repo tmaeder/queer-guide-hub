@@ -5,15 +5,9 @@ const extractSpy = vi.fn();
 const uploadSpy = vi.fn();
 const invokeSpy = vi.fn();
 
-vi.mock('@/lib/fileExtractors', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/fileExtractors')>(
-    '@/lib/fileExtractors',
-  );
-  return {
-    ...actual,
-    extractFileContent: (file: File) => extractSpy(file),
-  };
-});
+vi.mock('@/lib/extractFileContent', () => ({
+  extractFileContent: (file: File) => extractSpy(file),
+}));
 
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'test-user' } }),
