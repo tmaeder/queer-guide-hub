@@ -48,7 +48,11 @@ export interface SearchFilters {
   cluster_ids?: string[];
   /** Audience tags (lesbian, trans, …) — search_hybrid any-of facet match. */
   target_groups?: string[];
-  /** Content tags (leather, gay-bar, …) — search_hybrid any-of facet match. */
+  /**
+   * Content tags (leather, gay-bar, …) — search_hybrid any-of facet match.
+   * Values are the raw tokens stored in entity `.tags` (slugs), so they match
+   * the facet keys and the venue/event/group tag arrays exactly.
+   */
   tags?: string[];
   priceRange?: [number, number];
   dateRange?: [Date, Date];
