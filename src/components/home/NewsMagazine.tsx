@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { HomeSection } from './HomeSection';
-import { useNews } from '@/hooks/useNews';
+import { useLatestNews } from '@/hooks/useLatestNews';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { getFallbackImage } from '@/utils/fallbackImages';
@@ -32,7 +32,7 @@ function meta(a: Article, dateFmt: string): string {
  * different from the date-grouped Events agenda above it.
  */
 const NewsMagazine = React.memo(() => {
-  const { articles, loading, error } = useNews();
+  const { articles, loading, error } = useLatestNews(5);
   const { t } = useTranslation();
 
   const latest = useMemo<Article[]>(() => articles.slice(0, 5) as unknown as Article[], [articles]);
