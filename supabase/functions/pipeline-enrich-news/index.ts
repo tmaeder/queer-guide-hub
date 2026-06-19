@@ -52,6 +52,9 @@ Deno.serve(withErrorReporting('pipeline-enrich-news', async (req) => {
             content:  String(n.content ?? n.body ?? '').slice(0, 800),
             excerpt:  String(n.excerpt ?? n.description ?? '').slice(0, 400),
             url:      String(n.url ?? n.source_url ?? ''),
+            // Cleaned full-page markdown from pipeline-extract-fulltext (extract
+            // worker), when available — preferred over the RSS stub for enrichment.
+            pageMarkdown: typeof n.markdown === 'string' ? n.markdown : undefined,
           }))
       } catch (e) {
         aiError = e instanceof CircuitOpenError ? `circuit_open:${e.apiName}` : (e as Error).message
