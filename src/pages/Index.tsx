@@ -20,6 +20,24 @@ const Index = React.memo(() => {
   const { t } = useTranslation();
   const { user } = useAuth();
 
+  // Defer mounting the hero map until the browser is idle after first paint.
+  // MapShell pulls the ~1MB maplibre chunk + heavy GL init; mounting it on the
+  // first frame makes it contend with page text + the news/events data fetches.
+  // The skeleton below holds the layout so nothing shifts.
+  const [mapReady, setMapReady] = React.useState(false);
+  React.useEffect(() => {
+    const w = window as typeof window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (typeof w.requestIdleCallback === 'function') {
+      const id = w.requestIdleCallback(() => setMapReady(true), { timeout: 1500 });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(() => setMapReady(true), 200);
+    return () => window.clearTimeout(id);
+  }, []);
+
   const mapHeight = isMobile ? '70vh' : 'calc(100dvh - 64px)';
 
   return (
@@ -27,14 +45,18 @@ const Index = React.memo(() => {
       {/* ── Hero = the live map (same MapShell as /map), search-free ──── */}
       <section className="relative isolate overflow-hidden" style={{ height: mapHeight }}>
         <ErrorBoundary section="map" fallback={<div className="h-full w-full bg-muted" />}>
-          <React.Suspense fallback={<div className="h-full w-full animate-pulse bg-muted" />}>
-            <MapShell
-              surface="discover"
-              height={mapHeight}
-              cooperativeGestures
-              configOverride={HOME_MAP_CONFIG}
-            />
-          </React.Suspense>
+          {mapReady ? (
+            <React.Suspense fallback={<div className="h-full w-full animate-pulse bg-muted" />}>
+              <MapShell
+                surface="discover"
+                height={mapHeight}
+                cooperativeGestures
+                configOverride={HOME_MAP_CONFIG}
+              />
+            </React.Suspense>
+          ) : (
+            <div className="h-full w-full animate-pulse bg-muted" />
+          )}
         </ErrorBoundary>
 
         {/* Headline kept for SEO + a11y only — visually hidden so the live map
