@@ -174,15 +174,15 @@ function extractLinks($: cheerio.CheerioAPI, url: string): ExtractLinks {
   const external = new Set<string>();
   $('a[href]').each((_i, a) => {
     const href = $(a).attr('href');
-    if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:')) {
-      return;
-    }
+    if (!href || href.startsWith('#')) return;
     let abs: URL;
     try {
       abs = new URL(href, url);
     } catch {
       return;
     }
+    // Protocol allowlist is the complete guard — drops javascript:, data:,
+    // vbscript:, mailto:, tel:, etc. (an incomplete scheme prefix-blocklist misses some).
     if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return;
     abs.hash = '';
     const s = abs.toString();

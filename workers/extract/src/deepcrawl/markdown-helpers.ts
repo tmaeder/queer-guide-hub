@@ -9,7 +9,6 @@
  * This prevents the markdown parser from breaking links that span multiple lines.
  */
 export function processMultiLineLinks(markdownContent: string): string {
-  let insideLinkContent = false;
   let newMarkdownContent = '';
   let linkOpenCount = 0;
 
@@ -21,9 +20,11 @@ export function processMultiLineLinks(markdownContent: string): string {
     } else if (char === ']') {
       linkOpenCount = Math.max(0, linkOpenCount - 1);
     }
-    insideLinkContent = linkOpenCount > 0;
 
-    if (insideLinkContent && char === '\n') {
+    // Inside link text (unbalanced brackets open), escape newlines so the
+    // markdown parser doesn't break the link. (Vendored from deepcrawl @ cb4817b;
+    // the redundant `insideLinkContent` flag was inlined to satisfy lint.)
+    if (linkOpenCount > 0 && char === '\n') {
       newMarkdownContent += '\\\n';
     } else {
       newMarkdownContent += char;

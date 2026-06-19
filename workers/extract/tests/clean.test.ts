@@ -45,7 +45,7 @@ describe('cleanHtml', () => {
   it('categorizes same-origin vs external links when crawl=true', () => {
     const r = cleanHtml(ARTICLE_HTML, 'https://news.example.com/pride', { crawl: true });
     expect(r.links.flat).toContain('https://news.example.com/events/parade');
-    expect(r.links.flat.every((u) => u.startsWith('https://news.example.com'))).toBe(true);
+    expect(r.links.flat.every((u) => new URL(u).origin === 'https://news.example.com')).toBe(true);
     expect(r.links.external).toContain('https://other.org/external');
   });
 });
