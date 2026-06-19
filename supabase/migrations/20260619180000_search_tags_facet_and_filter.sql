@@ -9,6 +9,7 @@
 -- the sibling public.search_embeddings table and joins optimized image assets —
 -- the migration-file history for these RPCs had drifted from prod, so do NOT
 -- reconstruct from older migration files). Only the `tags` clause/facet is added.
+-- Idempotent (create or replace) — already applied live via the same body.
 
 -- ── search_facets: add the `tags` facet + apply a `tags` filter in the candidate
 --    set (same as target_groups, so counts reflect an active tag selection).
