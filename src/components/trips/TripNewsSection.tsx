@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTripNews } from '@/hooks/useTripNews';
+import { resolvePublisherName } from '@/lib/publisherName';
 
 interface Props {
   countryIds: string[];
@@ -84,8 +85,18 @@ export function TripNewsSection({ countryIds }: Props) {
                 className="flex items-center gap-1.5 mt-0.5 text-muted-foreground"
                 style={{ fontSize: 11 }}
               >
-                {article.publisher_name && <span>{article.publisher_name}</span>}
-                {article.publisher_name && <span>·</span>}
+                {(() => {
+                  const pub = resolvePublisherName({
+                    publisherName: article.publisher_name,
+                    url: article.url,
+                  });
+                  return pub ? (
+                    <>
+                      <span>{pub}</span>
+                      <span>·</span>
+                    </>
+                  ) : null;
+                })()}
                 <span>
                   {formatDistanceToNow(new Date(article.published_at), {
                     addSuffix: true,

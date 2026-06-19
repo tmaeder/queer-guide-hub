@@ -29,6 +29,7 @@ import {
   type HistoricalNameEntry,
 } from '@/lib/historicalPlace';
 import { codeToFlagEmoji } from '@/lib/countryFlag';
+import { resolvePublisherName } from '@/lib/publisherName';
 
 export interface PersonalityBirthCity {
   id: string;
@@ -336,7 +337,9 @@ function RelatedContent({ personality }: { personality: Personality }) {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium line-clamp-2">{n.title}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {n.publisher_name ? `${n.publisher_name} · ` : ''}
+                        {resolvePublisherName({ publisherName: n.publisher_name })
+                          ? `${resolvePublisherName({ publisherName: n.publisher_name })} · `
+                          : ''}
                         <time dateTime={n.published_at}>
                           {new Date(n.published_at).toLocaleDateString(undefined, {
                             year: 'numeric',

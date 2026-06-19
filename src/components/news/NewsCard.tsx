@@ -14,6 +14,7 @@ import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { safeText } from '@/utils/safeDisplay';
 import { formatNewsTag } from '@/lib/newsTags';
+import { resolvePublisherName } from '@/lib/publisherName';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import type { NewsCategory } from '@/hooks/useNews';
@@ -119,9 +120,11 @@ export const NewsCard = ({
     );
   }
 
-  const publisherName = safeText((article as Record<string, unknown>).publisher_name);
-  const sourceFallback = safeText(sourcesMap[article.source_id]?.name);
-  const displaySource = publisherName || sourceFallback;
+  const displaySource = resolvePublisherName({
+    publisherName: safeText((article as Record<string, unknown>).publisher_name),
+    url: safeText(article.url),
+    sourceName: safeText(sourcesMap[article.source_id]?.name),
+  });
 
   const getCategoryLabel = (category: string) => {
     const catEntry = Object.values(categoriesMap).find(
