@@ -76,7 +76,7 @@ Deno.serve(withErrorReporting('news-fulltext-backfill', async (req) => {
           art.content.length >= MIN_SWAP_LEN &&
           art.content.length > item.content_len * MIN_GAIN_RATIO
 
-        if (dryRun) { swap ? improved++ : unchanged++; return }
+        if (dryRun) { if (swap) improved++; else unchanged++; return }
 
         const { error: rpcErr } = await supabase.rpc('apply_news_refetch', {
           p_id: item.id,
@@ -84,7 +84,7 @@ Deno.serve(withErrorReporting('news-fulltext-backfill', async (req) => {
           p_meta: meta,
         })
         if (rpcErr) { failed++; console.error(`apply ${item.id}: ${rpcErr.message}`); return }
-        swap ? improved++ : unchanged++
+        if (swap) improved++; else unchanged++
       } catch (e) {
         failed++
         console.error(`refetch ${item.id}: ${(e as Error).message}`)
