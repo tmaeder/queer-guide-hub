@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatDistance } from '@/lib/formatDistance';
+import { formatNewsTag } from '@/lib/newsTags';
 import { resolveType } from '@/lib/searchTaxonomy';
 import type { SearchResult } from '@/hooks/useSearch';
 import { BoostReasonBadge } from './BoostReasonBadge';
@@ -49,7 +50,13 @@ export interface SearchResultCardProps {
   view: 'list' | 'grid';
   query: string;
   onSelect: (result: SearchResult) => void;
+  /** Refine the current search by a tag (chip click). Omit to hide tag chips. */
+  onTagClick?: (tag: string) => void;
+  /** Tags already applied to the search — rendered as active, click is a no-op. */
+  activeTags?: string[];
 }
+
+const MAX_CARD_TAGS = 3;
 
 /**
  * One search result — bold monochrome, list + grid variants sharing the
@@ -58,7 +65,14 @@ export interface SearchResultCardProps {
  * redundant "View" button is gone. Memoized: only re-renders when its own
  * result/view/query change.
  */
-function SearchResultCardImpl({ result, view, query, onSelect }: SearchResultCardProps) {
+function SearchResultCardImpl({
+  result,
+  view,
+  query,
+  onSelect,
+  onTagClick,
+  activeTags,
+}: SearchResultCardProps) {
   const { t } = useTranslation();
   if (!result?.objectID) return null;
   const title = result.title || (result as unknown as { name?: string }).name || '';
@@ -97,6 +111,33 @@ function SearchResultCardImpl({ result, view, query, onSelect }: SearchResultCar
     </span>
   ) : null;
 
+  // Clickable tag chips — refine the current search by the tag. Subordinate to
+  // the card's own click target (stopPropagation), capped so cards stay calm.
+  const tagSet = new Set((activeTags ?? []).map((v) => v.toLowerCase()));
+  const tagChips =
+    onTagClick && Array.isArray(result.tags) && result.tags.length > 0 ? (
+      <div className="flex flex-wrap gap-1">
+        {result.tags.slice(0, MAX_CARD_TAGS).map((tag) => {
+          const active = tagSet.has(tag.toLowerCase());
+          return (
+            <Badge
+              key={tag}
+              variant="outline"
+              className="cursor-pointer gap-1 rounded-badge text-2xs hover:bg-accent"
+              data-active={active || undefined}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!active) onTagClick(tag);
+              }}
+            >
+              <Tag className="h-2.5 w-2.5" />
+              {formatNewsTag(tag)}
+            </Badge>
+          );
+        })}
+      </div>
+    ) : null;
+
   if (view === 'grid') {
     return (
       <div
@@ -129,6 +170,7 @@ function SearchResultCardImpl({ result, view, query, onSelect }: SearchResultCar
         <div className="flex flex-1 flex-col gap-1 p-4">
           <h3 className="line-clamp-2 text-15 font-semibold">{title}</h3>
           {meta && <p className="truncate text-xs text-muted-foreground">{meta}</p>}
+          {tagChips && <div className="pt-1">{tagChips}</div>}
           <div className="mt-auto flex items-center justify-between pt-2">
             {price ? <span className="text-sm font-semibold">{price}</span> : <span />}
             <div className="flex items-center gap-2">
@@ -195,6 +237,7 @@ function SearchResultCardImpl({ result, view, query, onSelect }: SearchResultCar
           )}
           {ratingEl}
         </div>
+        {tagChips}
       </div>
 
       <div className="flex shrink-0 flex-col items-end gap-2">

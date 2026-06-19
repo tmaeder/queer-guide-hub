@@ -95,6 +95,27 @@ describe('useSearch', () => {
     expect(cats.Other).toBe(8);
   });
 
+  it('normalises the worker array-shape facet distribution into {value: count}', async () => {
+    // The live search-proxy emits each facet as an ordered array (reorderFacets),
+    // NOT a {value:count} object — the panel reads it as an object, so normalise.
+    mockFetch.mockResolvedValue(
+      okJson({
+        hits: [{ objectID: '1', title: 'Leather Bar', type: 'venue' }],
+        suggestions: [],
+        totalHits: 1,
+        facetDistribution: {
+          tags: [
+            { value: 'gay-bar', count: 1325 },
+            { value: 'leather', count: 42 },
+          ],
+        },
+      }),
+    );
+    const { result } = renderHook(() => useSearch('bar', {}));
+    await waitFor(() => expect(result.current.results).toHaveLength(1), { timeout: 2000 });
+    expect(result.current.facets.tags).toEqual({ 'gay-bar': 1325, leather: 42 });
+  });
+
   // The worker's filters.types enum is the singular entity type (venue, event,
   // …) which equals our scope id — send ids verbatim, NOT plural index keys
   // (the worker rejects "venues"/"personalities" as invalid_enum).
