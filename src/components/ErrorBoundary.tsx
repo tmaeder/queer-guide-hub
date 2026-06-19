@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { fileError } from '@/utils/autoFileError';
 
 interface Props {
   children: ReactNode;
@@ -54,6 +55,14 @@ export class ErrorBoundary extends Component<Props, State> {
     } catch {
       // Never throw from error reporting
     }
+
+    // File into the in-app feedback board (deduped + autotriaged server-side).
+    fileError({
+      kind: 'error_boundary',
+      error,
+      routePath: route,
+      extra: { section, component_stack: errorInfo.componentStack?.slice(0, 1000) },
+    });
   }
 
   handleRetry = () => {
