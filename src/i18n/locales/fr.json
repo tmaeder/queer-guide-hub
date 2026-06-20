@@ -168,7 +168,8 @@
     "somethingWentWrong": "Un problème est survenu.",
     "clear": "Effacer",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[FR] More"
   },
   "navigation": {
     "home": "Accueil",
@@ -2153,7 +2154,11 @@
       "title": "Rappels de voyage",
       "body": "Recevez une notification 30 minutes avant chaque réservation, et à l’approche de l’expiration du passeport ou du visa.",
       "turnOn": "Activer",
-      "turnOff": "Désactiver"
+      "turnOff": "Désactiver",
+      "dm": {
+        "title": "[FR] Direct messages",
+        "body": "[FR] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2585,7 +2590,24 @@
     },
     "openInbox": "[FR] Open inbox",
     "markAlertsRead": "[FR] Mark alerts read",
-    "unread": "[FR] Unread"
+    "unread": "[FR] Unread",
+    "unreadCount": "[FR] {{count}} unread",
+    "action": {
+      "pin": "[FR] Pin",
+      "unpin": "[FR] Unpin",
+      "mute": "[FR] Mute",
+      "unmute": "[FR] Unmute",
+      "markRead": "[FR] Mark as read",
+      "archive": "[FR] Archive"
+    },
+    "search": "[FR] Search",
+    "searchEmpty": "[FR] No matches.",
+    "recipient": {
+      "search": "[FR] Search people",
+      "empty": "[FR] No suggestions yet.",
+      "recent": "[FR] Recently messaged",
+      "active": "[FR] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2685,5 +2707,47 @@
     "pride": "[FR] Pride",
     "contributors": "[FR] Contributors",
     "wishlists": "[FR] Wishlists"
+  },
+  "chat": {
+    "react": "[FR] React",
+    "edited": "[FR] edited",
+    "deleted": "[FR] Message deleted",
+    "editing": "[FR] Editing message",
+    "replyingTo": "[FR] Replying to {{name}}",
+    "reply": {
+      "action": "[FR] Reply",
+      "someone": "[FR] someone"
+    },
+    "emoji": {
+      "search": "[FR] Search emoji",
+      "none": "[FR] No emoji found.",
+      "cat": {
+        "smileys": "[FR] Smileys",
+        "gestures": "[FR] Gestures",
+        "hearts": "[FR] Hearts",
+        "pride": "[FR] Pride",
+        "animals": "[FR] Animals",
+        "food": "[FR] Food",
+        "activity": "[FR] Activity",
+        "symbols": "[FR] Symbols"
+      }
+    },
+    "activeNow": "[FR] Active now",
+    "preview": {
+      "you": "[FR] You",
+      "photo": "[FR] Photo",
+      "sticker": "[FR] Sticker",
+      "voice": "[FR] Voice message"
+    },
+    "streak": "[FR] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[FR] Set a vibe",
+      "title": "[FR] Your vibe",
+      "placeholder": "[FR] What's your vibe?",
+      "for4h": "[FR] 4h"
+    },
+    "stickers": {
+      "title": "[FR] Stickers"
+    }
   }
 }

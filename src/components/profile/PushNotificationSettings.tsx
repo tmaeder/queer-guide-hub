@@ -2,7 +2,9 @@ import { Bell, BellOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
+import { useProfile } from '@/hooks/useProfile';
 
 /**
  * Push-notification toggle row in Profile Settings → Travel.
@@ -16,6 +18,8 @@ export function PushNotificationSettings() {
   const { t } = useTranslation();
   const { supported, subscribed, pending, subscribe, unsubscribe, error } =
     usePushSubscription();
+  const { profile, updateProfile } = useProfile();
+  const dmPushEnabled = Boolean((profile as { dm_push_enabled?: boolean } | null)?.dm_push_enabled);
 
   if (!supported) return null;
 
@@ -49,6 +53,28 @@ export function PushNotificationSettings() {
               : t('settings.push.turnOn', 'Turn on')}
           </Button>
         </div>
+
+        {subscribed && (
+          <div className="mt-4 flex items-center justify-between gap-4 border-t border-border pt-4">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">
+                {t('settings.push.dm.title', 'Direct messages')}
+              </p>
+              <p className="text-13 text-muted-foreground">
+                {t('settings.push.dm.body', 'Notify me when someone sends me a message.')}
+              </p>
+            </div>
+            <Switch
+              checked={dmPushEnabled}
+              onCheckedChange={(next) =>
+                updateProfile({ dm_push_enabled: next } as unknown as Parameters<
+                  typeof updateProfile
+                >[0])
+              }
+              aria-label={t('settings.push.dm.title', 'Direct messages')}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

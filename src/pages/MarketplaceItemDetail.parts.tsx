@@ -114,6 +114,14 @@ export function MarketplaceBuyBox({
 }: BuyBoxProps) {
   const price = formatListingPrice(listing);
   const outbound = getOutboundLink(listing);
+  // Warmer, seller-forward CTA than the generic "Visit website" — name the
+  // shop so the click feels personal (esp. for queer-owned sellers).
+  const seller = (listing.brand || listing.business_name || '').trim();
+  const ctaLabel = seller
+    ? outbound?.isAffiliate
+      ? `Shop ${seller}`
+      : `Take me to ${seller}`
+    : outbound?.label;
   const pills = trustPillsFor(listing);
   const provenance = sourceProvenanceLine(listing);
   const linkState = linkHealthState(listing);
@@ -182,6 +190,22 @@ export function MarketplaceBuyBox({
             ))}
           </div>
         )}
+
+        {listing.description && (
+          <Editable
+            contentType="marketplace_listings"
+            recordId={listing.id}
+            field="description"
+            value={listing.description}
+            onSaved={onContentUpdated}
+            fieldOverride={{ type: 'textarea' }}
+            as="div"
+          >
+            <p className="mt-4 whitespace-pre-wrap leading-relaxed text-muted-foreground">
+              {listing.description}
+            </p>
+          </Editable>
+        )}
       </div>
 
       <Card>
@@ -238,7 +262,7 @@ export function MarketplaceBuyBox({
                   data-affiliate={outbound.isAffiliate ? 'true' : undefined}
                 >
                   <ExternalLink size={16} className="mr-2" />
-                  {outbound.label}
+                  {ctaLabel}
                 </a>
               </Button>
             )}
@@ -408,37 +432,14 @@ interface ContentProps {
   listing: MarketplaceListing;
   reviews: MarketplaceReview[];
   tags: ListingTag[];
-  t: (k: string, d?: string) => string;
-  onContentUpdated?: () => void;
 }
 
-/** Below-the-fold content column: facts, tags, description, history, reviews. */
-export function MarketplaceContent({ listing, reviews, tags, t, onContentUpdated }: ContentProps) {
+/** Below-the-fold content column: facts, tags, shipping, history, reviews. */
+export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
   return (
     <div className="flex flex-col gap-6">
       <ProductFacts listing={listing} />
       <ProductTags tags={tags} />
-
-      {listing.description && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('pages.marketplaceDetail.description', 'Description')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Editable
-              contentType="marketplace_listings"
-              recordId={listing.id}
-              field="description"
-              value={listing.description}
-              onSaved={onContentUpdated}
-              fieldOverride={{ type: 'textarea' }}
-              as="div"
-            >
-              <p className="whitespace-pre-wrap text-muted-foreground">{listing.description}</p>
-            </Editable>
-          </CardContent>
-        </Card>
-      )}
 
       {listing.shipping_available && listing.shipping_info && (
         <Card>

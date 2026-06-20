@@ -49,6 +49,16 @@ function stripLocale(pathname: string): string {
   return pathname;
 }
 
+/**
+ * The active non-default locale encoded in the pathname, or null. The global
+ * breadcrumb bar lives in LayoutShell (outside the `:locale?` Routes), so
+ * `useParams()` can't see the locale — links derive it from the path instead.
+ */
+export function localeFromPath(pathname: string): string | null {
+  const m = pathname.match(/^\/([a-z]{2})(\/|$)/);
+  return m && isSupportedLocale(m[1]) && m[1] !== DEFAULT_LOCALE ? m[1] : null;
+}
+
 export function homeCrumb(t: TFunction): BreadcrumbItem {
   return { label: t('breadcrumb.home', 'Home'), href: '/' };
 }

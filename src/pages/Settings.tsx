@@ -1,16 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
 import {
   User,
   ArrowLeft,
@@ -19,10 +12,10 @@ import {
   Lock,
   Check,
   Settings as SettingsIcon,
-  ChevronRight,
   ChevronDown,
   Luggage,
   FileText,
+  X,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -58,6 +51,7 @@ import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
 import type { AvatarConfig } from '@/components/profile/AvatarBuilder';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { cn } from '@/lib/utils';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 /** Columns newer than the generated Supabase types. */
@@ -68,7 +62,7 @@ type ProfileX = Profile & {
   username_auto_assigned?: boolean | null;
 };
 
-type SheetKind = 'profile' | 'dating' | 'privacy' | 'travel' | 'account' | 'avatar' | null;
+type SectionKind = 'profile' | 'dating' | 'privacy' | 'travel' | 'account' | 'avatar' | null;
 
 /** Personal documents are removed after this date (T+30 export window). */
 const DOCS_REMOVAL_DATE = 'July 11, 2026';
@@ -201,33 +195,63 @@ function SaveStatusLine({
   );
 }
 
-/** Glanceable state row — never an input. Tap opens the focused editor sheet. */
-function SummaryCard({
+/**
+ * Glanceable summary row that expands its editor inline (no pop-over). The
+ * header is never an input; the editor lives in the collapsible body.
+ */
+function AccordionSection({
+  id,
   icon: Icon,
   title,
   summary,
-  onOpen,
+  active,
+  onToggle,
+  children,
 }: {
+  id: Exclude<SectionKind, null>;
   icon: typeof User;
   title: string;
   summary: string;
-  onOpen: () => void;
+  active: boolean;
+  onToggle: (next: SectionKind) => void;
+  children: ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="w-full text-left rounded-container border border-border bg-card p-4 flex items-center gap-4 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40"
-    >
-      <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
-        <Icon size={18} aria-hidden="true" />
+    <Collapsible open={active} onOpenChange={(open) => onToggle(open ? id : null)}>
+      <div
+        id={`settings-section-${id}`}
+        className={cn(
+          'rounded-container border bg-card transition-colors scroll-mt-24',
+          active ? 'border-foreground/30' : 'border-border',
+        )}
+      >
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="w-full text-left p-4 flex items-center gap-4 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 rounded-container"
+          >
+            <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
+              <Icon size={18} aria-hidden="true" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold">{title}</p>
+              <p className="text-sm text-muted-foreground truncate">{summary}</p>
+            </div>
+            <ChevronDown
+              size={16}
+              className={cn(
+                'text-muted-foreground shrink-0 transition-transform',
+                active && 'rotate-180',
+              )}
+              aria-hidden="true"
+            />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-4 pb-6 pt-2 border-t border-border">{children}</div>
+        </CollapsibleContent>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold">{title}</p>
-        <p className="text-sm text-muted-foreground truncate">{summary}</p>
-      </div>
-      <ChevronRight size={16} className="text-muted-foreground shrink-0" aria-hidden="true" />
-    </button>
+    </Collapsible>
   );
 }
 
@@ -245,8 +269,8 @@ function ProfileSettingsContent({
   const [formData, setFormData] = useState<ProfileFormData>(() => initFormData(profile));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
-  // ?section= deep links (and old ?tab= links) open the matching sheet.
-  const SECTION_TO_SHEET: Record<string, SheetKind> = {
+  // ?section= deep links (and old ?tab= links) expand the matching section.
+  const SECTION_TO_KEY: Record<string, SectionKind> = {
     profile: 'profile',
     basic: 'profile',
     identity: 'dating',
@@ -259,12 +283,19 @@ function ProfileSettingsContent({
     intimate: 'dating',
     avatar: 'avatar',
   };
-  const [openSheet, setOpenSheet] = useState<SheetKind>(
+  const [activeSection, setActiveSection] = useState<SectionKind>(
     () =>
-      SECTION_TO_SHEET[searchParams.get('section') ?? ''] ??
-      SECTION_TO_SHEET[searchParams.get('tab') ?? ''] ??
+      SECTION_TO_KEY[searchParams.get('section') ?? ''] ??
+      SECTION_TO_KEY[searchParams.get('tab') ?? ''] ??
       null,
   );
+
+  // Scroll the opened section into view (deep link, hero button, or off-screen card).
+  useEffect(() => {
+    if (!activeSection) return;
+    const el = document.getElementById(`settings-section-${activeSection}`);
+    if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }, [activeSection]);
 
   const profileCompletion = calculateCompletion(formData, profile);
 
@@ -309,7 +340,7 @@ function ProfileSettingsContent({
       toast({ title: 'Avatar not saved', description: error, variant: 'destructive' });
       return;
     }
-    setOpenSheet(null);
+    setActiveSection(null);
     toast({ title: 'Avatar updated' });
   };
 
@@ -375,14 +406,7 @@ function ProfileSettingsContent({
     `Travel: ${formData.privacy_settings.travel_visibility || 'public'}`,
   ].join(' · ');
 
-  const sheetTitleId: Record<Exclude<SheetKind, null>, string> = {
-    profile: 'Profile',
-    dating: 'Identity & dating',
-    privacy: 'Privacy & visibility',
-    travel: 'Travel preferences',
-    account: 'Account',
-    avatar: 'Your avatar',
-  };
+  const toggleSection = (next: SectionKind) => setActiveSection(next);
 
   return (
     <div className="container mx-auto py-8 px-4 flex flex-col gap-6 pb-24 max-w-2xl">
@@ -410,14 +434,41 @@ function ProfileSettingsContent({
         avatarConfig={px?.avatar_config as AvatarConfig | null}
         email={user.email || ''}
         completion={profileCompletion}
-        onEditAvatar={() => setOpenSheet('avatar')}
-        onEditProfile={() => setOpenSheet('profile')}
-        onEditAccount={() => setOpenSheet('account')}
+        onEditAvatar={() => setActiveSection(activeSection === 'avatar' ? null : 'avatar')}
+        onEditProfile={() => setActiveSection('profile')}
+        onEditAccount={() => setActiveSection('account')}
       />
 
-      {/* State-of-your-account — summaries, not inputs */}
+      {/* Avatar editor — opened from the hero, inline (no pop-over) */}
+      {activeSection === 'avatar' && (
+        <Card id="settings-section-avatar" className="scroll-mt-24 border-foreground/30">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <p className="font-semibold">Your avatar</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveSection(null)}
+                className="rounded-element"
+              >
+                <X size={14} className="mr-1" aria-hidden="true" />
+                Close
+              </Button>
+            </div>
+            <AvatarChooser
+              email={user.email || ''}
+              currentUrl={px?.avatar_url}
+              currentConfig={px?.avatar_config as AvatarConfig | null}
+              onSave={handleAvatarSave}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* State-of-your-account — summaries that expand their editor inline */}
       <div className="flex flex-col gap-2">
-        <SummaryCard
+        <AccordionSection
+          id="profile"
           icon={User}
           title="Profile"
           summary={
@@ -425,32 +476,91 @@ function ProfileSettingsContent({
               .filter(Boolean)
               .join(' · ') || 'Bio, location, links'
           }
-          onOpen={() => setOpenSheet('profile')}
-        />
-        <SummaryCard
+          active={activeSection === 'profile'}
+          onToggle={toggleSection}
+        >
+          <BasicInfoTab
+            formData={formData}
+            profile={profile}
+            user={user}
+            onChange={handleInputChange}
+            onPronounTagsChange={handlePronounTagsChange}
+            onPrivacyChange={handlePrivacyChange}
+          />
+        </AccordionSection>
+
+        <AccordionSection
+          id="dating"
           icon={Heart}
           title="Identity & dating"
           summary={`${userModeLabel(formData.user_mode)}${formData.gender_identity ? ' · identity set' : ''}`}
-          onOpen={() => setOpenSheet('dating')}
-        />
-        <SummaryCard
+          active={activeSection === 'dating'}
+          onToggle={toggleSection}
+        >
+          <div className="flex flex-col gap-6">
+            <IdentityTab
+              formData={formData}
+              onChange={handleInputChange}
+              onComingOutChange={handleComingOutChange}
+            />
+            <IntimateTab />
+          </div>
+        </AccordionSection>
+
+        <AccordionSection
+          id="privacy"
           icon={Lock}
           title="Privacy & visibility"
           summary={privacySummary}
-          onOpen={() => setOpenSheet('privacy')}
-        />
-        <SummaryCard
+          active={activeSection === 'privacy'}
+          onToggle={toggleSection}
+        >
+          <PrivacyTab
+            formData={formData}
+            hasPasskey={hasPasskey}
+            onPrivacyChange={handlePrivacyChange}
+          />
+        </AccordionSection>
+
+        <AccordionSection
+          id="travel"
           icon={Luggage}
           title="Travel preferences"
           summary="Budget, style, accessibility needs"
-          onOpen={() => setOpenSheet('travel')}
-        />
-        <SummaryCard
+          active={activeSection === 'travel'}
+          onToggle={toggleSection}
+        >
+          <TravelPreferencesEditor />
+        </AccordionSection>
+
+        <AccordionSection
+          id="account"
           icon={SettingsIcon}
           title="Account"
           summary={username ? `@${username} · email, notifications` : 'Username, email, notifications'}
-          onOpen={() => setOpenSheet('account')}
-        />
+          active={activeSection === 'account'}
+          onToggle={toggleSection}
+        >
+          <div className="flex flex-col gap-6">
+            <Card>
+              <CardContent className="pt-6 flex flex-col gap-4">
+                <div>
+                  <p className="font-semibold">Username</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your unique queer.guide handle.
+                  </p>
+                </div>
+                <UsernamePanel
+                  username={username}
+                  autoAssigned={px?.username_auto_assigned ?? false}
+                  onChanged={() => void refetchProfile()}
+                />
+              </CardContent>
+            </Card>
+            <EmailForwardingSettings />
+            <PushNotificationSettings />
+          </div>
+        </AccordionSection>
       </div>
 
       {/* Preferences — review-only mirror of in-context choices */}
@@ -488,101 +598,6 @@ function ProfileSettingsContent({
           </Collapsible>
         </CardContent>
       </Card>
-
-      {/* ---------- Sheets ---------- */}
-      <Sheet open={openSheet !== null} onOpenChange={(open) => !open && setOpenSheet(null)}>
-        <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto px-4 pb-8 sm:px-6">
-          {/* full-width sheet on mobile; reading-width column on desktop */}
-          <div className="mx-auto w-full max-w-2xl">
-          {openSheet && (
-            <SheetHeader className="text-left">
-              <SheetTitle>{sheetTitleId[openSheet]}</SheetTitle>
-              <SheetDescription className="sr-only">
-                Edit your {sheetTitleId[openSheet].toLowerCase()} settings
-              </SheetDescription>
-            </SheetHeader>
-          )}
-
-          <div className="mt-4">
-            {openSheet === 'profile' && (
-              <BasicInfoTab
-                formData={formData}
-                profile={profile}
-                user={user}
-                onChange={handleInputChange}
-                onPronounTagsChange={handlePronounTagsChange}
-                onPrivacyChange={handlePrivacyChange}
-              />
-            )}
-
-            {openSheet === 'dating' && (
-              <div className="flex flex-col gap-6">
-                <IdentityTab
-                  formData={formData}
-                  onChange={handleInputChange}
-                  onComingOutChange={handleComingOutChange}
-                />
-                <IntimateTab />
-              </div>
-            )}
-
-            {openSheet === 'travel' && <TravelPreferencesEditor />}
-
-            {openSheet === 'privacy' && (
-              <PrivacyTab
-                formData={formData}
-                hasPasskey={hasPasskey}
-                onPrivacyChange={handlePrivacyChange}
-              />
-            )}
-
-            {openSheet === 'account' && (
-              <div className="flex flex-col gap-6">
-                <Card>
-                  <CardContent className="pt-6 flex flex-col gap-4">
-                    <div>
-                      <p className="font-semibold">Username</p>
-                      <p className="text-sm text-muted-foreground">
-                        Your unique queer.guide handle.
-                      </p>
-                    </div>
-                    <UsernamePanel
-                      username={username}
-                      autoAssigned={px?.username_auto_assigned ?? false}
-                      onChanged={() => void refetchProfile()}
-                    />
-                  </CardContent>
-                </Card>
-                <EmailForwardingSettings />
-                <PushNotificationSettings />
-              </div>
-            )}
-
-            {openSheet === 'avatar' && (
-              <AvatarChooser
-                email={user.email || ''}
-                currentUrl={px?.avatar_url}
-                currentConfig={px?.avatar_config as AvatarConfig | null}
-                onSave={handleAvatarSave}
-              />
-            )}
-          </div>
-          </div>
-
-          {/* Auto-saving sheets cover the page-bottom status bar — repeat it here */}
-          {(openSheet === 'profile' ||
-            openSheet === 'dating' ||
-            openSheet === 'privacy') && (
-            <div className="sticky bottom-0 -mx-4 sm:-mx-6 -mb-8 mt-6 border-t border-border bg-background px-4 py-2">
-              <SaveStatusLine
-                status={saveStatus}
-                onRetry={() => handleSave(false)}
-                onSignIn={() => navigate('/auth')}
-              />
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
 
       {/* Sticky auto-save status bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95">
