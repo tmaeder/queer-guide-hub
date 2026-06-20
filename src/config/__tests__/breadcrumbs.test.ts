@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { getRouteBreadcrumbs, buildPlaceChain, homeCrumb } from '@/config/breadcrumbs';
+import {
+  getRouteBreadcrumbs,
+  buildPlaceChain,
+  homeCrumb,
+  localeFromPath,
+} from '@/config/breadcrumbs';
 
 // Minimal i18n stub: return the provided default string.
 const t = ((_key: string, def: string) => def) as never;
@@ -83,5 +88,20 @@ describe('buildPlaceChain', () => {
 describe('homeCrumb', () => {
   it('points at the root', () => {
     expect(homeCrumb(t)).toEqual({ label: 'Home', href: '/' });
+  });
+});
+
+describe('localeFromPath', () => {
+  it('returns the active non-default locale', () => {
+    expect(localeFromPath('/de/venues/soothr')).toBe('de');
+    expect(localeFromPath('/ar')).toBe('ar');
+  });
+  it('returns null for the default locale and unprefixed paths', () => {
+    expect(localeFromPath('/venues')).toBeNull();
+    expect(localeFromPath('/en/venues')).toBeNull();
+    expect(localeFromPath('/')).toBeNull();
+  });
+  it('ignores unsupported two-letter segments', () => {
+    expect(localeFromPath('/xy/venues')).toBeNull();
   });
 });

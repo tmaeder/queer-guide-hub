@@ -292,7 +292,6 @@ const Marketplace = () => {
       // `availability: 'in_stock'` is the default — don't count it as an
       // active narrowing. Only the explicit opt-in to sold-out counts.
       f.availability === 'any' ||
-      (f.relevanceMin && f.relevanceMin > 0) ||
       (f.verifiedWithinDays && f.verifiedWithinDays > 0),
     );
   }, [combinedFilters]);
