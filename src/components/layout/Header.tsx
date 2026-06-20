@@ -71,7 +71,6 @@ export function Header() {
         style={{ height: 34, width: 34 }}
       />
       <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
-      <span className="hidden flex-col font-display text-base font-semibold leading-[0.95] tracking-tight text-foreground md:flex">
         <span>Queer</span>
         <span>Guide</span>
       </span>
