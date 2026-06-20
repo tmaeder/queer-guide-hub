@@ -182,6 +182,22 @@ export function MarketplaceBuyBox({
             ))}
           </div>
         )}
+
+        {listing.description && (
+          <Editable
+            contentType="marketplace_listings"
+            recordId={listing.id}
+            field="description"
+            value={listing.description}
+            onSaved={onContentUpdated}
+            fieldOverride={{ type: 'textarea' }}
+            as="div"
+          >
+            <p className="mt-4 whitespace-pre-wrap leading-relaxed text-muted-foreground">
+              {listing.description}
+            </p>
+          </Editable>
+        )}
       </div>
 
       <Card>
@@ -408,37 +424,14 @@ interface ContentProps {
   listing: MarketplaceListing;
   reviews: MarketplaceReview[];
   tags: ListingTag[];
-  t: (k: string, d?: string) => string;
-  onContentUpdated?: () => void;
 }
 
-/** Below-the-fold content column: facts, tags, description, history, reviews. */
-export function MarketplaceContent({ listing, reviews, tags, t, onContentUpdated }: ContentProps) {
+/** Below-the-fold content column: facts, tags, shipping, history, reviews. */
+export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
   return (
     <div className="flex flex-col gap-6">
       <ProductFacts listing={listing} />
       <ProductTags tags={tags} />
-
-      {listing.description && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('pages.marketplaceDetail.description', 'Description')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Editable
-              contentType="marketplace_listings"
-              recordId={listing.id}
-              field="description"
-              value={listing.description}
-              onSaved={onContentUpdated}
-              fieldOverride={{ type: 'textarea' }}
-              as="div"
-            >
-              <p className="whitespace-pre-wrap text-muted-foreground">{listing.description}</p>
-            </Editable>
-          </CardContent>
-        </Card>
-      )}
 
       {listing.shipping_available && listing.shipping_info && (
         <Card>
