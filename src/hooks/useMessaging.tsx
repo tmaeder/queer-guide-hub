@@ -176,7 +176,12 @@ export const useMessaging = () => {
 
   // Send a message
   const sendMessage = useCallback(
-    async (conversationId: string, content: string, replyToId?: string) => {
+    async (
+      conversationId: string,
+      content: string,
+      replyToId?: string,
+      messageType: string = 'text',
+    ) => {
       if (!user || !content.trim()) return;
 
       const tempId = `temp-${Date.now()}`;
@@ -185,7 +190,7 @@ export const useMessaging = () => {
         conversation_id: conversationId,
         sender_id: user.id,
         content: content.trim(),
-        message_type: 'text',
+        message_type: messageType,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         edited_at: null,
@@ -215,6 +220,7 @@ export const useMessaging = () => {
             sender_id: user.id,
             content: content.trim(),
             reply_to_id: replyToId || null,
+            message_type: messageType,
           })
           .select('*')
           .single();

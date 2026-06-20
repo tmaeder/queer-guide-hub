@@ -43,8 +43,10 @@ import { ReactionBurst } from '@/components/messaging/ReactionBurst';
 import { JoyBurst } from '@/components/messaging/JoyBurst';
 import { VibeEditor } from '@/components/messaging/VibeEditor';
 import { QUICK_REACTIONS } from '@/lib/emojiData';
+import { StickerPicker } from '@/components/messaging/StickerPicker';
 import { pickIcebreaker } from '@/lib/icebreakers';
-import { Sparkles } from 'lucide-react';
+import { jumboTier } from '@/lib/messageRender';
+import { Sparkles, Sticker as StickerIcon } from 'lucide-react';
 import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
 import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
@@ -119,6 +121,7 @@ const MessageItem = ({
   const { t } = useTranslation();
   const [burst, setBurst] = useState<{ emoji: string; id: number } | null>(null);
   const isDeleted = !!message.deleted_at;
+  const jumbo = isDeleted ? 0 : message.message_type === 'sticker' ? 2 : jumboTier(message.content);
 
   const react = (emoji: string) => {
     onReaction(message.id, emoji);
@@ -169,36 +172,52 @@ const MessageItem = ({
             </button>
           )}
 
-          <div
-            className="transition-shadow"
-            style={{
-              paddingLeft: 16,
-              paddingRight: 16,
-              paddingTop: 8,
-              paddingBottom: 8,
-              borderRadius: 'var(--radius-container)',
-              ...(isOwn
-                ? {
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)',
-                    borderBottomRightRadius: 'var(--radius-element)',
-                  }
-                : {
-                    backgroundColor: 'var(--muted)',
-                    borderBottomLeftRadius: 'var(--radius-element)',
-                  }),
-              ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
-              ...(highlighted ? { boxShadow: '0 0 0 2px var(--accent-brand)' } : {}),
-            }}
-          >
-            {isDeleted ? (
-              <p className="text-sm italic opacity-70">
-                {t('chat.deleted', { defaultValue: 'Message deleted' })}
-              </p>
-            ) : (
-              <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-            )}
-          </div>
+          {jumbo > 0 && !isDeleted ? (
+            <div
+              className="leading-none"
+              style={{
+                fontSize: message.message_type === 'sticker' || jumbo === 2 ? 56 : 40,
+                textAlign: isOwn ? 'right' : 'left',
+                opacity: message.status === 'sending' ? 0.6 : 1,
+                ...(highlighted
+                  ? { outline: '2px solid var(--accent-brand)', borderRadius: 'var(--radius-element)' }
+                  : {}),
+              }}
+            >
+              {message.content}
+            </div>
+          ) : (
+            <div
+              className="transition-shadow"
+              style={{
+                paddingLeft: 16,
+                paddingRight: 16,
+                paddingTop: 8,
+                paddingBottom: 8,
+                borderRadius: 'var(--radius-container)',
+                ...(isOwn
+                  ? {
+                      backgroundColor: 'var(--primary)',
+                      color: 'var(--primary-foreground)',
+                      borderBottomRightRadius: 'var(--radius-element)',
+                    }
+                  : {
+                      backgroundColor: 'var(--muted)',
+                      borderBottomLeftRadius: 'var(--radius-element)',
+                    }),
+                ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
+                ...(highlighted ? { boxShadow: '0 0 0 2px var(--accent-brand)' } : {}),
+              }}
+            >
+              {isDeleted ? (
+                <p className="text-sm italic opacity-70">
+                  {t('chat.deleted', { defaultValue: 'Message deleted' })}
+                </p>
+              ) : (
+                <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+              )}
+            </div>
+          )}
 
           <div
             style={{ alignItems: 'center', justifyContent: 'space-between' }}
@@ -353,6 +372,8 @@ interface MessageInputProps {
   inputRef?: React.RefObject<HTMLInputElement>;
   /** Pre-populate the composer with this text. Latest non-empty value wins. */
   prefilledMessage?: string | null;
+  /** Send a sticker (standalone large emoji) immediately. */
+  onSticker?: (emoji: string) => void;
 }
 
 const MessageInput = ({
@@ -362,6 +383,7 @@ const MessageInput = ({
   disabled,
   inputRef,
   prefilledMessage,
+  onSticker,
 }: MessageInputProps) => {
   const [message, setMessage] = useState('');
 
@@ -472,6 +494,28 @@ const MessageInput = ({
       >
         <Sparkles size={20} />
       </Button>
+
+      {/* Sticker Picker */}
+      {onSticker && (
+        <StickerPicker
+          onSelect={onSticker}
+          side="top"
+          align="end"
+          trigger={
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="rounded-element p-0"
+              style={{ height: 44, width: 44 }}
+              disabled={disabled}
+              aria-label="Stickers"
+            >
+              <StickerIcon size={20} />
+            </Button>
+          }
+        />
+      )}
 
       {/* Emoji Picker */}
       <EmojiPicker
@@ -839,6 +883,10 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         disabled={sendingMessage}
         inputRef={inputRef}
         prefilledMessage={prefilledMessage}
+        onSticker={(emoji) => {
+          void sendMessage(conversationId, emoji, undefined, 'sticker');
+          void stopTypingIndicator(conversationId);
+        }}
       />
     </div>
   );

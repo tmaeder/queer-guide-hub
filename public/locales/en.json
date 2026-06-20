@@ -2716,6 +2716,9 @@
       "title": "Your vibe",
       "placeholder": "What's your vibe?",
       "for4h": "4h"
+    },
+    "stickers": {
+      "title": "Stickers"
     }
   }
 }
