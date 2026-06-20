@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNews } from '@/hooks/useNews';
 import type { NewsCategory } from '@/hooks/useNews';
+import { useNewsFront } from '@/hooks/useNewsFront';
 import { useNewsStories } from '@/hooks/useNewsStories';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMeta } from '@/hooks/useMeta';
@@ -15,6 +16,7 @@ import { ArrowRight } from 'lucide-react';
 import { IssueMasthead } from '@/components/news/editorial/IssueMasthead';
 import { LeadStory } from '@/components/news/editorial/LeadStory';
 import { AboveTheFold } from '@/components/news/editorial/AboveTheFold';
+import { ForYouSection } from '@/components/news/editorial/ForYouSection';
 import { LiveTicker } from '@/components/news/editorial/LiveTicker';
 import { SectionBand } from '@/components/news/editorial/SectionBand';
 import { StoryCollectionsBand } from '@/components/news/editorial/StoryCollectionsBand';
@@ -40,19 +42,22 @@ export default function News() {
     sources,
     categories,
     totalArticles,
-    loading,
-    getFeaturedArticles,
     fetchArticles,
   } = useNews();
+  // Live, self-ranking front: hotness = recency × quality × soft featured boost
+  // × trending. Replaces the old `is_featured` pin that left a months-old story
+  // as the permanent headline. Auto-refreshes (poll + focus) so it never goes stale.
+  const { articles: frontArticles, refetch: refetchFront } = useNewsFront(40);
   const { count: newCount, reset: resetNewCount } = useRealtimeNewsInserts();
 
   const handleRefreshNew = () => {
     void fetchArticles();
+    void refetchFront();
     resetNewCount();
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const [featured, setFeatured] = useState<Article[]>([]);
+  const featured = frontArticles as unknown as Article[];
   const editorsPick = useEditorsPick();
 
   useMeta({
@@ -61,14 +66,6 @@ export default function News() {
       'LGBTQ+ news from around the world. Editorial-led front page with live updates, sections, and story collections.',
     canonicalPath: '/news',
   });
-
-  useEffect(() => {
-    if (loading) return;
-    (async () => {
-      const feat = await getFeaturedArticles();
-      setFeatured(feat as Article[]);
-    })();
-  }, [loading, getFeaturedArticles]);
 
   const { stories, heroArticles: storyHeroes } = useNewsStories({
     minArticles: 2,
@@ -181,6 +178,12 @@ export default function News() {
               sourcesMap={sourcesMap}
               categoriesMap={categoriesMap}
               assets={assets}
+            />
+
+            <ForYouSection
+              sourcesMap={sourcesMap}
+              categoriesMap={categoriesMap}
+              excludeIds={[leadArticle?.id, topStory?.id, editorsPick?.id].filter(Boolean) as string[]}
             />
 
             {sectionCats.map((cat) => {

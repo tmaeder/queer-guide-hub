@@ -168,7 +168,8 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[JA] More"
   },
   "navigation": {
     "home": "ホーム",
@@ -2147,7 +2148,11 @@
       "title": "旅行のリマインダー",
       "body": "各予約の30分前、およびパスポートやビザの期限が近づいたときにブラウザ通知を受け取ります。",
       "turnOn": "オン",
-      "turnOff": "オフ"
+      "turnOff": "オフ",
+      "dm": {
+        "title": "[JA] Direct messages",
+        "body": "[JA] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2579,7 +2584,24 @@
     },
     "openInbox": "[JA] Open inbox",
     "markAlertsRead": "[JA] Mark alerts read",
-    "unread": "[JA] Unread"
+    "unread": "[JA] Unread",
+    "unreadCount": "[JA] {{count}} unread",
+    "action": {
+      "pin": "[JA] Pin",
+      "unpin": "[JA] Unpin",
+      "mute": "[JA] Mute",
+      "unmute": "[JA] Unmute",
+      "markRead": "[JA] Mark as read",
+      "archive": "[JA] Archive"
+    },
+    "search": "[JA] Search",
+    "searchEmpty": "[JA] No matches.",
+    "recipient": {
+      "search": "[JA] Search people",
+      "empty": "[JA] No suggestions yet.",
+      "recent": "[JA] Recently messaged",
+      "active": "[JA] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2679,5 +2701,54 @@
     "pride": "[JA] Pride",
     "contributors": "[JA] Contributors",
     "wishlists": "[JA] Wishlists"
+  },
+  "chat": {
+    "react": "[JA] React",
+    "edited": "[JA] edited",
+    "deleted": "[JA] Message deleted",
+    "editing": "[JA] Editing message",
+    "replyingTo": "[JA] Replying to {{name}}",
+    "reply": {
+      "action": "[JA] Reply",
+      "someone": "[JA] someone"
+    },
+    "emoji": {
+      "search": "[JA] Search emoji",
+      "none": "[JA] No emoji found.",
+      "cat": {
+        "smileys": "[JA] Smileys",
+        "gestures": "[JA] Gestures",
+        "hearts": "[JA] Hearts",
+        "pride": "[JA] Pride",
+        "animals": "[JA] Animals",
+        "food": "[JA] Food",
+        "activity": "[JA] Activity",
+        "symbols": "[JA] Symbols"
+      }
+    },
+    "activeNow": "[JA] Active now",
+    "preview": {
+      "you": "[JA] You",
+      "photo": "[JA] Photo",
+      "sticker": "[JA] Sticker",
+      "voice": "[JA] Voice message"
+    },
+    "streak": "[JA] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[JA] Set a vibe",
+      "title": "[JA] Your vibe",
+      "placeholder": "[JA] What's your vibe?",
+      "for4h": "[JA] 4h"
+    },
+    "stickers": {
+      "title": "[JA] Stickers"
+    },
+    "freeToMeet": {
+      "title": "[JA] Free to meet",
+      "set": "[JA] Free to meet",
+      "on": "[JA] Free now",
+      "both": "[JA] {{name}} is free to meet right now 🟢",
+      "youOnly": "[JA] You're marked free to meet 🟢"
+    }
   }
 }

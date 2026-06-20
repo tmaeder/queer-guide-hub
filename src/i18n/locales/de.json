@@ -168,7 +168,8 @@
     "somethingWentWrong": "Etwas ist schiefgelaufen.",
     "clear": "Löschen",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[DE] More"
   },
   "navigation": {
     "home": "Startseite",
@@ -2149,7 +2150,11 @@
       "title": "Reiseerinnerungen",
       "body": "Erhalte eine Browser-Benachrichtigung 30 Minuten vor jeder Reservierung und erneut, wenn ein Pass- oder Visum-Datum näher rückt.",
       "turnOn": "Einschalten",
-      "turnOff": "Ausschalten"
+      "turnOff": "Ausschalten",
+      "dm": {
+        "title": "[DE] Direct messages",
+        "body": "[DE] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2581,7 +2586,24 @@
     },
     "openInbox": "[DE] Open inbox",
     "markAlertsRead": "[DE] Mark alerts read",
-    "unread": "[DE] Unread"
+    "unread": "[DE] Unread",
+    "unreadCount": "[DE] {{count}} unread",
+    "action": {
+      "pin": "[DE] Pin",
+      "unpin": "[DE] Unpin",
+      "mute": "[DE] Mute",
+      "unmute": "[DE] Unmute",
+      "markRead": "[DE] Mark as read",
+      "archive": "[DE] Archive"
+    },
+    "search": "[DE] Search",
+    "searchEmpty": "[DE] No matches.",
+    "recipient": {
+      "search": "[DE] Search people",
+      "empty": "[DE] No suggestions yet.",
+      "recent": "[DE] Recently messaged",
+      "active": "[DE] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2681,5 +2703,54 @@
     "pride": "[DE] Pride",
     "contributors": "[DE] Contributors",
     "wishlists": "[DE] Wishlists"
+  },
+  "chat": {
+    "react": "[DE] React",
+    "edited": "[DE] edited",
+    "deleted": "[DE] Message deleted",
+    "editing": "[DE] Editing message",
+    "replyingTo": "[DE] Replying to {{name}}",
+    "reply": {
+      "action": "[DE] Reply",
+      "someone": "[DE] someone"
+    },
+    "emoji": {
+      "search": "[DE] Search emoji",
+      "none": "[DE] No emoji found.",
+      "cat": {
+        "smileys": "[DE] Smileys",
+        "gestures": "[DE] Gestures",
+        "hearts": "[DE] Hearts",
+        "pride": "[DE] Pride",
+        "animals": "[DE] Animals",
+        "food": "[DE] Food",
+        "activity": "[DE] Activity",
+        "symbols": "[DE] Symbols"
+      }
+    },
+    "activeNow": "[DE] Active now",
+    "preview": {
+      "you": "[DE] You",
+      "photo": "[DE] Photo",
+      "sticker": "[DE] Sticker",
+      "voice": "[DE] Voice message"
+    },
+    "streak": "[DE] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[DE] Set a vibe",
+      "title": "[DE] Your vibe",
+      "placeholder": "[DE] What's your vibe?",
+      "for4h": "[DE] 4h"
+    },
+    "stickers": {
+      "title": "[DE] Stickers"
+    },
+    "freeToMeet": {
+      "title": "[DE] Free to meet",
+      "set": "[DE] Free to meet",
+      "on": "[DE] Free now",
+      "both": "[DE] {{name}} is free to meet right now 🟢",
+      "youOnly": "[DE] You're marked free to meet 🟢"
+    }
   }
 }

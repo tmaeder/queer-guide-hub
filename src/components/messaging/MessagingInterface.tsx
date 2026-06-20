@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import {
   Send,
   MoreVertical,
@@ -16,26 +15,83 @@ import {
   Clock,
   Eye,
   ChevronLeft,
+  Reply,
+  Pencil,
+  Trash2,
+  X,
+  Search,
+  CalendarClock,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useSearchParams } from 'react-router';
 import { IntimateMatchThread } from '@/components/messaging/IntimateMatchThread';
+import { EmojiPicker } from '@/components/messaging/EmojiPicker';
+import { ReactionBurst } from '@/components/messaging/ReactionBurst';
+import { JoyBurst } from '@/components/messaging/JoyBurst';
+import { VibeEditor } from '@/components/messaging/VibeEditor';
+import { QUICK_REACTIONS } from '@/lib/emojiData';
+import { StickerPicker } from '@/components/messaging/StickerPicker';
+import { pickIcebreaker } from '@/lib/icebreakers';
+import { jumboTier } from '@/lib/messageRender';
+import { Sparkles, Sticker as StickerIcon } from 'lucide-react';
 import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
+import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
+import { useRailActions } from '@/hooks/useRailActions';
+import { useConversationAvailability } from '@/hooks/useConversationAvailability';
+import { usePublicStatus } from '@/hooks/usePublicStatus';
 import { MailDetail } from '@/components/messaging/MailDetail';
 import { NotificationDetailCard } from '@/components/messaging/NotificationDetailCard';
 import { ComposeChooser } from '@/components/messaging/ComposeChooser';
+import { RecipientPicker } from '@/components/messaging/RecipientPicker';
 import { ComposeEmail } from '@/components/inbox/ComposeEmail';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 interface MessageItemProps {
   message: Message;
   isOwn: boolean;
+  currentUserId?: string;
+  replyingTo?: Message | null;
+  highlighted?: boolean;
   onReaction: (messageId: string, emoji: string) => void;
+  onReply: (message: Message) => void;
+  onEdit: (message: Message) => void;
+  onDelete: (messageId: string) => void;
+  onScrollToMessage: (messageId: string) => void;
+}
+
+interface GroupedReaction {
+  emoji: string;
+  count: number;
+  mine: boolean;
+  names: string[];
+}
+
+function groupReactions(message: Message, currentUserId?: string): GroupedReaction[] {
+  const map = new Map<string, GroupedReaction>();
+  for (const r of message.reactions ?? []) {
+    const g = map.get(r.emoji) ?? { emoji: r.emoji, count: 0, mine: false, names: [] };
+    g.count += 1;
+    if (r.user_id === currentUserId) g.mine = true;
+    if (r.user?.display_name) g.names.push(r.user.display_name);
+    map.set(r.emoji, g);
+  }
+  return [...map.values()];
 }
 
 const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
@@ -53,13 +109,36 @@ const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
   }
 };
 
-const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
-  const [showReactions, setShowReactions] = useState(false);
+const MessageItem = ({
+  message,
+  isOwn,
+  currentUserId,
+  replyingTo,
+  highlighted,
+  onReaction,
+  onReply,
+  onEdit,
+  onDelete,
+  onScrollToMessage,
+}: MessageItemProps) => {
+  const { t } = useTranslation();
+  const [burst, setBurst] = useState<{ emoji: string; id: number } | null>(null);
+  const isDeleted = !!message.deleted_at;
+  const jumbo = isDeleted ? 0 : message.message_type === 'sticker' ? 2 : jumboTier(message.content);
 
-  const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😠'];
+  const react = (emoji: string) => {
+    onReaction(message.id, emoji);
+    setBurst({ emoji, id: Date.now() });
+  };
+
+  const grouped = groupReactions(message, currentUserId);
 
   return (
-    <div style={{ justifyContent: isOwn ? 'flex-end' : 'flex-start' }} className="flex mb-4">
+    <div
+      id={`msg-${message.id}`}
+      style={{ justifyContent: isOwn ? 'flex-end' : 'flex-start' }}
+      className="group flex mb-4"
+    >
       <div style={{ maxWidth: '70%', order: isOwn ? 2 : 1 }}>
         {!isOwn && (
           <div className="flex items-center gap-2 mb-1">
@@ -74,28 +153,74 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
         )}
 
         <div className="relative">
-          <div
-            style={{
-              paddingLeft: 16,
-              paddingRight: 16,
-              paddingTop: 8,
-              paddingBottom: 8,
-              borderRadius: 'var(--radius-container)',
-              ...(isOwn
-                ? {
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)',
-                    borderBottomRightRadius: 'var(--radius-element)',
-                  }
-                : {
-                    backgroundColor: 'var(--muted)',
-                    borderBottomLeftRadius: 'var(--radius-element)',
-                  }),
-              ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
-            }}
-          >
-            <p className="text-sm">{message.content}</p>
-          </div>
+          {burst && (
+            <ReactionBurst emoji={burst.emoji} onDone={() => setBurst(null)} />
+          )}
+
+          {/* Quoted reply stub */}
+          {replyingTo && !isDeleted && (
+            <button
+              type="button"
+              onClick={() => onScrollToMessage(replyingTo.id)}
+              className="mb-1 flex w-full flex-col items-start gap-0.5 rounded-element border-l-2 border-accent-brand bg-muted/60 px-2 py-1 text-left"
+            >
+              <span className="text-2xs font-medium text-accent-brand">
+                {replyingTo.sender?.display_name || t('chat.reply.someone', { defaultValue: 'Someone' })}
+              </span>
+              <span className="line-clamp-1 text-xs text-muted-foreground">
+                {replyingTo.deleted_at
+                  ? t('chat.deleted', { defaultValue: 'Message deleted' })
+                  : replyingTo.content}
+              </span>
+            </button>
+          )}
+
+          {jumbo > 0 && !isDeleted ? (
+            <div
+              className="leading-none"
+              style={{
+                fontSize: message.message_type === 'sticker' || jumbo === 2 ? 56 : 40,
+                textAlign: isOwn ? 'right' : 'left',
+                opacity: message.status === 'sending' ? 0.6 : 1,
+                ...(highlighted
+                  ? { outline: '2px solid var(--accent-brand)', borderRadius: 'var(--radius-element)' }
+                  : {}),
+              }}
+            >
+              {message.content}
+            </div>
+          ) : (
+            <div
+              className="transition-shadow"
+              style={{
+                paddingLeft: 16,
+                paddingRight: 16,
+                paddingTop: 8,
+                paddingBottom: 8,
+                borderRadius: 'var(--radius-container)',
+                ...(isOwn
+                  ? {
+                      backgroundColor: 'var(--primary)',
+                      color: 'var(--primary-foreground)',
+                      borderBottomRightRadius: 'var(--radius-element)',
+                    }
+                  : {
+                      backgroundColor: 'var(--muted)',
+                      borderBottomLeftRadius: 'var(--radius-element)',
+                    }),
+                ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
+                ...(highlighted ? { boxShadow: '0 0 0 2px var(--accent-brand)' } : {}),
+              }}
+            >
+              {isDeleted ? (
+                <p className="text-sm italic opacity-70">
+                  {t('chat.deleted', { defaultValue: 'Message deleted' })}
+                </p>
+              ) : (
+                <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+              )}
+            </div>
+          )}
 
           <div
             style={{ alignItems: 'center', justifyContent: 'space-between' }}
@@ -105,54 +230,104 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
               <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
               </span>
-
+              {message.edited_at && !isDeleted && (
+                <span className="text-2xs text-muted-foreground">
+                  {t('chat.edited', { defaultValue: 'edited' })}
+                </span>
+              )}
               {isOwn && <MessageStatusIcon status={message.status} />}
             </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              style={{ height: 24, width: 24, opacity: 0, transition: 'opacity 0.2s' }}
-              className="p-0"
-              onClick={() => setShowReactions(!showReactions)}
-            >
-              <Smile size={12} />
-            </Button>
+            {/* Hover actions: react / reply / (own) edit-delete */}
+            {!isDeleted && (
+              <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                <EmojiPicker
+                  onSelect={react}
+                  side="top"
+                  align={isOwn ? 'end' : 'start'}
+                  trigger={
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label={t('chat.react', { defaultValue: 'React' })}>
+                      <Smile size={13} />
+                    </Button>
+                  }
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  aria-label={t('chat.reply.action', { defaultValue: 'Reply' })}
+                  onClick={() => onReply(message)}
+                >
+                  <Reply size={13} />
+                </Button>
+                {isOwn && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label={t('common.more', { defaultValue: 'More' })}>
+                        <MoreVertical size={13} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEdit(message)}>
+                        <Pencil size={14} className="mr-2" />
+                        {t('common.edit', { defaultValue: 'Edit' })}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onDelete(message.id)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 size={14} className="mr-2" />
+                        {t('common.delete', { defaultValue: 'Delete' })}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            )}
           </div>
 
-          {showReactions && (
-            <div
-              className="rounded-container border border-border absolute mt-1 p-2"
-              style={{ top: '100%', backgroundColor: 'var(--popover)', zIndex: 10 }}
-            >
-              <div className="flex gap-1">
-                {commonEmojis.map((emoji) => (
-                  <Button
-                    key={emoji}
-                    variant="ghost"
-                    size="sm"
-                    style={{ height: 32, width: 32, transition: 'background-color 0.2s' }}
-                    className="p-0"
-                    onClick={() => {
-                      onReaction(message.id, emoji);
-                      setShowReactions(false);
-                    }}
-                  >
-                    {emoji}
-                  </Button>
-                ))}
-              </div>
+          {/* Quick-react bar on hover */}
+          {!isDeleted && (
+            <div className="mt-1 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+              {QUICK_REACTIONS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => react(emoji)}
+                  className="flex h-7 w-7 items-center justify-center rounded-badge text-sm transition-colors hover:bg-muted"
+                >
+                  {emoji}
+                </button>
+              ))}
             </div>
           )}
 
-          {message.reactions && message.reactions.length > 0 && (
-            <div style={{ flexWrap: 'wrap' }} className="flex gap-1 mt-2">
-              {message.reactions.map((reaction) => (
-                <Badge key={reaction.id} variant="secondary" className="text-xs">
-                  {reaction.emoji} 1
-                </Badge>
-              ))}
-            </div>
+          {/* Grouped reaction badges with counts + who-reacted tooltip */}
+          {grouped.length > 0 && (
+            <TooltipProvider>
+              <div style={{ flexWrap: 'wrap' }} className="flex gap-1 mt-2">
+                {grouped.map((g) => (
+                  <Tooltip key={g.emoji}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => react(g.emoji)}
+                        className={`rounded-badge border px-1.5 py-0.5 text-xs transition-colors ${
+                          g.mine
+                            ? 'border-accent-brand bg-accent-brand/10'
+                            : 'border-border bg-muted hover:bg-muted/70'
+                        }`}
+                      >
+                        {g.emoji} {g.count}
+                      </button>
+                    </TooltipTrigger>
+                    {g.names.length > 0 && (
+                      <TooltipContent>{g.names.join(', ')}</TooltipContent>
+                    )}
+                  </Tooltip>
+                ))}
+              </div>
+            </TooltipProvider>
           )}
         </div>
       </div>
@@ -200,6 +375,8 @@ interface MessageInputProps {
   inputRef?: React.RefObject<HTMLInputElement>;
   /** Pre-populate the composer with this text. Latest non-empty value wins. */
   prefilledMessage?: string | null;
+  /** Send a sticker (standalone large emoji) immediately. */
+  onSticker?: (emoji: string) => void;
 }
 
 const MessageInput = ({
@@ -209,6 +386,7 @@ const MessageInput = ({
   disabled,
   inputRef,
   prefilledMessage,
+  onSticker,
 }: MessageInputProps) => {
   const [message, setMessage] = useState('');
 
@@ -222,47 +400,11 @@ const MessageInput = ({
       inputRef?.current?.focus();
     }
   }, [prefilledMessage, inputRef]);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Common emojis for quick access
-  const commonEmojis = [
-    '😀',
-    '😂',
-    '🥰',
-    '😍',
-    '🤔',
-    '👍',
-    '👎',
-    '❤️',
-    '🔥',
-    '💯',
-    '😊',
-    '😎',
-    '🙄',
-    '😴',
-    '🤗',
-    '👋',
-    '👏',
-    '🎉',
-    '💪',
-    '🙏',
-    '😢',
-    '😭',
-    '😡',
-    '😱',
-    '🤯',
-    '🥺',
-    '😤',
-    '🤮',
-    '😷',
-    '🤒',
-  ];
-
-  // Add emoji to message
+  // Append an emoji to the composer text.
   const addEmoji = (emoji: string) => {
     setMessage((prev) => prev + emoji);
-    setShowEmojiPicker(false);
     inputRef?.current?.focus();
   };
 
@@ -339,9 +481,51 @@ const MessageInput = ({
         maxLength={2000}
       />
 
+      {/* Spark: drop an icebreaker into the composer */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="rounded-element p-0"
+        style={{ height: 44, width: 44 }}
+        disabled={disabled}
+        aria-label="Spark a conversation"
+        onClick={() => {
+          setMessage(pickIcebreaker(Date.now()));
+          inputRef?.current?.focus();
+        }}
+      >
+        <Sparkles size={20} />
+      </Button>
+
+      {/* Sticker Picker */}
+      {onSticker && (
+        <StickerPicker
+          onSelect={onSticker}
+          side="top"
+          align="end"
+          trigger={
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="rounded-element p-0"
+              style={{ height: 44, width: 44 }}
+              disabled={disabled}
+              aria-label="Stickers"
+            >
+              <StickerIcon size={20} />
+            </Button>
+          }
+        />
+      )}
+
       {/* Emoji Picker */}
-      <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-        <PopoverTrigger asChild>
+      <EmojiPicker
+        onSelect={addEmoji}
+        side="top"
+        align="end"
+        trigger={
           <Button
             type="button"
             variant="ghost"
@@ -352,27 +536,8 @@ const MessageInput = ({
           >
             <Smile size={20} />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent style={{ width: 320 }} className="p-4" side="top">
-          <div className="flex flex-col gap-4">
-            <p className="font-medium text-sm">Choose an emoji</p>
-            <div className="grid grid-cols-8 md:grid-cols-10 gap-1">
-              {commonEmojis.map((emoji, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="sm"
-                  style={{ height: 32, width: 32, transition: 'background-color 0.2s' }}
-                  className="p-0"
-                  onClick={() => addEmoji(emoji)}
-                >
-                  <span className="text-lg">{emoji}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+        }
+      />
 
       <Button
         type="submit"
@@ -399,6 +564,7 @@ interface ChatViewProps {
  * the unified inbox switch without disturbing the rail.
  */
 const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const {
     conversations,
@@ -408,17 +574,25 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
     fetchMessages,
     sendMessage,
     addReaction,
+    editMessage,
+    deleteMessage,
     markAsRead,
     sendTypingIndicator,
     stopTypingIndicator,
   } = useMessaging();
 
   const [prefilledMessage, setPrefilledMessage] = useState<string | null>(null);
+  const [replyTarget, setReplyTarget] = useState<Message | null>(null);
+  const [editing, setEditing] = useState<Message | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [composerKey, setComposerKey] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const currentMessages = messages[conversationId] || [];
   const currentTypingUsers = typingUsers[conversationId] || [];
+  const messageById = (id: string | null) =>
+    id ? currentMessages.find((m) => m.id === id) ?? null : null;
 
   useEffect(() => {
     void fetchMessages(conversationId);
@@ -435,7 +609,13 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   }, [conversationId]);
 
   const handleSendMessage = async (content: string) => {
-    await sendMessage(conversationId, content);
+    if (editing) {
+      await editMessage(editing.id, content);
+      setEditing(null);
+    } else {
+      await sendMessage(conversationId, content, replyTarget?.id);
+      setReplyTarget(null);
+    }
     await stopTypingIndicator(conversationId);
   };
 
@@ -443,11 +623,86 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
     await addReaction(messageId, emoji);
   };
 
+  const handleReply = (message: Message) => {
+    setEditing(null);
+    setReplyTarget(message);
+    inputRef.current?.focus();
+  };
+
+  const handleEdit = (message: Message) => {
+    setReplyTarget(null);
+    setEditing(message);
+    setPrefilledMessage(message.content);
+    setComposerKey((k) => k + 1);
+    inputRef.current?.focus();
+  };
+
+  const cancelContext = () => {
+    setReplyTarget(null);
+    if (editing) {
+      setEditing(null);
+      setPrefilledMessage(null);
+      setComposerKey((k) => k + 1);
+    }
+  };
+
+  const scrollToMessage = (messageId: string) => {
+    document.getElementById(`msg-${messageId}`)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
+    setHighlightedId(messageId);
+    setTimeout(() => setHighlightedId((cur) => (cur === messageId ? null : cur)), 1500);
+  };
+
   const conv = conversations.find((c) => c.id === conversationId);
   const otherParticipant = conv?.participants?.find((p) => p.user_id !== user?.id);
+  const onlineInThread = useConversationPresence(conversationId);
+  const { status: otherStatus } = usePublicStatus(otherParticipant?.user_id);
+  const isOtherOnline = otherParticipant ? onlineInThread.has(otherParticipant.user_id) : false;
+  const vibeEmoji = otherParticipant?.profile?.vibe_emoji ?? null;
+  const vibeText = otherParticipant?.profile?.vibe_text ?? null;
+  const vibeExpiresAt = otherParticipant?.profile?.vibe_expires_at ?? null;
+  const firstMessageAt = currentMessages.length > 1 ? currentMessages[0].created_at : null;
+  // Date.now() lives in useMemo (not render) to satisfy the purity rule; it
+  // re-evaluates whenever the inputs change, which is fresh enough for both.
+  const { vibeActive, streakDays } = useMemo(() => {
+    const now = Date.now();
+    const active = !!vibeText && (!vibeExpiresAt || new Date(vibeExpiresAt).getTime() > now);
+    const days = firstMessageAt
+      ? Math.floor((now - new Date(firstMessageAt).getTime()) / 86_400_000)
+      : 0;
+    return { vibeActive: active, streakDays: days };
+  }, [vibeText, vibeExpiresAt, firstMessageAt]);
+  const presenceLabel = isOtherOnline
+    ? t('chat.activeNow', { defaultValue: 'Active now' })
+    : vibeActive
+      ? `${vibeEmoji ?? '✨'} ${vibeText}`
+      : otherStatus?.text
+        ? otherStatus.text
+        : null;
+
+  // Free-to-meet availability for this thread (self + other).
+  const {
+    selfAvailable,
+    otherAvailable,
+    toggle: toggleAvailability,
+  } = useConversationAvailability(conversationId, otherParticipant?.user_id);
+
+  // Queer-joy burst when a new match thread gets its first message.
+  const [joy, setJoy] = useState(false);
+  const prevLenRef = useRef(0);
+  useEffect(() => {
+    const prev = prevLenRef.current;
+    if (conv?.conversation_type === 'match' && prev === 0 && currentMessages.length > 0) {
+      setJoy(true);
+    }
+    prevLenRef.current = currentMessages.length;
+  }, [currentMessages.length, conv?.conversation_type]);
 
   return (
-    <>
+    <div className="relative flex h-full min-h-0 flex-1 flex-col">
+      {joy && <JoyBurst onDone={() => setJoy(false)} />}
       {/* Chat Header */}
       <div
         className="p-4 md:p-4 border-b"
@@ -488,36 +743,58 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                   {otherParticipant?.profile?.display_name?.charAt(0) || 'C'}
                 </AvatarFallback>
               </Avatar>
-              <div
-                className="rounded-full absolute"
-                style={{
-                  bottom: -2,
-                  right: -2,
-                  width: 12,
-                  height: 12,
-                  backgroundColor: 'hsl(var(--foreground))',
-                  border: '2px solid var(--background)',
-                }}
-              ></div>
+              {isOtherOnline && (
+                <div
+                  className="rounded-full absolute bg-accent-brand"
+                  style={{
+                    bottom: -2,
+                    right: -2,
+                    width: 12,
+                    height: 12,
+                    border: '2px solid var(--background)',
+                  }}
+                ></div>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                 {otherParticipant?.profile?.display_name || 'Unknown User'}
               </p>
-              <p className="text-sm text-foreground">Online</p>
+              {presenceLabel && (
+                <p className="text-sm text-muted-foreground truncate">{presenceLabel}</p>
+              )}
             </div>
           </div>
 
           <Button
-            variant="ghost"
+            variant={selfAvailable ? 'accent' : 'ghost'}
             size="sm"
-            className="rounded-element p-0"
-            style={{ height: 36, width: 36 }}
+            className="rounded-element gap-1 px-2"
+            style={{ height: 36 }}
+            onClick={toggleAvailability}
+            title={t('chat.freeToMeet.title', { defaultValue: 'Free to meet' })}
           >
-            <MoreVertical size={16} />
+            <CalendarClock size={16} />
+            <span className="hidden text-13 sm:inline">
+              {selfAvailable
+                ? t('chat.freeToMeet.on', { defaultValue: 'Free now' })
+                : t('chat.freeToMeet.set', { defaultValue: 'Free to meet' })}
+            </span>
           </Button>
         </div>
       </div>
+
+      {/* Free-to-meet ribbon */}
+      {(otherAvailable || selfAvailable) && (
+        <div className="border-b border-border bg-muted/50 px-4 py-1.5 text-center text-13 text-muted-foreground">
+          {otherAvailable
+            ? t('chat.freeToMeet.both', {
+                defaultValue: '{{name}} is free to meet right now 🟢',
+                name: otherParticipant?.profile?.display_name || 'They',
+              })
+            : t('chat.freeToMeet.youOnly', { defaultValue: "You're marked free to meet 🟢" })}
+        </div>
+      )}
 
       {/* Match thread ribbon — only for conversation_type='match' */}
       {conv?.conversation_type === 'match' && (
@@ -550,14 +827,44 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
             </div>
           ) : (
             <div>
-              {currentMessages.map((message) => (
+              {streakDays >= 2 && (
+                <p className="mb-4 text-center text-2xs text-muted-foreground">
+                  {t('chat.streak', {
+                    defaultValue: 'You two have been chatting for {{count}} days ✨',
+                    count: streakDays,
+                  })}
+                </p>
+              )}
+              {currentMessages.map((rawMessage) => {
+                const isOwn = rawMessage.sender_id === user?.id;
+                // Derive read receipt: own message is "read" once the other
+                // participant's last_read_at is at/after it.
+                const otherRead = otherParticipant?.last_read_at
+                  ? new Date(otherParticipant.last_read_at).getTime()
+                  : 0;
+                const message =
+                  isOwn &&
+                  otherRead &&
+                  new Date(rawMessage.created_at).getTime() <= otherRead &&
+                  rawMessage.status !== 'sending'
+                    ? { ...rawMessage, status: 'read' as const }
+                    : rawMessage;
+                return (
                 <MessageItem
                   key={message.id}
                   message={message}
-                  isOwn={message.sender_id === user?.id}
+                  isOwn={isOwn}
+                  currentUserId={user?.id}
+                  replyingTo={messageById(message.reply_to_id)}
+                  highlighted={highlightedId === message.id}
                   onReaction={handleReaction}
+                  onReply={handleReply}
+                  onEdit={handleEdit}
+                  onDelete={deleteMessage}
+                  onScrollToMessage={scrollToMessage}
                 />
-              ))}
+                );
+              })}
 
               <TypingIndicatorComponent typingUsers={currentTypingUsers} />
               <div ref={messagesEndRef} />
@@ -566,16 +873,51 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         </div>
       </ScrollArea>
 
+      {/* Reply / edit context banner */}
+      {(replyTarget || editing) && (
+        <div className="flex items-center justify-between gap-2 border-t border-border bg-muted/50 px-4 py-2">
+          <div className="min-w-0">
+            <p className="text-2xs font-medium text-accent-brand">
+              {editing
+                ? t('chat.editing', { defaultValue: 'Editing message' })
+                : t('chat.replyingTo', {
+                    defaultValue: 'Replying to {{name}}',
+                    name:
+                      replyTarget?.sender?.display_name ||
+                      t('chat.reply.someone', { defaultValue: 'someone' }),
+                  })}
+            </p>
+            <p className="line-clamp-1 text-xs text-muted-foreground">
+              {editing ? editing.content : replyTarget?.content}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 shrink-0 p-0"
+            aria-label={t('common.cancel', { defaultValue: 'Cancel' })}
+            onClick={cancelContext}
+          >
+            <X size={16} />
+          </Button>
+        </div>
+      )}
+
       {/* Message Input */}
       <MessageInput
+        key={composerKey}
         onSend={handleSendMessage}
         onTyping={() => sendTypingIndicator(conversationId)}
         onStopTyping={() => stopTypingIndicator(conversationId)}
         disabled={sendingMessage}
         inputRef={inputRef}
         prefilledMessage={prefilledMessage}
+        onSticker={(emoji) => {
+          void sendMessage(conversationId, emoji, undefined, 'sticker');
+          void stopTypingIndicator(conversationId);
+        }}
       />
-    </>
+    </div>
   );
 };
 
@@ -591,8 +933,46 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { items, loading } = useInboxFeed(filter ?? 'all');
-  const navigate = useLocalizedNavigate();
+  const onlineUsers = useGlobalPresence();
+  const railActions = useRailActions();
   const [composeEmailOpen, setComposeEmailOpen] = useState(false);
+  const [recipientOpen, setRecipientOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const { user } = useAuth();
+  const [serverResults, setServerResults] = useState<InboxItem[]>([]);
+
+  // Server-side message-body/title search across all the user's conversations
+  // (the client filter below only covers the already-loaded feed). Debounced.
+  useEffect(() => {
+    const q = search.trim();
+    if (!user || q.length <= 2) {
+      setServerResults([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const { data } = await supabase.rpc('search_inbox', {
+        p_user: user.id,
+        p_query: q,
+        p_limit: 30,
+      } as never);
+      if (!cancelled) setServerResults(((data as InboxItem[]) ?? []));
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [search, user]);
+
+  const visibleItems = (() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    const clientMatches = items.filter(
+      (i) => i.title.toLowerCase().includes(q) || i.preview.toLowerCase().includes(q),
+    );
+    const seen = new Set(clientMatches.map((i) => i.id));
+    return [...clientMatches, ...serverResults.filter((i) => !seen.has(i.id))];
+  })();
 
   const [selected, setSelected] = useState<InboxItem | null>(null);
 
@@ -677,20 +1057,43 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
         </SheetContent>
       </Sheet>
 
+      {/* New-message recipient picker */}
+      <RecipientPicker
+        open={recipientOpen}
+        onOpenChange={setRecipientOpen}
+        onPicked={(conversationId) => {
+          const next = new URLSearchParams(searchParams);
+          next.set('conversation', conversationId);
+          next.delete('email');
+          setSearchParams(next, { replace: true });
+        }}
+      />
+
       {/* Merged inbox rail - full width on mobile, 1/3 on desktop */}
       <div
         className={`${selected ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r flex-col`}
         style={{ backgroundColor: 'rgba(var(--background-rgb), 0.5)' }}
       >
         {/* Rail header */}
-        <div className="flex items-center justify-between px-4 py-2 border-b">
-          <span className="text-sm font-medium text-foreground">
-            {t('inbox.title', { defaultValue: 'Inbox' })}
-          </span>
-          <ComposeChooser
-            onNewMessage={() => navigate('/community/members')}
-            onNewEmail={() => setComposeEmailOpen(true)}
-          />
+        <div className="border-b">
+          <div className="flex items-center justify-between px-4 py-2">
+            <VibeEditor />
+            <ComposeChooser
+              onNewMessage={() => setRecipientOpen(true)}
+              onNewEmail={() => setComposeEmailOpen(true)}
+            />
+          </div>
+          <div className="px-4 pb-2">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('inbox.search', { defaultValue: 'Search' })}
+                className="h-9 rounded-element pl-8"
+              />
+            </div>
+          </div>
         </div>
         <ScrollArea style={{ flex: 1 }}>
           {loading ? (
@@ -702,7 +1105,7 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
                 </p>
               </div>
             </div>
-          ) : items.length === 0 ? (
+          ) : visibleItems.length === 0 ? (
             <div className="text-center py-8">
               <MessageCircle
                 size={48}
@@ -710,17 +1113,21 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
                 className="text-muted-foreground"
               />
               <p className="text-muted-foreground">
-                {t('inbox.empty', { defaultValue: 'Nothing here yet.' })}
+                {search.trim()
+                  ? t('inbox.searchEmpty', { defaultValue: 'No matches.' })
+                  : t('inbox.empty', { defaultValue: 'Nothing here yet.' })}
               </p>
             </div>
           ) : (
             <div>
-              {items.map((item) => (
+              {visibleItems.map((item) => (
                 <InboxRailItem
                   key={item.id}
                   item={item}
                   active={selected?.id === item.id}
                   onSelect={handleSelect}
+                  online={item.other_user_id ? onlineUsers.has(item.other_user_id) : false}
+                  actions={railActions}
                 />
               ))}
             </div>

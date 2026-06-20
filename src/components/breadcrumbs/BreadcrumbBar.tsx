@@ -12,7 +12,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useBreadcrumbState, type BreadcrumbItem as Crumb } from '@/contexts/BreadcrumbContext';
-import { getRouteBreadcrumbs, homeCrumb } from '@/config/breadcrumbs';
+import { getRouteBreadcrumbs, homeCrumb, localeFromPath } from '@/config/breadcrumbs';
 import { breadcrumbJsonLd } from '@/lib/breadcrumbJsonLd';
 
 /**
@@ -26,6 +26,10 @@ export function BreadcrumbBar() {
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const published = useBreadcrumbState();
+  // LocalizedLink can't read the locale here (bar is outside the :locale? Routes),
+  // so prefix hrefs ourselves from the path.
+  const locale = localeFromPath(pathname);
+  const loc = (href: string) => (locale && href.startsWith('/') ? `/${locale}${href}` : href);
 
   // Page trails are entity-only; prepend the shared Home crumb so every trail
   // is anchored consistently (and starts with a clickable Home).
@@ -91,7 +95,7 @@ export function BreadcrumbBar() {
                       <BreadcrumbPage className="truncate">{crumb.label}</BreadcrumbPage>
                     ) : crumb.href ? (
                       <BreadcrumbLink asChild>
-                        <LocalizedLink to={crumb.href}>{crumb.label}</LocalizedLink>
+                        <LocalizedLink to={loc(crumb.href)}>{crumb.label}</LocalizedLink>
                       </BreadcrumbLink>
                     ) : (
                       <span>{crumb.label}</span>
