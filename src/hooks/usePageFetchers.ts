@@ -511,11 +511,17 @@ export async function fetchRelatedNewsArticles<T = unknown>(
   return (data ?? []) as T[];
 }
 
-/** MarketplaceItemDetail.tsx — slug→uuid fallback + reviews + favorite state. */
+export interface ListingTag {
+  name: string;
+  /** unified_tags.category — 'material' | 'occasion' | 'vibe' | other | null */
+  category: string | null;
+}
+
+/** MarketplaceItemDetail.tsx — slug→uuid fallback + reviews + favorite state + tags. */
 export async function fetchMarketplaceListingBundle<TListing, TReview>(
   slug: string,
   userId: string | undefined,
-): Promise<{ listing: TListing; reviews: TReview[]; isFavorited: boolean } | null> {
+): Promise<{ listing: TListing; reviews: TReview[]; isFavorited: boolean; tags: ListingTag[] } | null> {
   let { data: listing, error } = await supabase
     .from('marketplace_listings')
     .select('*')
@@ -548,10 +554,21 @@ export async function fetchMarketplaceListingBundle<TListing, TReview>(
       .maybeSingle();
     isFavorited = !!fav;
   }
+  const { data: tagRows } = await supabase
+    .from('unified_tag_assignments')
+    .select('unified_tags!inner(name, category, status)')
+    .eq('entity_type', 'marketplace_listing')
+    .eq('entity_id', typed.id);
+  const tags: ListingTag[] = (
+    (tagRows as Array<{ unified_tags: { name: string; category: string | null; status: string | null } }> | null) ?? []
+  )
+    .filter((t) => t.unified_tags?.status !== 'inactive')
+    .map((t) => ({ name: t.unified_tags.name, category: t.unified_tags.category }));
   return {
     listing: typed,
     reviews: (reviews ?? []) as TReview[],
     isFavorited,
+    tags,
   };
 }
 
