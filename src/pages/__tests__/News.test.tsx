@@ -42,6 +42,7 @@ vi.mock('@/components/news/editorial/StoryCollectionsBand', () => ({
 }));
 vi.mock('@/components/news/editorial/WeekInReview', () => ({ WeekInReview: () => null }));
 vi.mock('@/components/news/editorial/ReaderRail', () => ({ ReaderRail: () => null }));
+vi.mock('@/components/news/editorial/ForYouSection', () => ({ ForYouSection: () => null }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ children }: { children: React.ReactNode }) => <a href="/">{children}</a>,
 }));
