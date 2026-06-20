@@ -11,6 +11,12 @@ vi.mock('@/hooks/usePushSubscription', () => ({
   }),
 }));
 
+// The component reads dm_push_enabled via useProfile (→ useAuth); mock it so the
+// test doesn't need a full AuthProvider tree.
+vi.mock('@/hooks/useProfile', () => ({
+  useProfile: () => ({ profile: null, updateProfile: vi.fn() }),
+}));
+
 import { PushNotificationSettings } from '../PushNotificationSettings';
 
 describe('PushNotificationSettings', () => {
