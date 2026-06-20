@@ -24,6 +24,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Tooltip,
   TooltipContent,
@@ -909,14 +910,41 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   const [composeEmailOpen, setComposeEmailOpen] = useState(false);
   const [recipientOpen, setRecipientOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const visibleItems = search.trim()
-    ? items.filter((i) => {
-        const q = search.trim().toLowerCase();
-        return (
-          i.title.toLowerCase().includes(q) || i.preview.toLowerCase().includes(q)
-        );
-      })
-    : items;
+  const { user } = useAuth();
+  const [serverResults, setServerResults] = useState<InboxItem[]>([]);
+
+  // Server-side message-body/title search across all the user's conversations
+  // (the client filter below only covers the already-loaded feed). Debounced.
+  useEffect(() => {
+    const q = search.trim();
+    if (!user || q.length <= 2) {
+      setServerResults([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const { data } = await supabase.rpc('search_inbox', {
+        p_user: user.id,
+        p_query: q,
+        p_limit: 30,
+      } as never);
+      if (!cancelled) setServerResults(((data as InboxItem[]) ?? []));
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [search, user]);
+
+  const visibleItems = (() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    const clientMatches = items.filter(
+      (i) => i.title.toLowerCase().includes(q) || i.preview.toLowerCase().includes(q),
+    );
+    const seen = new Set(clientMatches.map((i) => i.id));
+    return [...clientMatches, ...serverResults.filter((i) => !seen.has(i.id))];
+  })();
 
   const [selected, setSelected] = useState<InboxItem | null>(null);
 
