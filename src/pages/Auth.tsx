@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +26,12 @@ export default function Auth() {
   const { t } = useTranslation();
   const { token: captchaToken, widget: captcha, reset: resetCaptcha, required: captchaRequired } = useTurnstile();
 
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  // Where to land after sign-in: a gated tab (e.g. Messages) passes its target
+  // via router state; fall back to ?redirect= or home.
+  const redirectTo =
+    (location.state as { from?: string } | null)?.from || searchParams.get('redirect') || '/';
   const initialMode: Mode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
   const [mode, setMode] = useState<Mode>(initialMode);
 
@@ -53,7 +58,7 @@ export default function Auth() {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
 
   if (user) {
-    navigate('/');
+    navigate(redirectTo);
     return null;
   }
 
@@ -83,7 +88,7 @@ export default function Auth() {
         }
       } else {
         toast({ title: t('auth.welcomeBack', 'Welcome back!') });
-        navigate('/');
+        navigate(redirectTo);
       }
     } catch {
       setError(t('auth.errors.unexpected', 'An unexpected error occurred. Please try again.'));

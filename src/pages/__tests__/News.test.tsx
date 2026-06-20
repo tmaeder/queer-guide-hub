@@ -42,6 +42,8 @@ vi.mock('@/components/news/editorial/StoryCollectionsBand', () => ({
 }));
 vi.mock('@/components/news/editorial/WeekInReview', () => ({ WeekInReview: () => null }));
 vi.mock('@/components/news/editorial/ReaderRail', () => ({ ReaderRail: () => null }));
+// ForYouSection calls useForYouNews → useAuth; mock it out like its siblings so
+// the page renders without an AuthProvider tree (and survives the full suite).
 vi.mock('@/components/news/editorial/ForYouSection', () => ({ ForYouSection: () => null }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ children }: { children: React.ReactNode }) => <a href="/">{children}</a>,

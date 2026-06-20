@@ -101,7 +101,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         </motion.div>
       </AnimatePresence>
       {!isFullBleedMap && (
-        <div className="relative z-10 pb-14 md:pb-0">
+        <div className="relative z-10 pb-24 md:pb-0">
           <ErrorBoundary section="footer" fallback={null}>
             <Footer />
           </ErrorBoundary>
