@@ -73,9 +73,6 @@ export interface TrustPill {
 
 export function trustPillsFor(listing: MarketplaceListing): TrustPill[] {
   const pills: TrustPill[] = [];
-  if ((listing.lgbti_relevance_score ?? 0) >= 0.75) {
-    pills.push({ key: 'relevance', label: 'LGBTQ+ relevant', title: 'High LGBTQ+ relevance score' });
-  }
   if (listing.business_type === 'queer-owned' || listing.business_type === 'lgbtq-owned') {
     pills.push({ key: 'owned', label: 'Queer-owned', title: 'Identified as a queer-owned business' });
   }

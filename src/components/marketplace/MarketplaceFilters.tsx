@@ -55,7 +55,6 @@ interface MarketplaceFiltersProps {
     communityOwned?: string[];
     currency?: string;
     availability?: 'in_stock' | 'any';
-    relevanceMin?: number;
     verifiedWithinDays?: number;
   }) => void;
   /** Default-SFW browse toggle (owned by the page; persisted + 18+ opt-in). */
@@ -134,7 +133,6 @@ export function MarketplaceFilters({
   const [currency, setCurrency] = useState('');
   // Default 'in_stock' — hide sold-out listings unless the user opts in.
   const [availability, setAvailability] = useState<'in_stock' | 'any'>('in_stock');
-  const [relevanceMin, setRelevanceMin] = useState<number>(0);
   const [verifiedWithinDays, setVerifiedWithinDays] = useState<number>(0);
 
   const toggleCommunityOwned = (value: string) => {
@@ -173,7 +171,6 @@ export function MarketplaceFilters({
       communityOwned: communityOwned.length > 0 ? communityOwned : undefined,
       currency: currency || undefined,
       availability,
-      relevanceMin: relevanceMin > 0 ? relevanceMin : undefined,
       verifiedWithinDays: verifiedWithinDays > 0 ? verifiedWithinDays : undefined,
     };
   };
@@ -218,7 +215,6 @@ export function MarketplaceFilters({
     communityOwned,
     currency,
     availability,
-    relevanceMin,
     verifiedWithinDays,
   ]);
 
@@ -238,7 +234,6 @@ export function MarketplaceFilters({
     setCommunityOwned([]);
     setCurrency('');
     setAvailability('in_stock');
-    setRelevanceMin(0);
     setVerifiedWithinDays(0);
     onFiltersChange({});
   };
@@ -255,7 +250,6 @@ export function MarketplaceFilters({
     communityOwned.length > 0 ||
     currency ||
     availability === 'any' ||
-    relevanceMin > 0 ||
     verifiedWithinDays > 0;
 
   const activeFilterCount =
@@ -270,7 +264,6 @@ export function MarketplaceFilters({
     communityOwned.length +
     (currency ? 1 : 0) +
     (availability === 'any' ? 1 : 0) +
-    (relevanceMin > 0 ? 1 : 0) +
     (verifiedWithinDays > 0 ? 1 : 0);
 
   const handleTypeChange = (newType: string) => {
@@ -643,23 +636,6 @@ export function MarketplaceFilters({
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="relevance">Minimum LGBTQ+ relevance</Label>
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {relevanceMin === 0 ? 'Any' : `${Math.round(relevanceMin * 100)}%+`}
-                      </span>
-                    </div>
-                    <Slider
-                      id="relevance"
-                      min={0}
-                      max={1}
-                      step={0.05}
-                      value={[relevanceMin]}
-                      onValueChange={(v) => Array.isArray(v) && v[0] != null && setRelevanceMin(v[0])}
-                      aria-label="Minimum LGBTQ+ relevance"
-                    />
-                  </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -789,12 +765,6 @@ export function MarketplaceFilters({
                 className="cursor-pointer"
                 onClick={() => setAvailability('in_stock')}
               />
-            </Badge>
-          )}
-          {relevanceMin > 0 && (
-            <Badge variant="secondary">
-              Relevance ≥ {Math.round(relevanceMin * 100)}%
-              <X size={12} className="cursor-pointer" onClick={() => setRelevanceMin(0)} />
             </Badge>
           )}
           {verifiedWithinDays > 0 && (
