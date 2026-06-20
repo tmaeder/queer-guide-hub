@@ -73,7 +73,7 @@ queer-guide-hub/
 
 - **Edge functions:** 219
 - **Edge functions:** 201
-- **Migrations:** 626
+- **Migrations:** 639
 - **Migrations:** 632
 - **Edge functions:** 217
 - **Edge functions:** 201
@@ -183,7 +183,7 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - **Shadows:** disabled. ESLint warns on `shadow-(md|lg|xl|2xl)`. Use `border` or `bg-muted` for depth.
 - **Gradients:** not allowed in public UI. ESLint warns on `bg-gradient-to-*`. Exception: black readability scrims over images (`from-black/15 to-black/65`).
 - **Icons:** lucide-react only, inherit color from parent.
-- **Motion:** functional only (skeleton pulse, dialog/sheet transitions, accordion). No decorative animation (Aurora removed, ScrollReveal on hero removed).
+- **Motion:** functional only (skeleton pulse, dialog/sheet transitions, accordion). No decorative animation (Aurora removed, ScrollReveal on hero removed). **Exception — `/messages` is a sanctioned queer-joy motion zone:** the chat surface may use celebratory motion (`ReactionBurst` on adding a reaction, `JoyBurst` confetti on a new match's first message) and rainbow color in those bursts + the bundled sticker pack. Every such effect is hard-gated behind `useMotionTokens().reduced || isLowEndDevice()`, `aria-hidden`, and auto-unmounts; none of it is imported by `/help`,`/safety`,`/report-*`. Do not extend this exception to other routes.
 - **Copy:** direct factual voice. No "discover/explore/unlock/curated/journey/amazing/tailored/personalized for you". Empty states: "No X yet." not metaphors.
 - Full light + dark mode (system preference + header toggle).
 - Components: shadcn/ui primitives in `src/components/ui/`.
