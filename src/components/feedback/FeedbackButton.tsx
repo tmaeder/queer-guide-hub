@@ -174,10 +174,10 @@ export function FeedbackButton() {
             className="fixed right-6 z-[1200] flex h-12 w-12 items-center justify-center bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-50"
             style={{
               visibility: capturing ? 'hidden' : 'visible',
-              // On mobile, clear the fixed bottom nav (h-14 + safe-area) so the
-              // FAB doesn't sit on top of the Home/Find tabs.
+              // On mobile, clear the floating bottom-nav island (h-14 bar +
+              // mb-2 margin + safe-area) so the FAB doesn't sit on the tabs.
               bottom: isMobile
-                ? 'calc(5rem + env(safe-area-inset-bottom, 0px))'
+                ? 'calc(6rem + env(safe-area-inset-bottom, 0px))'
                 : '1.5rem',
             }}
           >
