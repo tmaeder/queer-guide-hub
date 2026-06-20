@@ -168,7 +168,8 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[ZH] More"
   },
   "navigation": {
     "home": "首页",
@@ -2147,7 +2148,11 @@
       "title": "旅行提醒",
       "body": "在每次预订前 30 分钟收到浏览器通知，以及护照或签证即将到期时再次提醒。",
       "turnOn": "开启",
-      "turnOff": "关闭"
+      "turnOff": "关闭",
+      "dm": {
+        "title": "[ZH] Direct messages",
+        "body": "[ZH] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2579,7 +2584,24 @@
     },
     "openInbox": "[ZH] Open inbox",
     "markAlertsRead": "[ZH] Mark alerts read",
-    "unread": "[ZH] Unread"
+    "unread": "[ZH] Unread",
+    "unreadCount": "[ZH] {{count}} unread",
+    "action": {
+      "pin": "[ZH] Pin",
+      "unpin": "[ZH] Unpin",
+      "mute": "[ZH] Mute",
+      "unmute": "[ZH] Unmute",
+      "markRead": "[ZH] Mark as read",
+      "archive": "[ZH] Archive"
+    },
+    "search": "[ZH] Search",
+    "searchEmpty": "[ZH] No matches.",
+    "recipient": {
+      "search": "[ZH] Search people",
+      "empty": "[ZH] No suggestions yet.",
+      "recent": "[ZH] Recently messaged",
+      "active": "[ZH] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2679,5 +2701,47 @@
     "pride": "[ZH] Pride",
     "contributors": "[ZH] Contributors",
     "wishlists": "[ZH] Wishlists"
+  },
+  "chat": {
+    "react": "[ZH] React",
+    "edited": "[ZH] edited",
+    "deleted": "[ZH] Message deleted",
+    "editing": "[ZH] Editing message",
+    "replyingTo": "[ZH] Replying to {{name}}",
+    "reply": {
+      "action": "[ZH] Reply",
+      "someone": "[ZH] someone"
+    },
+    "emoji": {
+      "search": "[ZH] Search emoji",
+      "none": "[ZH] No emoji found.",
+      "cat": {
+        "smileys": "[ZH] Smileys",
+        "gestures": "[ZH] Gestures",
+        "hearts": "[ZH] Hearts",
+        "pride": "[ZH] Pride",
+        "animals": "[ZH] Animals",
+        "food": "[ZH] Food",
+        "activity": "[ZH] Activity",
+        "symbols": "[ZH] Symbols"
+      }
+    },
+    "activeNow": "[ZH] Active now",
+    "preview": {
+      "you": "[ZH] You",
+      "photo": "[ZH] Photo",
+      "sticker": "[ZH] Sticker",
+      "voice": "[ZH] Voice message"
+    },
+    "streak": "[ZH] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[ZH] Set a vibe",
+      "title": "[ZH] Your vibe",
+      "placeholder": "[ZH] What's your vibe?",
+      "for4h": "[ZH] 4h"
+    },
+    "stickers": {
+      "title": "[ZH] Stickers"
+    }
   }
 }

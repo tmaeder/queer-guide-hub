@@ -168,7 +168,8 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[RU] More"
   },
   "navigation": {
     "home": "Главная",
@@ -2179,7 +2180,11 @@
       "title": "Напоминания о поездках",
       "body": "Получайте уведомление в браузере за 30 минут до каждого бронирования и при приближении срока окончания паспорта или визы.",
       "turnOn": "Включить",
-      "turnOff": "Выключить"
+      "turnOff": "Выключить",
+      "dm": {
+        "title": "[RU] Direct messages",
+        "body": "[RU] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2611,7 +2616,24 @@
     },
     "openInbox": "[RU] Open inbox",
     "markAlertsRead": "[RU] Mark alerts read",
-    "unread": "[RU] Unread"
+    "unread": "[RU] Unread",
+    "unreadCount": "[RU] {{count}} unread",
+    "action": {
+      "pin": "[RU] Pin",
+      "unpin": "[RU] Unpin",
+      "mute": "[RU] Mute",
+      "unmute": "[RU] Unmute",
+      "markRead": "[RU] Mark as read",
+      "archive": "[RU] Archive"
+    },
+    "search": "[RU] Search",
+    "searchEmpty": "[RU] No matches.",
+    "recipient": {
+      "search": "[RU] Search people",
+      "empty": "[RU] No suggestions yet.",
+      "recent": "[RU] Recently messaged",
+      "active": "[RU] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2711,5 +2733,47 @@
     "pride": "[RU] Pride",
     "contributors": "[RU] Contributors",
     "wishlists": "[RU] Wishlists"
+  },
+  "chat": {
+    "react": "[RU] React",
+    "edited": "[RU] edited",
+    "deleted": "[RU] Message deleted",
+    "editing": "[RU] Editing message",
+    "replyingTo": "[RU] Replying to {{name}}",
+    "reply": {
+      "action": "[RU] Reply",
+      "someone": "[RU] someone"
+    },
+    "emoji": {
+      "search": "[RU] Search emoji",
+      "none": "[RU] No emoji found.",
+      "cat": {
+        "smileys": "[RU] Smileys",
+        "gestures": "[RU] Gestures",
+        "hearts": "[RU] Hearts",
+        "pride": "[RU] Pride",
+        "animals": "[RU] Animals",
+        "food": "[RU] Food",
+        "activity": "[RU] Activity",
+        "symbols": "[RU] Symbols"
+      }
+    },
+    "activeNow": "[RU] Active now",
+    "preview": {
+      "you": "[RU] You",
+      "photo": "[RU] Photo",
+      "sticker": "[RU] Sticker",
+      "voice": "[RU] Voice message"
+    },
+    "streak": "[RU] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[RU] Set a vibe",
+      "title": "[RU] Your vibe",
+      "placeholder": "[RU] What's your vibe?",
+      "for4h": "[RU] 4h"
+    },
+    "stickers": {
+      "title": "[RU] Stickers"
+    }
   }
 }
