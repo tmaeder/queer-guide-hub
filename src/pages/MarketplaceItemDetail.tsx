@@ -213,13 +213,7 @@ export default function MarketplaceItemDetail() {
           content: (
             <div className="flex flex-col gap-6">
               <ListingFeaturedInGuides listingId={listing.id} />
-              <MarketplaceContent
-                listing={listing}
-                reviews={reviews}
-                tags={tags}
-                t={t}
-                onContentUpdated={refetch}
-              />
+              <MarketplaceContent listing={listing} reviews={reviews} tags={tags} />
             </div>
           ),
         },
