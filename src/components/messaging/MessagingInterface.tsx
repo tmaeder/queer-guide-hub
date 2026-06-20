@@ -19,6 +19,7 @@ import {
   Pencil,
   Trash2,
   X,
+  Search,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
@@ -52,9 +53,9 @@ import { usePublicStatus } from '@/hooks/usePublicStatus';
 import { MailDetail } from '@/components/messaging/MailDetail';
 import { NotificationDetailCard } from '@/components/messaging/NotificationDetailCard';
 import { ComposeChooser } from '@/components/messaging/ComposeChooser';
+import { RecipientPicker } from '@/components/messaging/RecipientPicker';
 import { ComposeEmail } from '@/components/inbox/ComposeEmail';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 interface MessageItemProps {
   message: Message;
@@ -855,10 +856,19 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { items, loading } = useInboxFeed(filter ?? 'all');
-  const navigate = useLocalizedNavigate();
   const onlineUsers = useGlobalPresence();
   const railActions = useRailActions();
   const [composeEmailOpen, setComposeEmailOpen] = useState(false);
+  const [recipientOpen, setRecipientOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const visibleItems = search.trim()
+    ? items.filter((i) => {
+        const q = search.trim().toLowerCase();
+        return (
+          i.title.toLowerCase().includes(q) || i.preview.toLowerCase().includes(q)
+        );
+      })
+    : items;
 
   const [selected, setSelected] = useState<InboxItem | null>(null);
 
@@ -943,18 +953,43 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
         </SheetContent>
       </Sheet>
 
+      {/* New-message recipient picker */}
+      <RecipientPicker
+        open={recipientOpen}
+        onOpenChange={setRecipientOpen}
+        onPicked={(conversationId) => {
+          const next = new URLSearchParams(searchParams);
+          next.set('conversation', conversationId);
+          next.delete('email');
+          setSearchParams(next, { replace: true });
+        }}
+      />
+
       {/* Merged inbox rail - full width on mobile, 1/3 on desktop */}
       <div
         className={`${selected ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r flex-col`}
         style={{ backgroundColor: 'rgba(var(--background-rgb), 0.5)' }}
       >
         {/* Rail header */}
-        <div className="flex items-center justify-between px-4 py-2 border-b">
-          <VibeEditor />
-          <ComposeChooser
-            onNewMessage={() => navigate('/community/members')}
-            onNewEmail={() => setComposeEmailOpen(true)}
-          />
+        <div className="border-b">
+          <div className="flex items-center justify-between px-4 py-2">
+            <VibeEditor />
+            <ComposeChooser
+              onNewMessage={() => setRecipientOpen(true)}
+              onNewEmail={() => setComposeEmailOpen(true)}
+            />
+          </div>
+          <div className="px-4 pb-2">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('inbox.search', { defaultValue: 'Search' })}
+                className="h-9 rounded-element pl-8"
+              />
+            </div>
+          </div>
         </div>
         <ScrollArea style={{ flex: 1 }}>
           {loading ? (
@@ -966,7 +1001,7 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
                 </p>
               </div>
             </div>
-          ) : items.length === 0 ? (
+          ) : visibleItems.length === 0 ? (
             <div className="text-center py-8">
               <MessageCircle
                 size={48}
@@ -974,12 +1009,14 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
                 className="text-muted-foreground"
               />
               <p className="text-muted-foreground">
-                {t('inbox.empty', { defaultValue: 'Nothing here yet.' })}
+                {search.trim()
+                  ? t('inbox.searchEmpty', { defaultValue: 'No matches.' })
+                  : t('inbox.empty', { defaultValue: 'Nothing here yet.' })}
               </p>
             </div>
           ) : (
             <div>
-              {items.map((item) => (
+              {visibleItems.map((item) => (
                 <InboxRailItem
                   key={item.id}
                   item={item}

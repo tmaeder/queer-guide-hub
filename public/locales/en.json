@@ -46,6 +46,14 @@
       "unmute": "Unmute",
       "markRead": "Mark as read",
       "archive": "Archive"
+    },
+    "search": "Search",
+    "searchEmpty": "No matches.",
+    "recipient": {
+      "search": "Search people",
+      "empty": "No suggestions yet.",
+      "recent": "Recently messaged",
+      "active": "Active recently"
     }
   },
   "eventTypes": {
