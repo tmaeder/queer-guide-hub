@@ -2742,6 +2742,13 @@
     },
     "stickers": {
       "title": "[KO] Stickers"
+    },
+    "freeToMeet": {
+      "title": "[KO] Free to meet",
+      "set": "[KO] Free to meet",
+      "on": "[KO] Free now",
+      "both": "[KO] {{name}} is free to meet right now 🟢",
+      "youOnly": "[KO] You're marked free to meet 🟢"
     }
   }
 }
