@@ -114,6 +114,14 @@ export function MarketplaceBuyBox({
 }: BuyBoxProps) {
   const price = formatListingPrice(listing);
   const outbound = getOutboundLink(listing);
+  // Warmer, seller-forward CTA than the generic "Visit website" — name the
+  // shop so the click feels personal (esp. for queer-owned sellers).
+  const seller = (listing.brand || listing.business_name || '').trim();
+  const ctaLabel = seller
+    ? outbound?.isAffiliate
+      ? `Shop ${seller}`
+      : `Take me to ${seller}`
+    : outbound?.label;
   const pills = trustPillsFor(listing);
   const provenance = sourceProvenanceLine(listing);
   const linkState = linkHealthState(listing);
@@ -254,7 +262,7 @@ export function MarketplaceBuyBox({
                   data-affiliate={outbound.isAffiliate ? 'true' : undefined}
                 >
                   <ExternalLink size={16} className="mr-2" />
-                  {outbound.label}
+                  {ctaLabel}
                 </a>
               </Button>
             )}
