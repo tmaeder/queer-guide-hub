@@ -37,7 +37,16 @@
     },
     "openInbox": "Open inbox",
     "markAlertsRead": "Mark alerts read",
-    "unread": "Unread"
+    "unread": "Unread",
+    "unreadCount": "{{count}} unread",
+    "action": {
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "markRead": "Mark as read",
+      "archive": "Archive"
+    }
   },
   "eventTypes": {
     "party": "Party",
@@ -2681,6 +2690,13 @@
         "activity": "Activity",
         "symbols": "Symbols"
       }
+    },
+    "activeNow": "Active now",
+    "preview": {
+      "you": "You",
+      "photo": "Photo",
+      "sticker": "Sticker",
+      "voice": "Voice message"
     }
   }
 }

@@ -42,6 +42,9 @@ import { ReactionBurst } from '@/components/messaging/ReactionBurst';
 import { QUICK_REACTIONS } from '@/lib/emojiData';
 import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
+import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
+import { useRailActions } from '@/hooks/useRailActions';
+import { usePublicStatus } from '@/hooks/usePublicStatus';
 import { MailDetail } from '@/components/messaging/MailDetail';
 import { NotificationDetailCard } from '@/components/messaging/NotificationDetailCard';
 import { ComposeChooser } from '@/components/messaging/ComposeChooser';
@@ -585,6 +588,14 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
 
   const conv = conversations.find((c) => c.id === conversationId);
   const otherParticipant = conv?.participants?.find((p) => p.user_id !== user?.id);
+  const onlineInThread = useConversationPresence(conversationId);
+  const { status: otherStatus } = usePublicStatus(otherParticipant?.user_id);
+  const isOtherOnline = otherParticipant ? onlineInThread.has(otherParticipant.user_id) : false;
+  const presenceLabel = isOtherOnline
+    ? t('chat.activeNow', { defaultValue: 'Active now' })
+    : otherStatus?.text
+      ? otherStatus.text
+      : null;
 
   return (
     <>
@@ -628,23 +639,26 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                   {otherParticipant?.profile?.display_name?.charAt(0) || 'C'}
                 </AvatarFallback>
               </Avatar>
-              <div
-                className="rounded-full absolute"
-                style={{
-                  bottom: -2,
-                  right: -2,
-                  width: 12,
-                  height: 12,
-                  backgroundColor: 'hsl(var(--foreground))',
-                  border: '2px solid var(--background)',
-                }}
-              ></div>
+              {isOtherOnline && (
+                <div
+                  className="rounded-full absolute bg-accent-brand"
+                  style={{
+                    bottom: -2,
+                    right: -2,
+                    width: 12,
+                    height: 12,
+                    border: '2px solid var(--background)',
+                  }}
+                ></div>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                 {otherParticipant?.profile?.display_name || 'Unknown User'}
               </p>
-              <p className="text-sm text-foreground">Online</p>
+              {presenceLabel && (
+                <p className="text-sm text-muted-foreground truncate">{presenceLabel}</p>
+              )}
             </div>
           </div>
 
@@ -770,6 +784,8 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   const [searchParams, setSearchParams] = useSearchParams();
   const { items, loading } = useInboxFeed(filter ?? 'all');
   const navigate = useLocalizedNavigate();
+  const onlineUsers = useGlobalPresence();
+  const railActions = useRailActions();
   const [composeEmailOpen, setComposeEmailOpen] = useState(false);
 
   const [selected, setSelected] = useState<InboxItem | null>(null);
@@ -899,6 +915,8 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
                   item={item}
                   active={selected?.id === item.id}
                   onSelect={handleSelect}
+                  online={item.other_user_id ? onlineUsers.has(item.other_user_id) : false}
+                  actions={railActions}
                 />
               ))}
             </div>
