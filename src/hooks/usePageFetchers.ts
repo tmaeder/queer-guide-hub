@@ -335,26 +335,23 @@ export async function fetchTagWithCategories(name: string) {
   // Tag URLs use the slug (the value stored in entity `tags[]` columns), e.g.
   // "bear-bar". Resolve by slug first, then fall back to a name match so older
   // name-based links keep working.
-  let data: Record<string, unknown> | null = null;
-  {
-    const res = await supabase
-      .from('unified_tags')
-      .select('*')
-      .eq('slug', name.toLowerCase())
-      .eq('status', 'active')
-      .limit(1)
-      .maybeSingle();
-    data = res.data as Record<string, unknown> | null;
-  }
+  const bySlug = await supabase
+    .from('unified_tags')
+    .select('*')
+    .eq('slug', name.toLowerCase())
+    .eq('status', 'active')
+    .limit(1)
+    .maybeSingle();
+  let data = bySlug.data as Record<string, unknown> | null;
   if (!data) {
-    const res = await supabase
+    const byName = await supabase
       .from('unified_tags')
       .select('*')
       .ilike('name', name)
       .eq('status', 'active')
       .limit(1)
       .maybeSingle();
-    data = res.data as Record<string, unknown> | null;
+    data = byName.data as Record<string, unknown> | null;
   }
   if (!data) return null;
 
