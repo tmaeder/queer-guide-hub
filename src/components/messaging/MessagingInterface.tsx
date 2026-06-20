@@ -20,10 +20,12 @@ import {
   Trash2,
   X,
   Search,
+  CalendarClock,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Tooltip,
   TooltipContent,
@@ -51,6 +53,7 @@ import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInbox
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
 import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
 import { useRailActions } from '@/hooks/useRailActions';
+import { useConversationAvailability } from '@/hooks/useConversationAvailability';
 import { usePublicStatus } from '@/hooks/usePublicStatus';
 import { MailDetail } from '@/components/messaging/MailDetail';
 import { NotificationDetailCard } from '@/components/messaging/NotificationDetailCard';
@@ -679,6 +682,13 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         ? otherStatus.text
         : null;
 
+  // Free-to-meet availability for this thread (self + other).
+  const {
+    selfAvailable,
+    otherAvailable,
+    toggle: toggleAvailability,
+  } = useConversationAvailability(conversationId, otherParticipant?.user_id);
+
   // Queer-joy burst when a new match thread gets its first message.
   const [joy, setJoy] = useState(false);
   const prevLenRef = useRef(0);
@@ -757,15 +767,34 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
           </div>
 
           <Button
-            variant="ghost"
+            variant={selfAvailable ? 'accent' : 'ghost'}
             size="sm"
-            className="rounded-element p-0"
-            style={{ height: 36, width: 36 }}
+            className="rounded-element gap-1 px-2"
+            style={{ height: 36 }}
+            onClick={toggleAvailability}
+            title={t('chat.freeToMeet.title', { defaultValue: 'Free to meet' })}
           >
-            <MoreVertical size={16} />
+            <CalendarClock size={16} />
+            <span className="hidden text-13 sm:inline">
+              {selfAvailable
+                ? t('chat.freeToMeet.on', { defaultValue: 'Free now' })
+                : t('chat.freeToMeet.set', { defaultValue: 'Free to meet' })}
+            </span>
           </Button>
         </div>
       </div>
+
+      {/* Free-to-meet ribbon */}
+      {(otherAvailable || selfAvailable) && (
+        <div className="border-b border-border bg-muted/50 px-4 py-1.5 text-center text-13 text-muted-foreground">
+          {otherAvailable
+            ? t('chat.freeToMeet.both', {
+                defaultValue: '{{name}} is free to meet right now 🟢',
+                name: otherParticipant?.profile?.display_name || 'They',
+              })
+            : t('chat.freeToMeet.youOnly', { defaultValue: "You're marked free to meet 🟢" })}
+        </div>
+      )}
 
       {/* Match thread ribbon — only for conversation_type='match' */}
       {conv?.conversation_type === 'match' && (
@@ -909,14 +938,41 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   const [composeEmailOpen, setComposeEmailOpen] = useState(false);
   const [recipientOpen, setRecipientOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const visibleItems = search.trim()
-    ? items.filter((i) => {
-        const q = search.trim().toLowerCase();
-        return (
-          i.title.toLowerCase().includes(q) || i.preview.toLowerCase().includes(q)
-        );
-      })
-    : items;
+  const { user } = useAuth();
+  const [serverResults, setServerResults] = useState<InboxItem[]>([]);
+
+  // Server-side message-body/title search across all the user's conversations
+  // (the client filter below only covers the already-loaded feed). Debounced.
+  useEffect(() => {
+    const q = search.trim();
+    if (!user || q.length <= 2) {
+      setServerResults([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const { data } = await supabase.rpc('search_inbox', {
+        p_user: user.id,
+        p_query: q,
+        p_limit: 30,
+      } as never);
+      if (!cancelled) setServerResults(((data as InboxItem[]) ?? []));
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [search, user]);
+
+  const visibleItems = (() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    const clientMatches = items.filter(
+      (i) => i.title.toLowerCase().includes(q) || i.preview.toLowerCase().includes(q),
+    );
+    const seen = new Set(clientMatches.map((i) => i.id));
+    return [...clientMatches, ...serverResults.filter((i) => !seen.has(i.id))];
+  })();
 
   const [selected, setSelected] = useState<InboxItem | null>(null);
 
