@@ -18,16 +18,18 @@ import {
 import {
   type MarketplaceListing,
   type MarketplaceReview,
-  MarketplaceHero,
-  MarketplaceOverview,
-  MarketplaceSidebar,
+  MarketplaceBuyBox,
+  MarketplaceContent,
 } from './MarketplaceItemDetail.parts';
+import { MarketplaceGallery } from '@/components/marketplace/MarketplaceGallery';
+import type { ListingTag } from '@/hooks/usePageFetchers';
 import { ListingFeaturedInGuides } from '@/components/marketplace/FeaturedInGuides';
 
 interface ListingBundle {
   listing: MarketplaceListing;
   reviews: MarketplaceReview[];
   isFavorited: boolean;
+  tags: ListingTag[];
 }
 
 async function fetchListingBundle(slug: string, userId: string | undefined): Promise<ListingBundle | null> {
@@ -69,9 +71,10 @@ export default function MarketplaceItemDetail() {
         description: listing.description ?? undefined,
         image: listing.images && listing.images.length > 0 ? listing.images : undefined,
         sku: listing.id,
-        brand: listing.business_name
-          ? { '@type': 'Brand', name: listing.business_name }
-          : undefined,
+        brand:
+          listing.brand || listing.business_name
+            ? { '@type': 'Brand', name: listing.brand || listing.business_name }
+            : undefined,
         ...(reviews.length > 0
           ? {
               aggregateRating: {
@@ -192,7 +195,7 @@ export default function MarketplaceItemDetail() {
   const averageRating = reviews.length
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0;
-  const heroImage = listing?.images && listing.images.length > 0 ? listing.images[0] : null;
+  const tags = data?.tags ?? [];
 
   const breadcrumbs = listing
     ? [
@@ -210,9 +213,10 @@ export default function MarketplaceItemDetail() {
           content: (
             <div className="flex flex-col gap-6">
               <ListingFeaturedInGuides listingId={listing.id} />
-              <MarketplaceOverview
+              <MarketplaceContent
                 listing={listing}
                 reviews={reviews}
+                tags={tags}
                 t={t}
                 onContentUpdated={refetch}
               />
@@ -229,20 +233,21 @@ export default function MarketplaceItemDetail() {
       breadcrumbs={breadcrumbs}
       hero={
         listing ? (
-          <MarketplaceHero
-            listing={listing}
-            reviewsCount={reviews.length}
-            averageRating={averageRating}
-            isFavorited={isFavorited}
-            onToggleFavorite={handleToggleFavorite}
-            onShare={handleShare}
-            heroImage={heroImage}
-            onContentUpdated={refetch}
-          />
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,1fr)]">
+            <MarketplaceGallery listingId={listing.id} images={listing.images} title={listing.title} />
+            <MarketplaceBuyBox
+              listing={listing}
+              reviewsCount={reviews.length}
+              averageRating={averageRating}
+              isFavorited={isFavorited}
+              onToggleFavorite={handleToggleFavorite}
+              onShare={handleShare}
+              onContentUpdated={refetch}
+            />
+          </div>
         ) : null
       }
       tabs={tabs}
-      sidebar={listing ? <MarketplaceSidebar listing={listing} t={t} /> : undefined}
       entityType="marketplace_listing"
       entityId={listing?.id}
     />
