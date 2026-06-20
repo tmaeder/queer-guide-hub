@@ -36,8 +36,6 @@ export interface MarketplaceFiltersInput {
   currency?: string;
   /** When 'in_stock', hides listings where availability !== 'in_stock'. */
   availability?: 'in_stock' | 'any';
-  /** lgbti_relevance_score floor 0–1. Skipped when null/undefined or 0. */
-  relevanceMin?: number;
   /** last_verified_at within N days. Skipped when null/undefined or 0. */
   verifiedWithinDays?: number;
   /**
@@ -284,10 +282,6 @@ export function useMarketplace() {
       // null-availability listings stay visible.
       if (filters?.availability === 'in_stock') {
         query = query.or('availability.is.null,availability.neq.out_of_stock');
-      }
-
-      if (filters?.relevanceMin && filters.relevanceMin > 0) {
-        query = query.gte('lgbti_relevance_score', filters.relevanceMin);
       }
 
       if (filters?.verifiedWithinDays && filters.verifiedWithinDays > 0) {

@@ -248,7 +248,7 @@ export default function EventDetail() {
 
   const breadcrumbs = event
     ? [
-        { label: 'Events', href: '/events' },
+        { label: t('breadcrumb.events', 'Events'), href: '/events' },
         ...(countryName ? [{ label: countryName, href: countryLink ?? undefined }] : []),
         ...(cityName ? [{ label: cityName, href: cityLink ?? undefined }] : []),
         { label: event.title },

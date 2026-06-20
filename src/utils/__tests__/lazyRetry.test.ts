@@ -55,6 +55,27 @@ describe('lazyRetry', () => {
     expect(sessionStorage.getItem('chunk-reload-/test-route')).toBe('1');
   });
 
+  // Regression: a chunk that resolves to a module WITHOUT a default export
+  // (stale/partial chunk during a deploy) must be treated as a load failure
+  // — retry then reload — rather than letting React.lazy throw the cryptic
+  // "Cannot read properties of undefined (reading 'default')". This was the
+  // root cause of a crash on /marketplace/category/:slug right after a deploy.
+  it('treats a module with no default export as a load failure (retry → reload)', async () => {
+    const factory = vi.fn(() => Promise.resolve({} as { default: () => null }));
+    const lazy = lazyRetry(factory);
+
+    type LazyInternals = {
+      _payload: { _result: Promise<unknown> };
+      _init: (p: { _result: Promise<unknown> }) => unknown;
+    };
+    const internals = lazy as unknown as LazyInternals;
+    try { internals._init(internals._payload); } catch { /* expected */ }
+    await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+
+    expect(factory).toHaveBeenCalledTimes(2);
+    expect(reloadSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('re-throws and clears the loop-guard when the retry also fails after a previous reload', async () => {
     sessionStorage.setItem('chunk-reload-/test-route', '1');
 

@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketplaceCard } from './MarketplaceCard';
 import { useMarketplaceRow, type CuratedRowKey } from '@/hooks/useMarketplaceRows';
 import { useCuratedIds } from './useCuratedIds';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 
 interface MarketplaceRowProps {
   rowKey: CuratedRowKey;
@@ -24,6 +25,8 @@ export function MarketplaceRow({
   const { data, loading, error } = useMarketplaceRow(rowKey, limit);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const { register } = useCuratedIds();
+  const listingIds = useMemo(() => data.map((l) => l.id), [data]);
+  const { assets } = useEntityImageAssets('marketplace_listing', listingIds);
 
   useEffect(() => {
     register(rowKey, data.map((l) => l.id));
@@ -69,7 +72,7 @@ export function MarketplaceRow({
             ))
           : data.map((listing) => (
               <div key={listing.id} className="snap-start shrink-0 w-[280px] sm:w-[320px]">
-                <MarketplaceCard listing={listing} showFavoriteButton={showFavoriteButton} />
+                <MarketplaceCard listing={listing} imageAsset={assets.get(listing.id)} showFavoriteButton={showFavoriteButton} />
               </div>
             ))}
       </div>

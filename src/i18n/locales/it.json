@@ -168,7 +168,8 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[IT] More"
   },
   "navigation": {
     "home": "Home",
@@ -2149,7 +2150,11 @@
       "title": "Promemoria di viaggio",
       "body": "Ricevi una notifica 30 minuti prima di ogni prenotazione e quando passaporto o visto stanno per scadere.",
       "turnOn": "Attiva",
-      "turnOff": "Disattiva"
+      "turnOff": "Disattiva",
+      "dm": {
+        "title": "[IT] Direct messages",
+        "body": "[IT] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2581,7 +2586,24 @@
     },
     "openInbox": "[IT] Open inbox",
     "markAlertsRead": "[IT] Mark alerts read",
-    "unread": "[IT] Unread"
+    "unread": "[IT] Unread",
+    "unreadCount": "[IT] {{count}} unread",
+    "action": {
+      "pin": "[IT] Pin",
+      "unpin": "[IT] Unpin",
+      "mute": "[IT] Mute",
+      "unmute": "[IT] Unmute",
+      "markRead": "[IT] Mark as read",
+      "archive": "[IT] Archive"
+    },
+    "search": "[IT] Search",
+    "searchEmpty": "[IT] No matches.",
+    "recipient": {
+      "search": "[IT] Search people",
+      "empty": "[IT] No suggestions yet.",
+      "recent": "[IT] Recently messaged",
+      "active": "[IT] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2660,6 +2682,68 @@
     "bug": {
       "label": "[IT] Found a bug?",
       "cta": "[IT] open an issue"
+    }
+  },
+  "breadcrumb": {
+    "home": "[IT] Home",
+    "venues": "[IT] Venues",
+    "events": "[IT] Events",
+    "hotels": "[IT] Hotels",
+    "villages": "[IT] Queer villages",
+    "marketplace": "[IT] Marketplace",
+    "resources": "[IT] Resources",
+    "personalities": "[IT] People",
+    "news": "[IT] News",
+    "places": "[IT] Places",
+    "cities": "[IT] Cities",
+    "quests": "[IT] Quests",
+    "groups": "[IT] Groups",
+    "trips": "[IT] Trips",
+    "help": "[IT] Help",
+    "pride": "[IT] Pride",
+    "contributors": "[IT] Contributors",
+    "wishlists": "[IT] Wishlists"
+  },
+  "chat": {
+    "react": "[IT] React",
+    "edited": "[IT] edited",
+    "deleted": "[IT] Message deleted",
+    "editing": "[IT] Editing message",
+    "replyingTo": "[IT] Replying to {{name}}",
+    "reply": {
+      "action": "[IT] Reply",
+      "someone": "[IT] someone"
+    },
+    "emoji": {
+      "search": "[IT] Search emoji",
+      "none": "[IT] No emoji found.",
+      "cat": {
+        "smileys": "[IT] Smileys",
+        "gestures": "[IT] Gestures",
+        "hearts": "[IT] Hearts",
+        "pride": "[IT] Pride",
+        "animals": "[IT] Animals",
+        "food": "[IT] Food",
+        "activity": "[IT] Activity",
+        "symbols": "[IT] Symbols"
+      }
+    },
+    "activeNow": "[IT] Active now",
+    "preview": {
+      "you": "[IT] You",
+      "photo": "[IT] Photo",
+      "sticker": "[IT] Sticker",
+      "voice": "[IT] Voice message"
+    },
+    "streak": "[IT] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[IT] Set a vibe",
+      "title": "[IT] Your vibe",
+      "placeholder": "[IT] What's your vibe?",
+      "for4h": "[IT] 4h"
+    },
+    "stickers": {
+      "title": "[IT] Stickers"
     }
   }
 }

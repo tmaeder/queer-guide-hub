@@ -38,7 +38,9 @@ import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
+import { buildPlaceChain } from '@/config/breadcrumbs';
 import { useIsMobile } from '@/hooks/use-mobile';
+import type { TFunction } from 'i18next';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
@@ -90,18 +92,17 @@ export function getPriceRange(range: number | null) {
  */
 export function buildVenueBreadcrumbs(
   venue: VenueWithRelations | null,
+  t: TFunction,
 ): Array<{ label: string; href?: string }> | undefined {
   if (!venue) return undefined;
-  const cityName = venue.cities?.name ?? null;
-  const countryName = venue.countries?.name ?? null;
-  const cityLink = venue.cities?.id ? `/city/${venue.cities.slug || venue.cities.id}` : undefined;
-  const countryLink = venue.countries?.id
-    ? `/country/${venue.countries.slug || venue.countries.id}`
-    : undefined;
   return [
-    { label: 'Venues', href: '/venues' },
-    ...(countryName ? [{ label: countryName, href: countryLink }] : []),
-    ...(cityName ? [{ label: cityName, href: cityLink }] : []),
+    { label: t('breadcrumb.venues', 'Venues'), href: '/venues' },
+    ...buildPlaceChain({
+      countryName: venue.countries?.name ?? null,
+      countrySlug: venue.countries?.slug || venue.countries?.id || null,
+      cityName: venue.cities?.name ?? null,
+      citySlug: venue.cities?.slug || venue.cities?.id || null,
+    }).map((c) => ({ label: c.label as string, href: c.href })),
     { label: venue.name },
   ];
 }

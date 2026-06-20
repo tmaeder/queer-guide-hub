@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { MarketplaceCard } from './MarketplaceCard';
 import { useMarketplaceListingsForCountry } from '@/hooks/useMarketplaceQueries';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 
 /**
  * Editorial marketplace strip for CountryDetail. Mirrors MarketplaceForCity
@@ -17,6 +19,7 @@ export function MarketplaceForCountry({
   limit?: number;
 }) {
   const { data: items, loading } = useMarketplaceListingsForCountry(countryId, limit);
+  const { assets } = useEntityImageAssets('marketplace_listing', useMemo(() => items.map((i) => i.id), [items]));
   if (loading || items.length === 0) return null;
   return (
     <section aria-labelledby="country-marketplace" className="mt-8">
@@ -25,7 +28,7 @@ export function MarketplaceForCountry({
       </h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {items.map((it) => (
-          <MarketplaceCard key={it.id} listing={it} />
+          <MarketplaceCard key={it.id} listing={it} imageAsset={assets.get(it.id)} />
         ))}
       </div>
     </section>

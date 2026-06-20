@@ -1,6 +1,8 @@
 import { useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Globe } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { MerchantFeaturedInGuides } from '@/components/marketplace/FeaturedInGuides';
@@ -8,6 +10,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 
 export default function MarketplaceMerchant() {
+  const { t } = useTranslation();
   const { domain } = useParams<{ domain: string }>();
   const cleanDomain = (domain ?? '').toLowerCase();
   const displayName = cleanDomain.replace(/^www\./, '').replace(/\.[a-z]{2,}$/, '');
@@ -17,6 +20,15 @@ export default function MarketplaceMerchant() {
     description: `All listings from ${cleanDomain} on Queer Guide.`,
     canonicalPath: cleanDomain ? `/marketplace/merchants/${cleanDomain}` : undefined,
   });
+
+  useBreadcrumbs(
+    cleanDomain
+      ? [
+          { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
+          { label: displayName.charAt(0).toUpperCase() + displayName.slice(1) },
+        ]
+      : null,
+  );
 
   if (!cleanDomain) {
     return (
@@ -35,14 +47,6 @@ export default function MarketplaceMerchant() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto py-12 md:py-20 px-4">
-        <div className="mb-4">
-          <LocalizedLink to="/marketplace">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft size={14} className="mr-1.5" />
-              All marketplace
-            </Button>
-          </LocalizedLink>
-        </div>
         <PageHeader
           title={displayName.charAt(0).toUpperCase() + displayName.slice(1)}
           subtitle={cleanDomain}

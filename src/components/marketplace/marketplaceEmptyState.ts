@@ -44,7 +44,6 @@ export function buildLooseningSuggestion(f: MarketplaceFiltersInput): string {
     suggestions.push(`Loosen the ownership filter?`);
   if (f.subcategory) suggestions.push(`Show all categories?`);
   if (f.verifiedWithinDays) suggestions.push(`Include older listings?`);
-  if (f.relevanceMin && f.relevanceMin > 0) suggestions.push(`Lower the relevance threshold?`);
   if (suggestions.length === 0) return 'Try broadening your search.';
   return suggestions.slice(0, 2).join(' ');
 }

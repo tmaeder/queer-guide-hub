@@ -1,4 +1,5 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
@@ -15,7 +16,6 @@ import {
   Newspaper,
   Share2,
   Calendar,
-  ChevronRight,
   User,
   BookOpen,
   ArrowRight,
@@ -262,6 +262,24 @@ export default function NewsDetail() {
     return category?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
+  // Publish the breadcrumb trail to the global bar (News / [Category] / Title).
+  useBreadcrumbs(
+    article
+      ? [
+          { label: t('breadcrumb.news', 'News'), href: '/news' },
+          ...(article.category && article.category !== 'general'
+            ? [
+                {
+                  label: getCategoryLabel(article.category),
+                  href: `/news?category=${article.category}`,
+                },
+              ]
+            : []),
+          { label: decodeHtmlEntities(article.title) },
+        ]
+      : null,
+  );
+
   // Loading skeleton matching 2-column grid pattern
   if (loading) {
     return (
@@ -320,33 +338,6 @@ export default function NewsDetail() {
   return (
     <TracingBeam className="container mx-auto py-8 px-4 pb-24">
       <ReadingProgressBar />
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1 mb-4 flex-wrap">
-        <LocalizedLink
-          to="/news"
-          style={{ alignItems: 'center', color: 'inherit' }}
-          className="inline-flex no-underline"
-        >
-          <ArrowLeft size={14} className="mr-1" />
-          <span className="text-sm text-muted-foreground hover:text-primary">News</span>
-        </LocalizedLink>
-        {article.category && article.category !== 'general' && (
-          <>
-            <ChevronRight size={14} className="text-muted-foreground" />
-            <button
-              type="button"
-              className="text-sm text-muted-foreground capitalize hover:text-primary cursor-pointer bg-transparent border-0 p-0"
-              onClick={() => navigate(`/news?category=${article.category}`)}
-            >
-              {getCategoryLabel(article.category)}
-            </button>
-          </>
-        )}
-        <ChevronRight size={14} className="text-muted-foreground" />
-        <span className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[300px]">
-          {decodeHtmlEntities(article.title)}
-        </span>
-      </div>
 
       {/* Hero image */}
       <figure className="group mb-6">

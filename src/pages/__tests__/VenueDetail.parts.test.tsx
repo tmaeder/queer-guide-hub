@@ -45,9 +45,10 @@ describe('VenueDetail.parts', () => {
 
   describe('buildVenueBreadcrumbs (D5)', () => {
     const baseVenue = { id: 'v1', name: 'Test Venue' } as VenueWithRelations;
+    const t = ((_k: string, d: string) => d) as never;
 
     it('returns undefined for null venue', () => {
-      expect(buildVenueBreadcrumbs(null)).toBeUndefined();
+      expect(buildVenueBreadcrumbs(null, t)).toBeUndefined();
     });
     it('omits country segment when countries FK is null', () => {
       const trail = buildVenueBreadcrumbs({
@@ -56,7 +57,7 @@ describe('VenueDetail.parts', () => {
         country: 'CH',
         cities: null,
         city: 'Zürich',
-      } as VenueWithRelations);
+      } as VenueWithRelations, t);
       expect(trail).toEqual([
         { label: 'Venues', href: '/venues' },
         { label: 'Test Venue' },
@@ -70,7 +71,7 @@ describe('VenueDetail.parts', () => {
         ...baseVenue,
         countries: { id: 'c1', slug: 'switzerland', name: 'Switzerland' },
         cities: { id: 'ci1', slug: 'zurich', name: 'Zürich' },
-      } as VenueWithRelations);
+      } as VenueWithRelations, t);
       expect(trail).toEqual([
         { label: 'Venues', href: '/venues' },
         { label: 'Switzerland', href: '/country/switzerland' },
@@ -83,7 +84,7 @@ describe('VenueDetail.parts', () => {
         ...baseVenue,
         countries: { id: 'c1', slug: 'germany', name: 'Germany' },
         cities: null,
-      } as VenueWithRelations);
+      } as VenueWithRelations, t);
       expect(trail).toEqual([
         { label: 'Venues', href: '/venues' },
         { label: 'Germany', href: '/country/germany' },

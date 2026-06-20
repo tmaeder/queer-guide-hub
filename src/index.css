@@ -516,13 +516,13 @@ body {
    is the only signal distinguishing them (axe `link-in-text-block`,
    WCAG 1.4.1 Use of Color). Standalone links — nav, buttons, cards — stay
    un-underlined. Documented exception to the editorial flat rule. */
-p a, li a, td a, span a, label a {
+p a:not(.no-underline), li a:not(.no-underline), td a:not(.no-underline), span a:not(.no-underline), label a:not(.no-underline) {
   min-height: unset;
   display: inline;
   text-decoration: none;
   position: relative;
 }
-p a::after, li a::after, td a::after, span a::after, label a::after {
+p a:not(.no-underline)::after, li a:not(.no-underline)::after, td a:not(.no-underline)::after, span a:not(.no-underline)::after, label a:not(.no-underline)::after {
   content: '';
   position: absolute;
   left: 0;
@@ -534,11 +534,11 @@ p a::after, li a::after, td a::after, span a::after, label a::after {
   transform-origin: center;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-p a:hover::after, li a:hover::after, td a:hover::after, span a:hover::after, label a:hover::after {
+p a:not(.no-underline):hover::after, li a:not(.no-underline):hover::after, td a:not(.no-underline):hover::after, span a:not(.no-underline):hover::after, label a:not(.no-underline):hover::after {
   transform: scaleX(0);
 }
 @media (prefers-reduced-motion: reduce) {
-  p a::after, li a::after, td a::after, span a::after, label a::after {
+  p a:not(.no-underline)::after, li a:not(.no-underline)::after, td a:not(.no-underline)::after, span a:not(.no-underline)::after, label a:not(.no-underline)::after {
     transition: none;
   }
 }

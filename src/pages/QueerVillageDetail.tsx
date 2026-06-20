@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
@@ -40,6 +41,7 @@ const JOIN_SPEC =
   '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, flag_emoji)';
 
 export default function QueerVillageDetail() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('queer_village');
@@ -200,7 +202,7 @@ export default function QueerVillageDetail() {
         <EditorialDetailLayout
           loading={isLoading}
           error={error as Error | null}
-          breadcrumbs={buildVillageBreadcrumbs(village)}
+          breadcrumbs={buildVillageBreadcrumbs(village, t)}
           banner={
             <TripCoveringBanner
               target={{
@@ -258,7 +260,7 @@ export default function QueerVillageDetail() {
       <EntityDetailLayout
         loading={isLoading}
         error={error as Error | null}
-        breadcrumbs={village ? buildVillageBreadcrumbs(village) : undefined}
+        breadcrumbs={village ? buildVillageBreadcrumbs(village, t) : undefined}
         hero={
           village ? (
             <VillageHero

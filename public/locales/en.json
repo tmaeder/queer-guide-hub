@@ -1,4 +1,24 @@
 {
+  "breadcrumb": {
+    "home": "Home",
+    "venues": "Venues",
+    "events": "Events",
+    "hotels": "Hotels",
+    "villages": "Queer villages",
+    "marketplace": "Marketplace",
+    "resources": "Resources",
+    "personalities": "People",
+    "news": "News",
+    "places": "Places",
+    "cities": "Cities",
+    "quests": "Quests",
+    "groups": "Groups",
+    "trips": "Trips",
+    "help": "Help",
+    "pride": "Pride",
+    "contributors": "Contributors",
+    "wishlists": "Wishlists"
+  },
   "inbox": {
     "title": "Inbox",
     "filter": {
@@ -17,7 +37,24 @@
     },
     "openInbox": "Open inbox",
     "markAlertsRead": "Mark alerts read",
-    "unread": "Unread"
+    "unread": "Unread",
+    "unreadCount": "{{count}} unread",
+    "action": {
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "markRead": "Mark as read",
+      "archive": "Archive"
+    },
+    "search": "Search",
+    "searchEmpty": "No matches.",
+    "recipient": {
+      "search": "Search people",
+      "empty": "No suggestions yet.",
+      "recent": "Recently messaged",
+      "active": "Active recently"
+    }
   },
   "eventTypes": {
     "party": "Party",
@@ -181,7 +218,9 @@
     "save": "Save",
     "delete": "Delete",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "edit": "Edit",
+    "more": "More"
   },
   "navigation": {
     "home": "Home",
@@ -2143,7 +2182,11 @@
       "title": "Travel reminders",
       "body": "Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.",
       "turnOn": "Turn on",
-      "turnOff": "Turn off"
+      "turnOff": "Turn off",
+      "dm": {
+        "title": "Direct messages",
+        "body": "Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2634,6 +2677,48 @@
     "bug": {
       "label": "Found a bug?",
       "cta": "open an issue"
+    }
+  },
+  "chat": {
+    "react": "React",
+    "edited": "edited",
+    "deleted": "Message deleted",
+    "editing": "Editing message",
+    "replyingTo": "Replying to {{name}}",
+    "reply": {
+      "action": "Reply",
+      "someone": "someone"
+    },
+    "emoji": {
+      "search": "Search emoji",
+      "none": "No emoji found.",
+      "cat": {
+        "smileys": "Smileys",
+        "gestures": "Gestures",
+        "hearts": "Hearts",
+        "pride": "Pride",
+        "animals": "Animals",
+        "food": "Food",
+        "activity": "Activity",
+        "symbols": "Symbols"
+      }
+    },
+    "activeNow": "Active now",
+    "preview": {
+      "you": "You",
+      "photo": "Photo",
+      "sticker": "Sticker",
+      "voice": "Voice message"
+    },
+    "streak": "You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "Set a vibe",
+      "title": "Your vibe",
+      "placeholder": "What's your vibe?",
+      "for4h": "4h"
+    },
+    "stickers": {
+      "title": "Stickers"
     }
   }
 }

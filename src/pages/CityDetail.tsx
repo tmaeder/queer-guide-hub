@@ -191,7 +191,7 @@ export default function CityDetail() {
   }
 
   const breadcrumbs = [
-    { label: 'Places', href: '/places' },
+    { label: t('breadcrumb.places', 'Places'), href: '/places' },
     ...(city.countries
       ? [
           {

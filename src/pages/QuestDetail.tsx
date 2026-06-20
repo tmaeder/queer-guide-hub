@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router';
-import { Flag, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { Flag, CheckCircle2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -24,6 +26,7 @@ function fmtDate(s: string) {
 }
 
 export default function QuestDetail() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { data: quest, isLoading, error } = useQuest(slug);
@@ -48,6 +51,12 @@ export default function QuestDetail() {
     description: quest?.brief_md.slice(0, 160) ?? undefined,
   });
 
+  useBreadcrumbs(
+    quest
+      ? [{ label: t('breadcrumb.quests', 'Quests'), href: '/quests' }, { label: quest.title }]
+      : null,
+  );
+
   if (isLoading) {
     return <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">Loading…</div>;
   }
@@ -68,10 +77,6 @@ export default function QuestDetail() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto max-w-4xl px-4 py-8 md:py-16">
-        <Link to="/quests" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> All quests
-        </Link>
-
         <PageHeader
           eyebrow={quest.theme ?? 'Editorial Quest'}
           title={quest.title}

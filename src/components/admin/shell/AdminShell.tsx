@@ -10,13 +10,30 @@
  * - Negative margins to break out of App.tsx Container maxWidth
  */
 
-import { useState, useCallback, useEffect, lazy, Suspense, createContext, useContext } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router';
+import {
+  useState,
+  useCallback,
+  useEffect,
+  lazy,
+  Suspense,
+  createContext,
+  useContext,
+  Fragment,
+} from 'react';
+import { Outlet, useLocation, useNavigate, Link } from 'react-router';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, ChevronRight } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { getBreadcrumbsForRoute, getRouteMinRole } from '@/config/adminNavigation';
@@ -219,37 +236,29 @@ export function AdminShell() {
           {/* Breadcrumb bar */}
           {breadcrumbs.length > 1 && (
             <div className="px-4 sm:px-6 py-2.5 bg-background border-b border-border flex items-center min-h-11">
-              <nav aria-label="Breadcrumb">
-                <ol className="flex items-center flex-nowrap">
+              <Breadcrumb>
+                <BreadcrumbList className="flex-nowrap text-13">
                   {breadcrumbs.map((crumb, i) => {
                     const isLast = i === breadcrumbs.length - 1;
                     return (
-                      <li key={i} className="flex items-center">
-                        {i > 0 && (
-                          <span className="mx-1.5">
-                            <ChevronRight size={14} className="text-muted-foreground" />
-                          </span>
-                        )}
-                        {isLast ? (
-                          <span
-                            className="font-semibold text-13 text-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[300px] md:max-w-[500px] inline-block"
-                          >
-                            {crumb.label}
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => crumb.route && navigate(crumb.route)}
-                            className="font-medium text-13 text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--foreground))] bg-transparent border-0 p-0"
-                          >
-                            {crumb.label}
-                          </button>
-                        )}
-                      </li>
+                      <Fragment key={i}>
+                        {i > 0 && <BreadcrumbSeparator />}
+                        <BreadcrumbItem>
+                          {isLast || !crumb.route ? (
+                            <BreadcrumbPage className="font-semibold whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[300px] md:max-w-[500px] inline-block">
+                              {crumb.label}
+                            </BreadcrumbPage>
+                          ) : (
+                            <BreadcrumbLink asChild className="font-medium whitespace-nowrap hover:underline">
+                              <Link to={crumb.route}>{crumb.label}</Link>
+                            </BreadcrumbLink>
+                          )}
+                        </BreadcrumbItem>
+                      </Fragment>
                     );
                   })}
-                </ol>
-              </nav>
+                </BreadcrumbList>
+              </Breadcrumb>
             </div>
           )}
 

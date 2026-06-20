@@ -204,7 +204,7 @@ export default function VenueDetail() {
   const heroImage = venue?.images && venue.images.length > 0 ? venue.images[0] : null;
   const isClosed = Boolean(venue?.closed_at && new Date(venue.closed_at) <= new Date());
 
-  const breadcrumbs = buildVenueBreadcrumbs(venue);
+  const breadcrumbs = buildVenueBreadcrumbs(venue, t);
 
   const tabs: EntityDetailTab[] = venue
     ? [

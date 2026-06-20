@@ -19,7 +19,7 @@ const village = { id: 'v1', name: 'Castro', slug: 'castro', city: { name: 'SF' }
 
 describe('QueerVillageDetail.parts', () => {
   it('buildVillageBreadcrumbs returns array', () => {
-    const bc = buildVillageBreadcrumbs(village);
+    const bc = buildVillageBreadcrumbs(village, ((_k: string, d: string) => d) as never);
     expect(Array.isArray(bc)).toBe(true);
   });
   it('VillageHero renders', () => {

@@ -13,10 +13,26 @@ import React, { lazy } from 'react';
  *    so the browser re-requests index.html and picks up the current
  *    chunk hashes. The reload guard prevents an infinite loop.
  */
+/**
+ * Guard against a dynamic import that *resolves* but yields a module with no
+ * usable `default` export. This happens during the deploy window when a stale
+ * `index.html` requests a chunk hash that the new deploy serves as a different
+ * (or partially-initialised) module. Without this guard React.lazy reads
+ * `.default` off `undefined` and throws the cryptic "Cannot read properties of
+ * undefined (reading 'default')", crashing the route. Throwing here instead
+ * routes the failure into retryDynamicImport's retry → reload recovery.
+ */
+function ensureDefaultExport<T>(mod: { default: T } | undefined | null): { default: T } {
+  if (mod == null || typeof mod.default === 'undefined') {
+    throw new Error('lazyRetry: dynamic import resolved without a default export (stale/partial chunk)');
+  }
+  return mod;
+}
+
 export function lazyRetry<T extends React.ComponentType<unknown>>(
   factory: () => Promise<{ default: T }>,
 ): React.LazyExoticComponent<T> {
-  return lazy(() => retryDynamicImport(factory));
+  return lazy(() => retryDynamicImport(() => factory().then(ensureDefaultExport)));
 }
 
 /**
@@ -29,7 +45,7 @@ export function lazyOptional<T extends React.ComponentType<unknown>>(
   factory: () => Promise<{ default: T }>,
 ): React.LazyExoticComponent<T> {
   return lazy(() =>
-    retryDynamicImport(factory).catch(() => {
+    retryDynamicImport(() => factory().then(ensureDefaultExport)).catch(() => {
       // Final fallback: render-nothing component. React.lazy requires
       // a module shape with a `default` export.
       return { default: (() => null) as unknown as T };

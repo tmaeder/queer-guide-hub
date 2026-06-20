@@ -1,8 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { AnimatePresence, motion, useScroll, useSpring } from 'motion/react';
-import { ChevronRight } from 'lucide-react';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -46,6 +45,9 @@ export function EntityDetailLayout({
   entityType: _entityType,
   entityId: _entityId,
 }: EntityDetailLayoutProps) {
+  // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
+  useBreadcrumbs(breadcrumbs ?? null);
+
   // Tab state is encoded in the URL query string so /city/rabat?tab=map is
   // deep-linkable and browser back/forward steps through tabs naturally.
   // Falls back to the first tab when ?tab is missing or unknown.
@@ -124,34 +126,6 @@ export function EntityDetailLayout({
         className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
       />
       <div className="container mx-auto py-8" data-testid="entity-detail-layout">
-        {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1 mb-4 flex-wrap">
-            {breadcrumbs.map((crumb, i) => {
-              const isLast = i === breadcrumbs.length - 1;
-              const label =
-                crumb.href && !isLast ? (
-                  <LocalizedLink to={crumb.href} className="no-underline">
-                    <span className="text-sm text-muted-foreground hover:text-primary">
-                      {crumb.label}
-                    </span>
-                  </LocalizedLink>
-                ) : (
-                  <span
-                    className={`text-sm ${isLast ? 'font-medium text-foreground' : 'text-muted-foreground'}`}
-                  >
-                    {crumb.label}
-                  </span>
-                );
-              return (
-                <span key={i} className="inline-flex items-center gap-1">
-                  {i > 0 && <ChevronRight size={14} className="text-muted-foreground" />}
-                  {label}
-                </span>
-              );
-            })}
-          </nav>
-        )}
-
         <div className="mb-6">{hero}</div>
 
         <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
