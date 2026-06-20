@@ -68,7 +68,7 @@ export function Header() {
         aria-hidden="true"
         tabIndex={-1}
         className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
-        style={{ height: 28, width: 28 }}
+        style={{ height: 34, width: 34 }}
       />
       <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
         <span>Queer</span>
