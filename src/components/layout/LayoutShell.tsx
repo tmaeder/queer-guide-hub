@@ -8,6 +8,7 @@ import { TripContextBar } from '@/components/trips/TripContextBar';
 import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
 import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
+import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
 
@@ -41,6 +42,9 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   // Match /map and /:locale/map (locale prefix is optional in the router).
   const isFullBleedMap = /^\/(?:[a-z]{2}\/)?map\/?$/.test(pathname);
   const reduced = useReducedMotion();
+  // Broadcast the current user's global presence (only if they opted into the
+  // global dot) so inbox/discovery surfaces can show "active now".
+  useGlobalPresence();
 
   // Key route transitions by the first non-locale segment so detail-page
   // tab switches don't trigger a full fade (only true route changes do).
