@@ -61,7 +61,7 @@ export function Header() {
 
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
-    <Link to="/" aria-label="Queer Guide" className="flex items-center gap-2 shrink-0 no-underline">
+    <Link to="/" aria-label="Queer Guide" className="flex items-center gap-2.5 shrink-0 no-underline">
       <img
         src="/images/logo.png"
         alt=""
@@ -70,7 +70,7 @@ export function Header() {
         className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
         style={{ height: 28, width: 28 }}
       />
-      <span className="hidden flex-col font-display text-base font-semibold leading-[0.95] tracking-tight text-foreground md:flex">
+      <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
         <span>Queer</span>
         <span>Guide</span>
       </span>
