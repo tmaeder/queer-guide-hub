@@ -2719,6 +2719,13 @@
     },
     "stickers": {
       "title": "Stickers"
+    },
+    "freeToMeet": {
+      "title": "Free to meet",
+      "set": "Free to meet",
+      "on": "Free now",
+      "both": "{{name}} is free to meet right now 🟢",
+      "youOnly": "You're marked free to meet 🟢"
     }
   }
 }
