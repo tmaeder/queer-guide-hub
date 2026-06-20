@@ -149,6 +149,28 @@ async function handleDocExpiry(): Promise<number> {
   return sent;
 }
 
+async function handleDm(): Promise<number> {
+  const { data, error } = await admin.rpc('claim_dm_push_batch');
+  if (error) throw error;
+  let sent = 0;
+  for (const row of (data ?? []) as Array<{
+    recipient_id: string;
+    conversation_id: string;
+    sender_name: string | null;
+    preview: string | null;
+  }>) {
+    await sendToUser(row.recipient_id, {
+      title: row.sender_name ?? 'New message',
+      body: row.preview ?? '',
+      url: `/messages?conversation=${row.conversation_id}`,
+      tag: `dm:${row.conversation_id}`,
+    });
+    await markSent(row.recipient_id, 'dm', row.conversation_id);
+    sent += 1;
+  }
+  return sent;
+}
+
 Deno.serve(async (req) => {
   const cors = corsFor(req);
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -176,6 +198,12 @@ Deno.serve(async (req) => {
     }
     if (kind === 'doc_expiry') {
       const sent = await handleDocExpiry();
+      return new Response(JSON.stringify({ ok: true, sent }), {
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
+    if (kind === 'dm') {
+      const sent = await handleDm();
       return new Response(JSON.stringify({ ok: true, sent }), {
         headers: { ...cors, 'Content-Type': 'application/json' },
       });

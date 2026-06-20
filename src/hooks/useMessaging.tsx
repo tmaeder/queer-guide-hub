@@ -542,6 +542,15 @@ export const useMessaging = () => {
           if (mid) void refreshReactions(mid);
         },
       )
+      // Read receipts: the other participant updating last_read_at refreshes
+      // conversations so derived own-message "read" status updates live.
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'conversation_participants' },
+        () => {
+          void fetchConversations();
+        },
+      )
       .subscribe();
 
     // Subscribe to conversation updates

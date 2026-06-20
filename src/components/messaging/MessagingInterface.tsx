@@ -704,11 +704,25 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
             </div>
           ) : (
             <div>
-              {currentMessages.map((message) => (
+              {currentMessages.map((rawMessage) => {
+                const isOwn = rawMessage.sender_id === user?.id;
+                // Derive read receipt: own message is "read" once the other
+                // participant's last_read_at is at/after it.
+                const otherRead = otherParticipant?.last_read_at
+                  ? new Date(otherParticipant.last_read_at).getTime()
+                  : 0;
+                const message =
+                  isOwn &&
+                  otherRead &&
+                  new Date(rawMessage.created_at).getTime() <= otherRead &&
+                  rawMessage.status !== 'sending'
+                    ? { ...rawMessage, status: 'read' as const }
+                    : rawMessage;
+                return (
                 <MessageItem
                   key={message.id}
                   message={message}
-                  isOwn={message.sender_id === user?.id}
+                  isOwn={isOwn}
                   currentUserId={user?.id}
                   replyingTo={messageById(message.reply_to_id)}
                   highlighted={highlightedId === message.id}
@@ -718,7 +732,8 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                   onDelete={deleteMessage}
                   onScrollToMessage={scrollToMessage}
                 />
-              ))}
+                );
+              })}
 
               <TypingIndicatorComponent typingUsers={currentTypingUsers} />
               <div ref={messagesEndRef} />
