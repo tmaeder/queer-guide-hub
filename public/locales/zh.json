@@ -2742,6 +2742,13 @@
     },
     "stickers": {
       "title": "[ZH] Stickers"
+    },
+    "freeToMeet": {
+      "title": "[ZH] Free to meet",
+      "set": "[ZH] Free to meet",
+      "on": "[ZH] Free now",
+      "both": "[ZH] {{name}} is free to meet right now 🟢",
+      "youOnly": "[ZH] You're marked free to meet 🟢"
     }
   }
 }
