@@ -27,6 +27,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 	});
 }
 import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities, fetchDisplayMap } from "./supabase";
+import { handleGo } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
@@ -121,6 +122,8 @@ export default {
 					return await handleTrending(request, env, cors);
 				case "/recommendations":
 					return await handleRecommendations(request, env, cors);
+				case "/go":
+					return await handleGo(request, env, ctx);
 				case "/track":
 					return await handleTrack(request, env, cors);
 				case "/onboarding":
