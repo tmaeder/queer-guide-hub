@@ -1,6 +1,8 @@
 import { useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
@@ -14,6 +16,7 @@ function prettify(slug: string): string {
 }
 
 export default function MarketplaceCategory() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const subcategory = (slug ?? '').toLowerCase();
   // The route serves both grains: department umbrellas (apparel, intimacy, …)
@@ -27,6 +30,15 @@ export default function MarketplaceCategory() {
     description: `Browse ${name || 'this category'} on Queer Guide.`,
     canonicalPath: subcategory ? `/marketplace/category/${subcategory}` : undefined,
   });
+
+  useBreadcrumbs(
+    subcategory
+      ? [
+          { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
+          { label: name },
+        ]
+      : null,
+  );
 
   if (!subcategory) {
     return (
@@ -45,14 +57,6 @@ export default function MarketplaceCategory() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto py-12 md:py-20 px-4">
-        <div className="mb-4">
-          <LocalizedLink to="/marketplace">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft size={14} className="mr-1.5" />
-              All marketplace
-            </Button>
-          </LocalizedLink>
-        </div>
         <PageHeader title={name} subtitle="Queer-friendly products and services in this category." />
         <MarketplaceFilteredView
           filters={isDepartment ? { department: subcategory } : { subcategory }}

@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeta } from '@/hooks/useMeta';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMarketplaceCollectionBySlug } from '@/hooks/useMarketplaceCollections';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
@@ -10,6 +12,7 @@ import { Store } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 const MarketplaceCollection = () => {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
@@ -20,6 +23,15 @@ const MarketplaceCollection = () => {
     description: collection?.editor_blurb ?? collection?.subtitle ?? 'A collection on Queer Guide.',
     canonicalPath: collection ? `/marketplace/collection/${collection.slug}` : undefined,
   });
+
+  useBreadcrumbs(
+    collection
+      ? [
+          { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
+          { label: collection.title },
+        ]
+      : null,
+  );
 
   const listingIds = useMemo(() => listings.map((l) => l.id), [listings]);
   const { assets } = useEntityImageAssets('marketplace_listing', listingIds);

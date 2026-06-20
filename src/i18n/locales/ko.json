@@ -2659,5 +2659,25 @@
       "label": "[KO] Found a bug?",
       "cta": "[KO] open an issue"
     }
+  },
+  "breadcrumb": {
+    "home": "[KO] Home",
+    "venues": "[KO] Venues",
+    "events": "[KO] Events",
+    "hotels": "[KO] Hotels",
+    "villages": "[KO] Queer villages",
+    "marketplace": "[KO] Marketplace",
+    "resources": "[KO] Resources",
+    "personalities": "[KO] People",
+    "news": "[KO] News",
+    "places": "[KO] Places",
+    "cities": "[KO] Cities",
+    "quests": "[KO] Quests",
+    "groups": "[KO] Groups",
+    "trips": "[KO] Trips",
+    "help": "[KO] Help",
+    "pride": "[KO] Pride",
+    "contributors": "[KO] Contributors",
+    "wishlists": "[KO] Wishlists"
   }
 }

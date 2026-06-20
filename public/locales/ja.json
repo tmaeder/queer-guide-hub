@@ -2659,5 +2659,25 @@
       "label": "[JA] Found a bug?",
       "cta": "[JA] open an issue"
     }
+  },
+  "breadcrumb": {
+    "home": "[JA] Home",
+    "venues": "[JA] Venues",
+    "events": "[JA] Events",
+    "hotels": "[JA] Hotels",
+    "villages": "[JA] Queer villages",
+    "marketplace": "[JA] Marketplace",
+    "resources": "[JA] Resources",
+    "personalities": "[JA] People",
+    "news": "[JA] News",
+    "places": "[JA] Places",
+    "cities": "[JA] Cities",
+    "quests": "[JA] Quests",
+    "groups": "[JA] Groups",
+    "trips": "[JA] Trips",
+    "help": "[JA] Help",
+    "pride": "[JA] Pride",
+    "contributors": "[JA] Contributors",
+    "wishlists": "[JA] Wishlists"
   }
 }

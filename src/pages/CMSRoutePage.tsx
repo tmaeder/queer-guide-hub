@@ -17,6 +17,7 @@
  */
 
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ChevronRight, FileText, Shield, Cookie, Scale } from 'lucide-react';
@@ -169,21 +170,6 @@ function LegalHubCard({ page }: { page: CMSPage }) {
   );
 }
 
-function Breadcrumb({ parent, current }: { parent: CMSPage; current: CMSPage }) {
-  return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm">
-      <LocalizedLink
-        to={`/${parent.slug}`}
-        className="font-medium text-muted-foreground hover:underline"
-      >
-        {parent.title}
-      </LocalizedLink>
-      <ChevronRight size={14} className="text-muted-foreground" />
-      <span className="font-semibold text-foreground">{current.title}</span>
-    </nav>
-  );
-}
-
 // ── Main component ──────────────────────────────────────────────────────────
 export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   const { data, isLoading: loading } = useCMSPage(slug);
@@ -201,6 +187,16 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     description: page?.meta_description || page?.excerpt || '',
     canonicalPath: `/${slug}`,
   });
+
+  // Publish the trail to the global breadcrumb bar (parent → current page).
+  useBreadcrumbs(
+    page
+      ? [
+          ...(parentPage ? [{ label: parentPage.title, href: `/${parentPage.slug}` }] : []),
+          { label: page.title },
+        ]
+      : null,
+  );
 
   if (loading) return <PageSkeleton />;
 
@@ -270,11 +266,6 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     return (
       <>
         <CmsBodyStyles />
-        {parentPage && (
-          <div className="mx-auto w-full max-w-[1100px] px-4 pt-4 sm:px-6">
-            <Breadcrumb parent={parentPage} current={page} />
-          </div>
-        )}
         <LegalPageLayout
           title={page.title}
           subtitle={page.subtitle || undefined}
@@ -297,11 +288,6 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   return (
     <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
       <CmsBodyStyles />
-      {parentPage && (
-        <div className="mb-4">
-          <Breadcrumb parent={parentPage} current={page} />
-        </div>
-      )}
 
       {editorialHero ? (
         <EditorialHero

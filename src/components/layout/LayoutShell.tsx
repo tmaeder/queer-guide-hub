@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { TripContextBar } from '@/components/trips/TripContextBar';
 import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
+import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
@@ -77,6 +78,11 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           <EmailVerifyBanner />
           <TripContextBar />
         </ErrorBoundary>
+        {!isFullBleedMap && (
+          <ErrorBoundary section="breadcrumbs" fallback={null}>
+            <BreadcrumbBar />
+          </ErrorBoundary>
+        )}
       </div>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div

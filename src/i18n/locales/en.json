@@ -1,4 +1,24 @@
 {
+  "breadcrumb": {
+    "home": "Home",
+    "venues": "Venues",
+    "events": "Events",
+    "hotels": "Hotels",
+    "villages": "Queer villages",
+    "marketplace": "Marketplace",
+    "resources": "Resources",
+    "personalities": "People",
+    "news": "News",
+    "places": "Places",
+    "cities": "Cities",
+    "quests": "Quests",
+    "groups": "Groups",
+    "trips": "Trips",
+    "help": "Help",
+    "pride": "Pride",
+    "contributors": "Contributors",
+    "wishlists": "Wishlists"
+  },
   "inbox": {
     "title": "Inbox",
     "filter": {

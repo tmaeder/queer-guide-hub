@@ -2659,5 +2659,25 @@
       "label": "[AR] Found a bug?",
       "cta": "[AR] open an issue"
     }
+  },
+  "breadcrumb": {
+    "home": "[AR] Home",
+    "venues": "[AR] Venues",
+    "events": "[AR] Events",
+    "hotels": "[AR] Hotels",
+    "villages": "[AR] Queer villages",
+    "marketplace": "[AR] Marketplace",
+    "resources": "[AR] Resources",
+    "personalities": "[AR] People",
+    "news": "[AR] News",
+    "places": "[AR] Places",
+    "cities": "[AR] Cities",
+    "quests": "[AR] Quests",
+    "groups": "[AR] Groups",
+    "trips": "[AR] Trips",
+    "help": "[AR] Help",
+    "pride": "[AR] Pride",
+    "contributors": "[AR] Contributors",
+    "wishlists": "[AR] Wishlists"
   }
 }

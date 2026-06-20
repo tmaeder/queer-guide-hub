@@ -1,8 +1,7 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { motion, useScroll, useSpring } from 'motion/react';
-import { ChevronRight } from 'lucide-react';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { SectionNav } from './SectionNav';
@@ -45,6 +44,9 @@ export function EditorialDetailLayout({
   entityType: _entityType,
   entityId: _entityId,
 }: EditorialDetailLayoutProps) {
+  // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
+  useBreadcrumbs(breadcrumbs ?? null);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const sectionIds = useMemo(() => sections.map((s) => s.id), [sections]);
   const [activeId, selectSection] = useActiveSection(sectionIds);
@@ -129,38 +131,6 @@ export function EditorialDetailLayout({
         className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
       />
       <div className="container mx-auto px-4 py-8" data-testid="editorial-detail-layout">
-        {breadcrumbs && breadcrumbs.length > 0 ? (
-          <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap items-center gap-1">
-            {breadcrumbs.map((crumb, i) => {
-              const isLast = i === breadcrumbs.length - 1;
-              const label =
-                crumb.href && !isLast ? (
-                  <LocalizedLink to={crumb.href} className="no-underline">
-                    <span className="text-sm text-muted-foreground hover:text-foreground">
-                      {crumb.label}
-                    </span>
-                  </LocalizedLink>
-                ) : (
-                  <span
-                    className={
-                      isLast
-                        ? 'text-sm font-medium text-foreground'
-                        : 'text-sm text-muted-foreground'
-                    }
-                  >
-                    {crumb.label}
-                  </span>
-                );
-              return (
-                <span key={i} className="inline-flex items-center gap-1">
-                  {i > 0 ? <ChevronRight size={14} className="text-muted-foreground" /> : null}
-                  {label}
-                </span>
-              );
-            })}
-          </nav>
-        ) : null}
-
         <div className="mb-8">{header}</div>
 
         {banner ? <div className="mb-6">{banner}</div> : null}
