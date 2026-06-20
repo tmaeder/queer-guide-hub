@@ -16,6 +16,14 @@ export interface InboxItem {
   ts: string;
   unread: boolean;
   open_target: string;
+  // Chat-only rail metadata (null/false/0 for mail + notifications).
+  other_user_id: string | null;
+  is_muted: boolean;
+  is_pinned: boolean;
+  is_archived: boolean;
+  unread_count: number;
+  last_sender_is_me: boolean | null;
+  last_message_subtype: string | null;
 }
 
 const PAGE = 30;
@@ -119,8 +127,16 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
     };
   }, [user, instanceId, queryClient]);
 
+  // Pins float to the top of the already-loaded feed (client-side pass so the
+  // RPC's (ts,id) cursor pagination stays simple). A pinned chat older than the
+  // loaded window is an accepted edge case.
+  const flat = (feed.data?.pages.flat() ?? []) as InboxItem[];
+  const items = flat.some((i) => i.is_pinned)
+    ? [...flat].sort((a, b) => Number(b.is_pinned) - Number(a.is_pinned))
+    : flat;
+
   return {
-    items: (feed.data?.pages.flat() ?? []) as InboxItem[],
+    items,
     unreadCount: countQuery.data ?? 0,
     loading: feed.isLoading,
     hasNextPage: feed.hasNextPage,
