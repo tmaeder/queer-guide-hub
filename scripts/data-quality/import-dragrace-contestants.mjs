@@ -118,10 +118,19 @@ async function discoverSeasonPages() {
 
 // ---- HTML table parsing ----------------------------------------------------
 function stripTags(html) {
-  return html
-    .replace(/<sup\b[^>]*>.*?<\/sup>/gis, '')      // footnote markers
-    .replace(/<style\b[^>]*>.*?<\/style>/gis, '')
-    .replace(/<[^>]+>/g, '')
+  // Remove element blocks (incl. their content) and all remaining tags in a
+  // loop until the string is stable — a single pass can leave residual markup
+  // that re-forms a tag once an inner match is removed (CodeQL js/incomplete-
+  // multi-character-sanitization).
+  let s = html
+  let prev
+  do {
+    prev = s
+    s = s
+      .replace(/<(sup|style|script)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '') // footnotes / style / script blocks
+      .replace(/<[^<>]*>/g, '')                                       // any remaining tag
+  } while (s !== prev)
+  return s
     .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)) // numeric entities (&#91; → '[')
     .replace(/&#160;|&nbsp;/g, ' ').replace(/&#39;|&rsquo;/g, "'")
     .replace(/&quot;/g, '"').replace(/&ndash;/g, '–').replace(/&mdash;/g, '—')
