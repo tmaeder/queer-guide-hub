@@ -201,7 +201,9 @@
     "save": "Save",
     "delete": "Delete",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "edit": "Edit",
+    "more": "More"
   },
   "navigation": {
     "home": "Home",
@@ -2654,6 +2656,31 @@
     "bug": {
       "label": "Found a bug?",
       "cta": "open an issue"
+    }
+  },
+  "chat": {
+    "react": "React",
+    "edited": "edited",
+    "deleted": "Message deleted",
+    "editing": "Editing message",
+    "replyingTo": "Replying to {{name}}",
+    "reply": {
+      "action": "Reply",
+      "someone": "someone"
+    },
+    "emoji": {
+      "search": "Search emoji",
+      "none": "No emoji found.",
+      "cat": {
+        "smileys": "Smileys",
+        "gestures": "Gestures",
+        "hearts": "Hearts",
+        "pride": "Pride",
+        "animals": "Animals",
+        "food": "Food",
+        "activity": "Activity",
+        "symbols": "Symbols"
+      }
     }
   }
 }

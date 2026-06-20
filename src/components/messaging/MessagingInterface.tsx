@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import {
   Send,
   MoreVertical,
@@ -16,13 +15,31 @@ import {
   Clock,
   Eye,
   ChevronLeft,
+  Reply,
+  Pencil,
+  Trash2,
+  X,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useSearchParams } from 'react-router';
 import { IntimateMatchThread } from '@/components/messaging/IntimateMatchThread';
+import { EmojiPicker } from '@/components/messaging/EmojiPicker';
+import { ReactionBurst } from '@/components/messaging/ReactionBurst';
+import { QUICK_REACTIONS } from '@/lib/emojiData';
 import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
 import { MailDetail } from '@/components/messaging/MailDetail';
@@ -35,7 +52,33 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 interface MessageItemProps {
   message: Message;
   isOwn: boolean;
+  currentUserId?: string;
+  replyingTo?: Message | null;
+  highlighted?: boolean;
   onReaction: (messageId: string, emoji: string) => void;
+  onReply: (message: Message) => void;
+  onEdit: (message: Message) => void;
+  onDelete: (messageId: string) => void;
+  onScrollToMessage: (messageId: string) => void;
+}
+
+interface GroupedReaction {
+  emoji: string;
+  count: number;
+  mine: boolean;
+  names: string[];
+}
+
+function groupReactions(message: Message, currentUserId?: string): GroupedReaction[] {
+  const map = new Map<string, GroupedReaction>();
+  for (const r of message.reactions ?? []) {
+    const g = map.get(r.emoji) ?? { emoji: r.emoji, count: 0, mine: false, names: [] };
+    g.count += 1;
+    if (r.user_id === currentUserId) g.mine = true;
+    if (r.user?.display_name) g.names.push(r.user.display_name);
+    map.set(r.emoji, g);
+  }
+  return [...map.values()];
 }
 
 const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
@@ -53,13 +96,35 @@ const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
   }
 };
 
-const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
-  const [showReactions, setShowReactions] = useState(false);
+const MessageItem = ({
+  message,
+  isOwn,
+  currentUserId,
+  replyingTo,
+  highlighted,
+  onReaction,
+  onReply,
+  onEdit,
+  onDelete,
+  onScrollToMessage,
+}: MessageItemProps) => {
+  const { t } = useTranslation();
+  const [burst, setBurst] = useState<{ emoji: string; id: number } | null>(null);
+  const isDeleted = !!message.deleted_at;
 
-  const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😠'];
+  const react = (emoji: string) => {
+    onReaction(message.id, emoji);
+    setBurst({ emoji, id: Date.now() });
+  };
+
+  const grouped = groupReactions(message, currentUserId);
 
   return (
-    <div style={{ justifyContent: isOwn ? 'flex-end' : 'flex-start' }} className="flex mb-4">
+    <div
+      id={`msg-${message.id}`}
+      style={{ justifyContent: isOwn ? 'flex-end' : 'flex-start' }}
+      className="group flex mb-4"
+    >
       <div style={{ maxWidth: '70%', order: isOwn ? 2 : 1 }}>
         {!isOwn && (
           <div className="flex items-center gap-2 mb-1">
@@ -74,7 +139,30 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
         )}
 
         <div className="relative">
+          {burst && (
+            <ReactionBurst emoji={burst.emoji} onDone={() => setBurst(null)} />
+          )}
+
+          {/* Quoted reply stub */}
+          {replyingTo && !isDeleted && (
+            <button
+              type="button"
+              onClick={() => onScrollToMessage(replyingTo.id)}
+              className="mb-1 flex w-full flex-col items-start gap-0.5 rounded-element border-l-2 border-accent-brand bg-muted/60 px-2 py-1 text-left"
+            >
+              <span className="text-2xs font-medium text-accent-brand">
+                {replyingTo.sender?.display_name || t('chat.reply.someone', { defaultValue: 'Someone' })}
+              </span>
+              <span className="line-clamp-1 text-xs text-muted-foreground">
+                {replyingTo.deleted_at
+                  ? t('chat.deleted', { defaultValue: 'Message deleted' })
+                  : replyingTo.content}
+              </span>
+            </button>
+          )}
+
           <div
+            className="transition-shadow"
             style={{
               paddingLeft: 16,
               paddingRight: 16,
@@ -92,9 +180,16 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
                     borderBottomLeftRadius: 'var(--radius-element)',
                   }),
               ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
+              ...(highlighted ? { boxShadow: '0 0 0 2px var(--accent-brand)' } : {}),
             }}
           >
-            <p className="text-sm">{message.content}</p>
+            {isDeleted ? (
+              <p className="text-sm italic opacity-70">
+                {t('chat.deleted', { defaultValue: 'Message deleted' })}
+              </p>
+            ) : (
+              <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+            )}
           </div>
 
           <div
@@ -105,54 +200,104 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
               <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
               </span>
-
+              {message.edited_at && !isDeleted && (
+                <span className="text-2xs text-muted-foreground">
+                  {t('chat.edited', { defaultValue: 'edited' })}
+                </span>
+              )}
               {isOwn && <MessageStatusIcon status={message.status} />}
             </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              style={{ height: 24, width: 24, opacity: 0, transition: 'opacity 0.2s' }}
-              className="p-0"
-              onClick={() => setShowReactions(!showReactions)}
-            >
-              <Smile size={12} />
-            </Button>
+            {/* Hover actions: react / reply / (own) edit-delete */}
+            {!isDeleted && (
+              <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                <EmojiPicker
+                  onSelect={react}
+                  side="top"
+                  align={isOwn ? 'end' : 'start'}
+                  trigger={
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label={t('chat.react', { defaultValue: 'React' })}>
+                      <Smile size={13} />
+                    </Button>
+                  }
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  aria-label={t('chat.reply.action', { defaultValue: 'Reply' })}
+                  onClick={() => onReply(message)}
+                >
+                  <Reply size={13} />
+                </Button>
+                {isOwn && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label={t('common.more', { defaultValue: 'More' })}>
+                        <MoreVertical size={13} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEdit(message)}>
+                        <Pencil size={14} className="mr-2" />
+                        {t('common.edit', { defaultValue: 'Edit' })}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onDelete(message.id)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 size={14} className="mr-2" />
+                        {t('common.delete', { defaultValue: 'Delete' })}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            )}
           </div>
 
-          {showReactions && (
-            <div
-              className="rounded-container border border-border absolute mt-1 p-2"
-              style={{ top: '100%', backgroundColor: 'var(--popover)', zIndex: 10 }}
-            >
-              <div className="flex gap-1">
-                {commonEmojis.map((emoji) => (
-                  <Button
-                    key={emoji}
-                    variant="ghost"
-                    size="sm"
-                    style={{ height: 32, width: 32, transition: 'background-color 0.2s' }}
-                    className="p-0"
-                    onClick={() => {
-                      onReaction(message.id, emoji);
-                      setShowReactions(false);
-                    }}
-                  >
-                    {emoji}
-                  </Button>
-                ))}
-              </div>
+          {/* Quick-react bar on hover */}
+          {!isDeleted && (
+            <div className="mt-1 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+              {QUICK_REACTIONS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => react(emoji)}
+                  className="flex h-7 w-7 items-center justify-center rounded-badge text-sm transition-colors hover:bg-muted"
+                >
+                  {emoji}
+                </button>
+              ))}
             </div>
           )}
 
-          {message.reactions && message.reactions.length > 0 && (
-            <div style={{ flexWrap: 'wrap' }} className="flex gap-1 mt-2">
-              {message.reactions.map((reaction) => (
-                <Badge key={reaction.id} variant="secondary" className="text-xs">
-                  {reaction.emoji} 1
-                </Badge>
-              ))}
-            </div>
+          {/* Grouped reaction badges with counts + who-reacted tooltip */}
+          {grouped.length > 0 && (
+            <TooltipProvider>
+              <div style={{ flexWrap: 'wrap' }} className="flex gap-1 mt-2">
+                {grouped.map((g) => (
+                  <Tooltip key={g.emoji}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => react(g.emoji)}
+                        className={`rounded-badge border px-1.5 py-0.5 text-xs transition-colors ${
+                          g.mine
+                            ? 'border-accent-brand bg-accent-brand/10'
+                            : 'border-border bg-muted hover:bg-muted/70'
+                        }`}
+                      >
+                        {g.emoji} {g.count}
+                      </button>
+                    </TooltipTrigger>
+                    {g.names.length > 0 && (
+                      <TooltipContent>{g.names.join(', ')}</TooltipContent>
+                    )}
+                  </Tooltip>
+                ))}
+              </div>
+            </TooltipProvider>
           )}
         </div>
       </div>
@@ -222,47 +367,11 @@ const MessageInput = ({
       inputRef?.current?.focus();
     }
   }, [prefilledMessage, inputRef]);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Common emojis for quick access
-  const commonEmojis = [
-    '😀',
-    '😂',
-    '🥰',
-    '😍',
-    '🤔',
-    '👍',
-    '👎',
-    '❤️',
-    '🔥',
-    '💯',
-    '😊',
-    '😎',
-    '🙄',
-    '😴',
-    '🤗',
-    '👋',
-    '👏',
-    '🎉',
-    '💪',
-    '🙏',
-    '😢',
-    '😭',
-    '😡',
-    '😱',
-    '🤯',
-    '🥺',
-    '😤',
-    '🤮',
-    '😷',
-    '🤒',
-  ];
-
-  // Add emoji to message
+  // Append an emoji to the composer text.
   const addEmoji = (emoji: string) => {
     setMessage((prev) => prev + emoji);
-    setShowEmojiPicker(false);
     inputRef?.current?.focus();
   };
 
@@ -340,8 +449,11 @@ const MessageInput = ({
       />
 
       {/* Emoji Picker */}
-      <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-        <PopoverTrigger asChild>
+      <EmojiPicker
+        onSelect={addEmoji}
+        side="top"
+        align="end"
+        trigger={
           <Button
             type="button"
             variant="ghost"
@@ -352,27 +464,8 @@ const MessageInput = ({
           >
             <Smile size={20} />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent style={{ width: 320 }} className="p-4" side="top">
-          <div className="flex flex-col gap-4">
-            <p className="font-medium text-sm">Choose an emoji</p>
-            <div className="grid grid-cols-8 md:grid-cols-10 gap-1">
-              {commonEmojis.map((emoji, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="sm"
-                  style={{ height: 32, width: 32, transition: 'background-color 0.2s' }}
-                  className="p-0"
-                  onClick={() => addEmoji(emoji)}
-                >
-                  <span className="text-lg">{emoji}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+        }
+      />
 
       <Button
         type="submit"
@@ -399,6 +492,7 @@ interface ChatViewProps {
  * the unified inbox switch without disturbing the rail.
  */
 const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const {
     conversations,
@@ -408,17 +502,25 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
     fetchMessages,
     sendMessage,
     addReaction,
+    editMessage,
+    deleteMessage,
     markAsRead,
     sendTypingIndicator,
     stopTypingIndicator,
   } = useMessaging();
 
   const [prefilledMessage, setPrefilledMessage] = useState<string | null>(null);
+  const [replyTarget, setReplyTarget] = useState<Message | null>(null);
+  const [editing, setEditing] = useState<Message | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [composerKey, setComposerKey] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const currentMessages = messages[conversationId] || [];
   const currentTypingUsers = typingUsers[conversationId] || [];
+  const messageById = (id: string | null) =>
+    id ? currentMessages.find((m) => m.id === id) ?? null : null;
 
   useEffect(() => {
     void fetchMessages(conversationId);
@@ -435,12 +537,50 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   }, [conversationId]);
 
   const handleSendMessage = async (content: string) => {
-    await sendMessage(conversationId, content);
+    if (editing) {
+      await editMessage(editing.id, content);
+      setEditing(null);
+    } else {
+      await sendMessage(conversationId, content, replyTarget?.id);
+      setReplyTarget(null);
+    }
     await stopTypingIndicator(conversationId);
   };
 
   const handleReaction = async (messageId: string, emoji: string) => {
     await addReaction(messageId, emoji);
+  };
+
+  const handleReply = (message: Message) => {
+    setEditing(null);
+    setReplyTarget(message);
+    inputRef.current?.focus();
+  };
+
+  const handleEdit = (message: Message) => {
+    setReplyTarget(null);
+    setEditing(message);
+    setPrefilledMessage(message.content);
+    setComposerKey((k) => k + 1);
+    inputRef.current?.focus();
+  };
+
+  const cancelContext = () => {
+    setReplyTarget(null);
+    if (editing) {
+      setEditing(null);
+      setPrefilledMessage(null);
+      setComposerKey((k) => k + 1);
+    }
+  };
+
+  const scrollToMessage = (messageId: string) => {
+    document.getElementById(`msg-${messageId}`)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
+    setHighlightedId(messageId);
+    setTimeout(() => setHighlightedId((cur) => (cur === messageId ? null : cur)), 1500);
   };
 
   const conv = conversations.find((c) => c.id === conversationId);
@@ -555,7 +695,14 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                   key={message.id}
                   message={message}
                   isOwn={message.sender_id === user?.id}
+                  currentUserId={user?.id}
+                  replyingTo={messageById(message.reply_to_id)}
+                  highlighted={highlightedId === message.id}
                   onReaction={handleReaction}
+                  onReply={handleReply}
+                  onEdit={handleEdit}
+                  onDelete={deleteMessage}
+                  onScrollToMessage={scrollToMessage}
                 />
               ))}
 
@@ -566,8 +713,39 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         </div>
       </ScrollArea>
 
+      {/* Reply / edit context banner */}
+      {(replyTarget || editing) && (
+        <div className="flex items-center justify-between gap-2 border-t border-border bg-muted/50 px-4 py-2">
+          <div className="min-w-0">
+            <p className="text-2xs font-medium text-accent-brand">
+              {editing
+                ? t('chat.editing', { defaultValue: 'Editing message' })
+                : t('chat.replyingTo', {
+                    defaultValue: 'Replying to {{name}}',
+                    name:
+                      replyTarget?.sender?.display_name ||
+                      t('chat.reply.someone', { defaultValue: 'someone' }),
+                  })}
+            </p>
+            <p className="line-clamp-1 text-xs text-muted-foreground">
+              {editing ? editing.content : replyTarget?.content}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 shrink-0 p-0"
+            aria-label={t('common.cancel', { defaultValue: 'Cancel' })}
+            onClick={cancelContext}
+          >
+            <X size={16} />
+          </Button>
+        </div>
+      )}
+
       {/* Message Input */}
       <MessageInput
+        key={composerKey}
         onSend={handleSendMessage}
         onTyping={() => sendTypingIndicator(conversationId)}
         onStopTyping={() => stopTypingIndicator(conversationId)}

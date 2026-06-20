@@ -18,6 +18,7 @@ export interface Message {
   created_at: string;
   updated_at: string;
   edited_at: string | null;
+  deleted_at: string | null;
   reply_to_id: string | null;
   attachments: Record<string, unknown>[] | null;
   metadata: Record<string, unknown> | null;
@@ -182,6 +183,7 @@ export const useMessaging = () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         edited_at: null,
+        deleted_at: null,
         reply_to_id: replyToId || null,
         attachments: null,
         metadata: null,
@@ -271,37 +273,113 @@ export const useMessaging = () => {
     [user, fetchConversations, toast],
   );
 
-  // Add reaction to message
+  // Refetch reactions for a single message and patch it into state — avoids the
+  // N+1 full-conversation refetch the old addReaction did on every tap.
+  const refreshReactions = useCallback(async (messageId: string) => {
+    const { data } = await supabase
+      .from('message_reactions')
+      .select('*, user:profiles!message_reactions_user_id_profiles_user_id_fkey(display_name, avatar_url)')
+      .eq('message_id', messageId);
+    const reactions = (data as MessageReaction[]) ?? [];
+    setMessages((prev) => {
+      const next: Record<string, Message[]> = {};
+      for (const [convId, list] of Object.entries(prev)) {
+        next[convId] = list.map((m) => (m.id === messageId ? { ...m, reactions } : m));
+      }
+      return next;
+    });
+  }, []);
+
+  // Toggle a reaction: same (user, emoji) removes it, otherwise adds it.
   const addReaction = useCallback(
     async (messageId: string, emoji: string) => {
       if (!user) return;
 
+      const existing = Object.values(messages)
+        .flat()
+        .find((m) => m.id === messageId)
+        ?.reactions?.some((r) => r.user_id === user.id && r.emoji === emoji);
+
       try {
-        const { error } = await supabase.from('message_reactions').upsert({
-          message_id: messageId,
-          user_id: user.id,
-          emoji,
-        });
-
-        if (error) throw error;
-
-        // Refresh messages to show the new reaction
-        const message = Object.values(messages)
-          .flat()
-          .find((m) => m.id === messageId);
-        if (message) {
-          await fetchMessages(message.conversation_id);
+        if (existing) {
+          const { error } = await supabase
+            .from('message_reactions')
+            .delete()
+            .eq('message_id', messageId)
+            .eq('user_id', user.id)
+            .eq('emoji', emoji);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase
+            .from('message_reactions')
+            .insert({ message_id: messageId, user_id: user.id, emoji });
+          if (error) throw error;
         }
+        await refreshReactions(messageId);
       } catch (error) {
-        console.error('Error adding reaction:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to add reaction',
-          variant: 'destructive',
-        });
+        console.error('Error toggling reaction:', error);
+        toast({ title: 'Error', description: 'Failed to add reaction', variant: 'destructive' });
       }
     },
-    [user, toast, messages, fetchMessages],
+    [user, toast, messages, refreshReactions],
+  );
+
+  // Edit own message content
+  const editMessage = useCallback(
+    async (messageId: string, content: string) => {
+      if (!user || !content.trim()) return;
+      const clean = content.trim();
+      try {
+        const { error } = await supabase
+          .from('messages')
+          .update({ content: clean, edited_at: new Date().toISOString() })
+          .eq('id', messageId)
+          .eq('sender_id', user.id);
+        if (error) throw error;
+        setMessages((prev) => {
+          const next: Record<string, Message[]> = {};
+          for (const [convId, list] of Object.entries(prev)) {
+            next[convId] = list.map((m) =>
+              m.id === messageId ? { ...m, content: clean, edited_at: new Date().toISOString() } : m,
+            );
+          }
+          return next;
+        });
+      } catch (error) {
+        console.error('Error editing message:', error);
+        toast({ title: 'Error', description: 'Failed to edit message', variant: 'destructive' });
+      }
+    },
+    [user, toast],
+  );
+
+  // Soft-delete own message (keeps the row so replies stay intact)
+  const deleteMessage = useCallback(
+    async (messageId: string) => {
+      if (!user) return;
+      const now = new Date().toISOString();
+      try {
+        const { error } = await supabase
+          .from('messages')
+          .update({ deleted_at: now, content: '' })
+          .eq('id', messageId)
+          .eq('sender_id', user.id);
+        if (error) throw error;
+        setMessages((prev) => {
+          const next: Record<string, Message[]> = {};
+          for (const [convId, list] of Object.entries(prev)) {
+            next[convId] = list.map((m) =>
+              m.id === messageId ? { ...m, deleted_at: now, content: '' } : m,
+            );
+          }
+          return next;
+        });
+      } catch (error) {
+        console.error('Error deleting message:', error);
+        toast({ title: 'Error', description: 'Failed to delete message', variant: 'destructive' });
+      }
+    },
+    [user, toast],
   );
 
   // Mark conversation as read
@@ -427,6 +505,43 @@ export const useMessaging = () => {
           }
         },
       )
+      // Edits + soft-deletes from other clients
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages' },
+        (payload) => {
+          const upd = payload.new as Message;
+          setMessages((prev) => {
+            const list = prev[upd.conversation_id];
+            if (!list) return prev;
+            return {
+              ...prev,
+              [upd.conversation_id]: list.map((m) =>
+                m.id === upd.id
+                  ? { ...m, content: upd.content, edited_at: upd.edited_at, deleted_at: upd.deleted_at }
+                  : m,
+              ),
+            };
+          });
+        },
+      )
+      // Live reactions (add/remove) from any participant
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'message_reactions' },
+        (payload) => {
+          const mid = (payload.new as { message_id?: string }).message_id;
+          if (mid) void refreshReactions(mid);
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'message_reactions' },
+        (payload) => {
+          const mid = (payload.old as { message_id?: string }).message_id;
+          if (mid) void refreshReactions(mid);
+        },
+      )
       .subscribe();
 
     // Subscribe to conversation updates
@@ -449,7 +564,7 @@ export const useMessaging = () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(conversationsChannel);
     };
-  }, [user, fetchConversations, instanceId]);
+  }, [user, fetchConversations, instanceId, refreshReactions]);
 
   // Set up typing indicators for active conversations
   useEffect(() => {
@@ -519,6 +634,8 @@ export const useMessaging = () => {
     sendMessage,
     startConversation,
     addReaction,
+    editMessage,
+    deleteMessage,
     markAsRead,
     sendTypingIndicator,
     stopTypingIndicator,
