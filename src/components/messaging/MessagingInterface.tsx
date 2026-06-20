@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -39,7 +39,11 @@ import { useSearchParams } from 'react-router';
 import { IntimateMatchThread } from '@/components/messaging/IntimateMatchThread';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { ReactionBurst } from '@/components/messaging/ReactionBurst';
+import { JoyBurst } from '@/components/messaging/JoyBurst';
+import { VibeEditor } from '@/components/messaging/VibeEditor';
 import { QUICK_REACTIONS } from '@/lib/emojiData';
+import { pickIcebreaker } from '@/lib/icebreakers';
+import { Sparkles } from 'lucide-react';
 import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
 import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
@@ -451,6 +455,23 @@ const MessageInput = ({
         maxLength={2000}
       />
 
+      {/* Spark: drop an icebreaker into the composer */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="rounded-element p-0"
+        style={{ height: 44, width: 44 }}
+        disabled={disabled}
+        aria-label="Spark a conversation"
+        onClick={() => {
+          setMessage(pickIcebreaker(Date.now()));
+          inputRef?.current?.focus();
+        }}
+      >
+        <Sparkles size={20} />
+      </Button>
+
       {/* Emoji Picker */}
       <EmojiPicker
         onSelect={addEmoji}
@@ -591,14 +612,42 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   const onlineInThread = useConversationPresence(conversationId);
   const { status: otherStatus } = usePublicStatus(otherParticipant?.user_id);
   const isOtherOnline = otherParticipant ? onlineInThread.has(otherParticipant.user_id) : false;
+  const vibeEmoji = otherParticipant?.profile?.vibe_emoji ?? null;
+  const vibeText = otherParticipant?.profile?.vibe_text ?? null;
+  const vibeExpiresAt = otherParticipant?.profile?.vibe_expires_at ?? null;
+  const firstMessageAt = currentMessages.length > 1 ? currentMessages[0].created_at : null;
+  // Date.now() lives in useMemo (not render) to satisfy the purity rule; it
+  // re-evaluates whenever the inputs change, which is fresh enough for both.
+  const { vibeActive, streakDays } = useMemo(() => {
+    const now = Date.now();
+    const active = !!vibeText && (!vibeExpiresAt || new Date(vibeExpiresAt).getTime() > now);
+    const days = firstMessageAt
+      ? Math.floor((now - new Date(firstMessageAt).getTime()) / 86_400_000)
+      : 0;
+    return { vibeActive: active, streakDays: days };
+  }, [vibeText, vibeExpiresAt, firstMessageAt]);
   const presenceLabel = isOtherOnline
     ? t('chat.activeNow', { defaultValue: 'Active now' })
-    : otherStatus?.text
-      ? otherStatus.text
-      : null;
+    : vibeActive
+      ? `${vibeEmoji ?? '✨'} ${vibeText}`
+      : otherStatus?.text
+        ? otherStatus.text
+        : null;
+
+  // Queer-joy burst when a new match thread gets its first message.
+  const [joy, setJoy] = useState(false);
+  const prevLenRef = useRef(0);
+  useEffect(() => {
+    const prev = prevLenRef.current;
+    if (conv?.conversation_type === 'match' && prev === 0 && currentMessages.length > 0) {
+      setJoy(true);
+    }
+    prevLenRef.current = currentMessages.length;
+  }, [currentMessages.length, conv?.conversation_type]);
 
   return (
-    <>
+    <div className="relative flex h-full min-h-0 flex-1 flex-col">
+      {joy && <JoyBurst onDone={() => setJoy(false)} />}
       {/* Chat Header */}
       <div
         className="p-4 md:p-4 border-b"
@@ -704,6 +753,14 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
             </div>
           ) : (
             <div>
+              {streakDays >= 2 && (
+                <p className="mb-4 text-center text-2xs text-muted-foreground">
+                  {t('chat.streak', {
+                    defaultValue: 'You two have been chatting for {{count}} days ✨',
+                    count: streakDays,
+                  })}
+                </p>
+              )}
               {currentMessages.map((rawMessage) => {
                 const isOwn = rawMessage.sender_id === user?.id;
                 // Derive read receipt: own message is "read" once the other
@@ -782,7 +839,7 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         inputRef={inputRef}
         prefilledMessage={prefilledMessage}
       />
-    </>
+    </div>
   );
 };
 
@@ -893,9 +950,7 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
       >
         {/* Rail header */}
         <div className="flex items-center justify-between px-4 py-2 border-b">
-          <span className="text-sm font-medium text-foreground">
-            {t('inbox.title', { defaultValue: 'Inbox' })}
-          </span>
+          <VibeEditor />
           <ComposeChooser
             onNewMessage={() => navigate('/community/members')}
             onNewEmail={() => setComposeEmailOpen(true)}

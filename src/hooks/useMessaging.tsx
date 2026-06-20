@@ -7,6 +7,9 @@ export interface MessageProfile {
   display_name: string | null;
   avatar_url: string | null;
   user_mode?: string | null;
+  vibe_emoji?: string | null;
+  vibe_text?: string | null;
+  vibe_expires_at?: string | null;
 }
 
 export interface Message {
@@ -106,7 +109,10 @@ export const useMessaging = () => {
               display_name,
               avatar_url,
               user_id,
-              user_mode
+              user_mode,
+              vibe_emoji,
+              vibe_text,
+              vibe_expires_at
             )
           )
         `,
