@@ -23,7 +23,7 @@ const TEXT_MAX_CHARS = 2400;
 const FEEDBACK_CATEGORIES = ['bug', 'idea', 'improvement', 'content-idea'];
 const ALLOWED_LABELS = [
   'ui', 'performance', 'data-quality', 'auth', 'mobile', 'search', 'map',
-  'content', 'crash', 'accessibility', 'payments', 'i18n', 'seo',
+  'content', 'crash', 'accessibility', 'payments', 'i18n', 'seo', 'not-found',
 ];
 
 interface BodyShape { submission_ids?: string[]; limit?: number; }
@@ -129,6 +129,34 @@ Deno.serve(async (req) => {
   let done = 0, failed = 0;
 
   for (const row of pending) {
+    // 404s are auto-filed in bulk (every dead URL) and are not bugs/crashes.
+    // Triage them deterministically — minor priority + a 'not-found' label —
+    // instead of spending an LLM call that mislabels them as crashes. The
+    // route_template fingerprint already deduped per-slug floods to one row;
+    // occurrence_count tells admins which dead paths actually matter.
+    if (row.content_type === 'api_error' && row.data?.kind === 'not_found') {
+      const template = typeof row.data.route_template === 'string' ? row.data.route_template : 'unknown route';
+      const mergedLabels = Array.from(new Set([...(row.labels ?? []), 'not-found']));
+      const { error: updErr } = await supabase
+        .from('community_submissions')
+        .update({
+          priority: 3,
+          labels: mergedLabels,
+          autotriage: {
+            category: null,
+            summary: `404 — no page at ${template}`,
+            suggested_priority: 3,
+            suggested_labels: ['not-found'],
+            is_probably_spam: false,
+            model: 'deterministic',
+            at: new Date().toISOString(),
+          },
+        })
+        .eq('id', row.id);
+      if (updErr) { failed += 1; } else { done += 1; }
+      continue;
+    }
+
     const text = buildText(row);
     if (!text.trim()) { failed += 1; continue; }
     try {

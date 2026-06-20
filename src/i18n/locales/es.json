@@ -2744,6 +2744,13 @@
     },
     "stickers": {
       "title": "[ES] Stickers"
+    },
+    "freeToMeet": {
+      "title": "[ES] Free to meet",
+      "set": "[ES] Free to meet",
+      "on": "[ES] Free now",
+      "both": "[ES] {{name}} is free to meet right now 🟢",
+      "youOnly": "[ES] You're marked free to meet 🟢"
     }
   }
 }
