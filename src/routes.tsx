@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
@@ -52,18 +52,18 @@ const SearchPersonalization = lazyRetry(() => import('./pages/onboarding/SearchP
 const PatternLibrary = lazyRetry(() => import('./pages/PatternLibrary'));
 
 // Unified Admin Shell (wraps all /admin/* routes)
-const AdminShell = lazy(() =>
+const AdminShell = lazyRetry(() =>
   import('./components/admin/shell/AdminShell').then((m) => ({ default: m.AdminShell })),
 );
 
 // Admin page components (rendered inside AdminShell via Outlet)
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
-const AdminMaps = lazy(() => import('./pages/AdminMaps'));
-const AdminUsers = lazy(() => import('./pages/AdminUsers'));
-const AdminCountries = lazy(() => import('./pages/AdminCountries'));
-const AdminTags = lazy(() => import('./pages/AdminTags'));
-const AdminGroups = lazy(() => import('./pages/AdminGroups'));
+const AdminDashboard = lazyRetry(() => import('./pages/AdminDashboard'));
+const AdminAnalytics = lazyRetry(() => import('./pages/AdminAnalytics'));
+const AdminMaps = lazyRetry(() => import('./pages/AdminMaps'));
+const AdminUsers = lazyRetry(() => import('./pages/AdminUsers'));
+const AdminCountries = lazyRetry(() => import('./pages/AdminCountries'));
+const AdminTags = lazyRetry(() => import('./pages/AdminTags'));
+const AdminGroups = lazyRetry(() => import('./pages/AdminGroups'));
 const Cities = lazyRetry(() => import('./pages/Cities'));
 const CitiesCompare = lazyRetry(() => import('./pages/cities/Compare'));
 const CityDetail = lazyRetry(() => import('./pages/CityDetail'));
@@ -71,37 +71,37 @@ const CountryDetail = lazyRetry(() => import('./pages/CountryDetail'));
 const Travel = lazyRetry(() => import('./pages/Travel'));
 const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
-const AdminVenues = lazy(() => import('./pages/AdminVenues'));
-const AdminDuplicates = lazy(() => import('./pages/AdminDuplicates'));
-const AdminVenueCategories = lazy(() => import('./pages/AdminVenueCategories'));
-const AdminVenueServices = lazy(() => import('./pages/AdminVenueServices'));
-const AdminEventTypes = lazy(() => import('./pages/AdminEventTypes'));
-const AdminEventAmenities = lazy(() => import('./pages/AdminEventAmenities'));
-const AdminEventServices = lazy(() => import('./pages/AdminEventServices'));
-const AdminAccessibilityAttributes = lazy(() => import('./pages/AdminAccessibilityAttributes'));
-const AdminTargetGroups = lazy(() => import('./pages/AdminTargetGroups'));
-const AdminProfessions = lazy(() => import('./pages/AdminProfessions'));
-const AdminEvents = lazy(() => import('./pages/AdminEvents'));
-const AdminCityQuality = lazy(() => import('./pages/AdminCityQuality'));
-const AdminPersonalityQuality = lazy(() => import('./pages/AdminPersonalityQuality'));
-const AdminVenueQuality = lazy(() => import('./pages/AdminVenueQuality'));
-const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
-const AdminMarketplaceQuality = lazy(() => import('./pages/AdminMarketplaceQuality'));
-const AdminMarketplaceGuides = lazy(() => import('./pages/AdminMarketplaceGuides'));
-const AdminVenueGuides = lazy(() => import('./pages/AdminVenueGuides'));
-const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
-const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
-const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
-const AdminQuests = lazy(() => import('./pages/AdminQuests'));
-const AdminPlacesEditorial = lazy(() => import('./pages/AdminPlacesEditorial'));
+const AdminVenues = lazyRetry(() => import('./pages/AdminVenues'));
+const AdminDuplicates = lazyRetry(() => import('./pages/AdminDuplicates'));
+const AdminVenueCategories = lazyRetry(() => import('./pages/AdminVenueCategories'));
+const AdminVenueServices = lazyRetry(() => import('./pages/AdminVenueServices'));
+const AdminEventTypes = lazyRetry(() => import('./pages/AdminEventTypes'));
+const AdminEventAmenities = lazyRetry(() => import('./pages/AdminEventAmenities'));
+const AdminEventServices = lazyRetry(() => import('./pages/AdminEventServices'));
+const AdminAccessibilityAttributes = lazyRetry(() => import('./pages/AdminAccessibilityAttributes'));
+const AdminTargetGroups = lazyRetry(() => import('./pages/AdminTargetGroups'));
+const AdminProfessions = lazyRetry(() => import('./pages/AdminProfessions'));
+const AdminEvents = lazyRetry(() => import('./pages/AdminEvents'));
+const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
+const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
+const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
+const AdminMarketplace = lazyRetry(() => import('./pages/AdminMarketplace'));
+const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
+const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
+const AdminVenueGuides = lazyRetry(() => import('./pages/AdminVenueGuides'));
+const AdminNewsSources = lazyRetry(() => import('./pages/AdminNewsSources'));
+const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
+const AdminPersonalities = lazyRetry(() => import('./pages/AdminPersonalities'));
+const AdminQuests = lazyRetry(() => import('./pages/AdminQuests'));
+const AdminPlacesEditorial = lazyRetry(() => import('./pages/AdminPlacesEditorial'));
 const Quests = lazyRetry(() => import('./pages/Quests'));
 const QuestDetail = lazyRetry(() => import('./pages/QuestDetail'));
-const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
-const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
-const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
-const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
-const AdminSearchIntelligence = lazy(() => import('./pages/AdminSearchIntelligence'));
-const AdminRecognition = lazy(() => import('./pages/admin/Recognition'));
+const AdminRedirects = lazyRetry(() => import('./pages/AdminRedirects'));
+const AdminPipelines = lazyRetry(() => import('./pages/AdminPipelines'));
+const AdminIngestionRules = lazyRetry(() => import('./pages/AdminIngestionRules'));
+const AdminEmailIngestions = lazyRetry(() => import('./pages/AdminEmailIngestions'));
+const AdminSearchIntelligence = lazyRetry(() => import('./pages/AdminSearchIntelligence'));
+const AdminRecognition = lazyRetry(() => import('./pages/admin/Recognition'));
 const Contributors = lazyRetry(() => import('./pages/Contributors'));
 
 // New feature pages
@@ -111,44 +111,44 @@ const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'))
 // Festivals routes now redirect to /events (festivals integrated into events)
 
 // New admin pages
-const AdminHotels = lazy(() => import('./pages/AdminHotels'));
-const AdminQueerVillages = lazy(() => import('./pages/AdminQueerVillages'));
-const AdminVillageQuality = lazy(() => import('./pages/AdminVillageQuality'));
-const AdminReview = lazy(() => import('./pages/AdminReview'));
-const AdminInbox = lazy(() => import('./pages/AdminInbox'));
-const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
-const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
+const AdminHotels = lazyRetry(() => import('./pages/AdminHotels'));
+const AdminQueerVillages = lazyRetry(() => import('./pages/AdminQueerVillages'));
+const AdminVillageQuality = lazyRetry(() => import('./pages/AdminVillageQuality'));
+const AdminReview = lazyRetry(() => import('./pages/AdminReview'));
+const AdminInbox = lazyRetry(() => import('./pages/AdminInbox'));
+const AdminAutomation = lazyRetry(() => import('./pages/AdminAutomation'));
+const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
 
 // CMS components rendered as admin views
-const AdminCMS = lazy(() => import('./pages/AdminCMS'));
-const ContentListPanel = lazy(() =>
+const AdminCMS = lazyRetry(() => import('./pages/AdminCMS'));
+const ContentListPanel = lazyRetry(() =>
   import('./components/cms/ContentListPanel').then((m) => ({ default: m.ContentListPanel })),
 );
 // ReviewQueue (CMS) is now loaded inside AdminReview page
-const MediaLibrary = lazy(() =>
+const MediaLibrary = lazyRetry(() =>
   import('./components/cms/MediaLibrary').then((m) => ({ default: m.MediaLibrary })),
 );
-const MediaDetailPage = lazy(() =>
+const MediaDetailPage = lazyRetry(() =>
   import('./components/cms/MediaLibrary/MediaDetailPage').then((m) => ({ default: m.MediaDetailPage })),
 );
-const AuditLog = lazy(() =>
+const AuditLog = lazyRetry(() =>
   import('./components/cms/AuditLog').then((m) => ({ default: m.AuditLog })),
 );
 
 // Import Hub components rendered as admin views
-const AffiliatePartnersManager = lazy(() =>
+const AffiliatePartnersManager = lazyRetry(() =>
   import('./components/admin/AffiliatePartnersManager').then((m) => ({
     default: m.AffiliatePartnersManager,
   })),
 );
 
 // Dashboard sub-views
-const SecurityMonitoringDashboard = lazy(() =>
+const SecurityMonitoringDashboard = lazyRetry(() =>
   import('./components/admin/SecurityMonitoringDashboard').then((m) => ({
     default: m.SecurityMonitoringDashboard,
   })),
 );
-const CloudflareDashboard = lazy(() =>
+const CloudflareDashboard = lazyRetry(() =>
   import('./components/admin/CloudflareDashboard').then((m) => ({
     default: m.CloudflareDashboard,
   })),
