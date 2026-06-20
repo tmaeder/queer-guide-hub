@@ -20,6 +20,7 @@ import {
   Trash2,
   X,
   Search,
+  CalendarClock,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
@@ -52,6 +53,7 @@ import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInbox
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
 import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
 import { useRailActions } from '@/hooks/useRailActions';
+import { useConversationAvailability } from '@/hooks/useConversationAvailability';
 import { usePublicStatus } from '@/hooks/usePublicStatus';
 import { MailDetail } from '@/components/messaging/MailDetail';
 import { NotificationDetailCard } from '@/components/messaging/NotificationDetailCard';
@@ -680,6 +682,13 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         ? otherStatus.text
         : null;
 
+  // Free-to-meet availability for this thread (self + other).
+  const {
+    selfAvailable,
+    otherAvailable,
+    toggle: toggleAvailability,
+  } = useConversationAvailability(conversationId, otherParticipant?.user_id);
+
   // Queer-joy burst when a new match thread gets its first message.
   const [joy, setJoy] = useState(false);
   const prevLenRef = useRef(0);
@@ -758,15 +767,34 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
           </div>
 
           <Button
-            variant="ghost"
+            variant={selfAvailable ? 'accent' : 'ghost'}
             size="sm"
-            className="rounded-element p-0"
-            style={{ height: 36, width: 36 }}
+            className="rounded-element gap-1 px-2"
+            style={{ height: 36 }}
+            onClick={toggleAvailability}
+            title={t('chat.freeToMeet.title', { defaultValue: 'Free to meet' })}
           >
-            <MoreVertical size={16} />
+            <CalendarClock size={16} />
+            <span className="hidden text-13 sm:inline">
+              {selfAvailable
+                ? t('chat.freeToMeet.on', { defaultValue: 'Free now' })
+                : t('chat.freeToMeet.set', { defaultValue: 'Free to meet' })}
+            </span>
           </Button>
         </div>
       </div>
+
+      {/* Free-to-meet ribbon */}
+      {(otherAvailable || selfAvailable) && (
+        <div className="border-b border-border bg-muted/50 px-4 py-1.5 text-center text-13 text-muted-foreground">
+          {otherAvailable
+            ? t('chat.freeToMeet.both', {
+                defaultValue: '{{name}} is free to meet right now 🟢',
+                name: otherParticipant?.profile?.display_name || 'They',
+              })
+            : t('chat.freeToMeet.youOnly', { defaultValue: "You're marked free to meet 🟢" })}
+        </div>
+      )}
 
       {/* Match thread ribbon — only for conversation_type='match' */}
       {conv?.conversation_type === 'match' && (
