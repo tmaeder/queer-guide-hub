@@ -168,7 +168,8 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[KO] More"
   },
   "navigation": {
     "home": "홈",
@@ -2147,7 +2148,11 @@
       "title": "여행 알림",
       "body": "각 예약 30분 전과 여권 또는 비자 만료일이 다가올 때 브라우저 알림을 받습니다.",
       "turnOn": "켜기",
-      "turnOff": "끄기"
+      "turnOff": "끄기",
+      "dm": {
+        "title": "[KO] Direct messages",
+        "body": "[KO] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2579,7 +2584,24 @@
     },
     "openInbox": "[KO] Open inbox",
     "markAlertsRead": "[KO] Mark alerts read",
-    "unread": "[KO] Unread"
+    "unread": "[KO] Unread",
+    "unreadCount": "[KO] {{count}} unread",
+    "action": {
+      "pin": "[KO] Pin",
+      "unpin": "[KO] Unpin",
+      "mute": "[KO] Mute",
+      "unmute": "[KO] Unmute",
+      "markRead": "[KO] Mark as read",
+      "archive": "[KO] Archive"
+    },
+    "search": "[KO] Search",
+    "searchEmpty": "[KO] No matches.",
+    "recipient": {
+      "search": "[KO] Search people",
+      "empty": "[KO] No suggestions yet.",
+      "recent": "[KO] Recently messaged",
+      "active": "[KO] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2679,5 +2701,47 @@
     "pride": "[KO] Pride",
     "contributors": "[KO] Contributors",
     "wishlists": "[KO] Wishlists"
+  },
+  "chat": {
+    "react": "[KO] React",
+    "edited": "[KO] edited",
+    "deleted": "[KO] Message deleted",
+    "editing": "[KO] Editing message",
+    "replyingTo": "[KO] Replying to {{name}}",
+    "reply": {
+      "action": "[KO] Reply",
+      "someone": "[KO] someone"
+    },
+    "emoji": {
+      "search": "[KO] Search emoji",
+      "none": "[KO] No emoji found.",
+      "cat": {
+        "smileys": "[KO] Smileys",
+        "gestures": "[KO] Gestures",
+        "hearts": "[KO] Hearts",
+        "pride": "[KO] Pride",
+        "animals": "[KO] Animals",
+        "food": "[KO] Food",
+        "activity": "[KO] Activity",
+        "symbols": "[KO] Symbols"
+      }
+    },
+    "activeNow": "[KO] Active now",
+    "preview": {
+      "you": "[KO] You",
+      "photo": "[KO] Photo",
+      "sticker": "[KO] Sticker",
+      "voice": "[KO] Voice message"
+    },
+    "streak": "[KO] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[KO] Set a vibe",
+      "title": "[KO] Your vibe",
+      "placeholder": "[KO] What's your vibe?",
+      "for4h": "[KO] 4h"
+    },
+    "stickers": {
+      "title": "[KO] Stickers"
+    }
   }
 }

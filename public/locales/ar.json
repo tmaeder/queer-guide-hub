@@ -168,7 +168,8 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[AR] More"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -2147,7 +2148,11 @@
       "title": "تذكيرات السفر",
       "body": "تلقَّ إشعارًا في المتصفح قبل 30 دقيقة من كل حجز، وعند اقتراب انتهاء صلاحية جواز السفر أو التأشيرة.",
       "turnOn": "تشغيل",
-      "turnOff": "إيقاف"
+      "turnOff": "إيقاف",
+      "dm": {
+        "title": "[AR] Direct messages",
+        "body": "[AR] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2579,7 +2584,24 @@
     },
     "openInbox": "[AR] Open inbox",
     "markAlertsRead": "[AR] Mark alerts read",
-    "unread": "[AR] Unread"
+    "unread": "[AR] Unread",
+    "unreadCount": "[AR] {{count}} unread",
+    "action": {
+      "pin": "[AR] Pin",
+      "unpin": "[AR] Unpin",
+      "mute": "[AR] Mute",
+      "unmute": "[AR] Unmute",
+      "markRead": "[AR] Mark as read",
+      "archive": "[AR] Archive"
+    },
+    "search": "[AR] Search",
+    "searchEmpty": "[AR] No matches.",
+    "recipient": {
+      "search": "[AR] Search people",
+      "empty": "[AR] No suggestions yet.",
+      "recent": "[AR] Recently messaged",
+      "active": "[AR] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2679,5 +2701,47 @@
     "pride": "[AR] Pride",
     "contributors": "[AR] Contributors",
     "wishlists": "[AR] Wishlists"
+  },
+  "chat": {
+    "react": "[AR] React",
+    "edited": "[AR] edited",
+    "deleted": "[AR] Message deleted",
+    "editing": "[AR] Editing message",
+    "replyingTo": "[AR] Replying to {{name}}",
+    "reply": {
+      "action": "[AR] Reply",
+      "someone": "[AR] someone"
+    },
+    "emoji": {
+      "search": "[AR] Search emoji",
+      "none": "[AR] No emoji found.",
+      "cat": {
+        "smileys": "[AR] Smileys",
+        "gestures": "[AR] Gestures",
+        "hearts": "[AR] Hearts",
+        "pride": "[AR] Pride",
+        "animals": "[AR] Animals",
+        "food": "[AR] Food",
+        "activity": "[AR] Activity",
+        "symbols": "[AR] Symbols"
+      }
+    },
+    "activeNow": "[AR] Active now",
+    "preview": {
+      "you": "[AR] You",
+      "photo": "[AR] Photo",
+      "sticker": "[AR] Sticker",
+      "voice": "[AR] Voice message"
+    },
+    "streak": "[AR] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[AR] Set a vibe",
+      "title": "[AR] Your vibe",
+      "placeholder": "[AR] What's your vibe?",
+      "for4h": "[AR] 4h"
+    },
+    "stickers": {
+      "title": "[AR] Stickers"
+    }
   }
 }
