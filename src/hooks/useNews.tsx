@@ -33,6 +33,7 @@ interface NewsFilters {
   cityIds?: string[];
   sourceId?: string;
   category?: string;
+  language?: string;
   sortField?: string;
   sortOrder?: 'asc' | 'desc';
 }
@@ -75,7 +76,7 @@ export const useNews = () => {
         .from('news_articles')
         .select(
           `
-          id, slug, title, excerpt, url, image_url, author,
+          id, slug, title, title_i18n, content_language, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured, is_premium,
           country_ids, city_ids, tags, category, category_canonical, publisher_name
         `,
@@ -117,6 +118,9 @@ export const useNews = () => {
       }
       if (filters?.sourceId) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('source_id', filters.sourceId);
+      }
+      if (filters?.language) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq('content_language', filters.language);
       }
       if (filters?.category) {
         // Filter on the canonical-category column from migration
@@ -280,7 +284,7 @@ export const useNews = () => {
         .from('news_articles')
         .select(
           `
-          id, slug, title, excerpt, url, image_url, author,
+          id, slug, title, title_i18n, content_language, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured, is_premium,
           country_ids, city_ids, tags, category, category_canonical, publisher_name
         `,

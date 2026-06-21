@@ -18,6 +18,9 @@ import { resolvePublisherName } from '@/lib/publisherName';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import type { NewsCategory } from '@/hooks/useNews';
+import { useTranslation } from 'react-i18next';
+import { localizedNewsTitle } from '@/lib/newsTitle';
+import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 
 type NewsArticle = Tables<'news_articles'> & {
   news_sources?: Tables<'news_sources'>;
@@ -104,6 +107,7 @@ export const NewsCard = ({
   imageAsset,
 }: NewsCardProps) => {
   const navigate = useLocalizedNavigate();
+  const { i18n } = useTranslation();
   const [imgFailed, setImgFailed] = useState(false);
   const fallbackSrc = useMemo(() => getRandomFallbackImage(), []);
 
@@ -136,8 +140,19 @@ export const NewsCard = ({
 
   const authorName = safeText(cleanAuthor(safeText(article.author)));
   const excerptText = safeText(cleanExcerpt(safeText(article.excerpt)));
-  const safeTitle = safeText(decodeHtmlEntities(safeText(article.title)));
   const articleAny = article as Record<string, unknown>;
+  const localizedTitle = localizedNewsTitle(
+    {
+      title: article.title,
+      title_i18n: articleAny.title_i18n as Record<string, string> | null | undefined,
+    },
+    i18n.language,
+  );
+  const safeTitle = safeText(decodeHtmlEntities(safeText(localizedTitle)));
+  const contentLanguage = (articleAny.content_language as string | null | undefined) ?? null;
+  // Authoritative language badge — renders nothing when the article language
+  // matches the UI locale or is unknown. Flags untranslated foreign cards.
+  const langBadge = <ContentLangBadge language={contentLanguage} text={article.title} />;
   const canonical =
     typeof articleAny.category_canonical === 'string'
       ? (articleAny.category_canonical as string)
@@ -227,6 +242,7 @@ export const NewsCard = ({
           <h2 className="m-0 mt-2 text-display md:text-hero font-bold leading-[0.95] tracking-tight max-w-4xl">
             {safeTitle}
           </h2>
+          {langBadge}
           {dek && (
             <p className="news-lead-dek mt-4 max-w-2xl text-base md:text-lg italic leading-snug opacity-95">
               {dek}
@@ -270,6 +286,7 @@ export const NewsCard = ({
           <h3 className="m-0 text-headline md:text-headline-lg font-bold leading-[1.05] tracking-tight">
             {safeTitle}
           </h3>
+          {langBadge}
           {dek && (
             <p className="text-15 italic text-muted-foreground leading-relaxed">{dek}</p>
           )}
@@ -318,6 +335,7 @@ export const NewsCard = ({
               {part}
             </span>
           ))}
+          {langBadge}
         </div>
       </LocalizedLink>
     );
@@ -355,6 +373,7 @@ export const NewsCard = ({
             </p>
           )}
           <h3 className="text-2xl font-bold leading-tight m-0">{safeTitle}</h3>
+          {langBadge}
           {excerptText && (
             <p
               className="text-sm text-muted-foreground overflow-hidden"
@@ -418,6 +437,7 @@ export const NewsCard = ({
           >
             {safeTitle}
           </h3>
+          {langBadge}
           {excerptText && (
             <p
               className="text-sm text-muted-foreground overflow-hidden"
@@ -487,6 +507,7 @@ export const NewsCard = ({
           >
             {safeTitle}
           </h3>
+          {langBadge}
 
           {excerptText && (
             <p

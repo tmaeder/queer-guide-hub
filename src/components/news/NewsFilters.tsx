@@ -12,11 +12,31 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatNewsTag } from '@/lib/newsTags';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag } from 'lucide-react';
+import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag, Languages } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from 'react-i18next';
 import type { NewsCategory } from '@/hooks/useNews';
+
+// Localized language label via Intl.DisplayNames (same approach as ContentLangBadge).
+function languageLabel(code: string, uiLanguage: string): string {
+  try {
+    const DN = (Intl as unknown as { DisplayNames?: typeof Intl.DisplayNames }).DisplayNames;
+    if (DN) {
+      const out = new DN([uiLanguage], { type: 'language' }).of(code);
+      if (out) return out;
+    }
+  } catch {
+    /* fall through */
+  }
+  return code.toUpperCase();
+}
+
+interface LanguageOption {
+  language: string;
+  article_count?: number;
+}
 
 type NewsSource = Tables<'news_sources'>;
 
@@ -45,6 +65,7 @@ interface NewsFiltersProps {
     featured?: boolean;
     inStory?: boolean;
     category?: string;
+    language?: string;
   }) => void;
   trendingTags?: { tag: string; count: number }[];
   sources?: NewsSource[];
@@ -58,8 +79,11 @@ export const NewsFilters = ({
   categories = [],
 }: NewsFiltersProps) => {
   const { toast } = useToast();
+  const { i18n } = useTranslation();
   const [source, setSource] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  const [languages, setLanguages] = useState<LanguageOption[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
@@ -77,15 +101,21 @@ export const NewsFilters = ({
   // {id, name, article_count} so the Select can show counts.
   useEffect(() => {
     const fetchData = async () => {
-      const [countriesRes, citiesRes] = await Promise.all([
+      const [countriesRes, citiesRes, languagesRes] = await Promise.all([
         supabase.rpc('news_countries_with_articles'),
         supabase.rpc('news_cities_with_articles'),
+        // news_languages_with_articles isn't in the generated types.ts — bridge untyped.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).rpc('news_languages_with_articles'),
       ]);
       if (!countriesRes.error && Array.isArray(countriesRes.data)) {
         setCountries(countriesRes.data as CountryOption[]);
       }
       if (!citiesRes.error && Array.isArray(citiesRes.data)) {
         setCities(citiesRes.data as CityOption[]);
+      }
+      if (!languagesRes.error && Array.isArray(languagesRes.data)) {
+        setLanguages(languagesRes.data as LanguageOption[]);
       }
     };
     fetchData();
@@ -107,6 +137,8 @@ export const NewsFilters = ({
         inStoryOnly: overrides.inStoryOnly !== undefined ? overrides.inStoryOnly : inStoryOnly,
         category:
           overrides.selectedCategory !== undefined ? overrides.selectedCategory : selectedCategory,
+        language:
+          overrides.selectedLanguage !== undefined ? overrides.selectedLanguage : selectedLanguage,
       };
 
       // Build the filter object
@@ -122,6 +154,7 @@ export const NewsFilters = ({
       if (current.featuredOnly) filters.featured = true;
       if (current.inStoryOnly) filters.inStory = true;
       if (current.category) filters.category = current.category;
+      if (current.language) filters.language = current.language;
 
       // Convert date range string to from/to
       if (current.dateRange) {
@@ -171,6 +204,7 @@ export const NewsFilters = ({
     [
       source,
       selectedCategory,
+      selectedLanguage,
       selectedTags,
       selectedCountries,
       selectedCities,
@@ -183,6 +217,12 @@ export const NewsFilters = ({
       onFiltersChange,
     ],
   );
+
+  const handleLanguageChange = (value: string) => {
+    const newLanguage = value === 'all' ? '' : value;
+    setSelectedLanguage(newLanguage);
+    emitFilters({ selectedLanguage: newLanguage });
+  };
 
   const handleCategoryChange = (value: string) => {
     const newCategory = value === 'all' ? '' : value;
@@ -275,6 +315,7 @@ export const NewsFilters = ({
   const clearFilters = () => {
     setSource('');
     setSelectedCategory('');
+    setSelectedLanguage('');
     setSelectedTags([]);
     setSelectedCountries([]);
     setSelectedCities([]);
@@ -289,6 +330,7 @@ export const NewsFilters = ({
   const hasActiveFilters =
     source ||
     selectedCategory ||
+    selectedLanguage ||
     selectedTags.length > 0 ||
     selectedCountries.length > 0 ||
     selectedCities.length > 0 ||
@@ -336,6 +378,33 @@ export const NewsFilters = ({
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.slug}>
                       {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Separator />
+          </>
+        )}
+
+        {/* Language Filter */}
+        {languages.length > 0 && (
+          <>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-2">
+                <Languages size={16} />
+                <span className="text-sm font-medium">Language</span>
+              </div>
+              <Select value={selectedLanguage || 'all'} onValueChange={handleLanguageChange}>
+                <SelectTrigger style={{ width: '100%' }}>
+                  <SelectValue placeholder="All languages" />
+                </SelectTrigger>
+                <SelectContent style={{ maxHeight: 240, overflowY: 'auto' }}>
+                  <SelectItem value="all">All languages</SelectItem>
+                  {languages.map((l) => (
+                    <SelectItem key={l.language} value={l.language}>
+                      {languageLabel(l.language, i18n.language || 'en')}
+                      {l.article_count ? ` (${l.article_count})` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
