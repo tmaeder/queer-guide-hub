@@ -61,9 +61,12 @@ export function BreadcrumbBar() {
 
   return (
     <div className="border-b border-border bg-background">
-      <div className="container mx-auto flex min-h-11 items-center px-4 py-2.5">
-        <Breadcrumb>
-          <BreadcrumbList className="flex-nowrap">
+      <div className="container mx-auto flex min-h-11 items-center overflow-hidden px-4 py-2.5">
+        <Breadcrumb className="min-w-0 max-w-full">
+          {/* Locked to a single line: every crumb but the last keeps its width
+              (shrink-0); the last crumb absorbs the remaining space and
+              truncates with an ellipsis so the row never wraps or overflows. */}
+          <BreadcrumbList className="min-w-0 flex-nowrap overflow-hidden">
             {trail.map((crumb, i) => {
               const isLast = i === lastIndex;
               const isFirst = i === 0;
@@ -76,23 +79,26 @@ export function BreadcrumbBar() {
 
               return (
                 <Fragment key={i}>
-                  {i > 0 && <BreadcrumbSeparator className={hideSep ? 'hidden md:inline-flex' : ''} />}
+                  {i > 0 && (
+                    <BreadcrumbSeparator
+                      className={`shrink-0 ${hideSep ? 'hidden md:inline-flex' : ''}`}
+                    />
+                  )}
                   {/* Mobile-only ellipsis stand-in, shown once after the first crumb. */}
                   {collapse && i === 1 && (
-                    <BreadcrumbItem className="md:hidden">
+                    <BreadcrumbItem className="shrink-0 md:hidden">
                       <BreadcrumbEllipsis />
                     </BreadcrumbItem>
                   )}
                   <BreadcrumbItem
                     className={
-                      mobileClass +
-                      (isLast
-                        ? ' min-w-0 max-w-[55vw] sm:max-w-[40ch] truncate inline-block whitespace-nowrap'
-                        : '')
+                      isLast
+                        ? 'min-w-0 flex-1 whitespace-nowrap'
+                        : `shrink-0 whitespace-nowrap ${mobileClass}`
                     }
                   >
                     {isLast ? (
-                      <BreadcrumbPage className="truncate">{crumb.label}</BreadcrumbPage>
+                      <BreadcrumbPage className="block truncate">{crumb.label}</BreadcrumbPage>
                     ) : crumb.href ? (
                       <BreadcrumbLink asChild>
                         <LocalizedLink to={loc(crumb.href)}>{crumb.label}</LocalizedLink>
