@@ -120,7 +120,7 @@ export function stripHtmlTags(html: string): string {
       out += html[i]
     }
   }
-  return out.replace(/&nbsp;/gi, ' ').replace(/ /g, ' ')
+  return out.replace(/&nbsp;/gi, ' ').replace(/\u00a0/g, ' ')
 }
 
 // Common HTML entities seen in scraped feeds — decode the few that matter for
