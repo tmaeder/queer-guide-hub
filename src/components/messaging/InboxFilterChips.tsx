@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { InboxFilter } from '@/hooks/useInboxFeed';
+import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 
-const FILTERS: { key: InboxFilter; labelKey: string }[] = [
-  { key: 'all', labelKey: 'inbox.filter.all' },
-  { key: 'chats', labelKey: 'inbox.filter.chats' },
-  { key: 'mail', labelKey: 'inbox.filter.mail' },
-  { key: 'alerts', labelKey: 'inbox.filter.alerts' },
+const BASE_FILTERS: { key: InboxFilter; labelKey: string; defaultLabel: string }[] = [
+  { key: 'all', labelKey: 'inbox.filter.all', defaultLabel: 'All' },
+  { key: 'chats', labelKey: 'inbox.filter.chats', defaultLabel: 'Chats' },
+  { key: 'mail', labelKey: 'inbox.filter.mail', defaultLabel: 'Mail' },
+  { key: 'alerts', labelKey: 'inbox.filter.alerts', defaultLabel: 'Alerts' },
 ];
 
 export function InboxFilterChips({
@@ -17,9 +18,16 @@ export function InboxFilterChips({
   onChange: (f: InboxFilter) => void;
 }) {
   const { t } = useTranslation();
+  const { data: upcomingTrips } = useUpcomingTrips();
+  const hasUpcomingTrips = (upcomingTrips?.length ?? 0) > 0;
+
+  const filters = hasUpcomingTrips
+    ? [...BASE_FILTERS, { key: 'trips' as InboxFilter, labelKey: 'inbox.filter.trips', defaultLabel: 'Trips' }]
+    : BASE_FILTERS;
+
   return (
     <div className="flex gap-2 overflow-x-auto p-2" role="tablist">
-      {FILTERS.map((f) => (
+      {filters.map((f) => (
         <button
           key={f.key}
           role="tab"
@@ -30,7 +38,7 @@ export function InboxFilterChips({
             value === f.key ? 'bg-foreground text-background' : 'bg-background text-foreground',
           )}
         >
-          {t(f.labelKey, { defaultValue: f.key })}
+          {t(f.labelKey, { defaultValue: f.defaultLabel })}
         </button>
       ))}
     </div>
