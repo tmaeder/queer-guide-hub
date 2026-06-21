@@ -41,15 +41,35 @@ export function useTripNudges(tripId: string | undefined) {
 export function useDismissTripNudge() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id }: { id: string; tripId: string }) => {
+    mutationFn: async ({
+      id,
+      tripId,
+      kind,
+      dedupeKey,
+    }: {
+      id: string;
+      tripId: string;
+      kind?: string;
+      dedupeKey?: string;
+    }) => {
       const { error } = await supabase
         .from('trip_nudges')
         .update({ dismissed_at: new Date().toISOString() })
         .eq('id', id);
       if (error) throw error;
+      // Mirror dismiss → mark the exact mirrored notification as read.
+      // The notification's nudge_dedupe_key is `${tripId}:${kind}:${dedupeKey}`.
+      if (kind && dedupeKey) {
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('type', 'trip_nudge')
+          .eq('metadata->>nudge_dedupe_key', `${tripId}:${kind}:${dedupeKey}`);
+      }
     },
     onSuccess: (_r, vars) => {
       qc.invalidateQueries({ queryKey: ['trip-nudges', vars.tripId] });
+      qc.invalidateQueries({ queryKey: ['inbox-feed'] });
     },
   });
 }

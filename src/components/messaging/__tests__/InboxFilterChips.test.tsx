@@ -13,6 +13,11 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+const mockUpcoming = vi.fn(() => ({ data: [] as unknown[] }));
+vi.mock('@/hooks/useUpcomingTrips', () => ({
+  useUpcomingTrips: () => mockUpcoming(),
+}));
+
 import { InboxFilterChips } from '../InboxFilterChips';
 
 describe('InboxFilterChips', () => {
@@ -20,7 +25,14 @@ describe('InboxFilterChips', () => {
     const onChange = vi.fn();
     render(<InboxFilterChips value="all" onChange={onChange} />);
     expect(screen.getByRole('tab', { name: /all/i })).toBeTruthy();
+    expect(screen.queryByRole('tab', { name: /trips/i })).toBeNull();
     fireEvent.click(screen.getByRole('tab', { name: /mail/i }));
     expect(onChange).toHaveBeenCalledWith('mail');
+  });
+
+  it('shows the trips chip when upcoming trips exist', () => {
+    mockUpcoming.mockReturnValueOnce({ data: [{ id: 't1' }] });
+    render(<InboxFilterChips value="all" onChange={vi.fn()} />);
+    expect(screen.getByRole('tab', { name: /trips/i })).toBeTruthy();
   });
 });

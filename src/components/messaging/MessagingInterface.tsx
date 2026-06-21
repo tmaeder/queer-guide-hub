@@ -51,6 +51,8 @@ import { jumboTier } from '@/lib/messageRender';
 import { Sparkles, Sticker as StickerIcon } from 'lucide-react';
 import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
+import { TripRailCard } from '@/components/messaging/TripRailCard';
+import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
 import { useRailActions } from '@/hooks/useRailActions';
 import { useConversationAvailability } from '@/hooks/useConversationAvailability';
@@ -933,6 +935,8 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { items, loading } = useInboxFeed(filter ?? 'all');
+  const { data: upcomingTrips } = useUpcomingTrips();
+  const showTripCards = filter === 'all' || filter === 'trips';
   const onlineUsers = useGlobalPresence();
   const railActions = useRailActions();
   const [composeEmailOpen, setComposeEmailOpen] = useState(false);
@@ -1120,6 +1124,13 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
             </div>
           ) : (
             <div>
+              {showTripCards && upcomingTrips && upcomingTrips.length > 0 && (
+                <div className="border-b">
+                  {upcomingTrips.map((trip) => (
+                    <TripRailCard key={trip.id} trip={trip} />
+                  ))}
+                </div>
+              )}
               {visibleItems.map((item) => (
                 <InboxRailItem
                   key={item.id}

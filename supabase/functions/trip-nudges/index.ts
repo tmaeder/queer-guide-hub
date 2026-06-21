@@ -28,6 +28,7 @@ const corsFor = (req: Request) => ({
 
 interface TripRow {
   id: string;
+  owner_id: string;
   title: string;
   start_date: string | null;
   end_date: string | null;
@@ -54,7 +55,7 @@ async function activeTrips(admin: any, tripId?: string): Promise<TripRow[]> {
     .slice(0, 10);
   let q = admin
     .from('trips')
-    .select('id, title, start_date, end_date, status')
+    .select('id, owner_id, title, start_date, end_date, status')
     .in('status', ['planning', 'active']);
   if (tripId) {
     q = q.eq('id', tripId);
@@ -197,6 +198,48 @@ async function bookingReminderNudges(admin: any, trip: TripRow): Promise<NudgeRo
 
 // deno-lint-ignore no-explicit-any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function mirrorNudgesToNotifications(admin: any, trip: TripRow, rows: NudgeRow[]) {
+  const notifiable = rows.filter((r) => r.severity === 'warning' || r.severity === 'critical');
+  if (notifiable.length === 0) return;
+  const candidates = notifiable.map((r) => ({
+    dedupe: `${trip.id}:${r.kind}:${r.dedupe_key}`,
+    row: {
+      user_id: trip.owner_id,
+      type: 'trip_nudge',
+      title: r.title,
+      content: r.body,
+      action_url: r.action_url,
+      metadata: {
+        nudge_dedupe_key: `${trip.id}:${r.kind}:${r.dedupe_key}`,
+        trip_id: trip.id,
+        trip_title: trip.title,
+        nudge_kind: r.kind,
+      },
+    },
+  }));
+
+  // PostgREST upsert can't target an expression index, so pre-filter against
+  // already-mirrored dedupe keys for this owner. The unique index is the
+  // backstop against concurrent races.
+  const { data: existing } = await admin
+    .from('notifications')
+    .select('metadata')
+    .eq('user_id', trip.owner_id)
+    .eq('type', 'trip_nudge')
+    .in('metadata->>nudge_dedupe_key', candidates.map((c) => c.dedupe));
+  const seen = new Set(
+    ((existing ?? []) as { metadata: { nudge_dedupe_key?: string } }[])
+      .map((e) => e.metadata?.nudge_dedupe_key)
+      .filter(Boolean),
+  );
+  const fresh = candidates.filter((c) => !seen.has(c.dedupe)).map((c) => c.row);
+  if (fresh.length === 0) return;
+  const { error } = await admin.from('notifications').insert(fresh);
+  if (error) console.warn('notifications mirror failed', error.message);
+}
+
+// deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function scanOne(admin: any, trip: TripRow): Promise<number> {
   const [evs, news, book] = await Promise.all([
     eventOverlapNudges(admin, trip).catch(() => [] as NudgeRow[]),
@@ -210,6 +253,8 @@ async function scanOne(admin: any, trip: TripRow): Promise<number> {
     .from('trip_nudges')
     .upsert(rows, { onConflict: 'trip_id,kind,dedupe_key', ignoreDuplicates: true });
   if (error) throw error;
+  // Mirror warning/critical nudges into the unified notifications inbox
+  await mirrorNudgesToNotifications(admin, trip, rows).catch(() => {});
   return rows.length;
 }
 
