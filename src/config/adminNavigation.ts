@@ -100,6 +100,13 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Inbox,
         route: '/admin/inbox',
       },
+      {
+        id: 'affiliate',
+        label: 'Affiliate',
+        icon: Handshake,
+        route: '/admin/affiliate',
+        adminOnly: true,
+      },
     ],
   },
 

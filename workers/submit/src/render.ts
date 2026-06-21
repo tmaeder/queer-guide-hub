@@ -84,17 +84,35 @@ async function renderViaWorker(
     };
     if (!data.meta?.title) return [];
 
-    // Synthesize an OG MetaMap so the shared og-core builds the DetectedItem —
-    // keeps the rendered item's shape identical to the static OG path.
+    // Try the shared og-core first — when the rendered DOM exposes og:type or a
+    // known platform, this classifies the entity properly and keeps the item
+    // shape identical to the static OG path.
     const meta: MetaMap = new Map();
     meta.set("og:title", data.meta.title);
     if (data.meta.description) meta.set("og:description", data.meta.description);
     if (data.meta.image) meta.set("og:image", data.meta.image);
-    const item = buildOgItem(meta, url);
-    if (!item) return [];
+    const ogItem = buildOgItem(meta, url) as SchemaDetectedItem | null;
+
+    // buildOgItem returns null for bare pages (no og:type, non-whitelisted host)
+    // — which is exactly the SPA case this fallback targets. So synthesize a
+    // generic low-confidence `place` item (the same tier the extension's DOM
+    // heuristics use) carrying the cleaned markdown for the user to classify.
+    const item: SchemaDetectedItem = ogItem ?? {
+      entity_type: "place",
+      raw_data: {
+        name: data.meta.title,
+        description: data.meta.description ?? "",
+        url,
+        ...(data.meta.image ? { images: [data.meta.image] } : {}),
+      },
+      confidence: 0.3,
+      field_confidence: { name: 0.5 },
+      extraction_method: "dom",
+      source_url: url,
+    };
     // Attach cleaned markdown for the downstream /enrich step.
     if (data.markdown) (item.raw_data as Record<string, unknown>).page_markdown = data.markdown;
-    return [item as SchemaDetectedItem];
+    return [item];
   } catch {
     return [];
   } finally {

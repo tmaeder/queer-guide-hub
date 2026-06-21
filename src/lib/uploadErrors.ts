@@ -12,6 +12,7 @@ export type UploadErrorCode =
   | 'UNSUPPORTED_TYPE'
   | 'UNREADABLE_FILE'
   | 'EXTRACTION_EMPTY'
+  | 'PAGE_UNREADABLE'
   | 'RATE_LIMITED'
   | 'NETWORK_ERROR'
   | 'SERVER_ERROR'
@@ -33,6 +34,7 @@ const I18N_KEYS: Record<UploadErrorCode, string> = {
   UNSUPPORTED_TYPE: 'submission.errors.unsupportedType',
   UNREADABLE_FILE: 'submission.errors.unreadableFile',
   EXTRACTION_EMPTY: 'submission.errors.extractionEmpty',
+  PAGE_UNREADABLE: 'submission.errors.pageUnreadable',
   RATE_LIMITED: 'submission.errors.rateLimited',
   NETWORK_ERROR: 'submission.errors.networkError',
   SERVER_ERROR: 'submission.errors.serverError',
@@ -45,6 +47,7 @@ const NON_RETRYABLE: UploadErrorCode[] = ['FILE_TOO_LARGE', 'UNSUPPORTED_TYPE'];
 // Categories where the scan failed but the user can still fill the form.
 const MANUAL_FALLBACK: UploadErrorCode[] = [
   'EXTRACTION_EMPTY',
+  'PAGE_UNREADABLE',
   'UNREADABLE_FILE',
   'SERVER_ERROR',
   'RATE_LIMITED',
@@ -122,6 +125,15 @@ export function toUploadError(input: unknown, ctx?: { phase?: UploadErrorPhase }
   const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
   if (offline || isFetchTypeError || /network|offline|timeout|timed out/i.test(lower)) {
     return makeUploadError('NETWORK_ERROR', msg || 'network error');
+  }
+
+  // A pasted link the server couldn't read (bot-blocked, JS-only, non-HTML, empty).
+  // analyze-flyer returns 422 for this; also match the underlying fetch messages.
+  if (
+    status === 422 ||
+    /couldn.?t read|page unreadable|failed to fetch page|no extractable text|did not return an html/i.test(msg)
+  ) {
+    return makeUploadError('PAGE_UNREADABLE', msg || 'page unreadable');
   }
 
   if (typeof status === 'number' && status >= 500) {

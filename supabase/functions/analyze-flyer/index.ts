@@ -13,7 +13,17 @@
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
 import { chatCompletion } from '../_shared/openai-client.ts'
+import { extractContent } from '../_shared/extract-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
+
+/** A pasted link could not be read server-side (bot-blocked, JS-only, non-HTML,
+ *  empty). Surfaced as a 422 so the client shows actionable copy instead of a 500. */
+class PageUnreadableError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'PageUnreadableError'
+  }
+}
 
 const CF_ACCOUNT_ID = '7aa3765cc5f50f2b681b782eb4a8d296'
 const CF_VISION_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.2-11b-vision-instruct`
@@ -654,7 +664,20 @@ Deno.serve(async (req) => {
     let textInput = text
     if (urls.length === 0 && !textInput && page_url) {
       console.log(`Fetching page for extraction: ${page_url}`)
-      textInput = await fetchPageText(page_url)
+      // Prefer the deepcrawl extract worker (clean markdown + main-content
+      // isolation); fall back to the naive in-function fetcher if it's
+      // unavailable. A genuine read failure becomes an actionable 422.
+      const extracted = await extractContent(supabase, { url: page_url })
+      if (extracted && extracted.markdown && extracted.markdown.trim().length >= 20) {
+        const title = extracted.meta?.title ? `# ${extracted.meta.title}\n\n` : ''
+        textInput = (title + extracted.markdown).slice(0, 12_000)
+      } else {
+        try {
+          textInput = await fetchPageText(page_url)
+        } catch (e) {
+          throw new PageUnreadableError((e as Error).message || 'page unreadable')
+        }
+      }
     }
 
     const isTextMode = !!textInput && urls.length === 0
@@ -810,6 +833,12 @@ Deno.serve(async (req) => {
     })
   } catch (error) {
     console.error('analyze-flyer error:', error)
+    if (error instanceof PageUnreadableError) {
+      return errorResponse(
+        "We couldn't read that link. It may require a login or block automated access. Upload a screenshot of the flyer instead.",
+        422,
+      )
+    }
     return errorResponse(error.message || 'Internal server error', 500)
   }
 })
