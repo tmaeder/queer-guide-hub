@@ -13,7 +13,7 @@
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
 import { chatCompletion } from '../_shared/openai-client.ts'
-import { extractContent } from '../_shared/extract-client.ts'
+import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
 
 /** A pasted link could not be read server-side (bot-blocked, JS-only, non-HTML,
@@ -579,6 +579,33 @@ function htmlToText(html: string): string {
     .trim()
 }
 
+/** A static extract is "weak" (worth escalating to Browser Rendering) when it
+ *  came back empty or has little body text AND no structured metadata to lean on. */
+function isWeakExtract(e: ExtractResult | null): boolean {
+  if (!e) return true
+  const md = (e.markdown || '').trim()
+  const hasJsonLd = Array.isArray(e.jsonLd) && e.jsonLd.length > 0
+  const hasDesc = !!(e.meta?.description && e.meta.description.trim().length > 0)
+  return md.length < 200 && !hasJsonLd && !hasDesc
+}
+
+/** Build structuring text from an extract: og:title + og:description + serialized
+ *  JSON-LD + markdown. Pages with structured metadata but thin bodies (Eventbrite,
+ *  many SPAs) still produce a usable extraction this way. Returns the og:image too. */
+function assembleExtractedContent(e: ExtractResult): { text: string; image: string | null } {
+  const parts: string[] = []
+  if (e.meta?.title) parts.push(`# ${e.meta.title}`)
+  if (e.meta?.description) parts.push(e.meta.description)
+  if (Array.isArray(e.jsonLd) && e.jsonLd.length > 0) {
+    try {
+      parts.push('Structured data (schema.org):\n' + JSON.stringify(e.jsonLd))
+    } catch { /* non-serializable — skip */ }
+  }
+  const md = (e.markdown || '').trim()
+  if (md) parts.push(md)
+  return { text: parts.join('\n\n'), image: e.meta?.image ?? null }
+}
+
 const MAX_PAGE_BYTES = 2 * 1024 * 1024 // 2MB of HTML is plenty for extraction
 
 /** Fetch a public web page and return its visible text (SSRF-guarded). */
@@ -600,7 +627,10 @@ async function fetchPageText(pageUrl: string): Promise<string> {
     signal: AbortSignal.timeout(12_000),
     redirect: 'follow',
     headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide)',
+      // Realistic Chrome UA — the bot UA was blocked / served degraded pages by
+      // many event & venue sites (the common scan targets).
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
       'Accept': 'text/html,application/xhtml+xml',
     },
   })
@@ -662,15 +692,27 @@ Deno.serve(async (req) => {
 
     // A pasted link is fetched + stripped to text, then rides the text pipeline.
     let textInput = text
+    let pageImageUrl: string | null = null
     if (urls.length === 0 && !textInput && page_url) {
       console.log(`Fetching page for extraction: ${page_url}`)
-      // Prefer the deepcrawl extract worker (clean markdown + main-content
-      // isolation); fall back to the naive in-function fetcher if it's
-      // unavailable. A genuine read failure becomes an actionable 422.
-      const extracted = await extractContent(supabase, { url: page_url })
-      if (extracted && extracted.markdown && extracted.markdown.trim().length >= 20) {
-        const title = extracted.meta?.title ? `# ${extracted.meta.title}\n\n` : ''
-        textInput = (title + extracted.markdown).slice(0, 12_000)
+      // Prefer the deepcrawl extract worker (clean markdown + OG/JSON-LD metadata).
+      // Static fetch first; escalate once to Browser Rendering for JS-only pages
+      // whose static pass yields little usable content. Fall back to the naive
+      // in-function fetcher. A genuine read failure becomes an actionable 422.
+      let extracted = await extractContent(supabase, { url: page_url })
+      if (isWeakExtract(extracted)) {
+        console.log('Static extract weak — escalating to Browser Rendering')
+        const rendered = await extractContent(supabase, {
+          url: page_url,
+          render: true,
+          timeoutMs: 20_000,
+        })
+        if (rendered && (!isWeakExtract(rendered) || !extracted)) extracted = rendered
+      }
+      const assembled = extracted ? assembleExtractedContent(extracted) : null
+      if (assembled && assembled.text.trim().length >= 20) {
+        textInput = assembled.text.slice(0, 12_000)
+        pageImageUrl = assembled.image
       } else {
         try {
           textInput = await fetchPageText(page_url)
@@ -813,10 +855,12 @@ Deno.serve(async (req) => {
           flyer_scan_id: scanRow.id,
           platform:      isTextMode ? 'manual' : 'flyer',
           sub_source_type: isTextMode ? 'manual' : 'upload',
-          media_urls:    urls.length > 0 ? urls : null,
+          media_urls:    urls.length > 0 ? urls : (pageImageUrl ? [pageImageUrl] : null),
           vision_summary: isTextMode ? null : contentForStructuring.slice(0, 8000),
           raw_text:      extraction.raw_text || null,
-          media_processing_status: urls.length > 0 ? 'done' : 'not_applicable',
+          media_processing_status: urls.length > 0
+            ? 'done'
+            : (pageImageUrl ? 'pending' : 'not_applicable'),
         })
         if (subErr) console.error('Failed to create community_submission:', subErr.message)
       }
@@ -829,6 +873,8 @@ Deno.serve(async (req) => {
       items: itemsWithMatches,
       raw_text: extraction.raw_text,
       language: extraction.language,
+      // OG image of a scanned page, so the form can prefill a preview image.
+      image_url: urls[0] || pageImageUrl || null,
       processing_time_ms: processingTime,
     })
   } catch (error) {
