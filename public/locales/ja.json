@@ -31,6 +31,7 @@
       "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
       "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
       "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "pageUnreadable": "そのリンクを読み取れませんでした。ログインが必要か、自動アクセスがブロックされている可能性があります。チラシのスクリーンショットをアップロードするか、下のフォームに手動で入力してください。",
       "rateLimited": "You've reached the scan limit. Please try again in an hour.",
       "networkError": "Connection problem. Please check your internet and try again.",
       "serverError": "Something went wrong on our side. Please try again in a moment.",

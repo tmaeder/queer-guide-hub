@@ -20,25 +20,25 @@ export interface BookableLink {
   url: string;
 }
 
-const GYG_PARTNER = '2PBDXWH';
-const BOOKING_AID = '2381426';
-const BOOKING_LABEL = 'queerguide-452012';
+import { GYG_PARTNER, BOOKING_AID, BOOKING_LABEL_BASE, type AffiliateSurface } from '@/lib/affiliate/config';
+import { applySubId } from '@/lib/affiliate/links';
 
-function gygCitySearch(query: string, date?: string | null): string {
+function gygCitySearch(query: string, date: string | null | undefined, surface: AffiliateSurface): string {
   const params = new URLSearchParams({ q: query, partner_id: GYG_PARTNER });
   if (date) params.set('date_from', date);
-  return `https://www.getyourguide.com/s/?${params.toString()}`;
+  return applySubId(`https://www.getyourguide.com/s/?${params.toString()}`, 'getyourguide', surface);
 }
 
-function bookingHotelSearch(query: string, checkIn?: string | null, checkOut?: string | null): string {
-  const params = new URLSearchParams({
-    ss: query,
-    aid: BOOKING_AID,
-    label: BOOKING_LABEL,
-  });
+function bookingHotelSearch(
+  query: string,
+  checkIn: string | null | undefined,
+  checkOut: string | null | undefined,
+  surface: AffiliateSurface,
+): string {
+  const params = new URLSearchParams({ ss: query, aid: BOOKING_AID, label: BOOKING_LABEL_BASE });
   if (checkIn) params.set('checkin', checkIn);
   if (checkOut) params.set('checkout', checkOut);
-  return `https://www.booking.com/searchresults.html?${params.toString()}`;
+  return applySubId(`https://www.booking.com/searchresults.html?${params.toString()}`, 'booking', surface);
 }
 
 interface BuildArgs {
@@ -47,6 +47,8 @@ interface BuildArgs {
   cityName?: string | null;
   startDate?: string | null;
   endDate?: string | null;
+  /** Originating surface for sub-id attribution. Defaults from category. */
+  surface?: AffiliateSurface;
 }
 
 /**
@@ -60,24 +62,27 @@ export function buildPlaceBookableLinks({
   cityName,
   startDate,
   endDate,
+  surface,
 }: BuildArgs): BookableLink[] {
   const links: BookableLink[] = [];
   const query = cityName ?? name;
   if (!query) return links;
+
+  const sub: AffiliateSurface = surface ?? (category === 'hotel' ? 'hotel' : category === 'event' ? 'event' : 'venue');
 
   if (category === 'hotel') {
     links.push({
       provider: 'booking',
       vertical: 'hotel',
       label: 'Book on Booking.com',
-      url: bookingHotelSearch(name, startDate, endDate),
+      url: bookingHotelSearch(name, startDate, endDate, sub),
     });
     if (cityName) {
       links.push({
         provider: 'getyourguide',
         vertical: 'activity',
         label: 'Tours nearby',
-        url: gygCitySearch(cityName, startDate),
+        url: gygCitySearch(cityName, startDate, sub),
       });
     }
     return links;
@@ -89,7 +94,7 @@ export function buildPlaceBookableLinks({
       provider: 'getyourguide',
       vertical: 'activity',
       label: 'Tours & tickets',
-      url: gygCitySearch(`${name} ${cityName}`.trim(), startDate),
+      url: gygCitySearch(`${name} ${cityName}`.trim(), startDate, sub),
     });
   }
 

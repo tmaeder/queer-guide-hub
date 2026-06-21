@@ -149,4 +149,47 @@ test.describe('Marketplace — discovery surface', () => {
     await page.goto('/marketplace');
     await expect(page.getByRole('button', { name: /saved searches/i })).toBeVisible({ timeout: 30_000 });
   });
+
+  // Regression (PR #1714): lgbti_relevance_score is admin-only. The public
+  // "Minimum LGBTQ+ relevance" filter and the "LGBTQ+ relevant" detail pill
+  // must NOT render to end users.
+  test('public marketplace exposes no LGBTQ+ relevance filter', async ({ page }) => {
+    await page.goto('/marketplace');
+    await page.waitForLoadState('domcontentloaded');
+    // Open the advanced filter panel, then expand the "Quality & freshness"
+    // section — where the (now-removed) relevance slider used to live. Radix
+    // unmounts collapsed accordion content, so expanding it is what would
+    // surface the slider in the DOM if it still existed.
+    await page.getByRole('button', { name: /toggle filters/i }).click();
+    const quality = page.getByRole('button', { name: /quality & freshness/i });
+    await quality.click();
+    await expect(quality).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByText(/minimum lgbtq\+ relevance/i)).toHaveCount(0);
+    await expect(page.locator('[aria-label="Minimum LGBTQ+ relevance"]')).toHaveCount(0);
+  });
+
+  test('marketplace detail page shows no "LGBTQ+ relevant" pill', async ({ page }) => {
+    await page.goto('/marketplace');
+    await page.waitForSelector('a[href^="/marketplace/"]', { timeout: 30_000 });
+    const detailLink = page
+      .locator('a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="guide"]):not([href*="share"]):not([href$="/submit"])')
+      .first();
+    const href = await detailLink.getAttribute('href');
+    expect(href).toBeTruthy();
+    await page.goto(href!);
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for the buy box to hydrate (price is part of the same card as the pills).
+    await page.waitForFunction(
+      () =>
+        Array.from(document.querySelectorAll('script[type="application/ld+json"]')).some((s) => {
+          try {
+            return JSON.parse(s.textContent || '')['@type'] === 'Product';
+          } catch {
+            return false;
+          }
+        }),
+      { timeout: 30_000 },
+    );
+    await expect(page.getByText(/lgbtq\+ relevant/i)).toHaveCount(0);
+  });
 });

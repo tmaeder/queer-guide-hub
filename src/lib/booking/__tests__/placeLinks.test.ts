@@ -29,7 +29,8 @@ describe('buildPlaceBookableLinks', () => {
       expect(u.origin + u.pathname).toBe('https://www.booking.com/searchresults.html');
       expect(u.searchParams.get('ss')).toBe('Hotel X');
       expect(u.searchParams.get('aid')).toBe('2381426');
-      expect(u.searchParams.get('label')).toBe('queerguide-452012');
+      // label now carries the per-surface sub-id suffix for attribution
+      expect(u.searchParams.get('label')).toBe('queerguide-452012-hotel');
       expect(u.searchParams.get('checkin')).toBe('2026-06-01');
       expect(u.searchParams.get('checkout')).toBe('2026-06-05');
     });
