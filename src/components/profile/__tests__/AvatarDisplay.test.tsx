@@ -1,9 +1,21 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 
 // Mock BigHead since it's a heavy SVG library
 vi.mock('@bigheads/core', () => ({
   BigHead: (_props: unknown) => <div data-testid="bighead-avatar">BigHead</div>,
+}));
+
+// Radix AvatarImage only mounts the <img> after the image successfully loads,
+// which never happens in jsdom (no real network/image load) — so it would always
+// show the fallback and the src assertions could never run. Mock the primitive to
+// plain elements so the test exercises AvatarDisplay's own logic (which src/alt it
+// passes for each prop) rather than radix's load-state behavior.
+vi.mock('@/components/ui/avatar', () => ({
+  Avatar: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  AvatarImage: ({ src, alt }: { src?: string; alt?: string }) => <img src={src} alt={alt} />,
+  AvatarFallback: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
 import { AvatarDisplay } from '../AvatarDisplay';
