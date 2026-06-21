@@ -119,9 +119,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
         ? 'bg-foreground text-background'
         : overlay?.variant === 'overlap'
           ? 'bg-background text-foreground border border-border'
-          : // Solid (not /80): a translucent badge lets a bright event image bleed
-            // through and drops the white label below the 4.5:1 contrast floor.
-            'bg-foreground text-background';
+          : 'bg-foreground/80 text-background';
 
   const locationLabel = event
     ? [event.venues?.name || event.venue_name, event.city].filter(Boolean).join(', ')
