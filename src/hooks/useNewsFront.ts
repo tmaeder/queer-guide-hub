@@ -26,6 +26,8 @@ export interface NewsFrontArticle {
   category: string | null;
   category_canonical: string | null;
   publisher_name: string | null;
+  title_i18n: Record<string, string> | null;
+  content_language: string | null;
   hotness: number;
   personal_score: number;
   matches_interest: boolean;

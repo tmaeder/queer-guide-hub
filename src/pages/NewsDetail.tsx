@@ -53,6 +53,8 @@ import { Layers } from 'lucide-react';
 import { TracingBeam } from '@/components/effects/TracingBeam';
 import { Editable } from '@/components/admin/inline/Editable';
 import { useUserNewsReads } from '@/hooks/useUserNewsReads';
+import { localizedNewsTitle } from '@/lib/newsTitle';
+import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { ReadingProgressBar } from '@/components/news/editorial/ReadingProgressBar';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { EditorsPickToggle } from '@/components/admin/news/EditorsPickToggle';
@@ -60,6 +62,8 @@ import { EditorsPickToggle } from '@/components/admin/news/EditorsPickToggle';
 interface NewsArticle {
   id: string;
   title: string;
+  title_i18n?: Record<string, string> | null;
+  content_language?: string | null;
   content: string | null;
   excerpt: string | null;
   url: string;
@@ -97,7 +101,7 @@ interface RelatedArticle {
 }
 
 export default function NewsDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const [article, setArticle] = useState<NewsArticle | null>(null);
@@ -386,9 +390,10 @@ export default function NewsDetail() {
                   setArticle((prev) => (prev ? { ...prev, title: String(next ?? '') } : prev))
                 }
               >
-                {decodeHtmlEntities(article.title)}
+                {decodeHtmlEntities(localizedNewsTitle(article, i18n.language))}
               </Editable>
             </h1>
+            <ContentLangBadge language={article.content_language} text={article.title} />
             {article.is_featured && (
               <Badge
                 style={{ backgroundColor: 'hsl(var(--foreground))' }}
