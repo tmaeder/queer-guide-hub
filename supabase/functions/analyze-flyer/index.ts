@@ -188,7 +188,9 @@ Return ONLY valid JSON with this exact structure:
 }
 
 Rules:
+- COMPACTNESS (important): OMIT any field you cannot determine — do NOT emit null/empty fields or zero-confidence fields. Only include fields you actually found. This keeps each item small so ALL events fit in the response.
 - If you find MULTIPLE distinct events or venues, return one item per event/venue (max 10 items)
+- VENUE WITH A CALENDAR: when the page is a venue's own site/homepage that lists many upcoming events (an event calendar), return the VENUE as the first item (detected_type "venue") AND a separate "event" item for each of the next upcoming events (up to 10 total items). Do not return only the venue.
 - If only one event or venue is found, return an array with a single item
 - Do NOT merge separate events into one — each gets its own item
 - CRITICAL: If a flyer shows MULTIPLE separate dates (e.g. "April 5" and "April 12", or "5. April und 12. April"), these are DIFFERENT events — create one item per date. Do NOT put them into start_date/end_date of a single item. This is the most common mistake — avoid it.
@@ -196,7 +198,7 @@ Rules:
 - Recurring events (e.g. "every Friday", multiple listed dates, "5. April und 12. April") → separate items, one per date.
 - When in doubt between "range" and "separate events": always prefer separate items.
 - Each item should be self-contained with its own location, dates, etc.
-- Set confidence to 0 and value to null for fields you cannot determine
+- Omit fields you cannot determine (see COMPACTNESS) rather than emitting null
 - For detected_type: "event" if there's a specific date/time; "venue" if it's a business listing/card
 - Parse dates to ISO 8601 when possible (use current year if year not specified)
 - Extract ALL visible text into raw_text
