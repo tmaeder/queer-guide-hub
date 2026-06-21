@@ -65,6 +65,7 @@ function countActiveFilters(f: SearchFilters): number {
     (f.tags?.length || 0) +
     (f.cluster_ids?.length || 0) +
     (f.target_groups?.length || 0) +
+    (f.tags?.length || 0) +
     (f.priceRange ? 1 : 0) +
     (f.dateRange ? 1 : 0) +
     (f.free ? 1 : 0) +
@@ -94,8 +95,8 @@ export default function SearchResults() {
     types: searchParams.get('types')?.split(',').filter(Boolean) || [],
     location: searchParams.get('location') || undefined,
     categories: searchParams.get('categories')?.split(',').filter(Boolean) || undefined,
-    tags: searchParams.get('tags')?.split(',').filter(Boolean) || undefined,
     cluster_ids: searchParams.get('clusters')?.split(',').filter(Boolean) || undefined,
+    tags: searchParams.get('tags')?.split(',').filter(Boolean) || undefined,
     lat: initialLat,
     lng: initialLng,
     radius: Number(searchParams.get('radius')) || undefined,
@@ -155,8 +156,8 @@ export default function SearchResults() {
       if (next.types?.length) params.set('types', next.types.join(','));
       if (next.location) params.set('location', next.location);
       if (next.categories?.length) params.set('categories', next.categories.join(','));
-      if (next.tags?.length) params.set('tags', next.tags.join(','));
       if (next.cluster_ids?.length) params.set('clusters', next.cluster_ids.join(','));
+      if (next.tags?.length) params.set('tags', next.tags.join(','));
       if (next.lat != null && next.lng != null) {
         params.set('lat', String(next.lat));
         params.set('lng', String(next.lng));

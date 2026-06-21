@@ -25,6 +25,9 @@ vi.mock('@/hooks/useCommunityPosts', () => ({
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('@/components/layout/PageLoadingState', () => ({ PageLoadingState: () => null }));
+// FollowedTagsFeed pulls in useQuery; this test renders Feed without a
+// QueryClientProvider, so stub it out (it self-hides for anon users anyway).
+vi.mock('@/components/tags/FollowedTagsFeed', () => ({ FollowedTagsFeed: () => null }));
 
 import Feed from '../Feed';
 

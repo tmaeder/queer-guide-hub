@@ -17,6 +17,7 @@ import { isMeaningfulTag } from '@/utils/eventText';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Image } from '@/components/ui/Image';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
+import { TagChipRow } from '@/components/tags/TagChipRow';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import type { EventSocialSignal } from '@/hooks/useEventSocialSignals';
@@ -207,6 +208,9 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
                   <p className="mt-2 text-2xs text-muted-foreground truncate capitalize">
                     {eventTypeTag}
                   </p>
+                )}
+                {event.tags && event.tags.length > 0 && (
+                  <TagChipRow tags={event.tags} max={2} size="sm" linkless className="mt-2" />
                 )}
                 <SocialSignalBar
                   className="mt-2"

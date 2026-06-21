@@ -2,7 +2,16 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardImage } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Newspaper, Calendar, Users as UsersIcon, Star, ExternalLink } from 'lucide-react';
+import {
+  MapPin,
+  Newspaper,
+  Calendar,
+  Users as UsersIcon,
+  Star,
+  ExternalLink,
+  ShoppingBag,
+  Landmark,
+} from 'lucide-react';
 import { useTagContent, TagContentResult } from '@/hooks/useTagContent';
 import { formatDistanceToNow } from 'date-fns';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
@@ -281,6 +290,65 @@ function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onCl
   );
 }
 
+// ── Marketplace Card ────────────────────────────────────────────────
+
+function MarketplaceCard({
+  m,
+  onClick,
+}: {
+  m: TagContentResult['marketplace'][number];
+  onClick: () => void;
+}) {
+  const price = m.price_usd ?? m.price;
+  return (
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
+      <CardImage src={m.image_url} alt={m.title} fallbackIcon={ShoppingBag} height={160} />
+      <div className="p-4">
+        <p className="text-base font-semibold leading-tight line-clamp-2">{m.title}</p>
+        <div className="mt-2 flex items-center justify-between gap-2">
+          {(m.brand || m.business_name) && (
+            <span className="truncate text-sm text-muted-foreground">
+              {m.brand || m.business_name}
+            </span>
+          )}
+          {price != null && (
+            <span className="shrink-0 text-sm font-medium tabular-nums">
+              {m.price_usd != null ? '$' : ''}
+              {Number(price).toFixed(0)}
+              {m.price_usd == null && m.currency ? ` ${m.currency}` : ''}
+            </span>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// ── Queer Village Card ──────────────────────────────────────────────
+
+function VillageCard({
+  v,
+  onClick,
+}: {
+  v: TagContentResult['queer_villages'][number];
+  onClick: () => void;
+}) {
+  return (
+    <Card hoverable className="overflow-hidden" onClick={onClick}>
+      <CardImage src={v.image_url} alt={v.name} fallbackIcon={Landmark} height={160} />
+      <div className="p-4">
+        <p className="text-base font-semibold leading-tight">{v.name}</p>
+        {(v.city || v.country) && (
+          <div className="mt-2 flex items-center gap-1.5 text-muted-foreground">
+            <MapPin size={14} className="shrink-0" />
+            <p className="text-sm">{[v.city, v.country].filter(Boolean).join(', ')}</p>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 // ── Section wrapper ─────────────────────────────────────────────────
 
 function Section({
@@ -371,12 +439,16 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
   if (!data) return null;
 
   const { venues, events, personalities, groups } = data;
+  const marketplace = data.marketplace ?? [];
+  const villages = data.queer_villages ?? [];
   const news = rankNewsByRelevance(data.news, tagName);
   const hasAny =
     venues.length > 0 ||
     news.length > 0 ||
     events.length > 0 ||
     personalities.length > 0 ||
+    marketplace.length > 0 ||
+    villages.length > 0 ||
     groups.length > 0;
   if (!hasAny) return null;
 
@@ -443,6 +515,32 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
               +{news.length - MAX_NEWS} more articles
             </p>
           )}
+        </Section>
+      )}
+
+      {/* Queer villages */}
+      {villages.length > 0 && (
+        <Section title="Queer villages" count={villages.length}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {villages.map((v) => (
+              <VillageCard key={v.id} v={v} onClick={() => navigate(`/villages/${v.slug || v.id}`)} />
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {/* Marketplace */}
+      {marketplace.length > 0 && (
+        <Section title="Shop" count={marketplace.length}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {marketplace.map((m) => (
+              <MarketplaceCard
+                key={m.id}
+                m={m}
+                onClick={() => navigate(`/marketplace/${m.slug || m.id}`)}
+              />
+            ))}
+          </div>
         </Section>
       )}
 
