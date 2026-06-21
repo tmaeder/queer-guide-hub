@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { useSimilarTags, type SimilarTag } from '@/hooks/useTagRelationships';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { TagChip } from '@/components/tags/TagChip';
 import { useSafeMode } from '@/providers/SafeModeProvider';
 import { isAdultCategoryName } from '@/components/resources/categoryMeta';
 
@@ -10,7 +9,8 @@ interface RelatedTagsCardProps {
   tagId: string;
   /** Category of the source tag — used to prefer within-category results. */
   sourceCategory?: string | null;
-  onTagClick: (tag: { name: string; id: string }) => void;
+  /** Retained for backwards-compat; chips now navigate to the canonical tag page. */
+  onTagClick?: (tag: { name: string; id: string }) => void;
 }
 
 /**
@@ -38,7 +38,7 @@ function rankAndFilter(
   });
 }
 
-export function RelatedTagsCard({ tagId, sourceCategory, onTagClick }: RelatedTagsCardProps) {
+export function RelatedTagsCard({ tagId, sourceCategory }: RelatedTagsCardProps) {
   const { data: similarTags, isLoading } = useSimilarTags(tagId, 15);
   const { enabled: safeEnabled } = useSafeMode();
 
@@ -67,19 +67,7 @@ export function RelatedTagsCard({ tagId, sourceCategory, onTagClick }: RelatedTa
       <h2 className="font-bold text-lg mb-4">Related</h2>
       <div className="flex flex-wrap gap-2">
         {ranked.map((tag) => (
-          <LocalizedLink
-            key={tag.tag_id}
-            to={`/resources/${tag.slug || tag.name}`}
-            className="no-underline"
-            onClick={(e) => {
-              e.preventDefault();
-              onTagClick({ name: tag.name, id: tag.tag_id });
-            }}
-          >
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              {tag.name}
-            </Badge>
-          </LocalizedLink>
+          <TagChip key={tag.tag_id} tag={tag.slug || tag.name} name={tag.name} />
         ))}
       </div>
     </div>

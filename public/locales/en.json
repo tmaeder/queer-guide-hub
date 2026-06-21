@@ -88,6 +88,7 @@
       "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
       "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
       "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "pageUnreadable": "We couldn't read that link. It may require a login or block automated access. Upload a screenshot of the flyer or fill in the form manually below.",
       "rateLimited": "You've reached the scan limit. Please try again in an hour.",
       "networkError": "Connection problem. Please check your internet and try again.",
       "serverError": "Something went wrong on our side. Please try again in a moment.",
@@ -2719,6 +2720,13 @@
     },
     "stickers": {
       "title": "Stickers"
+    },
+    "freeToMeet": {
+      "title": "Free to meet",
+      "set": "Free to meet",
+      "on": "Free now",
+      "both": "{{name}} is free to meet right now 🟢",
+      "youOnly": "You're marked free to meet 🟢"
     }
   }
 }

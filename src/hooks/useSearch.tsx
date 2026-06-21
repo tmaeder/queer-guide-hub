@@ -119,6 +119,25 @@ interface SearchResponse {
   hitsPerPage?: number;
 }
 
+/**
+ * True when the filters alone can drive a browse (no keyword needed) — the worker
+ * runs an empty-query browse via search_hybrid. Powers tag/facet-only result lists
+ * (e.g. the glossary "Search everything tagged X" bridge → /search?tags=…).
+ */
+function hasBrowseFilters(f: SearchFilters): boolean {
+  return !!(
+    f.tags?.length ||
+    f.categories?.length ||
+    f.target_groups?.length ||
+    f.location ||
+    f.priceRange ||
+    f.dateRange ||
+    f.featured ||
+    f.free ||
+    (f.lat != null && f.lng != null)
+  );
+}
+
 const FORBIDDEN_FACET_KEYS = new Set(['undefined', 'null', '']);
 
 /**
@@ -283,7 +302,10 @@ export const useSearch = (
   }, [userId, sessionId]);
 
   const performSearch = async (searchQuery: string, searchPage = 1) => {
-    if (searchQuery.trim().length < MIN_QUERY_LEN) {
+    // Allow a filter-only browse (empty query + active filters); only short-circuit
+    // a genuinely empty, unfiltered request or a 1-char mid-typing artefact.
+    const browseable = hasBrowseFilters(filtersRef.current);
+    if (searchQuery.trim().length < MIN_QUERY_LEN && !browseable) {
       setResults([]);
       setSuggestions([]);
       setFacets({});
@@ -341,8 +363,7 @@ export const useSearch = (
   };
 
   useEffect(() => {
-    if (debouncedQuery) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+    if (debouncedQuery || hasBrowseFilters(filtersRef.current)) {
       performSearch(debouncedQuery, page);
     } else {
       setResults([]);

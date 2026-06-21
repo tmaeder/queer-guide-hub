@@ -27,6 +27,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 	});
 }
 import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities, fetchDisplayMap } from "./supabase";
+import { handleGo } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
@@ -121,6 +122,8 @@ export default {
 					return await handleTrending(request, env, cors);
 				case "/recommendations":
 					return await handleRecommendations(request, env, cors);
+				case "/go":
+					return await handleGo(request, env, ctx);
 				case "/track":
 					return await handleTrack(request, env, cors);
 				case "/onboarding":
@@ -162,6 +165,76 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		"body",
 	);
 	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
+
+	// Filter-only browse: an empty query with meaningful filters (tags, category,
+	// audience, city, featured, price, date, …) browses the filtered set via
+	// search_hybrid (empty query + filters returns the set ranked, with facets).
+	// Powers the tag-glossary "Search everything tagged X" bridge and any
+	// facet-only browse — the keyword pipeline below requires a real query, so
+	// this branch runs first.
+	if (typeof body.query === "string" && body.query.trim().length === 0) {
+		const bf = validFilters(body.filters);
+		if (!bf.ok) return errorResponse(bf, cors);
+		const bFilters = bf.value;
+		const bHppR = validInt(body.hitsPerPage, "hitsPerPage", { min: 1, max: MAX_HITS_PER_PAGE, default: 20, clamp: true });
+		if (!bHppR.ok) return errorResponse(bHppR, cors);
+		const bPageR = validInt(body.page, "page", { min: 0, max: MAX_PAGE, default: 0 });
+		if (!bPageR.ok) return errorResponse(bPageR, cors);
+		if (!hasBrowseFilters(bFilters)) {
+			return json(
+				{ hits: [], suggestions: [], facetDistribution: {}, processingTimeMS: Date.now() - started, reason: "empty_query_no_filters" },
+				200,
+				cors,
+			);
+		}
+		const bTypes = [...(bFilters.type ? [bFilters.type] : []), ...(bFilters.types ?? [])]
+			.map((t) => INDEX_MAP[t] || t)
+			.filter((t) => ALL_INDEXES.includes(t));
+		const bPgTypes = [...new Set(bTypes.map((i) => INDEX_TO_PG_TYPE[i]).filter(Boolean))] as string[];
+		const browse = await pgHybridSearch(env, {
+			query: "",
+			queryVec: null,
+			contentTypes: bPgTypes.length ? bPgTypes : null,
+			filters: {
+				city: bFilters.city || bFilters.location || undefined,
+				country: bFilters.country || undefined,
+				category: bFilters.categories?.[0],
+				is_featured: bFilters.featured || undefined,
+				is_free: bFilters.is_free,
+				target_groups: bFilters.target_groups,
+				tags: bFilters.tags,
+			},
+			lat: bFilters.lat ?? null,
+			lng: bFilters.lng ?? null,
+			radiusKm: bFilters.radius ?? null,
+			dateFrom: bFilters.date_from ?? null,
+			dateTo: bFilters.date_to ?? null,
+			priceMin: bFilters.price_min ?? null,
+			priceMax: bFilters.price_max ?? null,
+			sort: bFilters.sort ?? null,
+			hitsPerPage: bHppR.value,
+			page: bPageR.value,
+		}).catch((e) => {
+			console.warn("pgBrowse", (e as Error).message);
+			return null;
+		});
+		const bHits = (browse?.hits ?? []) as Array<Record<string, unknown>>;
+		return json(
+			{
+				hits: bHits,
+				suggestions: bHits.slice(0, 5),
+				nbHits: bHits.length,
+				page: bPageR.value,
+				hitsPerPage: bHppR.value,
+				totalHits: browse?.estimatedTotalHits ?? bHits.length,
+				facetDistribution: reorderFacets(browse?.facetDistribution ?? {}, [], []),
+				processingTimeMS: Date.now() - started,
+				reason: "filter_browse",
+			},
+			200,
+			cors,
+		);
+	}
 
 	const queryR = validString(body.query, "query", { min: MIN_QUERY_LEN, max: MAX_QUERY_LEN });
 	if (!queryR.ok) return errorResponse(queryR, cors);
@@ -664,6 +737,7 @@ const INDEX_TO_PG_TYPE: Record<string, string> = {
 	tags: "tag",
 	queer_villages: "queer_village",
 	groups: "group",
+	organizations: "organization",
 };
 
 async function loadSignal(env: Env, who: { user_id?: string; session_id?: string }) {
@@ -773,6 +847,25 @@ function dedupeById(list: FuseItem[]): FuseItem[] {
 	return out;
 }
 
+/** True when the filters alone can drive a browse (no keyword needed). */
+function hasBrowseFilters(f: ValidatedFilters): boolean {
+	return !!(
+		(f.tags && f.tags.length) ||
+		(f.categories && f.categories.length) ||
+		(f.target_groups && f.target_groups.length) ||
+		f.city ||
+		f.country ||
+		f.location ||
+		f.featured ||
+		f.is_free ||
+		(typeof f.lat === "number" && typeof f.lng === "number") ||
+		f.date_from ||
+		f.date_to ||
+		typeof f.price_min === "number" ||
+		typeof f.price_max === "number"
+	);
+}
+
 function reorderFacets(
 	dist: Record<string, Record<string, number>>,
 	recentTags: string[],
@@ -842,7 +935,7 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 		// Default to a broad set so the typeahead surfaces all content types,
 		// not just venues. Diversified round-robin below keeps any one type from
 		// monopolising the slots.
-		indexes = ["venues", "events", "cities", "countries", "personalities", "news", "marketplace", "queer_villages", "groups", "tags"];
+		indexes = ["venues", "events", "cities", "countries", "personalities", "news", "marketplace", "queer_villages", "groups", "tags", "organizations"];
 	}
 
 	// Bug #9: 800ms hard timeout on autocomplete. Falls back to popular-cities

@@ -31,6 +31,7 @@
       "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
       "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
       "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "pageUnreadable": "Non siamo riusciti a leggere questo link. Potrebbe richiedere un accesso o bloccare l'accesso automatico. Carica uno screenshot del volantino o compila il modulo manualmente qui sotto.",
       "rateLimited": "You've reached the scan limit. Please try again in an hour.",
       "networkError": "Connection problem. Please check your internet and try again.",
       "serverError": "Something went wrong on our side. Please try again in a moment.",
@@ -168,7 +169,8 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[IT] More"
   },
   "navigation": {
     "home": "Home",
@@ -2149,7 +2151,11 @@
       "title": "Promemoria di viaggio",
       "body": "Ricevi una notifica 30 minuti prima di ogni prenotazione e quando passaporto o visto stanno per scadere.",
       "turnOn": "Attiva",
-      "turnOff": "Disattiva"
+      "turnOff": "Disattiva",
+      "dm": {
+        "title": "[IT] Direct messages",
+        "body": "[IT] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2581,7 +2587,24 @@
     },
     "openInbox": "[IT] Open inbox",
     "markAlertsRead": "[IT] Mark alerts read",
-    "unread": "[IT] Unread"
+    "unread": "[IT] Unread",
+    "unreadCount": "[IT] {{count}} unread",
+    "action": {
+      "pin": "[IT] Pin",
+      "unpin": "[IT] Unpin",
+      "mute": "[IT] Mute",
+      "unmute": "[IT] Unmute",
+      "markRead": "[IT] Mark as read",
+      "archive": "[IT] Archive"
+    },
+    "search": "[IT] Search",
+    "searchEmpty": "[IT] No matches.",
+    "recipient": {
+      "search": "[IT] Search people",
+      "empty": "[IT] No suggestions yet.",
+      "recent": "[IT] Recently messaged",
+      "active": "[IT] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2681,5 +2704,54 @@
     "pride": "[IT] Pride",
     "contributors": "[IT] Contributors",
     "wishlists": "[IT] Wishlists"
+  },
+  "chat": {
+    "react": "[IT] React",
+    "edited": "[IT] edited",
+    "deleted": "[IT] Message deleted",
+    "editing": "[IT] Editing message",
+    "replyingTo": "[IT] Replying to {{name}}",
+    "reply": {
+      "action": "[IT] Reply",
+      "someone": "[IT] someone"
+    },
+    "emoji": {
+      "search": "[IT] Search emoji",
+      "none": "[IT] No emoji found.",
+      "cat": {
+        "smileys": "[IT] Smileys",
+        "gestures": "[IT] Gestures",
+        "hearts": "[IT] Hearts",
+        "pride": "[IT] Pride",
+        "animals": "[IT] Animals",
+        "food": "[IT] Food",
+        "activity": "[IT] Activity",
+        "symbols": "[IT] Symbols"
+      }
+    },
+    "activeNow": "[IT] Active now",
+    "preview": {
+      "you": "[IT] You",
+      "photo": "[IT] Photo",
+      "sticker": "[IT] Sticker",
+      "voice": "[IT] Voice message"
+    },
+    "streak": "[IT] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[IT] Set a vibe",
+      "title": "[IT] Your vibe",
+      "placeholder": "[IT] What's your vibe?",
+      "for4h": "[IT] 4h"
+    },
+    "stickers": {
+      "title": "[IT] Stickers"
+    },
+    "freeToMeet": {
+      "title": "[IT] Free to meet",
+      "set": "[IT] Free to meet",
+      "on": "[IT] Free now",
+      "both": "[IT] {{name}} is free to meet right now 🟢",
+      "youOnly": "[IT] You're marked free to meet 🟢"
+    }
   }
 }

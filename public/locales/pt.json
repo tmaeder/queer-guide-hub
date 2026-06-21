@@ -31,6 +31,7 @@
       "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
       "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
       "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "pageUnreadable": "Não conseguimos ler esse link. Ele pode exigir login ou bloquear o acesso automatizado. Envie uma captura de tela do panfleto ou preencha o formulário manualmente abaixo.",
       "rateLimited": "You've reached the scan limit. Please try again in an hour.",
       "networkError": "Connection problem. Please check your internet and try again.",
       "serverError": "Something went wrong on our side. Please try again in a moment.",
@@ -168,7 +169,8 @@
     "somethingWentWrong": "Something went wrong.",
     "clear": "Clear",
     "signIn": "Sign in",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "more": "[PT] More"
   },
   "navigation": {
     "home": "Início",
@@ -2149,7 +2151,11 @@
       "title": "Lembretes de viagem",
       "body": "Receba uma notificação 30 minutos antes de cada reserva e quando o passaporte ou visto estiver próximo do vencimento.",
       "turnOn": "Ativar",
-      "turnOff": "Desativar"
+      "turnOff": "Desativar",
+      "dm": {
+        "title": "[PT] Direct messages",
+        "body": "[PT] Notify me when someone sends me a message."
+      }
     }
   },
   "map": {
@@ -2581,7 +2587,24 @@
     },
     "openInbox": "[PT] Open inbox",
     "markAlertsRead": "[PT] Mark alerts read",
-    "unread": "[PT] Unread"
+    "unread": "[PT] Unread",
+    "unreadCount": "[PT] {{count}} unread",
+    "action": {
+      "pin": "[PT] Pin",
+      "unpin": "[PT] Unpin",
+      "mute": "[PT] Mute",
+      "unmute": "[PT] Unmute",
+      "markRead": "[PT] Mark as read",
+      "archive": "[PT] Archive"
+    },
+    "search": "[PT] Search",
+    "searchEmpty": "[PT] No matches.",
+    "recipient": {
+      "search": "[PT] Search people",
+      "empty": "[PT] No suggestions yet.",
+      "recent": "[PT] Recently messaged",
+      "active": "[PT] Active recently"
+    }
   },
   "extension": {
     "signInGate": {
@@ -2681,5 +2704,54 @@
     "pride": "[PT] Pride",
     "contributors": "[PT] Contributors",
     "wishlists": "[PT] Wishlists"
+  },
+  "chat": {
+    "react": "[PT] React",
+    "edited": "[PT] edited",
+    "deleted": "[PT] Message deleted",
+    "editing": "[PT] Editing message",
+    "replyingTo": "[PT] Replying to {{name}}",
+    "reply": {
+      "action": "[PT] Reply",
+      "someone": "[PT] someone"
+    },
+    "emoji": {
+      "search": "[PT] Search emoji",
+      "none": "[PT] No emoji found.",
+      "cat": {
+        "smileys": "[PT] Smileys",
+        "gestures": "[PT] Gestures",
+        "hearts": "[PT] Hearts",
+        "pride": "[PT] Pride",
+        "animals": "[PT] Animals",
+        "food": "[PT] Food",
+        "activity": "[PT] Activity",
+        "symbols": "[PT] Symbols"
+      }
+    },
+    "activeNow": "[PT] Active now",
+    "preview": {
+      "you": "[PT] You",
+      "photo": "[PT] Photo",
+      "sticker": "[PT] Sticker",
+      "voice": "[PT] Voice message"
+    },
+    "streak": "[PT] You two have been chatting for {{count}} days ✨",
+    "vibe": {
+      "set": "[PT] Set a vibe",
+      "title": "[PT] Your vibe",
+      "placeholder": "[PT] What's your vibe?",
+      "for4h": "[PT] 4h"
+    },
+    "stickers": {
+      "title": "[PT] Stickers"
+    },
+    "freeToMeet": {
+      "title": "[PT] Free to meet",
+      "set": "[PT] Free to meet",
+      "on": "[PT] Free now",
+      "both": "[PT] {{name}} is free to meet right now 🟢",
+      "youOnly": "[PT] You're marked free to meet 🟢"
+    }
   }
 }

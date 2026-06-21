@@ -14,6 +14,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { TagChipRow } from '@/components/tags/TagChipRow';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
@@ -182,13 +183,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle, onContentU
       </div>
 
       {village.tags && village.tags.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-1.5">
-          {village.tags.map((tag, i) => (
-            <Badge key={i} variant="outline">
-              {tag}
-            </Badge>
-          ))}
-        </div>
+        <TagChipRow tags={village.tags} className="mb-4" more="expand" />
       )}
     </div>
   );

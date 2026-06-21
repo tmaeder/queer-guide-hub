@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
 import { useMeta } from '@/hooks/useMeta';
@@ -34,6 +35,27 @@ interface ListingBundle {
 
 async function fetchListingBundle(slug: string, userId: string | undefined): Promise<ListingBundle | null> {
   return fetchMarketplaceListingBundle<MarketplaceListing, MarketplaceReview>(slug, userId);
+}
+
+// Generic / placeholder category values that carry no information — never shown
+// as a breadcrumb crumb.
+const GENERIC_CATEGORIES = new Set([
+  'products',
+  'product',
+  'uncategorized',
+  'other',
+  'misc',
+  'general',
+  'all',
+  'none',
+]);
+
+/** Turn a raw listing.category into a clean, linked breadcrumb crumb, or null. */
+function buildCategoryCrumb(category: string | null | undefined): { label: string; href: string } | null {
+  const raw = category?.trim();
+  if (!raw || GENERIC_CATEGORIES.has(raw.toLowerCase())) return null;
+  const label = raw.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return { label, href: `/marketplace/category/${encodeURIComponent(raw.toLowerCase())}` };
 }
 
 export default function MarketplaceItemDetail() {
@@ -197,10 +219,14 @@ export default function MarketplaceItemDetail() {
     : 0;
   const tags = data?.tags ?? [];
 
+  // listing.category is uncontrolled source data — often a generic junk value
+  // ("products", "uncategorized"). Show it only when it's a real category,
+  // prettified and linking to its category page.
+  const categoryCrumb = buildCategoryCrumb(listing?.category);
   const breadcrumbs = listing
     ? [
         { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
-        ...(listing.category ? [{ label: listing.category }] : []),
+        ...(categoryCrumb ? [categoryCrumb] : []),
         { label: listing.title },
       ]
     : undefined;
@@ -213,13 +239,7 @@ export default function MarketplaceItemDetail() {
           content: (
             <div className="flex flex-col gap-6">
               <ListingFeaturedInGuides listingId={listing.id} />
-              <MarketplaceContent
-                listing={listing}
-                reviews={reviews}
-                tags={tags}
-                t={t}
-                onContentUpdated={refetch}
-              />
+              <MarketplaceContent listing={listing} reviews={reviews} tags={tags} />
             </div>
           ),
         },
@@ -227,29 +247,41 @@ export default function MarketplaceItemDetail() {
     : [];
 
   return (
-    <EntityDetailLayout
-      loading={isLoading}
-      error={(error as Error | null) ?? null}
-      breadcrumbs={breadcrumbs}
-      hero={
-        listing ? (
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,1fr)]">
-            <MarketplaceGallery listingId={listing.id} images={listing.images} title={listing.title} />
-            <MarketplaceBuyBox
-              listing={listing}
-              reviewsCount={reviews.length}
-              averageRating={averageRating}
-              isFavorited={isFavorited}
-              onToggleFavorite={handleToggleFavorite}
-              onShare={handleShare}
-              onContentUpdated={refetch}
-            />
-          </div>
-        ) : null
-      }
-      tabs={tabs}
-      entityType="marketplace_listing"
-      entityId={listing?.id}
-    />
+    <>
+      <EntityDetailLayout
+        loading={isLoading}
+        error={(error as Error | null) ?? null}
+        breadcrumbs={breadcrumbs}
+        hero={
+          listing ? (
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,1fr)]">
+              <MarketplaceGallery listingId={listing.id} images={listing.images} title={listing.title} />
+              <MarketplaceBuyBox
+                listing={listing}
+                reviewsCount={reviews.length}
+                averageRating={averageRating}
+                isFavorited={isFavorited}
+                onToggleFavorite={handleToggleFavorite}
+                onShare={handleShare}
+                onContentUpdated={refetch}
+              />
+            </div>
+          ) : null
+        }
+        tabs={tabs}
+        entityType="marketplace_listing"
+        entityId={listing?.id}
+      />
+      {listing && (
+        <div className="container mx-auto px-4 pb-12">
+          <MoreLikeThisByTag
+            entityType="marketplace"
+            entityId={listing.id}
+            title="Related by tag"
+            className="mt-8"
+          />
+        </div>
+      )}
+    </>
   );
 }

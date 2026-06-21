@@ -117,15 +117,39 @@ test.describe('/messages — unified inbox (signed in)', () => {
     });
   });
 
-  test('renders the two-pane shell: header, rail, compose, filter tabs', async ({ page }) => {
+  test('renders the two-pane shell: header, rail, compose, search, filter tabs', async ({ page }) => {
     await gotoInbox(page);
     await expect(page.getByRole('heading', { name: 'Messages' })).toBeVisible();
-    await expect(page.getByText('Inbox', { exact: true })).toBeVisible();
+    // Rail header now carries a vibe chip + compose + a search box (the old
+    // static "Inbox" label was replaced by the vibe editor).
     await expect(page.getByRole('button', { name: /compose/i })).toBeVisible();
+    await expect(page.getByPlaceholder(/^search$/i)).toBeVisible();
     for (const name of [/^all$/i, /^chats$/i, /^mail$/i, /^alerts$/i]) {
       await expect(tab(page, name)).toBeVisible();
     }
     await expect(tab(page, /^all$/i)).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('rail search box filters the inbox', async ({ page }) => {
+    await gotoInbox(page);
+    const search = page.getByPlaceholder(/^search$/i);
+    await search.fill('zzzznomatchzzzz');
+    await expect(page.getByText(/no matches/i)).toBeVisible({ timeout: 10_000 });
+    await search.clear();
+    await expect(tab(page, /^all$/i)).toBeVisible();
+  });
+
+  test('compose → New message opens the recipient picker', async ({ page }) => {
+    await gotoInbox(page);
+    await page.getByRole('button', { name: /compose/i }).click();
+    await page.getByRole('menuitem', { name: /new message/i }).click();
+    await expect(page.getByPlaceholder(/search people/i)).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('vibe editor opens from the rail header', async ({ page }) => {
+    await gotoInbox(page);
+    await page.getByRole('button', { name: /set a vibe|✨/i }).first().click();
+    await expect(page.getByText(/your vibe/i)).toBeVisible({ timeout: 10_000 });
   });
 
   test('filter chips toggle aria-selected', async ({ page }) => {
@@ -201,6 +225,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   });
 
   test('chat: open seeded thread, send a message, add a reaction', async ({ page }) => {
+    test.setTimeout(60_000); // prod round-trips (send + reaction) can be slow
     await gotoInbox(page, `?conversation=${SEED.conversationId}`);
     const partner = page.getByText(SEED.partnerName).first();
     const ok = await partner
@@ -219,21 +244,65 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(page.getByText(body).first()).toBeVisible({ timeout: 15_000 });
     await expect(input).toHaveValue('');
 
-    // React to the seeded partner message. The chat bubble is the `div.relative`
-    // that *contains* the message `<p class="text-sm">` (distinct from the rail
-    // preview, which carries the same text); take the last such match (the chat
-    // pane renders after the rail in the DOM). Its only button is the Smile
-    // toggle, which is opacity:0 until hover — force the click.
+    // React to the message we just sent (fresh + own → deterministic 0→1, so
+    // the toggle behaviour can't flip an existing reaction off on re-runs).
+    // The quick-react buttons are always in the DOM (opacity-0 until hover), so
+    // a force-click works without hovering; re-resolving the locator at action
+    // time tolerates the optimistic temp→persisted node swap.
+    const messageP = page.locator('p.text-sm', { hasText: body }).last();
+    await expect(messageP).toBeVisible({ timeout: 15_000 });
+    const bubble = page.locator('div.relative', { has: messageP });
+    await bubble.getByRole('button', { name: '👍' }).first().click({ force: true });
+    await expect(page.getByText('👍 1').first()).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('chat: reply affordance shows the reply banner', async ({ page }) => {
+    await gotoInbox(page, `?conversation=${SEED.conversationId}`);
+    const seeded = page.getByText(SEED.partnerMessage).first();
+    const ok = await seeded
+      .waitFor({ state: 'visible', timeout: 15_000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!ok, 'Seeded conversation not present.');
+
     const bubble = page
-      .locator('div.relative', {
-        has: page.locator('p.text-sm', { hasText: SEED.partnerMessage }),
-      })
+      .locator('div.relative', { has: page.locator('p.text-sm', { hasText: SEED.partnerMessage }) })
       .last();
     await bubble.scrollIntoViewIfNeeded();
     await bubble.hover();
-    await bubble.getByRole('button').first().click({ force: true });
-    await page.getByRole('button', { name: '👍' }).click();
-    await expect(page.getByText('👍 1').first()).toBeVisible({ timeout: 15_000 });
+    await bubble.getByRole('button', { name: /^reply$/i }).click({ force: true });
+    await expect(page.getByText(/replying to/i)).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('chat: sticker picker opens', async ({ page }) => {
+    await gotoInbox(page, `?conversation=${SEED.conversationId}`);
+    const ok = await page
+      .getByText(SEED.partnerName)
+      .first()
+      .waitFor({ state: 'visible', timeout: 15_000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!ok, 'Seeded conversation not present.');
+    await page.getByRole('button', { name: /^stickers$/i }).click();
+    await expect(page.getByText(/^stickers$/i).first()).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('chat: free-to-meet toggle reveals the ribbon', async ({ page }) => {
+    await gotoInbox(page, `?conversation=${SEED.conversationId}`);
+    const ok = await page
+      .getByText(SEED.partnerName)
+      .first()
+      .waitFor({ state: 'visible', timeout: 15_000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!ok, 'Seeded conversation not present.');
+    const toggle = page.getByRole('button', { name: /free to meet|free now/i }).first();
+    await toggle.click();
+    await expect(page.getByText(/free to meet right now|marked free to meet/i)).toBeVisible({
+      timeout: 10_000,
+    });
+    // Reset so re-runs start clean.
+    await toggle.click();
   });
 
   test('mail: open seeded inbound, reply (correct payload), then archive', async ({ page }) => {

@@ -12,6 +12,7 @@ import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
+import { TagChipRow } from '@/components/tags/TagChipRow';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -208,9 +209,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                   );
                 })()}
                 {topTags.length > 0 && (
-                  <p className="mt-2 text-2xs text-muted-foreground truncate">
-                    {topTags.join(' · ')}
-                  </p>
+                  <TagChipRow tags={topTags} max={2} size="sm" linkless className="mt-2" />
                 )}
                 {socialSignal && (
                   <SocialSignalBar

@@ -17,6 +17,32 @@ import {
 } from '@/lib/uploadErrors';
 import { normalizeAndValidateUrl } from '@/utils/url';
 
+/**
+ * Recover the real HTTP status + error message from a Supabase `FunctionsHttpError`.
+ * `invoke` only exposes a generic message; the edge function's `{ error }` body and
+ * status code live on `error.context` (the Response). Without this, every analyze
+ * failure collapses to a generic 500 "our side" message.
+ */
+async function enrichFnError(fnError: unknown): Promise<Error & { status?: number }> {
+  const ctx = (fnError as { context?: Response }).context;
+  let status: number | undefined;
+  let message: string | undefined;
+  if (ctx && typeof ctx.status === 'number') {
+    status = ctx.status;
+    try {
+      const body = await ctx.clone().json();
+      message = body?.error || body?.message;
+    } catch {
+      /* non-JSON body — keep the generic message */
+    }
+  }
+  const err = new Error(message || (fnError as Error)?.message || 'analyze failed') as Error & {
+    status?: number;
+  };
+  err.status = status;
+  return err;
+}
+
 /** Keep scanned URLs only when they validate; otherwise drop to avoid pre-filling garbage. */
 function safeScannedUrl(value: unknown): string | undefined {
   if (typeof value !== 'string' || !value.trim()) return undefined;
@@ -157,7 +183,7 @@ export function useFlyerScan() {
           });
 
           if (fnError) {
-            throw toUploadError(fnError, { phase: 'analyze' });
+            throw toUploadError(await enrichFnError(fnError), { phase: 'analyze' });
           }
           if (data?.error) {
             throw toUploadError(new Error(data.error), { phase: 'analyze' });
@@ -226,7 +252,7 @@ export function useFlyerScan() {
         const { data, error: fnError } = await supabase.functions.invoke('analyze-flyer', {
           body: { page_url: normalized.value },
         });
-        if (fnError) throw toUploadError(fnError, { phase: 'analyze' });
+        if (fnError) throw toUploadError(await enrichFnError(fnError), { phase: 'analyze' });
         if (data?.error) throw toUploadError(new Error(data.error), { phase: 'analyze' });
 
         const scanResult: FlyerScanResult = {

@@ -40,7 +40,13 @@ const BreadcrumbLink = forwardRef<HTMLAnchorElement, BreadcrumbLinkProps>(
     return (
       <Comp
         ref={ref}
-        className={cn('no-underline transition-colors hover:text-foreground', className)}
+        className={cn(
+          // inline-flex + items-center so the link text stays vertically centered
+          // even though the global touch-target rule forces a 44px min-height on
+          // anchors (otherwise the text pins to the top and misaligns the row).
+          'inline-flex items-center no-underline transition-colors hover:text-foreground',
+          className,
+        )}
         {...props}
       />
     );
@@ -64,7 +70,12 @@ const BreadcrumbPage = forwardRef<HTMLSpanElement, ComponentPropsWithoutRef<'spa
 
 function BreadcrumbSeparator({ children, className, ...props }: ComponentPropsWithoutRef<'li'>) {
   return (
-    <li role="presentation" aria-hidden="true" className={cn('text-muted-foreground', className)} {...props}>
+    <li
+      role="presentation"
+      aria-hidden="true"
+      className={cn('inline-flex items-center text-muted-foreground', className)}
+      {...props}
+    >
       {children ?? <ChevronRight size={14} />}
     </li>
   );

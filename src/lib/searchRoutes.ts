@@ -17,6 +17,7 @@ export const ROUTE_HREFS: Record<string, (slug: string) => string> = {
   // Route is /villages/:slug (NOT /queer-villages — that path 404s).
   queer_village: (s) => `/villages/${s}`,
   news: (s) => `/news/${s}`,
+  organization: (s) => `/organizations/${s}`,
   // NB: `tag` is deliberately NOT here — the glossary route /resources/:tagName
   // is NAME-keyed (fetchTagWithCategories ilike('name', …)), but ROUTE_HREFS
   // builders only receive the slug. Route tags via `tagHref(name)` / hrefForEntity

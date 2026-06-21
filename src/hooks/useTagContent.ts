@@ -56,11 +56,35 @@ export interface TagGroup {
   privacy: string | null;
 }
 
+export interface TagMarketplaceItem {
+  id: string;
+  title: string;
+  brand: string | null;
+  business_name: string | null;
+  category: string | null;
+  price: number | null;
+  price_usd: number | null;
+  currency: string | null;
+  image_url: string | null;
+  slug: string | null;
+}
+
+export interface TagVillage {
+  id: string;
+  name: string;
+  slug: string | null;
+  image_url: string | null;
+  city: string | null;
+  country: string | null;
+}
+
 export interface TagContentResult {
   venues: TagVenue[];
   news: TagNewsArticle[];
   events: TagEvent[];
   personalities: TagPersonality[];
+  marketplace: TagMarketplaceItem[];
+  queer_villages: TagVillage[];
   groups: TagGroup[];
 }
 
@@ -87,7 +111,15 @@ async function fetchTagContent(tagId: string, tagName: string): Promise<TagConte
 
   if (error || !data) {
     console.error('Error fetching tag content via RPC:', error);
-    return { venues: [], news: [], events: [], personalities: [], groups: [] };
+    return {
+      venues: [],
+      news: [],
+      events: [],
+      personalities: [],
+      marketplace: [],
+      queer_villages: [],
+      groups: [],
+    };
   }
 
   // The RPC returns a JSON object matching TagContentResult shape

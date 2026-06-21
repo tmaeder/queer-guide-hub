@@ -12,10 +12,15 @@ import {
   Tag as TagIcon,
   DollarSign,
   Sparkles,
+  Newspaper,
+  ShoppingBag,
+  Building2,
 } from 'lucide-react';
 import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { TagChipRow } from '@/components/tags/TagChipRow';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Image } from '@/components/ui/Image';
@@ -57,12 +62,16 @@ export type VenueWithRelations = Venue & {
     equality_score: number | null;
     lgbti_criminalization: Record<string, unknown> | null;
   } | null;
+  // Set when the venue is the physical presence of a brand that also publishes
+  // and/or sells online. Added with the organizations spine (joined below).
+  organization_id?: string | null;
+  organizations?: { slug: string; name: string; roles: string[] } | null;
 };
 
 export type SocialSignals = ReturnType<typeof useVenueSocialSignals>['data'];
 
 export const VENUE_SELECT_FIELDS =
-  '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization)';
+  '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization), organizations:organization_id(slug, name, roles)';
 
 export interface FetchVenueResult {
   venue: VenueWithRelations | null;
@@ -525,7 +534,6 @@ interface VenueOverviewProps {
   reviews: VenueReview[];
   venueEvents: Array<{ id: string; venue_id?: string | null }>;
   averageRating: number;
-  navigate: (path: string) => void;
   onContentUpdated?: () => void;
   t: (key: string, fallback?: string) => string;
 }
@@ -535,7 +543,6 @@ export function VenueOverview({
   reviews,
   venueEvents,
   averageRating,
-  navigate,
   onContentUpdated,
   t,
 }: VenueOverviewProps) {
@@ -549,6 +556,30 @@ export function VenueOverview({
   return (
     <div className="flex flex-col gap-10">
       <VenueFeaturedInGuides venueId={venue.id} />
+
+      {venue.organizations && (
+        <LocalizedLink
+          to={`/organizations/${venue.organizations.slug}`}
+          className="flex items-center gap-2 rounded-element border border-border p-4 transition-colors hover:bg-muted"
+        >
+          <Building2 size={20} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <div className="font-medium">Part of {venue.organizations.name}</div>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-13 text-muted-foreground">
+              {venue.organizations.roles?.includes('publisher') && (
+                <span className="inline-flex items-center gap-1">
+                  <Newspaper size={13} aria-hidden="true" /> Also publishes news
+                </span>
+              )}
+              {venue.organizations.roles?.includes('seller') && (
+                <span className="inline-flex items-center gap-1">
+                  <ShoppingBag size={13} aria-hidden="true" /> Also sells online
+                </span>
+              )}
+            </div>
+          </div>
+        </LocalizedLink>
+      )}
 
       {venue.description && (
         <section>
@@ -583,19 +614,7 @@ export function VenueOverview({
           onSaved={onContentUpdated}
           as="div"
         >
-          <div className="flex flex-wrap gap-2">
-            {venue.tags!.slice(0, TAG_DISPLAY_LIMIT).map((tag, index) => (
-              <Badge
-                key={index}
-                variant="outline"
-                className="cursor-pointer gap-1.5"
-                onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
-              >
-                <TagIcon size={12} aria-hidden="true" />
-                {tag}
-              </Badge>
-            ))}
-          </div>
+          <TagChipRow tags={venue.tags!} max={TAG_DISPLAY_LIMIT} icon more="expand" />
         </Editable>
       )}
 
@@ -669,6 +688,8 @@ export function VenueOverview({
           </Editable>
         </section>
       )}
+
+      <MoreLikeThisByTag entityType="venue" entityId={venue.id} />
     </div>
   );
 }

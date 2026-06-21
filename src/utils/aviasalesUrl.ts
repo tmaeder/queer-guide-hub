@@ -15,8 +15,10 @@
  * @module aviasalesUrl
  */
 
-/** Travelpayouts affiliate marker (partner ID) */
-export const AFFILIATE_MARKER = '452012';
+import { TRAVELPAYOUTS_MARKER } from '@/lib/affiliate/config';
+
+/** Travelpayouts affiliate marker (partner ID). Single source: lib/affiliate/config. */
+export const AFFILIATE_MARKER = TRAVELPAYOUTS_MARKER;
 
 /** Valid 3-letter IATA code pattern */
 const IATA_PATTERN = /^[A-Z]{3}$/;

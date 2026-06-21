@@ -94,8 +94,9 @@ describe('RelatedTagsCard', () => {
       { wrapper: w },
     );
     const badges = screen.getAllByRole('link');
-    // Within-category tag should come first despite lower score
-    expect(badges[0]).toHaveTextContent('InTag');
-    expect(badges[1]).toHaveTextContent('OutTag');
+    // Within-category tag should come first despite lower score.
+    // TagChip normalizes display casing (InTag → Intag).
+    expect(badges[0]).toHaveTextContent('Intag');
+    expect(badges[1]).toHaveTextContent('Outtag');
   });
 });
