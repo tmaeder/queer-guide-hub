@@ -86,6 +86,43 @@ export function normalizeWhitespace(s: string): string {
     .trim()
 }
 
+// Block-level tags whose removal must leave a separator, else adjacent
+// paragraphs concatenate ("…reveal all" + "Michael…" → "allMichael").
+const BLOCK_TAGS = new Set([
+  'p', 'div', 'br', 'li', 'ul', 'ol', 'tr', 'td', 'th', 'table',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'section',
+  'article', 'header', 'footer', 'figure', 'figcaption', 'hr',
+])
+
+// Strip HTML tags via a single-pass state machine (no regex on tag patterns — avoids
+// CodeQL "incomplete multi-character sanitization" rule). Any `<` opens tag mode,
+// `>` closes it; text outside tag mode is emitted. Block-level tags collapse to a
+// newline so paragraph boundaries don't fuse words; inline tags vanish silently.
+export function stripHtmlTags(html: string): string {
+  if (!html) return ''
+  const LT = 60 // <
+  const GT = 62 // >
+  let out = ''
+  let inside = false
+  let tagBuf = ''
+  for (let i = 0; i < html.length; i++) {
+    const code = html.charCodeAt(i)
+    if (code === LT) {
+      inside = true
+      tagBuf = ''
+    } else if (code === GT) {
+      inside = false
+      const name = tagBuf.replace(/^\//, '').split(/[\s/]/)[0].toLowerCase()
+      if (BLOCK_TAGS.has(name)) out += '\n'
+    } else if (inside) {
+      if (tagBuf.length < 16) tagBuf += html[i]
+    } else {
+      out += html[i]
+    }
+  }
+  return out.replace(/&nbsp;/gi, ' ').replace(/\u00a0/g, ' ')
+}
+
 // Common HTML entities seen in scraped feeds — decode the few that matter for
 // titles + body. Full entity tables are huge; this covers the high-frequency cases
 // observed in production (numeric refs, named refs for punctuation + ampersand).
@@ -93,8 +130,12 @@ const NAMED_ENTITIES: Record<string, string> = {
   amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
   ndash: '–', mdash: '—', hellip: '…',
   lsquo: '\u2018', rsquo: '\u2019', ldquo: '\u201C', rdquo: '\u201D',
-  laquo: '«', raquo: '»',
+  laquo: '«', raquo: '»', lsaquo: '‹', rsaquo: '›',
   copy: '©', reg: '®', trade: '™',
+  pound: '£', euro: '€', cent: '¢', yen: '¥',
+  times: '×', divide: '÷', deg: '°', plusmn: '±',
+  frac12: '½', frac14: '¼', frac34: '¾', middot: '·',
+  bull: '•', dagger: '†', sect: '§', para: '¶', micro: 'µ',
   eacute: 'é', egrave: 'è', ecirc: 'ê', euml: 'ë',
   aacute: 'á', agrave: 'à', acirc: 'â', auml: 'ä', aring: 'å',
   iacute: 'í', igrave: 'ì', icirc: 'î', iuml: 'ï',
@@ -140,12 +181,27 @@ export function sanitizeArticle(input: { title: string; content: string }): Sani
   const cleanedTitle = cleanTitle(input.title || '')
   if (cleanedTitle !== (input.title || '').trim()) removed.push('title:reformatted')
 
-  const decodedBody = decodeHtmlEntities(input.content || '')
-  if (decodedBody !== (input.content || '')) removed.push('html_entities')
+  // Iteratively strip tags + decode entities until the body stops changing. A single
+  // pass misses entity-encoded tags (&lt;td&gt; → <td>) and double-encoded entities
+  // (&amp;#39; → &#39; → '), which only reveal themselves after one decode round.
+  let body = input.content || ''
+  let strippedAny = false
+  let decodedAny = false
+  for (let pass = 0; pass < 4; pass++) {
+    const before = body
+    const stripped = stripHtmlTags(body)
+    if (stripped !== body) strippedAny = true
+    const decoded = decodeHtmlEntities(stripped)
+    if (decoded !== stripped) decodedAny = true
+    body = decoded
+    if (body === before) break
+  }
+  if (strippedAny) removed.push('html_tags')
+  if (decodedAny) removed.push('html_entities')
 
-  const stripBody = stripJunkPhrases(decodedBody)
+  const stripBody = stripJunkPhrases(body)
   removed.push(...stripBody.removed)
-  let body = stripBody.text
+  body = stripBody.text
   body = collapseDuplicateHeadings(body, cleanedTitle)
   body = normalizeWhitespace(body)
 
