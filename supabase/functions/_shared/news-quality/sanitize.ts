@@ -86,22 +86,37 @@ export function normalizeWhitespace(s: string): string {
     .trim()
 }
 
+// Block-level tags whose removal must leave a separator, else adjacent
+// paragraphs concatenate ("…reveal all" + "Michael…" → "allMichael").
+const BLOCK_TAGS = new Set([
+  'p', 'div', 'br', 'li', 'ul', 'ol', 'tr', 'td', 'th', 'table',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'section',
+  'article', 'header', 'footer', 'figure', 'figcaption', 'hr',
+])
+
 // Strip HTML tags via a single-pass state machine (no regex on tag patterns — avoids
 // CodeQL "incomplete multi-character sanitization" rule). Any `<` opens tag mode,
-// `>` closes it; text outside tag mode is emitted. Handles nested/malformed tags safely.
+// `>` closes it; text outside tag mode is emitted. Block-level tags collapse to a
+// newline so paragraph boundaries don't fuse words; inline tags vanish silently.
 export function stripHtmlTags(html: string): string {
   if (!html) return ''
   const LT = 60 // <
   const GT = 62 // >
   let out = ''
   let inside = false
+  let tagBuf = ''
   for (let i = 0; i < html.length; i++) {
     const code = html.charCodeAt(i)
     if (code === LT) {
       inside = true
+      tagBuf = ''
     } else if (code === GT) {
       inside = false
-    } else if (!inside) {
+      const name = tagBuf.replace(/^\//, '').split(/[\s/]/)[0].toLowerCase()
+      if (BLOCK_TAGS.has(name)) out += '\n'
+    } else if (inside) {
+      if (tagBuf.length < 16) tagBuf += html[i]
+    } else {
       out += html[i]
     }
   }
