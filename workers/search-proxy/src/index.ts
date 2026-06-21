@@ -737,6 +737,7 @@ const INDEX_TO_PG_TYPE: Record<string, string> = {
 	tags: "tag",
 	queer_villages: "queer_village",
 	groups: "group",
+	organizations: "organization",
 };
 
 async function loadSignal(env: Env, who: { user_id?: string; session_id?: string }) {
@@ -934,7 +935,7 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 		// Default to a broad set so the typeahead surfaces all content types,
 		// not just venues. Diversified round-robin below keeps any one type from
 		// monopolising the slots.
-		indexes = ["venues", "events", "cities", "countries", "personalities", "news", "marketplace", "queer_villages", "groups", "tags"];
+		indexes = ["venues", "events", "cities", "countries", "personalities", "news", "marketplace", "queer_villages", "groups", "tags", "organizations"];
 	}
 
 	// Bug #9: 800ms hard timeout on autocomplete. Falls back to popular-cities

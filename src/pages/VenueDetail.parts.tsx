@@ -12,6 +12,9 @@ import {
   Tag as TagIcon,
   DollarSign,
   Sparkles,
+  Newspaper,
+  ShoppingBag,
+  Building2,
 } from 'lucide-react';
 import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,12 +60,16 @@ export type VenueWithRelations = Venue & {
     equality_score: number | null;
     lgbti_criminalization: Record<string, unknown> | null;
   } | null;
+  // Set when the venue is the physical presence of a brand that also publishes
+  // and/or sells online. Added with the organizations spine (joined below).
+  organization_id?: string | null;
+  organizations?: { slug: string; name: string; roles: string[] } | null;
 };
 
 export type SocialSignals = ReturnType<typeof useVenueSocialSignals>['data'];
 
 export const VENUE_SELECT_FIELDS =
-  '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization)';
+  '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization), organizations:organization_id(slug, name, roles)';
 
 export interface FetchVenueResult {
   venue: VenueWithRelations | null;
@@ -549,6 +556,30 @@ export function VenueOverview({
   return (
     <div className="flex flex-col gap-10">
       <VenueFeaturedInGuides venueId={venue.id} />
+
+      {venue.organizations && (
+        <LocalizedLink
+          to={`/organizations/${venue.organizations.slug}`}
+          className="flex items-center gap-2 rounded-element border border-border p-4 transition-colors hover:bg-muted"
+        >
+          <Building2 size={20} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <div className="font-medium">Part of {venue.organizations.name}</div>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-13 text-muted-foreground">
+              {venue.organizations.roles?.includes('publisher') && (
+                <span className="inline-flex items-center gap-1">
+                  <Newspaper size={13} aria-hidden="true" /> Also publishes news
+                </span>
+              )}
+              {venue.organizations.roles?.includes('seller') && (
+                <span className="inline-flex items-center gap-1">
+                  <ShoppingBag size={13} aria-hidden="true" /> Also sells online
+                </span>
+              )}
+            </div>
+          </div>
+        </LocalizedLink>
+      )}
 
       {venue.description && (
         <section>
