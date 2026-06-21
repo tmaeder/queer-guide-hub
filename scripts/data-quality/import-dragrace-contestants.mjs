@@ -135,6 +135,28 @@ function stripTags(html) {
       .replace(/\s+/g, ' ').trim()
   } while (out !== prev)
   return out
+  // Remove script/style/sup blocks (with content) repeatedly until stable, so
+  // nested or overlapping tags (e.g. <sty<style></style>le>) can't survive a
+  // single pass. Then strip any remaining tags, also to a fixed point.
+  do {
+    prev = out
+    out = out
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<sup\b[^>]*>[\s\S]*?<\/sup>/gi, '')  // footnote markers
+  } while (out !== prev)
+  do {
+    prev = out
+    out = out.replace(/<[^>]+>/g, '')
+  } while (out !== prev)
+  return out
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)) // numeric entities (&#91; → '[')
+    .replace(/&#160;|&nbsp;/g, ' ').replace(/&#39;|&rsquo;/g, "'")
+    .replace(/&quot;/g, '"').replace(/&ndash;/g, '–').replace(/&mdash;/g, '—')
+    .replace(/&amp;/g, '&')
+    .replace(/\[\d+\]/g, '')                         // [1] citation markers
+    .replace(/\s*\[[a-z]{1,3}\]\s*/gi, ' ')          // [ca]/[es] interwiki language tags
+    .replace(/\s+/g, ' ').trim()
 }
 
 // Season/franchise label, not a contestant — e.g. "All Stars 5", "US season 10",
