@@ -80,12 +80,12 @@ describe('TripNudgesBanner', () => {
 
   it('Dismiss button fires mutation with id + tripId', () => {
     useNudgesMock.mockReturnValue({
-      data: [{ id: 'n1', kind: 'event_overlap', severity: 'info', title: 'T', body: null }],
+      data: [{ id: 'n1', kind: 'event_overlap', dedupe_key: 'evt-1', severity: 'info', title: 'T', body: null }],
       isLoading: false,
     });
     render(inRouter(<TripNudgesBanner tripId="t1" />));
     fireEvent.click(screen.getByRole('button', { name: /Dismiss/i }));
-    expect(dismissMutate).toHaveBeenCalledWith({ id: 'n1', tripId: 't1' });
+    expect(dismissMutate).toHaveBeenCalledWith({ id: 'n1', tripId: 't1', kind: 'event_overlap', dedupeKey: 'evt-1' });
   });
 
   it('uses AlertTriangle icon for critical severity', () => {

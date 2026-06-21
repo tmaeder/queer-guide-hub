@@ -25,6 +25,8 @@ export interface AdultConsentCandidate {
 }
 
 const db = supabase as unknown as {
+  // Deliberate escape hatch: new tables/RPCs aren't in the generated types yet.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   from: (t: string) => any;
   rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
 };

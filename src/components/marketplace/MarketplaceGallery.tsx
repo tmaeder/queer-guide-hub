@@ -53,6 +53,9 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
     <div className="flex flex-col gap-4">
       <div className="overflow-hidden rounded-container bg-muted">
         {current && !failed.has(safeActive) ? (
+          // onError is a standard non-interactive image fallback handler, not a
+          // mouse/keyboard interaction.
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
           <img
             src={current.full}
             alt={current.alt || title}
