@@ -7,6 +7,7 @@ import {
   cleanTitle,
   collapseDuplicateHeadings,
   normalizeWhitespace,
+  stripHtmlTags,
 } from './sanitize.ts'
 
 Deno.test('stripJunkPhrases removes paywall + share boilerplate', () => {
@@ -149,4 +150,42 @@ Deno.test('sanitizeArticle is idempotent (clean input)', () => {
   assertEquals(r1.title, r2.title)
   assertEquals(r1.content, r2.content)
   assertFalse(r2.changed && r1.changed && r2.removedArtifacts.length > 0)
+})
+
+Deno.test('stripHtmlTags: block tags keep a separator, inline tags vanish', () => {
+  // Block-level boundaries must not fuse adjacent words.
+  const out = stripHtmlTags('<p>reveal all</p><p>Michael said</p>')
+  assert(!out.includes('allMichael'), `words fused: ${JSON.stringify(out)}`)
+  assert(out.includes('reveal all'))
+  assert(out.includes('Michael said'))
+  // Inline tags disappear with no separator.
+  assertEquals(stripHtmlTags('a<strong>b</strong>c'), 'abc')
+})
+
+Deno.test('sanitizeArticle: double-encoded entities decode fully (iterative)', () => {
+  const r = sanitizeArticle({
+    title: 'Test',
+    content: 'He said &amp;#39;hello&amp;#39; to everyone in the room today. '.repeat(6),
+  })
+  assert(r.content.includes("'hello'"), r.content.slice(0, 60))
+  assert(!r.content.includes('&'), `stray entity: ${r.content.slice(0, 60)}`)
+})
+
+Deno.test('sanitizeArticle: entity-encoded tags are stripped after decode', () => {
+  const r = sanitizeArticle({
+    title: 'Test',
+    content: '&lt;table&gt;&lt;td&gt;cell value here&lt;/td&gt;&lt;/table&gt; ' + 'padding sentence. '.repeat(20),
+  })
+  assert(r.content.includes('cell value here'))
+  assert(!r.content.includes('<td>'))
+  assert(!r.content.includes('&lt;'))
+})
+
+Deno.test('sanitizeArticle: expanded entity map decodes typographic + currency refs', () => {
+  const r = sanitizeArticle({
+    title: 'Test',
+    content: 'Tickets cost &pound;5 and the venue holds 3 &times; 400 guests. '.repeat(6),
+  })
+  assert(r.content.includes('£5'), r.content.slice(0, 60))
+  assert(r.content.includes('×'))
 })
