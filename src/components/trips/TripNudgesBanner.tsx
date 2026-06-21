@@ -80,7 +80,7 @@ export function TripNudgesBanner({ tripId }: Props) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => dismiss.mutate({ id: n.id, tripId })}
+              onClick={() => dismiss.mutate({ id: n.id, tripId, kind: n.kind, dedupeKey: n.dedupe_key })}
               disabled={dismiss.isPending}
               aria-label="Dismiss"
               className="h-7 w-7 p-0"

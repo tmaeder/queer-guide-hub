@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 export type InboxKind = 'chat' | 'mail' | 'notification';
-export type InboxFilter = 'all' | 'chats' | 'mail' | 'alerts';
+export type InboxFilter = 'all' | 'chats' | 'mail' | 'alerts' | 'trips';
 
 export interface InboxItem {
   id: string;
@@ -41,11 +41,13 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
     enabled: !!user,
     initialPageParam: null as { ts: string; id: string } | null,
     queryFn: async ({ pageParam }) => {
+      // 'trips' is a frontend-only filter — surface alerts (trip_nudge notifications)
+      const rpcFilter = filter === 'trips' ? 'alerts' : filter;
       const { data, error } = await supabase.rpc('get_inbox_feed', {
         p_user: user!.id,
         p_cursor: pageParam?.ts ?? null,
         p_cursor_id: pageParam?.id ?? null,
-        p_filter: filter,
+        p_filter: rpcFilter,
         p_limit: PAGE,
       } as never);
       if (error) throw error;
