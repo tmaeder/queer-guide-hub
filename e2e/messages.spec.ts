@@ -225,6 +225,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
   });
 
   test('chat: open seeded thread, send a message, add a reaction', async ({ page }) => {
+    test.setTimeout(60_000); // prod round-trips (send + reaction) can be slow
     await gotoInbox(page, `?conversation=${SEED.conversationId}`);
     const partner = page.getByText(SEED.partnerName).first();
     const ok = await partner
@@ -244,13 +245,13 @@ test.describe('/messages — unified inbox (signed in)', () => {
     await expect(input).toHaveValue('');
 
     // React to the message we just sent (fresh + own → deterministic 0→1, so
-    // the toggle behaviour can't flip an existing reaction off on re-runs). The
-    // quick-react bar appears on hover; click 👍 and assert the grouped badge.
-    const bubble = page
-      .locator('div.relative', { has: page.locator('p.text-sm', { hasText: body }) })
-      .last();
-    await bubble.scrollIntoViewIfNeeded();
-    await bubble.hover();
+    // the toggle behaviour can't flip an existing reaction off on re-runs).
+    // The quick-react buttons are always in the DOM (opacity-0 until hover), so
+    // a force-click works without hovering; re-resolving the locator at action
+    // time tolerates the optimistic temp→persisted node swap.
+    const messageP = page.locator('p.text-sm', { hasText: body }).last();
+    await expect(messageP).toBeVisible({ timeout: 15_000 });
+    const bubble = page.locator('div.relative', { has: messageP });
     await bubble.getByRole('button', { name: '👍' }).first().click({ force: true });
     await expect(page.getByText('👍 1').first()).toBeVisible({ timeout: 15_000 });
   });
