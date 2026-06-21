@@ -1,3 +1,6 @@
+/* eslint-disable react-refresh/only-export-components --
+   this file intentionally co-locates the BreadcrumbProvider component with its
+   companion hooks; splitting them gains nothing but a fast-refresh edge case. */
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export type BreadcrumbItem = { label: ReactNode; href?: string };

@@ -14,7 +14,11 @@ test.describe('Events — automated a11y', () => {
 
   test('/events has no serious/critical axe violations', async ({ page }) => {
     await page.goto('/events');
-    await page.waitForLoadState('domcontentloaded');
+    // networkidle (not domcontentloaded): wait for stylesheets to finish loading
+    // so axe scans the fully-painted page. Scanning at domcontentloaded catches a
+    // pre-paint flash where themed buttons are briefly unstyled, yielding flaky
+    // color-contrast violations. Matches the sibling a11y-header/dialogs/admin specs.
+    await page.waitForLoadState('networkidle');
     await page.waitForSelector('main', { timeout: 30_000 }).catch(() => {});
 
     const results = await new AxeBuilder({ page })
@@ -31,7 +35,7 @@ test.describe('Events — automated a11y', () => {
 
   test('ticket CTA has accessible name when event cards render', async ({ page }) => {
     await page.goto('/events');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
     const ticketBtn = page.getByRole('button', { name: /get tickets|tickets/i }).first();
     // If no tickets on any event today, skip; otherwise it must have an accessible name
     if ((await ticketBtn.count()) > 0) {
