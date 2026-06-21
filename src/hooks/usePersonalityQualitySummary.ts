@@ -21,6 +21,7 @@ export interface PersonalityQualitySummary {
 
 // New tables/RPCs are not in the generated Supabase types yet.
 const db = supabase as unknown as {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   from: (t: string) => any;
   rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
 };

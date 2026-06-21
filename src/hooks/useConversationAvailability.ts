@@ -31,6 +31,9 @@ export function useConversationAvailability(
   }, [conversationId]);
 
   useEffect(() => {
+    // refresh() is an async Supabase fetch; setRows runs in a promise callback,
+    // not synchronously — canonical mount-fetch effect, not a cascading render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refresh();
   }, [refresh]);
 

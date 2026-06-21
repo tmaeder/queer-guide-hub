@@ -24,7 +24,9 @@ async function outlineOf(locator: ReturnType<typeof import('@playwright/test').P
 test.describe('Trip planner — focus visibility', () => {
   test('focused buttons on /trips have a visible outline', async ({ page }) => {
     await page.goto('/trips');
-    await page.waitForLoadState('domcontentloaded');
+    // networkidle (not domcontentloaded): ensure stylesheets are applied before
+    // asserting focus-outline styling — matches the sibling test below.
+    await page.waitForLoadState('networkidle');
 
     const button = page.locator('button, [role="button"], a').first();
     await expect(button).toBeVisible({ timeout: 15000 });

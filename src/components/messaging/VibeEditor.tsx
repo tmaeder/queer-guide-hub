@@ -66,7 +66,7 @@ export function VibeEditor() {
           <span className="truncate">{label}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[280px] p-3">
+      <PopoverContent align="end" className="w-[280px] p-4">
         <p className="mb-2 text-sm font-medium">{t('chat.vibe.title', { defaultValue: 'Your vibe' })}</p>
         <div className="flex items-center gap-2">
           <EmojiPicker
@@ -87,7 +87,7 @@ export function VibeEditor() {
             maxLength={80}
           />
         </div>
-        <div className="mt-3 flex items-center justify-between gap-2">
+        <div className="mt-4 flex items-center justify-between gap-2">
           <Button variant="ghost" size="sm" onClick={clear} disabled={saving}>
             {t('common.clear', { defaultValue: 'Clear' })}
           </Button>
