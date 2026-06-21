@@ -217,32 +217,49 @@ async function structureExtraction(
   const hintText = hints.length > 0 ? '\n\n' + hints.join('\n') : ''
 
   // Bound the structuring latency: the 70B model's runtime scales with input +
-  // output size, and large pages (e.g. long articles) pushed a single call past
-  // the 45s ceiling → 500. Event/venue details sit near the top, so 6k chars is
-  // plenty and keeps the call comfortably under the ceiling (~12-25s) with margin.
-  const boundedContent = contentText.length > 6_000 ? contentText.slice(0, 6_000) : contentText
+  // output size. A venue homepage with a long event calendar (e.g. lab-oratory's
+  // ~50 listings) ran a single call past the 45s ceiling → timeout → empty. The
+  // venue identity + the lead events sit at the top (og:title/description first),
+  // so 4k chars captures what matters and keeps the call well under the ceiling.
+  const boundedContent = contentText.length > 4_000 ? contentText.slice(0, 4_000) : contentText
 
   const userMessage = isTextMode
     ? `Here is text extracted from a document:\n\n${boundedContent}${hintText}`
     : `Here is a detailed description of a flyer/poster image:\n\n${boundedContent}${hintText}`
 
-  // Use a fast CF-hosted model for structuring. The default 70B is slow and
-  // highly variable on Workers AI (12s–45s+, frequently timing out under
-  // concurrency with the background pipelines) — this is field transcription
-  // from already-clean text, not a reasoning task, so Llama 4 Scout (fast MoE)
-  // handles it well at a fraction of the latency. Passing an explicit @cf/ model
-  // opts out of mapToCfModel's 70B default.
-  const result = await chatCompletion(supabase, {
-    model: '@cf/meta/llama-4-scout-17b-16e-instruct',
-    messages: [
-      { role: 'system', content: STRUCTURING_PROMPT },
-      { role: 'user', content: userMessage },
-    ],
-    temperature: 0.1,
-    max_tokens: 2000,
-    response_format: { type: 'json_object' },
-  })
-  const content = result.content
+  // Structuring model. Llama 4 Scout (fast MoE) was tried for latency but in
+  // practice it produced unusable JSON on real pasted links — truncated/garbled
+  // output that failed to parse (empty fields) or empty results that threw a 500.
+  // The 70B (the project's standard extraction model, proven-good for news/venue
+  // enrichment) follows the JSON contract far more reliably; the interactive scan
+  // can afford its ~20-30s under the 45s ceiling. max_tokens raised to 4000 so a
+  // multi-item page (e.g. a venue homepage listing many events) isn't truncated
+  // mid-JSON. A structuring failure must NOT 500 the whole scan — we degrade to
+  // raw text + the manual form below.
+  let content: string
+  try {
+    const result = await chatCompletion(supabase, {
+      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+      messages: [
+        { role: 'system', content: STRUCTURING_PROMPT },
+        { role: 'user', content: userMessage },
+      ],
+      temperature: 0.1,
+      // Caps output-generation time (the dominant latency when a page yields many
+      // items) while leaving room for a handful of fully-populated items. Too high
+      // and a dense calendar page runs past the 45s ceiling.
+      max_tokens: 2500,
+      response_format: { type: 'json_object' },
+    })
+    content = result.content
+  } catch (e) {
+    console.error('Structuring model call failed:', (e as Error).message)
+    return {
+      items: [{ detected_type: 'event', fields: {} }],
+      raw_text: contentText,
+      language: 'en',
+    }
+  }
   const source = isTextMode ? 'text+refinement' : 'vision+refinement'
 
   try {
@@ -256,20 +273,7 @@ async function structureExtraction(
     })()
     const parsed = JSON.parse(jsonText)
     const rawItems = Array.isArray(parsed.items) ? parsed.items : [parsed]
-    const items: ExtractedItem[] = rawItems.slice(0, 10).map((item: Record<string, unknown>) => {
-      const detectedType = item.detected_type === 'venue' ? 'venue' : 'event'
-      const fields = detectedType === 'event'
-        ? { ...item.event_fields, ...pickVenueFieldsForEvent(item.venue_fields) }
-        : item.venue_fields || {}
-
-      for (const key of Object.keys(fields)) {
-        if (fields[key] && typeof fields[key] === 'object' && 'confidence' in fields[key]) {
-          fields[key].source = source
-        }
-      }
-
-      return { detected_type: detectedType, fields }
-    })
+    const items = mapRawItems(rawItems, source)
 
     return {
       items: items.length > 0 ? items : [{ detected_type: 'event', fields: {} }],
@@ -277,6 +281,15 @@ async function structureExtraction(
       language: parsed.language || 'en',
     }
   } catch {
+    // Dense pages (e.g. a venue homepage with a long event calendar) can blow
+    // past the token cap and truncate the JSON mid-array. Rather than drop the
+    // whole extraction, salvage the item objects that fully closed — the leading
+    // ones (venue + first events) carry their fields; truncation is at the tail.
+    const salvaged = salvageTruncatedItems(content)
+    if (salvaged.length > 0) {
+      console.warn(`Structuring JSON invalid — salvaged ${salvaged.length} item(s)`)
+      return { items: mapRawItems(salvaged, source), raw_text: '', language: 'en' }
+    }
     console.error('Failed to parse structuring response:', content?.slice(0, 200))
     return {
       items: [{ detected_type: 'event', fields: {} }],
@@ -284,6 +297,53 @@ async function structureExtraction(
       language: 'en',
     }
   }
+}
+
+/** Map raw model items (event_fields/venue_fields shape) to ExtractedItem[]. */
+function mapRawItems(rawItems: unknown[], source: string): ExtractedItem[] {
+  return rawItems.slice(0, 10).map((raw) => {
+    const item = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
+    const detectedType = item.detected_type === 'venue' ? 'venue' : 'event'
+    const fields = (detectedType === 'event'
+      ? { ...(item.event_fields as Record<string, unknown>), ...pickVenueFieldsForEvent(item.venue_fields as Record<string, unknown>) }
+      : (item.venue_fields as Record<string, unknown>) || {}) as Record<string, { confidence: number; source?: string } | unknown>
+
+    for (const key of Object.keys(fields)) {
+      const f = fields[key]
+      if (f && typeof f === 'object' && 'confidence' in f) {
+        (f as { source?: string }).source = source
+      }
+    }
+    return { detected_type: detectedType, fields: fields as ExtractedItem['fields'] }
+  })
+}
+
+/** Recover complete `{...}` objects from a truncated `"items":[ ... ` array.
+ *  Stops at the first object that didn't fully close. Returns [] if none. */
+function salvageTruncatedItems(content: string): Record<string, unknown>[] {
+  const m = content.match(/"items"\s*:\s*\[/)
+  if (!m || m.index == null) return []
+  let i = m.index + m[0].length
+  const out: Record<string, unknown>[] = []
+  while (i < content.length && out.length < 10) {
+    while (i < content.length && /[\s,]/.test(content[i])) i++
+    if (content[i] !== '{') break
+    let depth = 0, inStr = false, esc = false
+    const start = i
+    for (; i < content.length; i++) {
+      const c = content[i]
+      if (inStr) {
+        if (esc) esc = false
+        else if (c === '\\') esc = true
+        else if (c === '"') inStr = false
+      } else if (c === '"') inStr = true
+      else if (c === '{') depth++
+      else if (c === '}') { depth--; if (depth === 0) { i++; break } }
+    }
+    if (depth !== 0) break // truncated mid-object — stop salvaging
+    try { out.push(JSON.parse(content.slice(start, i))) } catch { break }
+  }
+  return out
 }
 
 /** When type is event, pull venue_name/address/city from venue_fields if event_fields is missing them */
