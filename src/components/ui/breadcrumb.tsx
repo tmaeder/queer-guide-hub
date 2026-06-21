@@ -64,7 +64,12 @@ const BreadcrumbPage = forwardRef<HTMLSpanElement, ComponentPropsWithoutRef<'spa
 
 function BreadcrumbSeparator({ children, className, ...props }: ComponentPropsWithoutRef<'li'>) {
   return (
-    <li role="presentation" aria-hidden="true" className={cn('text-muted-foreground', className)} {...props}>
+    <li
+      role="presentation"
+      aria-hidden="true"
+      className={cn('inline-flex items-center text-muted-foreground', className)}
+      {...props}
+    >
       {children ?? <ChevronRight size={14} />}
     </li>
   );
