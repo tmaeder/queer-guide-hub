@@ -1,7 +1,7 @@
 // Versioned junk phrase list for the news sanitizer.
 // Bump JUNK_PHRASES_VERSION when adding/removing entries so audit logs stay coherent.
 
-export const JUNK_PHRASES_VERSION = '2026.04.27.1'
+export const JUNK_PHRASES_VERSION = '2026.06.21.1'
 
 // Exact-match snippets stripped wholesale (case-insensitive). Order matters: longer first.
 export const EXACT_PHRASES: ReadonlyArray<string> = [
@@ -79,6 +79,11 @@ export const EXACT_PHRASES: ReadonlyArray<string> = [
   'subscribe to our newsletter',
   'join our newsletter',
   'newsletter sign-up',
+  // UI widget text scraped as content
+  'skip to next photo',
+  'show caption',
+  '(opens in new window)',
+  'opens in new window',
 ] as const
 
 // Regex patterns (case-insensitive, multiline). One per line so they're easy to maintain.
@@ -93,6 +98,20 @@ export const PATTERN_PHRASES: ReadonlyArray<RegExp> = [
   /(?:\s*[—|-]\s*[A-Z][^\n|—-]{1,40}){2,}\s*$/gim,
   // Trailing tracking-pixel image markup left as text
   /<img[^>]*1x1[^>]*>/gi,
+  // Social share icon lists scraped as text ("Facebook Twitter X WhatsApp Email …")
+  /^(Facebook|Twitter|X|WhatsApp|Email|LinkedIn|Pinterest|SMS)(\s+(Facebook|Twitter|X|WhatsApp|Email|LinkedIn|Pinterest|SMS)){2,}\s*$/gim,
+  // Author byline + metadata injected at article start ("By Name name@domain Updated Jun 20 Share\n")
+  /^By\s+\S+[^\n]*?(?:Share|Updated[^\n]*)\s*\n+/im,
+  // Read-time indicators ("8 Min Read", "3 minute read")
+  /\b\d{1,2}\s+[Mm]in(?:ute)?s?\s+[Rr]ead\b/g,
+  // Timestamp metadata ("12 hours ago", "Updated 3 days ago")
+  /\b\d+\s+(?:hour|day|minute)s?\s+ago(?:\s+Updated\s+\d+\s+(?:hour|day|minute)s?\s+ago)?\b/gi,
+  // Photo/image credit lines ("Credit: Getty", "Credit: Rick Kopstein")
+  /^Credit:\s+[^\n]{1,80}$/gim,
+  // Newsletter signup confirmation noise ("Sign up for The Sun newsletter Thank you!")
+  /Sign\s+up\s+for\s+[^\n]{0,50}newsletter[^\n]{0,30}Thank\s+you[!.]?\s*/gi,
+  // "(Opens in new window)" / "(opens in a new tab)" link artifacts
+  /\(opens?\s+in\s+(?:a\s+)?new\s+(?:window|tab)\)/gi,
 ] as const
 
 // Truncation markers — presence of any of these at the END of body strongly suggests truncation.

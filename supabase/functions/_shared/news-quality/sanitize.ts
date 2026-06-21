@@ -86,6 +86,28 @@ export function normalizeWhitespace(s: string): string {
     .trim()
 }
 
+// Strip HTML tags via a single-pass state machine (no regex on tag patterns — avoids
+// CodeQL "incomplete multi-character sanitization" rule). Any `<` opens tag mode,
+// `>` closes it; text outside tag mode is emitted. Handles nested/malformed tags safely.
+export function stripHtmlTags(html: string): string {
+  if (!html) return ''
+  const LT = 60 // <
+  const GT = 62 // >
+  let out = ''
+  let inside = false
+  for (let i = 0; i < html.length; i++) {
+    const code = html.charCodeAt(i)
+    if (code === LT) {
+      inside = true
+    } else if (code === GT) {
+      inside = false
+    } else if (!inside) {
+      out += html[i]
+    }
+  }
+  return out.replace(/&nbsp;/gi, ' ').replace(/ /g, ' ')
+}
+
 // Common HTML entities seen in scraped feeds — decode the few that matter for
 // titles + body. Full entity tables are huge; this covers the high-frequency cases
 // observed in production (numeric refs, named refs for punctuation + ampersand).
@@ -140,8 +162,11 @@ export function sanitizeArticle(input: { title: string; content: string }): Sani
   const cleanedTitle = cleanTitle(input.title || '')
   if (cleanedTitle !== (input.title || '').trim()) removed.push('title:reformatted')
 
-  const decodedBody = decodeHtmlEntities(input.content || '')
-  if (decodedBody !== (input.content || '')) removed.push('html_entities')
+  const strippedBody = stripHtmlTags(input.content || '')
+  if (strippedBody !== (input.content || '')) removed.push('html_tags')
+
+  const decodedBody = decodeHtmlEntities(strippedBody)
+  if (decodedBody !== strippedBody) removed.push('html_entities')
 
   const stripBody = stripJunkPhrases(decodedBody)
   removed.push(...stripBody.removed)
