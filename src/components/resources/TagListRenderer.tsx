@@ -1,8 +1,8 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Tag, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { getCategoryShortName } from './categoryMeta';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { TagChip } from '@/components/tags/TagChip';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
@@ -151,33 +151,19 @@ export function TagListRenderer({
     );
   }
 
-  // Chips — rendered as <a> so a single click navigates and modifier-clicks
-  // (cmd/ctrl, middle-click) work for "open in new tab" (P1-3).
+  // Chips — TagChip renders as <a> so a single click navigates and
+  // modifier-clicks (cmd/ctrl, middle-click) open in a new tab (P1-3).
   return (
     <div className="flex flex-wrap gap-2">
-      {tags.map((tag) => {
-        const uses = tagUsageCounts[tag.name] || 0;
-        const slug = tag.slug || encodeURIComponent(tag.name);
-        return (
-          <LocalizedLink
-            key={tag.id}
-            to={`/resources/${slug}`}
-            data-tag-name={tag.name}
-            className="inline-flex items-center gap-1.5 rounded-full cursor-pointer bg-background border border-border transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary no-underline text-inherit"
-            style={{ minHeight: 36, padding: '6px 12px' }}
-          >
-            <Tag size={12} style={{ opacity: 0.55 }} />
-            <span style={{ fontSize: '0.78rem' }} className="font-medium">
-              {tag.name}
-            </span>
-            {uses > 0 && (
-              <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
-                {uses}
-              </span>
-            )}
-          </LocalizedLink>
-        );
-      })}
+      {tags.map((tag) => (
+        <TagChip
+          key={tag.id}
+          tag={tag.slug || tag.name}
+          name={tag.name}
+          count={tagUsageCounts[tag.name] || 0}
+          icon
+        />
+      ))}
     </div>
   );
 }

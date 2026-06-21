@@ -4,6 +4,7 @@ import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceRelated } from '@/components/marketplace/MarketplaceRelated';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
@@ -744,6 +745,13 @@ export default function NewsDetail() {
         entity={{ type: 'news', id: article.id }}
         className="mt-10"
         title="Related news"
+      />
+
+      <MoreLikeThisByTag
+        entityType="news"
+        entityId={article.id}
+        title="Related by tag"
+        className="mt-10"
       />
 
       <MarketplaceRelated className="mt-12" title="Shop LGBTQ+ brands" />

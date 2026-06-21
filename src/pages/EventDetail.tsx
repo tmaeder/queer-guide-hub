@@ -7,6 +7,7 @@ import { ArrowLeft, Luggage, Ticket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { FavoriteButton } from '@/components/ui/favorite-button';
@@ -357,6 +358,12 @@ export default function EventDetail() {
               />
             )}
             <SimilarItems entity={{ type: 'event', id: event.id }} className="mt-10" />
+            <MoreLikeThisByTag
+              entityType="event"
+              entityId={event.id}
+              title="Related by tag"
+              className="mt-10"
+            />
           </div>
 
           {/* Sticky mobile action bar */}
