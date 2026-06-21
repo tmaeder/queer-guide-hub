@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
@@ -478,10 +479,8 @@ export function PersonalityOverview({
 
 export function PersonalitySidebar({
   personality,
-  onTagClick,
 }: {
   personality: Personality;
-  onTagClick: (tag: string) => void;
 }) {
   return (
     <ScrollReveal direction="up">
@@ -629,18 +628,7 @@ export function PersonalitySidebar({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {personality.tags.map((tag, index) => (
-                  <Badge
-                    key={index}
-                    variant="outline"
-                    className="text-xs cursor-pointer"
-                    onClick={() => onTagClick(tag)}
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
+              <TagChipRow tags={personality.tags} more="expand" />
             </CardContent>
           </Card>
         )}

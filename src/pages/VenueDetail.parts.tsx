@@ -19,6 +19,8 @@ import {
 import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { TagChipRow } from '@/components/tags/TagChipRow';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Image } from '@/components/ui/Image';
@@ -532,7 +534,6 @@ interface VenueOverviewProps {
   reviews: VenueReview[];
   venueEvents: Array<{ id: string; venue_id?: string | null }>;
   averageRating: number;
-  navigate: (path: string) => void;
   onContentUpdated?: () => void;
   t: (key: string, fallback?: string) => string;
 }
@@ -542,7 +543,6 @@ export function VenueOverview({
   reviews,
   venueEvents,
   averageRating,
-  navigate,
   onContentUpdated,
   t,
 }: VenueOverviewProps) {
@@ -614,19 +614,7 @@ export function VenueOverview({
           onSaved={onContentUpdated}
           as="div"
         >
-          <div className="flex flex-wrap gap-2">
-            {venue.tags!.slice(0, TAG_DISPLAY_LIMIT).map((tag, index) => (
-              <Badge
-                key={index}
-                variant="outline"
-                className="cursor-pointer gap-1.5"
-                onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
-              >
-                <TagIcon size={12} aria-hidden="true" />
-                {tag}
-              </Badge>
-            ))}
-          </div>
+          <TagChipRow tags={venue.tags!} max={TAG_DISPLAY_LIMIT} icon more="expand" />
         </Editable>
       )}
 
@@ -700,6 +688,8 @@ export function VenueOverview({
           </Editable>
         </section>
       )}
+
+      <MoreLikeThisByTag entityType="venue" entityId={venue.id} />
     </div>
   );
 }

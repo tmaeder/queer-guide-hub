@@ -181,7 +181,11 @@ export default function Resources() {
       return;
     }
     if (allTags.length > 0) {
-      const found = allTags.find((t) => t.name.toLowerCase() === decoded.toLowerCase());
+      const found = allTags.find(
+        (t) =>
+          (t.slug && t.slug.toLowerCase() === decoded.toLowerCase()) ||
+          t.name.toLowerCase() === decoded.toLowerCase(),
+      );
       if (found) {
         setSelectedTag(found);
         setTagNotFound(false);

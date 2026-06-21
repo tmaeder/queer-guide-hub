@@ -18,6 +18,7 @@ import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
+import { FollowedTagsFeed } from '@/components/tags/FollowedTagsFeed';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -73,6 +74,8 @@ export default function Feed() {
         )}
         center
       />
+
+      <FollowedTagsFeed className="mb-8" />
 
       {isLoading ? (
         <PageLoadingState count={3} variant="list" />
