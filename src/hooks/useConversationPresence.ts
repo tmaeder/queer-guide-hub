@@ -14,14 +14,72 @@ interface PresenceEntry {
   online_at: string;
 }
 
+// Ref-counted singleton channels keyed by topic. Multiple hook instances (e.g.
+// useGlobalPresence in both LayoutShell and MessagingInterface) MUST share one
+// Supabase channel per topic — subscribing the same topic twice throws
+// "cannot add callbacks after subscribe()" and blanks the consumer via the
+// ErrorBoundary. Presence is inherently shared, so a singleton is also correct.
+interface TopicEntry {
+  channel: ReturnType<typeof supabase.channel>;
+  online: Set<string>;
+  listeners: Set<(s: Set<string>) => void>;
+  refs: number;
+}
+const registry = new Map<string, TopicEntry>();
+
+function acquireTopic(
+  topic: string,
+  userId: string,
+  broadcast: boolean,
+  onChange: (s: Set<string>) => void,
+): () => void {
+  let entry = registry.get(topic);
+  if (!entry) {
+    const channel = supabase.channel(topic, { config: { presence: { key: userId } } });
+    const created: TopicEntry = { channel, online: new Set(), listeners: new Set(), refs: 0 };
+    registry.set(topic, created);
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState<PresenceEntry>();
+        const next = new Set<string>();
+        for (const key of Object.keys(state)) {
+          if (key === userId) continue;
+          if (state[key]?.length) next.add(key);
+        }
+        created.online = next;
+        created.listeners.forEach((l) => l(next));
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED' && broadcast) {
+          await channel.track({
+            user_id: userId,
+            online_at: new Date().toISOString(),
+          } satisfies PresenceEntry);
+        }
+      });
+    entry = created;
+  }
+  entry.refs += 1;
+  entry.listeners.add(onChange);
+  onChange(entry.online);
+
+  return () => {
+    const e = registry.get(topic);
+    if (!e) return;
+    e.listeners.delete(onChange);
+    e.refs -= 1;
+    if (e.refs <= 0) {
+      void supabase.removeChannel(e.channel);
+      registry.delete(topic);
+    }
+  };
+}
+
 /**
- * Generic Supabase Realtime presence reader. Tracks the current user on the
- * scoped channel *only if* their visibility settings permit it (conversation
- * scope is always-on for participants), and returns the set of other user_ids
- * currently present. Reading is always allowed; appearing requires opt-in.
- *
- * Channel topic comes from `src/lib/presence.ts#channelName`, so every
- * presence-aware surface shares one naming contract.
+ * Generic Supabase Realtime presence reader. Shares one ref-counted channel per
+ * topic across all hook instances. Tracks the current user only if their
+ * visibility settings permit (conversation scope is always-on for participants);
+ * reading is always allowed.
  */
 export function usePresenceSet(scope: PresenceScope, id?: string): Set<string> {
   const { user } = useAuth();
@@ -30,41 +88,14 @@ export function usePresenceSet(scope: PresenceScope, id?: string): Set<string> {
 
   const visibility = (profile?.presence_visibility ?? null) as PresenceVisibility | null;
   const broadcast = shouldBroadcast(scope, visibility);
-  // Conversation scope needs an id; global does not. Bail if a scoped channel
-  // is missing its id rather than throwing inside channelName.
   const needsId = scope !== 'global';
   const ready = !!user?.id && (!needsId || !!id);
 
   useEffect(() => {
     if (!ready) return;
     const topic = channelName(scope, id);
-    const channel = supabase.channel(topic, {
-      config: { presence: { key: user!.id } },
-    });
-
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState<PresenceEntry>();
-        const next = new Set<string>();
-        for (const key of Object.keys(state)) {
-          if (key === user!.id) continue; // others only
-          if (state[key]?.length) next.add(key);
-        }
-        setOnline(next);
-      })
-      .subscribe(async (status) => {
-        if (status !== 'SUBSCRIBED') return;
-        if (broadcast) {
-          await channel.track({
-            user_id: user!.id,
-            online_at: new Date().toISOString(),
-          } satisfies PresenceEntry);
-        }
-      });
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+    const release = acquireTopic(topic, user!.id, broadcast, setOnline);
+    return release;
   }, [ready, scope, id, user, broadcast]);
 
   return online;

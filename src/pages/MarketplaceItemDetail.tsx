@@ -37,6 +37,27 @@ async function fetchListingBundle(slug: string, userId: string | undefined): Pro
   return fetchMarketplaceListingBundle<MarketplaceListing, MarketplaceReview>(slug, userId);
 }
 
+// Generic / placeholder category values that carry no information — never shown
+// as a breadcrumb crumb.
+const GENERIC_CATEGORIES = new Set([
+  'products',
+  'product',
+  'uncategorized',
+  'other',
+  'misc',
+  'general',
+  'all',
+  'none',
+]);
+
+/** Turn a raw listing.category into a clean, linked breadcrumb crumb, or null. */
+function buildCategoryCrumb(category: string | null | undefined): { label: string; href: string } | null {
+  const raw = category?.trim();
+  if (!raw || GENERIC_CATEGORIES.has(raw.toLowerCase())) return null;
+  const label = raw.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return { label, href: `/marketplace/category/${encodeURIComponent(raw.toLowerCase())}` };
+}
+
 export default function MarketplaceItemDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
@@ -198,10 +219,14 @@ export default function MarketplaceItemDetail() {
     : 0;
   const tags = data?.tags ?? [];
 
+  // listing.category is uncontrolled source data — often a generic junk value
+  // ("products", "uncategorized"). Show it only when it's a real category,
+  // prettified and linking to its category page.
+  const categoryCrumb = buildCategoryCrumb(listing?.category);
   const breadcrumbs = listing
     ? [
         { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
-        ...(listing.category ? [{ label: listing.category }] : []),
+        ...(categoryCrumb ? [categoryCrumb] : []),
         { label: listing.title },
       ]
     : undefined;

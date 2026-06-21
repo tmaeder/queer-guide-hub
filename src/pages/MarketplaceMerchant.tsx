@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Globe } from 'lucide-react';
@@ -8,12 +9,21 @@ import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFil
 import { MerchantFeaturedInGuides } from '@/components/marketplace/FeaturedInGuides';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
+import { useOrgSlugByDomain } from '@/hooks/useOrganization';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 export default function MarketplaceMerchant() {
   const { t } = useTranslation();
   const { domain } = useParams<{ domain: string }>();
   const cleanDomain = (domain ?? '').toLowerCase();
   const displayName = cleanDomain.replace(/^www\./, '').replace(/\.[a-z]{2,}$/, '');
+
+  // Sellers now have a unified organization profile — redirect there when one exists.
+  const navigate = useLocalizedNavigate();
+  const { data: orgSlug } = useOrgSlugByDomain(cleanDomain || undefined);
+  useEffect(() => {
+    if (orgSlug) navigate(`/organizations/${orgSlug}`, { replace: true });
+  }, [orgSlug, navigate]);
 
   useMeta({
     title: cleanDomain ? `${cleanDomain} — Marketplace` : 'Merchant',

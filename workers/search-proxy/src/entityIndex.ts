@@ -32,6 +32,8 @@ export const INDEX_MAP: Record<string, string> = {
 	queer_villages: "queer_villages",
 	group: "groups",
 	groups: "groups",
+	organization: "organizations",
+	organizations: "organizations",
 	hotel: "hotels",
 	hotels: "hotels",
 	festival: "festivals",
@@ -49,6 +51,7 @@ export const ALL_INDEXES = [
 	"tags",
 	"queer_villages",
 	"groups",
+	"organizations",
 	"hotels",
 	"festivals",
 ];

@@ -62,6 +62,7 @@ function countActiveFilters(f: SearchFilters): number {
     (f.types?.length || 0) +
     (f.location ? 1 : 0) +
     (f.categories?.length || 0) +
+    (f.tags?.length || 0) +
     (f.cluster_ids?.length || 0) +
     (f.target_groups?.length || 0) +
     (f.tags?.length || 0) +
@@ -324,7 +325,12 @@ export default function SearchResults() {
                         ? query.slice(0, MAX_HEADING_QUERY_LEN) + '…'
                         : query,
                   })
-                : undefined
+                : activeFilterCount > 0
+                  ? t('search.resultsCountPlain', {
+                      defaultValue: '{{count}} results',
+                      count: totalHits,
+                    })
+                  : undefined
           }
         >
           <div className="flex gap-2">
@@ -371,7 +377,7 @@ export default function SearchResults() {
           </Sheet>
         )}
 
-        {hasQuery && (
+        {(hasQuery || activeFilterCount > 0) && (
           <>
             <SearchScopeChips activeScope={activeScope} onScopeChange={handleScopeChange} />
 
