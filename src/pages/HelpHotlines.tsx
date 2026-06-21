@@ -36,6 +36,7 @@ import {
   Search,
   Heart,
   ChevronRight,
+  Building2,
   Shield,
   EyeOff,
   Zap,
@@ -53,6 +54,7 @@ import { useCMSPage } from '@/hooks/useCMSPage';
 import { useAuth } from '@/hooks/useAuth';
 import { useHotlineBookmarks } from '@/hooks/useHotlineBookmarks';
 import { useGeoCountry } from '@/hooks/useGeoCountry';
+import { useOrganizationsList } from '@/hooks/useOrganization';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -289,6 +291,14 @@ export default function HelpHotlines() {
     () => visibleHotlines.filter((h) => h.kind === 'directory'),
     [visibleHotlines],
   );
+
+  // Support organizations (community centers, advocacy NGOs) for the current
+  // country — links out to the unified organization profiles.
+  const { data: supportOrgs = [] } = useOrganizationsList({
+    role: 'support',
+    countryCode: countryFilter,
+    limit: 12,
+  });
 
   const bookmarkedHotlines = useMemo(() => {
     if (bookmarkedIds.size === 0) return [];
@@ -587,6 +597,50 @@ export default function HelpHotlines() {
                 </div>
               )}
             </>
+          )}
+
+          {/* Support organizations — community centers & advocacy NGOs */}
+          {supportOrgs.length > 0 && (
+            <div className="mt-12 border-t pt-6">
+              <h3 className="mb-4 text-sm font-bold">
+                {t('help.support_orgs', 'Support organizations')}
+              </h3>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {supportOrgs.slice(0, 8).map((org) => (
+                  <LocalizedLink
+                    key={org.id}
+                    to={`/organizations/${org.slug}`}
+                    className="flex items-center gap-2 rounded-element border p-4 no-underline transition-colors hover:bg-muted"
+                  >
+                    {org.logo_url ? (
+                      <img
+                        src={org.logo_url}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-element border object-contain"
+                      />
+                    ) : (
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element border text-muted-foreground">
+                        <Building2 size={18} aria-hidden="true" />
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium">{org.name}</div>
+                      {org.website_domain && (
+                        <div className="truncate text-13 text-muted-foreground">
+                          {org.website_domain}
+                        </div>
+                      )}
+                    </div>
+                  </LocalizedLink>
+                ))}
+              </div>
+              <Button asChild variant="ghost" size="sm" className="mt-4">
+                <LocalizedLink to="/organizations?role=support">
+                  {t('help.browse_support_orgs', 'Browse all support organizations')}
+                  <ChevronRight size={16} className="ml-1" />
+                </LocalizedLink>
+              </Button>
+            </div>
           )}
 
           {/* Related resources */}
