@@ -120,16 +120,13 @@ async function discoverSeasonPages() {
 function stripTags(html) {
   let out = html
   let prev
-  // Remove script/style/sup blocks (with content) repeatedly until stable, so
-  // nested or overlapping tags (e.g. <sty<style></style>le>) can't survive a
-  // single pass. Then strip any remaining tags, also to a fixed point.
-  do {
-    prev = out
-    out = out
-      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
-      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
-      .replace(/<sup\b[^>]*>[\s\S]*?<\/sup>/gi, '')  // footnote markers
-  } while (out !== prev)
+  // Strip every HTML tag repeatedly to a fixed point, so nested or overlapping
+  // tags (e.g. <sty<style></style>le>) collapse fully and no `<tag` substring can
+  // survive. This also removes <script>/<style>/<sup> tags themselves; their inert
+  // text content is harmless here (the output is stored as escaped DB data, never
+  // re-rendered as HTML). Footnote text inside <sup> is cleaned by the [n] strips
+  // below. Single-tag fixed-point removal is the robust pattern; tag-with-content
+  // regexes can be bypassed by unclosed or whitespace-padded end tags.
   do {
     prev = out
     out = out.replace(/<[^>]+>/g, '')

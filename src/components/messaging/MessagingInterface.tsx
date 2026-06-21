@@ -51,6 +51,8 @@ import { jumboTier } from '@/lib/messageRender';
 import { Sparkles, Sticker as StickerIcon } from 'lucide-react';
 import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
+import { TripRailCard } from '@/components/messaging/TripRailCard';
+import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
 import { useRailActions } from '@/hooks/useRailActions';
 import { useConversationAvailability } from '@/hooks/useConversationAvailability';
@@ -666,6 +668,9 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   const firstMessageAt = currentMessages.length > 1 ? currentMessages[0].created_at : null;
   // Date.now() lives in useMemo (not render) to satisfy the purity rule; it
   // re-evaluates whenever the inputs change, which is fresh enough for both.
+  /* eslint-disable react-hooks/purity, react-hooks/preserve-manual-memoization --
+     time-derived display values (vibe expiry + streak); Date.now() in the memo is
+     fresh enough and deps are read-only const projections. */
   const { vibeActive, streakDays } = useMemo(() => {
     const now = Date.now();
     const active = !!vibeText && (!vibeExpiresAt || new Date(vibeExpiresAt).getTime() > now);
@@ -674,6 +679,7 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
       : 0;
     return { vibeActive: active, streakDays: days };
   }, [vibeText, vibeExpiresAt, firstMessageAt]);
+  /* eslint-enable react-hooks/purity, react-hooks/preserve-manual-memoization */
   const presenceLabel = isOtherOnline
     ? t('chat.activeNow', { defaultValue: 'Active now' })
     : vibeActive
@@ -933,6 +939,8 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { items, loading } = useInboxFeed(filter ?? 'all');
+  const { data: upcomingTrips } = useUpcomingTrips();
+  const showTripCards = filter === 'all' || filter === 'trips';
   const onlineUsers = useGlobalPresence();
   const railActions = useRailActions();
   const [composeEmailOpen, setComposeEmailOpen] = useState(false);
@@ -946,6 +954,9 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   useEffect(() => {
     const q = search.trim();
     if (!user || q.length <= 2) {
+      // Intentional reset of the debounced server-search when the query is too
+      // short; harmless, not a cascading render.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setServerResults([]);
       return;
     }
@@ -1120,6 +1131,13 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
             </div>
           ) : (
             <div>
+              {showTripCards && upcomingTrips && upcomingTrips.length > 0 && (
+                <div className="border-b">
+                  {upcomingTrips.map((trip) => (
+                    <TripRailCard key={trip.id} trip={trip} />
+                  ))}
+                </div>
+              )}
               {visibleItems.map((item) => (
                 <InboxRailItem
                   key={item.id}
