@@ -5,7 +5,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { getCorsHeaders, getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts';
+import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts';
 
 async function requireAdmin(
   req: Request,
