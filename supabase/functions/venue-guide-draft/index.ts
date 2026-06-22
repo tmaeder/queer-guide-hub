@@ -2,32 +2,12 @@
 // Mirror of marketplace-guide-draft adapted for venues.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { getCorsHeaders as corsHeaders, jsonResponse as json, getServiceClient } from '../_shared/supabase-client.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
-
-const ALLOWED_ORIGINS = new Set([
-  'https://queer.guide',
-  'https://www.queer.guide',
-  'http://localhost:5173',
-  'http://localhost:3000',
-])
-
-function corsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get('Origin') ?? ''
-  return {
-    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : '',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  }
-}
-function json(data: unknown, status: number, req: Request): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
-  })
-}
 
 const SYSTEM_PROMPT = `You are an editorial assistant for a Wirecutter-style LGBTQ+ venue guide (bars, clubs, saunas, restaurants, etc.). Voice: direct, factual, never breathless. No "discover/explore/unlock/curated/journey/amazing/tailored/vibrant". Write like a local who knows the door policies, the crowds, the music, and isn't selling anything. Honest about trade-offs.
 
@@ -71,7 +51,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(req) })
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405, req)
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  const supabase = getServiceClient()
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) return json({ error: 'unauthorized' }, 401, req)

@@ -1,7 +1,7 @@
 // Source REAL venue photos from the Foursquare 2025 Places API, coords-validated (radius=400m
 // → match is the venue at that location). Writes venues.images[]. Resumable: keyset by id via
 // `after` (driver passes back `last`). REQUIRES Foursquare account credits (429 = out of credits).
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getServiceClient } from '../_shared/supabase-client.ts'
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' }
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } })
 
@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
     const { batch_size = 20, after = '00000000-0000-0000-0000-000000000000' } = await req.json().catch(() => ({}))
     const fsq = Deno.env.get('FOURSQUARE_API_KEY')
     if (!fsq) return json({ error: 'FOURSQUARE_API_KEY not set' }, 500)
-    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+    const sb = getServiceClient()
     const { data: rows, error } = await sb.from('venues').select('id,name,latitude,longitude')
       .is('duplicate_of_id', null).not('latitude', 'is', null).or('images.is.null')
       .gt('id', after).order('id', { ascending: true }).limit(batch_size)
