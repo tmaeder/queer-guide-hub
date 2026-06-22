@@ -20,7 +20,6 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const _pipelineRunId = body.pipeline_run_id as string
     const entityType = body.entityType as string
     const minScore = body.minScore ?? 40
     const batchSize = body.batch_size || 50
@@ -64,7 +63,7 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
           ? scoreMarketplaceQuality(normalized)
           : (type === 'news_article' || item.target_table === 'news_articles')
             ? computeNewsScore(normalized)
-            : computeScore(normalized, type)
+            : computeScore(normalized)
 
       if (!dryRun) {
         const belowMin = score < minScore
@@ -148,7 +147,7 @@ function computeNewsScore(data: Record<string, unknown>): number {
   return Math.min(score, 100)
 }
 
-function computeScore(data: Record<string, unknown>, _entityType: string): number {
+function computeScore(data: Record<string, unknown>): number {
   let score = 0
   const max = 100
 

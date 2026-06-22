@@ -2,7 +2,7 @@
 // that were never classified. Self-contained (inline Supabase + native CF /ai/run to
 // dodge the /ai/v1 json-hang). Resumable via classified_at. Personalities intentionally
 // EXCLUDED (auto-labeling real people's LGBTQ+ status = outing risk).
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getServiceClient } from '../_shared/supabase-client.ts'
 
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' }
 const json = (b: unknown, s = 200) =>
@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     const cfg = CFG[entity_type as string]
     if (!cfg) return json({ error: 'bad entity_type (venue|event|marketplace|news)' }, 400)
 
-    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+    const sb = getServiceClient()
     const { data: rows, error } = await sb.from(cfg.table).select(cfg.cols).is('classified_at', null).limit(batch_size)
     if (error) return json({ error: error.message }, 500)
     if (!rows?.length) return json({ done: true, processed: 0, ok: 0, failed: 0 })

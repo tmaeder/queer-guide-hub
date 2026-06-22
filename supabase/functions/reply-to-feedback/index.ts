@@ -5,42 +5,9 @@
  * we don't churn the schema for every message.
  */
 
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { sendEmail, isEmailConfigured } from '../_shared/email.ts';
-
-const ALLOWED_ORIGINS = new Set<string>([
-  'https://queer.guide',
-  'https://www.queer.guide',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:8080',
-]);
-
-function corsHeaders(req?: Request): Record<string, string> {
-  const origin = req?.headers.get('Origin') ?? '';
-  return {
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : '',
-  };
-}
-
-function jsonResponse(data: unknown, status = 200, req?: Request): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
-  });
-}
-
-function errorResponse(message: string, status = 500, req?: Request): Response {
-  return jsonResponse({ error: message, success: false }, status, req);
-}
-
-function getServiceClient(): SupabaseClient {
-  return createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  );
-}
+import { getCorsHeaders as corsHeaders, jsonResponse, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
 
 async function requireAdmin(
   req: Request,

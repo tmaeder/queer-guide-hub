@@ -1,4 +1,4 @@
-import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { getServiceClient } from '../_shared/supabase-client.ts'
 
 // ============================================================
 // marketplace-description-enhance — translate + clean poor marketplace
@@ -21,7 +21,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' }
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...CORS, 'Content-Type': 'application/json' } })
-const client = () => createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+const client = () => getServiceClient()
 
 const SYSTEM_PROMPT = `You rewrite e-commerce product descriptions for the queer.guide marketplace. Given a product title and its source description (often German), return ONE concise, factual ENGLISH paragraph (40-480 characters) describing what the product IS and its key real features. RULES: translate to natural English if not English; REMOVE size charts, care/washing instructions, shipping/returns/payment, material composition tables, SKU/article numbers, store policy, and marketing slop (discover, curated, elevate, premium experience, must-have); keep adult/fetish wording factual, plain, neutral; do NOT invent sizes, materials, measurements, brands, or claims not in the source; if already clean English just tighten it. Return ONLY minified JSON, no markdown: {"description":"...","source_lang":"de|en|fr|other"}`
 

@@ -5,6 +5,7 @@ const ALLOWED_ORIGINS = new Set<string>([
   'https://www.queer.guide',
   'http://localhost:5173',
   'http://localhost:3000',
+  'http://localhost:8080',
 ])
 
 const baseCorsHeaders = {

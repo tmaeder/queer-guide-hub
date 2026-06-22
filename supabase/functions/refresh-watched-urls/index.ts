@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { getServiceClient } from '../_shared/supabase-client.ts'
 
 /**
  * M7.1 cron — picks watched_urls rows that are due (last_checked_at +
@@ -19,7 +19,7 @@ async function sha256Hex(text: string): Promise<string> {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*' } })
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+  const supabase = getServiceClient()
 
   const batchLimit = 50
   // Due = no last_checked_at OR last_checked_at + frequency_minutes < now().

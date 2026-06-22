@@ -4,46 +4,8 @@
  * and an @claude mention so Claude's GitHub App can pick it up.
  */
 
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-// ── Inlined helpers (shared patterns from _shared/supabase-client.ts) ─────
-
-const ALLOWED_ORIGINS = new Set<string>([
-  'https://queer.guide',
-  'https://www.queer.guide',
-  'http://localhost:5173',
-  'http://localhost:3000',
-]);
-
-function getCorsHeaders(req?: Request): Record<string, string> {
-  const origin = req?.headers.get('Origin') ?? '';
-  return {
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : '',
-  };
-}
-
-function getServiceClient(): SupabaseClient {
-  return createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  );
-}
-
-function jsonResponse(data: unknown, status = 200, req?: Request): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-  });
-}
-
-function errorResponse(message: string, status = 500, req?: Request): Response {
-  return jsonResponse({ error: message, success: false }, status, req);
-}
-
-function corsResponse(req?: Request): Response {
-  return new Response('ok', { headers: getCorsHeaders(req) });
-}
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts';
 
 async function requireAdmin(
   req: Request,
