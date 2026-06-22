@@ -262,7 +262,7 @@ export function useFlyerScan() {
           language: data.language || 'en',
           processing_time_ms: data.processing_time_ms,
           source_file: normalized.value,
-          image_url: null,
+          image_url: data.image_url ?? null,
         };
 
         if (scanResult.items.length === 0) {

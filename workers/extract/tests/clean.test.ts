@@ -48,6 +48,47 @@ describe('cleanHtml', () => {
     expect(r.links.flat.every((u) => new URL(u).origin === 'https://news.example.com')).toBe(true);
     expect(r.links.external).toContain('https://other.org/external');
   });
+
+  it('returns empty jsonLd when the page has no ld+json', () => {
+    const r = cleanHtml(ARTICLE_HTML, 'https://news.example.com/pride');
+    expect(r.jsonLd).toEqual([]);
+  });
+});
+
+const EVENT_HTML = `
+<!doctype html><html><head>
+  <title>SPA shell</title>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Event","name":"Drag Brunch",
+   "startDate":"2026-07-04T12:00","location":{"@type":"Place","name":"The Club","address":"1 Main St"}}
+  </script>
+  <script type="application/ld+json">{ this is not valid json }</script>
+</head><body><div id="root"></div></body></html>`;
+
+const GRAPH_HTML = `
+<!doctype html><html><head>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@graph":[
+    {"@type":"WebSite","name":"ignore me"},
+    {"@type":"LocalBusiness","name":"Rainbow Bar","telephone":"+1 555 0100"}
+  ]}
+  </script>
+</head><body></body></html>`;
+
+describe('cleanHtml jsonLd', () => {
+  it('parses Event JSON-LD even when the body is an empty SPA shell, skipping malformed blocks', () => {
+    const r = cleanHtml(EVENT_HTML, 'https://tickets.example.com/e/1');
+    expect(r.jsonLd).toHaveLength(1);
+    expect(r.jsonLd[0]['@type']).toBe('Event');
+    expect(r.jsonLd[0].name).toBe('Drag Brunch');
+  });
+
+  it('flattens @graph and keeps only relevant @types', () => {
+    const r = cleanHtml(GRAPH_HTML, 'https://example.com/venue');
+    expect(r.jsonLd).toHaveLength(1);
+    expect(r.jsonLd[0]['@type']).toBe('LocalBusiness');
+    expect(r.jsonLd[0].name).toBe('Rainbow Bar');
+  });
 });
 
 describe('assertPublicHttpUrl', () => {

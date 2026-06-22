@@ -23,6 +23,8 @@ export interface ExtractResult {
   finalUrl: string
   markdown: string
   meta: ExtractMeta
+  /** schema.org objects from JSON-LD (Event/Place/Product/…). Empty if none. */
+  jsonLd?: Array<Record<string, unknown>>
   links?: { flat: string[]; external: string[] }
   method: 'fetch' | 'render'
   charCount: number
@@ -30,11 +32,11 @@ export interface ExtractResult {
 
 const BREAKER = 'deepcrawl_extract'
 const RENDER_BREAKER = 'cf_browser_render'
-const TIMEOUT_MS = 12_000
+const DEFAULT_TIMEOUT_MS = 12_000
 
 export async function extractContent(
   supabase: SupabaseClient,
-  opts: { url: string; render?: boolean; crawl?: boolean },
+  opts: { url: string; render?: boolean; crawl?: boolean; timeoutMs?: number },
 ): Promise<ExtractResult | null> {
   const base = Deno.env.get('EXTRACT_WORKER_URL')
   // Dedicated secret for the extract worker handshake, decoupled from the global
@@ -46,11 +48,14 @@ export async function extractContent(
   }
 
   const breaker = opts.render ? RENDER_BREAKER : BREAKER
+  // Browser Rendering navigates up to ~15s; the static default would abort a
+  // valid render. Callers escalating to render pass a longer timeout.
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
 
   try {
     return await withCircuitBreaker(supabase, breaker, async () => {
       const ctrl = new AbortController()
-      const t = setTimeout(() => ctrl.abort('timeout'), TIMEOUT_MS)
+      const t = setTimeout(() => ctrl.abort('timeout'), timeoutMs)
       try {
         const res = await fetch(`${base.replace(/\/$/, '')}/extract`, {
           method: 'POST',
