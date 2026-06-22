@@ -34,6 +34,9 @@ export interface CleanResult {
   markdown: string;
   meta: ExtractMeta;
   links: ExtractLinks;
+  /** schema.org objects parsed from <script type="application/ld+json"> — the
+   *  highest-signal source on event/venue/product pages. Empty if none found. */
+  jsonLd: Array<Record<string, unknown>>;
   contentMethod: 'article' | 'main' | 'density' | 'body';
   charCount: number;
 }
@@ -117,6 +120,61 @@ function extractMeta($: cheerio.CheerioAPI, url: string): ExtractMeta {
       url,
     ),
   };
+}
+
+/** schema.org @type values worth keeping (substring match, case-insensitive). */
+const JSONLD_KEEP = [
+  'event', 'place', 'localbusiness', 'restaurant', 'barorpub', 'nightclub',
+  'product', 'article', 'organization', 'museum', 'touristattraction',
+];
+const JSONLD_MAX_OBJECTS = 5;
+const JSONLD_MAX_BYTES = 8_000;
+
+function jsonLdTypeMatches(type: unknown): boolean {
+  const types = Array.isArray(type) ? type : [type];
+  return types.some(
+    (t) => typeof t === 'string' && JSONLD_KEEP.includes(t.toLowerCase()),
+  );
+}
+
+/** Parse all <script type="application/ld+json"> blocks, flatten @graph, and keep
+ *  objects whose @type is event/venue/product-ish. Runs before noise stripping. */
+function extractJsonLd($: cheerio.CheerioAPI): Array<Record<string, unknown>> {
+  const kept: Array<Record<string, unknown>> = [];
+  let bytes = 0;
+
+  const consider = (obj: unknown) => {
+    if (kept.length >= JSONLD_MAX_OBJECTS || bytes >= JSONLD_MAX_BYTES) return;
+    if (!obj || typeof obj !== 'object') return;
+    const record = obj as Record<string, unknown>;
+    if (!jsonLdTypeMatches(record['@type'])) return;
+    const size = JSON.stringify(record).length;
+    if (size > JSONLD_MAX_BYTES) return;
+    kept.push(record);
+    bytes += size;
+  };
+
+  $('script[type="application/ld+json"]').each((_i, el) => {
+    if (kept.length >= JSONLD_MAX_OBJECTS) return;
+    const raw = $(el).contents().text().trim();
+    if (!raw) return;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return; // malformed JSON-LD is common — skip silently
+    }
+    const nodes = Array.isArray(parsed) ? parsed : [parsed];
+    for (const node of nodes) {
+      if (node && typeof node === 'object' && Array.isArray((node as Record<string, unknown>)['@graph'])) {
+        for (const g of (node as Record<string, unknown>)['@graph'] as unknown[]) consider(g);
+      } else {
+        consider(node);
+      }
+    }
+  });
+
+  return kept;
 }
 
 /** Same main-content strategy as the news extractor, returning the element's HTML. */
@@ -211,11 +269,13 @@ export function cleanHtml(
 ): CleanResult {
   const $ = cheerio.load(html);
   const meta = extractMeta($, url);
+  const jsonLd = extractJsonLd($);
   const links = opts.crawl ? extractLinks($, url) : { flat: [], external: [] };
 
-  // pickMainContentHtml mutates $ (strips noise) — run metadata + links first.
+  // pickMainContentHtml mutates $ (strips noise incl. <script>) — run metadata,
+  // JSON-LD, and links first.
   const { html: contentHtml, method } = pickMainContentHtml($);
   const markdown = toMarkdown(contentHtml);
 
-  return { markdown, meta, links, contentMethod: method, charCount: markdown.length };
+  return { markdown, meta, jsonLd, links, contentMethod: method, charCount: markdown.length };
 }

@@ -2,12 +2,12 @@
  * queer-guide extract worker — self-hosted deepcrawl extraction service.
  *
  *   POST /extract  { url, render?:bool, crawl?:bool }
- *     → { url, finalUrl, markdown, meta, links?, method, charCount }
+ *     → { url, finalUrl, markdown, meta, jsonLd, links?, method, charCount }
  *   GET  /health   → { ok: true }
  *
  * Internal-only (X-Internal-Secret). Static path: fetch → cheerio main-content →
- * markdown. render:true is reserved for Phase 4 (Cloudflare Browser Rendering)
- * and currently returns 501. See src/deepcrawl/VENDORED.md.
+ * markdown. render:true uses Cloudflare Browser Rendering (the [browser] binding);
+ * it 501s only if that binding isn't provisioned. See src/deepcrawl/VENDORED.md.
  */
 import { cleanHtml } from './clean';
 import { hasInternalSecret } from './auth';
@@ -23,7 +23,11 @@ interface Env {
   BROWSER?: Fetcher;
 }
 
-const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide/bot)';
+// Realistic desktop Chrome UA — the bot UA was served degraded/blocked pages by
+// many event & venue sites, the most common scan targets. Won't defeat hard bot
+// walls (those still fail and surface a clean error to the caller).
+const UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -121,6 +125,7 @@ export default {
         finalUrl,
         markdown: result.markdown,
         meta: result.meta,
+        jsonLd: result.jsonLd,
         links: body.crawl ? result.links : undefined,
         method,
         contentMethod: result.contentMethod,

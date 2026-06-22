@@ -13,7 +13,7 @@
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
 import { chatCompletion } from '../_shared/openai-client.ts'
-import { extractContent } from '../_shared/extract-client.ts'
+import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
 
 /** A pasted link could not be read server-side (bot-blocked, JS-only, non-HTML,
@@ -188,7 +188,9 @@ Return ONLY valid JSON with this exact structure:
 }
 
 Rules:
+- COMPACTNESS (important): OMIT any field you cannot determine — do NOT emit null/empty fields or zero-confidence fields. Only include fields you actually found. This keeps each item small so ALL events fit in the response.
 - If you find MULTIPLE distinct events or venues, return one item per event/venue (max 10 items)
+- VENUE WITH A CALENDAR: when the page is a venue's own site/homepage that lists many upcoming events (an event calendar), return the VENUE as the first item (detected_type "venue") AND a separate "event" item for each of the next upcoming events (up to 10 total items). Do not return only the venue.
 - If only one event or venue is found, return an array with a single item
 - Do NOT merge separate events into one — each gets its own item
 - CRITICAL: If a flyer shows MULTIPLE separate dates (e.g. "April 5" and "April 12", or "5. April und 12. April"), these are DIFFERENT events — create one item per date. Do NOT put them into start_date/end_date of a single item. This is the most common mistake — avoid it.
@@ -196,7 +198,7 @@ Rules:
 - Recurring events (e.g. "every Friday", multiple listed dates, "5. April und 12. April") → separate items, one per date.
 - When in doubt between "range" and "separate events": always prefer separate items.
 - Each item should be self-contained with its own location, dates, etc.
-- Set confidence to 0 and value to null for fields you cannot determine
+- Omit fields you cannot determine (see COMPACTNESS) rather than emitting null
 - For detected_type: "event" if there's a specific date/time; "venue" if it's a business listing/card
 - Parse dates to ISO 8601 when possible (use current year if year not specified)
 - Extract ALL visible text into raw_text
@@ -217,32 +219,49 @@ async function structureExtraction(
   const hintText = hints.length > 0 ? '\n\n' + hints.join('\n') : ''
 
   // Bound the structuring latency: the 70B model's runtime scales with input +
-  // output size, and large pages (e.g. long articles) pushed a single call past
-  // the 45s ceiling → 500. Event/venue details sit near the top, so 6k chars is
-  // plenty and keeps the call comfortably under the ceiling (~12-25s) with margin.
-  const boundedContent = contentText.length > 6_000 ? contentText.slice(0, 6_000) : contentText
+  // output size. A venue homepage with a long event calendar (e.g. lab-oratory's
+  // ~50 listings) ran a single call past the 45s ceiling → timeout → empty. The
+  // venue identity + the lead events sit at the top (og:title/description first),
+  // so 4k chars captures what matters and keeps the call well under the ceiling.
+  const boundedContent = contentText.length > 4_000 ? contentText.slice(0, 4_000) : contentText
 
   const userMessage = isTextMode
     ? `Here is text extracted from a document:\n\n${boundedContent}${hintText}`
     : `Here is a detailed description of a flyer/poster image:\n\n${boundedContent}${hintText}`
 
-  // Use a fast CF-hosted model for structuring. The default 70B is slow and
-  // highly variable on Workers AI (12s–45s+, frequently timing out under
-  // concurrency with the background pipelines) — this is field transcription
-  // from already-clean text, not a reasoning task, so Llama 4 Scout (fast MoE)
-  // handles it well at a fraction of the latency. Passing an explicit @cf/ model
-  // opts out of mapToCfModel's 70B default.
-  const result = await chatCompletion(supabase, {
-    model: '@cf/meta/llama-4-scout-17b-16e-instruct',
-    messages: [
-      { role: 'system', content: STRUCTURING_PROMPT },
-      { role: 'user', content: userMessage },
-    ],
-    temperature: 0.1,
-    max_tokens: 2000,
-    response_format: { type: 'json_object' },
-  })
-  const content = result.content
+  // Structuring model. Llama 4 Scout (fast MoE) was tried for latency but in
+  // practice it produced unusable JSON on real pasted links — truncated/garbled
+  // output that failed to parse (empty fields) or empty results that threw a 500.
+  // The 70B (the project's standard extraction model, proven-good for news/venue
+  // enrichment) follows the JSON contract far more reliably; the interactive scan
+  // can afford its ~20-30s under the 45s ceiling. max_tokens raised to 4000 so a
+  // multi-item page (e.g. a venue homepage listing many events) isn't truncated
+  // mid-JSON. A structuring failure must NOT 500 the whole scan — we degrade to
+  // raw text + the manual form below.
+  let content: string
+  try {
+    const result = await chatCompletion(supabase, {
+      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+      messages: [
+        { role: 'system', content: STRUCTURING_PROMPT },
+        { role: 'user', content: userMessage },
+      ],
+      temperature: 0.1,
+      // Caps output-generation time (the dominant latency when a page yields many
+      // items) while leaving room for a handful of fully-populated items. Too high
+      // and a dense calendar page runs past the 45s ceiling.
+      max_tokens: 2500,
+      response_format: { type: 'json_object' },
+    })
+    content = result.content
+  } catch (e) {
+    console.error('Structuring model call failed:', (e as Error).message)
+    return {
+      items: [{ detected_type: 'event', fields: {} }],
+      raw_text: contentText,
+      language: 'en',
+    }
+  }
   const source = isTextMode ? 'text+refinement' : 'vision+refinement'
 
   try {
@@ -256,20 +275,7 @@ async function structureExtraction(
     })()
     const parsed = JSON.parse(jsonText)
     const rawItems = Array.isArray(parsed.items) ? parsed.items : [parsed]
-    const items: ExtractedItem[] = rawItems.slice(0, 10).map((item: Record<string, unknown>) => {
-      const detectedType = item.detected_type === 'venue' ? 'venue' : 'event'
-      const fields = detectedType === 'event'
-        ? { ...item.event_fields, ...pickVenueFieldsForEvent(item.venue_fields) }
-        : item.venue_fields || {}
-
-      for (const key of Object.keys(fields)) {
-        if (fields[key] && typeof fields[key] === 'object' && 'confidence' in fields[key]) {
-          fields[key].source = source
-        }
-      }
-
-      return { detected_type: detectedType, fields }
-    })
+    const items = mapRawItems(rawItems, source)
 
     return {
       items: items.length > 0 ? items : [{ detected_type: 'event', fields: {} }],
@@ -277,6 +283,15 @@ async function structureExtraction(
       language: parsed.language || 'en',
     }
   } catch {
+    // Dense pages (e.g. a venue homepage with a long event calendar) can blow
+    // past the token cap and truncate the JSON mid-array. Rather than drop the
+    // whole extraction, salvage the item objects that fully closed — the leading
+    // ones (venue + first events) carry their fields; truncation is at the tail.
+    const salvaged = salvageTruncatedItems(content)
+    if (salvaged.length > 0) {
+      console.warn(`Structuring JSON invalid — salvaged ${salvaged.length} item(s)`)
+      return { items: mapRawItems(salvaged, source), raw_text: '', language: 'en' }
+    }
     console.error('Failed to parse structuring response:', content?.slice(0, 200))
     return {
       items: [{ detected_type: 'event', fields: {} }],
@@ -284,6 +299,53 @@ async function structureExtraction(
       language: 'en',
     }
   }
+}
+
+/** Map raw model items (event_fields/venue_fields shape) to ExtractedItem[]. */
+function mapRawItems(rawItems: unknown[], source: string): ExtractedItem[] {
+  return rawItems.slice(0, 10).map((raw) => {
+    const item = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
+    const detectedType = item.detected_type === 'venue' ? 'venue' : 'event'
+    const fields = (detectedType === 'event'
+      ? { ...(item.event_fields as Record<string, unknown>), ...pickVenueFieldsForEvent(item.venue_fields as Record<string, unknown>) }
+      : (item.venue_fields as Record<string, unknown>) || {}) as Record<string, { confidence: number; source?: string } | unknown>
+
+    for (const key of Object.keys(fields)) {
+      const f = fields[key]
+      if (f && typeof f === 'object' && 'confidence' in f) {
+        (f as { source?: string }).source = source
+      }
+    }
+    return { detected_type: detectedType, fields: fields as ExtractedItem['fields'] }
+  })
+}
+
+/** Recover complete `{...}` objects from a truncated `"items":[ ... ` array.
+ *  Stops at the first object that didn't fully close. Returns [] if none. */
+function salvageTruncatedItems(content: string): Record<string, unknown>[] {
+  const m = content.match(/"items"\s*:\s*\[/)
+  if (!m || m.index == null) return []
+  let i = m.index + m[0].length
+  const out: Record<string, unknown>[] = []
+  while (i < content.length && out.length < 10) {
+    while (i < content.length && /[\s,]/.test(content[i])) i++
+    if (content[i] !== '{') break
+    let depth = 0, inStr = false, esc = false
+    const start = i
+    for (; i < content.length; i++) {
+      const c = content[i]
+      if (inStr) {
+        if (esc) esc = false
+        else if (c === '\\') esc = true
+        else if (c === '"') inStr = false
+      } else if (c === '"') inStr = true
+      else if (c === '{') depth++
+      else if (c === '}') { depth--; if (depth === 0) { i++; break } }
+    }
+    if (depth !== 0) break // truncated mid-object — stop salvaging
+    try { out.push(JSON.parse(content.slice(start, i))) } catch { break }
+  }
+  return out
 }
 
 /** When type is event, pull venue_name/address/city from venue_fields if event_fields is missing them */
@@ -579,6 +641,33 @@ function htmlToText(html: string): string {
     .trim()
 }
 
+/** A static extract is "weak" (worth escalating to Browser Rendering) when it
+ *  came back empty or has little body text AND no structured metadata to lean on. */
+function isWeakExtract(e: ExtractResult | null): boolean {
+  if (!e) return true
+  const md = (e.markdown || '').trim()
+  const hasJsonLd = Array.isArray(e.jsonLd) && e.jsonLd.length > 0
+  const hasDesc = !!(e.meta?.description && e.meta.description.trim().length > 0)
+  return md.length < 200 && !hasJsonLd && !hasDesc
+}
+
+/** Build structuring text from an extract: og:title + og:description + serialized
+ *  JSON-LD + markdown. Pages with structured metadata but thin bodies (Eventbrite,
+ *  many SPAs) still produce a usable extraction this way. Returns the og:image too. */
+function assembleExtractedContent(e: ExtractResult): { text: string; image: string | null } {
+  const parts: string[] = []
+  if (e.meta?.title) parts.push(`# ${e.meta.title}`)
+  if (e.meta?.description) parts.push(e.meta.description)
+  if (Array.isArray(e.jsonLd) && e.jsonLd.length > 0) {
+    try {
+      parts.push('Structured data (schema.org):\n' + JSON.stringify(e.jsonLd))
+    } catch { /* non-serializable — skip */ }
+  }
+  const md = (e.markdown || '').trim()
+  if (md) parts.push(md)
+  return { text: parts.join('\n\n'), image: e.meta?.image ?? null }
+}
+
 const MAX_PAGE_BYTES = 2 * 1024 * 1024 // 2MB of HTML is plenty for extraction
 
 /** Fetch a public web page and return its visible text (SSRF-guarded). */
@@ -600,7 +689,10 @@ async function fetchPageText(pageUrl: string): Promise<string> {
     signal: AbortSignal.timeout(12_000),
     redirect: 'follow',
     headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide)',
+      // Realistic Chrome UA — the bot UA was blocked / served degraded pages by
+      // many event & venue sites (the common scan targets).
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
       'Accept': 'text/html,application/xhtml+xml',
     },
   })
@@ -662,15 +754,27 @@ Deno.serve(async (req) => {
 
     // A pasted link is fetched + stripped to text, then rides the text pipeline.
     let textInput = text
+    let pageImageUrl: string | null = null
     if (urls.length === 0 && !textInput && page_url) {
       console.log(`Fetching page for extraction: ${page_url}`)
-      // Prefer the deepcrawl extract worker (clean markdown + main-content
-      // isolation); fall back to the naive in-function fetcher if it's
-      // unavailable. A genuine read failure becomes an actionable 422.
-      const extracted = await extractContent(supabase, { url: page_url })
-      if (extracted && extracted.markdown && extracted.markdown.trim().length >= 20) {
-        const title = extracted.meta?.title ? `# ${extracted.meta.title}\n\n` : ''
-        textInput = (title + extracted.markdown).slice(0, 12_000)
+      // Prefer the deepcrawl extract worker (clean markdown + OG/JSON-LD metadata).
+      // Static fetch first; escalate once to Browser Rendering for JS-only pages
+      // whose static pass yields little usable content. Fall back to the naive
+      // in-function fetcher. A genuine read failure becomes an actionable 422.
+      let extracted = await extractContent(supabase, { url: page_url })
+      if (isWeakExtract(extracted)) {
+        console.log('Static extract weak — escalating to Browser Rendering')
+        const rendered = await extractContent(supabase, {
+          url: page_url,
+          render: true,
+          timeoutMs: 20_000,
+        })
+        if (rendered && (!isWeakExtract(rendered) || !extracted)) extracted = rendered
+      }
+      const assembled = extracted ? assembleExtractedContent(extracted) : null
+      if (assembled && assembled.text.trim().length >= 20) {
+        textInput = assembled.text.slice(0, 12_000)
+        pageImageUrl = assembled.image
       } else {
         try {
           textInput = await fetchPageText(page_url)
@@ -813,10 +917,12 @@ Deno.serve(async (req) => {
           flyer_scan_id: scanRow.id,
           platform:      isTextMode ? 'manual' : 'flyer',
           sub_source_type: isTextMode ? 'manual' : 'upload',
-          media_urls:    urls.length > 0 ? urls : null,
+          media_urls:    urls.length > 0 ? urls : (pageImageUrl ? [pageImageUrl] : null),
           vision_summary: isTextMode ? null : contentForStructuring.slice(0, 8000),
           raw_text:      extraction.raw_text || null,
-          media_processing_status: urls.length > 0 ? 'done' : 'not_applicable',
+          media_processing_status: urls.length > 0
+            ? 'done'
+            : (pageImageUrl ? 'pending' : 'not_applicable'),
         })
         if (subErr) console.error('Failed to create community_submission:', subErr.message)
       }
@@ -829,6 +935,8 @@ Deno.serve(async (req) => {
       items: itemsWithMatches,
       raw_text: extraction.raw_text,
       language: extraction.language,
+      // OG image of a scanned page, so the form can prefill a preview image.
+      image_url: urls[0] || pageImageUrl || null,
       processing_time_ms: processingTime,
     })
   } catch (error) {
