@@ -22,6 +22,8 @@ export interface MapPointSummary {
   optimizedImage?: string;
   /** R2-mirrored thumbnail copy. */
   thumbImage?: string;
+  /** True when `image` is a brand logo — render contained, not cropped. */
+  isLogo?: boolean;
   category?: string;
   city?: string;
   openNow?: boolean | null;
@@ -65,6 +67,7 @@ export function summaryFromFeature(f: PointFeature): MapPointSummary {
     image: typeof meta.image === 'string' ? meta.image : undefined,
     optimizedImage: typeof meta.optimizedImage === 'string' ? meta.optimizedImage : undefined,
     thumbImage: typeof meta.thumbImage === 'string' ? meta.thumbImage : undefined,
+    isLogo: meta.isLogo === true,
     category: typeof meta.category === 'string' ? meta.category : undefined,
     city: typeof meta.city === 'string' ? meta.city : undefined,
     openNow: typeof meta.openNow === 'boolean' ? meta.openNow : null,

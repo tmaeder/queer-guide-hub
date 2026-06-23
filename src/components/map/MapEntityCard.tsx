@@ -158,6 +158,7 @@ export function MapEntityCard({
               imageUrl={point.image}
               optimizedUrl={point.optimizedImage}
               thumbnailUrl={point.thumbImage}
+              fit={point.isLogo ? 'contain' : 'cover'}
               alt=""
               aspect="square"
               imageRole="thumb"
@@ -190,6 +191,7 @@ export function MapEntityCard({
             imageUrl={point.image}
             optimizedUrl={point.optimizedImage}
             thumbnailUrl={point.thumbImage}
+            fit={point.isLogo ? 'contain' : 'cover'}
             alt={point.name}
             aspect={isRail ? 'auto' : 'card'}
             heightPx={isRail ? 96 : 112}
