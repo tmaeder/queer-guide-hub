@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { LogOut, Plus, Shield, UserRound } from 'lucide-react';
@@ -22,6 +22,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { USER_MENU_ITEMS as userMenuItems } from '@/config/navigation';
+import { getSubmitCta } from '@/lib/submitCta';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -40,18 +41,7 @@ export function Header() {
     profile?.avatar_url ||
     (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
 
-  const getSubmitCta = useCallback(() => {
-    if (location.pathname.startsWith('/events'))
-      return { label: t('header.submitEvent', 'Submit Event'), route: '/submit/event' };
-    if (location.pathname.startsWith('/venues'))
-      return { label: t('header.submitVenue', 'Submit Venue'), route: '/submit/venue' };
-    if (location.pathname.startsWith('/marketplace'))
-      return { label: t('header.submitProduct', 'Submit Product'), route: '/submit/product' };
-    if (location.pathname.startsWith('/hotels'))
-      return { label: t('header.submitHotel', 'Submit Hotel'), route: '/submit/hotel' };
-    return { label: t('header.contribute', 'Contribute'), route: '/submit' };
-  }, [location.pathname, t]);
-  const submitCta = getSubmitCta();
+  const submitCta = getSubmitCta(location.pathname, t);
 
   const displayName = (profile?.display_name as string | null) || null;
   const username = (profile?.username as string | null) || null;
@@ -61,7 +51,11 @@ export function Header() {
 
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
-    <Link to="/" aria-label="Queer Guide" className="flex items-center gap-2.5 shrink-0 no-underline">
+    <Link
+      to="/"
+      aria-label="Queer Guide"
+      className="flex items-center gap-2.5 shrink-0 no-underline"
+    >
       <img
         src="/images/logo.png"
         alt=""
