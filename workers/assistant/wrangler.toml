@@ -26,6 +26,10 @@ ROUTER_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 # Secrets (set via: wrangler secret put NAME):
 #   SUPABASE_URL
 #   SUPABASE_SERVICE_KEY  - service role, for the search_documents RPC tools
+#   SUPABASE_JWT_SECRET   - OPTIONAL (HS256). Safety layer: when set, the caller's
+#     access token is verified offline to decide whether a logged-in user may see
+#     gated (high-risk-country) content in chat. When unset, falls back to a GoTrue
+#     check using SUPABASE_SERVICE_KEY, so the gate works without this secret.
 # (No LLM API key — inference runs on the Workers AI binding above.)
 
 [observability]

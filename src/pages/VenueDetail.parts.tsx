@@ -38,6 +38,7 @@ import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { EntityMap } from '@/components/map/EntityMap';
+import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -776,6 +777,14 @@ export function VenueSidebar({ venue, checkinRefresh, onContentUpdated }: VenueS
     venue.address || venue.phone || venue.email || venue.website || venue.instagram,
   );
 
+  const nearby = useNearbyMapPoints({
+    lat: typeof venue.latitude === 'number' ? venue.latitude : null,
+    lng: typeof venue.longitude === 'number' ? venue.longitude : null,
+    excludeType: 'venue',
+    excludeId: venue.id,
+    enabled: hasMap,
+  });
+
   return (
     <div className="flex flex-col gap-6">
       {(hasMap || hasContact) && (
@@ -798,6 +807,7 @@ export function VenueSidebar({ venue, checkinRefresh, onContentUpdated }: VenueS
                     type: 'venues',
                     primary: true,
                   },
+                  ...nearby,
                 ]}
               />
             )}
