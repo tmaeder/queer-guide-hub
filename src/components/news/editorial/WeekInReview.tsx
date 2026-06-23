@@ -1,6 +1,6 @@
 import { Separator } from '@/components/ui/separator';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { decodeHtmlEntities } from '@/utils/htmlDecode';
+import { cleanTitle } from '@/utils/htmlDecode';
 import type { Tables } from '@/integrations/supabase/types';
 import { startOfWeek } from 'date-fns';
 
@@ -87,7 +87,7 @@ export function WeekInReview({ articles, sourceCount }: WeekInReviewProps) {
                   to={`/news/${a.slug}`}
                   className="block no-underline text-foreground hover:underline text-title font-semibold leading-tight"
                 >
-                  {decodeHtmlEntities(a.title ?? '')}
+                  {cleanTitle(a.title ?? '')}
                 </LocalizedLink>
                 <p className="mt-2 text-2xs uppercase tracking-wider text-muted-foreground">
                   {(a.views_count ?? 0).toLocaleString()} reads
