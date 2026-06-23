@@ -11,7 +11,7 @@ interface CountryLegalityInput {
   lgbti_criminalization?: unknown;
 }
 
-function hasCriminalizationFlag(input: unknown): boolean {
+export function hasCriminalizationFlag(input: unknown): boolean {
   if (!input || typeof input !== 'object') return false;
   const c = input as Record<string, unknown>;
   // Schema (countries.lgbti_criminalization): { legal: boolean, penalty: string,

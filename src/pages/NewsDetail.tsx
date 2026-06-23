@@ -68,7 +68,7 @@ export default function NewsDetail() {
   const [loading, setLoading] = useState(true);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
-  const { isAdmin } = useAdminEditMode();
+  const { isAdmin, altHeld } = useAdminEditMode();
   const isMobile = useIsMobile();
 
   const article = data?.article ?? null;
@@ -412,6 +412,34 @@ export default function NewsDetail() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
         {/* Main */}
         <div className="flex flex-col gap-6">
+          {/* "Why this matters" — admin-curated, shown to everyone when populated.
+              The empty authoring placeholder stays hidden during normal browsing;
+              admins reveal it by holding Alt (#1812). */}
+          {(article.editorial_note || altHeld) && (
+            <aside aria-label="Why this matters" className="border-l-2 border-foreground py-2 pl-6">
+              <p className="m-0 text-2xs uppercase tracking-[0.2em] text-muted-foreground">
+                Why this matters
+              </p>
+              <Editable
+                contentType="news_articles"
+                recordId={article.id}
+                field="editorial_note"
+                value={article.editorial_note ?? ''}
+                onSaved={(next) => patchArticle({ editorial_note: (next as string) || null })}
+                as="div"
+                className="mt-2"
+              >
+                {article.editorial_note ? (
+                  <p className="m-0 text-base italic leading-relaxed">{article.editorial_note}</p>
+                ) : (
+                  <p className="m-0 text-base italic leading-relaxed text-muted-foreground">
+                    Alt-click to add the stakes — 1–3 sentences on why this story matters.
+                  </p>
+                )}
+              </Editable>
+            </aside>
+          )}
+
           {/* Podcast episode */}
           {article.media_type === 'podcast' && article.audio_url && (
             <div className="max-w-[68ch]">

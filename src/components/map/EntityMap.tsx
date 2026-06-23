@@ -27,7 +27,7 @@ export interface EntityMapMarker {
   subtitle?: string;
   color?: string;
   linkTo?: string;
-  type?: 'venues' | 'events' | 'cities' | 'countries' | 'restrooms' | 'neighbourhoods';
+  type?: 'venues' | 'events' | 'cities' | 'countries' | 'restrooms' | 'neighbourhoods' | 'hotels';
   meta?: Record<string, unknown>;
   /** Whether this is the primary/focused marker */
   primary?: boolean;

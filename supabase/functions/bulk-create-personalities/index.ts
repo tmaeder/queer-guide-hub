@@ -49,7 +49,6 @@ Deno.serve(async (req) => {
       wikipedia: sources.wikipedia !== false,
       openLibrary: sources.openLibrary !== false,
       bandsintown: sources.bandsintown !== false,
-      pexelsImages: sources.pexelsImages !== false,
       openSanctions: sources.openSanctions !== false
     };
 
@@ -76,19 +75,12 @@ Deno.serve(async (req) => {
         console.log(`Data fetched for ${name}:`, personalityData ? 'success' : 'failed');
         
         if (personalityData) {
-          // Optionally enrich image via Pexels before staging
-          if (!personalityData.image_url && sourceConfig.pexelsImages) {
-            try {
-              const imageResponse = await supabase.functions.invoke('get-pexels-images', {
-                body: { query: `${personalityData.name} portrait`, type: 'person' }
-              });
-              if (imageResponse.data?.images?.[0]?.url) {
-                personalityData.image_url = imageResponse.data.images[0].url;
-              }
-            } catch (imageError) {
-              console.log(`Pexels enrich fail for ${name}:`, imageError);
-            }
-          }
+          // NOTE: Do NOT enrich personality images from stock-photo libraries
+          // (Pexels/Unsplash). They have no photos of these real, often niche
+          // individuals, so a name search returns a random stock face attached
+          // to a named person — actively misleading. The only trustworthy
+          // sources are Wikidata P18 (by QID, resolved below) and Wikimedia;
+          // no match falls through to the initials avatar on the frontend.
 
           try {
             const qid = (personalityData as { wikidata_qid?: string }).wikidata_qid ?? null
