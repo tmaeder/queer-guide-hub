@@ -5,6 +5,12 @@ import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { parseRssItems, cleanText } from './rss-parse.ts'
+import {
+  isWikinewsHost,
+  parseWikinewsCategoryUrl,
+  fetchWikinewsCategoryPage,
+  fetchWikinewsArticles,
+} from '../_shared/wikinews.ts'
 
 // ============================================================
 // Source: RSS/News APIs — unified adapter for all news sources
@@ -54,7 +60,14 @@ const rssNewsAdapter: SourceAdapter = {
         let articles: Record<string, unknown>[] = []
         const apiName = detectApiName(source.url)
 
-        if (apiName) {
+        if (isWikinewsHost(source.url)) {
+          // Wikinews has no usable category RSS feed — pull recent LGBT articles
+          // via the MediaWiki API. Full historical import goes through the
+          // backfill mode in the HTTP handler below.
+          articles = await withCircuitBreaker(supabase, 'wikinews', () =>
+            fetchRecentWikinews(source.url, maxArticles)
+          )
+        } else if (apiName) {
           articles = await withCircuitBreaker(supabase, apiName, () =>
             fetchFromApi(source, sinceHours)
           )
@@ -258,6 +271,14 @@ async function fetchTheNewsApi(baseUrl: string): Promise<Record<string, unknown>
   }))
 }
 
+// Recent Wikinews articles for a category page URL: newest-categorized page of
+// members, then per-page extract/image/first-revision-date via the MediaWiki API.
+async function fetchRecentWikinews(url: string, maxArticles: number): Promise<Record<string, unknown>[]> {
+  const target = parseWikinewsCategoryUrl(url)
+  const { pageIds } = await fetchWikinewsCategoryPage(target, { limit: Math.min(maxArticles, 50) })
+  return fetchWikinewsArticles(target, pageIds)
+}
+
 async function fetchFromRss(feedUrl: string, isPodcast = false): Promise<Record<string, unknown>[]> {
   // Throw on failure so the caller's catch can register the failure
   // (consecutive_failures + backoff_until). Returning [] silently would
@@ -292,6 +313,58 @@ function extractTags(title: string, content: string): string[] {
   return LGBTQ_KEYWORDS.filter(kw => text.includes(kw)).slice(0, 5)
 }
 
+// ─── Wikinews backfill ───────────────────────────────────────
+
+async function handleWikinewsBackfill(
+  supabase: ReturnType<typeof getServiceClient>,
+  body: Record<string, unknown>,
+  config: AdapterConfig,
+  req: Request,
+): Promise<Response> {
+  const sourceId = String(body.wikinews_backfill_source_id)
+  const cmcontinue = (body.cmcontinue as string | undefined) ?? null
+  const limit = Math.min(Number(body.limit) || 50, 500)
+
+  const { data: source, error } = await supabase
+    .from('news_sources')
+    .select('id, name, url')
+    .eq('id', sourceId)
+    .single()
+  if (error || !source) {
+    return errorResponse(`Wikinews source not found: ${sourceId}`, 404, req)
+  }
+  if (!isWikinewsHost(source.url)) {
+    return errorResponse(`Source ${sourceId} is not a Wikinews source`, 400, req)
+  }
+
+  const target = parseWikinewsCategoryUrl(source.url)
+  const page = await fetchWikinewsCategoryPage(target, { limit, cmcontinue })
+  const articles = await fetchWikinewsArticles(target, page.pageIds)
+
+  const rawItems: RawItem[] = articles.map((article, i) => ({
+    sourceId: (article.url as string) || `${source.id}-backfill-${Date.now()}-${i}`,
+    data: { ...article, source_id: source.id, source_name: source.name },
+  }))
+
+  let written = 0
+  if (!config.dryRun && rawItems.length > 0) {
+    written = await writeToStaging(supabase, rssNewsAdapter, rawItems, {
+      ...config,
+      targetTable: 'news_articles',
+    })
+  }
+
+  return jsonResponse({
+    success: true,
+    items: config.dryRun ? rawItems.length : written,
+    items_total: rawItems.length,
+    page_ids: page.pageIds.length,
+    cmcontinue: page.cmcontinue,
+    done: page.cmcontinue === null,
+    dry_run: config.dryRun,
+  }, 200, req)
+}
+
 // ─── HTTP Handler ────────────────────────────────────────────
 
 Deno.serve(withErrorReporting('source-rss-news', async (req) => {
@@ -308,6 +381,14 @@ Deno.serve(withErrorReporting('source-rss-news', async (req) => {
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id,
       nodeId: body.node_id,
+    }
+
+    // Wikinews historical backfill: paginate one Category:LGBT page (≤50) for a
+    // single source per call and return the next cmcontinue cursor. The driver
+    // (scripts/import-wikinews-history.mjs) threads cmcontinue until exhausted.
+    // Staged rows are processed by the normal news pipeline crons.
+    if (body.wikinews_backfill_source_id) {
+      return await handleWikinewsBackfill(supabase, body, config, req)
     }
 
     const rawItems = await rssNewsAdapter.fetch(config)
