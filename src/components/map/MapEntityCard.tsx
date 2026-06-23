@@ -62,13 +62,67 @@ function MarkerGlyph({
 }
 
 /** Small signal pills shared across variants. */
-function Signals({ point }: { point: MapPointSummary }) {
+function Signals({ point, compact }: { point: MapPointSummary; compact?: boolean }) {
   const price = priceLabel(point.priceRange);
   const dist = point.distanceKm != null ? formatDistance(point.distanceKm * 1000) : null;
   const countdown = point.type === 'events' && !point.live ? timeUntil(point.startDate) : null;
   // "Trending" = editorially featured AND high trust. Honest proxy until a
   // real engagement/check-in signal exists; otherwise just "Featured".
   const trending = point.featured && (point.trustScore ?? 0) >= 80;
+
+  // Compact (rail): one fixed, non-wrapping line so every card is the same
+  // height. Slot 1 = the single most important status; slot 2 = distance
+  // (the most useful at-a-glance fact), else price.
+  if (compact) {
+    const status =
+      point.type === 'venues' && point.openNow === true ? (
+        <Badge variant="soft" className="gap-1">
+          <Clock className="h-3 w-3" aria-hidden />
+          Open now
+        </Badge>
+      ) : point.type === 'events' && point.live ? (
+        <Badge variant="soft" className="gap-1">
+          <Radio className="h-3 w-3" aria-hidden />
+          On now
+        </Badge>
+      ) : countdown ? (
+        <Badge variant="soft" className="gap-1">
+          <Clock className="h-3 w-3" aria-hidden />
+          {countdown}
+        </Badge>
+      ) : trending ? (
+        <Badge variant="soft" className="gap-1">
+          <TrendingUp className="h-3 w-3" aria-hidden />
+          Trending
+        </Badge>
+      ) : point.featured ? (
+        <Badge variant="soft" className="gap-1">
+          <Star className="h-3 w-3" aria-hidden />
+          Featured
+        </Badge>
+      ) : point.favorited ? (
+        <Badge variant="soft" className="gap-1">
+          <Heart className="h-3 w-3 fill-current" aria-hidden />
+          Saved
+        </Badge>
+      ) : null;
+    const secondary = dist ? (
+      <Badge variant="outline" className="gap-1">
+        <MapPin className="h-3 w-3" aria-hidden />
+        {dist}
+      </Badge>
+    ) : price ? (
+      <Badge variant="outline">{price}</Badge>
+    ) : null;
+    if (!status && !secondary) return null;
+    return (
+      <div className="flex items-center gap-1 overflow-hidden">
+        {status}
+        {secondary}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {point.favorited && (
@@ -186,7 +240,7 @@ export function MapEntityCard({
   const body = (
     <>
       {hasImage ? (
-        <div className={`relative w-full ${isRail ? 'h-24' : 'h-28'}`}>
+        <div className={`relative w-full ${isRail ? 'h-20' : 'h-28'}`}>
           <Image
             imageUrl={point.image}
             optimizedUrl={point.optimizedImage}
@@ -194,7 +248,7 @@ export function MapEntityCard({
             fit={point.isLogo ? 'contain' : 'cover'}
             alt={point.name}
             aspect={isRail ? 'auto' : 'card'}
-            heightPx={isRail ? 96 : 112}
+            heightPx={isRail ? 80 : 112}
             imageRole="cover"
             fallbackEntityType={fallbackTheme}
             fallbackKey={point.id}
@@ -208,22 +262,26 @@ export function MapEntityCard({
           </div>
         </div>
       ) : (
-        // No photo (most venues): a compact, intentional band — muted ground
-        // with one category glyph in the entity's accent color. Beats a giant
-        // generic placeholder repeated down the whole rail.
+        // No photo (most venues): a muted ground with one category glyph in the
+        // entity's accent color. Kept the SAME height as the image band so every
+        // rail card lines up — uneven heights were the main "unpolished" tell.
         <div
-          className={`flex w-full items-center justify-center bg-muted ${isRail ? 'h-14' : 'h-16'}`}
+          className={`flex w-full items-center justify-center bg-muted ${isRail ? 'h-20' : 'h-16'}`}
         >
           <MarkerGlyph icon={Icon} className="h-6 w-6" style={{ color: point.color }} />
         </div>
       )}
 
-      <div className="flex flex-col gap-1.5 p-2">
-        <div className="truncate text-body-lg font-semibold leading-tight text-foreground">
+      <div className={`flex flex-col p-2 ${isRail ? 'gap-1' : 'gap-1.5'}`}>
+        <div
+          className={`truncate font-semibold leading-tight text-foreground ${
+            isRail ? 'text-15' : 'text-body-lg'
+          }`}
+        >
           {point.name}
         </div>
         {metaLine && <div className="truncate text-13 text-muted-foreground">{metaLine}</div>}
-        <Signals point={point} />
+        <Signals point={point} compact={isRail} />
 
         {variant === 'popup' && (
           <div className="mt-1 flex items-center gap-4">

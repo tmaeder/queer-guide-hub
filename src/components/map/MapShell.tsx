@@ -278,7 +278,7 @@ export const MapShell = ({
 
       {showRail && (
         <>
-          <MapLegend lens={state.lens} layers={exploreLayers} pridePalette />
+          <MapLegend lens={state.lens} layers={exploreLayers} pridePalette raised />
           <SpotlightRail
             points={pointsInView}
             selectedId={selectedId}
