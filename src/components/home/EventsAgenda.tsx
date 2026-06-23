@@ -126,7 +126,7 @@ const EventsAgenda = () => {
                         const fb = getFallbackImage('event', ev.id);
                         if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
                       }}
-                      className="h-14 w-14 shrink-0 rounded-element bg-muted object-cover grayscale"
+                      className="h-14 w-14 shrink-0 rounded-element bg-muted object-cover"
                     />
                     <span className="min-w-0">
                       <span className="block truncate text-15 font-semibold leading-tight tracking-tight transition-opacity group-hover:opacity-70">

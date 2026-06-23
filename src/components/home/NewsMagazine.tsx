@@ -70,7 +70,7 @@ const NewsMagazine = React.memo(() => {
               loading="lazy"
               decoding="async"
               referrerPolicy="no-referrer"
-              className="h-full w-full object-cover grayscale transition-transform duration-500 group-hover:scale-[1.02]"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             />
           </div>
           <Eyebrow as="div" className="mb-4">
@@ -103,7 +103,7 @@ const NewsMagazine = React.memo(() => {
                     loading="lazy"
                     decoding="async"
                     referrerPolicy="no-referrer"
-                    className="h-full w-full object-cover grayscale transition-transform duration-500 group-hover:scale-[1.03]"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 </div>
                 <div className="mb-2 truncate text-2xs font-semibold uppercase tracking-label text-muted-foreground">
