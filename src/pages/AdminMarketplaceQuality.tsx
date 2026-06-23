@@ -6,7 +6,7 @@ import { Table2 } from 'lucide-react';
 
 /**
  * Marketplace tag engine dashboard: department/attribute coverage and the
- * rating-downgrade review gate. Full listing CRUD lives at /admin/marketplace.
+ * rating-downgrade review gate. Full listing CRUD lives at /admin/content/marketplace_listings.
  */
 export default function AdminMarketplaceQuality() {
   return (
@@ -17,7 +17,7 @@ export default function AdminMarketplaceQuality() {
           <p className="text-13 text-muted-foreground">Department + attribute coverage and the rating-downgrade review gate.</p>
         </div>
         <Button asChild variant="outline" size="sm">
-          <Link to="/admin/marketplace">
+          <Link to="/admin/content/marketplace_listings">
             <Table2 size={14} className="mr-1" /> Edit listings
           </Link>
         </Button>

@@ -59,7 +59,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       changeType: 'positive' as const,
       icon: Building,
       description: 'Listed locations',
-      onClick: () => navigate('/admin/venues'),
+      onClick: () => navigate('/admin/content/venues'),
     },
     {
       title: 'Upcoming Events',
@@ -68,7 +68,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       changeType: 'positive' as const,
       icon: Calendar,
       description: 'Scheduled events',
-      onClick: () => navigate('/admin/events'),
+      onClick: () => navigate('/admin/content/events'),
     },
     {
       title: 'Marketplace Items',
@@ -77,7 +77,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       changeType: 'positive' as const,
       icon: ShoppingBag,
       description: 'Active listings',
-      onClick: () => navigate('/admin/marketplace'),
+      onClick: () => navigate('/admin/content/marketplace_listings'),
     },
   ];
 

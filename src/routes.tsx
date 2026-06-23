@@ -91,7 +91,6 @@ const AdminMarketplace = lazyRetry(() => import('./pages/AdminMarketplace'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
 const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
 const AdminVenueGuides = lazyRetry(() => import('./pages/AdminVenueGuides'));
-const AdminNewsSources = lazyRetry(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazyRetry(() => import('./pages/AdminPersonalities'));
 const AdminQuests = lazyRetry(() => import('./pages/AdminQuests'));
@@ -123,7 +122,6 @@ const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
 const AdminAffiliate = lazyRetry(() => import('./pages/AdminAffiliate'));
 
 // CMS components rendered as admin views
-const AdminCMS = lazyRetry(() => import('./pages/AdminCMS'));
 const ContentListPanel = lazyRetry(() =>
   import('./components/cms/ContentListPanel').then((m) => ({ default: m.ContentListPanel })),
 );
@@ -388,7 +386,7 @@ export const AppRoutes = () => {
                 <Route path="venues" element={<AdminVenues />} />
                 <Route path="duplicates" element={<AdminDuplicates />} />
                 <Route path="events" element={<AdminEvents />} />
-                <Route path="tags" element={<AdminTags />} />
+                <Route path="tags" element={<Navigate to="/admin/content/unified_tags" replace />} />
                 <Route path="cities" element={<AdminCityQuality />} />
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
@@ -398,8 +396,8 @@ export const AppRoutes = () => {
                 <Route path="marketplace/guides" element={<AdminMarketplaceGuides />} />
                 <Route path="venue-guides" element={<AdminVenueGuides />} />
                 <Route path="groups" element={<AdminGroups />} />
-                <Route path="news-sources" element={<AdminNewsSources />} />
-                <Route path="cms" element={<AdminCMS />} />
+                <Route path="news-sources" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
+                <Route path="cms" element={<Navigate to="/admin/content" replace />} />
                 <Route path="import-hub" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="festivals" element={<Navigate to="/admin/events" replace />} />
                 <Route
