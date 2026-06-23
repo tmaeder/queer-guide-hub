@@ -102,6 +102,7 @@ const AdminIngestionRules = lazyRetry(() => import('./pages/AdminIngestionRules'
 const AdminEmailIngestions = lazyRetry(() => import('./pages/AdminEmailIngestions'));
 const AdminImports = lazyRetry(() => import('./pages/AdminImports'));
 const AdminEventQuality = lazyRetry(() => import('./pages/AdminEventQuality'));
+const AdminGroupRequests = lazyRetry(() => import('./pages/AdminGroupRequests'));
 const AdminSearchIntelligence = lazyRetry(() => import('./pages/AdminSearchIntelligence'));
 const AdminRecognition = lazyRetry(() => import('./pages/admin/Recognition'));
 const Contributors = lazyRetry(() => import('./pages/Contributors'));
@@ -366,6 +367,7 @@ export const AppRoutes = () => {
                 <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
                 <Route path="content/village-quality" element={<AdminVillageQuality />} />
+                <Route path="content/group-requests" element={<AdminGroupRequests />} />
                 <Route path="hotels" element={<AdminHotels />} />
                 <Route path="villages" element={<AdminQueerVillages />} />
 

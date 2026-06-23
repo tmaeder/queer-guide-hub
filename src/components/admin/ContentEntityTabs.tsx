@@ -14,13 +14,17 @@ interface EntityTab {
 }
 
 /** type segment → its companion routes (besides the List page). */
-const QUALITY_ROUTE: Record<string, { quality?: string; duplicates?: string }> = {
+const QUALITY_ROUTE: Record<
+  string,
+  { quality?: string; duplicates?: string; requests?: string }
+> = {
   venues: { quality: '/admin/content/venue-quality', duplicates: '/admin/duplicates' },
   events: { quality: '/admin/content/event-quality' },
   cities: { quality: '/admin/content/city-quality' },
   personalities: { quality: '/admin/content/personality-quality' },
   marketplace_listings: { quality: '/admin/content/marketplace-quality' },
   queer_villages: { quality: '/admin/content/village-quality' },
+  community_groups: { requests: '/admin/content/group-requests' },
 };
 
 /** Returns the tab set for a type, or null when it has no companion pages. */
@@ -31,6 +35,7 @@ function entityTabsFor(type: string | undefined): EntityTab[] | null {
   const tabs: EntityTab[] = [{ label: 'List', route: `/admin/content/${type}` }];
   if (companion.quality) tabs.push({ label: 'Quality', route: companion.quality });
   if (companion.duplicates) tabs.push({ label: 'Duplicates', route: companion.duplicates });
+  if (companion.requests) tabs.push({ label: 'Requests', route: companion.requests });
   return tabs;
 }
 
