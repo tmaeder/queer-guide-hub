@@ -124,11 +124,13 @@ export interface ToolOutcome {
 	cards: Card[];
 }
 
-export async function executeTool(env: Env, name: string, input: Record<string, unknown>): Promise<ToolOutcome> {
+export async function executeTool(env: Env, name: string, input: Record<string, unknown>, authed = false): Promise<ToolOutcome> {
 	try {
 		let cards: Card[] = [];
 		if (name === "search_entities") {
-			const filters: Record<string, unknown> = {};
+			// Safety layer: only a verified-logged-in caller sees high-risk-country
+			// (gated) content; anonymous callers get the gated-excluded default.
+			const filters: Record<string, unknown> = authed ? { include_gated: true } : {};
 			if (typeof input.city === "string" && input.city) filters.city = input.city;
 			const query = String(input.query ?? "");
 			// Embed the query (bge-m3, corpus-matched) so search_hybrid fuses the
@@ -148,6 +150,7 @@ export async function executeTool(env: Env, name: string, input: Record<string, 
 				p_content_types: Array.isArray(input.types) && input.types.length ? input.types : null,
 				p_city: typeof input.city === "string" ? input.city : null,
 				p_limit: clampLimit(input.limit, 8),
+				p_include_gated: authed,
 			});
 			cards = asCards(rows);
 		} else if (name === "find_related") {
@@ -155,6 +158,7 @@ export async function executeTool(env: Env, name: string, input: Record<string, 
 				p_entity_type: String(input.entity_type ?? ""),
 				p_entity_id: String(input.entity_id ?? ""),
 				p_limit: clampLimit(input.limit, 8),
+				p_include_gated: authed,
 			});
 			cards = asCards(rows);
 		} else if (name === "knowledge_search") {

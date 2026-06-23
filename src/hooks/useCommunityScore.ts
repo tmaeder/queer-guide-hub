@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -57,6 +57,7 @@ export function useCommunityScore(): {
   loading: boolean;
 } {
   const { user } = useAuth();
+  const instanceId = useId();
   const [row, setRow] = useState<CommunityScoreRow | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -82,7 +83,7 @@ export function useCommunityScore(): {
     })();
 
     const channel = supabase
-      .channel(`community-score:${user.id}`)
+      .channel(`community-score:${user.id}:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -102,7 +103,7 @@ export function useCommunityScore(): {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, instanceId]);
 
   const view = useMemo(() => (row ? enrich(row) : null), [row]);
   return { data: view, loading };

@@ -11,9 +11,19 @@ import { Skeleton } from '@/components/ui/skeleton';
  * The RPC owns all gating (block, visibility, presence opt-in); this view just
  * renders the ranked result or an honest empty state.
  */
-export function PeopleModeView({ mode, emptyHint }: { mode: PeopleMode; emptyHint: string }) {
+export function PeopleModeView({
+  mode,
+  emptyHint,
+  cityId,
+  tripId,
+}: {
+  mode: PeopleMode;
+  emptyHint: string;
+  cityId?: string;
+  tripId?: string;
+}) {
   const { user } = useAuth();
-  const { data: matches = [], isLoading } = usePeopleDiscovery({ mode, limit: 60 });
+  const { data: matches = [], isLoading } = usePeopleDiscovery({ mode, cityId, tripId, limit: 60 });
 
   const ids = useMemo(() => matches.map((m) => m.userId), [matches]);
   const profiles = useFriendProfiles(ids, ids.length > 0);
