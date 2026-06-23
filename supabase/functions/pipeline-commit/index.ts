@@ -34,6 +34,51 @@ const SIMPLE_COMMIT_TARGETS: Record<string, SimpleCommitConfig> = {
 
 type SimpleCommitRow = { staging_id: string; action: string } & Record<string, string>
 
+// Target table -> the jsonb column that holds normalized social links.
+const SOCIAL_COLUMN: Record<string, string> = {
+  venues: 'social_links',
+  events: 'social_links',
+  cities: 'social_links',
+  queer_villages: 'social_links',
+  personalities: 'social_links',
+  marketplace_listings: 'social_media',
+}
+
+/**
+ * Post-commit: persist normalized_data.social_links onto the committed entity
+ * rows (the batch RPCs don't write the social column). Only touches rows that
+ * actually carry social links — usually a handful — so the per-row search
+ * trigger fires a bounded number of times, never a storm. Merges with any
+ * existing value so re-ingests don't drop previously known links.
+ */
+async function persistSocialLinks(
+  supabase: ReturnType<typeof getServiceClient>,
+  target: string,
+  rows: SimpleCommitRow[],
+  idColumn: string,
+): Promise<void> {
+  const col = SOCIAL_COLUMN[target]
+  if (!col || !rows.length) return
+  const { data: sRows } = await supabase
+    .from('ingestion_staging')
+    .select('id, normalized_data')
+    .in('id', rows.map((r) => r.staging_id))
+  const byId = new Map<string, Record<string, unknown>>()
+  for (const s of sRows ?? []) byId.set(s.id, (s.normalized_data ?? {}) as Record<string, unknown>)
+  for (const r of rows) {
+    const n = byId.get(r.staging_id) ?? {}
+    const links = n.social_links as Record<string, string> | undefined
+    if (!links || Object.keys(links).length === 0) continue
+    const entityId = r[idColumn]
+    if (!entityId) continue
+    const { data: cur } = await supabase.from(target).select(col).eq('id', entityId).maybeSingle()
+    const existing = (cur?.[col as keyof typeof cur] as Record<string, unknown>) ?? {}
+    const merged = { ...existing, ...links }
+    if (Object.keys(merged).length === Object.keys(existing).length) continue // no change
+    await supabase.from(target).update({ [col]: merged }).eq('id', entityId)
+  }
+}
+
 async function commitSimple(
   supabase: ReturnType<typeof getServiceClient>,
   target: string,
@@ -50,6 +95,7 @@ async function commitSimple(
   }
   if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
   const rows = data ?? []
+  await persistSocialLinks(supabase, target, rows, cfg.idColumn)
   const inserted = rows.filter((r) => r.action === 'inserted').length
   const updated  = rows.filter((r) => r.action === 'updated').length
   const errorsCt = rows.filter((r) => r.action === 'error' || r.action === 'rejected').length
@@ -119,6 +165,8 @@ Deno.serve(async (req) => {
             .eq('id', r.venue_id)
         }
       }
+
+      await persistSocialLinks(supabase, 'venues', rows, 'venue_id')
 
       return jsonResponse({
         success: true,

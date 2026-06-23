@@ -1,4 +1,5 @@
 import type { VenueWithRelations } from './VenueDetail.parts';
+import { socialSameAs } from '@/lib/social/registry';
 
 const MAX_DESC = 155;
 const PLACE_CATEGORIES = new Set(['park', 'beach', 'monument', 'landmark', 'museum']);
@@ -53,8 +54,10 @@ export function buildVenueJsonLd(
   if (countryName) address.addressCountry = countryName;
   if (venue.postal_code) address.postalCode = venue.postal_code;
 
-  const sameAs: string[] = [];
-  if (venue.instagram) sameAs.push(`https://instagram.com/${venue.instagram}`);
+  const sameAs = [...new Set(socialSameAs(venue.social_links))];
+  if (venue.instagram && !sameAs.some((u) => /instagram\.com/i.test(u))) {
+    sameAs.push(`https://instagram.com/${venue.instagram.replace(/^@/, '')}`);
+  }
 
   const openingHoursSpec = buildOpeningHoursSpec(
     venue.hours && typeof venue.hours === 'object' && !Array.isArray(venue.hours)
