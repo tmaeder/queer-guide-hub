@@ -516,9 +516,13 @@ function ForYouNewsRail({
                   >
                     <Card className="h-40 overflow-hidden transition">
                       <Image
-                        imageUrl={isValidImageUrl(h.image_url) ? (h.image_url as string) : null}
-                        optimizedUrl={h.optimized_url}
-                        thumbnailUrl={h.thumbnail_url}
+                        imageUrl={
+                          isValidImageUrl(h.imageUrl as string | null | undefined)
+                            ? (h.imageUrl as string)
+                            : null
+                        }
+                        optimizedUrl={(h.optimizedUrl as string | null | undefined) ?? null}
+                        thumbnailUrl={(h.thumbnailUrl as string | null | undefined) ?? null}
                         preferThumb
                         alt=""
                         heightPx={96}
