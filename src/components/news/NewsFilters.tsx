@@ -12,8 +12,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatNewsTag } from '@/lib/newsTags';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag, Languages, Headphones } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { MultiCombobox, type MultiComboboxOption } from '@/components/events/MultiCombobox';
+import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag, Languages, Headphones, SmilePlus } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import type { DateRange } from 'react-day-picker';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
@@ -58,7 +62,7 @@ interface NewsFiltersProps {
     tags?: string[];
     countryIds?: string[];
     cityIds?: string[];
-    source?: string;
+    sourceId?: string;
     nearMe?: boolean;
     userLocation?: { lat: number; lng: number };
     dateRange?: { from?: string; to?: string };
@@ -67,6 +71,9 @@ interface NewsFiltersProps {
     category?: string;
     language?: string;
     mediaType?: 'podcast';
+    sentiment?: string;
+    trustScoreMin?: number;
+    authorNames?: string[];
   }) => void;
   trendingTags?: { tag: string; count: number }[];
   sources?: NewsSource[];
@@ -92,9 +99,15 @@ export const NewsFilters = ({
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [dateRange, setDateRange] = useState<string>('');
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
+  const [showCustomDate, setShowCustomDate] = useState(false);
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const [inStoryOnly, setInStoryOnly] = useState(false);
   const [podcastsOnly, setPodcastsOnly] = useState(false);
+  const [sentiment, setSentiment] = useState<string>('');
+  const [trustScoreMin, setTrustScoreMin] = useState<number>(0);
+  const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
+  const [authors, setAuthors] = useState<MultiComboboxOption[]>([]);
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
 
@@ -103,12 +116,13 @@ export const NewsFilters = ({
   // {id, name, article_count} so the Select can show counts.
   useEffect(() => {
     const fetchData = async () => {
-      const [countriesRes, citiesRes, languagesRes] = await Promise.all([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const db = supabase as any;
+      const [countriesRes, citiesRes, languagesRes, authorsRes] = await Promise.all([
         supabase.rpc('news_countries_with_articles'),
         supabase.rpc('news_cities_with_articles'),
-        // news_languages_with_articles isn't in the generated types.ts — bridge untyped.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase as any).rpc('news_languages_with_articles'),
+        db.rpc('news_languages_with_articles'),
+        db.rpc('news_authors_with_articles'),
       ]);
       if (!countriesRes.error && Array.isArray(countriesRes.data)) {
         setCountries(countriesRes.data as CountryOption[]);
@@ -118,6 +132,14 @@ export const NewsFilters = ({
       }
       if (!languagesRes.error && Array.isArray(languagesRes.data)) {
         setLanguages(languagesRes.data as LanguageOption[]);
+      }
+      if (!authorsRes.error && Array.isArray(authorsRes.data)) {
+        setAuthors(
+          (authorsRes.data as Array<{ author: string; article_count: number }>).map((a) => ({
+            value: a.author,
+            label: `${a.author} (${a.article_count})`,
+          })),
+        );
       }
     };
     fetchData();
@@ -135,6 +157,8 @@ export const NewsFilters = ({
         nearMe: overrides.nearMe !== undefined ? overrides.nearMe : nearMe,
         userLocation: overrides.userLocation !== undefined ? overrides.userLocation : userLocation,
         dateRange: overrides.dateRange !== undefined ? overrides.dateRange : dateRange,
+        customDateRange:
+          overrides.customDateRange !== undefined ? overrides.customDateRange : customDateRange,
         featuredOnly: overrides.featuredOnly !== undefined ? overrides.featuredOnly : featuredOnly,
         inStoryOnly: overrides.inStoryOnly !== undefined ? overrides.inStoryOnly : inStoryOnly,
         podcastsOnly: overrides.podcastsOnly !== undefined ? overrides.podcastsOnly : podcastsOnly,
@@ -142,14 +166,18 @@ export const NewsFilters = ({
           overrides.selectedCategory !== undefined ? overrides.selectedCategory : selectedCategory,
         language:
           overrides.selectedLanguage !== undefined ? overrides.selectedLanguage : selectedLanguage,
+        sentiment: overrides.sentiment !== undefined ? overrides.sentiment : sentiment,
+        trustScoreMin:
+          overrides.trustScoreMin !== undefined ? overrides.trustScoreMin : trustScoreMin,
+        selectedAuthors:
+          overrides.selectedAuthors !== undefined ? overrides.selectedAuthors : selectedAuthors,
       };
 
-      // Build the filter object
       const filters: Record<string, unknown> = {};
 
-      if (current.tags?.length > 0) filters.tags = current.tags;
-      if (current.countryIds?.length > 0) filters.countryIds = current.countryIds;
-      if (current.cityIds?.length > 0) filters.cityIds = current.cityIds;
+      if ((current.tags as string[])?.length > 0) filters.tags = current.tags;
+      if ((current.countryIds as string[])?.length > 0) filters.countryIds = current.countryIds;
+      if ((current.cityIds as string[])?.length > 0) filters.cityIds = current.cityIds;
       if (current.nearMe && current.userLocation) {
         filters.nearMe = true;
         filters.userLocation = current.userLocation;
@@ -159,9 +187,24 @@ export const NewsFilters = ({
       if (current.podcastsOnly) filters.mediaType = 'podcast';
       if (current.category) filters.category = current.category;
       if (current.language) filters.language = current.language;
+      if (current.sentiment) filters.sentiment = current.sentiment;
+      if (typeof current.trustScoreMin === 'number' && (current.trustScoreMin as number) > 0) {
+        filters.trustScoreMin = current.trustScoreMin;
+      }
+      if ((current.selectedAuthors as string[])?.length > 0) {
+        filters.authorNames = current.selectedAuthors;
+      }
+      // Fix: emit sourceId (uuid) not source name as search string
+      if (current.source) filters.sourceId = current.source;
 
-      // Convert date range string to from/to
-      if (current.dateRange) {
+      // Custom date range takes precedence over preset
+      if (current.customDateRange) {
+        const dr = current.customDateRange as DateRange;
+        filters.dateRange = {
+          ...(dr.from ? { from: dr.from.toISOString() } : {}),
+          ...(dr.to ? { to: dr.to.toISOString() } : {}),
+        };
+      } else if (current.dateRange) {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         switch (current.dateRange) {
@@ -186,21 +229,14 @@ export const NewsFilters = ({
             break;
           }
           default:
-            // Numeric year like "2024"
-            if (/^\d{4}$/.test(current.dateRange)) {
-              const yr = parseInt(current.dateRange);
+            if (/^\d{4}$/.test(current.dateRange as string)) {
+              const yr = parseInt(current.dateRange as string);
               filters.dateRange = {
                 from: new Date(yr, 0, 1).toISOString(),
                 to: new Date(yr, 11, 31, 23, 59, 59).toISOString(),
               };
             }
         }
-      }
-
-      // Search by source name (filter in the quick search)
-      if (current.source) {
-        const src = sources.find((s) => s.id === current.source);
-        if (src) filters.search = src.name;
       }
 
       onFiltersChange(filters);
@@ -215,10 +251,13 @@ export const NewsFilters = ({
       nearMe,
       userLocation,
       dateRange,
+      customDateRange,
       featuredOnly,
       inStoryOnly,
       podcastsOnly,
-      sources,
+      sentiment,
+      trustScoreMin,
+      selectedAuthors,
       onFiltersChange,
     ],
   );
@@ -305,6 +344,11 @@ export const NewsFilters = ({
     emitFilters({ dateRange: newDateRange });
   };
 
+  const handleAuthorsChange = (next: string[]) => {
+    setSelectedAuthors(next);
+    emitFilters({ selectedAuthors: next });
+  };
+
   const handleFeaturedToggle = () => {
     const newVal = !featuredOnly;
     setFeaturedOnly(newVal);
@@ -333,9 +377,14 @@ export const NewsFilters = ({
     setNearMe(false);
     setUserLocation(null);
     setDateRange('');
+    setCustomDateRange(undefined);
+    setShowCustomDate(false);
     setFeaturedOnly(false);
     setInStoryOnly(false);
     setPodcastsOnly(false);
+    setSentiment('');
+    setTrustScoreMin(0);
+    setSelectedAuthors([]);
     onFiltersChange({});
   };
 
@@ -348,8 +397,12 @@ export const NewsFilters = ({
     selectedCities.length > 0 ||
     nearMe ||
     dateRange ||
+    customDateRange ||
     featuredOnly ||
-    podcastsOnly;
+    podcastsOnly ||
+    sentiment ||
+    trustScoreMin > 0 ||
+    selectedAuthors.length > 0;
 
   return (
     <Card style={{ top: 16 }} className="sticky">
@@ -379,6 +432,50 @@ export const NewsFilters = ({
             Podcasts only
           </span>
           <Switch checked={podcastsOnly} onCheckedChange={handlePodcastsToggle} />
+        </div>
+
+        <Separator />
+
+        {/* Sentiment */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <SmilePlus size={16} />
+            <span className="text-sm font-medium">Sentiment</span>
+          </div>
+          <div className="flex gap-1">
+            {(['', 'positive', 'neutral', 'negative'] as const).map((s) => (
+              <Button
+                key={s || 'any'}
+                variant={sentiment === s ? 'default' : 'outline'}
+                size="sm"
+                style={{ flex: 1, fontSize: '0.7rem', padding: '0 4px', height: 28 }}
+                onClick={() => {
+                  setSentiment(s);
+                  emitFilters({ sentiment: s });
+                }}
+              >
+                {s || 'Any'}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Trust score */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Min credibility</span>
+            <span className="text-xs text-muted-foreground">{trustScoreMin > 0 ? `≥${trustScoreMin}` : 'Any'}</span>
+          </div>
+          <Slider
+            min={0}
+            max={100}
+            step={10}
+            value={[trustScoreMin]}
+            onValueChange={([v]) => {
+              setTrustScoreMin(v);
+              emitFilters({ trustScoreMin: v });
+            }}
+          />
         </div>
 
         <Separator />
@@ -557,27 +654,66 @@ export const NewsFilters = ({
           </div>
         )}
 
+        {/* Author Filter */}
+        {authors.length > 0 && (
+          <div className="flex flex-col gap-3">
+            <span className="text-sm font-medium">Author</span>
+            <MultiCombobox
+              options={authors}
+              selected={selectedAuthors}
+              onChange={handleAuthorsChange}
+              placeholder="All authors"
+              searchPlaceholder="Search authors…"
+              emptyText="No authors found."
+            />
+          </div>
+        )}
+
         {/* Date Range Filter */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <Calendar size={16} />
             <span className="text-sm font-medium">Published Date</span>
           </div>
-          <Select value={dateRange} onValueChange={handleDateRangeChange}>
-            <SelectTrigger style={{ width: '100%' }}>
-              <SelectValue placeholder="All dates" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All dates</SelectItem>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">This week</SelectItem>
-              <SelectItem value="month">This month</SelectItem>
-              <SelectItem value="year">This year</SelectItem>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-              <SelectItem value="2023">2023</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap gap-1">
+            {([['', 'Any'], ['today', 'Today'], ['week', 'Week'], ['month', 'Month'], ['year', 'Year']] as [string, string][]).map(
+              ([val, label]) => (
+                <Badge
+                  key={val || 'any'}
+                  variant={dateRange === val && !customDateRange ? 'default' : 'outline'}
+                  style={{ fontSize: '0.7rem', cursor: 'pointer' }}
+                  onClick={() => {
+                    const newVal = val;
+                    setDateRange(newVal);
+                    setCustomDateRange(undefined);
+                    setShowCustomDate(false);
+                    emitFilters({ dateRange: newVal, customDateRange: undefined });
+                  }}
+                >
+                  {label}
+                </Badge>
+              ),
+            )}
+            <Badge
+              variant={showCustomDate || customDateRange ? 'default' : 'outline'}
+              style={{ fontSize: '0.7rem', cursor: 'pointer' }}
+              onClick={() => {
+                setShowCustomDate((v) => !v);
+                if (!showCustomDate) setDateRange('');
+              }}
+            >
+              Custom
+            </Badge>
+          </div>
+          {showCustomDate && (
+            <DatePickerWithRange
+              date={customDateRange}
+              onSelect={(range) => {
+                setCustomDateRange(range ?? undefined);
+                emitFilters({ customDateRange: range ?? undefined, dateRange: '' });
+              }}
+            />
+          )}
         </div>
 
         {/* Trending Tags */}
