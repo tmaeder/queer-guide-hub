@@ -82,6 +82,7 @@ export default function MarketplaceItemDetail() {
     type: 'marketplace',
     slug: listing?.slug,
     title: listing?.title,
+    image: listing?.images?.[0],
   });
   const reviews = data?.reviews ?? [];
 

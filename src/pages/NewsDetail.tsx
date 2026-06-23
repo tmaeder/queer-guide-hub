@@ -3,6 +3,8 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { MarketplaceRelated } from '@/components/marketplace/MarketplaceRelated';
+import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -68,7 +70,7 @@ export default function NewsDetail() {
   const [loading, setLoading] = useState(true);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
-  const { isAdmin } = useAdminEditMode();
+  const { isAdmin, altHeld } = useAdminEditMode();
   const isMobile = useIsMobile();
 
   const article = data?.article ?? null;
@@ -416,6 +418,15 @@ export default function NewsDetail() {
           {(article.editorial_note || isAdmin) && (
             <aside aria-label="Why this matters" className="border-l-2 border-foreground py-2 pl-6">
               <p className="m-0 text-2xs uppercase tracking-[0.2em] text-muted-foreground">
+          {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote.
+              Shown to everyone when populated. Admins reveal a placeholder slot by holding
+              Alt so they can alt-click to author one (never shown during normal browsing). */}
+          {(article.editorial_note || altHeld) && (
+            <aside
+              aria-label="Why this matters"
+              className="border-l-2 border-foreground pl-6 py-2"
+            >
+              <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground m-0">
                 Why this matters
               </p>
               <Editable
@@ -517,5 +528,12 @@ export default function NewsDetail() {
 
       <MarketplaceRelated className="mt-12" title="Shop LGBTQ+ brands" />
     </div>
+      <MoreLikeThisByTag
+        entityType="news"
+        entityId={article.id}
+        title="Related by tag"
+        className="mt-10"
+      />
+    </TracingBeam>
   );
 }

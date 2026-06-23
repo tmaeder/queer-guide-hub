@@ -132,12 +132,12 @@ function extractSocialUrls($: cheerio.CheerioAPI): string[] {
   const out = new Set<string>();
   $('a[rel~="me"]').each((_i, el) => {
     const href = $(el).attr('href');
-    if (href) out.add(href.split('?')[0]);
+    if (href) out.add(href.split('?')[0] ?? href);
   });
   $('a[href]').each((_i, el) => {
     if (out.size >= 12) return;
     const href = $(el).attr('href') ?? '';
-    if (hosts.test(href)) out.add(href.split('?')[0]);
+    if (hosts.test(href)) out.add(href.split('?')[0] ?? href);
   });
   return Array.from(out).slice(0, 12);
 }
