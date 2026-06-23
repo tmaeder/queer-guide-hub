@@ -45,7 +45,7 @@ import AdminDuplicates from '../AdminDuplicates';
 describe('AdminDuplicates', () => {
   it('renders a venue cluster and suggests the higher-quality canonical', async () => {
     renderWithProviders(<AdminDuplicates />);
-    await waitFor(() => expect(screen.getByText('Duplicate venues')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('2 copies')).toBeInTheDocument());
     await waitFor(() => expect(screen.getByText('440-castro')).toBeInTheDocument());
     // v1 (quality 80) should be the suggested canonical, not v2 (quality 50).
     expect(screen.getByText('canonical')).toBeInTheDocument();
