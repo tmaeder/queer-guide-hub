@@ -19,6 +19,7 @@ import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMeta } from '@/hooks/useMeta';
+import { socialSameAs } from '@/lib/social/registry';
 import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
@@ -62,6 +63,7 @@ export default function EventDetail() {
     type: 'event',
     slug: event?.slug,
     title: event?.title,
+    image: resolveEntityImage('event', event).url ?? undefined,
     city: event?.cities?.name ?? event?.city,
     country: event?.countries?.name ?? event?.country,
   });
@@ -102,6 +104,7 @@ export default function EventDetail() {
               : undefined,
           image: eventOgImage || undefined,
           description: event.description ?? undefined,
+          sameAs: socialSameAs(event.social_links).length ? socialSameAs(event.social_links) : undefined,
         }
       : undefined,
   });

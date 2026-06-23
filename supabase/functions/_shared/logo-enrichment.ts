@@ -110,6 +110,35 @@ export async function resolveLogoUrl(
   }
 }
 
+export interface FetchedLogo {
+  bytes: Uint8Array
+  contentType: string
+}
+
+/**
+ * Fetch the REAL logo image bytes for a website, or null when no real logo
+ * exists. Probes logo.dev with `fallback=404`, so a 200 body is guaranteed to be
+ * an actual brand logo (never the generic monogram). Returned bytes are meant to
+ * be mirrored to our own R2/CDN, so the logo.dev token never reaches a public
+ * URL. Tiny/empty responses are treated as "no logo".
+ */
+export async function fetchRealLogo(
+  website: string | null | undefined,
+): Promise<FetchedLogo | null> {
+  const probeUrl = buildLogoProbeUrl(extractDomain(website) ?? '')
+  if (!probeUrl) return null
+  try {
+    const res = await fetch(probeUrl, { method: 'GET' })
+    if (!res.ok) return null
+    const bytes = new Uint8Array(await res.arrayBuffer())
+    if (bytes.byteLength < 100) return null // logo.dev sometimes 200s a 1px blank
+    const contentType = res.headers.get('content-type') || 'image/png'
+    return { bytes, contentType }
+  } catch {
+    return null
+  }
+}
+
 /** Small delay helper for rate limiting in batch operations */
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))

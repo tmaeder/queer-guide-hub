@@ -23,6 +23,8 @@ export interface ExtractMeta {
   author: string | null;
   publishedAt: string | null;
   image: string | null;
+  /** Social profile URLs harvested from rel="me" links + anchors (schema.org sameAs shape). */
+  sameAs?: string[];
 }
 
 export interface ExtractLinks {
@@ -119,7 +121,25 @@ function extractMeta($: cheerio.CheerioAPI, url: string): ExtractMeta {
       ),
       url,
     ),
+    sameAs: extractSocialUrls($),
   };
+}
+
+/** Harvest social profile URLs from rel="me" links and known-host anchors. */
+function extractSocialUrls($: cheerio.CheerioAPI): string[] {
+  const hosts =
+    /(instagram\.com|tiktok\.com|(?:twitter|x)\.com|facebook\.com|youtube\.com|linkedin\.com|threads\.net|bsky\.app|t\.me\/|patreon\.com|ko-fi\.com|twitch\.tv|open\.spotify\.com|soundcloud\.com|onlyfans\.com|fansly\.com|fetlife\.com|joyclub\.|(?:planet|gay)?romeo\.com|grindr\.com|scruff\.com|recon\.com|pornhub\.com|xhamster\.com|xtube\.com)/i;
+  const out = new Set<string>();
+  $('a[rel~="me"]').each((_i, el) => {
+    const href = $(el).attr('href');
+    if (href) out.add(href.split('?')[0] ?? href);
+  });
+  $('a[href]').each((_i, el) => {
+    if (out.size >= 12) return;
+    const href = $(el).attr('href') ?? '';
+    if (hosts.test(href)) out.add(href.split('?')[0] ?? href);
+  });
+  return Array.from(out).slice(0, 12);
 }
 
 /** schema.org @type values worth keeping (substring match, case-insensitive). */

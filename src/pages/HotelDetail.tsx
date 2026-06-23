@@ -52,6 +52,7 @@ export default function HotelDetail() {
     type: 'hotel',
     slug: hotel?.slug,
     title: hotel?.name,
+    image: hotel?.images?.[0],
   });
   const loading = primaryLoading || (!primary && fallbackLoading);
   const { data: tripStatus } = useEntityTripStatus('hotel', hotel?.id);

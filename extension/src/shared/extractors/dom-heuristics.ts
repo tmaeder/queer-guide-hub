@@ -40,6 +40,19 @@ export function extractDomHeuristics(doc: Document, sourceUrl: string): Detected
     fc.price = 0.3;
   }
 
+  // Social profile links anywhere on the page (footer / header / contact).
+  const socialHosts =
+    /(instagram\.com|tiktok\.com|(?:twitter|x)\.com|facebook\.com|youtube\.com|linkedin\.com|threads\.net|bsky\.app|t\.me\/|mastodon|patreon\.com|ko-fi\.com|twitch\.tv|open\.spotify\.com|onlyfans\.com|fansly\.com|fetlife\.com|joyclub\.|(?:planet|gay)?romeo\.com|grindr\.com|scruff\.com|recon\.com|pornhub\.com|xhamster\.com|xtube\.com)/i;
+  const socials = new Set<string>();
+  for (const a of Array.from(doc.querySelectorAll<HTMLAnchorElement>("a[href]"))) {
+    const href = a.href;
+    if (href && socialHosts.test(href)) socials.add(href.split("?")[0] ?? href);
+  }
+  if (socials.size) {
+    raw.sameAs = Array.from(socials).slice(0, 12);
+    fc.sameAs = 0.5;
+  }
+
   raw.url = sourceUrl;
 
   return [

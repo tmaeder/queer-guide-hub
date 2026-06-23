@@ -3,7 +3,6 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
-import { MarketplaceRelated } from '@/components/marketplace/MarketplaceRelated';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { useEffect, useMemo, useState } from 'react';
@@ -121,7 +120,7 @@ export default function NewsDetail() {
   );
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
-  const { isAdmin } = useAdminEditMode();
+  const { isAdmin, altHeld } = useAdminEditMode();
   const isMobile = useIsMobile();
 
   // Mark the article as read once we have its id (drives streak + challenge progress).
@@ -486,9 +485,9 @@ export default function NewsDetail() {
         {/* Main Content */}
         <div className="flex flex-col gap-6">
           {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote.
-              Shown to everyone when populated. Admins see a placeholder slot when empty so
-              they can alt-click to author one. */}
-          {(article.editorial_note || isAdmin) && (
+              Shown to everyone when populated. Admins reveal a placeholder slot by holding
+              Alt so they can alt-click to author one (never shown during normal browsing). */}
+          {(article.editorial_note || altHeld) && (
             <aside
               aria-label="Why this matters"
               className="border-l-2 border-foreground pl-6 py-2"
@@ -773,8 +772,6 @@ export default function NewsDetail() {
         title="Related by tag"
         className="mt-10"
       />
-
-      <MarketplaceRelated className="mt-12" title="Shop LGBTQ+ brands" />
     </TracingBeam>
   );
 }

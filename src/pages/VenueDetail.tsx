@@ -60,6 +60,7 @@ export default function VenueDetail() {
     type: 'venue',
     slug: venue?.slug,
     title: venue?.name,
+    image: venue?.images?.[0],
     city: venue?.cities?.name,
     country: venue?.countries?.name,
   });
