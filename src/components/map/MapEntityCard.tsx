@@ -230,25 +230,57 @@ export function MapEntityCard({
     );
   }
 
-  const isRail = variant === 'rail';
-  const clickable = isRail && point.linkTo && onNavigate;
+  // Rail: a compact horizontal row — a small leading tile (photo thumbnail when
+  // present, else one category glyph) beside the text. Roughly half the height
+  // of a media-on-top card, and the icon is sized sensibly instead of floating
+  // in a tall empty band (most venues have no photo).
+  if (variant === 'rail') {
+    return (
+      <div className="flex w-full items-center gap-2 overflow-hidden rounded-container border border-border bg-background p-2">
+        {hasImage ? (
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-element">
+            <Image
+              imageUrl={point.image}
+              optimizedUrl={point.optimizedImage}
+              thumbnailUrl={point.thumbImage}
+              fit={point.isLogo ? 'contain' : 'cover'}
+              alt=""
+              aspect="square"
+              imageRole="thumb"
+              fallbackEntityType={fallbackTheme}
+              fallbackKey={point.id}
+              fallbackIcon={Icon}
+            />
+          </div>
+        ) : (
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-element bg-muted">
+            <MarkerGlyph icon={Icon} className="h-5 w-5" style={{ color: point.color }} />
+          </div>
+        )}
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="truncate text-15 font-semibold leading-tight text-foreground">
+            {point.name}
+          </div>
+          {metaLine && <div className="truncate text-13 text-muted-foreground">{metaLine}</div>}
+          <Signals point={point} compact />
+        </div>
+      </div>
+    );
+  }
 
-  const wrapperClass = `flex w-full flex-col overflow-hidden ${
-    isRail ? 'rounded-container border border-border bg-background' : ''
-  } ${clickable ? 'cursor-pointer text-left' : ''} ${className ?? ''}`;
-
+  // Popup (the only remaining variant): media-on-top card with inline actions.
   const body = (
     <>
       {hasImage ? (
-        <div className={`relative w-full ${isRail ? 'h-20' : 'h-28'}`}>
+        <div className="relative h-28 w-full">
           <Image
             imageUrl={point.image}
             optimizedUrl={point.optimizedImage}
             thumbnailUrl={point.thumbImage}
             fit={point.isLogo ? 'contain' : 'cover'}
             alt={point.name}
-            aspect={isRail ? 'auto' : 'card'}
-            heightPx={isRail ? 80 : 112}
+            aspect="card"
+            heightPx={112}
             imageRole="cover"
             fallbackEntityType={fallbackTheme}
             fallbackKey={point.id}
@@ -262,26 +294,17 @@ export function MapEntityCard({
           </div>
         </div>
       ) : (
-        // No photo (most venues): a muted ground with one category glyph in the
-        // entity's accent color. Kept the SAME height as the image band so every
-        // rail card lines up — uneven heights were the main "unpolished" tell.
-        <div
-          className={`flex w-full items-center justify-center bg-muted ${isRail ? 'h-20' : 'h-16'}`}
-        >
+        <div className="flex h-16 w-full items-center justify-center bg-muted">
           <MarkerGlyph icon={Icon} className="h-6 w-6" style={{ color: point.color }} />
         </div>
       )}
 
-      <div className={`flex flex-col p-2 ${isRail ? 'gap-1' : 'gap-1.5'}`}>
-        <div
-          className={`truncate font-semibold leading-tight text-foreground ${
-            isRail ? 'text-15' : 'text-body-lg'
-          }`}
-        >
+      <div className="flex flex-col gap-1.5 p-2">
+        <div className="truncate text-body-lg font-semibold leading-tight text-foreground">
           {point.name}
         </div>
         {metaLine && <div className="truncate text-13 text-muted-foreground">{metaLine}</div>}
-        <Signals point={point} compact={isRail} />
+        <Signals point={point} />
 
         {variant === 'popup' && (
           <div className="mt-1 flex items-center gap-4">
@@ -311,17 +334,7 @@ export function MapEntityCard({
     </>
   );
 
-  // A native <button> gives the clickable rail card real keyboard + role
-  // semantics (the popup block with nested buttons never renders when clickable).
-  if (clickable) {
-    return (
-      <button type="button" className={wrapperClass} onClick={() => onNavigate!(point.linkTo!)}>
-        {body}
-      </button>
-    );
-  }
-
-  return <div className={wrapperClass}>{body}</div>;
+  return <div className={`flex w-full flex-col overflow-hidden ${className ?? ''}`}>{body}</div>;
 }
 
 export default MapEntityCard;
