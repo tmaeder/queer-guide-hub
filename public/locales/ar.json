@@ -2766,5 +2766,38 @@
       "both": "{{name}} متاح للقاء الآن 🟢",
       "youOnly": "أنت مُعلَّم كمتاح للقاء 🟢"
     }
+  },
+  "newsDetail": {
+    "notFound": "المقال غير موجود",
+    "notFoundDesc": "المقال الذي تبحث عنه غير موجود.",
+    "backToNews": "العودة إلى الأخبار",
+    "share": "مشاركة",
+    "readAtSource": "اقرأ من المصدر",
+    "fresh": "جديد",
+    "reportedByOutlets": "نقلته {{count}} وسائل إعلام",
+    "featured": "مميّز",
+    "byAuthor": "بقلم {{author}}",
+    "minRead": "قراءة {{count}} دقيقة",
+    "viewsCount": "{{count}} مشاهدة",
+    "whyThisMatters": "لماذا هذا مهم",
+    "editorialPlaceholder": "انقر مع مفتاح Alt لإضافة السياق — جملة إلى ثلاث عن أهمية هذا الخبر.",
+    "bodyFallback": "الخبر الكامل متاح في المصدر الأصلي.",
+    "originallyPublishedBy": "نُشر أصلاً في {{source}}.",
+    "viewOriginal": "عرض التقرير الأصلي",
+    "integritySatire": "موسوم كمحتوى ساخر — وليس تقريرًا حرفيًا.",
+    "integrityAdvertorial": "محتوى مموّل / إعلاني.",
+    "integritySentimentConflict": "تختلف المصادر في النبرة — اقرأه بحذر.",
+    "closeToHome": "قريب من مكان إقامتك",
+    "seeFullStory": "عرض القصة كاملة",
+    "topics": "المواضيع",
+    "home": "الرئيسية",
+    "whereThisHappens": "أين يحدث هذا",
+    "aboutSource": "عن المصدر",
+    "corroboratedAcross": "مؤكَّد من {{count}} وسائل إعلام",
+    "lastVerified": "آخر تحقق {{time}}",
+    "visitSource": "زيارة {{source}}",
+    "source": "المصدر",
+    "moreLikeThis": "محتوى مشابه",
+    "forYou": "مختار لك"
   }
 }

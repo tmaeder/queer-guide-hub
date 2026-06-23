@@ -2798,5 +2798,38 @@
       "both": "{{name}} сейчас готов(а) встретиться 🟢",
       "youOnly": "Вы отмечены как готовы встретиться 🟢"
     }
+  },
+  "newsDetail": {
+    "notFound": "Статья не найдена",
+    "notFoundDesc": "Статья, которую вы ищете, не существует.",
+    "backToNews": "Назад к новостям",
+    "share": "Поделиться",
+    "readAtSource": "Читать в источнике",
+    "fresh": "Новое",
+    "reportedByOutlets": "Сообщают {{count}} изданий",
+    "featured": "Рекомендуемое",
+    "byAuthor": "Автор: {{author}}",
+    "minRead": "{{count}} мин чтения",
+    "viewsCount": "{{count}} просмотров",
+    "whyThisMatters": "Почему это важно",
+    "editorialPlaceholder": "Alt-клик, чтобы добавить контекст — 1–3 предложения о том, почему это важно.",
+    "bodyFallback": "Полный текст доступен в оригинальном источнике.",
+    "originallyPublishedBy": "Впервые опубликовано в {{source}}.",
+    "viewOriginal": "Открыть оригинал",
+    "integritySatire": "Помечено как сатира — не буквальный репортаж.",
+    "integrityAdvertorial": "Спонсорский / рекламный материал.",
+    "integritySentimentConflict": "Источники расходятся в тоне — читайте внимательно.",
+    "closeToHome": "Рядом с вашим городом",
+    "seeFullStory": "Смотреть всю историю",
+    "topics": "Темы",
+    "home": "Дом",
+    "whereThisHappens": "Где это происходит",
+    "aboutSource": "Об источнике",
+    "corroboratedAcross": "Подтверждено {{count}} изданиями",
+    "lastVerified": "Проверено {{time}}",
+    "visitSource": "Перейти к {{source}}",
+    "source": "источник",
+    "moreLikeThis": "Похожее",
+    "forYou": "Для вас"
   }
 }

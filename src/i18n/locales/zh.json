@@ -2766,5 +2766,38 @@
       "both": "{{name}} 现在有空见面 🟢",
       "youOnly": "你已标记为有空见面 🟢"
     }
+  },
+  "newsDetail": {
+    "notFound": "未找到文章",
+    "notFoundDesc": "您查找的文章不存在。",
+    "backToNews": "返回新闻",
+    "share": "分享",
+    "readAtSource": "查看原文",
+    "fresh": "最新",
+    "reportedByOutlets": "{{count}} 家媒体报道",
+    "featured": "精选",
+    "byAuthor": "作者：{{author}}",
+    "minRead": "阅读约 {{count}} 分钟",
+    "viewsCount": "{{count}} 次浏览",
+    "whyThisMatters": "为何重要",
+    "editorialPlaceholder": "Alt+点击添加背景——用 1–3 句说明这条新闻为何重要。",
+    "bodyFallback": "完整报道请见原始来源。",
+    "originallyPublishedBy": "最初由 {{source}} 发布。",
+    "viewOriginal": "查看原始报道",
+    "integritySatire": "已标记为讽刺——并非字面报道。",
+    "integrityAdvertorial": "赞助/软文内容。",
+    "integritySentimentConflict": "各来源对语气存在分歧——请谨慎阅读。",
+    "closeToHome": "靠近你的所在地",
+    "seeFullStory": "查看完整报道",
+    "topics": "话题",
+    "home": "主页",
+    "whereThisHappens": "发生地点",
+    "aboutSource": "关于来源",
+    "corroboratedAcross": "{{count}} 家媒体证实",
+    "lastVerified": "最近核实 {{time}}",
+    "visitSource": "访问 {{source}}",
+    "source": "来源",
+    "moreLikeThis": "相关推荐",
+    "forYou": "为你推荐"
   }
 }
