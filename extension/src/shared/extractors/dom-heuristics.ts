@@ -46,7 +46,7 @@ export function extractDomHeuristics(doc: Document, sourceUrl: string): Detected
   const socials = new Set<string>();
   for (const a of Array.from(doc.querySelectorAll<HTMLAnchorElement>("a[href]"))) {
     const href = a.href;
-    if (href && socialHosts.test(href)) socials.add(href.split("?")[0]);
+    if (href && socialHosts.test(href)) socials.add(href.split("?")[0] ?? href);
   }
   if (socials.size) {
     raw.sameAs = Array.from(socials).slice(0, 12);
