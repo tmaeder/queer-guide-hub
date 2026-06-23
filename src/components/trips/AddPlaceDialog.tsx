@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, Star, Clock, X, Loader2 } from 'lucide-react';
+import { Search, MapPin, Star, Clock, X, Loader2, Sparkles } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,8 +22,10 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { listFromWhere } from '@/hooks/usePageFetchers';
-import { useTripMutations, type TripDay } from '@/hooks/useTrips';
+import { useTripMutations, type TripDay, type TripPlace } from '@/hooks/useTrips';
 import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
+import { fetchSimilar } from '@/lib/searchClient';
+import { resolveEntityGeo } from '@/lib/trips/resolveEntityGeo';
 import { SocialSignalBadges } from './SocialSignalBadges';
 
 interface SearchResult {
@@ -77,13 +79,18 @@ interface Props {
   tripId: string;
   days: TripDay[];
   preselectedDayId?: string | null;
+  /** Existing trip places — seeds the "Nearby" tab and excludes duplicates. */
+  places?: TripPlace[];
 }
 
-export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }: Props) {
+export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, places = [] }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { addPlace } = useTripMutations();
   const [mode, setMode] = useState('search');
+  const [nearbyResults, setNearbyResults] = useState<SearchResult[]>([]);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyTried, setNearbyTried] = useState(false);
   const [dayId, setDayId] = useState<string>(preselectedDayId || '');
   const [searching, setSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -107,6 +114,8 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
     setMode('search');
     setSearchQuery('');
     setResults([]);
+    setNearbyResults([]);
+    setNearbyTried(false);
     setSelected(null);
     setCustomName('');
     setCustomAddress('');
@@ -182,6 +191,64 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
   const handleSearch = () => runSearch(searchQuery);
 
+  // "Nearby" tab: semantic neighbours of the most-recently-added venue/event in
+  // the trip (related_entities via the search-proxy /similar endpoint). Geo is
+  // resolved client-side so added places still get map pins + safety scoring.
+  const existingPlaceIds = new Set(
+    places.map((p) => p.venue_id ?? p.event_id).filter((id): id is string => !!id),
+  );
+
+  const seedPlace = [...places]
+    .sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))
+    .find((p) => p.venue_id || p.event_id);
+
+  const runNearby = async () => {
+    if (!seedPlace) {
+      setNearbyTried(true);
+      return;
+    }
+    setNearbyLoading(true);
+    setSelected(null);
+    try {
+      const seedType = seedPlace.venue_id ? 'venue' : 'event';
+      const seedId = (seedPlace.venue_id ?? seedPlace.event_id) as string;
+      const hits = await fetchSimilar({ type: seedType, id: seedId }, 12, ['venue', 'event']);
+      const refs = hits
+        .filter((h) => (h.type === 'venue' || h.type === 'event') && !!h.objectID)
+        .filter((h) => !existingPlaceIds.has(h.objectID as string))
+        .map((h) => ({ type: h.type as 'venue' | 'event', id: h.objectID as string }));
+      const geoMap = await resolveEntityGeo(refs);
+      const mapped: SearchResult[] = refs.map((r) => {
+        const g = geoMap.get(r.id);
+        const hit = hits.find((h) => h.objectID === r.id);
+        return {
+          id: r.id,
+          name: g?.name || hit?.title || hit?.name || 'Untitled',
+          type: r.type,
+          city: g ? undefined : (hit?.city as string | undefined),
+          address: g?.address ?? undefined,
+          latitude: g?.latitude ?? undefined,
+          longitude: g?.longitude ?? undefined,
+          city_id: g?.city_id ?? undefined,
+          country_id: g?.country_id ?? undefined,
+        };
+      });
+      setNearbyResults(mapped);
+    } catch (err) {
+      console.error('Nearby error:', err);
+    } finally {
+      setNearbyLoading(false);
+      setNearbyTried(true);
+    }
+  };
+
+  const handleModeChange = (next: string) => {
+    setMode(next);
+    if (next === 'nearby' && !nearbyTried && !nearbyLoading) {
+      void runNearby();
+    }
+  };
+
   const clearRecent = () => {
     try {
       localStorage.removeItem(RECENT_SEARCHES_KEY);
@@ -194,12 +261,51 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
   const filteredResults = typeFilter === 'all' ? results : results.filter((r) => r.type === typeFilter);
   const countFor = (t: TypeFilter) => (t === 'all' ? results.length : results.filter((r) => r.type === t).length);
 
-  const venueIdsInResults = filteredResults.filter((r) => r.type === 'venue').map((r) => r.id);
+  const venueIdsInResults = [...filteredResults, ...nearbyResults]
+    .filter((r) => r.type === 'venue')
+    .map((r) => r.id);
   const { data: socialSignals } = useVenueSocialSignals(venueIdsInResults);
+
+  const renderResultItems = (items: SearchResult[]) => (
+    <ul className="mt-4 max-h-[280px] overflow-auto flex flex-col gap-1 -mx-1 px-1">
+      {items.map((r) => {
+        const isSelected = selected?.id === r.id && selected?.type === r.type;
+        return (
+          <li key={`${r.type}-${r.id}`}>
+            <button
+              type="button"
+              onClick={() => setSelected(r)}
+              className={`w-full text-left min-h-[52px] px-4 py-2.5 rounded-container border ${isSelected ? 'bg-muted border-foreground/40' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
+            >
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-medium">{r.name}</span>
+                <Badge variant="outline" className="rounded-full text-2xs uppercase tracking-wider">
+                  {r.type}
+                </Badge>
+                {r.type === 'venue' && <SocialSignalBadges signal={socialSignals?.get(r.id)} />}
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                {(r.address || r.city) && (
+                  <span className="flex items-center gap-0.5">
+                    <MapPin size={10} /> {r.address || r.city}
+                  </span>
+                )}
+                {r.rating != null && (
+                  <span className="flex items-center gap-0.5">
+                    <Star size={10} /> {r.rating}
+                  </span>
+                )}
+              </div>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
 
   const handleSubmit = async () => {
     try {
-      if (mode === 'search' && selected) {
+      if ((mode === 'search' || mode === 'nearby') && selected) {
         await addPlace.mutateAsync({
           trip_id: tripId, day_id: dayId || null,
           venue_id: selected.type === 'venue' ? selected.id : null,
@@ -231,7 +337,8 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
   };
 
   const canSubmit =
-    (mode === 'search' && selected !== null) || (mode === 'custom' && customName.trim().length > 0);
+    ((mode === 'search' || mode === 'nearby') && selected !== null) ||
+    (mode === 'custom' && customName.trim().length > 0);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
@@ -262,9 +369,13 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
           </Select>
         </div>
 
-        <Tabs value={mode} onValueChange={setMode}>
+        <Tabs value={mode} onValueChange={handleModeChange}>
           <TabsList>
             <TabsTrigger value="search">{t('trips.addPlace.searchTab', 'Search queer.guide')}</TabsTrigger>
+            <TabsTrigger value="nearby">
+              <Sparkles size={13} className="mr-1" />
+              {t('trips.addPlace.nearbyTab', 'Suggested')}
+            </TabsTrigger>
             <TabsTrigger value="custom">{t('trips.addPlace.customTab', 'Custom Place')}</TabsTrigger>
           </TabsList>
 
@@ -346,46 +457,30 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
               </div>
             )}
 
-            {filteredResults.length > 0 && (
-              <ul className="mt-4 max-h-[280px] overflow-auto flex flex-col gap-1 -mx-1 px-1">
-                {filteredResults.map((r) => {
-                  const isSelected = selected?.id === r.id && selected?.type === r.type;
-                  return (
-                    <li key={`${r.type}-${r.id}`}>
-                      <button
-                        type="button"
-                        onClick={() => setSelected(r)}
-                        className={`w-full text-left min-h-[52px] px-4 py-2.5 rounded-container border ${isSelected ? 'bg-muted border-foreground/40' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
-                      >
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-medium">{r.name}</span>
-                          <Badge variant="outline" className="rounded-full text-2xs uppercase tracking-wider">{r.type}</Badge>
-                          {r.type === 'venue' && (
-                            <SocialSignalBadges signal={socialSignals?.get(r.id)} />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                          {r.address && (
-                            <span className="flex items-center gap-0.5">
-                              <MapPin size={10} /> {r.address}
-                            </span>
-                          )}
-                          {r.rating != null && (
-                            <span className="flex items-center gap-0.5">
-                              <Star size={10} /> {r.rating}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+            {filteredResults.length > 0 && renderResultItems(filteredResults)}
 
             {!searching && results.length === 0 && searchQuery.trim() && (
               <p className="text-sm text-muted-foreground mt-4 text-center">
                 {t('trips.addPlace.noResults', 'No results found. Try a different search or add a custom place.')}
+              </p>
+            )}
+          </TabsContent>
+
+          <TabsContent value="nearby">
+            {nearbyLoading && (
+              <div className="flex justify-center py-8">
+                <Loader2 size={20} className="animate-spin text-muted-foreground" aria-label="Loading" />
+              </div>
+            )}
+            {!nearbyLoading && nearbyResults.length > 0 && renderResultItems(nearbyResults)}
+            {!nearbyLoading && nearbyTried && nearbyResults.length === 0 && (
+              <p className="text-sm text-muted-foreground mt-4 text-center">
+                {seedPlace
+                  ? t('trips.addPlace.nearbyEmpty', 'No suggestions right now. Try search instead.')
+                  : t(
+                      'trips.addPlace.nearbyNoSeed',
+                      'Add a venue or event to your trip first, then we can suggest similar places.',
+                    )}
               </p>
             )}
           </TabsContent>

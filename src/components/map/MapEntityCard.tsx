@@ -18,6 +18,7 @@ import { formatDistance } from '@/lib/formatDistance';
 import { timeUntil } from '@/utils/relativeTime';
 import { iconForMarker, categoryLabel } from './mapIcons';
 import type { MapPointSummary } from './mapPoint';
+import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 
 type CardVariant = 'popup' | 'rail' | 'hover';
 
@@ -304,6 +305,20 @@ export function MapEntityCard({
                 <Share2 className="h-3.5 w-3.5" aria-hidden />
                 Share
               </button>
+            )}
+            {(point.type === 'venues' || point.type === 'events') && (
+              <QuietAddToTripButton
+                variant="inline"
+                className="ml-auto h-7 w-7"
+                entity={{
+                  type: point.type === 'venues' ? 'venue' : 'event',
+                  id: point.id,
+                  name: point.name,
+                  latitude: point.lat,
+                  longitude: point.lng,
+                  category: point.category ?? null,
+                }}
+              />
             )}
           </div>
         )}
