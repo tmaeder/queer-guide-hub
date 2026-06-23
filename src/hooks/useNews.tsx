@@ -34,6 +34,7 @@ interface NewsFilters {
   sourceId?: string;
   category?: string;
   language?: string;
+  mediaType?: 'podcast' | 'article';
   sortField?: string;
   sortOrder?: 'asc' | 'desc';
 }
@@ -78,7 +79,8 @@ export const useNews = () => {
           `
           id, slug, title, title_i18n, content_language, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured, is_premium,
-          country_ids, city_ids, tags, category, category_canonical, publisher_name
+          country_ids, city_ids, tags, category, category_canonical, publisher_name,
+          media_type, audio_url, duration_seconds
         `,
         )
         .not('published_at', 'is', null)
@@ -121,6 +123,9 @@ export const useNews = () => {
       }
       if (filters?.language) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('content_language', filters.language);
+      }
+      if (filters?.mediaType) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq('media_type', filters.mediaType);
       }
       if (filters?.category) {
         // Filter on the canonical-category column from migration
@@ -286,7 +291,8 @@ export const useNews = () => {
           `
           id, slug, title, title_i18n, content_language, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured, is_premium,
-          country_ids, city_ids, tags, category, category_canonical, publisher_name
+          country_ids, city_ids, tags, category, category_canonical, publisher_name,
+          media_type, audio_url, duration_seconds
         `,
         )
         .eq('is_featured', true)
