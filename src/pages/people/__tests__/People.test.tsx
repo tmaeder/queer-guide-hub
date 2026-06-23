@@ -23,6 +23,9 @@ vi.mock('@/pages/intimate/IntimateDiscovery', () => ({
 vi.mock('@/components/people/IntentSheet', () => ({
   IntentSheet: () => null,
 }));
+vi.mock('../NearbyView', () => ({
+  NearbyView: () => <div data-testid="nearby-view">nearby</div>,
+}));
 
 import People from '../People';
 
@@ -55,6 +58,6 @@ describe('People hub', () => {
   it('honors an explicit tab prop over the default', () => {
     profile.user_mode = 'dating';
     renderHub('nearby');
-    expect(screen.getByTestId('mode-view')).toHaveTextContent('locals');
+    expect(screen.getByTestId('nearby-view')).toBeInTheDocument();
   });
 });

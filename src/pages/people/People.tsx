@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { IntentSheet } from '@/components/people/IntentSheet';
 import { PeopleModeView } from './PeopleModeView';
+import { NearbyView } from './NearbyView';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
 const IntimateDiscovery = lazyRetry(() => import('@/pages/intimate/IntimateDiscovery'));
@@ -129,13 +130,7 @@ export default function People({ tab }: { tab?: PeopleTab }) {
               )}
             />
           )}
-          {active === 'nearby' && (
-            <PeopleModeView
-              mode="locals"
-              cityId={cityId}
-              emptyHint={t('people.empty.nearby', 'No one nearby yet.')}
-            />
-          )}
+          {active === 'nearby' && <NearbyView />}
         </Suspense>
       </div>
 
