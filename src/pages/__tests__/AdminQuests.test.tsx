@@ -15,6 +15,7 @@ import AdminQuests from '../AdminQuests';
 
 describe('AdminQuests', () => {
   it('renders without crashing', () => {
+    const { container } = render(<MemoryRouter><AdminQuests /></MemoryRouter>);
     const { container } = render(
       <MemoryRouter>
         <AdminQuests />
