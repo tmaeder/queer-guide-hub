@@ -1,6 +1,7 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { TopHotelCity } from '@/hooks/useHotelDiscovery';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage } from '@/utils/fallbackImages';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
 interface DestinationTilesProps {
   cities: TopHotelCity[];
@@ -11,7 +12,8 @@ export function DestinationTiles({ cities }: DestinationTilesProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {cities.map((c) => {
-        const img = c.image_url || getRandomFallbackImage();
+        const fallback = getFallbackImage('place', c.city_id);
+        const img = isValidImageUrl(c.image_url) ? c.image_url : fallback;
         const href = `/hotels?city=${encodeURIComponent(c.slug ?? c.name)}`;
         return (
           <LocalizedLink
@@ -29,7 +31,7 @@ export function DestinationTiles({ cities }: DestinationTilesProps) {
               loading="lazy"
               decoding="async"
               referrerPolicy="no-referrer"
-              onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
+              onError={(e) => { if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback; }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">

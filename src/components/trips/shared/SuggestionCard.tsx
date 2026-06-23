@@ -3,6 +3,7 @@ import { ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/Image';
 
 export interface SuggestionCardProps {
   title: string;
@@ -75,16 +76,13 @@ export function SuggestionCard({
       <CardContent>
         <div className="flex flex-col gap-2 h-full">
           {imageUrl && (
-            <div
-              className="w-full bg-muted"
-              style={{
-                aspectRatio: '16/10',
-                backgroundImage: `url(${imageUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-              role="img"
-              aria-label={title}
+            <Image
+              imageUrl={imageUrl}
+              alt={title}
+              aspect="card"
+              rounded="element"
+              fallbackEntityType="default"
+              fallbackKey={title}
             />
           )}
           <div className="flex items-center justify-between gap-2">

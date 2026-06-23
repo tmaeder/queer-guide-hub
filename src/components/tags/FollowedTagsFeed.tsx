@@ -6,7 +6,20 @@ import { TagChip } from '@/components/tags/TagChip';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { hrefForEntity } from '@/lib/searchRoutes';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage, type FallbackTheme } from '@/utils/fallbackImages';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+
+function fallbackTheme(type: string): FallbackTheme {
+  switch (type) {
+    case 'venue': return 'venue';
+    case 'event': return 'event';
+    case 'hotel': return 'hotel';
+    case 'news': return 'news';
+    case 'marketplace': return 'marketplace';
+    case 'personality': return 'person';
+    default: return 'place';
+  }
+}
 
 interface FeedItem {
   type: string;
@@ -55,7 +68,11 @@ export function FollowedTagsFeed({ className }: { className?: string }) {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {feed.map((item) => {
             const href = hrefForEntity({ type: item.type, slug: item.slug, title: item.title });
-            const img = resolveImageUrl({ imageUrl: item.image_url }) ?? getRandomFallbackImage();
+            const fallback = getFallbackImage(fallbackTheme(item.type), item.id);
+            const resolved = isValidImageUrl(item.image_url)
+              ? resolveImageUrl({ imageUrl: item.image_url })
+              : null;
+            const img = resolved ?? fallback;
             const location = [item.city, item.country].filter(Boolean).join(', ');
             return (
               <LocalizedLink
@@ -72,7 +89,7 @@ export function FollowedTagsFeed({ className }: { className?: string }) {
                     referrerPolicy="no-referrer"
                     className="absolute inset-0 h-full w-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).style.visibility = 'hidden';
+                      if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
                     }}
                   />
                 </div>
