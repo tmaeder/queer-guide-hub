@@ -4,11 +4,14 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
   // P1.1 — only include rows whose seo_indexable flag is true. The DB default
   // is true, but admin/editorial workflows can flip it to remove placeholder
   // or low-quality rows from search without deleting them.
+  // Safety layer — exclude high-risk-country (safety_gated) venues so their
+  // URLs are never published to crawlers. fetchRows uses the service-role key
+  // (RLS bypassed), so this filter must be explicit.
   const rows = await fetchRows(
     env,
     'venues',
     'slug,updated_at',
-    'slug=not.is.null&seo_indexable=eq.true',
+    'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false',
     5000,
   );
   const entries: SitemapEntry[] = rows
