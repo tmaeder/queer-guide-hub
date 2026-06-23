@@ -10,6 +10,7 @@
 // suggestion_types).
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { decodeHtmlEntities } from './news-quality/sanitize.ts'
 
 export type SuggestionType =
   | 'tag'
@@ -176,6 +177,10 @@ export async function applySuggestion(
         throw new Error(`translation: ${s.entity_type} does not support i18n field '${field}'`)
       }
       const i18nCol = `${field}_i18n`
+      // Decode any HTML entities the source carried into the translation (e.g.
+      // `&#038;`/`&#8217;` from WordPress feeds) so localized text never renders
+      // raw entities. Pure decode — preserves the translated wording + newlines.
+      const cleanValue = decodeHtmlEntities(value)
       // Read-merge-write the JSONB column. The merge preserves locales the
       // producer didn't touch — we only set the target locale's slot.
       const { data: row, error: readErr } = await client
@@ -185,7 +190,7 @@ export async function applySuggestion(
         .single()
       if (readErr) throw new Error(`translation read failed: ${readErr.message}`)
       const current = ((row as Record<string, unknown>)[i18nCol] as Record<string, unknown> | null) ?? {}
-      const next = { ...current, [s.locale]: value }
+      const next = { ...current, [s.locale]: cleanValue }
       const { error: writeErr } = await client
         .from(s.entity_type)
         .update({ [i18nCol]: next, updated_at: new Date().toISOString() })
