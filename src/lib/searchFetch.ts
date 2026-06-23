@@ -20,6 +20,7 @@
  */
 
 import * as Sentry from '@sentry/react';
+import { supabase } from '@/integrations/supabase/client';
 
 const SEARCH_PROXY_URL =
   import.meta.env.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
@@ -56,6 +57,19 @@ export async function searchFetch<T>(
   const { timeoutMs = 10_000, retryOnTimeout = true, signal: externalSignal } = opts;
   const url = path.startsWith('http') ? path : `${SEARCH_PROXY_URL}${path}`;
 
+  // Safety layer: attach the current access token so the proxy can verify the
+  // user is logged in and surface high-risk-country (gated) content. Anonymous
+  // sessions have no token → the proxy treats them as anon and hides gated rows.
+  // getSession() reads the in-memory/localStorage session (no network hop).
+  let authHeader: Record<string, string> = {};
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (token) authHeader = { Authorization: `Bearer ${token}` };
+  } catch {
+    /* unauthenticated or session unavailable — proceed without the header */
+  }
+
   const attempt = async (): Promise<T> => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort('timeout'), timeoutMs);
@@ -68,7 +82,7 @@ export async function searchFetch<T>(
     try {
       res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify(body),
         signal: controller.signal,
         keepalive: true,

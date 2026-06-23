@@ -45,6 +45,12 @@ export interface PgSearchArgs {
 	priceMax?: number | null;
 	/** Server-side sort mode (p_sort); undefined/relevance = score order. */
 	sort?: string | null;
+	/**
+	 * When true, include safety-gated (high-risk-country) entities in the results.
+	 * Set only after the Worker has verified the caller's Supabase JWT. Passed to
+	 * the RPCs as p_filters.include_gated; default/false keeps gated content hidden.
+	 */
+	includeGated?: boolean;
 	hitsPerPage: number;
 	page: number;
 }
@@ -132,6 +138,9 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 	if (typeof args.filters?.is_free === "boolean") pFilters.is_free = args.filters.is_free;
 	if (args.filters?.target_groups && args.filters.target_groups.length) pFilters.target_groups = args.filters.target_groups;
 	if (args.filters?.tags && args.filters.tags.length) pFilters.tags = args.filters.tags;
+	// Safety layer: only verified-authenticated callers see gated content. The
+	// same pFilters object is passed to both search_hybrid and search_facets.
+	if (args.includeGated) pFilters.include_gated = true;
 
 	const pContentTypes = args.contentTypes && args.contentTypes.length ? args.contentTypes : null;
 	const offset = Math.max(0, args.page) * args.hitsPerPage;
@@ -203,11 +212,13 @@ export async function pgAutocomplete(
 	prefix: string,
 	contentTypes: string[] | null,
 	limit: number,
+	includeGated = false,
 ): Promise<PgSuggestion[]> {
 	const rows = await callRpc<Array<Record<string, unknown>>>(env, "search_autocomplete", {
 		p_prefix: prefix,
 		p_content_types: contentTypes && contentTypes.length ? contentTypes : null,
 		p_limit: limit,
+		p_include_gated: includeGated,
 	});
 	return (rows ?? []).map((r) => ({
 		id: r.objectID as string | undefined,
