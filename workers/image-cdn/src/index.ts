@@ -11,6 +11,7 @@
  */
 
 import { handleAvatarResolve } from './avatarResolve';
+import { handleSocialResolve } from './socialCardResolve';
 
 interface Env {
   IMAGES: R2Bucket;
@@ -66,6 +67,11 @@ export default {
     // POST /avatar/resolve — unavatar privacy proxy
     if (req.method === 'POST' && path === 'avatar/resolve') {
       return handleAvatarResolve(req, env, corsHeaders(req, env));
+    }
+
+    // POST /social/resolve — privacy-safe social-card resolver (server-only)
+    if (req.method === 'POST' && path === 'social/resolve') {
+      return handleSocialResolve(req, env, corsHeaders(req, env));
     }
 
     // GET — serve image

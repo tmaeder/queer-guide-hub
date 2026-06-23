@@ -3,15 +3,13 @@
 // canonical path; this helper is only hit when target isn't in
 // SIMPLE_COMMIT_TARGETS. Kept pure so it can be unit-tested.
 
-import { logoUrlFromWebsite } from '../_shared/logo-enrichment.ts'
-
 export function buildRecord(
   table: string,
   normalized: Record<string, unknown>,
   enriched: Record<string, unknown>,
   _entityType: string | null,
-  // injectable so tests are deterministic
-  now: () => string = () => new Date().toISOString(),
+  // injectable so tests are deterministic (kept for signature stability)
+  _now: () => string = () => new Date().toISOString(),
 ): Record<string, unknown> {
   const meta = (normalized.metadata ?? {}) as Record<string, unknown>
   const loc  = (normalized.location ?? {}) as Record<string, unknown>
@@ -25,16 +23,10 @@ export function buildRecord(
       record.end_date    = (normalized.dates as Record<string, unknown>)?.end
       if (loc.city) record.location = loc.city
       if (meta.url) record.url = meta.url
-      {
-        const site = meta.website || meta.url || ((normalized.urls as string[]) ?? [])[0]
-        if (site) {
-          const logo = logoUrlFromWebsite(site as string)
-          if (logo) {
-            record.logo_url = logo
-            record.logo_fetched_at = now()
-          }
-        }
-      }
+      // Logos are no longer assigned at commit: a raw logo.dev URL embeds the API
+      // token and is an unverified monogram. The daily enrich-logos job fetches
+      // only real logos and mirrors them to R2 (token-free). Leaving logo_url null
+      // keeps the row eligible for that job.
       break
 
     case 'personalities':
