@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useFollowedTags } from '@/hooks/useFollowedTags';
+import { useTagSearch } from '@/hooks/useTagSearch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +13,6 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Rss, X, Plus } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { formatNewsTag } from '@/lib/newsTags';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -29,30 +29,8 @@ interface FollowedTagsRailProps {
 export function FollowedTagsRail({ onFilterByTag }: FollowedTagsRailProps) {
   const { user } = useAuth();
   const { followedTags, toggleFollow } = useFollowedTags();
+  const { results: tagOptions, loading: searchLoading, search: handleSearchTags } = useTagSearch();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [tagOptions, setTagOptions] = useState<TagOption[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-
-  const handleSearchTags = async (q: string) => {
-    if (!q.trim()) {
-      setTagOptions([]);
-      return;
-    }
-    setSearchLoading(true);
-    try {
-      const { data } = await supabase
-        .from('unified_tags')
-        .select('id, name, slug')
-        .ilike('name', `%${q}%`)
-        .eq('is_active', true)
-        .limit(10);
-      setTagOptions((data as TagOption[]) ?? []);
-    } catch {
-      /* best-effort */
-    } finally {
-      setSearchLoading(false);
-    }
-  };
 
   if (!user) return null;
   if (followedTags.length === 0 && !searchOpen) {
@@ -80,7 +58,7 @@ export function FollowedTagsRail({ onFilterByTag }: FollowedTagsRailProps) {
           Followed Topics
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+      <CardContent className="flex flex-col gap-2">
         {followedTags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {followedTags.map((tag) => (
