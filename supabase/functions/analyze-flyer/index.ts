@@ -11,11 +11,12 @@
  */
 
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { corsHeaders, jsonResponse, errorResponse, hasInternalSecret } from '../_shared/supabase-client.ts'
 import { chatCompletion } from '../_shared/openai-client.ts'
 import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
 import { buildTagSuggestions } from '../_shared/scan-tags.ts'
+import { mergeExtractedItems } from '../_shared/scan-merge.ts'
 
 /** A pasted link could not be read server-side (bot-blocked, JS-only, non-HTML,
  *  empty). Surfaced as a 422 so the client shows actionable copy instead of a 500. */
@@ -38,6 +39,8 @@ interface AnalyzeRequest {
   page_url?: string
   hint_city?: string
   hint_country?: string
+  /** Internal cron re-scan: attribute the scan to this user (requires X-Internal-Secret). */
+  as_user_id?: string
 }
 
 const MAX_IMAGES_PER_SCAN = 5
@@ -73,6 +76,15 @@ interface ExtractionResult {
 
 /** Typed empty item for structuring-failure fallbacks. */
 const EMPTY_ITEM: ExtractedItem = { detected_type: 'event', fields: {}, raw_tags: [] }
+
+// Dynamic extraction bounds. No fixed 10-item cap: long pages (venue calendars)
+// are split into chunks, structured in parallel, then merged + deduped. MAX_ITEMS
+// is a safety ceiling, not the expected count.
+const MAX_ITEMS = 60
+const CHUNK_SIZE = 4_000        // chars per LLM structuring call (keeps each ~20-30s)
+const CHUNK_OVERLAP = 300       // overlap so an item split across a seam survives in one chunk
+const MAX_CHUNKS = 4            // parallel calls cap → wall-clock ≈ one call, under the 45s ceiling
+const MAX_STRUCTURE_CHARS = CHUNK_SIZE * MAX_CHUNKS // total content fed to structuring (~16k)
 
 interface VenueCandidate {
   id: string
@@ -231,8 +243,8 @@ Return ONLY valid JSON with this exact structure:
 
 Rules:
 - COMPACTNESS (important): OMIT any field you cannot determine — do NOT emit null/empty fields or zero-confidence fields. Only include fields you actually found. This keeps each item small so ALL events fit in the response.
-- If you find MULTIPLE distinct events or venues, return one item per event/venue (max 10 items)
-- VENUE WITH A CALENDAR: when the page is a venue's own site/homepage that lists many upcoming events (an event calendar), return the VENUE as the first item (detected_type "venue") AND a separate "event" item for each of the next upcoming events (up to 10 total items). Do not return only the venue.
+- If you find MULTIPLE distinct events or venues, return one item per event/venue — return ALL of them, no fixed limit.
+- VENUE WITH A CALENDAR: when the page is a venue's own site/homepage that lists many upcoming events (an event calendar), return the VENUE as the first item (detected_type "venue") AND a separate "event" item for EVERY upcoming event listed. Do not return only the venue, and do not stop early.
 - If only one event or venue is found, return an array with a single item
 - Do NOT merge separate events into one — each gets its own item
 - CRITICAL: If a flyer shows MULTIPLE separate dates (e.g. "April 5" and "April 12", or "5. April und 12. April"), these are DIFFERENT events — create one item per date. Do NOT put them into start_date/end_date of a single item. This is the most common mistake — avoid it.
@@ -249,63 +261,40 @@ Rules:
 - For pricing: extract presale price (advance tickets) into price_presale, box office/door price into price_box_office. If only one price exists, use price_box_office. If prices show different tiers (e.g., "€10 presale / €15 door"), extract both separately.
 - Do NOT hallucinate — only extract what's actually described`
 
-async function structureExtraction(
-  contentText: string,
+/** One LLM structuring call over a single content window. Never throws — degrades
+ *  to [] items so a bad chunk can't sink the whole scan. */
+async function structureChunk(
+  chunkText: string,
   supabase: SupabaseClient,
   isTextMode: boolean,
-  hintCity?: string,
-  hintCountry?: string,
-): Promise<ExtractionResult> {
-  const hints = []
-  if (hintCity) hints.push(`User hint: city is likely "${hintCity}"`)
-  if (hintCountry) hints.push(`User hint: country is likely "${hintCountry}"`)
-  const hintText = hints.length > 0 ? '\n\n' + hints.join('\n') : ''
-
-  // Bound the structuring latency: the 70B model's runtime scales with input +
-  // output size. A venue homepage with a long event calendar (e.g. lab-oratory's
-  // ~50 listings) ran a single call past the 45s ceiling → timeout → empty. The
-  // venue identity + the lead events sit at the top (og:title/description first),
-  // so 4k chars captures what matters and keeps the call well under the ceiling.
-  const boundedContent = contentText.length > 4_000 ? contentText.slice(0, 4_000) : contentText
-
+  hintText: string,
+  source: string,
+): Promise<{ items: ExtractedItem[]; raw_text: string; language: string }> {
   const userMessage = isTextMode
-    ? `Here is text extracted from a document:\n\n${boundedContent}${hintText}`
-    : `Here is a detailed description of a flyer/poster image:\n\n${boundedContent}${hintText}`
+    ? `Here is text extracted from a document:\n\n${chunkText}${hintText}`
+    : `Here is a detailed description of a flyer/poster image:\n\n${chunkText}${hintText}`
 
-  // Structuring model. Llama 4 Scout (fast MoE) was tried for latency but in
-  // practice it produced unusable JSON on real pasted links — truncated/garbled
-  // output that failed to parse (empty fields) or empty results that threw a 500.
-  // The 70B (the project's standard extraction model, proven-good for news/venue
-  // enrichment) follows the JSON contract far more reliably; the interactive scan
-  // can afford its ~20-30s under the 45s ceiling. max_tokens raised to 4000 so a
-  // multi-item page (e.g. a venue homepage listing many events) isn't truncated
-  // mid-JSON. A structuring failure must NOT 500 the whole scan — we degrade to
-  // raw text + the manual form below.
   let content: string
   try {
     const result = await chatCompletion(supabase, {
+      // The 70B follows the JSON contract reliably (Scout produced garbled JSON on
+      // real links). Each call is bounded to one CHUNK_SIZE window so it stays
+      // ~20-30s under the 45s ceiling; many items come from running chunks in
+      // parallel, not from one giant call.
       model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       messages: [
         { role: 'system', content: STRUCTURING_PROMPT },
         { role: 'user', content: userMessage },
       ],
       temperature: 0.1,
-      // Caps output-generation time (the dominant latency when a page yields many
-      // items) while leaving room for a handful of fully-populated items. Too high
-      // and a dense calendar page runs past the 45s ceiling.
-      max_tokens: 2500,
+      max_tokens: 3000,
       response_format: { type: 'json_object' },
     })
     content = result.content
   } catch (e) {
     console.error('Structuring model call failed:', (e as Error).message)
-    return {
-      items: [EMPTY_ITEM],
-      raw_text: contentText,
-      language: 'en',
-    }
+    return { items: [], raw_text: '', language: 'en' }
   }
-  const source = isTextMode ? 'text+refinement' : 'vision+refinement'
 
   try {
     // Tolerate models that wrap JSON in ```json fences or surrounding prose.
@@ -318,30 +307,59 @@ async function structureExtraction(
     })()
     const parsed = JSON.parse(jsonText)
     const rawItems = Array.isArray(parsed.items) ? parsed.items : [parsed]
-    const items = mapRawItems(rawItems, source)
-
-    return {
-      items: items.length > 0 ? items : [EMPTY_ITEM],
-      raw_text: parsed.raw_text || '',
-      language: parsed.language || 'en',
-    }
+    return { items: mapRawItems(rawItems, source), raw_text: parsed.raw_text || '', language: parsed.language || 'en' }
   } catch {
-    // Dense pages (e.g. a venue homepage with a long event calendar) can blow
-    // past the token cap and truncate the JSON mid-array. Rather than drop the
-    // whole extraction, salvage the item objects that fully closed — the leading
-    // ones (venue + first events) carry their fields; truncation is at the tail.
+    // Truncated mid-array → salvage the objects that fully closed.
     const salvaged = salvageTruncatedItems(content)
     if (salvaged.length > 0) {
       console.warn(`Structuring JSON invalid — salvaged ${salvaged.length} item(s)`)
       return { items: mapRawItems(salvaged, source), raw_text: '', language: 'en' }
     }
     console.error('Failed to parse structuring response:', content?.slice(0, 200))
-    return {
-      items: [EMPTY_ITEM],
-      raw_text: contentText,
-      language: 'en',
-    }
+    return { items: [], raw_text: '', language: 'en' }
   }
+}
+
+/** Split text into ≤ MAX_CHUNKS overlapping windows (overlap so an item straddling
+ *  a seam survives whole in one chunk). Short text → a single window. */
+function splitIntoChunks(text: string): string[] {
+  if (text.length <= CHUNK_SIZE) return [text]
+  const bounded = text.slice(0, MAX_STRUCTURE_CHARS)
+  const chunks: string[] = []
+  let i = 0
+  while (i < bounded.length && chunks.length < MAX_CHUNKS) {
+    chunks.push(bounded.slice(i, i + CHUNK_SIZE))
+    i += CHUNK_SIZE - CHUNK_OVERLAP
+  }
+  return chunks
+}
+
+async function structureExtraction(
+  contentText: string,
+  supabase: SupabaseClient,
+  isTextMode: boolean,
+  hintCity?: string,
+  hintCountry?: string,
+): Promise<ExtractionResult> {
+  const hints = []
+  if (hintCity) hints.push(`User hint: city is likely "${hintCity}"`)
+  if (hintCountry) hints.push(`User hint: country is likely "${hintCountry}"`)
+  const hintText = hints.length > 0 ? '\n\n' + hints.join('\n') : ''
+  const source = isTextMode ? 'text+refinement' : 'vision+refinement'
+
+  const chunks = splitIntoChunks(contentText)
+
+  // Single window (flyers, single events, vision descriptions) → one call, no
+  // added latency. Long pages → parallel calls; wall-clock ≈ slowest single call.
+  const results = await Promise.all(
+    chunks.map((c) => structureChunk(c, supabase, isTextMode, hintText, source)),
+  )
+
+  const merged = mergeExtractedItems(results.flatMap((r) => r.items), MAX_ITEMS)
+  const raw_text = results.find((r) => r.raw_text)?.raw_text || ''
+  const language = results.find((r) => r.language && r.language !== 'en')?.language || 'en'
+
+  return { items: merged.length > 0 ? merged : [EMPTY_ITEM], raw_text, language }
 }
 
 const VALID_TYPES: DetectedType[] = ['event', 'venue', 'hotel', 'news', 'marketplace']
@@ -355,7 +373,7 @@ const FIELD_BLOCK: Record<DetectedType, string> = {
 
 /** Map raw model items (per-type *_fields shape) to ExtractedItem[]. */
 function mapRawItems(rawItems: unknown[], source: string): ExtractedItem[] {
-  return rawItems.slice(0, 10).map((raw) => {
+  return rawItems.slice(0, MAX_ITEMS).map((raw) => {
     const item = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
     const detectedType = (VALID_TYPES.includes(item.detected_type as DetectedType)
       ? item.detected_type
@@ -388,7 +406,7 @@ function salvageTruncatedItems(content: string): Record<string, unknown>[] {
   if (!m || m.index == null) return []
   let i = m.index + m[0].length
   const out: Record<string, unknown>[] = []
-  while (i < content.length && out.length < 10) {
+  while (i < content.length && out.length < MAX_ITEMS) {
     while (i < content.length && /[\s,]/.test(content[i])) i++
     if (content[i] !== '{') break
     let depth = 0, inStr = false, esc = false
@@ -787,8 +805,8 @@ async function fetchPageText(pageUrl: string): Promise<string> {
   const html = new TextDecoder().decode(buffer)
   const text = htmlToText(html)
   if (text.length < 20) throw new Error('Page had no extractable text')
-  // structureExtraction caps to 9k before the LLM; cap here too to limit work.
-  return text.slice(0, 12_000)
+  // structureExtraction chunks this across parallel LLM calls; feed the full window.
+  return text.slice(0, MAX_STRUCTURE_CHARS)
 }
 
 // ── Main Handler ──────────────────────────────────────────────────────────
@@ -801,10 +819,6 @@ Deno.serve(async (req) => {
   const startTime = Date.now()
 
   try {
-    // Auth: extract user from JWT
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) return errorResponse('Missing authorization', 401)
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const cfToken = Deno.env.get('CLOUDFLARE_API_TOKEN')
@@ -813,16 +827,27 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) return errorResponse('Invalid authorization', 401)
+    // Parse request first so internal callers (refresh-watched-urls cron) can pass as_user_id.
+    const { image_url, image_urls, text, page_url, hint_city, hint_country, as_user_id }: AnalyzeRequest = await req.json()
 
-    // Rate limit
-    const withinLimit = await checkRateLimit(user.id, supabase)
-    if (!withinLimit) return errorResponse('Rate limit exceeded (20 scans/hour)', 429)
+    // Auth: a user JWT (interactive scan) OR a valid internal secret + as_user_id
+    // (cron re-scan of a watched URL, attributed to the watch owner — no per-user
+    // rate limit, since it's system-driven).
+    const internal = hasInternalSecret(req)
+    let userId: string
+    if (internal && as_user_id) {
+      userId = as_user_id
+    } else {
+      const authHeader = req.headers.get('Authorization')
+      if (!authHeader) return errorResponse('Missing authorization', 401)
+      const token = authHeader.replace('Bearer ', '')
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+      if (authError || !user) return errorResponse('Invalid authorization', 401)
+      userId = user.id
+      const withinLimit = await checkRateLimit(userId, supabase)
+      if (!withinLimit) return errorResponse('Rate limit exceeded (20 scans/hour)', 429)
+    }
 
-    // Parse request
-    const { image_url, image_urls, text, page_url, hint_city, hint_country }: AnalyzeRequest = await req.json()
     const urls: string[] = (Array.isArray(image_urls) ? image_urls : [])
       .concat(image_url ? [image_url] : [])
       .filter((u, i, arr) => typeof u === 'string' && u.length > 0 && arr.indexOf(u) === i)
@@ -852,7 +877,7 @@ Deno.serve(async (req) => {
       }
       const assembled = extracted ? assembleExtractedContent(extracted) : null
       if (assembled && assembled.text.trim().length >= 20) {
-        textInput = assembled.text.slice(0, 12_000)
+        textInput = assembled.text.slice(0, MAX_STRUCTURE_CHARS)
         pageImageUrl = assembled.image
       } else {
         try {
@@ -864,7 +889,7 @@ Deno.serve(async (req) => {
     }
 
     const isTextMode = !!textInput && urls.length === 0
-    console.log(`Analyzing flyer for user ${user.id} (${isTextMode ? 'text' : `image x${urls.length}`} mode)`)
+    console.log(`Analyzing flyer for user ${userId} (${isTextMode ? 'text' : `image x${urls.length}`} mode)`)
 
     // Step 1: Get content for structuring
     let contentForStructuring: string
@@ -960,7 +985,7 @@ Deno.serve(async (req) => {
     const { data: scanRow, error: insertError } = await supabase
       .from('flyer_scans')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         image_url: urls[0] || page_url || `text://${(textInput || '').slice(0, 60)}`,
         detected_type: primaryItem.detected_type,
         raw_extraction: {

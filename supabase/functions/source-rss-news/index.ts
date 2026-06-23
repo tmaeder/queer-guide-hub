@@ -4,6 +4,7 @@ import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
+import { parseRssItems, cleanText } from './rss-parse.ts'
 
 // ============================================================
 // Source: RSS/News APIs — unified adapter for all news sources
@@ -18,6 +19,7 @@ interface NewsSource {
   url: string
   is_active: boolean
   last_fetched_at: string | null
+  feed_type?: string | null  // 'news' | 'podcast' — gates podcast enclosure parsing
 }
 
 const LGBTQ_KEYWORDS = ['lgbtq', 'lgbt', 'gay', 'lesbian', 'trans', 'transgender', 'bisexual', 'queer', 'pride', 'nonbinary', 'rainbow', 'drag', 'same-sex']
@@ -57,7 +59,7 @@ const rssNewsAdapter: SourceAdapter = {
             fetchFromApi(source, sinceHours)
           )
         } else {
-          articles = await fetchFromRss(source.url)
+          articles = await fetchFromRss(source.url, source.feed_type === 'podcast')
         }
 
         for (let i = 0; i < Math.min(articles.length, maxArticles); i++) {
@@ -153,6 +155,9 @@ const rssNewsAdapter: SourceAdapter = {
         published_at: normalizeDate(d.published_at || d.publishedAt || d.pubDate),
         url: d.url,
         image_url: d.image_url || d.image,
+        media_type: (d.media_type as string) || 'article',
+        audio_url: d.audio_url,
+        duration_seconds: d.duration_seconds,
       },
     }
   },
@@ -253,7 +258,7 @@ async function fetchTheNewsApi(baseUrl: string): Promise<Record<string, unknown>
   }))
 }
 
-async function fetchFromRss(feedUrl: string): Promise<Record<string, unknown>[]> {
+async function fetchFromRss(feedUrl: string, isPodcast = false): Promise<Record<string, unknown>[]> {
   // Throw on failure so the caller's catch can register the failure
   // (consecutive_failures + backoff_until). Returning [] silently would
   // mask flapping feeds and never trip auto-pause.
@@ -269,91 +274,13 @@ async function fetchFromRss(feedUrl: string): Promise<Record<string, unknown>[]>
       throw new Error(`HTTP ${res.status} ${res.statusText}`)
     }
     const xml = await res.text()
-    return parseRssItems(xml)
+    return parseRssItems(xml, isPodcast)
   } finally {
     clearTimeout(timeout)
   }
 }
 
-function parseRssItems(xml: string): Record<string, unknown>[] {
-  const items: Record<string, unknown>[] = []
-  const itemRegex = /<item>([\s\S]*?)<\/item>/gi
-  let match
-  while ((match = itemRegex.exec(xml)) !== null) {
-    const block = match[1]
-    const title = extractTag(block, 'title')
-    const link = extractTag(block, 'link') || extractTag(block, 'guid')
-    const desc = extractTag(block, 'description') || extractTag(block, 'content:encoded')
-    const pubDate = extractTag(block, 'pubDate')
-    const author = extractTag(block, 'dc:creator') || extractTag(block, 'author')
-    const image = extractMediaUrl(block)
-
-    if (title && link) {
-      items.push({
-        title: cleanText(title), content: cleanText(desc || ''),
-        url: link.trim(), image_url: image, author,
-        published_at: pubDate, excerpt: cleanText(desc || '').slice(0, 500),
-      })
-    }
-  }
-  return items
-}
-
-function extractTag(xml: string, tag: string): string | null {
-  const cdataRe = new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${tag}>`, 'i')
-  const cdataMatch = cdataRe.exec(xml)
-  if (cdataMatch) return cdataMatch[1]
-  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i')
-  const m = re.exec(xml)
-  return m ? m[1] : null
-}
-
-function extractMediaUrl(block: string): string | null {
-  const mediaMatch = /url="([^"]+\.(jpg|jpeg|png|gif|webp)[^"]*)"/i.exec(block)
-  if (mediaMatch) return mediaMatch[1]
-  const encMatch = /<enclosure[^>]+url="([^"]+)"/i.exec(block)
-  return encMatch ? encMatch[1] : null
-}
-
-// ─── Utilities ────────────────────────────────────────────
-
-function cleanText(s: string): string {
-  // Phase 1: strip HTML entity references for angle brackets BEFORE any
-  // other decoding. `&lt;` / `&gt;` are stripped (not decoded) so they can
-  // never reintroduce raw `<` or `>` characters. Single-character regex,
-  // no multi-char sanitization concern.
-  let out = s.replace(/&lt;/g, '').replace(/&gt;/g, '')
-
-  // Phase 2: strip angle brackets. This is the terminal sanitizer for
-  // HTML-injection risk \u2014 every subsequent transformation in this function
-  // is text-only (entity decoding for non-bracket entities + cosmetic
-  // regexes) and cannot reintroduce `<` or `>`.
-  out = out.replace(/</g, '').replace(/>/g, '')
-
-  // Phase 3: decode the remaining entities. None of these can produce an
-  // angle bracket directly, but a doubly-encoded payload like
-  // `&amp;lt;script&amp;gt;` is unchanged by Phases 1+2 (no literal `&lt;`,
-  // no literal `<`) and gets decoded here to `&lt;script&gt;`. That output is
-  // XSS-safe in any React text context, but Phase 3b below re-strips brackets
-  // and bracket entities after decode to close the loop and silence CodeQL
-  // `js/incomplete-multi-character-sanitization`.
-  const AMP_SENTINEL = '__AMP_SENTINEL__'
-  out = out
-    .replace(/&amp;/g, AMP_SENTINEL)
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8217;/g, "'")
-    .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
-    .replace(new RegExp(AMP_SENTINEL, 'g'), '&')
-    .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
-
-  // Phase 3b: defensive re-strip after entity decode.
-  out = out.replace(/&lt;/g, '').replace(/&gt;/g, '').replace(/</g, '').replace(/>/g, '')
-
-  // Phase 4: cosmetic RSS-junk removal.
-  return out
-    .replace(/The post .* appeared first on .*\./g, '')
-    .replace(/Continue reading.*/g, '')
-    .trim()
-}
+// ─── Utilities ──────────────────────
 
 function normalizeDate(val: unknown): string | null {
   if (!val) return null
