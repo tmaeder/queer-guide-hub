@@ -31,7 +31,7 @@ Deno.test('events: enriched description fills when normalized lacks one', () => 
   assertEquals(r.description, 'from-enrich')
 })
 
-Deno.test('events: logo fetched when website/url present', () => {
+Deno.test('events: logo is NOT assigned at commit (deferred to enrich-logos → R2)', () => {
   const r = buildRecord(
     'events',
     { name: 'X', metadata: { website: 'https://acme.com' } },
@@ -39,10 +39,11 @@ Deno.test('events: logo fetched when website/url present', () => {
     null,
     NOW,
   )
-  // logoUrlFromWebsite returns a non-empty string for plain hostnames
-  if (typeof r.logo_url === 'string') {
-    assertEquals(r.logo_fetched_at, NOW())
-  }
+  // Commit no longer writes a (token-bearing, unverified) logo.dev URL; the daily
+  // enrich-logos job mirrors only real logos to R2. logo_url stays unset so the
+  // row remains eligible for that job.
+  assertEquals('logo_url' in r, false)
+  assertEquals('logo_fetched_at' in r, false)
 })
 
 Deno.test('personalities: name/bio + optional metadata fields', () => {
