@@ -120,6 +120,24 @@ Deno.test('classifyFamily buckets match types', () => {
   assertEquals(classifyFamily('source_entity_id'), 'exact')
   assertEquals(classifyFamily('domain_proximity'), 'strong')
   assertEquals(classifyFamily('name_proximity'), 'fuzzy')
+  // new deterministic name keys
+  assertEquals(classifyFamily('despaced_exact'), 'exact')
+  assertEquals(classifyFamily('core_token'), 'strong')
+  assertEquals(classifyFamily('despaced_name'), 'strong')
+})
+
+Deno.test('core_token key auto-merges a nearby venue (Boiler = BOILER Sauna Berlin)', () => {
+  const raws: RawCandidate[] = [{ entity_id: 'a', match_type: 'core_token', score: 0.92, distance_m: 12 }]
+  const v = decideCandidate(venue, raws, {})
+  assertEquals(v.decision, 'duplicate')
+  assertEquals(v.action, 'auto_merge')
+})
+
+Deno.test('despaced key far apart is geo-vetoed, not auto-merged (Laboratory/Lab.Oratory)', () => {
+  const raws: RawCandidate[] = [{ entity_id: 'a', match_type: 'despaced_exact', score: 0.96, distance_m: 2735 }]
+  const v = decideCandidate(venue, raws, {})
+  assertEquals(v.decision, 'unique')
+  assertEquals(v.guardsFired.includes('geo>250m'), true)
 })
 
 Deno.test('composeStagingEmbedText mirrors the worker text shape', () => {
