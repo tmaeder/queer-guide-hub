@@ -1617,6 +1617,17 @@
     "notifications": {
       "label": "[FR] Notifications",
       "unread": "[FR] Notifications, {{count}} unread"
+    },
+    "mobileNav": {
+      "home": "Accueil",
+      "explore": "Explorer",
+      "contribute": "Ajouter",
+      "messages": "Messages",
+      "you": "Profil",
+      "menuTitle": "Explorer Queer Guide",
+      "menuDescription": "Accédez à n’importe quelle section, changez de langue ou de thème.",
+      "trips": "Mes voyages",
+      "settingsSection": "Affichage"
     }
   },
   "pages": {
