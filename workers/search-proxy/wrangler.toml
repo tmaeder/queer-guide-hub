@@ -27,11 +27,12 @@ SEARCH_BACKEND = "pg"
 # Secrets (set via: wrangler secret put NAME):
 #   SUPABASE_URL
 #   SUPABASE_SERVICE_KEY
-#   SUPABASE_JWT_SECRET  — project JWT secret (HS256). Required by the safety
-#     layer: the proxy verifies the caller's access token to decide whether to
-#     surface gated (high-risk-country) content. Missing → fail-closed (all
-#     callers treated as anonymous; gated content stays hidden).
-#     Find it in Supabase: Project Settings → API → JWT Settings → JWT Secret.
+#   SUPABASE_JWT_SECRET  — OPTIONAL project JWT secret (HS256). When set, the
+#     safety layer verifies the caller's access token offline (no network hop)
+#     to decide whether to surface gated (high-risk-country) content. When
+#     UNSET, the Worker falls back to a GoTrue check using SUPABASE_SERVICE_KEY,
+#     so the gate works without this secret — setting it is purely a latency
+#     optimization. Find it in Supabase: Project Settings → API → JWT Secret.
 
 [observability]
 enabled = true
