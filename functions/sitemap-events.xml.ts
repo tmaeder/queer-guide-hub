@@ -3,12 +3,14 @@ import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
   // P1.1 — seo_indexable gate; also drop past/cancelled events from the
   // sitemap so Google doesn't waste crawl on stale event pages.
+  // Safety layer — exclude high-risk-country (safety_gated) events so their
+  // URLs are never published to crawlers (service-role fetch bypasses RLS).
   const today = new Date().toISOString().slice(0, 10);
   const rows = await fetchRows(
     env,
     'events',
     'slug,updated_at',
-    `slug=not.is.null&seo_indexable=eq.true&status=neq.cancelled&start_date=gte.${today}`,
+    `slug=not.is.null&seo_indexable=eq.true&status=neq.cancelled&start_date=gte.${today}&safety_gated=eq.false`,
     5000,
   );
   const entries: SitemapEntry[] = rows
