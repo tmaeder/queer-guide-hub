@@ -18,6 +18,7 @@ import {
   Download,
   Check,
   Loader2,
+  Lightbulb,
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +33,7 @@ import { TripNudgesBanner } from '@/components/trips/TripNudgesBanner';
 import { AddPlaceDialog } from '@/components/trips/AddPlaceDialog';
 import { ShareTripDialog } from '@/components/trips/ShareTripDialog';
 import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
+import { TripSuggestions } from '@/components/trips/TripSuggestions';
 import { TripCoverBand } from '@/components/trips/TripCoverBand';
 import { TripProgressRing } from '@/components/trips/TripProgressRing';
 import { TripDocExpiryBanner } from '@/components/trips/TripDocExpiryBanner';
@@ -352,6 +354,23 @@ export default function TripPlannerPage() {
           {t('trips.timeline.more', 'More tools')}
         </h2>
         <Accordion type="multiple" className="w-full">
+          <AccordionItem value="suggestions">
+            <AccordionTrigger>
+              <span className="inline-flex items-center gap-2">
+                <Lightbulb size={16} /> {t('trips.tabs.suggestions', 'Suggestions')}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <TripSuggestions
+                tripId={trip.id}
+                places={trip.trip_places}
+                days={trip.trip_days}
+                startDate={trip.start_date ?? undefined}
+                endDate={trip.end_date ?? undefined}
+              />
+            </AccordionContent>
+          </AccordionItem>
+
           <AccordionItem value="map">
             <AccordionTrigger>
               <span className="inline-flex items-center gap-2">

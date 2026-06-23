@@ -22,6 +22,7 @@ import { resolveType } from '@/lib/searchTaxonomy';
 import type { SearchResult } from '@/hooks/useSearch';
 import { BoostReasonBadge } from './BoostReasonBadge';
 import { SearchFeedbackButtons } from './SearchFeedbackButtons';
+import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 
 const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   venue: Building2,
@@ -82,6 +83,16 @@ function SearchResultCardImpl({
   const dateLabel = result.date ? new Date(result.date).toLocaleDateString() : null;
   const featured = Boolean(result.metadata?.featured);
   const price = result.price ? `$${result.price}` : null;
+
+  // Add-to-trip is only meaningful for venues/events (hotels have their own
+  // detail CTA; cities/countries/news aren't itinerary places). Search hits
+  // lack city_id/country_id, so "create new trip" inside the dialog is the
+  // degraded path — "add to an existing trip" works fine.
+  const canonicalType = resolveType(result.type) ?? result.type;
+  const tripEntity =
+    canonicalType === 'venue' || canonicalType === 'event'
+      ? { type: canonicalType as 'venue' | 'event', id: result.objectID, name: title }
+      : null;
 
   // Subtitle: location · (distance | date) · rating — compact, no icon soup.
   const meta = [result.location, distance ?? dateLabel].filter(Boolean).join(' · ');
@@ -175,6 +186,7 @@ function SearchResultCardImpl({
             {price ? <span className="text-sm font-semibold">{price}</span> : <span />}
             <div className="flex items-center gap-2">
               {ratingEl}
+              {tripEntity && <QuietAddToTripButton variant="inline" entity={tripEntity} />}
               <SearchFeedbackButtons entity={{ type: result.type, id: result.objectID }} query={query} />
             </div>
           </div>
@@ -242,7 +254,10 @@ function SearchResultCardImpl({
 
       <div className="flex shrink-0 flex-col items-end gap-2">
         {price && <span className="text-base font-semibold">{price}</span>}
-        <SearchFeedbackButtons entity={{ type: result.type, id: result.objectID }} query={query} />
+        <div className="flex items-center gap-2">
+          {tripEntity && <QuietAddToTripButton variant="inline" entity={tripEntity} />}
+          <SearchFeedbackButtons entity={{ type: result.type, id: result.objectID }} query={query} />
+        </div>
       </div>
     </div>
   );

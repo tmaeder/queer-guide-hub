@@ -190,6 +190,7 @@ export function SortablePlaceCard({
           startDate={tripStartDate ?? null}
           endDate={tripEndDate ?? null}
           bookingStatus={status}
+          onBookingPrompt={() => setBookOpen(true)}
         />
 
         <Button
