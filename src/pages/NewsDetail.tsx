@@ -438,20 +438,15 @@ export default function NewsDetail() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
         {/* Main */}
         <div className="flex flex-col gap-6">
+          {/* "Why this matters" — admin-curated, shown to everyone when populated.
+              The empty authoring placeholder stays hidden during normal browsing;
+              admins reveal it by holding Alt (#1812). */}
+          {(article.editorial_note || altHeld) && (
           {/* Podcast episode: inline player streaming the publisher's enclosure URL */}
           {/* "Why this matters" — admin-curated, shown to everyone when populated. */}
           {(article.editorial_note || isAdmin) && (
             <aside aria-label="Why this matters" className="border-l-2 border-foreground py-2 pl-6">
               <p className="m-0 text-2xs uppercase tracking-[0.2em] text-muted-foreground">
-          {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote.
-              Shown to everyone when populated. Admins reveal a placeholder slot by holding
-              Alt so they can alt-click to author one (never shown during normal browsing). */}
-          {(article.editorial_note || altHeld) && (
-            <aside
-              aria-label="Why this matters"
-              className="border-l-2 border-foreground pl-6 py-2"
-            >
-              <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground m-0">
                 Why this matters
               </p>
               <Editable
