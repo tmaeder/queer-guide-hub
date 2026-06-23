@@ -68,7 +68,7 @@ export default function NewsDetail() {
   const [loading, setLoading] = useState(true);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
-  const { isAdmin } = useAdminEditMode();
+  const { isAdmin, altHeld } = useAdminEditMode();
   const isMobile = useIsMobile();
 
   const article = data?.article ?? null;
