@@ -37,7 +37,7 @@ export interface GranularRolesReturn {
   /** Check if user can perform action on content type */
   can: (permission: Permission, contentType?: string) => boolean;
   /** Check if user can access a specific admin section */
-  canAccess: (section: 'cockpit' | 'content' | 'import-review' | 'system') => boolean;
+  canAccess: (section: 'cockpit' | 'content' | 'import-data' | 'system') => boolean;
   /** All content types the user has any permission for */
   allowedContentTypes: string[];
   /** Loading state */
@@ -124,7 +124,7 @@ export function useGranularRoles(): GranularRolesReturn {
 
   // Section access check
   const canAccess = useCallback(
-    (section: 'cockpit' | 'content' | 'import-review' | 'system'): boolean => {
+    (section: 'cockpit' | 'content' | 'import-data' | 'system'): boolean => {
       if (isAdmin) return true;
 
       switch (section) {
@@ -134,7 +134,7 @@ export function useGranularRoles(): GranularRolesReturn {
           return (
             isModerator || isEditor || permissions.some((p) => p.permissions.includes('view'))
           );
-        case 'import-review':
+        case 'import-data':
           return (
             isModerator ||
             isEditor ||

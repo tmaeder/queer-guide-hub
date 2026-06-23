@@ -268,7 +268,53 @@ async function fetchCockpitData(): Promise<CockpitData> {
   return { system, review, imports, quality, stats, automation };
 }
 
-// ── Hook ────────────────────────────────────────────────────────────────
+// ── Hooks ───────────────────────────────────────────────────────────────
+//
+// Per-domain query hooks let each cockpit widget tune its own refetch cadence
+// and expose `dataUpdatedAt` / `isFetching` for the freshness indicator.
+// `useAdminCockpit()` stays as a thin aggregator for back-compat.
+
+/** Volatile queue/count data — poll every 30s, refresh on focus. */
+const QUEUE_OPTS = {
+  staleTime: 30_000,
+  refetchInterval: 30_000,
+  refetchOnWindowFocus: true,
+} as const;
+
+/** Slow-moving aggregates — poll every 5 minutes. */
+const SLOW_OPTS = {
+  staleTime: 5 * 60_000,
+  refetchInterval: 5 * 60_000,
+  refetchOnWindowFocus: true,
+} as const;
+
+export function useSystemHealthQuery() {
+  return useQuery({ queryKey: ['cockpit', 'system'], queryFn: fetchSystemHealth, ...QUEUE_OPTS });
+}
+
+export function useReviewSummaryQuery() {
+  return useQuery({ queryKey: ['cockpit', 'review'], queryFn: fetchReviewSummary, ...QUEUE_OPTS });
+}
+
+export function useImportSummaryQuery() {
+  return useQuery({ queryKey: ['cockpit', 'imports'], queryFn: fetchImportSummary, ...QUEUE_OPTS });
+}
+
+export function useAutomationSummaryQuery() {
+  return useQuery({
+    queryKey: ['cockpit', 'automation-summary'],
+    queryFn: fetchAutomationSummary,
+    ...QUEUE_OPTS,
+  });
+}
+
+export function useQualityIndexQuery() {
+  return useQuery({ queryKey: ['cockpit', 'quality'], queryFn: fetchQualityIndex, ...SLOW_OPTS });
+}
+
+export function useContentStatsQuery() {
+  return useQuery({ queryKey: ['cockpit', 'stats'], queryFn: fetchContentStats, ...SLOW_OPTS });
+}
 
 export function useAdminCockpit() {
   return useQuery({
