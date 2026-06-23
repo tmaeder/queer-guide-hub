@@ -80,7 +80,6 @@ interface NewsArticle {
   tags: string[] | null;
   publisher_name: string | null;
   created_at: string;
-  editorial_note?: string | null;
   is_editors_pick?: boolean | null;
   image_attribution?: string | null;
   media_type?: string | null;
@@ -485,43 +484,6 @@ export default function NewsDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
         {/* Main Content */}
         <div className="flex flex-col gap-6">
-          {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote.
-              Shown to everyone when populated. Admins see a placeholder slot when empty so
-              they can alt-click to author one. */}
-          {(article.editorial_note || isAdmin) && (
-            <aside
-              aria-label="Why this matters"
-              className="border-l-2 border-foreground pl-6 py-2"
-            >
-              <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground m-0">
-                Why this matters
-              </p>
-              <Editable
-                contentType="news_articles"
-                recordId={article.id}
-                field="editorial_note"
-                value={article.editorial_note ?? ''}
-                onSaved={(next) =>
-                  setArticle((prev) =>
-                    prev ? { ...prev, editorial_note: (next as string) || null } : prev,
-                  )
-                }
-                as="div"
-                className="mt-2"
-              >
-                {article.editorial_note ? (
-                  <p className="m-0 text-base italic leading-relaxed">
-                    {article.editorial_note}
-                  </p>
-                ) : (
-                  <p className="m-0 text-base italic leading-relaxed text-muted-foreground">
-                    Alt-click to add the stakes — 1–3 sentences on why this story matters.
-                  </p>
-                )}
-              </Editable>
-            </aside>
-          )}
-
           {/* Podcast episode: inline player streaming the publisher's enclosure URL */}
           {article.media_type === 'podcast' && article.audio_url && (
             <div className="mb-6 max-w-[68ch]">
