@@ -22177,6 +22177,10 @@ export type Database = {
       compose_safety_note: { Args: { p: Json }; Returns: Json }
       compute_city_completeness: { Args: { p_id: string }; Returns: number }
       compute_community_level: { Args: { p_points: number }; Returns: number }
+      compute_compatibility: {
+        Args: { p_candidate: string; p_viewer: string }
+        Returns: number
+      }
       compute_level: { Args: { p_points: number }; Returns: number }
       compute_quality_score: {
         Args: { p_entity_id: string; p_entity_type: string }
@@ -23967,6 +23971,21 @@ export type Database = {
           p_table_name: string
         }
         Returns: string
+      }
+      people_discovery: {
+        Args: {
+          p_viewer: string
+          p_mode: string
+          p_city_id?: string
+          p_event_id?: string
+          p_trip_id?: string
+          p_limit?: number
+        }
+        Returns: {
+          user_id: string
+          score: number
+          shared: Json
+        }[]
       }
       personalities_nonperson_candidates: {
         Args: { p_limit?: number }

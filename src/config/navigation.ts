@@ -56,6 +56,7 @@ export const NAV_CLUSTERS: { id: NavCluster; labelKey: string }[] = [
 /** All 14 destinations. Array order is preserved within each cluster/primary view. */
 export const DESTINATIONS: NavDestination[] = [
   { to: '/venues', icon: MapPin, labelKey: 'header.nav.venues', cluster: 'places', searchType: 'venue', primary: true },
+  { to: '/people', icon: UserCheck, labelKey: 'header.nav.people', cluster: 'community', primary: true },
   { to: '/events', icon: Calendar, labelKey: 'header.nav.events', cluster: 'community', searchType: 'event', primary: true },
   { to: '/places', icon: Globe, labelKey: 'header.nav.places', cluster: 'places', primary: true },
   { to: '/marketplace', icon: Store, labelKey: 'header.nav.marketplace', cluster: 'shop', searchType: 'marketplace', primary: true },

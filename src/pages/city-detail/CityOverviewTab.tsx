@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { WeatherForecast } from '@/components/weather/WeatherForecast';
+import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import type { CityRelation } from './types';
 
 export interface CityOverviewTabProps {
@@ -134,6 +135,15 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
 
       {typeof city.latitude === 'number' && typeof city.longitude === 'number' && (
         <WeatherForecast latitude={city.latitude} longitude={city.longitude} cityName={city.name} />
+      )}
+
+      {city.id && (
+        <PeopleHereRail
+          mode="locals"
+          cityId={city.id}
+          title={`Locals & travelers to meet in ${city.name}`}
+          seeAllHref="/community/members"
+        />
       )}
     </div>
   );
