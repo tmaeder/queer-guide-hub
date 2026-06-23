@@ -20,6 +20,12 @@ interface Props {
   startDate?: string | null;
   endDate?: string | null;
   bookingStatus?: 'intent' | 'booked' | 'completed';
+  /**
+   * Invoked when the user returns from an affiliate site and no matching
+   * reservation exists yet — opens the reservation dialog so the click→booked
+   * loop closes. Provided by SortablePlaceCard (which owns the dialog).
+   */
+  onBookingPrompt?: () => void;
 }
 
 const iconFor = (link: BookableLink) =>
@@ -34,6 +40,7 @@ export function PlaceBookableLinks({
   startDate,
   endDate,
   bookingStatus = 'intent',
+  onBookingPrompt,
 }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -49,7 +56,9 @@ export function PlaceBookableLinks({
     endDate,
   });
 
-  // On window focus after an affiliate click, prompt user if no reservation appeared.
+  // On window focus after an affiliate click, prompt the user if no reservation
+  // appeared — with an action that opens the reservation dialog so the
+  // click→booked loop actually closes (previously this was a dead-end toast).
   useEffect(() => {
     function onFocus() {
       if (!clickedRef.current) return;
@@ -57,10 +66,13 @@ export function PlaceBookableLinks({
         const hasReservation = (reservations ?? []).some(
           (r) => r.title?.toLowerCase().includes(name.toLowerCase()),
         );
-        if (!hasReservation) {
+        if (!hasReservation && bookingStatus !== 'booked' && bookingStatus !== 'completed') {
           toast({
             title: 'Did you complete the booking?',
-            description: `Mark "${name}" as booked to track it.`,
+            description: `Record "${name}" so it shows as booked.`,
+            ...(onBookingPrompt
+              ? { action: { label: 'Mark booked', onClick: () => onBookingPrompt() } }
+              : {}),
           });
         }
         clickedRef.current = false;
@@ -68,7 +80,7 @@ export function PlaceBookableLinks({
     }
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
-  }, [name, refetch, reservations, toast]);
+  }, [name, refetch, reservations, toast, onBookingPrompt, bookingStatus]);
 
   if (links.length === 0) return null;
 

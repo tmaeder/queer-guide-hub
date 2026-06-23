@@ -7,6 +7,12 @@ import { cn } from '@/lib/utils';
 
 export interface QuietAddToTripButtonProps {
   entity: AddToTripDialogProps['entity'];
+  /**
+   * `overlay` (default) — absolute top-right chip that fades in on card hover.
+   * `inline` — a static, always-visible icon button for action rows (search
+   * results, list footers) where there's no `group` hover container.
+   */
+  variant?: 'overlay' | 'inline';
   /** Position relative to parent. Default: top-right absolute. */
   className?: string;
 }
@@ -16,7 +22,11 @@ export interface QuietAddToTripButtonProps {
  * hover/focus or always at 60% on touch). Stops event propagation so the parent
  * card link doesn't navigate. Wraps the existing AddToTripDialog.
  */
-export function QuietAddToTripButton({ entity, className }: QuietAddToTripButtonProps) {
+export function QuietAddToTripButton({
+  entity,
+  variant = 'overlay',
+  className,
+}: QuietAddToTripButtonProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { data: status } = useEntityTripStatus(entity.type, entity.id);
@@ -40,12 +50,14 @@ export function QuietAddToTripButton({ entity, className }: QuietAddToTripButton
         aria-label={label}
         title={label}
         className={cn(
-          'absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-element border bg-background/85 backdrop-blur transition-opacity duration-150',
-          'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
-          // Touch: keep visible at 60% so it's reachable without hover.
-          'opacity-60 sm:opacity-0',
-          inTrip && 'opacity-100 sm:opacity-100',
-          'hover:bg-background',
+          'inline-flex h-8 w-8 items-center justify-center rounded-element border bg-background/85 backdrop-blur transition-opacity duration-150 hover:bg-background',
+          variant === 'overlay' && [
+            'absolute right-3 top-3',
+            'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
+            // Touch: keep visible at 60% so it's reachable without hover.
+            'opacity-60 sm:opacity-0',
+            inTrip && 'opacity-100 sm:opacity-100',
+          ],
           className,
         )}
       >
