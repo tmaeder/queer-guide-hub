@@ -66,7 +66,12 @@ export const UserDirectoryGrid = ({
             onValueChange={(value) =>
               setFilters((prev) => ({
                 ...prev,
-                sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active',
+                sortBy: value as
+                  | 'newest'
+                  | 'oldest'
+                  | 'alphabetical'
+                  | 'last_active'
+                  | 'match',
               }))
             }
           >
@@ -74,6 +79,7 @@ export const UserDirectoryGrid = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="match">Best match</SelectItem>
               <SelectItem value="newest">Newest members</SelectItem>
               <SelectItem value="oldest">Oldest members</SelectItem>
               <SelectItem value="alphabetical">Alphabetical</SelectItem>
