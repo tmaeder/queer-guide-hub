@@ -13,7 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonCrossfade } from "@/components/effects";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sparkles } from "lucide-react";
-import { getRandomFallbackImage } from "@/utils/fallbackImages";
+import { Image } from "@/components/ui/Image";
+import type { FallbackTheme } from "@/utils/fallbackImages";
 import { decodeHtmlEntities } from "@/lib/decodeHtmlEntities";
 import { isValidImageUrl } from "@/lib/images/resolveEntityImage";
 
@@ -40,6 +41,17 @@ function hitPath(type: string, slug: string): string | null {
 	return base ? `${base}/${slug}` : null;
 }
 
+function fallbackTheme(type: string): FallbackTheme {
+	switch (type) {
+		case "venue": return "venue";
+		case "event": return "event";
+		case "hotel": return "hotel";
+		case "news": return "news";
+		case "marketplace": return "marketplace";
+		case "personality": return "person";
+		default: return "place";
+	}
+}
 
 interface Hit {
 	id: string;
@@ -49,6 +61,8 @@ interface Hit {
 	country?: string;
 	slug?: string;
 	image_url?: string;
+	optimized_url?: string | null;
+	thumbnail_url?: string | null;
 }
 
 export function RecommendedForYou({ className, limit = 10, hideHeader }: { className?: string; limit?: number; hideHeader?: boolean }) {
@@ -129,17 +143,17 @@ export function RecommendedForYou({ className, limit = 10, hideHeader }: { class
 										onClick={() => trackClick({ type: it.type, id: it.id }, "recommended")}
 									>
 										<Card className="h-40 overflow-hidden transition">
-											<img
-												src={isValidImageUrl(it.image_url) ? it.image_url : getRandomFallbackImage()}
+											<Image
+												imageUrl={isValidImageUrl(it.image_url) ? it.image_url : null}
+												optimizedUrl={it.optimized_url}
+												thumbnailUrl={it.thumbnail_url}
+												preferThumb
 												alt=""
-												role="presentation"
-												loading="lazy"
-												referrerPolicy="no-referrer"
-												className="h-24 w-full object-cover"
-												onError={(e) => {
-													const fb = getRandomFallbackImage();
-													if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
-												}}
+												heightPx={96}
+												imageRole="thumb"
+												rounded="none"
+												fallbackEntityType={fallbackTheme(it.type)}
+												fallbackKey={it.id}
 											/>
 											<CardContent className="p-2">
 												<div className="text-sm font-medium truncate">

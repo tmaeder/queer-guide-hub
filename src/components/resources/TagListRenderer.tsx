@@ -4,7 +4,8 @@ import { ChevronRight } from 'lucide-react';
 import { getCategoryShortName } from './categoryMeta';
 import { TagChip } from '@/components/tags/TagChip';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage } from '@/utils/fallbackImages';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
 type DisplayMode = 'chips' | 'grid' | 'list';
 
@@ -38,6 +39,7 @@ export function TagListRenderer({
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {tags.map((tag) => {
           const uses = tagUsageCounts[tag.name] || 0;
+          const fallback = getFallbackImage('default', tag.id);
           return (
             <button
               key={tag.id}
@@ -48,14 +50,14 @@ export function TagListRenderer({
             >
               <div className="relative w-full bg-muted" style={{ aspectRatio: '4 / 3' }}>
                 <img
-                  src={tag.image_url || getRandomFallbackImage()}
+                  src={isValidImageUrl(tag.image_url) ? tag.image_url : fallback}
                   alt={tag.name}
                   role="presentation"
                   loading="lazy"
                   referrerPolicy="no-referrer"
                   className="absolute inset-0 w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
+                    if ((e.target as HTMLImageElement).src !== fallback) (e.target as HTMLImageElement).src = fallback;
                   }}
                 />
                 {uses > 0 && (
@@ -94,6 +96,7 @@ export function TagListRenderer({
       <div className="flex flex-col gap-1">
         {tags.map((tag) => {
           const uses = tagUsageCounts[tag.name] || 0;
+          const fallback = getFallbackImage('default', tag.id);
           return (
             <button
               key={tag.id}
@@ -107,14 +110,14 @@ export function TagListRenderer({
                 style={{ width: 40, height: 40 }}
               >
                 <img
-                  src={tag.image_url || getRandomFallbackImage()}
+                  src={isValidImageUrl(tag.image_url) ? tag.image_url : fallback}
                   alt={tag.name}
                   role="presentation"
                   loading="lazy"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
+                    if ((e.target as HTMLImageElement).src !== fallback) (e.target as HTMLImageElement).src = fallback;
                   }}
                 />
               </div>

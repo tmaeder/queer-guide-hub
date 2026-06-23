@@ -12,7 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ScrollReveal } from "@/components/animation/ScrollReveal";
 import { SkeletonCrossfade } from "@/components/effects";
-import { getFallbackImage, type FallbackTheme } from "@/utils/fallbackImages";
+import { Image } from "@/components/ui/Image";
+import { type FallbackTheme } from "@/utils/fallbackImages";
 import { isValidImageUrl } from "@/lib/images/resolveEntityImage";
 
 interface Props {
@@ -63,7 +64,7 @@ interface SimItem {
 	content_type: string;
 	content_id: string;
 	score: number;
-	metadata: { title?: string; city?: string; country?: string; category?: string; slug?: string; image_url?: string; tags?: string[] };
+	metadata: { title?: string; city?: string; country?: string; category?: string; slug?: string; image_url?: string; optimized_url?: string | null; thumbnail_url?: string | null; tags?: string[] };
 }
 
 export function SimilarItems({ entity, limit = 6, title = "More like this", className, contentTypes }: Props) {
@@ -148,15 +149,18 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 											}
 										>
 											<Card className="h-40 overflow-hidden transition">
-												<img
-														src={isValidImageUrl(it.metadata?.image_url) ? (it.metadata!.image_url as string) : getFallbackImage(fallbackTheme(it.content_type), it.content_id)}
-														alt=""
-														role="presentation"
-														loading="lazy"
-														referrerPolicy="no-referrer"
-														className="h-24 w-full object-cover"
-														onError={(e) => { const fb = getFallbackImage(fallbackTheme(it.content_type), it.content_id); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
-													/>
+												<Image
+													imageUrl={isValidImageUrl(it.metadata?.image_url) ? (it.metadata!.image_url as string) : null}
+													optimizedUrl={it.metadata?.optimized_url}
+													thumbnailUrl={it.metadata?.thumbnail_url}
+													preferThumb
+													alt=""
+													heightPx={96}
+													imageRole="thumb"
+													rounded="none"
+													fallbackEntityType={fallbackTheme(it.content_type)}
+													fallbackKey={it.content_id}
+												/>
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">
 														{it.metadata?.title || it.metadata?.slug?.replace(/-/g, " ")}
