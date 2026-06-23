@@ -2768,5 +2768,38 @@
       "both": "{{name}} è libero/a per vedersi ora 🟢",
       "youOnly": "Risulti libero/a per vedersi 🟢"
     }
+  },
+  "newsDetail": {
+    "notFound": "Articolo non trovato",
+    "notFoundDesc": "L'articolo che cerchi non esiste.",
+    "backToNews": "Torna alle notizie",
+    "share": "Condividi",
+    "readAtSource": "Leggi alla fonte",
+    "fresh": "Nuovo",
+    "reportedByOutlets": "Riportato da {{count}} testate",
+    "featured": "In evidenza",
+    "byAuthor": "Di {{author}}",
+    "minRead": "{{count}} min di lettura",
+    "viewsCount": "{{count}} visualizzazioni",
+    "whyThisMatters": "Perché è importante",
+    "editorialPlaceholder": "Alt-clic per aggiungere il contesto: 1–3 frasi sul perché questa notizia conta.",
+    "bodyFallback": "La notizia completa è disponibile sulla fonte originale.",
+    "originallyPublishedBy": "Pubblicato originariamente da {{source}}.",
+    "viewOriginal": "Vedi l'articolo originale",
+    "integritySatire": "Segnalato come satira: non è un resoconto letterale.",
+    "integrityAdvertorial": "Contenuto sponsorizzato / pubbliredazionale.",
+    "integritySentimentConflict": "Le fonti non concordano sul tono: leggi con attenzione.",
+    "closeToHome": "Vicino a casa tua",
+    "seeFullStory": "Vedi la storia completa",
+    "topics": "Argomenti",
+    "home": "Casa",
+    "whereThisHappens": "Dove accade",
+    "aboutSource": "Informazioni sulla fonte",
+    "corroboratedAcross": "Confermato da {{count}} testate",
+    "lastVerified": "Verificato {{time}}",
+    "visitSource": "Visita {{source}}",
+    "source": "la fonte",
+    "moreLikeThis": "Altri simili",
+    "forYou": "Per te"
   }
 }

@@ -2772,5 +2772,38 @@
       "both": "{{name}} est dispo pour se voir maintenant 🟢",
       "youOnly": "Vous êtes indiqué comme dispo pour se voir 🟢"
     }
+  },
+  "newsDetail": {
+    "notFound": "Article introuvable",
+    "notFoundDesc": "L'article que vous cherchez n'existe pas.",
+    "backToNews": "Retour aux actualités",
+    "share": "Partager",
+    "readAtSource": "Lire à la source",
+    "fresh": "Nouveau",
+    "reportedByOutlets": "Rapporté par {{count}} médias",
+    "featured": "À la une",
+    "byAuthor": "Par {{author}}",
+    "minRead": "{{count}} min de lecture",
+    "viewsCount": "{{count}} vues",
+    "whyThisMatters": "Pourquoi c'est important",
+    "editorialPlaceholder": "Alt-clic pour ajouter le contexte — 1 à 3 phrases sur l’importance de ce sujet.",
+    "bodyFallback": "L'article complet se trouve à la source d'origine.",
+    "originallyPublishedBy": "Publié à l’origine par {{source}}.",
+    "viewOriginal": "Voir l'article original",
+    "integritySatire": "Signalé comme satire — pas un compte rendu littéral.",
+    "integrityAdvertorial": "Contenu sponsorisé / publi-rédactionnel.",
+    "integritySentimentConflict": "Les sources divergent sur le ton — à lire avec prudence.",
+    "closeToHome": "Près de chez vous",
+    "seeFullStory": "Voir le sujet complet",
+    "topics": "Thèmes",
+    "home": "Chez vous",
+    "whereThisHappens": "Où cela se passe",
+    "aboutSource": "À propos de la source",
+    "corroboratedAcross": "Corroboré par {{count}} médias",
+    "lastVerified": "Vérifié {{time}}",
+    "visitSource": "Visiter {{source}}",
+    "source": "la source",
+    "moreLikeThis": "À voir aussi",
+    "forYou": "Pour vous"
   }
 }

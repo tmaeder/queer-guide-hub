@@ -2743,5 +2743,38 @@
       "both": "{{name}} is free to meet right now 🟢",
       "youOnly": "You're marked free to meet 🟢"
     }
+  },
+  "newsDetail": {
+    "notFound": "Article Not Found",
+    "notFoundDesc": "The article you're looking for doesn't exist.",
+    "backToNews": "Back to News",
+    "share": "Share",
+    "readAtSource": "Read at source",
+    "fresh": "New",
+    "reportedByOutlets": "Reported by {{count}} outlets",
+    "featured": "Featured",
+    "byAuthor": "By {{author}}",
+    "minRead": "{{count}} min read",
+    "viewsCount": "{{count}} views",
+    "whyThisMatters": "Why this matters",
+    "editorialPlaceholder": "Alt-click to add the stakes — 1–3 sentences on why this story matters.",
+    "bodyFallback": "The full story lives on the original source.",
+    "originallyPublishedBy": "Originally published by {{source}}.",
+    "viewOriginal": "View the original report",
+    "integritySatire": "Flagged as satire — not a literal report.",
+    "integrityAdvertorial": "Sponsored / advertorial content.",
+    "integritySentimentConflict": "Sources disagree on tone — read with care.",
+    "closeToHome": "Close to your home base",
+    "seeFullStory": "See the full story",
+    "topics": "Topics",
+    "home": "Home",
+    "whereThisHappens": "Where this happens",
+    "aboutSource": "About the source",
+    "corroboratedAcross": "Corroborated across {{count}} outlets",
+    "lastVerified": "Last verified {{time}}",
+    "visitSource": "Visit {{source}}",
+    "source": "source",
+    "moreLikeThis": "More like this",
+    "forYou": "For you"
   }
 }
