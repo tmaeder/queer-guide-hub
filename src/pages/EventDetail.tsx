@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Luggage, Ticket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
@@ -211,7 +212,7 @@ export default function EventDetail() {
   };
 
   if (!isLoading && !event && !error) {
-    return (
+    const eventNotFound = (
       <div className="container mx-auto py-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Event Not Found</h2>
         <p className="text-muted-foreground mb-6">
@@ -225,6 +226,7 @@ export default function EventDetail() {
         </LocalizedLink>
       </div>
     );
+    return <GatedDetailFallback entityType="event" slug={slug} notFound={eventNotFound} />;
   }
 
   const cityName = event?.cities?.name ?? event?.city ?? null;

@@ -6,6 +6,7 @@ import { useTrackView } from '@/hooks/useTrackView';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { PageLoading } from '@/components/ui/loading';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { CountryHero } from '@/components/country/CountryHero';
 import { SafetyVerdict } from '@/components/country/SafetyVerdict';
 import { CountryPracticalInfo } from '@/components/country/CountryPracticalInfo';
@@ -267,7 +268,12 @@ export default function CountryDetail() {
         loading={false}
         error={null}
         breadcrumbs={breadcrumbs}
-        banner={<TripCoveringBanner target={{ type: 'country', countryId: country.id }} />}
+        banner={
+          <>
+            <TripCoveringBanner target={{ type: 'country', countryId: country.id }} />
+            <GatedContentNotice countryId={country.id} />
+          </>
+        }
         header={
           <div className="flex flex-col gap-8">
             <CountryHero country={country} weatherData={weatherData} onContentUpdated={refetchCountry} />

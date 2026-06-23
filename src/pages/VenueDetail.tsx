@@ -19,6 +19,7 @@ import { MarketplaceForVenue } from '@/components/marketplace/MarketplaceForVenu
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
+import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { useMeta } from '@/hooks/useMeta';
 import { buildVenueJsonLd, buildVenueMeta } from './VenueDetail.meta';
 import {
@@ -137,7 +138,7 @@ export default function VenueDetail() {
   if (!isLoading && notFound) {
     const sectionSlugs = ['hotels', 'events', 'news', 'marketplace', 'travel', 'groups', 'resources'];
     const didYouMeanSection = slug && sectionSlugs.includes(slug) ? slug : null;
-    return (
+    const venueNotFound = (
       <div className="container mx-auto py-8 px-4 text-center">
         <NotFoundMeta
           title={t('pages.venueDetail.notFoundTitle', 'Venue not found')}
@@ -168,6 +169,7 @@ export default function VenueDetail() {
         </LocalizedLink>
       </div>
     );
+    return <GatedDetailFallback entityType="venue" slug={slug} notFound={venueNotFound} />;
   }
 
   if (!isLoading && error && !venue) {
