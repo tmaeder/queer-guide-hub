@@ -19,6 +19,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { Editable } from '@/components/admin/inline/Editable';
 import { EntityMap } from '@/components/map/EntityMap';
+import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
 import type { Database } from '@/integrations/supabase/types';
 import { getFallbackImage } from '@/utils/fallbackImages';
@@ -154,6 +155,13 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
 
 export function HotelOverview({ hotel, t, onContentUpdated }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string; onContentUpdated?: () => void }) {
   const hasMap = typeof hotel.latitude === 'number' && typeof hotel.longitude === 'number';
+  const nearby = useNearbyMapPoints({
+    lat: typeof hotel.latitude === 'number' ? hotel.latitude : null,
+    lng: typeof hotel.longitude === 'number' ? hotel.longitude : null,
+    excludeType: 'hotel',
+    excludeId: hotel.id,
+    enabled: hasMap,
+  });
   return (
     <ScrollReveal direction="up">
     <div className="flex flex-col gap-6">
@@ -196,8 +204,10 @@ export function HotelOverview({ hotel, t, onContentUpdated }: { hotel: HotelWith
                   lat: hotel.latitude as number,
                   lng: hotel.longitude as number,
                   name: hotel.name,
+                  type: 'venues',
                   primary: true,
                 },
+                ...nearby,
               ]}
             />
           </CardContent>
