@@ -13,7 +13,7 @@ import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
 
 const Index = lazyRetry(() => import('./pages/Index'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
-const VenueDetail = lazyRetry(() => import('./pages/VenueDetail'));
+const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
 const VenueGuides = lazyRetry(() => import('./pages/VenueGuides'));
 const VenueGuide = lazyRetry(() => import('./pages/VenueGuide'));
 const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
@@ -27,7 +27,6 @@ const MarketplaceItemDetail = lazyRetry(() => import('./pages/MarketplaceItemDet
 const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'));
 const MarketplaceCategories = lazyRetry(() => import('./pages/MarketplaceCategories'));
 const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
-const OrganizationDetail = lazyRetry(() => import('./pages/OrganizationDetail'));
 const Organizations = lazyRetry(() => import('./pages/Organizations'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 const MarketplaceCollection = lazyRetry(() => import('./pages/MarketplaceCollection'));
@@ -449,9 +448,9 @@ export const AppRoutes = () => {
                 <Route path="venues/passport" element={<Navigate to="/me/progress" replace />} />
                 <Route path="venues/guides" element={<VenueGuides />} />
                 <Route path="venues/guides/:slug" element={<VenueGuide />} />
-                <Route path="venues/:slug" element={<VenueDetail />} />
+                <Route path="venues/:slug" element={<EntityDetail source="venue" />} />
                 <Route path="organizations" element={<Organizations />} />
-                <Route path="organizations/:slug" element={<OrganizationDetail />} />
+                <Route path="organizations/:slug" element={<EntityDetail source="organization" />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/guides" element={<EventGuides />} />
                 <Route path="events/guides/:slug" element={<EventGuide />} />
