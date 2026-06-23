@@ -3,7 +3,9 @@ import {
   detectPlatform,
   displayHandle,
   fromLegacyLinks,
+  isSensitivePlatform,
   normalizeUrl,
+  platformSensitivity,
   readAccounts,
   toLegacyLinks,
   unavatarSource,
@@ -44,6 +46,32 @@ describe('unavatarSource', () => {
   it('returns null for unsupported', () => {
     expect(unavatarSource('Bluesky')).toBeNull();
   });
+  it('never resolves an avatar for sensitive platforms', () => {
+    expect(unavatarSource('OnlyFans')).toBeNull();
+    expect(unavatarSource('Pornhub')).toBeNull();
+    expect(unavatarSource('Grindr')).toBeNull();
+  });
+});
+
+describe('platform sensitivity', () => {
+  it('flags adult + dating platforms', () => {
+    expect(platformSensitivity('OnlyFans')).toBe('adult');
+    expect(platformSensitivity('Fansly')).toBe('adult');
+    expect(platformSensitivity('Pornhub')).toBe('adult');
+    expect(platformSensitivity('FetLife')).toBe('dating');
+    expect(platformSensitivity('Grindr')).toBe('dating');
+    expect(isSensitivePlatform('xHamster')).toBe(true);
+  });
+  it('leaves mainstream + support platforms unflagged', () => {
+    expect(platformSensitivity('Instagram')).toBeNull();
+    expect(platformSensitivity('Patreon')).toBeNull();
+    expect(isSensitivePlatform('Bluesky')).toBe(false);
+  });
+  it('detects the new sensitive platforms from URLs', () => {
+    expect(detectPlatform('https://fansly.com/someone').platform).toBe('Fansly');
+    expect(detectPlatform('https://fetlife.com/users/123456').platform).toBe('FetLife');
+    expect(detectPlatform('https://pornhub.com/model/someone').platform).toBe('Pornhub');
+  });
 });
 
 describe('displayHandle', () => {
@@ -65,6 +93,18 @@ describe('legacy <-> accounts', () => {
     expect(toLegacyLinks([{ platform: 'Instagram', url: 'https://instagram.com/x' }])).toEqual({
       Instagram: 'https://instagram.com/x',
     });
+  });
+  it('excludes sensitive accounts from the legacy map', () => {
+    const map = toLegacyLinks([
+      { platform: 'Instagram', url: 'https://instagram.com/x' },
+      { platform: 'OnlyFans', url: 'https://onlyfans.com/x', sensitive: true },
+      { platform: 'Grindr', url: 'https://grindr.com/profile/abcd1234' },
+    ]);
+    expect(map).toEqual({ Instagram: 'https://instagram.com/x' });
+  });
+  it('migrates sensitive legacy links to community visibility + sensitive flag', () => {
+    const accounts = fromLegacyLinks({ OnlyFans: 'https://onlyfans.com/x' });
+    expect(accounts[0]).toMatchObject({ platform: 'OnlyFans', sensitive: true, visibility: 'community' });
   });
 });
 

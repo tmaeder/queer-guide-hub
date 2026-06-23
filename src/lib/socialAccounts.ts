@@ -18,6 +18,9 @@ export interface SocialAccount {
   visibility?: AccountVisibility;
   featured?: boolean;
   embed_enabled?: boolean;
+  /** Adult/creator/dating platform — outing-risk. Set at add time, drives safe
+   *  defaults (community visibility, no avatar fetch, no verify/embed) + 18+ badge. */
+  sensitive?: boolean;
 }
 
 /** Ensure a URL has a scheme. */
@@ -54,6 +57,17 @@ export function detectPlatform(rawUrl: string): { platform: string; handle: stri
   return { platform: 'Website', handle: null };
 }
 
+/** Sensitivity tier for a platform ('adult' | 'dating' | null). Looked up from
+ *  the shared platform vocabulary so detection stays in one place. */
+export function platformSensitivity(platform: string): 'adult' | 'dating' | null {
+  const config = PLATFORM_CONFIGS.find((c) => c.platform === platform);
+  return config?.sensitivity ?? null;
+}
+
+export function isSensitivePlatform(platform: string): boolean {
+  return platformSensitivity(platform) !== null;
+}
+
 /** unavatar.io source slug for a platform, or null if we can't resolve an avatar
  *  for it. Drives the existing /avatar/resolve worker. Keep in sync with the
  *  worker's SOURCES allowlist (workers/image-cdn/src/avatarResolve.ts). */
@@ -70,6 +84,8 @@ const UNAVATAR_SOURCE: Record<string, string> = {
 };
 
 export function unavatarSource(platform: string): string | null {
+  // Never fetch an avatar from an adult/dating site (could pull explicit imagery).
+  if (isSensitivePlatform(platform)) return null;
   return UNAVATAR_SOURCE[platform] ?? null;
 }
 
@@ -93,14 +109,17 @@ export function fromLegacyLinks(links: Record<string, unknown> | null | undefine
     .filter(([, url]) => typeof url === 'string' && url.trim() !== '')
     .map(([platform, url]) => {
       const detected = detectPlatform(url as string);
+      const resolvedPlatform = platform || detected.platform;
+      const sensitive = isSensitivePlatform(resolvedPlatform);
       return {
-        platform: platform || detected.platform,
+        platform: resolvedPlatform,
         url: normalizeUrl(url as string),
         handle: detected.handle,
         verified: 'unverified' as VerifiedStatus,
-        visibility: 'public' as AccountVisibility,
+        visibility: (sensitive ? 'community' : 'public') as AccountVisibility,
         featured: false,
         embed_enabled: false,
+        sensitive,
       };
     });
 }
@@ -117,11 +136,14 @@ export function readAccounts(
   return fromLegacyLinks(legacyLinks);
 }
 
-/** Derive the back-compat social_links map from accounts (last write wins per platform). */
+/** Derive the back-compat social_links map from accounts (last write wins per platform).
+ *  Sensitive accounts are EXCLUDED — the legacy map is read by ungated surfaces
+ *  (SocialLinksDisplay in GroupMembersList / PersonalityDetail), so adult/dating
+ *  links live only in the structured social_accounts array. */
 export function toLegacyLinks(accounts: SocialAccount[]): Record<string, string> {
   const out: Record<string, string> = {};
   for (const a of accounts) {
-    if (a.url) out[a.platform] = a.url;
+    if (a.url && !a.sensitive && !isSensitivePlatform(a.platform)) out[a.platform] = a.url;
   }
   return out;
 }

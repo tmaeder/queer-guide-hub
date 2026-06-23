@@ -1,5 +1,5 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { decodeHtmlEntities } from '@/utils/htmlDecode';
+import { cleanTitle } from '@/utils/htmlDecode';
 import type { Tables } from '@/integrations/supabase/types';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -53,7 +53,7 @@ export function LiveTicker({ articles, windowMs = DEFAULT_WINDOW }: LiveTickerPr
                     ? formatDistanceToNow(new Date(a.published_at), { addSuffix: true })
                     : ''}
                 </span>
-                {decodeHtmlEntities(a.title ?? '')}
+                {cleanTitle(a.title ?? '')}
               </LocalizedLink>
             ))}
           </div>
@@ -67,7 +67,7 @@ export function LiveTicker({ articles, windowMs = DEFAULT_WINDOW }: LiveTickerPr
               to={`/news/${a.slug}`}
               className="text-13 hover:underline no-underline text-foreground truncate"
             >
-              {decodeHtmlEntities(a.title ?? '')}
+              {cleanTitle(a.title ?? '')}
             </LocalizedLink>
           ))}
         </div>

@@ -35,8 +35,9 @@ export function MapLegend({ lens, layers, pridePalette, raised }: MapLegendProps
   const palette = pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS;
   const showHeat = lens === 'density' || lens === 'combined';
   const showPins = lens !== 'density' && lens !== 'boundary';
-  // The collapsed button sits low; when the rail is present, clear its height.
-  const bottomClass = raised ? 'bottom-36' : 'bottom-10';
+  // The collapsed button sits low; when the rail (~170px tall) is present, lift
+  // the legend fully above it so it stays reachable on full-width mobile rails.
+  const bottomClass = raised ? 'bottom-48' : 'bottom-10';
 
   return (
     <AnimatePresence initial={false} mode="wait">
