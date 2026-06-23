@@ -8,7 +8,8 @@ import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { TrustTierBadge } from '@/components/profile/TrustTierBadge';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { CompletionRing } from '@/components/profile/CompletionRing';
-import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
+import { SocialAccountsDisplay } from '@/components/profile/SocialAccountsDisplay';
+import { readAccounts } from '@/lib/socialAccounts';
 import { StatusBar } from '@/components/status/StatusBar';
 import { ScoreLevelChip } from '@/components/score/ScoreLevelChip';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -44,6 +45,7 @@ export function ProfileHeader({
   const displayName = publicDisplayName(profile.display_name as string) || 'Anonymous User';
   const username = profile.username as string | undefined;
   const socialLinks = profile.social_links as Record<string, unknown> | undefined;
+  const socialAccounts = readAccounts(profile.social_accounts, socialLinks);
   const hasStatus =
     !!status &&
     (status.emoji || status.text || status.dndActive || status.travel || (status.tags?.length ?? 0) > 0);
@@ -140,9 +142,9 @@ export function ProfileHeader({
                 </div>
               )}
 
-              {socialLinks && Object.keys(socialLinks).length > 0 && (
+              {socialAccounts.length > 0 && (
                 <div className="mb-4">
-                  <SocialLinksDisplay socialLinks={socialLinks} />
+                  <SocialAccountsDisplay socialAccounts={profile.social_accounts} socialLinks={socialLinks} />
                 </div>
               )}
 
