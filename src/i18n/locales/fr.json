@@ -1627,7 +1627,10 @@
       "menuTitle": "Explorer Queer Guide",
       "menuDescription": "Accédez à n’importe quelle section, changez de langue ou de thème.",
       "trips": "Mes voyages",
-      "settingsSection": "Affichage"
+      "settingsSection": "Affichage",
+      "browseAll": "Parcourir toutes les sections",
+      "unreadCount": "{{count}} non lus",
+      "tripsBadge": "{{count}} éléments de voyage à vérifier"
     }
   },
   "pages": {

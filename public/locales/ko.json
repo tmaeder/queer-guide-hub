@@ -1623,7 +1623,10 @@
       "menuTitle": "Queer Guide 둘러보기",
       "menuDescription": "원하는 섹션으로 이동하고 언어나 테마를 변경하세요.",
       "trips": "내 여행",
-      "settingsSection": "디스플레이"
+      "settingsSection": "디스플레이",
+      "browseAll": "모든 섹션 보기",
+      "unreadCount": "읽지 않음 {{count}}개",
+      "tripsBadge": "확인이 필요한 여행 항목 {{count}}개"
     }
   },
   "pages": {

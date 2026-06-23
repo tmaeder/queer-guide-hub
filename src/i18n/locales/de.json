@@ -1623,7 +1623,10 @@
       "menuTitle": "Queer Guide entdecken",
       "menuDescription": "Zu jedem Bereich springen, Sprache oder Design wechseln.",
       "trips": "Meine Reisen",
-      "settingsSection": "Anzeige"
+      "settingsSection": "Anzeige",
+      "browseAll": "Alle Bereiche anzeigen",
+      "unreadCount": "{{count}} ungelesen",
+      "tripsBadge": "{{count}} Reise-Elemente erfordern Aufmerksamkeit"
     }
   },
   "pages": {

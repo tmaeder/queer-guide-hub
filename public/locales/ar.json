@@ -1623,7 +1623,10 @@
       "menuTitle": "استكشف Queer Guide",
       "menuDescription": "انتقل إلى أي قسم، وبدّل اللغة أو المظهر.",
       "trips": "رحلاتي",
-      "settingsSection": "العرض"
+      "settingsSection": "العرض",
+      "browseAll": "تصفّح كل الأقسام",
+      "unreadCount": "{{count}} غير مقروء",
+      "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه"
     }
   },
   "pages": {
