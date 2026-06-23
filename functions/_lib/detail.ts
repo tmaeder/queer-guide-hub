@@ -30,6 +30,28 @@ const MAX_TITLE = 60;
 const MAX_DESC = 155;
 
 /**
+ * Safety layer — a high-risk-country (safety_gated) venue/event must never leak
+ * its content to crawlers via the bot-prerender path. We return a non-null,
+ * `indexable:false` result with NO entity-specific meta/body/JSON-LD: the
+ * middleware then emits noindex,nofollow and injects nothing identifying, while
+ * the SPA still mounts for humans and shows the GatedDetailFallback sign-in gate.
+ * Returning null is wrong here — the middleware hard-404s a null detail on a
+ * detail path, which would break the human sign-in gate.
+ */
+function gatedDetailResult(): DetailResult {
+  return {
+    meta: {
+      title: `Sign in to view${TITLE_SUFFIX}`,
+      description: 'This content is only available to signed-in members on Queer Guide.',
+      ogImage: safeOgImage(DEFAULT_OG_IMAGE),
+    },
+    body: '<main data-prerendered="bot-ua"><p>This content is only available to signed-in members.</p></main>',
+    jsonLd: '',
+    indexable: false,
+  };
+}
+
+/**
  * Cuts a string to max chars. Prefers a sentence boundary inside the last
  * 30 chars before the limit so descriptions don't end mid-thought; falls
  * back to a word boundary + ellipsis when no sentence end is found.
@@ -98,9 +120,10 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     'venues',
     'slug',
     slug,
-    'name,slug,description,address,city,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at',
+    'name,slug,description,address,city,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated',
   );
   if (!row) return null;
+  if (row.safety_gated === true) return gatedDetailResult();
 
   const name = stringField(row, 'name') ?? slug;
   const description = stringField(row, 'description') ?? '';
@@ -221,9 +244,10 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
     'events',
     'slug',
     slug,
-    'title,slug,description,address,city,country,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at',
+    'title,slug,description,address,city,country,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated',
   );
   if (!row) return null;
+  if (row.safety_gated === true) return gatedDetailResult();
 
   const title = stringField(row, 'title') ?? slug;
   const description = stringField(row, 'description') ?? '';
@@ -480,7 +504,9 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
           env,
           'venues',
           'name,slug,address,category,venue_subtype,foursquare_rating',
-          `city_id=eq.${cityId}&order=foursquare_rating.desc.nullslast`,
+          // Safety layer — never list high-risk-country venues in the
+          // prerendered city page (service-role fetch bypasses RLS).
+          `city_id=eq.${cityId}&safety_gated=eq.false&order=foursquare_rating.desc.nullslast`,
           10,
         ).catch(() => [])
       : Promise.resolve([]),
@@ -489,7 +515,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
           env,
           'events',
           'title,slug,start_date',
-          `city_id=eq.${cityId}&start_date=gte.${new Date().toISOString().slice(0, 10)}&order=start_date.asc`,
+          `city_id=eq.${cityId}&safety_gated=eq.false&start_date=gte.${new Date().toISOString().slice(0, 10)}&order=start_date.asc`,
           10,
         ).catch(() => [])
       : Promise.resolve([]),
