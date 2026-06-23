@@ -23,6 +23,9 @@ import {
   Info,
   Accessibility,
   Scale,
+  Compass,
+  MessageCircle,
+  User,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -75,6 +78,75 @@ export const DESTINATIONS: NavDestination[] = [
 /** Desktop primary nav row (5) and the secondary "More" set (9). */
 export const PRIMARY_NAV = DESTINATIONS.filter((d) => d.primary);
 export const MORE_NAV = DESTINATIONS.filter((d) => !d.primary);
+
+/**
+ * Mobile bottom-nav tab set — single source of truth for the four destination
+ * slots (the raised contribute button is bespoke and not listed here). Tapping
+ * Explore deep-links to discovery (`/search`); the full destination hub is
+ * reached by long-pressing Explore (or its chevron affordance), not a slot.
+ */
+export interface BottomNavTab {
+  id: 'home' | 'explore' | 'messages' | 'you';
+  to: string;
+  icon: LucideIcon;
+  labelKey: string;
+  /** Locale-stripped prefixes that light this tab. '/' is matched exactly. */
+  activePrefixes: string[];
+  /** Anonymous tap routes to /auth with a return-to instead of navigating. */
+  authGated?: boolean;
+  /** Source for the tab's count badge. */
+  badge?: 'unread';
+  /** Render the signed-in avatar in place of the icon. */
+  avatar?: boolean;
+}
+
+export const BOTTOM_NAV_TABS: BottomNavTab[] = [
+  { id: 'home', to: '/', icon: Home, labelKey: 'header.mobileNav.home', activePrefixes: ['/'] },
+  {
+    id: 'explore',
+    to: '/search',
+    icon: Compass,
+    labelKey: 'header.mobileNav.explore',
+    // Any browse/discovery route lights Explore — "you're in the catalogue".
+    activePrefixes: [
+      '/search',
+      '/venues',
+      '/events',
+      '/places',
+      '/marketplace',
+      '/news',
+      '/map',
+      '/people',
+      '/hotels',
+      '/travel',
+      '/resources',
+      '/personalities',
+      '/community',
+      '/feed',
+      '/groups',
+      '/users',
+      '/friends',
+    ],
+  },
+  {
+    id: 'messages',
+    to: '/messages',
+    icon: MessageCircle,
+    labelKey: 'header.mobileNav.messages',
+    activePrefixes: ['/messages'],
+    authGated: true,
+    badge: 'unread',
+  },
+  {
+    id: 'you',
+    to: '/me',
+    icon: User,
+    labelKey: 'header.mobileNav.you',
+    activePrefixes: ['/me', '/profile', '/user'],
+    authGated: true,
+    avatar: true,
+  },
+];
 
 export interface NavItem {
   to: string;

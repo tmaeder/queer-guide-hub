@@ -293,6 +293,12 @@ export const adminNavSections: AdminNavSection[] = [
     minRole: 'editor',
     items: [
       {
+        id: 'import-data-hub',
+        label: 'Import data',
+        icon: Download,
+        route: '/admin/imports/data',
+      },
+      {
         id: 'email-ingestions',
         label: 'Email Ingestions',
         icon: Mail,

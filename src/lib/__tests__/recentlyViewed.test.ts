@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   trackRecentlyViewed,
   getRecentlyViewed,
+  recentlyViewedHref,
   clearRecentlyViewed,
 } from '../recentlyViewed';
 
@@ -50,5 +51,18 @@ describe('recentlyViewed', () => {
     const bySlug = Object.fromEntries(getRecentlyViewed().map((it) => [it.slug, it.image]));
     expect(bySlug.good).toBe('https://cdn.example/ok.webp');
     expect(bySlug.bad).toBeUndefined();
+  });
+
+  it('records organization views (not dropped by the type guard)', () => {
+    trackRecentlyViewed({ type: 'organization', slug: 'nclr', title: 'NCLR' });
+    const [item] = getRecentlyViewed();
+    expect(item?.type).toBe('organization');
+    expect(item?.slug).toBe('nclr');
+  });
+
+  it('builds the organization href', () => {
+    expect(
+      recentlyViewedHref({ type: 'organization', slug: 'nclr', title: 'NCLR', ts: 1 }),
+    ).toBe('/organizations/nclr');
   });
 });
