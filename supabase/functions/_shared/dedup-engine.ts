@@ -230,15 +230,18 @@ export function decideCandidate(
 // ── Per-type registry ───────────────────────────────────────────────────────
 //
 // The config that REPLACES the per-type if-ladder in pipeline-deduplicate.
-// Threshold/cosine numbers are conservative starting points; scripts/dedup-eval.ts
-// recalibrates them against labeled pairs (precision floor 0.98 on the auto band).
-
+// Initial numbers calibrated by scripts/dedup-eval.ts against labeled pairs.
+// VENUE/HOTEL tuned from the production distribution (669 confirmed-dup pairs vs
+// 130k same-city distinct pairs, 2026-06-24): dup median cosine 0.835 but
+// distinct same-city median ~0.82 (they share city/country context), so semantic
+// ALONE is a weak venue discriminator — the confirm path carries it and the
+// standalone bar sits at 0.96 (above distinct p99 0.872) to stay precise.
 export const DEDUP_REGISTRY: Record<EntityType, TypeConfig> = {
   venue: {
     entityType: 'venue',
     candidateRpc: 'find_venue_duplicate_candidates',
     idField: 'venue_id',
-    semantic: { enabled: true, minCosine: 0.86, confirmWeight: 0.06, standaloneReviewCosine: 0.93 },
+    semantic: { enabled: true, minCosine: 0.84, confirmWeight: 0.06, standaloneReviewCosine: 0.96 },
     thresholds: { autoMerge: 0.90, review: 0.75 },
     guards: [geoGuard(250)],
   },
@@ -246,7 +249,7 @@ export const DEDUP_REGISTRY: Record<EntityType, TypeConfig> = {
     entityType: 'hotel',
     candidateRpc: 'find_hotel_duplicate_candidates',
     idField: 'venue_id',
-    semantic: { enabled: true, minCosine: 0.88, confirmWeight: 0.05, standaloneReviewCosine: 0.95 },
+    semantic: { enabled: true, minCosine: 0.86, confirmWeight: 0.05, standaloneReviewCosine: 0.96 },
     thresholds: { autoMerge: 0.90, review: 0.75 },
     guards: [geoGuard(250)],
   },

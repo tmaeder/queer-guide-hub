@@ -9,21 +9,33 @@ import {
   useFuzzyDuplicateClusters,
   runFuzzyAutomerge,
   mergeVenuePair,
+  mergeEntityPair,
+  unmergeEntity,
   unmergeAudit,
   type Cluster,
   type ClusterMember,
   type VenueMeta,
   type FuzzyCluster,
+  type DedupContentType,
 } from '@/hooks/useVenueDuplicates';
 
 /**
- * /admin/duplicates — duplicate-venue review & merge (dedup Phase 1).
+ * /admin/duplicates — duplicate review & merge across content types.
  *
- * Lists clusters from find_duplicate_clusters('venue'); the admin picks the
+ * Lists clusters from find_duplicate_clusters(<type>); the admin picks the
  * canonical row and merges the rest (soft + reversible — sets duplicate_of_id,
- * reparents children, records a slug redirect, audits the op). The success toast
- * offers an Undo that calls unmerge_venues.
+ * reparents children, records a slug redirect, audits the op). Venues use the
+ * dedicated merge_venues RPC (+ a fuzzy same-place tab); events / marketplace /
+ * personalities go through the generic merge_entities dispatcher. The success
+ * toast offers an Undo.
  */
+
+const CONTENT_TYPES: { value: DedupContentType; label: string }[] = [
+  { value: 'venue', label: 'Venues' },
+  { value: 'event', label: 'Events' },
+  { value: 'marketplace', label: 'Marketplace' },
+  { value: 'personality', label: 'People' },
+];
 
 const clusterKey = (c: Cluster) => `${c.normalized_title}|${c.city ?? ''}`;
 const hasImage = (m?: VenueMeta) => Array.isArray(m?.images) && (m!.images as unknown[]).length > 0;
@@ -43,12 +55,13 @@ function suggestKeep(members: ClusterMember[], meta: Map<string, VenueMeta>): st
 
 export default function AdminDuplicates() {
   const queryClient = useQueryClient();
+  const [contentType, setContentType] = useState<DedupContentType>('venue');
   const [view, setView] = useState<'exact' | 'fuzzy'>('exact');
-  const { clusters, meta, isLoading, isError, error } = useDuplicateClusters();
+  const { clusters, meta, isLoading, isError, error } = useDuplicateClusters(contentType);
   const [picked, setPicked] = useState<Record<string, string>>({});
 
   const keepFor = (c: Cluster) => picked[clusterKey(c)] ?? suggestKeep(c.members, meta);
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['dup-clusters', 'venue'] });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['dup-clusters', contentType] });
 
   const mergeMutation = useMutation({
     mutationFn: async (c: Cluster): Promise<string[]> => {
@@ -56,7 +69,7 @@ export default function AdminDuplicates() {
       const audits: string[] = [];
       for (const m of c.members) {
         if (m.id === keepId) continue;
-        const a = await mergeVenuePair(keepId, m.id);
+        const a = await mergeEntityPair(contentType, keepId, m.id);
         if (a) audits.push(a);
       }
       return audits;
@@ -69,7 +82,7 @@ export default function AdminDuplicates() {
           label: 'Undo',
           onClick: async () => {
             try {
-              for (const id of audits) await unmergeAudit(id);
+              for (const id of audits) await unmergeEntity(contentType, id);
               toast.success('Merge undone');
               refresh();
             } catch (e) {
@@ -82,26 +95,44 @@ export default function AdminDuplicates() {
     onError: (e) => toast.error(`Merge failed: ${(e as Error).message}`),
   });
 
+  // Fuzzy "same place" review is venue-only (find_fuzzy_duplicate_clusters).
+  const effectiveView = contentType === 'venue' ? view : 'exact';
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <header className="flex flex-col gap-2">
-        <h1 className="text-headline font-semibold">Duplicate venues</h1>
+        <h1 className="text-headline font-semibold">Duplicates</h1>
         <p className="text-muted-foreground text-15">
           Pick the canonical record and merge the rest — duplicates are hidden, their URLs redirect,
           and every merge is reversible.
         </p>
       </header>
 
-      <div className="flex gap-2">
-        <Button variant={view === 'exact' ? 'default' : 'outline'} size="sm" onClick={() => setView('exact')}>
-          Exact (name + city)
-        </Button>
-        <Button variant={view === 'fuzzy' ? 'default' : 'outline'} size="sm" onClick={() => setView('fuzzy')}>
-          Same place (fuzzy)
-        </Button>
+      <div className="flex flex-wrap gap-2">
+        {CONTENT_TYPES.map((t) => (
+          <Button
+            key={t.value}
+            variant={contentType === t.value ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { setContentType(t.value); setPicked({}); setView('exact'); }}
+          >
+            {t.label}
+          </Button>
+        ))}
       </div>
 
-      {view === 'fuzzy' ? (
+      {contentType === 'venue' && (
+        <div className="flex gap-2">
+          <Button variant={view === 'exact' ? 'default' : 'outline'} size="sm" onClick={() => setView('exact')}>
+            Exact (name + city)
+          </Button>
+          <Button variant={view === 'fuzzy' ? 'default' : 'outline'} size="sm" onClick={() => setView('fuzzy')}>
+            Same place (fuzzy)
+          </Button>
+        </div>
+      )}
+
+      {effectiveView === 'fuzzy' ? (
         <FuzzyDuplicates />
       ) : (
       <>
@@ -111,7 +142,7 @@ export default function AdminDuplicates() {
         </div>
       )}
       {isError && <div className="text-destructive p-4">Failed to load clusters: {error?.message}</div>}
-      {!isLoading && clusters.length === 0 && <div className="text-muted-foreground p-4">No duplicate venue clusters.</div>}
+      {!isLoading && clusters.length === 0 && <div className="text-muted-foreground p-4">No duplicate clusters.</div>}
 
       <div className="flex flex-col gap-4">
         {clusters.map((c) => {
