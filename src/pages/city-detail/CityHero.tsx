@@ -4,7 +4,8 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage } from '@/utils/fallbackImages';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import type { CityRelation } from './types';
 
 export interface CityHeroProps {
@@ -31,13 +32,16 @@ export function CityHero({
   const countryHref = city.countries
     ? `/country/${city.countries.slug || city.countries.id}`
     : null;
+  const fallback = getFallbackImage('place', city.id);
 
   return (
     <div className="group relative h-[58vh] min-h-[380px] max-h-[600px] w-full overflow-hidden rounded-container ring-1 ring-border/60">
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
       <img
-        src={imageUrl || getRandomFallbackImage()}
+        src={isValidImageUrl(imageUrl) ? imageUrl : fallback}
         alt={city.name}
         referrerPolicy="no-referrer"
+        onError={(e) => { if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback; }}
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
       />
       <div className="pointer-events-none absolute inset-0 img-scrim-strong" aria-hidden="true" />

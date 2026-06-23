@@ -6,7 +6,8 @@ import type { Hotel } from '@/hooks/useHotels';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { safeText } from '@/utils/safeDisplay';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage } from '@/utils/fallbackImages';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
 interface HotelCardProps {
   hotel?: Hotel;
@@ -74,7 +75,9 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
     );
   }
 
-  const imageUrl = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
+  const rawImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
+  const imageUrl = isValidImageUrl(rawImage) ? rawImage : null;
+  const hotelFallback = getFallbackImage('hotel', hotel.id);
   const hotelName = safeText(hotel.name);
   const city = safeText(hotel.city);
   const country = safeText(hotel.country);
@@ -96,13 +99,13 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
             <div className="relative overflow-hidden bg-accent" style={{ height: 180 }}>
               {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
               <img
-                src={imageUrl || getRandomFallbackImage()}
+                src={imageUrl || hotelFallback}
                 alt={hotelName}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 loading="lazy"
                 decoding="async"
                 referrerPolicy="no-referrer"
-                onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
+                onError={(e) => { if (e.currentTarget.src !== hotelFallback) e.currentTarget.src = hotelFallback; }}
                 className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
               />
               {/*

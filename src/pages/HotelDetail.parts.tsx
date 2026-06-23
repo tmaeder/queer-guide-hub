@@ -21,7 +21,8 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { EntityMap } from '@/components/map/EntityMap';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
 import type { Database } from '@/integrations/supabase/types';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage } from '@/utils/fallbackImages';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 export type HotelWithRelations = Hotel & {
@@ -51,6 +52,7 @@ interface HeroProps {
 
 export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, onAddToTrip, onContentUpdated }: HeroProps) {
   const heroImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
+  const heroFallback = getFallbackImage('hotel', hotel.id);
   // Website is only useful when it points somewhere different than the
   // booking URL — otherwise it's a duplicate of "Book Now".
   const showWebsite = Boolean(hotel.website) && hotel.website !== hotel.booking_url;
@@ -60,10 +62,10 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
           <img
             loading="lazy"
-            src={heroImage || getRandomFallbackImage()}
+            src={isValidImageUrl(heroImage) ? heroImage : heroFallback}
             alt={hotel.name}
             referrerPolicy="no-referrer"
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => { const fb = getRandomFallbackImage(); if ((e.target as HTMLImageElement).src !== fb) (e.target as HTMLImageElement).src = fb; }}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => { if ((e.target as HTMLImageElement).src !== heroFallback) (e.target as HTMLImageElement).src = heroFallback; }}
             className="w-full h-full object-cover"
           />
       </ParallaxHero>

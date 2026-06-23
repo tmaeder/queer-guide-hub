@@ -11,7 +11,7 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
 }));
 vi.mock('@/utils/safeDisplay', () => ({ safeText: (s: string) => s }));
 vi.mock('@/utils/htmlDecode', () => ({ decodeHtmlEntities: (s: string) => s }));
-vi.mock('@/utils/fallbackImages', () => ({ getRandomFallbackImage: () => '/fallback.png' }));
+vi.mock('@/utils/fallbackImages', () => ({ getFallbackImage: () => '/fallback.png', getRandomFallbackImage: () => '/fallback.png' }));
 
 import { StoryCard } from '../StoryCard';
 
@@ -35,16 +35,16 @@ describe('StoryCard', () => {
   it('uses hero image when provided', () => {
     // Image has role="presentation" (decorative — story title carries semantics).
     const { container } = render(
-      <StoryCard story={story} hero={{ image_url: '/hero.jpg', excerpt: 'lead' } as never} />,
+      <StoryCard story={story} hero={{ image_url: 'https://img.test/hero.jpg', excerpt: 'lead' } as never} />,
     );
     const img = container.querySelector('img');
-    expect(img).toHaveAttribute('src', '/hero.jpg');
+    expect(img).toHaveAttribute('src', 'https://img.test/hero.jpg');
     expect(screen.getByText('lead')).toBeInTheDocument();
   });
 
   it('falls back to placeholder on image error', () => {
     const { container } = render(
-      <StoryCard story={story} hero={{ image_url: '/broken.jpg' } as never} />,
+      <StoryCard story={story} hero={{ image_url: 'https://img.test/broken.jpg' } as never} />,
     );
     const img = container.querySelector('img')!;
     fireEvent.error(img);

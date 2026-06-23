@@ -4,7 +4,20 @@ import { Badge } from '@/components/ui/badge';
 import { useRelatedByTags } from '@/hooks/useRelatedByTags';
 import { hrefForEntity } from '@/lib/searchRoutes';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage, type FallbackTheme } from '@/utils/fallbackImages';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+
+function fallbackTheme(type: string): FallbackTheme {
+  switch (type) {
+    case 'venue': return 'venue';
+    case 'event': return 'event';
+    case 'hotel': return 'hotel';
+    case 'news': return 'news';
+    case 'marketplace': return 'marketplace';
+    case 'personality': return 'person';
+    default: return 'place';
+  }
+}
 
 const TYPE_LABEL: Record<string, string> = {
   venue: 'Venue',
@@ -52,8 +65,9 @@ export function MoreLikeThisByTag({
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {data.map((item) => {
           const href = hrefForEntity({ type: item.type, slug: item.slug, title: item.title });
+          const fallback = getFallbackImage(fallbackTheme(item.type), item.id);
           const img =
-            resolveImageUrl({ imageUrl: item.image_url }) ?? getRandomFallbackImage();
+            (isValidImageUrl(item.image_url) ? resolveImageUrl({ imageUrl: item.image_url }) : null) ?? fallback;
           const location = [item.city, item.country].filter(Boolean).join(', ');
           return (
             <LocalizedLink
@@ -70,7 +84,7 @@ export function MoreLikeThisByTag({
                   referrerPolicy="no-referrer"
                   className="absolute inset-0 h-full w-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).style.visibility = 'hidden';
+                    if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
                   }}
                 />
                 <Badge variant="soft" className="absolute left-2 top-2 text-2xs">
