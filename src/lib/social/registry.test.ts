@@ -7,6 +7,7 @@ import {
   normalizeSocialLinks,
   canonicalizeUrl,
   isAdultPlatform,
+  isShareOrWidgetUrl,
 } from './registry';
 
 describe('detectPlatform', () => {
@@ -54,6 +55,80 @@ describe('detectPlatform', () => {
   it('does not misclassify known hosts as mastodon', () => {
     expect(detectPlatform('https://instagram.com/@weird')).not.toBe('mastodon');
     expect(detectPlatform('https://medium.com/@writer')).toBe('medium');
+  });
+});
+
+describe('share-intent / widget / post-permalink exclusion', () => {
+  const bad = [
+    'https://www.facebook.com/sharer/sharer.php?u=https://example.com',
+    'https://facebook.com/sharer.php?u=x',
+    'http://www.facebook.com/share.php',
+    'https://t.me/share/url?url=https://example.com',
+    'https://twitter.com/intent/tweet?text=hi',
+    'https://x.com/intent/follow?screen_name=x',
+    'https://www.facebook.com/dialog/share?href=x',
+    'https://www.instagram.com/reels/ABC123/',
+    'https://instagram.com/reel/ABC123',
+    'https://www.instagram.com/p/ABC123/',
+    'https://www.facebook.com/watch/?v=123',
+    'https://www.facebook.com/hashtag/pride',
+    'https://www.instagram.com/explore/tags/pride/',
+    'https://www.instagram.com/stories/someone/123/',
+    'https://instagram.com/reels',
+    'https://facebook.com/sharer',
+    'https://t.me/share',
+  ];
+
+  it.each(bad)('isShareOrWidgetUrl(%s) is true', (url) => {
+    expect(isShareOrWidgetUrl(url)).toBe(true);
+  });
+
+  it.each(bad)('detectPlatform(%s) is null', (url) => {
+    expect(detectPlatform(url)).toBeNull();
+  });
+
+  it('does not flag real profile links', () => {
+    for (const url of [
+      'https://instagram.com/queer.guide',
+      'https://facebook.com/StonewallUK',
+      'https://x.com/handle',
+      'https://t.me/channelname',
+      'https://www.instagram.com/sharemyplate', // "share..." handle, not /share/
+    ]) {
+      expect(isShareOrWidgetUrl(url)).toBe(false);
+    }
+  });
+
+  it('normalizeHandle rejects reserved first-path segments', () => {
+    expect(normalizeHandle('instagram', 'https://instagram.com/reels/ABC123/')).toBeNull();
+    expect(normalizeHandle('instagram', 'https://instagram.com/p/ABC123/')).toBeNull();
+    expect(normalizeHandle('facebook', 'https://facebook.com/watch/?v=1')).toBeNull();
+    expect(normalizeHandle('instagram', 'reels')).toBeNull();
+    expect(normalizeHandle('instagram', '@p')).toBeNull();
+  });
+
+  it('extractSocialUrlsFromText ignores share/widget URLs', () => {
+    const text = `Share: https://www.facebook.com/sharer/sharer.php?u=x
+      Tweet: https://twitter.com/intent/tweet?text=hi
+      Reel: https://instagram.com/reels/ABC123/
+      Real: https://instagram.com/queer.guide`;
+    const out = extractSocialUrlsFromText(text);
+    expect(out.facebook).toBeUndefined();
+    expect(out.twitter).toBeUndefined();
+    expect(out.instagram).toBe('https://instagram.com/queer.guide');
+  });
+
+  it('normalizeSocialLinks strips junk stored under a known key', () => {
+    const out = normalizeSocialLinks({
+      instagram: 'https://instagram.com/reels',
+      facebook: 'https://facebook.com/sharer/sharer.php?u=x',
+      telegram: 'https://t.me/share',
+      twitter: 'https://x.com/realhandle',
+    });
+    expect(out.instagram).toBeUndefined();
+    expect(out.facebook).toBeUndefined();
+    expect(out.telegram).toBeUndefined();
+    expect(out.twitter).toBe('https://x.com/realhandle');
   });
 });
 
