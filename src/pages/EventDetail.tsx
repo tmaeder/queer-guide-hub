@@ -63,6 +63,7 @@ export default function EventDetail() {
     type: 'event',
     slug: event?.slug,
     title: event?.title,
+    image: resolveEntityImage('event', event).url ?? undefined,
     city: event?.cities?.name ?? event?.city,
     country: event?.countries?.name ?? event?.country,
   });

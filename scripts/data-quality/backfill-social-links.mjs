@@ -75,13 +75,24 @@ function token() {
 }
 const TOKEN = token()
 
-async function sql(query) {
-  const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query }),
-  })
-  if (!res.ok) throw new Error(`SQL ${res.status}: ${await res.text()}`)
+async function sql(query, attempt = 0) {
+  let res
+  try {
+    res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    })
+  } catch (e) {
+    if (attempt < 4) { await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt)); return sql(query, attempt + 1) }
+    throw e
+  }
+  // Retry transient Management-API failures (502/503/504/429) with backoff.
+  if ([429, 502, 503, 504].includes(res.status) && attempt < 4) {
+    await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt))
+    return sql(query, attempt + 1)
+  }
+  if (!res.ok) throw new Error(`SQL ${res.status}: ${(await res.text()).slice(0, 200)}`)
   return res.json()
 }
 
@@ -154,6 +165,10 @@ async function backfillTable(table) {
 const tables = ONLY_TABLE ? [ONLY_TABLE] : Object.keys(TARGETS)
 for (const t of tables) {
   if (!TARGETS[t]) { console.error(`unknown table ${t}`); continue }
-  await backfillTable(t)
+  try {
+    await backfillTable(t)
+  } catch (e) {
+    console.error(`${t}: aborted — ${e?.message ?? e}`)
+  }
 }
 console.log('done.')
