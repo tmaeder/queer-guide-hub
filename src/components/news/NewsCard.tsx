@@ -8,7 +8,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useState, useMemo } from 'react';
-import { decodeHtmlEntities, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
+import { cleanTitle, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
@@ -153,7 +153,7 @@ export const NewsCard = ({
     },
     i18n.language,
   );
-  const safeTitle = safeText(decodeHtmlEntities(safeText(localizedTitle)));
+  const safeTitle = safeText(cleanTitle(safeText(localizedTitle)));
   const contentLanguage = (articleAny.content_language as string | null | undefined) ?? null;
   // Authoritative language badge — renders nothing when the article language
   // matches the UI locale or is unknown. Flags untranslated foreign cards.

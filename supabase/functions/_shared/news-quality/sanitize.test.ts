@@ -140,6 +140,19 @@ Deno.test('stripJunkPhrases removes German + French paywall snippets', () => {
   assert(!fr.text.toLowerCase().includes('réservé aux abonnés'))
 })
 
+Deno.test('sanitizeArticle cleans excerpt + author entities', () => {
+  const r = sanitizeArticle({
+    title: 'A clean title',
+    content: 'Body text long enough to not look truncated. '.repeat(8),
+    excerpt: 'Pride &amp; joy &lt;b&gt;returns&lt;/b&gt;',
+    author: 'Jane &amp; John',
+  })
+  assertEquals(r.excerpt, 'Pride & joy returns')
+  assertEquals(r.author, 'Jane & John')
+  assert(r.removedArtifacts.includes('excerpt:cleaned'))
+  assert(r.removedArtifacts.includes('author:cleaned'))
+})
+
 Deno.test('sanitizeArticle is idempotent (clean input)', () => {
   const input = {
     title: 'Berlin pride draws record crowds',
