@@ -15,6 +15,7 @@ import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-cl
 import { chatCompletion } from '../_shared/openai-client.ts'
 import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
+import { buildTagSuggestions } from '../_shared/scan-tags.ts'
 
 /** A pasted link could not be read server-side (bot-blocked, JS-only, non-HTML,
  *  empty). Surfaced as a 422 so the client shows actionable copy instead of a 500. */
@@ -47,9 +48,21 @@ interface ExtractedField {
   source: string
 }
 
+type DetectedType = 'event' | 'venue' | 'hotel' | 'news' | 'marketplace'
+
 interface ExtractedItem {
-  detected_type: 'event' | 'venue'
+  detected_type: DetectedType
   fields: Record<string, ExtractedField>
+  raw_tags: string[]
+}
+
+/** Unified duplicate match shape returned to the client across all entity types. */
+interface DuplicateMatch {
+  id: string
+  title: string
+  score: number
+  type: DetectedType
+  city?: string | null
 }
 
 interface ExtractionResult {
@@ -57,6 +70,9 @@ interface ExtractionResult {
   raw_text: string
   language: string
 }
+
+/** Typed empty item for structuring-failure fallbacks. */
+const EMPTY_ITEM: ExtractedItem = { detected_type: 'event', fields: {}, raw_tags: [] }
 
 interface VenueCandidate {
   id: string
@@ -140,13 +156,19 @@ Be thorough and precise. Transcribe all text exactly as shown.`,
 // ── Structuring Pass (gpt-4o-mini) ────────────────────────────────────────
 
 const STRUCTURING_PROMPT = `You are a data extraction assistant for queer.guide, an LGBTQ+ travel and community platform.
-Given content from a flyer, poster, or document, extract ALL distinct events and venues as structured JSON.
+Given content from a flyer, poster, page, or document, extract ALL distinct entities as structured JSON.
+
+detected_type is one of: "event" (a dated happening), "venue" (a bar/club/shop/cafe/etc.),
+"hotel" (any accommodation — hotel/hostel/B&B/resort/guesthouse), "news" (a news article/blog post),
+"marketplace" (a product or service for sale). Fill ONLY the *_fields block matching detected_type
+(hotel uses venue_fields plus the hotel-only keys; event flyers may also carry venue data).
 
 Return ONLY valid JSON with this exact structure:
 {
   "items": [
     {
-      "detected_type": "event" or "venue",
+      "detected_type": "event"|"venue"|"hotel"|"news"|"marketplace",
+      "tags": ["short topical keyword", "..."],
       "event_fields": {
         "title": {"value": string|null, "confidence": 0.0-1.0},
         "description": {"value": string|null, "confidence": 0.0-1.0},
@@ -179,7 +201,27 @@ Return ONLY valid JSON with this exact structure:
         "email": {"value": string|null, "confidence": 0.0-1.0},
         "website": {"value": string|null, "confidence": 0.0-1.0},
         "instagram": {"value": string|null, "confidence": 0.0-1.0},
-        "hours_text": {"value": string|null, "confidence": 0.0-1.0}
+        "hours_text": {"value": string|null, "confidence": 0.0-1.0},
+        "star_rating": {"value": number|null, "confidence": 0.0-1.0},
+        "amenities": {"value": string|null, "confidence": 0.0-1.0},
+        "booking_url": {"value": string|null, "confidence": 0.0-1.0}
+      },
+      "news_fields": {
+        "title": {"value": string|null, "confidence": 0.0-1.0},
+        "summary": {"value": string|null, "confidence": 0.0-1.0},
+        "author": {"value": string|null, "confidence": 0.0-1.0},
+        "published_at": {"value": "ISO8601"|null, "confidence": 0.0-1.0},
+        "source_name": {"value": string|null, "confidence": 0.0-1.0},
+        "url": {"value": string|null, "confidence": 0.0-1.0}
+      },
+      "marketplace_fields": {
+        "title": {"value": string|null, "confidence": 0.0-1.0},
+        "description": {"value": string|null, "confidence": 0.0-1.0},
+        "price": {"value": string|number|null, "confidence": 0.0-1.0},
+        "currency": {"value": string|null, "confidence": 0.0-1.0},
+        "brand": {"value": string|null, "confidence": 0.0-1.0},
+        "url": {"value": string|null, "confidence": 0.0-1.0},
+        "image": {"value": string|null, "confidence": 0.0-1.0}
       }
     }
   ],
@@ -199,7 +241,8 @@ Rules:
 - When in doubt between "range" and "separate events": always prefer separate items.
 - Each item should be self-contained with its own location, dates, etc.
 - Omit fields you cannot determine (see COMPACTNESS) rather than emitting null
-- For detected_type: "event" if there's a specific date/time; "venue" if it's a business listing/card
+- For detected_type: "event" if there's a specific date/time; "hotel" for any accommodation; "news" for an article/blog post; "marketplace" for a product/service for sale; "venue" for any other business listing/card
+- tags: 2-6 SHORT lowercase topical keywords per item (themes, audience, vibe, category — e.g. "drag", "techno", "lesbian", "leather", "brunch"). Omit generic words like "event"/"venue"/"lgbtq". Omit the tags array entirely if none apply.
 - Parse dates to ISO 8601 when possible (use current year if year not specified)
 - Extract ALL visible text into raw_text
 - Fill BOTH event_fields and venue_fields per item when possible (an event flyer often has venue data)
@@ -257,7 +300,7 @@ async function structureExtraction(
   } catch (e) {
     console.error('Structuring model call failed:', (e as Error).message)
     return {
-      items: [{ detected_type: 'event', fields: {} }],
+      items: [EMPTY_ITEM],
       raw_text: contentText,
       language: 'en',
     }
@@ -278,7 +321,7 @@ async function structureExtraction(
     const items = mapRawItems(rawItems, source)
 
     return {
-      items: items.length > 0 ? items : [{ detected_type: 'event', fields: {} }],
+      items: items.length > 0 ? items : [EMPTY_ITEM],
       raw_text: parsed.raw_text || '',
       language: parsed.language || 'en',
     }
@@ -294,21 +337,34 @@ async function structureExtraction(
     }
     console.error('Failed to parse structuring response:', content?.slice(0, 200))
     return {
-      items: [{ detected_type: 'event', fields: {} }],
+      items: [EMPTY_ITEM],
       raw_text: contentText,
       language: 'en',
     }
   }
 }
 
-/** Map raw model items (event_fields/venue_fields shape) to ExtractedItem[]. */
+const VALID_TYPES: DetectedType[] = ['event', 'venue', 'hotel', 'news', 'marketplace']
+const FIELD_BLOCK: Record<DetectedType, string> = {
+  event: 'event_fields',
+  venue: 'venue_fields',
+  hotel: 'venue_fields', // hotel is a venue with accommodation fields
+  news: 'news_fields',
+  marketplace: 'marketplace_fields',
+}
+
+/** Map raw model items (per-type *_fields shape) to ExtractedItem[]. */
 function mapRawItems(rawItems: unknown[], source: string): ExtractedItem[] {
   return rawItems.slice(0, 10).map((raw) => {
     const item = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
-    const detectedType = item.detected_type === 'venue' ? 'venue' : 'event'
+    const detectedType = (VALID_TYPES.includes(item.detected_type as DetectedType)
+      ? item.detected_type
+      : 'event') as DetectedType
+
+    const block = (item[FIELD_BLOCK[detectedType]] as Record<string, unknown>) || {}
     const fields = (detectedType === 'event'
-      ? { ...(item.event_fields as Record<string, unknown>), ...pickVenueFieldsForEvent(item.venue_fields as Record<string, unknown>) }
-      : (item.venue_fields as Record<string, unknown>) || {}) as Record<string, { confidence: number; source?: string } | unknown>
+      ? { ...block, ...pickVenueFieldsForEvent(item.venue_fields as Record<string, unknown>) }
+      : block) as Record<string, { confidence: number; source?: string } | unknown>
 
     for (const key of Object.keys(fields)) {
       const f = fields[key]
@@ -316,7 +372,12 @@ function mapRawItems(rawItems: unknown[], source: string): ExtractedItem[] {
         (f as { source?: string }).source = source
       }
     }
-    return { detected_type: detectedType, fields: fields as ExtractedItem['fields'] }
+
+    const rawTags = Array.isArray(item.tags)
+      ? (item.tags as unknown[]).map((t) => String(t)).filter(Boolean).slice(0, 12)
+      : []
+
+    return { detected_type: detectedType, fields: fields as ExtractedItem['fields'], raw_tags: rawTags }
   })
 }
 
@@ -553,6 +614,24 @@ async function checkVenueDuplicates(
   // deno-lint-ignore no-explicit-any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data || []).map((v: any) => ({ ...v, score: 0.9 }))
+}
+
+/** News / marketplace dedup via the shared find_duplicates RPC (trigram + vector). */
+async function checkSimpleDuplicates(
+  contentType: 'news' | 'marketplace',
+  type: DetectedType,
+  title: string | null | undefined,
+  supabase: SupabaseClient,
+): Promise<DuplicateMatch[]> {
+  if (!title || title.trim().length < 2) return []
+  const dups = await findDuplicates(contentType, title, supabase)
+  return dups.map((d) => ({
+    id: d.id,
+    title: d.title,
+    score: d.title_sim ?? d.vec_sim ?? 0.7,
+    type,
+    city: d.city ?? null,
+  }))
 }
 
 // ── Rate Limiting ─────────────────────────────────────────────────────────
@@ -820,44 +899,53 @@ Deno.serve(async (req) => {
     console.log('Matching entities...')
     const itemsWithMatches = await Promise.all(
       extraction.items.map(async (item) => {
+        const type = item.detected_type
+        const isVenueLike = type === 'venue' || type === 'hotel'
+        const title = (type === 'venue' || type === 'hotel'
+          ? item.fields.name?.value
+          : item.fields.title?.value) as string | undefined
+        const description = (item.fields.description?.value ?? item.fields.summary?.value) as string | undefined
+
         const countryName = item.fields.country?.value as string || hint_country
         const matchedCountry = await resolveCountry(countryName, supabase)
-
         const cityName = item.fields.city?.value as string || hint_city
         const matchedCity = await resolveCity(cityName, matchedCountry?.id || null, supabase)
-
         const cityId = matchedCity?.id || null
-        const venueName = item.detected_type === 'event'
-          ? item.fields.venue_name?.value as string
-          : item.fields.name?.value as string
 
-        // These three checks only depend on cityId — run in parallel
-        const [venueCandidates, duplicateEvents, duplicateVenues] = await Promise.all([
+        // venue_candidates: link an event/hotel to an existing venue.
+        const venueName = type === 'event' ? item.fields.venue_name?.value as string : title
+
+        const [venueCandidates, duplicateEvents, duplicateVenues, simpleDups, tagSuggestions] = await Promise.all([
           matchVenues(venueName, cityId, supabase),
-          item.detected_type === 'event'
-            ? checkEventDuplicates(
-                item.fields.title?.value as string,
-                item.fields.start_date?.value as string,
-                cityId,
-                supabase,
-              )
-            : [],
-          item.detected_type === 'venue'
-            ? checkVenueDuplicates(
-                item.fields.name?.value as string,
-                cityId,
-                supabase,
-              )
-            : [],
+          type === 'event'
+            ? checkEventDuplicates(title, item.fields.start_date?.value as string, cityId, supabase)
+            : Promise.resolve([]),
+          isVenueLike ? checkVenueDuplicates(title, cityId, supabase) : Promise.resolve([]),
+          type === 'news'
+            ? checkSimpleDuplicates('news', 'news', title, supabase)
+            : type === 'marketplace'
+              ? checkSimpleDuplicates('marketplace', 'marketplace', title, supabase)
+              : Promise.resolve([] as DuplicateMatch[]),
+          buildTagSuggestions(supabase, item.raw_tags, title, description),
         ])
 
+        // Unified duplicate list across all entity types, highest score first.
+        const duplicates: DuplicateMatch[] = [
+          ...duplicateEvents.map((d) => ({ id: d.id, title: d.title, score: d.score, type: 'event' as DetectedType })),
+          ...duplicateVenues.map((d) => ({ id: d.id, title: d.name, score: d.score, type })),
+          ...simpleDups,
+        ].sort((a, b) => b.score - a.score)
+
         return {
-          detected_type: item.detected_type,
+          detected_type: type,
           fields: item.fields,
+          tag_suggestions: tagSuggestions,
           matches: {
             venue_candidates: venueCandidates,
             city: matchedCity,
             country: matchedCountry,
+            duplicates,
+            // Retained for back-compat with older clients.
             duplicate_events: duplicateEvents,
             duplicate_venues: duplicateVenues,
           },
@@ -894,39 +982,9 @@ Deno.serve(async (req) => {
       console.error('Failed to insert audit row:', insertError)
     }
 
-    // Auto-create community_submissions for each extracted item so they
-    // flow through the ingestion pipeline (normalize → validate → dedup → commit).
-    if (scanRow?.id) {
-      for (const item of itemsWithMatches) {
-        const fields = item.fields as Record<string, { value: unknown; confidence: number } | unknown>
-        // Flatten fields: { fieldName: value } dropping low-confidence nulls
-        const flat: Record<string, unknown> = {}
-        for (const [k, v] of Object.entries(fields)) {
-          if (v && typeof v === 'object' && 'value' in v) {
-            const f = v as { value: unknown; confidence: number }
-            if (f.value !== null && f.value !== undefined) flat[k] = f.value
-          }
-        }
-        if (Object.keys(flat).length === 0) continue
-
-        const { error: subErr } = await supabase.from('community_submissions').insert({
-          content_type:  item.detected_type,
-          status:        'pending',
-          data:          { ...flat, _source: 'flyer_scan', _scan_id: scanRow.id },
-          submitted_by:  user.id,
-          flyer_scan_id: scanRow.id,
-          platform:      isTextMode ? 'manual' : 'flyer',
-          sub_source_type: isTextMode ? 'manual' : 'upload',
-          media_urls:    urls.length > 0 ? urls : (pageImageUrl ? [pageImageUrl] : null),
-          vision_summary: isTextMode ? null : contentForStructuring.slice(0, 8000),
-          raw_text:      extraction.raw_text || null,
-          media_processing_status: urls.length > 0
-            ? 'done'
-            : (pageImageUrl ? 'pending' : 'not_applicable'),
-        })
-        if (subErr) console.error('Failed to create community_submission:', subErr.message)
-      }
-    }
+    // NOTE: no longer auto-creates community_submissions. The scan is read-only —
+    // extraction + matching + this audit row. The client reviews all items and
+    // submits the batch explicitly (single source of truth, avoids double-submit).
 
     console.log(`Analysis complete in ${processingTime}ms — ${itemsWithMatches.length} item(s)`)
 

@@ -70,16 +70,63 @@ export interface VenueCandidate {
   longitude: number | null;
 }
 
+export type DetectedType = 'event' | 'venue' | 'hotel' | 'news' | 'marketplace';
+
+export interface TagSuggestion {
+  slug: string;
+  label: string;
+  confidence: number;
+  source: 'vocab' | 'extracted' | 'marker';
+  preselected: boolean;
+}
+
+export interface DuplicateMatch {
+  id: string;
+  title: string;
+  score: number;
+  type: DetectedType;
+  city?: string | null;
+}
+
 export interface FlyerScanItem {
-  detected_type: 'event' | 'venue';
+  detected_type: DetectedType;
   fields: Record<string, ExtractedField>;
+  tag_suggestions?: TagSuggestion[];
   matches: {
     venue_candidates: VenueCandidate[];
     city: { id: string; name: string } | null;
     country: { id: string; name: string } | null;
+    duplicates?: DuplicateMatch[];
+    // Back-compat (older responses): superseded by `duplicates`.
     duplicate_events: Array<{ id: string; title: string; start_date: string; score: number }>;
     duplicate_venues: Array<{ id: string; name: string; score: number }>;
   };
+}
+
+/** content_type values match the submissionRegistry ids the manual form uses. */
+export const CONTENT_TYPE_BY_DETECTED: Record<DetectedType, string> = {
+  event: 'event',
+  venue: 'venue',
+  hotel: 'hotel',
+  news: 'news',
+  marketplace: 'product',
+};
+
+/** Target table for an enrich link, by the matched duplicate's type. */
+export const TABLE_BY_DETECTED: Record<DetectedType, string> = {
+  event: 'events',
+  venue: 'venues',
+  hotel: 'venues',
+  news: 'news_articles',
+  marketplace: 'marketplace_listings',
+};
+
+export interface BuiltSubmission {
+  content_type: string;
+  data: Record<string, unknown>;
+  submission_intent: 'create' | 'enrich';
+  proposed_link_id: string | null;
+  proposed_link_table: string | null;
 }
 
 export interface FlyerScanResult {
@@ -282,140 +329,41 @@ export function useFlyerScan() {
     [user],
   );
 
-  /** Map a specific item's fields to the form schema */
-  const applyToForm = useCallback(
-    (resultIdx: number, itemIdx: number, selectedVenueId?: string): Record<string, unknown> => {
+  /** Build a community_submissions-ready row for one scanned item. */
+  const buildRow = useCallback(
+    (resultIdx: number, itemIdx: number, opts: BuildRowOpts = {}): BuiltSubmission => {
       const result = results[resultIdx];
-      if (!result) return {};
-
-      const item = result.items[itemIdx];
-      if (!item) return {};
-
-      const { fields, detected_type, matches } = item;
-      const getVal = (key: string, minConfidence = 0.1) => {
-        const f = fields[key];
-        return f && f.confidence >= minConfidence ? f.value : undefined;
-      };
-
-      const formData: Record<string, unknown> = {};
-
-      // If a venue candidate was selected, use its full data
-      if (selectedVenueId) {
-        const venue = matches.venue_candidates.find((v) => v.id === selectedVenueId);
-        if (venue) {
-          if (detected_type === 'event') {
-            formData.venue_name = venue.name;
-          } else {
-            formData.name = venue.name;
-          }
-          formData.address = venue.address;
-          formData.city = venue.city;
-          if (venue.city_id) formData.city_id = venue.city_id;
-          if (venue.country_id) formData.country_id = venue.country_id;
-          if (venue.latitude) formData.latitude = venue.latitude;
-          if (venue.longitude) formData.longitude = venue.longitude;
-        }
-      }
-
-      if (detected_type === 'event') {
-        if (getVal('title')) formData.title = getVal('title');
-        if (getVal('description')) formData.description = getVal('description');
-        if (getVal('event_type')) formData.event_type = getVal('event_type');
-        if (getVal('start_date')) formData.start_date = getVal('start_date');
-        if (getVal('end_date')) formData.end_date = getVal('end_date');
-        if (!selectedVenueId && getVal('venue_name')) formData.venue_name = getVal('venue_name');
-        if (!selectedVenueId && getVal('address')) formData.address = getVal('address');
-        if (!selectedVenueId && getVal('city')) formData.city = getVal('city');
-        if (!selectedVenueId && getVal('country')) formData.country = getVal('country');
-        if (getVal('organizer_name')) formData.organizer_name = getVal('organizer_name');
-        if (getVal('organizer_contact')) formData.organizer_contact = getVal('organizer_contact');
-        {
-          const ticket = safeScannedUrl(getVal('ticket_url'));
-          if (ticket) formData.ticket_url = ticket;
-          const site = safeScannedUrl(getVal('website'));
-          if (site) formData.website = site;
-        }
-        if (getVal('is_free') !== undefined) formData.is_free = getVal('is_free');
-
-        // Smart pricing: if presale exists, use it; otherwise use box office
-        const presalePrice = getVal('price_presale');
-        const boxOfficePrice = getVal('price_box_office');
-        const primaryPrice = presalePrice || boxOfficePrice;
-
-        const toNum = (v: unknown) =>
-          typeof v === 'number' ? v : parseFloat((v as string).replace(',', '.'));
-
-        if (primaryPrice) {
-          const priceNum = toNum(primaryPrice);
-          if (!isNaN(priceNum) && priceNum > 0 && priceNum < 10000) {
-            formData.price_min = priceNum;
-          }
-        }
-
-        // If both presale and box office exist and differ, use as price range
-        if (presalePrice && boxOfficePrice) {
-          const presaleNum = toNum(presalePrice);
-          const boxOfficeNum = toNum(boxOfficePrice);
-
-          if (!isNaN(presaleNum) && !isNaN(boxOfficeNum)) {
-            formData.price_min = Math.min(presaleNum, boxOfficeNum);
-            formData.price_max = Math.max(presaleNum, boxOfficeNum);
-          }
-        }
-
-        // Preserve the labelled presale/door breakdown — the form has no
-        // dedicated fields, so append to description instead of dropping it.
-        if (presalePrice || boxOfficePrice) {
-          const parts: string[] = [];
-          if (presalePrice) {
-            const n = toNum(presalePrice);
-            if (!isNaN(n)) parts.push(`Vorverkauf €${n}`);
-          }
-          if (boxOfficePrice) {
-            const n = toNum(boxOfficePrice);
-            if (!isNaN(n)) parts.push(`Abendkasse €${n}`);
-          }
-          if (parts.length) {
-            const note = parts.join(' / ');
-            const existing = (formData.description as string | undefined) ?? '';
-            if (!existing.includes(note)) {
-              formData.description = existing ? `${existing}\n\n${note}` : note;
-            }
-          }
-        }
-
-        if (getVal('age_restriction')) formData.age_restriction = getVal('age_restriction');
-      } else {
-        if (!selectedVenueId && getVal('name')) formData.name = getVal('name');
-        if (getVal('description')) formData.description = getVal('description');
-        if (getVal('category')) formData.category = getVal('category');
-        if (!selectedVenueId && getVal('address')) formData.address = getVal('address');
-        if (!selectedVenueId && getVal('city')) formData.city = getVal('city');
-        if (!selectedVenueId && getVal('country')) formData.country = getVal('country');
-        if (getVal('postal_code')) formData.postal_code = getVal('postal_code');
-        if (getVal('phone')) formData.phone = getVal('phone');
-        if (getVal('email')) formData.email = getVal('email');
-        {
-          const site = safeScannedUrl(getVal('website'));
-          if (site) formData.website = site;
-        }
-        if (getVal('instagram')) formData.instagram = getVal('instagram');
-      }
-
-      // Set matched city/country IDs
-      if (!selectedVenueId) {
-        if (matches.city?.id) formData.city_id = matches.city.id;
-        if (matches.country?.id) formData.country_id = matches.country.id;
-      }
-
-      // Add the flyer image to the images array
-      if (result.image_url) {
-        formData.images = [result.image_url];
-      }
-
-      return formData;
+      const item = result?.items[itemIdx];
+      if (!item) return { content_type: 'event', data: {}, submission_intent: 'create', proposed_link_id: null, proposed_link_table: null };
+      return buildSubmissionRow(item, { imageUrl: result.image_url, ...opts });
     },
     [results],
+  );
+
+  /** Batch-insert selected items as community_submissions (one DB round-trip). */
+  const submitBatch = useCallback(
+    async (rows: BuiltSubmission[]): Promise<{ inserted: number; enriched: number }> => {
+      if (!user) throw new Error('sign in required');
+      if (rows.length === 0) return { inserted: 0, enriched: 0 };
+      const payload = rows.map((r) => ({
+        content_type: r.content_type,
+        data: r.data,
+        submitted_by: user.id,
+        submission_intent: r.submission_intent,
+        proposed_link_id: r.proposed_link_id,
+        proposed_link_table: r.proposed_link_table,
+        platform: 'flyer',
+        sub_source_type: 'upload',
+      }));
+      // `as 'venues'` mirrors useSubmission — community_submissions isn't in the
+      // generated table types yet.
+      const { error } = await supabase
+        .from('community_submissions' as 'venues')
+        .insert(payload as never);
+      if (error) throw error;
+      return { inserted: rows.length, enriched: rows.filter((r) => r.submission_intent === 'enrich').length };
+    },
+    [user],
   );
 
   /** Get the total number of items across all results */
@@ -431,6 +379,168 @@ export function useFlyerScan() {
     startScan,
     startUrlScan,
     reset,
-    applyToForm,
+    buildRow,
+    submitBatch,
+  };
+}
+
+// ── Pure row builder (exported for testing) ───────────────────────────
+
+export interface BuildRowOpts {
+  imageUrl?: string | null;
+  /** Existing venue candidate to attach an event/venue/hotel to. */
+  selectedVenueId?: string;
+  /** Tag slugs the user kept; defaults to the preselected suggestions. */
+  selectedTagSlugs?: string[];
+  /** Link this submission as an enrichment of an existing entity. */
+  enrich?: { id: string; table: string } | null;
+  /** Inline field edits, applied last over the mapped data. */
+  edits?: Record<string, unknown>;
+  /** Override the detected type (the UI lets users re-classify an item). */
+  typeOverride?: DetectedType;
+}
+
+const toNum = (v: unknown) =>
+  typeof v === 'number' ? v : parseFloat(String(v ?? '').replace(',', '.'));
+
+/**
+ * Map a scanned item + user choices into a `community_submissions` row.
+ * `data` is shaped like the manual form values so the pipeline normalizes
+ * both paths identically.
+ */
+export function buildSubmissionRow(item: FlyerScanItem, opts: BuildRowOpts = {}): BuiltSubmission {
+  const { fields, matches } = item;
+  const { selectedVenueId, imageUrl, enrich, edits } = opts;
+  const type = opts.typeOverride ?? item.detected_type;
+  const getVal = (key: string, minConfidence = 0.1) => {
+    const f = fields[key];
+    return f && f.confidence >= minConfidence ? f.value : undefined;
+  };
+  const data: Record<string, unknown> = {};
+  const isVenueLike = type === 'venue' || type === 'hotel';
+
+  // Attach to a selected existing venue (events/venues/hotels).
+  if (selectedVenueId) {
+    const venue = matches.venue_candidates.find((v) => v.id === selectedVenueId);
+    if (venue) {
+      if (type === 'event') data.venue_name = venue.name;
+      else data.name = venue.name;
+      data.address = venue.address;
+      data.city = venue.city;
+      if (venue.city_id) data.city_id = venue.city_id;
+      if (venue.country_id) data.country_id = venue.country_id;
+      if (venue.latitude) data.latitude = venue.latitude;
+      if (venue.longitude) data.longitude = venue.longitude;
+    }
+  }
+
+  if (type === 'event') {
+    if (getVal('title')) data.title = getVal('title');
+    if (getVal('description')) data.description = getVal('description');
+    if (getVal('event_type')) data.event_type = getVal('event_type');
+    if (getVal('start_date')) data.start_date = getVal('start_date');
+    if (getVal('end_date')) data.end_date = getVal('end_date');
+    if (!selectedVenueId && getVal('venue_name')) data.venue_name = getVal('venue_name');
+    if (!selectedVenueId && getVal('address')) data.address = getVal('address');
+    if (!selectedVenueId && getVal('city')) data.city = getVal('city');
+    if (!selectedVenueId && getVal('country')) data.country = getVal('country');
+    if (getVal('organizer_name')) data.organizer_name = getVal('organizer_name');
+    if (getVal('organizer_contact')) data.organizer_contact = getVal('organizer_contact');
+    const ticket = safeScannedUrl(getVal('ticket_url'));
+    if (ticket) data.ticket_url = ticket;
+    const site = safeScannedUrl(getVal('website'));
+    if (site) data.website = site;
+    if (getVal('is_free') !== undefined) data.is_free = getVal('is_free');
+
+    const presale = getVal('price_presale');
+    const door = getVal('price_box_office');
+    const primary = presale || door;
+    if (primary) {
+      const n = toNum(primary);
+      if (!isNaN(n) && n > 0 && n < 10000) data.price_min = n;
+    }
+    if (presale && door) {
+      const p = toNum(presale);
+      const d = toNum(door);
+      if (!isNaN(p) && !isNaN(d)) {
+        data.price_min = Math.min(p, d);
+        data.price_max = Math.max(p, d);
+      }
+    }
+    if (presale || door) {
+      const parts: string[] = [];
+      if (presale && !isNaN(toNum(presale))) parts.push(`Vorverkauf €${toNum(presale)}`);
+      if (door && !isNaN(toNum(door))) parts.push(`Abendkasse €${toNum(door)}`);
+      if (parts.length) {
+        const note = parts.join(' / ');
+        const existing = (data.description as string | undefined) ?? '';
+        if (!existing.includes(note)) data.description = existing ? `${existing}\n\n${note}` : note;
+      }
+    }
+    if (getVal('age_restriction')) data.age_restriction = getVal('age_restriction');
+  } else if (isVenueLike) {
+    if (!selectedVenueId && getVal('name')) data.name = getVal('name');
+    if (getVal('description')) data.description = getVal('description');
+    if (type === 'hotel') data.category = 'hotel';
+    else if (getVal('category')) data.category = getVal('category');
+    if (!selectedVenueId && getVal('address')) data.address = getVal('address');
+    if (!selectedVenueId && getVal('city')) data.city = getVal('city');
+    if (!selectedVenueId && getVal('country')) data.country = getVal('country');
+    if (getVal('postal_code')) data.postal_code = getVal('postal_code');
+    if (getVal('phone')) data.phone = getVal('phone');
+    if (getVal('email')) data.email = getVal('email');
+    const site = safeScannedUrl(getVal('website')) ?? safeScannedUrl(getVal('booking_url'));
+    if (site) data.website = site;
+    if (getVal('instagram')) data.instagram = getVal('instagram');
+    if (type === 'hotel') {
+      if (getVal('amenities')) data.amenities = getVal('amenities');
+      if (getVal('star_rating') !== undefined) data.star_rating = getVal('star_rating');
+    }
+  } else if (type === 'news') {
+    if (getVal('title')) data.title = getVal('title');
+    if (getVal('summary')) data.summary = getVal('summary');
+    if (getVal('author')) data.author = getVal('author');
+    if (getVal('published_at')) data.published_at = getVal('published_at');
+    if (getVal('source_name')) data.source_name = getVal('source_name');
+    const url = safeScannedUrl(getVal('url'));
+    if (url) data.url = url;
+  } else if (type === 'marketplace') {
+    if (getVal('title')) data.title = getVal('title');
+    if (getVal('description')) data.description = getVal('description');
+    if (getVal('brand')) data.business_name = getVal('brand');
+    if (getVal('price') !== undefined) {
+      const n = toNum(getVal('price'));
+      if (!isNaN(n) && n > 0) data.price = n;
+    }
+    if (getVal('currency')) data.currency = getVal('currency');
+    const url = safeScannedUrl(getVal('url'));
+    if (url) data.website = url;
+  }
+
+  // Matched city/country IDs (unless they came from a selected venue).
+  if (!selectedVenueId) {
+    if (matches.city?.id) data.city_id = matches.city.id;
+    if (matches.country?.id) data.country_id = matches.country.id;
+  }
+
+  // Tags: explicit selection, else the preselected suggestions.
+  const tagSlugs = opts.selectedTagSlugs
+    ?? (item.tag_suggestions ?? []).filter((t) => t.preselected).map((t) => t.slug);
+  if (tagSlugs.length > 0) data.tags = tagSlugs;
+
+  // Images: item-level extracted image + the scan/OG image.
+  const images = [getVal('image'), imageUrl]
+    .map((v) => safeScannedUrl(v))
+    .filter((v): v is string => !!v);
+  if (images.length > 0) data.images = [...new Set(images)];
+
+  if (edits) Object.assign(data, edits);
+
+  return {
+    content_type: CONTENT_TYPE_BY_DETECTED[type],
+    data,
+    submission_intent: enrich ? 'enrich' : 'create',
+    proposed_link_id: enrich?.id ?? null,
+    proposed_link_table: enrich?.table ?? null,
   };
 }

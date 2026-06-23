@@ -36,7 +36,7 @@ Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
 
     let q = supabase
       .from('community_submissions')
-      .select('id, content_type, data, submitted_by, flyer_scan_id, platform, sub_source_type, source_url, raw_text, ocr_text, vision_summary, transcript_text, media_urls, media_storage_paths, screenshot_paths, queer_relevance_score, confidence_score, safety_flags, sensitivity_level, permission_level, submitter_metadata')
+      .select('id, content_type, data, submitted_by, flyer_scan_id, platform, sub_source_type, source_url, raw_text, ocr_text, vision_summary, transcript_text, media_urls, media_storage_paths, screenshot_paths, queer_relevance_score, confidence_score, safety_flags, sensitivity_level, permission_level, submitter_metadata, submission_intent, proposed_link_id, proposed_link_table')
       .eq('status', 'pending')
       .order('submitted_at', { ascending: true })
       .limit(batchLimit)
@@ -68,9 +68,23 @@ Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
       // INGESTIBLE_CONTENT_TYPES filter guarantees a match; defensive fallback
       // just so a future content_type addition doesn't silently misroute.
       const targetTable = TARGET_TABLE[row.content_type ?? ''] ?? 'events'
+      // Enrichment: the submitter linked this to an existing entity. Preset the
+      // dedup match + force review so the commit_*_staging_batch merge path
+      // updates that entity on admin approval (never auto-commits a new record).
+      const isEnrich = row.submission_intent === 'enrich' && !!row.proposed_link_id
+      const enrichFields = isEnrich
+        ? {
+            dedup_status:     'merge_candidate',
+            dedup_match_id:   row.proposed_link_id,
+            dedup_match_table: row.proposed_link_table ?? targetTable,
+            dedup_match_score: 1.0,
+            review_status:    'pending_review',
+          }
+        : {}
       stagingRows.push({
         source_type:     row.platform ? `community-${row.platform}` : 'community-submission',
         target_table:    targetTable,
+        ...enrichFields,
         raw_data:        {
           ...((row.data as Record<string, unknown>) ?? {}),
           _submission_id:  row.id,

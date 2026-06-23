@@ -8,7 +8,7 @@ import { FlyerScanResults } from '../FlyerScanResults';
 describe('FlyerScanResults', () => {
   it('renders', () => {
     const { container } = render(
-      <FlyerScanResults results={[]} selectedVenueId={null} onSelectVenue={vi.fn()} />,
+      <FlyerScanResults results={[]} onSubmitBatch={vi.fn()} onDismiss={vi.fn()} />,
     );
     expect(container).toBeTruthy();
   });

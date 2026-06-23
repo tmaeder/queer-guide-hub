@@ -51,7 +51,8 @@ beforeEach(() => {
     startScan: vi.fn(),
     startUrlScan: vi.fn(),
     reset: vi.fn(),
-    applyToForm: vi.fn(),
+    buildRow: vi.fn(),
+    submitBatch: vi.fn(),
   });
 });
 
