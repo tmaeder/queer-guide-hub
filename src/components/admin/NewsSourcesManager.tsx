@@ -44,6 +44,7 @@ export function NewsSourcesManager() {
     url: '',
     category: '',
     source_type: '',
+    feed_type: 'news',
     fetch_frequency: 120,
     is_active: true,
     auto_publish: false,
@@ -88,6 +89,7 @@ export function NewsSourcesManager() {
       url: '',
       category: '',
       source_type: '',
+      feed_type: 'news',
       fetch_frequency: 120,
       is_active: true,
       auto_publish: false,
@@ -103,6 +105,7 @@ export function NewsSourcesManager() {
       url: source.url,
       category: source.category,
       source_type: source.source_type,
+      feed_type: (source as NewsSource & { feed_type?: string }).feed_type ?? 'news',
       fetch_frequency: source.fetch_frequency,
       is_active: source.is_active,
       auto_publish: (source as NewsSource & { auto_publish?: boolean }).auto_publish ?? false,
@@ -252,6 +255,22 @@ export function NewsSourcesManager() {
                       <SelectItem value="api">API Source</SelectItem>
                       <SelectItem value="news_api">News API</SelectItem>
                       <SelectItem value="social">Social Media</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="feed_type">Feed Type</Label>
+                  <Select
+                    value={formData.feed_type}
+                    onValueChange={(value) => setFormData({ ...formData, feed_type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="News or podcast" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="news">News</SelectItem>
+                      <SelectItem value="podcast">Podcast (audio episodes)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -24,6 +24,10 @@ import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 
 type NewsArticle = Tables<'news_articles'> & {
   news_sources?: Tables<'news_sources'>;
+  // Podcast columns (migration 20260623063103); not yet in generated types.
+  media_type?: string | null;
+  audio_url?: string | null;
+  duration_seconds?: number | null;
 };
 
 const NewsCardFixture = () => (
@@ -190,7 +194,20 @@ export const NewsCard = ({
   const fresh = isFreshArticle(article.published_at);
   const dek = excerptText ? extractDek(excerptText) : '';
 
+  const isPodcast = article.media_type === 'podcast';
+  const podcastLabel = isPodcast
+    ? (() => {
+        const secs = Number(article.duration_seconds);
+        if (Number.isFinite(secs) && secs > 0) {
+          const m = Math.round(secs / 60);
+          return `🎧 Podcast · ${m} min`;
+        }
+        return '🎧 Podcast';
+      })()
+    : null;
+
   const eyebrowParts = [
+    podcastLabel,
     categoryDisplay,
     displaySource,
     relativeDate,
