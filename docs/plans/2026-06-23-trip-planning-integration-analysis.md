@@ -77,11 +77,20 @@ A single reviewable PR, zero DB migrations — all read-side composition + UI wi
 - **Theme 4 — booking loop:** `PlaceBookableLinks` refocus toast gains a "Mark booked" action
   (via `onBookingPrompt`) that opens the prefilled reservation dialog `SortablePlaceCard` owns.
 
+## Milestone 2 (shipped)
+
+- **Add-to-trip from map marker popups** — `QuietAddToTripButton` (inline) in
+  `MapEntityCard`'s popup variant for venue/event points.
+- **`AddPlaceDialog` "Suggested" (nearby) tab** — semantic neighbours of the trip's
+  most-recently-added place via `fetchSimilar` (`related_entities`), geo-resolved client-side.
+- **On-demand geo resolution** — `AddToTripDialog` now resolves `city_id`/`country_id` for
+  venue/event entities that lack them (search hits, map markers) via `resolveEntityGeo`, so the
+  *create-new-trip* path works everywhere instead of erroring. (Supersedes the M2 plan to
+  backfill geo into the search index — solved client-side, no index change needed.)
+
 ## Roadmap
 
-- **M2:** add-to-trip from map marker popups; `AddPlaceDialog` "nearby" tab via
-  `related_entities`/`fetchSimilar`; saves banner in `EmptyTripsHero`; backfill
-  `city_id`/`country_id` into the search index so search → *create-new-trip* isn't degraded.
-- **M3+:** real booking/payment integration (`bookings`/`booking_webhooks`); richer trip
-  activity as personalization signals; travel-buddy / "who's visiting at the same time"
-  social discovery (reusing intimate-match + inbox infra).
+- **M3:** saves banner in `EmptyTripsHero`; "Suggested" tab type/loading polish; surfacing
+  trip-place adds as a stronger personalization signal.
+- **M3+:** real booking/payment integration (`bookings`/`booking_webhooks`); travel-buddy /
+  "who's visiting at the same time" social discovery (reusing intimate-match + inbox infra).

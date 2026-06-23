@@ -30,8 +30,14 @@ vi.mock('@/hooks/useTrips', () => ({
 vi.mock('@/hooks/useActiveTrip', () => ({
   useActiveTrip: () => ({ activeTrip: null, setActiveTrip: vi.fn() }),
 }));
+// No-geo entities trigger an on-demand geo resolve; mock it to "not found" so
+// the missing-geo path is exercised deterministically (no real client call).
+vi.mock('@/lib/trips/resolveEntityGeo', () => ({
+  resolveEntityGeo: vi.fn().mockResolvedValue(new Map()),
+}));
 
 import { AddToTripDialog } from '../AddToTripDialog';
+import { resolveEntityGeo } from '@/lib/trips/resolveEntityGeo';
 
 function renderDialog(entityOverrides: Record<string, unknown> = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
@@ -109,10 +115,49 @@ describe('AddToTripDialog', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /create & add/i }));
 
+    // Geo resolve is async now, so the destructive toast fires after a tick.
+    await waitFor(() =>
+      expect(toastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: 'destructive' }),
+      ),
+    );
     expect(createTripMutate).not.toHaveBeenCalled();
     expect(addPlaceMutate).not.toHaveBeenCalled();
-    expect(toastSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' }),
+  });
+
+  it('resolves geo on demand for a venue missing city/country, then creates the trip', async () => {
+    createTripMutate.mockResolvedValue({ id: 'trip-2', title: 'Resolved' });
+    addPlaceMutate.mockResolvedValue({ id: 'place-2' });
+    vi.mocked(resolveEntityGeo).mockResolvedValueOnce(
+      new Map([
+        [
+          'v1',
+          {
+            id: 'v1',
+            type: 'venue',
+            name: 'Thermas Barcelona',
+            city_id: 'c9',
+            country_id: 'co9',
+            latitude: 1,
+            longitude: 2,
+            address: 'A',
+            category: 'sauna',
+          },
+        ],
+      ]),
+    );
+
+    renderDialog({ city_id: null, country_id: null });
+
+    fireEvent.change(screen.getByLabelText(/trip title/i), {
+      target: { value: 'Resolved trip' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /create & add/i }));
+
+    await waitFor(() =>
+      expect(createTripMutate).toHaveBeenCalledWith(
+        expect.objectContaining({ primary_city_id: 'c9', primary_country_id: 'co9' }),
+      ),
     );
   });
 });

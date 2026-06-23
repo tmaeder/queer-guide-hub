@@ -180,6 +180,7 @@ export function ItineraryView({ tripId, days, places }: Props) {
         onClose={() => setAddOpen(false)}
         tripId={tripId}
         days={days}
+        places={places}
         preselectedDayId={preselectedDayId}
       />
     </div>

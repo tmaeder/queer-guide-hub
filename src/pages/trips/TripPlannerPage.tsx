@@ -541,6 +541,7 @@ export default function TripPlannerPage() {
         onClose={() => setAddPlaceOpen(false)}
         tripId={trip.id}
         days={trip.trip_days}
+        places={trip.trip_places}
         preselectedDayId={addPlaceDay}
       />
 
