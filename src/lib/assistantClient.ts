@@ -10,6 +10,7 @@
  */
 
 import { getSessionId } from '@/lib/searchClient';
+import { supabase } from '@/integrations/supabase/client';
 
 const ASSISTANT_URL =
   import.meta.env.VITE_ASSISTANT_URL || 'https://assistant.queer.guide';
@@ -67,9 +68,21 @@ export async function askAssistant({
   }
 
   try {
+    // Safety layer: attach the access token so the assistant can verify the
+    // user is logged in and surface high-risk-country (gated) venues in chat,
+    // matching the rest of the product. Anonymous → no token → gated hidden.
+    let authHeader: Record<string, string> = {};
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (token) authHeader = { Authorization: `Bearer ${token}` };
+    } catch {
+      /* unauthenticated — proceed without the header */
+    }
+
     const res = await fetch(`${ASSISTANT_URL}/assistant`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeader },
       body: JSON.stringify({
         message,
         ...(conversationId && { conversation_id: conversationId }),
