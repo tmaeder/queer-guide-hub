@@ -11,6 +11,7 @@ import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/En
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { socialSameAs } from '@/lib/social/registry';
 import { EntityMap } from '@/components/map/EntityMap';
+import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { NewsCard } from '@/components/news/NewsCard';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
@@ -153,22 +154,36 @@ function OrgOverview({ org }: { org: Organization }) {
 function OrgVisit({ org }: { org: Organization }) {
   const located = org.venues.filter((v) => v.latitude != null && v.longitude != null);
   const center = located[0];
+  const orgVenueIds = new Set(org.venues.map((v) => v.id));
+  // Only blend in surroundings for a single-location org; multi-city orgs use a
+  // zoomed-out world view where nearby pins would be meaningless.
+  const nearbyRaw = useNearbyMapPoints({
+    lat: center && located.length === 1 ? Number(center.latitude) : null,
+    lng: center && located.length === 1 ? Number(center.longitude) : null,
+    excludeType: 'venue',
+    excludeId: center?.id ?? null,
+    enabled: Boolean(center) && located.length === 1,
+  });
+  const nearby = nearbyRaw.filter((m) => !orgVenueIds.has(m.id.replace(/^venue:/, '')));
   return (
     <div className="flex flex-col gap-6">
       {center && (
         <EntityMap
           center={[Number(center.longitude), Number(center.latitude)]}
           zoom={located.length > 1 ? 4 : 14}
-          markers={located.map((v) => ({
-            id: v.id,
-            lat: Number(v.latitude),
-            lng: Number(v.longitude),
-            name: v.name,
-            subtitle: v.city ?? undefined,
-            type: 'venues' as const,
-            linkTo: `/venues/${v.slug}`,
-            primary: v.id === center.id,
-          }))}
+          markers={[
+            ...located.map((v) => ({
+              id: v.id,
+              lat: Number(v.latitude),
+              lng: Number(v.longitude),
+              name: v.name,
+              subtitle: v.city ?? undefined,
+              type: 'venues' as const,
+              linkTo: `/venues/${v.slug}`,
+              primary: v.id === center.id,
+            })),
+            ...nearby,
+          ]}
           className="rounded-container"
         />
       )}
