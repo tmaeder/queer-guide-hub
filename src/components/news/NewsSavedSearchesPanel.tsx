@@ -32,7 +32,7 @@ export function NewsSavedSearchesPanel({
 }: NewsSavedSearchesPanelProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { searches, canSave, save, isSaving, remove, toggleAlert } = useNewsSavedSearches();
+  const { searches, save, isSaving, remove, toggleAlert } = useNewsSavedSearches();
   const [open, setOpen] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [alertEnabled, setAlertEnabled] = useState(false);
@@ -121,10 +121,10 @@ export function NewsSavedSearchesPanel({
                     autoFocus
                   />
                   <div className="flex items-center justify-between">
-                    <label className="text-xs text-muted-foreground flex items-center gap-2">
+                    <label htmlFor="alert-switch" className="text-xs text-muted-foreground flex items-center gap-2">
                       <Bell size={12} /> Email alerts
                     </label>
-                    <Switch checked={alertEnabled} onCheckedChange={setAlertEnabled} />
+                    <Switch id="alert-switch" checked={alertEnabled} onCheckedChange={setAlertEnabled} />
                   </div>
                   {alertEnabled && (
                     <Select

@@ -338,12 +338,6 @@ export const NewsFilters = ({
     }
   };
 
-  const handleDateRangeChange = (value: string) => {
-    const newDateRange = value === 'all' ? '' : value;
-    setDateRange(newDateRange);
-    emitFilters({ dateRange: newDateRange });
-  };
-
   const handleAuthorsChange = (next: string[]) => {
     setSelectedAuthors(next);
     emitFilters({ selectedAuthors: next });
