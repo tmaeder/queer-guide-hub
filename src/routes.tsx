@@ -563,6 +563,7 @@ export const AppRoutes = () => {
                 <Route path="me/saved" element={<ProfilePage tab="saved" />} />
                 <Route path="me/trips" element={<ProfilePage tab="trips" />} />
                 <Route path="me/travel" element={<ProfilePage tab="travel" />} />
+                <Route path="me/groups" element={<ProfilePage tab="groups" />} />
                 <Route path="me/contributions" element={<ProfilePage tab="contributions" />} />
                 <Route path="me/progress" element={<ProfilePage tab="progress" />} />
                 <Route path="me/passport" element={<Navigate to="/me/progress" replace />} />
