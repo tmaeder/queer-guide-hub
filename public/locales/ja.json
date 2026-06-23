@@ -2767,26 +2767,6 @@
       "youOnly": "あなたは「会える」と表示されています 🟢"
     }
   },
-  "pwa": {
-    "updateAvailable": {
-      "title": "新しいバージョンが利用可能です",
-      "description": "更新して最新の機能を入手してください。",
-      "action": "更新"
-    },
-    "backOnline": "オンラインに戻りました",
-    "offline": {
-      "title": "オフラインです",
-      "description": "一部の機能が利用できない場合があります。"
-    },
-    "install": {
-      "title": "Queer Guide をインストール",
-      "description": "ホーム画面からすぐにアクセス。オフラインでも使えます。",
-      "action": "インストール",
-      "iosTitle": "ホーム画面に追加",
-      "iosHint": "Safari の共有ボタンをタップし、「ホーム画面に追加」を選択してください。",
-      "dismiss": "閉じる",
-      "ariaLabel": "アプリをインストール"
-    }
   "newsDetail": {
     "notFound": "記事が見つかりません",
     "notFoundDesc": "お探しの記事は存在しません。",
@@ -2819,5 +2799,26 @@
     "source": "情報源",
     "moreLikeThis": "関連記事",
     "forYou": "おすすめ"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "新しいバージョンが利用可能です",
+      "description": "更新して最新の機能を入手してください。",
+      "action": "更新"
+    },
+    "backOnline": "オンラインに戻りました",
+    "offline": {
+      "title": "オフラインです",
+      "description": "一部の機能が利用できない場合があります。"
+    },
+    "install": {
+      "title": "Queer Guide をインストール",
+      "description": "ホーム画面からすぐにアクセス。オフラインでも使えます。",
+      "action": "インストール",
+      "iosTitle": "ホーム画面に追加",
+      "iosHint": "Safari の共有ボタンをタップし、「ホーム画面に追加」を選択してください。",
+      "dismiss": "閉じる",
+      "ariaLabel": "アプリをインストール"
+    }
   }
 }

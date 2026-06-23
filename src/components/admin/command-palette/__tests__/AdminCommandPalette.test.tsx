@@ -48,7 +48,6 @@ describe('AdminCommandPalette', () => {
   it('navigates on selecting a nav item', () => {
     render(
       <QueryClientProvider client={makeQc()}>
-      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}>
         <MemoryRouter>
           <AdminCommandActionsProvider>
             <AdminCommandPalette open onOpenChange={() => {}} />
@@ -64,7 +63,6 @@ describe('AdminCommandPalette', () => {
   it('filters by search input', () => {
     render(
       <QueryClientProvider client={makeQc()}>
-      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}>
         <MemoryRouter>
           <AdminCommandActionsProvider>
             <AdminCommandPalette open onOpenChange={() => {}} />
