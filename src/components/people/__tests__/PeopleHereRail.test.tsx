@@ -9,11 +9,15 @@ const statusMock = { visibility: { in_discovery: false } } as {
 } | null;
 let matches: { userId: string; score: number; shared: Record<string, number> }[] = [];
 let friendProfiles: { user_id: string; display_name: string; avatar_url: string | null }[] = [];
+let lastDiscoveryArgs: Record<string, unknown> | null = null;
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => auth }));
 vi.mock('@/hooks/useStatus', () => ({ useStatus: () => ({ status: statusMock }) }));
 vi.mock('@/hooks/usePeopleDiscovery', () => ({
-  usePeopleDiscovery: () => ({ data: matches, isLoading: false }),
+  usePeopleDiscovery: (args: Record<string, unknown>) => {
+    lastDiscoveryArgs = args;
+    return { data: matches, isLoading: false };
+  },
 }));
 vi.mock('@/hooks/useFriendProfiles', () => ({
   useFriendProfiles: () => friendProfiles,
@@ -30,11 +34,21 @@ const renderRail = () =>
     ),
   );
 
+const renderRailWith = (props: { mode: 'locals' | 'travel'; eventId?: string; tripId?: string }) =>
+  render(
+    React.createElement(
+      MemoryRouter,
+      null,
+      React.createElement(PeopleHereRail, { title: 'People', ...props }),
+    ),
+  );
+
 beforeEach(() => {
   auth.user = { id: 'me' };
   statusMock!.visibility.in_discovery = false;
   matches = [];
   friendProfiles = [];
+  lastDiscoveryArgs = null;
 });
 
 describe('PeopleHereRail', () => {
@@ -61,5 +75,20 @@ describe('PeopleHereRail', () => {
     matches = [];
     const { container } = renderRail();
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('forwards an event context to the discovery hook', () => {
+    statusMock!.visibility.in_discovery = true;
+    renderRailWith({ mode: 'locals', eventId: 'evt-1' });
+    expect(lastDiscoveryArgs).toMatchObject({ mode: 'locals', eventId: 'evt-1', enabled: true });
+  });
+
+  it('treats a trip context as a place surface (hidden without discovery opt-in)', () => {
+    statusMock!.visibility.in_discovery = false;
+    matches = [{ userId: 'a', score: 70, shared: {} }];
+    friendProfiles = [{ user_id: 'a', display_name: 'Alex', avatar_url: null }];
+    const { container } = renderRailWith({ mode: 'travel', tripId: 'trip-1' });
+    expect(container).toBeEmptyDOMElement();
+    expect(lastDiscoveryArgs).toMatchObject({ mode: 'travel', tripId: 'trip-1', enabled: false });
   });
 });
