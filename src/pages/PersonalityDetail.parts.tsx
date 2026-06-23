@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
-import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
+import { SocialCards } from '@/components/social/SocialCard';
 import type { Personality } from '@/hooks/usePersonalities';
 import { fetchPublicPersonalityBySlugOrId } from '@/hooks/usePageFetchers';
 import { formatPersonDateRange, isoDateAttr } from '@/lib/personDate';
@@ -614,7 +614,7 @@ export function PersonalitySidebar({
               <CardTitle>Social Links</CardTitle>
             </CardHeader>
             <CardContent>
-              <SocialLinksDisplay socialLinks={personality.social_links} size="sm" />
+              <SocialCards links={personality.social_links} />
             </CardContent>
           </Card>
         )}
