@@ -3,7 +3,25 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Globe, Save, Plus, Star, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Globe,
+  Save,
+  Plus,
+  Star,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  BadgeCheck,
+  ShieldCheck,
+  Copy,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { updateRowsBy } from '@/hooks/usePageFetchers';
@@ -15,6 +33,7 @@ import {
   normalizeUrl,
   toLegacyLinks,
   unavatarSource,
+  type AccountVisibility,
   type SocialAccount,
 } from '@/lib/socialAccounts';
 
@@ -105,6 +124,57 @@ export function SocialLinksManager({
   const setFeatured = (index: number) =>
     setAccounts((prev) => prev.map((a, i) => ({ ...a, featured: i === index })));
 
+  const setVisibility = (index: number, visibility: AccountVisibility) =>
+    setAccounts((prev) => prev.map((a, i) => (i === index ? { ...a, visibility } : a)));
+
+  const [verifyingUrl, setVerifyingUrl] = useState<string | null>(null);
+  const backlink = user ? `https://queer.guide/user/${user.id}` : '';
+
+  const copyBacklink = async () => {
+    if (!backlink) return;
+    try {
+      await navigator.clipboard.writeText(backlink);
+      toast({ title: 'Copied', description: 'Paste this into the bio of the account you want to verify.' });
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
+
+  const verify = async (account: SocialAccount) => {
+    setVerifyingUrl(account.url);
+    try {
+      const { data, error } = await supabase.functions.invoke('social-verify', {
+        body: { url: account.url },
+      });
+      if (error) throw error;
+      const result = data as { verified?: string; method?: string | null; reason?: string };
+      if (result.verified && result.verified !== 'unverified') {
+        setAccounts((prev) =>
+          prev.map((a) =>
+            a.url === account.url
+              ? { ...a, verified: result.verified as SocialAccount['verified'], verification_method: result.method ?? null }
+              : a,
+          ),
+        );
+        toast({ title: 'Verified', description: `${account.platform} ownership confirmed.` });
+      } else {
+        toast({
+          title: 'Not verified yet',
+          description: result.reason || 'Add your profile link to the bio, then try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch {
+      toast({
+        title: 'Verification failed',
+        description: 'Save your links first, then verify. Some platforms can’t be read.',
+        variant: 'destructive',
+      });
+    } finally {
+      setVerifyingUrl(null);
+    }
+  };
+
   const save = async () => {
     if (!user) return;
     setIsSaving(true);
@@ -158,6 +228,20 @@ export function SocialLinksManager({
             )}
           </div>
 
+          {accounts.length > 0 && backlink && (
+            <div className="flex flex-col gap-2 rounded-element border border-border bg-muted px-2 py-2">
+              <p className="text-xs text-muted-foreground">
+                To verify an account, add this link to its bio, then click Verify:
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 truncate text-xs">{backlink}</code>
+                <Button type="button" variant="ghost" size="icon" aria-label="Copy profile link" onClick={copyBacklink}>
+                  <Copy size={14} />
+                </Button>
+              </div>
+            </div>
+          )}
+
           {accounts.length > 0 && (
             <ul className="flex flex-col gap-2">
               {accounts.map((account, index) => (
@@ -174,11 +258,46 @@ export function SocialLinksManager({
                     </AvatarFallback>
                   </Avatar>
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-sm font-medium truncate">{account.platform}</span>
+                    <span className="flex items-center gap-1 text-sm font-medium truncate">
+                      {account.platform}
+                      {account.verified === 'verified' && (
+                        <BadgeCheck size={14} className="text-foreground" aria-label="Verified" />
+                      )}
+                      {account.verified === 'linked' && (
+                        <ShieldCheck size={14} className="text-muted-foreground" aria-label="Self-linked" />
+                      )}
+                    </span>
                     <span className="text-xs text-muted-foreground truncate">
                       {displayHandle(account)}
                     </span>
                   </span>
+                  <Select
+                    value={account.visibility ?? 'public'}
+                    onValueChange={(v) => setVisibility(index, v as AccountVisibility)}
+                  >
+                    <SelectTrigger className="h-8 w-28 hidden sm:flex" aria-label="Who can see this">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Public</SelectItem>
+                      <SelectItem value="community">Community</SelectItem>
+                      <SelectItem value="friends">Friends</SelectItem>
+                      <SelectItem value="private">Private</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={verifyingUrl === account.url || account.verified === 'verified'}
+                    onClick={() => verify(account)}
+                  >
+                    {account.verified === 'verified'
+                      ? 'Verified'
+                      : verifyingUrl === account.url
+                        ? 'Checking…'
+                        : 'Verify'}
+                  </Button>
                   <Button
                     type="button"
                     variant="ghost"
