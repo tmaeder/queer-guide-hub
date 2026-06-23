@@ -32,12 +32,30 @@ export interface VenueMeta {
   is_featured: boolean | null;
 }
 
-export function useDuplicateClusters() {
+/** Content types the /admin/duplicates surface can review + merge. */
+export type DedupContentType = 'venue' | 'event' | 'marketplace' | 'personality';
+
+// Per-type table + the columns we need for the canonical suggestion. Marketplace
+// has no is_featured; only venues carry an images array for the thumbnail icon.
+const META_TABLE: Record<DedupContentType, string> = {
+  venue: 'venues',
+  event: 'events',
+  marketplace: 'marketplace_listings',
+  personality: 'personalities',
+};
+const META_COLS: Record<DedupContentType, string> = {
+  venue: 'id, quality_score, trust_score, images, created_at, is_featured',
+  event: 'id, quality_score, created_at, is_featured',
+  marketplace: 'id, quality_score, created_at',
+  personality: 'id, quality_score, created_at, is_featured',
+};
+
+export function useDuplicateClusters(contentType: DedupContentType = 'venue') {
   const clustersQuery = useQuery({
-    queryKey: ['dup-clusters', 'venue'],
+    queryKey: ['dup-clusters', contentType],
     queryFn: async (): Promise<Cluster[]> => {
       const { data, error } = await supabase.rpc('find_duplicate_clusters' as never, {
-        p_content_type: 'venue',
+        p_content_type: contentType,
         p_limit: 200,
       } as never);
       if (error) throw error;
@@ -49,15 +67,15 @@ export function useDuplicateClusters() {
   const memberIds = useMemo(() => clusters.flatMap((c) => c.members.map((m) => m.id)), [clusters]);
 
   const metaQuery = useQuery({
-    queryKey: ['dup-venue-meta', memberIds],
+    queryKey: ['dup-entity-meta', contentType, memberIds],
     enabled: memberIds.length > 0,
     queryFn: async (): Promise<Map<string, VenueMeta>> => {
       const { data, error } = await supabase
-        .from('venues')
-        .select('id, quality_score, trust_score, images, created_at, is_featured')
+        .from(META_TABLE[contentType] as never)
+        .select(META_COLS[contentType])
         .in('id', memberIds);
       if (error) throw error;
-      return new Map((data as VenueMeta[]).map((v) => [v.id, v]));
+      return new Map((data as unknown as VenueMeta[]).map((v) => [v.id, v]));
     },
   });
 
@@ -138,8 +156,36 @@ export async function mergeVenuePair(keepId: string, dropId: string): Promise<st
   return (data as { audit_id?: string } | null)?.audit_id;
 }
 
-/** Reverse a merge by its audit id. */
+/** Reverse a venue merge by its audit id. */
 export async function unmergeAudit(auditId: string): Promise<void> {
   const { error } = await supabase.rpc('unmerge_venues' as never, { p_audit_id: auditId } as never);
+  if (error) throw error;
+}
+
+/**
+ * Merge one duplicate into the canonical for ANY supported content type.
+ * Venues keep their dedicated merge_venues RPC; events / marketplace /
+ * personalities go through the generic merge_entities dispatcher. Returns the
+ * audit id for undo.
+ */
+export async function mergeEntityPair(
+  contentType: DedupContentType,
+  keepId: string,
+  dropId: string,
+): Promise<string | undefined> {
+  if (contentType === 'venue') return mergeVenuePair(keepId, dropId);
+  const { data, error } = await supabase.rpc('merge_entities' as never, {
+    p_type: contentType,
+    p_keep_id: keepId,
+    p_drop_id: dropId,
+  } as never);
+  if (error) throw error;
+  return (data as { audit_id?: string } | null)?.audit_id;
+}
+
+/** Reverse a merge by audit id for ANY supported content type. */
+export async function unmergeEntity(contentType: DedupContentType, auditId: string): Promise<void> {
+  if (contentType === 'venue') return unmergeAudit(auditId);
+  const { error } = await supabase.rpc('unmerge_entities' as never, { p_audit_id: auditId } as never);
   if (error) throw error;
 }
