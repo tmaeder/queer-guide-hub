@@ -2744,6 +2744,26 @@
       "youOnly": "You're marked free to meet 🟢"
     }
   },
+  "pwa": {
+    "updateAvailable": {
+      "title": "A new version is available",
+      "description": "Refresh to get the latest features.",
+      "action": "Refresh"
+    },
+    "backOnline": "Back online",
+    "offline": {
+      "title": "You're offline",
+      "description": "Some features may be unavailable."
+    },
+    "install": {
+      "title": "Install Queer Guide",
+      "description": "Quick access from your home screen — works offline too.",
+      "action": "Install",
+      "iosTitle": "Add to Home Screen",
+      "iosHint": "Tap the share button in Safari, then select \"Add to Home Screen\".",
+      "dismiss": "Dismiss",
+      "ariaLabel": "Install app"
+    }
   "newsDetail": {
     "notFound": "Article Not Found",
     "notFoundDesc": "The article you're looking for doesn't exist.",

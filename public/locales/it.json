@@ -2769,6 +2769,26 @@
       "youOnly": "Risulti libero/a per vedersi 🟢"
     }
   },
+  "pwa": {
+    "updateAvailable": {
+      "title": "È disponibile una nuova versione",
+      "description": "Aggiorna per ottenere le ultime funzionalità.",
+      "action": "Aggiorna"
+    },
+    "backOnline": "Di nuovo online",
+    "offline": {
+      "title": "Sei offline",
+      "description": "Alcune funzionalità potrebbero non essere disponibili."
+    },
+    "install": {
+      "title": "Installa Queer Guide",
+      "description": "Accesso rapido dalla schermata Home — funziona anche offline.",
+      "action": "Installa",
+      "iosTitle": "Aggiungi alla schermata Home",
+      "iosHint": "Tocca il pulsante Condividi in Safari, poi seleziona «Aggiungi a Home».",
+      "dismiss": "Ignora",
+      "ariaLabel": "Installa app"
+    }
   "newsDetail": {
     "notFound": "Articolo non trovato",
     "notFoundDesc": "L'articolo che cerchi non esiste.",
