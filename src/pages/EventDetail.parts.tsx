@@ -11,7 +11,6 @@ import {
   ExternalLink,
   Phone,
   Globe,
-  Share2,
   Send,
   Download,
   Ticket,
@@ -25,6 +24,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
+import { ShareMenu } from '@/components/share/ShareMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
@@ -238,7 +238,6 @@ export function EventHero({
   tripCount,
   isInTrip,
   onAddToTrip,
-  onShare,
   onExportToCalendar,
   onSendEvent,
   showSendButton,
@@ -436,10 +435,10 @@ export function EventHero({
           <Download size={14} className="mr-1.5" />
           Calendar
         </Button>
-        <Button variant="outline" size="sm" onClick={onShare}>
-          <Share2 size={14} className="mr-1.5" />
-          Share
-        </Button>
+        <ShareMenu
+          url={typeof window !== 'undefined' ? window.location.href : `https://queer.guide/events/${event.slug ?? event.id}`}
+          title={event.title}
+        />
         {showSendButton && (
           <Button variant="outline" size="sm" onClick={onSendEvent}>
             <Send size={14} className="mr-1.5" />

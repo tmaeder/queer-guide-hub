@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { normalizeSocialLinks, platformLabel } from '@/lib/social/registry';
+import { normalizeSocialLinks, platformLabel, isAdultPlatform } from '@/lib/social/registry';
 import { platformIcon } from '@/lib/social/icons';
 
 interface EntitySocialLinksProps {
@@ -35,7 +35,8 @@ export function EntitySocialLinks({ links, size = 'md', showLabels = false, excl
     <div className={`flex flex-wrap gap-2 ${showLabels ? 'flex-col items-start' : ''} ${className ?? ''}`}>
       {entries.map(([key, url]) => {
         const Icon = platformIcon(key);
-        const label = platformLabel(key);
+        const adult = isAdultPlatform(key);
+        const label = adult ? `${platformLabel(key)} (18+)` : platformLabel(key);
         return (
           <Button
             key={key}

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
+import { socialSameAs } from '@/lib/social/registry';
 import { EntityMap } from '@/components/map/EntityMap';
 import { NewsCard } from '@/components/news/NewsCard';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
@@ -267,6 +268,14 @@ export default function OrganizationDetail() {
             org.description ||
             `${org.name} on Queer Guide.`,
           canonicalPath: `/organizations/${org.slug}`,
+          jsonLd: {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: org.name,
+            url: org.website || `https://queer.guide/organizations/${org.slug}`,
+            ...(org.description ? { description: org.description } : {}),
+            ...(socialSameAs(org.social).length ? { sameAs: socialSameAs(org.social) } : {}),
+          },
         }
       : {},
   );

@@ -6,6 +6,7 @@ import {
   extractSocialUrlsFromText,
   normalizeSocialLinks,
   canonicalizeUrl,
+  isAdultPlatform,
 } from './registry';
 
 describe('detectPlatform', () => {
@@ -31,6 +32,16 @@ describe('detectPlatform', () => {
     ['https://patreon.com/creator', 'patreon'],
     ['https://medium.com/@writer', 'medium'],
     ['https://tech.lgbt/@activist', 'mastodon'],
+    ['https://ko-fi.com/artist', 'kofi'],
+    ['https://onlyfans.com/creator', 'onlyfans'],
+    ['https://fansly.com/creator', 'fansly'],
+    ['https://fetlife.com/users/12345', 'fetlife'],
+    ['https://www.joyclub.de/profile/abc', 'joyclub'],
+    ['https://www.romeo.com/someguy', 'romeo'],
+    ['https://www.planetromeo.com/someguy', 'romeo'],
+    ['https://www.grindr.com/profile/abc', 'grindr'],
+    ['https://www.pornhub.com/model/somebody', 'pornhub'],
+    ['https://xhamster.com/creators/somebody', 'xhamster'],
     ['https://example.org/about', 'website'],
     ['instagram.com/noproto', 'instagram'],
     ['not a url', null],
@@ -43,6 +54,17 @@ describe('detectPlatform', () => {
   it('does not misclassify known hosts as mastodon', () => {
     expect(detectPlatform('https://instagram.com/@weird')).not.toBe('mastodon');
     expect(detectPlatform('https://medium.com/@writer')).toBe('medium');
+  });
+});
+
+describe('isAdultPlatform', () => {
+  it('flags 18+ platforms and not SFW ones', () => {
+    for (const k of ['onlyfans', 'fansly', 'fetlife', 'joyclub', 'romeo', 'grindr', 'scruff', 'recon', 'pornhub', 'xhamster', 'xtube']) {
+      expect(isAdultPlatform(k)).toBe(true);
+    }
+    for (const k of ['instagram', 'youtube', 'bluesky', 'kofi', 'patreon', 'website']) {
+      expect(isAdultPlatform(k)).toBe(false);
+    }
   });
 });
 

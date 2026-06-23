@@ -7,7 +7,6 @@ import {
   Clock,
   Luggage,
   Navigation2,
-  Share2,
   ShieldCheck,
   Tag as TagIcon,
   DollarSign,
@@ -20,6 +19,7 @@ import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
+import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { Button } from '@/components/ui/button';
@@ -295,7 +295,6 @@ export function VenueHero({
   isInTrip,
   socialSignal,
   onAddToTrip,
-  onShare,
   onCheckInSuccess,
   onContentUpdated,
   t,
@@ -500,10 +499,10 @@ export function VenueHero({
             </a>
           </Button>
         )}
-        <Button variant="outline" size="sm" onClick={onShare}>
-          <Share2 size={14} className="mr-1.5" />
-          Share
-        </Button>
+        <ShareMenu
+          url={typeof window !== 'undefined' ? window.location.href : `https://queer.guide/venues/${venue.slug ?? venue.id}`}
+          title={venue.name}
+        />
         <MarkVisitedButton entityType="venue" entityId={venue.id} kind="visited" />
         <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
         <AdminEditButton

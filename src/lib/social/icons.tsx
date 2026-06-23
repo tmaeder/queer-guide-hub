@@ -1,4 +1,4 @@
-import { Globe, Music, Send, MessageCircle, Tv } from 'lucide-react';
+import { Globe, Music, Send, MessageCircle, Tv, Coffee, Heart, Flame, Video } from 'lucide-react';
 import {
   Instagram,
   Facebook,
@@ -38,6 +38,18 @@ export const PLATFORM_ICONS: Record<SocialPlatformKey, IconComponent> = {
   discord: MessageCircle,
   medium: Globe,
   patreon: Globe,
+  kofi: Coffee,
+  onlyfans: Heart,
+  fansly: Heart,
+  fetlife: Flame,
+  joyclub: Flame,
+  romeo: Flame,
+  grindr: Flame,
+  scruff: Flame,
+  recon: Flame,
+  pornhub: Video,
+  xhamster: Video,
+  xtube: Video,
   website: Globe,
 };
 

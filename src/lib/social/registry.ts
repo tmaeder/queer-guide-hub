@@ -31,6 +31,21 @@ export type SocialPlatformKey =
   | 'discord'
   | 'medium'
   | 'patreon'
+  | 'kofi'
+  // Creator / adult / hookup platforms — relevant to an LGBTQ+ audience
+  // (creators, adult performers, community/dating). Flagged `adult` so the UI
+  // can gate or badge them; never auto-displayed louder than the rest.
+  | 'onlyfans'
+  | 'fansly'
+  | 'fetlife'
+  | 'joyclub'
+  | 'romeo'
+  | 'grindr'
+  | 'scruff'
+  | 'recon'
+  | 'pornhub'
+  | 'xhamster'
+  | 'xtube'
   | 'website';
 
 export interface PlatformDef {
@@ -40,6 +55,8 @@ export interface PlatformDef {
   detect: RegExp;
   /** Builds a canonical profile URL from a bare handle (no leading @). */
   build: (handle: string) => string;
+  /** 18+ / NSFW platform — the UI may gate or badge these. */
+  adult?: boolean;
 }
 
 /**
@@ -163,6 +180,90 @@ export const PLATFORMS: PlatformDef[] = [
     build: (h) => `https://patreon.com/${h}`,
   },
   {
+    key: 'kofi',
+    label: 'Ko-fi',
+    detect: /^https?:\/\/(?:www\.)?ko-fi\.com\/([a-z0-9_-]{3,30})\/?/i,
+    build: (h) => `https://ko-fi.com/${h}`,
+  },
+  // ---- Creator / adult / hookup platforms (18+) ----
+  {
+    key: 'onlyfans',
+    label: 'OnlyFans',
+    detect: /^https?:\/\/(?:www\.)?onlyfans\.com\/([a-z0-9._-]{3,50})\/?/i,
+    build: (h) => `https://onlyfans.com/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
+    key: 'fansly',
+    label: 'Fansly',
+    detect: /^https?:\/\/(?:www\.)?fansly\.com\/([a-z0-9._-]{2,50})\/?/i,
+    build: (h) => `https://fansly.com/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
+    key: 'fetlife',
+    label: 'FetLife',
+    detect: /^https?:\/\/(?:www\.)?fetlife\.com\/(users\/\d+|[a-z0-9._-]{2,40})\/?/i,
+    build: (h) => `https://fetlife.com/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
+    key: 'joyclub',
+    label: 'JoyClub',
+    detect: /^https?:\/\/(?:www\.)?joyclub\.(?:de|com)\//i,
+    build: (h) => (/^https?:\/\//i.test(h) ? h : `https://www.joyclub.de/${h}`),
+    adult: true,
+  },
+  {
+    key: 'romeo',
+    label: 'ROMEO',
+    detect: /^https?:\/\/(?:www\.)?(?:romeo|planetromeo|gayromeo)\.com\/([a-z0-9._-]{2,40})\/?/i,
+    build: (h) => `https://www.romeo.com/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
+    key: 'grindr',
+    label: 'Grindr',
+    detect: /^https?:\/\/(?:www\.)?grindr\.com\/(?:profile\/)?([a-z0-9._-]{3,40})\/?/i,
+    build: (h) => `https://www.grindr.com/profile/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
+    key: 'scruff',
+    label: 'SCRUFF',
+    detect: /^https?:\/\/(?:www\.)?scruff\.com\/([a-z0-9._-]{2,40})\/?/i,
+    build: (h) => `https://www.scruff.com/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
+    key: 'recon',
+    label: 'Recon',
+    detect: /^https?:\/\/(?:www\.)?recon\.com\/([a-z0-9._-]{2,40})\/?/i,
+    build: (h) => `https://www.recon.com/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
+    key: 'pornhub',
+    label: 'Pornhub',
+    detect: /^https?:\/\/(?:[a-z]+\.)?pornhub\.com\/(?:model|pornstar|users)\/([a-z0-9._-]{2,50})\/?/i,
+    build: (h) => `https://www.pornhub.com/model/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
+    key: 'xhamster',
+    label: 'xHamster',
+    detect: /^https?:\/\/(?:[a-z]+\.)?xhamster\.com\/(?:creators|users)\/([a-z0-9._-]{2,50})\/?/i,
+    build: (h) => `https://xhamster.com/creators/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
+    key: 'xtube',
+    label: 'xTube',
+    detect: /^https?:\/\/(?:www\.)?xtube\.com\/([a-z0-9._-]{2,50})\/?/i,
+    build: (h) => `https://www.xtube.com/${h.replace(/^@/, '')}`,
+    adult: true,
+  },
+  {
     key: 'mastodon',
     label: 'Mastodon',
     // Dynamic host; only matches the /@user shape on a non-known host.
@@ -185,7 +286,12 @@ const BY_KEY = new Map(PLATFORMS.map((p) => [p.key, p]));
 
 /** Hosts that should NOT be misread as a generic mastodon `/@user` profile. */
 const KNOWN_HOSTS =
-  /(instagram|tiktok|youtube|facebook|twitter|x|threads|bsky|linkedin|t\.me|telegram|github|reddit|twitch|spotify|soundcloud|pinterest|snapchat|discord|medium|patreon)\./i;
+  /(instagram|tiktok|youtube|facebook|twitter|x|threads|bsky|linkedin|t\.me|telegram|github|reddit|twitch|spotify|soundcloud|pinterest|snapchat|discord|medium|patreon|ko-fi|onlyfans|fansly|fetlife|joyclub|romeo|planetromeo|gayromeo|grindr|scruff|recon|pornhub|xhamster|xtube)\./i;
+
+/** True for 18+/NSFW platforms (OnlyFans, Fansly, FetLife, ROMEO, Pornhub, …). */
+export function isAdultPlatform(key: string): boolean {
+  return BY_KEY.get(key as SocialPlatformKey)?.adult === true;
+}
 
 function ensureHttp(url: string): string {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -255,6 +361,11 @@ export function extractSocialUrlsFromText(text: string): Partial<Record<SocialPl
 export function canonicalizeUrl(platform: SocialPlatformKey, url: string): string {
   const handle = normalizeHandle(platform, url);
   return handle ? buildProfileUrl(platform, handle) : ensureHttp(url);
+}
+
+/** Returns canonical social profile URLs as a schema.org `sameAs` array. */
+export function socialSameAs(input: Record<string, unknown> | null | undefined): string[] {
+  return Object.values(normalizeSocialLinks(input));
 }
 
 /**

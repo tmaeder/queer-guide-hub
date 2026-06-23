@@ -10,6 +10,7 @@ import { computeIdempotencyKey } from '../_shared/idempotency.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { coerceLgbtiConnection } from '../_shared/lgbti-connection.ts'
+import { extractSocialUrlsFromText, normalizeSocialLinks, detectPlatform, canonicalizeUrl } from '../_shared/social.ts'
 
 // ============================================================
 // Pipeline Normalize
@@ -385,6 +386,37 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
     if (raw.region_name || raw.state || raw.admin1) {
       n.region_name = cleanText(raw.region_name ?? raw.state ?? raw.admin1)
     }
+  }
+
+  // Social links — generic extraction for ALL entity types. Fuses nested social
+  // objects, schema.org sameAs, platform-named raw fields, and any social URLs
+  // found in the description. Builds the normalized social_links jsonb map.
+  {
+    const candidates: Record<string, string> = {}
+    // Nested social objects already present on the raw/normalized record.
+    for (const obj of [raw.social_links, raw.social, raw.social_media, raw.organizer_handles, n.social_links]) {
+      Object.assign(candidates, normalizeSocialLinks(obj as Record<string, unknown> | null))
+    }
+    // schema.org sameAs (set by extension / extract worker / scrapers).
+    const sameAs = (raw as Record<string, unknown>).sameAs ?? (raw as Record<string, unknown>).same_as
+    if (Array.isArray(sameAs)) {
+      for (const u of sameAs) {
+        const key = detectPlatform(String(u))
+        if (key && key !== 'website') candidates[key] ??= canonicalizeUrl(key, String(u))
+      }
+    }
+    // Platform-named raw fields (instagram, twitter_url, …).
+    for (const k of ['instagram', 'facebook', 'twitter', 'x', 'tiktok', 'youtube', 'linkedin', 'threads', 'bluesky', 'telegram', 'mastodon']) {
+      const v = String((raw as Record<string, unknown>)[`${k}_url`] ?? (raw as Record<string, unknown>)[k] ?? '').trim()
+      if (!v || !/^https?:\/\//i.test(v)) continue
+      const key = detectPlatform(v)
+      if (key && key !== 'website') candidates[key] ??= canonicalizeUrl(key, v)
+    }
+    // Free-text scan of the description (lowest priority — does not override above).
+    for (const [key, url] of Object.entries(extractSocialUrlsFromText(String(n.description ?? '')))) {
+      candidates[key] ??= url
+    }
+    if (Object.keys(candidates).length) n.social_links = candidates
   }
 
   n.metadata = { ...raw }
