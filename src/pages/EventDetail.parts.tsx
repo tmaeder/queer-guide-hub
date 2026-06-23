@@ -34,6 +34,7 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
 import { EntityMap } from '@/components/map/EntityMap';
+import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
@@ -817,6 +818,14 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
 
   const hasOrganizer = Boolean(org || event.organizer_name);
 
+  const nearby = useNearbyMapPoints({
+    lat: typeof lat === 'number' ? lat : null,
+    lng: typeof lng === 'number' ? lng : null,
+    excludeType: 'event',
+    excludeId: event.id,
+    enabled: hasMap,
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <Card ref={venueRef}>
@@ -839,6 +848,7 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
                   type: 'events',
                   primary: true,
                 },
+                ...nearby,
               ]}
             />
           )}
