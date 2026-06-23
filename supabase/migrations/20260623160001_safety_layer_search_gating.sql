@@ -274,12 +274,12 @@ grant execute on function public.search_autocomplete(text, text[], integer, time
 -- ---------------------------------------------------------------------------
 -- get_recommendations: new p_include_gated param.
 -- ---------------------------------------------------------------------------
+-- NOTE: body kept in sync with 20260623102938_discovery_rpcs_optimized_images
+-- (optimizedUrl/thumbnailUrl image-asset enrichment) PLUS the safety gate.
 drop function if exists public.get_recommendations(vector, text[], text, double precision, double precision, double precision, uuid[], timestamptz, integer);
-CREATE OR REPLACE FUNCTION public.get_recommendations(p_bias_vec vector DEFAULT NULL::vector, p_content_types text[] DEFAULT NULL::text[], p_city text DEFAULT NULL::text, p_lat double precision DEFAULT NULL::double precision, p_lng double precision DEFAULT NULL::double precision, p_radius_km double precision DEFAULT NULL::double precision, p_exclude_ids uuid[] DEFAULT NULL::uuid[], p_now timestamp with time zone DEFAULT now(), p_limit integer DEFAULT 20, p_include_gated boolean DEFAULT false)
+CREATE OR REPLACE FUNCTION public.get_recommendations(p_bias_vec vector DEFAULT NULL::vector, p_content_types text[] DEFAULT NULL::text[], p_city text DEFAULT NULL::text, p_lat double precision DEFAULT NULL::double precision, p_lng double precision DEFAULT NULL::double precision, p_radius_km double precision DEFAULT NULL::double precision, p_exclude_ids uuid[] DEFAULT NULL::uuid[], p_now timestamptz DEFAULT now(), p_limit integer DEFAULT 20, p_include_gated boolean DEFAULT false)
  RETURNS jsonb
- LANGUAGE sql
- STABLE SECURITY DEFINER
- SET search_path TO 'public', 'extensions', 'pg_temp'
+ LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public', 'extensions', 'pg_temp'
 AS $function$
 with params as (
   select case when p_lat is not null and p_lng is not null then st_setsrid(st_makepoint(p_lng,p_lat),4326)::geography end as origin
@@ -306,19 +306,37 @@ scored as (
   select *, 0.45*pop+0.25*vec+case when is_featured then 0.12 else 0 end+0.10*(coalesce(quality_score,0)/100.0)+case when entity_type='event' and start_date is not null and start_date>=p_now then 0.08*exp(-extract(epoch from (start_date-p_now))/(60*60*24*30)) else 0 end-case when dist is not null then least(dist/50000.0,1)*0.05 else 0 end as score
   from cand
 )
-select coalesce((select jsonb_agg(jsonb_build_object('objectID',entity_id,'type',entity_type,'title',title,'description',left(description,200),'city',city,'country',country,'slug',slug,'imageUrl',image_url,'category',facets->>'category','featured',is_featured,'start_date',extract(epoch from start_date),'_score',round(score::numeric,4)) order by score desc) from (select * from scored order by score desc limit greatest(p_limit,0)) x), '[]'::jsonb);
+select coalesce((
+  select jsonb_agg(jsonb_build_object(
+    'objectID',x.entity_id,'type',x.entity_type,'title',x.title,'description',left(x.description,200),
+    'city',x.city,'country',x.country,'slug',x.slug,'imageUrl',x.image_url,
+    'optimizedUrl',img.optimized_url,'thumbnailUrl',img.thumbnail_url,
+    'category',x.facets->>'category','featured',x.is_featured,
+    'start_date',extract(epoch from x.start_date),'_score',round(x.score::numeric,4)
+  ) order by x.score desc)
+  from (select * from scored order by score desc limit greatest(p_limit,0)) x
+  left join lateral (
+    select ia.optimized_url, ia.thumbnail_url
+    from public.image_asset_links l
+    join public.image_assets ia on ia.id = l.asset_id
+    where l.entity_id = x.entity_id
+      and l.entity_type = case x.entity_type when 'news' then 'news_article' when 'marketplace' then 'marketplace_listing' else x.entity_type end
+      and ia.status = 'active' and ia.optimization_status in ('optimized','cdn_optimized')
+    order by (l.role = 'cover') desc, l.sort_order nulls last limit 1
+  ) img on true
+), '[]'::jsonb);
 $function$;
 grant execute on function public.get_recommendations(vector, text[], text, double precision, double precision, double precision, uuid[], timestamptz, integer, boolean) to anon, authenticated, service_role;
 
 -- ---------------------------------------------------------------------------
 -- related_entities: new p_include_gated param.
 -- ---------------------------------------------------------------------------
+-- NOTE: body kept in sync with 20260623102938_discovery_rpcs_optimized_images
+-- (optimizedUrl/thumbnailUrl image-asset enrichment) PLUS the safety gate.
 drop function if exists public.related_entities(text, uuid, text[], boolean, integer, timestamptz);
-CREATE OR REPLACE FUNCTION public.related_entities(p_entity_type text, p_entity_id uuid, p_content_types text[] DEFAULT NULL::text[], p_same_type_only boolean DEFAULT false, p_limit integer DEFAULT 10, p_now timestamp with time zone DEFAULT now(), p_include_gated boolean DEFAULT false)
+CREATE OR REPLACE FUNCTION public.related_entities(p_entity_type text, p_entity_id uuid, p_content_types text[] DEFAULT NULL::text[], p_same_type_only boolean DEFAULT false, p_limit integer DEFAULT 10, p_now timestamptz DEFAULT now(), p_include_gated boolean DEFAULT false)
  RETURNS jsonb
- LANGUAGE plpgsql
- STABLE SECURITY DEFINER
- SET search_path TO 'public', 'extensions', 'pg_temp'
+ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO 'public', 'extensions', 'pg_temp'
 AS $function$
 declare v extensions.vector(1024);
 begin
@@ -328,7 +346,13 @@ begin
    where sd.entity_type=p_entity_type and sd.entity_id=p_entity_id;
   if v is null then return '[]'::jsonb; end if;
   return coalesce((
-    select jsonb_agg(jsonb_build_object('objectID',entity_id,'type',entity_type,'title',title,'description',left(description,200),'city',city,'country',country,'slug',slug,'imageUrl',image_url,'category',facets->>'category','featured',is_featured,'_score',round(sim::numeric,4)) order by sim desc)
+    select jsonb_agg(jsonb_build_object(
+        'objectID', nn.entity_id, 'type', nn.entity_type, 'title', nn.title,
+        'description', left(nn.description, 200), 'city', nn.city, 'country', nn.country,
+        'slug', nn.slug, 'imageUrl', nn.image_url,
+        'optimizedUrl', img.optimized_url, 'thumbnailUrl', img.thumbnail_url,
+        'category', nn.facets->>'category', 'featured', nn.is_featured, '_score', round(nn.sim::numeric, 4)
+      ) order by nn.sim desc)
     from (
       select sd.entity_id, sd.entity_type, sd.title, sd.description, sd.city, sd.country, sd.slug, sd.image_url, sd.facets, sd.is_featured,
              1-(se.embedding <=> v) as sim
@@ -345,6 +369,15 @@ begin
       order by se.embedding <=> v
       limit greatest(p_limit,0)
     ) nn
+    left join lateral (
+      select ia.optimized_url, ia.thumbnail_url
+      from public.image_asset_links l
+      join public.image_assets ia on ia.id = l.asset_id
+      where l.entity_id = nn.entity_id
+        and l.entity_type = case nn.entity_type when 'news' then 'news_article' when 'marketplace' then 'marketplace_listing' else nn.entity_type end
+        and ia.status = 'active' and ia.optimization_status in ('optimized','cdn_optimized')
+      order by (l.role = 'cover') desc, l.sort_order nulls last limit 1
+    ) img on true
   ), '[]'::jsonb);
 end $function$;
 grant execute on function public.related_entities(text, uuid, text[], boolean, integer, timestamptz, boolean) to anon, authenticated, service_role;
@@ -544,65 +577,51 @@ $function$;
 
 -- ---------------------------------------------------------------------------
 -- get_trending_entities: engagement-ranked discovery feed — always excludes
--- gated venues/events (consistent with v_popular_entities; trending should not
--- promote high-risk gated content to anyone).
+-- gated venues/events (consistent with v_popular_entities). Body kept in sync
+-- with 20260623102938_discovery_rpcs_optimized_images (optimized_url/
+-- thumbnail_url columns + image-asset lateral) PLUS the safety gate. The return
+-- type gained two columns there, so DROP first.
 -- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.get_trending_entities(p_types text[] DEFAULT ARRAY['venue'::text, 'event'::text], p_city text DEFAULT NULL::text, p_limit integer DEFAULT 20)
- RETURNS TABLE(entity_type text, entity_id text, score real, title text, city text, country text, slug text, image_url text, start_date timestamp with time zone, end_date timestamp with time zone)
- LANGUAGE sql
- STABLE SECURITY DEFINER
- SET search_path TO 'public', 'extensions'
+drop function if exists public.get_trending_entities(text[], text, integer);
+CREATE FUNCTION public.get_trending_entities(p_types text[] DEFAULT ARRAY['venue'::text, 'event'::text], p_city text DEFAULT NULL::text, p_limit integer DEFAULT 20)
+ RETURNS TABLE(entity_type text, entity_id text, score real, title text, city text, country text, slug text, image_url text, optimized_url text, thumbnail_url text, start_date timestamptz, end_date timestamptz)
+ LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public', 'extensions'
 AS $function$
   WITH w AS (
     SELECT entity_type, entity_id,
-      sum(
-        CASE event_type
-          WHEN 'click'    THEN 1
-          WHEN 'view'     THEN 0.3
-          WHEN 'save'     THEN 3
-          WHEN 'favorite' THEN 3
-          WHEN 'book'     THEN 5
-          WHEN 'attend'   THEN 5
-          ELSE 0
-        END
-        * exp(-EXTRACT(EPOCH FROM (now() - created_at)) / (3.0 * 86400.0))
-      )::real AS score
+      sum(CASE event_type WHEN 'click' THEN 1 WHEN 'view' THEN 0.3 WHEN 'save' THEN 3 WHEN 'favorite' THEN 3 WHEN 'book' THEN 5 WHEN 'attend' THEN 5 ELSE 0 END * exp(-EXTRACT(EPOCH FROM (now() - created_at)) / (3.0 * 86400.0)))::real AS score
     FROM user_events
-    WHERE created_at > now() - interval '7 days'
-      AND entity_type = ANY(p_types)
+    WHERE created_at > now() - interval '7 days' AND entity_type = ANY(p_types)
     GROUP BY entity_type, entity_id
   )
-  SELECT
-    w.entity_type,
-    w.entity_id,
-    w.score,
+  SELECT w.entity_type, w.entity_id, w.score,
     COALESCE(v.name, e.title, c.name, p.name) AS title,
     COALESCE(v.city, e.city, c.name) AS city,
     COALESCE(v.country, e.country, co.name) AS country,
     COALESCE(v.slug, e.slug, c.slug, p.slug) AS slug,
-    COALESCE(
-      v.images[1], v.logo_url,
-      e.images[1], e.logo_url,
-      c.curated_image_url, c.image_url,
-      co.curated_image_url, co.image_url,
-      p.image_url
-    ) AS image_url,
-    e.start_date,
-    e.end_date
+    COALESCE(v.images[1], v.logo_url, e.images[1], e.logo_url, c.curated_image_url, c.image_url, co.curated_image_url, co.image_url, p.image_url) AS image_url,
+    img.optimized_url, img.thumbnail_url,
+    e.start_date, e.end_date
   FROM w
   LEFT JOIN venues v        ON w.entity_type = 'venue'       AND v.id::text  = w.entity_id
   LEFT JOIN events e        ON w.entity_type = 'event'       AND e.id::text  = w.entity_id
   LEFT JOIN cities c        ON w.entity_type = 'city'        AND c.id::text  = w.entity_id
   LEFT JOIN countries co    ON w.entity_type = 'country'     AND co.id::text = w.entity_id
   LEFT JOIN personalities p ON w.entity_type = 'personality' AND p.id::text  = w.entity_id
+  LEFT JOIN LATERAL (
+    select ia.optimized_url, ia.thumbnail_url
+    from public.image_asset_links l
+    join public.image_assets ia on ia.id = l.asset_id
+    where l.entity_id::text = w.entity_id
+      and l.entity_type = case w.entity_type when 'news' then 'news_article' when 'marketplace' then 'marketplace_listing' else w.entity_type end
+      and ia.status = 'active' and ia.optimization_status in ('optimized','cdn_optimized')
+    order by (l.role = 'cover') desc, l.sort_order nulls last limit 1
+  ) img ON true
   WHERE (p_city IS NULL OR lower(COALESCE(v.city, e.city, c.name)) = lower(p_city))
     AND COALESCE(v.safety_gated, false) = false
     AND COALESCE(e.safety_gated, false) = false
-    AND (
-      w.entity_type <> 'event'
-      OR e.end_date IS NULL AND e.start_date >= now() - interval '12 hours'
-      OR e.end_date >= now()
-    )
+    AND (w.entity_type <> 'event' OR e.end_date IS NULL AND e.start_date >= now() - interval '12 hours' OR e.end_date >= now())
   ORDER BY w.score DESC
   LIMIT p_limit;
 $function$;
+grant execute on function public.get_trending_entities(text[], text, integer) to anon, authenticated, service_role;
