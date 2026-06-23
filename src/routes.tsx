@@ -584,6 +584,7 @@ export const AppRoutes = () => {
                 {/* Dating folded into the People hub; legacy entry points redirect. */}
                 <Route path="intimate" element={<LocalizedRedirect to="/people/dating" />} />
                 <Route path="discover" element={<LocalizedRedirect to="/people/dating" />} />
+                <Route path="cruising" element={<LocalizedRedirect to="/people/dating" />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
                 <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />
