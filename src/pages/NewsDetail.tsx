@@ -414,6 +414,9 @@ export default function NewsDetail() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
         {/* Main */}
         <div className="flex flex-col gap-6">
+          {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote.
+              Shown to everyone when populated. Admins reveal a placeholder slot by holding
+              Alt so they can alt-click to author one (never shown during normal browsing). */}
           {/* "Why this matters" — admin-curated, shown to everyone when populated.
               The empty authoring placeholder stays hidden during normal browsing;
               admins reveal it by holding Alt (#1812). */}

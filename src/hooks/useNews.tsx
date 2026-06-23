@@ -32,9 +32,13 @@ interface NewsFilters {
   countryIds?: string[];
   cityIds?: string[];
   sourceId?: string;
+  sourceIds?: string[];
   category?: string;
   language?: string;
   mediaType?: 'podcast' | 'article';
+  sentiment?: string;
+  trustScoreMin?: number;
+  authorNames?: string[];
   sortField?: string;
   sortOrder?: 'asc' | 'desc';
 }
@@ -118,8 +122,19 @@ export const useNews = () => {
           `title.ilike.%${escaped}%,content.ilike.%${escaped}%`,
         );
       }
-      if (filters?.sourceId) {
+      if (filters?.sourceIds && filters.sourceIds.length > 0) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).in('source_id', filters.sourceIds);
+      } else if (filters?.sourceId) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('source_id', filters.sourceId);
+      }
+      if (filters?.sentiment) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq('sentiment', filters.sentiment);
+      }
+      if (typeof filters?.trustScoreMin === 'number' && filters.trustScoreMin > 0) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).gte('trust_score', filters.trustScoreMin);
+      }
+      if (filters?.authorNames && filters.authorNames.length > 0) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).in('author', filters.authorNames);
       }
       if (filters?.language) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('content_language', filters.language);
