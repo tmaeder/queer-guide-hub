@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Layers, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { safeText } from '@/utils/safeDisplay';
-import { decodeHtmlEntities } from '@/utils/htmlDecode';
+import { cleanTitle } from '@/utils/htmlDecode';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import { useMemo, useState } from 'react';
 import type { NewsStory, NewsStoryArticle } from '@/hooks/useNewsStories';
@@ -17,7 +17,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
   const [imgFailed, setImgFailed] = useState(false);
   const fallback = useMemo(() => getRandomFallbackImage(), []);
   const img = hero?.image_url && !imgFailed ? hero.image_url : fallback;
-  const title = safeText(decodeHtmlEntities(story.title));
+  const title = safeText(cleanTitle(story.title));
 
   return (
     <LocalizedLink

@@ -40,7 +40,7 @@ import {
   fetchRelatedNewsArticles,
   fetchNamesByIds,
 } from '@/hooks/usePageFetchers';
-import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
+import { cleanTitle, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { formatNewsTag } from '@/lib/newsTags';
@@ -136,7 +136,7 @@ export default function NewsDetail() {
     : null;
 
   // Per-article SEO tags (client-side; edge-rendered tags are tracked separately for crawlers).
-  const articleTitle = article ? decodeHtmlEntities(article.title) : undefined;
+  const articleTitle = article ? cleanTitle(article.title) : undefined;
   const articleExcerpt = article?.excerpt ? cleanExcerpt(article.excerpt).slice(0, 200) : undefined;
   useMeta({
     title: articleTitle,
@@ -279,7 +279,7 @@ export default function NewsDetail() {
                 },
               ]
             : []),
-          { label: decodeHtmlEntities(article.title) },
+          { label: cleanTitle(article.title) },
         ]
       : null,
   );
@@ -347,7 +347,7 @@ export default function NewsDetail() {
       <figure className="group mb-6">
         <Image
           src={heroSrc}
-          alt={decodeHtmlEntities(article.title)}
+          alt={cleanTitle(article.title)}
           heightPx={isMobile ? 220 : 360}
           imageRole="hero"
           rounded="container"
@@ -390,7 +390,7 @@ export default function NewsDetail() {
                   setArticle((prev) => (prev ? { ...prev, title: String(next ?? '') } : prev))
                 }
               >
-                {decodeHtmlEntities(localizedNewsTitle(article, i18n.language))}
+                {cleanTitle(localizedNewsTitle(article, i18n.language))}
               </Editable>
             </h1>
             <ContentLangBadge language={article.content_language} text={article.title} />
@@ -613,7 +613,7 @@ export default function NewsDetail() {
                             textTransform: 'none',
                           }}
                         >
-                          {decodeHtmlEntities(related.title)}
+                          {cleanTitle(related.title)}
                         </p>
                         {related.published_at && (
                           <span className="text-xs text-muted-foreground">
@@ -739,7 +739,7 @@ export default function NewsDetail() {
             <Layers size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
             <span>
               <Eyebrow as="span">Story · {story.article_count} articles</Eyebrow>
-              <span className="block font-semibold">{decodeHtmlEntities(story.title)}</span>
+              <span className="block font-semibold">{cleanTitle(story.title)}</span>
             </span>
           </span>
           <ArrowRight size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
