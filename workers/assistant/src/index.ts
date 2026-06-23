@@ -12,6 +12,7 @@
  */
 
 import type { Env } from "./types";
+import { isAuthenticatedRequest } from "./jwt";
 export { Conversation } from "./conversation";
 
 function corsHeaders(request: Request, env: Env): Record<string, string> {
@@ -21,7 +22,7 @@ function corsHeaders(request: Request, env: Env): Record<string, string> {
 	return {
 		"Access-Control-Allow-Origin": allow,
 		"Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-		"Access-Control-Allow-Headers": "Content-Type",
+		"Access-Control-Allow-Headers": "Content-Type, Authorization",
 		"Access-Control-Allow-Credentials": "true",
 		Vary: "Origin",
 	};
@@ -54,15 +55,22 @@ export default {
 				return json({ error: "message required" }, 400, cors);
 			}
 
+			// Safety layer: a verified-logged-in caller may see high-risk-country
+			// (gated) content in chat, matching the rest of the product. The body's
+			// user_id is spoofable, so trust the signed JWT. Anonymous → gated hidden.
+			const authed = await isAuthenticatedRequest(request, env);
+
 			// Route to the conversation's Durable Object (new id if none supplied).
 			const conversationId =
 				typeof body.conversation_id === "string" && body.conversation_id ? body.conversation_id : crypto.randomUUID();
 			const stub = env.CONVERSATION.get(env.CONVERSATION.idFromName(conversationId));
 
+			// Forward the original turn body plus the trusted `authed` flag. (The DO
+			// must not re-derive auth — it can't see the Authorization header.)
 			const doResp = await stub.fetch("https://do/turn", {
 				method: "POST",
 				headers: { "content-type": "application/json" },
-				body: await request.text(),
+				body: JSON.stringify({ ...(body as Record<string, unknown>), authed }),
 			});
 			const payload = (await doResp.json()) as Record<string, unknown>;
 			return json({ conversation_id: conversationId, ...payload }, doResp.status, cors);
