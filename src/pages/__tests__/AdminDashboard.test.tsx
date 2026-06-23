@@ -2,11 +2,6 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TooltipProvider } from '@/components/ui/tooltip';
-
 import { renderWithProviders } from '@/test/test-utils';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -50,15 +45,6 @@ import AdminDashboard from '../AdminDashboard';
 
 describe('AdminDashboard', () => {
   it('renders without crashing', () => {
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    const { container } = render(
-      <QueryClientProvider client={qc}>
-        <MemoryRouter>
-          <TooltipProvider>
-            <AdminDashboard />
-          </TooltipProvider>
-        </MemoryRouter>
-      </QueryClientProvider>,
     const { container } = renderWithProviders(
       <TooltipProvider>
         <AdminDashboard />

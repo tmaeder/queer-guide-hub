@@ -2769,26 +2769,6 @@
       "youOnly": "Du bist als „bereit für ein Treffen“ markiert 🟢"
     }
   },
-  "pwa": {
-    "updateAvailable": {
-      "title": "Eine neue Version ist verfügbar",
-      "description": "Aktualisiere, um die neuesten Funktionen zu erhalten.",
-      "action": "Aktualisieren"
-    },
-    "backOnline": "Wieder online",
-    "offline": {
-      "title": "Du bist offline",
-      "description": "Einige Funktionen sind möglicherweise nicht verfügbar."
-    },
-    "install": {
-      "title": "Queer Guide installieren",
-      "description": "Schneller Zugriff vom Startbildschirm — funktioniert auch offline.",
-      "action": "Installieren",
-      "iosTitle": "Zum Startbildschirm hinzufügen",
-      "iosHint": "Tippe in Safari auf die Teilen-Schaltfläche und wähle „Zum Home-Bildschirm“.",
-      "dismiss": "Schließen",
-      "ariaLabel": "App installieren"
-    }
   "newsDetail": {
     "notFound": "Artikel nicht gefunden",
     "notFoundDesc": "Den gesuchten Artikel gibt es nicht.",
@@ -2821,5 +2801,26 @@
     "source": "Quelle",
     "moreLikeThis": "Ähnliche Beiträge",
     "forYou": "Für dich"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "Eine neue Version ist verfügbar",
+      "description": "Aktualisiere, um die neuesten Funktionen zu erhalten.",
+      "action": "Aktualisieren"
+    },
+    "backOnline": "Wieder online",
+    "offline": {
+      "title": "Du bist offline",
+      "description": "Einige Funktionen sind möglicherweise nicht verfügbar."
+    },
+    "install": {
+      "title": "Queer Guide installieren",
+      "description": "Schneller Zugriff vom Startbildschirm — funktioniert auch offline.",
+      "action": "Installieren",
+      "iosTitle": "Zum Startbildschirm hinzufügen",
+      "iosHint": "Tippe in Safari auf die Teilen-Schaltfläche und wähle „Zum Home-Bildschirm“.",
+      "dismiss": "Schließen",
+      "ariaLabel": "App installieren"
+    }
   }
 }

@@ -2767,26 +2767,6 @@
       "youOnly": "你已标记为有空见面 🟢"
     }
   },
-  "pwa": {
-    "updateAvailable": {
-      "title": "有新版本可用",
-      "description": "刷新以获取最新功能。",
-      "action": "刷新"
-    },
-    "backOnline": "已恢复在线",
-    "offline": {
-      "title": "您已离线",
-      "description": "部分功能可能无法使用。"
-    },
-    "install": {
-      "title": "安装 Queer Guide",
-      "description": "从主屏幕快速访问，也支持离线使用。",
-      "action": "安装",
-      "iosTitle": "添加到主屏幕",
-      "iosHint": "在 Safari 中点按分享按钮，然后选择“添加到主屏幕”。",
-      "dismiss": "关闭",
-      "ariaLabel": "安装应用"
-    }
   "newsDetail": {
     "notFound": "未找到文章",
     "notFoundDesc": "您查找的文章不存在。",
@@ -2819,5 +2799,26 @@
     "source": "来源",
     "moreLikeThis": "相关推荐",
     "forYou": "为你推荐"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "有新版本可用",
+      "description": "刷新以获取最新功能。",
+      "action": "刷新"
+    },
+    "backOnline": "已恢复在线",
+    "offline": {
+      "title": "您已离线",
+      "description": "部分功能可能无法使用。"
+    },
+    "install": {
+      "title": "安装 Queer Guide",
+      "description": "从主屏幕快速访问，也支持离线使用。",
+      "action": "安装",
+      "iosTitle": "添加到主屏幕",
+      "iosHint": "在 Safari 中点按分享按钮，然后选择“添加到主屏幕”。",
+      "dismiss": "关闭",
+      "ariaLabel": "安装应用"
+    }
   }
 }
