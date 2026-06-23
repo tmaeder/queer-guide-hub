@@ -179,6 +179,12 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'cities',
       },
       {
+        id: 'city-quality',
+        label: 'City quality',
+        icon: ShieldCheck,
+        route: '/admin/content/city-quality',
+      },
+      {
         id: 'countries',
         label: 'Countries',
         icon: Globe,
