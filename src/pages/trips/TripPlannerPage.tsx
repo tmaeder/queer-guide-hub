@@ -40,6 +40,7 @@ import { MemoryRecapCard } from '@/components/trips/MemoryRecapCard';
 import { PostTripMemoryPrompt } from '@/components/trips/PostTripMemoryPrompt';
 import { TripLocalContext } from '@/components/trips/TripLocalContext';
 import { getTripPhase } from '@/components/trips/tripPhase';
+import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -505,6 +506,16 @@ export default function TripPlannerPage() {
           <PostTripMemoryPrompt trip={trip} />
         </div>
       )}
+
+      {/* Travel buddies — people heading to this trip's city around these dates. */}
+      <div className="mt-8">
+        <PeopleHereRail
+          mode="travel"
+          tripId={trip.id}
+          title="Travel buddies for this trip"
+          seeAllHref="/people/travel"
+        />
+      </div>
 
       <AddPlaceDialog
         open={addPlaceOpen}
