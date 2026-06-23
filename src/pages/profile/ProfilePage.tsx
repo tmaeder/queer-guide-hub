@@ -2,9 +2,17 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Flag, Share2, Shield, User } from 'lucide-react';
+import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { ArrowLeft, Eye, Flag, Share2, Shield, User } from 'lucide-react';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ScrollableTabList } from '@/components/profile/ScrollableTabList';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { OverviewTab } from '@/components/profile/tabs/OverviewTab';
 import { ContributionsTab } from '@/components/profile/tabs/ContributionsTab';
@@ -32,6 +40,13 @@ type ProfileTab = (typeof TABS)[number];
 /** Tabs that expose private personal data — only the owner viewing as themselves. */
 const OWN_ONLY_TABS: readonly ProfileTab[] = ['saved', 'trips', 'progress'];
 
+/** Lens options for the mobile "view as" sheet. */
+const LENS_OPTIONS: Array<{ value: ProfileLens; label: string; hint: string }> = [
+  { value: 'you', label: 'You', hint: 'Everything, as only you see it.' },
+  { value: 'community', label: 'Community', hint: 'What signed-in members see.' },
+  { value: 'public', label: 'Public', hint: 'What signed-out visitors see.' },
+];
+
 /**
  * Unified profile page. /me/:tab? renders the signed-in user; /user/:userId/:tab?
  * renders anyone (own mode when it's you). Progress is own-only.
@@ -56,6 +71,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
   const { score: othersScore } = usePublicCommunityScore(isOwnProfile ? null : targetUserId ?? null);
   const score = isOwnProfile ? ownScore : othersScore;
   const [statusPickerOpen, setStatusPickerOpen] = useState(false);
+  const [viewAsOpen, setViewAsOpen] = useState(false);
   const [lens, setLens] = useState<ProfileLens>('you');
 
   // tabProp comes from the static /me/<tab> routes; params.tab from /user/:userId/:tab?.
@@ -181,7 +197,50 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
             </Button>
           )}
           <div className="flex items-center gap-2 ml-auto">
-            {isOwnProfile && <ViewAsToggle lens={lens} onChange={setLens} />}
+            {isOwnProfile && (
+              <>
+                <ViewAsToggle lens={lens} onChange={setLens} className="hidden md:inline-flex" />
+                <Sheet open={viewAsOpen} onOpenChange={setViewAsOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="View profile as…"
+                      className="rounded-element md:hidden"
+                    >
+                      <Eye size={16} />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="pb-8">
+                    <SheetHeader className="mb-4">
+                      <SheetTitle>View profile as</SheetTitle>
+                    </SheetHeader>
+                    <div className="flex flex-col gap-2">
+                      {LENS_OPTIONS.map(({ value, label, hint }) => (
+                        <button
+                          key={value}
+                          type="button"
+                          aria-pressed={lens === value}
+                          onClick={() => {
+                            setLens(value);
+                            setViewAsOpen(false);
+                          }}
+                          className={
+                            'rounded-element border p-4 text-left transition-colors ' +
+                            (lens === value
+                              ? 'border-foreground bg-muted/40'
+                              : 'border-border hover:bg-muted/30')
+                          }
+                        >
+                          <span className="block text-sm font-medium">{label}</span>
+                          <span className="block text-13 text-muted-foreground">{hint}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </>
+            )}
             <Button
               variant="outline"
               size="icon"
@@ -209,12 +268,11 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
           isOwnProfile={ownView}
           status={status}
           score={score}
-          completionPct={completionPct}
           onEditStatus={() => setStatusPickerOpen(true)}
         />
 
         <Tabs value={tab} onValueChange={setTab} style={{ width: '100%' }}>
-          <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start">
+          <ScrollableTabList>
             {(
               [
                 ['overview', t('profile.tabs.overview', 'Overview')],
@@ -233,12 +291,12 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
               <TabsTrigger
                 key={v}
                 value={v}
-                className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none"
+                className="h-10 shrink-0 snap-start rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none"
               >
                 {l}
               </TabsTrigger>
             ))}
-          </TabsList>
+          </ScrollableTabList>
 
           <TabsContent value="overview">
             <OverviewTab

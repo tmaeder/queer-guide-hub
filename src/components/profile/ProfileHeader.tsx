@@ -7,7 +7,6 @@ import { StartConversationButton } from '@/components/messaging/StartConversatio
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { TrustTierBadge } from '@/components/profile/TrustTierBadge';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
-import { CompletionRing } from '@/components/profile/CompletionRing';
 import { SocialAccountsDisplay } from '@/components/profile/SocialAccountsDisplay';
 import { readAccounts } from '@/lib/socialAccounts';
 import { StatusBar } from '@/components/status/StatusBar';
@@ -21,7 +20,6 @@ interface ProfileHeaderProps {
   isOwnProfile: boolean;
   status?: UserStatus | null;
   score?: { level: number; tier: string; total_points: number } | null;
-  completionPct?: number;
   onEditStatus?: () => void;
 }
 
@@ -37,7 +35,6 @@ export function ProfileHeader({
   isOwnProfile,
   status,
   score,
-  completionPct,
   onEditStatus,
 }: ProfileHeaderProps) {
   const navigate = useLocalizedNavigate();
@@ -55,7 +52,7 @@ export function ProfileHeader({
       <CardContent>
         <div className="flex flex-col md:flex-row gap-6 items-start">
           <div className="flex flex-col items-center text-center md:text-left">
-            <Avatar style={{ width: 128, height: 128 }} className="mb-4">
+            <Avatar className="size-24 md:size-32 mb-4">
               <AvatarImage
                 src={(profile.avatar_url as string) || undefined}
                 alt={displayName}
@@ -70,35 +67,31 @@ export function ProfileHeader({
                 Verified
               </Badge>
             )}
-            {isOwnProfile && typeof completionPct === 'number' && completionPct < 100 && (
-              <CompletionRing
-                percent={completionPct}
-                size={56}
-                className="mt-4"
-                label={<span>profile complete</span>}
-              />
-            )}
           </div>
 
           <div className="flex-1 flex flex-col gap-4 min-w-0">
             <div>
-              <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
-                <h1 className="text-2xl font-bold">{displayName}</h1>
-                {!!profile.user_mode && (
-                  <UserModeBadge mode={profile.user_mode} size="lg" />
-                )}
-                <TrustTierBadge userId={profile.user_id as string} showLabel />
-                {score && (
-                  <ScoreLevelChip
-                    compact
-                    level={score.level}
-                    tier={score.tier}
-                    totalPoints={score.total_points}
-                  />
-                )}
+              <div className="flex flex-col gap-2 mb-2">
+                <h1 className="text-headline font-display font-semibold leading-tight">
+                  {displayName}
+                </h1>
+                <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
+                  {!!profile.user_mode && (
+                    <UserModeBadge mode={profile.user_mode} size="lg" />
+                  )}
+                  <TrustTierBadge userId={profile.user_id as string} showLabel />
+                  {score && (
+                    <ScoreLevelChip
+                      compact
+                      level={score.level}
+                      tier={score.tier}
+                      totalPoints={score.total_points}
+                    />
+                  )}
+                </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-muted-foreground mb-4 text-sm">
+              <div className="flex flex-wrap items-center justify-center gap-2 text-muted-foreground mb-4 text-13 md:justify-start">
                 {username && <span>@{username}</span>}
                 {!!profile.pronouns && (
                   <>
@@ -159,7 +152,7 @@ export function ProfileHeader({
             </div>
 
             {!isOwnProfile ? (
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-2 [&>*]:w-full sm:[&>*]:w-auto">
                 <StartConversationButton
                   userId={profile.user_id as string}
                   userName={displayName}

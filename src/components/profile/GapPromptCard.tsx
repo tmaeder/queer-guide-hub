@@ -3,18 +3,7 @@ import { AtSign, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-
-const PROMPT_DISMISS_KEY = 'qg.settings.prompt.dismissed';
-const PROMPT_REDISPLAY_MS = 7 * 24 * 60 * 60 * 1000;
-
-function promptDismissed(kind: string): boolean {
-  try {
-    const raw = localStorage.getItem(`${PROMPT_DISMISS_KEY}.${kind}`);
-    return !!raw && Date.now() - Number(raw) < PROMPT_REDISPLAY_MS;
-  } catch {
-    return false;
-  }
-}
+import { getProfileGap, dismissPrompt } from '@/lib/profileGaps';
 
 interface GapPromptCardProps {
   profile: Record<string, unknown>;
@@ -29,45 +18,12 @@ export function GapPromptCard({ profile }: GapPromptCardProps) {
   const [tick, setTick] = useState(0);
   void tick;
 
-  const username = (profile.username as string | null) ?? null;
-  const pronounTags = (profile.pronoun_tags as string[] | null) ?? [];
-
-  let prompt: { kind: string; title: string; body: string; cta: string; section: string } | null =
-    null;
-  if (!username) {
-    prompt = {
-      kind: 'username',
-      title: 'Claim your @username',
-      body: 'Your permanent handle for mentions and your profile link.',
-      cta: 'Claim now',
-      section: 'account',
-    };
-  } else if (profile.avatar_auto_assigned && !promptDismissed('avatar')) {
-    prompt = {
-      kind: 'avatar',
-      title: 'Make your avatar yours',
-      body: 'We gave you a starter look. Upload a photo, import one, or build your own.',
-      cta: 'Choose avatar',
-      section: 'avatar',
-    };
-  } else if (pronounTags.length === 0 && !promptDismissed('pronouns')) {
-    prompt = {
-      kind: 'pronouns',
-      title: 'Add your pronouns',
-      body: 'Optional, takes 30 seconds. You decide who sees them.',
-      cta: 'Add pronouns',
-      section: 'profile',
-    };
-  }
+  const prompt = getProfileGap(profile);
 
   if (!prompt) return null;
 
   const dismiss = (kind: string) => {
-    try {
-      localStorage.setItem(`${PROMPT_DISMISS_KEY}.${kind}`, String(Date.now()));
-    } catch {
-      /* storage unavailable — prompt just stays */
-    }
+    dismissPrompt(kind);
     setTick((t) => t + 1);
   };
 
