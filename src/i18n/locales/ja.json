@@ -1547,6 +1547,7 @@
     "submitProduct": "商品を投稿",
     "submitHotel": "ホテルを投稿",
     "nav": {
+      "people": "人々",
       "discover": "発見",
       "connect": "つながる",
       "more": "もっと見る",
@@ -1612,6 +1613,17 @@
     "notifications": {
       "label": "[JA] Notifications",
       "unread": "[JA] Notifications, {{count}} unread"
+    },
+    "mobileNav": {
+      "home": "ホーム",
+      "explore": "さがす",
+      "contribute": "追加",
+      "messages": "メッセージ",
+      "you": "マイページ",
+      "menuTitle": "Queer Guide を見る",
+      "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
+      "trips": "マイトリップ",
+      "settingsSection": "表示"
     }
   },
   "pages": {

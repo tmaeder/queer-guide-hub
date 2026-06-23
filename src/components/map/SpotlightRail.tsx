@@ -60,7 +60,7 @@ export function SpotlightRail({
           </div>
           <div className="flex gap-2 overflow-hidden pb-1.5">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-36 w-44 shrink-0 animate-pulse rounded-container bg-muted" />
+              <div key={i} className="h-16 w-56 shrink-0 animate-pulse rounded-container bg-muted" />
             ))}
           </div>
         </div>
@@ -114,7 +114,7 @@ export function SpotlightRail({
               role="listitem"
               data-point-id={point.id}
               aria-label={`Show ${point.name} on the map`}
-              className={`block w-44 shrink-0 cursor-pointer rounded-container text-left ${
+              className={`block w-56 shrink-0 cursor-pointer rounded-container text-left ${
                 selectedId === point.id ? 'ring-2 ring-foreground' : ''
               }`}
               onMouseEnter={() => onHover(point.id)}

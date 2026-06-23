@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getTripPhase, phaseStatusText, daysFromToday } from './tripPhase';
 import { resolveTripTitle } from './tripTitle';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
 interface Props {
   trips: Trip[];
@@ -76,7 +77,7 @@ export function NextTripStrip({ trips }: Props) {
   return (
     <Card className="mb-8 overflow-hidden">
       <div className="flex flex-col md:flex-row md:items-stretch">
-        {trip.cover_image_url ? (
+        {isValidImageUrl(trip.cover_image_url) ? (
           <div
             className="md:w-64 h-40 md:h-auto bg-muted shrink-0"
             style={{

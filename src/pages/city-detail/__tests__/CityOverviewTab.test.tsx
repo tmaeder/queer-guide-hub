@@ -6,6 +6,8 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/components/weather/WeatherForecast', () => ({ WeatherForecast: () => <div>weather</div> }));
+// The people rail has its own hook stack (auth/presence/discovery) + spec; stub it here.
+vi.mock('@/components/people/PeopleHereRail', () => ({ PeopleHereRail: () => null }));
 
 import { CityOverviewTab } from '../CityOverviewTab';
 

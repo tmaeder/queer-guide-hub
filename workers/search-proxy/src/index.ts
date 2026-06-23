@@ -31,6 +31,7 @@ import { handleGo } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
+import { isAuthenticatedRequest } from "./jwt";
 import { tokenize, isBareLgbtqQuery } from "./queryPrep";
 import { resolveSession } from "./sessionCookie";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
@@ -82,6 +83,13 @@ export interface Env {
 	 * falls back to unsigned session ids (dev only).
 	 */
 	SESSION_SIGNING_KEY?: string;
+	/**
+	 * Supabase JWT secret (HS256). Set via `wrangler secret put SUPABASE_JWT_SECRET`.
+	 * Used to verify the caller's access token so logged-in users (and only them)
+	 * see safety-gated content from high-risk countries. Missing → fail-closed
+	 * (everyone treated as anonymous; gated content stays hidden).
+	 */
+	SUPABASE_JWT_SECRET?: string;
 }
 
 // Read endpoints: corpus is public, ACAO: *.
@@ -272,6 +280,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
 	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
 	const debug = body.debug === true;
+	// Safety layer: only a verified-logged-in caller sees high-risk-country
+	// (gated) content. The body's user_id is spoofable, so trust the signed JWT.
+	const authed = await isAuthenticatedRequest(request, env);
 
 	// Bug #9: a bare LGBTQ+ token query ('gay', 'queer', 'trans') is a
 	// stop-word in the venue/event indexes — running it through the full
@@ -293,6 +304,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				queryVec: null,
 				contentTypes: ["venue", "event"],
 				filters: { is_featured: true },
+				includeGated: authed,
 				hitsPerPage: hitsPerPage * (page + 1),
 				page: 0,
 			}).catch(() => null);
@@ -389,6 +401,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		priceMin: mergedFilters.price_min ?? null,
 		priceMax: mergedFilters.price_max ?? null,
 		sort: mergedFilters.sort ?? null,
+		includeGated: authed,
 		hitsPerPage,
 		page,
 	};
@@ -705,6 +718,8 @@ async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Pro
 		entityId: entity_id,
 		contentTypes: content_types,
 		limit,
+		// Safety layer: gated neighbours only for verified-authenticated callers.
+		includeGated: await isAuthenticatedRequest(request, env),
 	});
 	const results = related.map((r) => ({
 		content_type: r.type as string,
@@ -717,6 +732,11 @@ async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Pro
 			category: r.category as string | undefined,
 			slug: r.slug as string | undefined,
 			image_url: (r.imageUrl as string) ?? undefined,
+			// R2-mirrored copies (surfaced by related_entities since the
+			// discovery-RPC optimized-image upgrade) — the client prefers these
+			// over the raw image_url, which often hotlink-fails.
+			optimized_url: (r.optimizedUrl as string) ?? undefined,
+			thumbnail_url: (r.thumbnailUrl as string) ?? undefined,
 		},
 	}));
 	return json({ results }, 200, cors);
@@ -947,8 +967,10 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 	// trigram fuzzy, type-diversified in SQL). 800ms hard timeout so the dropdown
 	// never blocks typing; on timeout/error we return whatever we have ([]).
 	const pgTypes = indexes.map((i) => INDEX_TO_PG_TYPE[i]).filter(Boolean) as string[];
+	// Safety layer: surface gated suggestions only to verified-authenticated callers.
+	const autocompleteAuthed = await isAuthenticatedRequest(request, env);
 	const suggestions = await Promise.race([
-		pgAutocomplete(env, q, pgTypes.length ? pgTypes : null, limit),
+		pgAutocomplete(env, q, pgTypes.length ? pgTypes : null, limit, autocompleteAuthed),
 		new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTOCOMPLETE_TIMEOUT_MS)),
 	]).catch((e) => {
 		console.warn("pgAutocomplete", (e as Error).message);
@@ -1019,6 +1041,8 @@ async function handleRecommendations(request: Request, env: Env, cors: HeadersIn
 		radiusKm: radius,
 		excludeIds,
 		limit,
+		// Safety layer: gated recommendations only for verified-authenticated callers.
+		includeGated: await isAuthenticatedRequest(request, env),
 	});
 
 	return json(

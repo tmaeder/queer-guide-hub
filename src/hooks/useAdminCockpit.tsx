@@ -174,41 +174,13 @@ async function fetchImportSummary(): Promise<ImportSummary> {
 }
 
 async function fetchQualityIndex(): Promise<QualityIndex> {
-  const entityTypes = ['venues', 'events', 'personalities', 'news_articles'] as const;
-  const byContentType: Record<string, { total: number; withIssues: number; score: number }> = {};
-  let totalScoreSum = 0;
-  let totalScored = 0;
-  let warnings = 0;
-  let critical = 0;
-
-  const results = await Promise.all(
-    entityTypes.map((t) =>
-      supabase.from(t as 'venues').select('quality_score, needs_attention'),
-    ),
-  );
-
-  entityTypes.forEach((type, i) => {
-    const rows = (results[i].data ?? []) as Array<{
-      quality_score: number | null;
-      needs_attention: boolean | null;
-    }>;
-    const scored = rows.filter((r) => r.quality_score != null);
-    const withIssues = rows.filter((r) => r.needs_attention === true).length;
-    const avg =
-      scored.length > 0
-        ? Math.round(scored.reduce((s, r) => s + (r.quality_score ?? 0), 0) / scored.length)
-        : 0;
-
-    byContentType[type] = { total: rows.length, withIssues, score: avg };
-    totalScoreSum += scored.reduce((s, r) => s + (r.quality_score ?? 0), 0);
-    totalScored += scored.length;
-    if (withIssues > 0 && withIssues <= 10) warnings += withIssues;
-    if (withIssues > 10) critical += withIssues;
-  });
-
-  const overallScore = totalScored > 0 ? Math.round(totalScoreSum / totalScored) : 0;
-
-  return { overallScore, byContentType, warnings, critical };
+  // Aggregated server-side in SQL (get_admin_quality_index) — avoids pulling
+  // every row of venues/events/personalities/news_articles to the client.
+  const { data, error } = await supabase.rpc('get_admin_quality_index' as never);
+  if (error || !data) {
+    return { overallScore: 0, byContentType: {}, warnings: 0, critical: 0 };
+  }
+  return data as unknown as QualityIndex;
 }
 
 async function fetchContentStats(): Promise<ContentStats> {

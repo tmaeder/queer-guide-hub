@@ -25,6 +25,7 @@ import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { EditorialDetailLayout, type SectionDef } from '@/components/entity/editorial';
 import { CITY_SECTION_DEFS } from './city-detail/CitySectionDefs';
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
@@ -309,6 +310,7 @@ export default function CityDetail() {
                 countryId: city.countries?.id ?? null,
               }}
             />
+            <GatedContentNotice cityId={city.id} />
           </>
         }
         header={

@@ -91,7 +91,6 @@ const AdminMarketplace = lazyRetry(() => import('./pages/AdminMarketplace'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
 const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
 const AdminVenueGuides = lazyRetry(() => import('./pages/AdminVenueGuides'));
-const AdminNewsSources = lazyRetry(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazyRetry(() => import('./pages/AdminPersonalities'));
 const AdminQuests = lazyRetry(() => import('./pages/AdminQuests'));
@@ -123,7 +122,6 @@ const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
 const AdminAffiliate = lazyRetry(() => import('./pages/AdminAffiliate'));
 
 // CMS components rendered as admin views
-const AdminCMS = lazyRetry(() => import('./pages/AdminCMS'));
 const ContentListPanel = lazyRetry(() =>
   import('./components/cms/ContentListPanel').then((m) => ({ default: m.ContentListPanel })),
 );
@@ -164,9 +162,9 @@ const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
 const Settings = lazyRetry(() => import('./pages/Settings'));
 const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard'));
-const IntimateDiscovery = lazyRetry(() => import('./pages/intimate/IntimateDiscovery'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
 
+const People = lazyRetry(() => import('./pages/people/People'));
 const Community = lazyRetry(() => import('./pages/Community'));
 
 const Messages = lazyRetry(() => import('./pages/Messages'));
@@ -388,7 +386,7 @@ export const AppRoutes = () => {
                 <Route path="venues" element={<AdminVenues />} />
                 <Route path="duplicates" element={<AdminDuplicates />} />
                 <Route path="events" element={<AdminEvents />} />
-                <Route path="tags" element={<AdminTags />} />
+                <Route path="tags" element={<Navigate to="/admin/content/unified_tags" replace />} />
                 <Route path="cities" element={<AdminCityQuality />} />
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
@@ -398,8 +396,8 @@ export const AppRoutes = () => {
                 <Route path="marketplace/guides" element={<AdminMarketplaceGuides />} />
                 <Route path="venue-guides" element={<AdminVenueGuides />} />
                 <Route path="groups" element={<AdminGroups />} />
-                <Route path="news-sources" element={<AdminNewsSources />} />
-                <Route path="cms" element={<AdminCMS />} />
+                <Route path="news-sources" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
+                <Route path="cms" element={<Navigate to="/admin/content" replace />} />
                 <Route path="import-hub" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="festivals" element={<Navigate to="/admin/events" replace />} />
                 <Route
@@ -574,8 +572,17 @@ export const AppRoutes = () => {
                 <Route path="settings" element={<Settings />} />
                 <Route path="settings/privacy" element={<Navigate to="/settings?section=privacy" replace />} />
                 <Route path="profile/settings" element={<SettingsRedirect />} />
-                <Route path="intimate" element={<IntimateDiscovery />} />
-                <Route path="discover" element={<IntimateDiscovery />} />
+                {/* Unified People surface. Static per-tab routes (not people/:tab?)
+                  so the optional :locale? parent can't capture "people" as an
+                  unknown locale and 404 — same reason /community/* is spelled out. */}
+                <Route path="people" element={<People />} />
+                <Route path="people/friends" element={<People tab="friends" />} />
+                <Route path="people/dating" element={<People tab="dating" />} />
+                <Route path="people/travel" element={<People tab="travel" />} />
+                <Route path="people/nearby" element={<People tab="nearby" />} />
+                {/* Dating folded into the People hub; legacy entry points redirect. */}
+                <Route path="intimate" element={<LocalizedRedirect to="/people/dating" />} />
+                <Route path="discover" element={<LocalizedRedirect to="/people/dating" />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
                 <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />

@@ -2,6 +2,7 @@ import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { UserPostsList } from '@/components/posts/UserPostsList';
 import { UserReviewsList } from '@/components/profile/contributions/UserReviewsList';
 import { UserSubmissionsList } from '@/components/profile/contributions/UserSubmissionsList';
+import { WatchedSitesList } from '@/components/profile/contributions/WatchedSitesList';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { sectionVisible, type ProfileLens } from '@/lib/profileLens';
 
@@ -51,6 +52,15 @@ export function ContributionsTab({ userId, isOwnProfile, lens = 'you', privacySe
           <h2 className="text-title font-semibold">Submissions</h2>
           <p className="text-13 text-muted-foreground -mt-2">Visible only to you.</p>
           <UserSubmissionsList />
+        </section>
+      )}
+      {ownView && (
+        <section aria-label="Watched sites" className="flex flex-col gap-4">
+          <h2 className="text-title font-semibold">Watched sites</h2>
+          <p className="text-13 text-muted-foreground -mt-2">
+            Sites we re-check for new content to import. Visible only to you.
+          </p>
+          <WatchedSitesList />
         </section>
       )}
     </div>

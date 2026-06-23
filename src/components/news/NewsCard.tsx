@@ -9,8 +9,9 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useState, useMemo } from 'react';
 import { cleanTitle, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage } from '@/utils/fallbackImages';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { safeText } from '@/utils/safeDisplay';
 import { formatNewsTag } from '@/lib/newsTags';
@@ -24,6 +25,10 @@ import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 
 type NewsArticle = Tables<'news_articles'> & {
   news_sources?: Tables<'news_sources'>;
+  // Podcast columns (migration 20260623063103); not yet in generated types.
+  media_type?: string | null;
+  audio_url?: string | null;
+  duration_seconds?: number | null;
 };
 
 const NewsCardFixture = () => (
@@ -109,7 +114,7 @@ export const NewsCard = ({
   const navigate = useLocalizedNavigate();
   const { i18n } = useTranslation();
   const [imgFailed, setImgFailed] = useState(false);
-  const fallbackSrc = useMemo(() => getRandomFallbackImage(), []);
+  const fallbackSrc = useMemo(() => getFallbackImage('news', article?.id), [article?.id]);
 
   if (loading || !article) {
     return (
@@ -171,7 +176,7 @@ export const NewsCard = ({
   const isPremium = (article as Record<string, unknown>).is_premium === true;
 
   const resolvedSrc = resolveImageUrl({
-    imageUrl: article.image_url,
+    imageUrl: isValidImageUrl(article.image_url) ? article.image_url : null,
     optimizedUrl: imageAsset?.optimized_url ?? null,
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
   });
@@ -190,7 +195,20 @@ export const NewsCard = ({
   const fresh = isFreshArticle(article.published_at);
   const dek = excerptText ? extractDek(excerptText) : '';
 
+  const isPodcast = article.media_type === 'podcast';
+  const podcastLabel = isPodcast
+    ? (() => {
+        const secs = Number(article.duration_seconds);
+        if (Number.isFinite(secs) && secs > 0) {
+          const m = Math.round(secs / 60);
+          return `🎧 Podcast · ${m} min`;
+        }
+        return '🎧 Podcast';
+      })()
+    : null;
+
   const eyebrowParts = [
+    podcastLabel,
     categoryDisplay,
     displaySource,
     relativeDate,

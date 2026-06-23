@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublicTripCard } from './PublicTripCard';
 import { TripTemplates } from './TripTemplates';
+import { SavedToTripCard } from './SavedToTripCard';
 
 interface Props {
   onCreate: () => void;
@@ -77,6 +78,12 @@ export function EmptyTripsHero({ onCreate }: Props) {
             'Three ways to start — pick whichever fits.',
           )}
         </p>
+      </div>
+
+      {/* Seed a first trip from places the user already saved. Self-hides
+          unless there are ≥2 saves in one city. */}
+      <div className="mb-8 max-w-3xl mx-auto">
+        <SavedToTripCard />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">

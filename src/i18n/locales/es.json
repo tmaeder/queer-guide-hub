@@ -1547,6 +1547,7 @@
     "submitProduct": "Enviar producto",
     "submitHotel": "Enviar hotel",
     "nav": {
+      "people": "Personas",
       "discover": "Descubrir",
       "connect": "Conectar",
       "more": "Más",
@@ -1612,6 +1613,17 @@
     "notifications": {
       "label": "[ES] Notifications",
       "unread": "[ES] Notifications, {{count}} unread"
+    },
+    "mobileNav": {
+      "home": "Inicio",
+      "explore": "Explorar",
+      "contribute": "Añadir",
+      "messages": "Mensajes",
+      "you": "Perfil",
+      "menuTitle": "Explora Queer Guide",
+      "menuDescription": "Ve a cualquier sección, cambia el idioma o el tema.",
+      "trips": "Mis viajes",
+      "settingsSection": "Pantalla"
     }
   },
   "pages": {

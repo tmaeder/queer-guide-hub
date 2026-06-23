@@ -7,7 +7,7 @@ import { Table2 } from 'lucide-react';
 /**
  * Personality Truth Engine dashboard: completeness/coverage health, the identity
  * review gate, and consent-gated adult-cohort publishing. Full personality CRUD
- * lives at /admin/personalities.
+ * lives at /admin/content/personalities.
  */
 export default function AdminPersonalityQuality() {
   return (
@@ -18,7 +18,7 @@ export default function AdminPersonalityQuality() {
           <p className="text-13 text-muted-foreground">Completeness, coverage gaps, identity review gate, and consent-gated publishing.</p>
         </div>
         <Button asChild variant="outline" size="sm">
-          <Link to="/admin/personalities">
+          <Link to="/admin/content/personalities">
             <Table2 size={14} className="mr-1" /> Edit personalities
           </Link>
         </Button>

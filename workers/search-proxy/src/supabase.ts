@@ -149,7 +149,7 @@ export async function semanticSearch(
  */
 export async function relatedEntities(
 	env: Env,
-	opts: { entityType: string; entityId: string; contentTypes?: string[] | null; sameTypeOnly?: boolean; limit?: number },
+	opts: { entityType: string; entityId: string; contentTypes?: string[] | null; sameTypeOnly?: boolean; limit?: number; includeGated?: boolean },
 ): Promise<Array<Record<string, unknown>>> {
 	try {
 		return await rpc<Array<Record<string, unknown>>>(env, "related_entities", {
@@ -158,6 +158,7 @@ export async function relatedEntities(
 			p_content_types: opts.contentTypes && opts.contentTypes.length ? opts.contentTypes : null,
 			p_same_type_only: opts.sameTypeOnly ?? false,
 			p_limit: opts.limit ?? 10,
+			p_include_gated: opts.includeGated ?? false,
 		});
 	} catch (e) {
 		console.warn("related_entities", (e as Error).message);
@@ -182,6 +183,7 @@ export async function getRecommendations(
 		radiusKm?: number | null;
 		excludeIds?: string[] | null;
 		limit?: number;
+		includeGated?: boolean;
 	},
 ): Promise<Array<Record<string, unknown>>> {
 	try {
@@ -194,6 +196,7 @@ export async function getRecommendations(
 			p_radius_km: opts.radiusKm ?? null,
 			p_exclude_ids: opts.excludeIds && opts.excludeIds.length ? opts.excludeIds : null,
 			p_limit: opts.limit ?? 20,
+			p_include_gated: opts.includeGated ?? false,
 		});
 	} catch (e) {
 		console.warn("get_recommendations", (e as Error).message);

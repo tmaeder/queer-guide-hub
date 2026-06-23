@@ -4,7 +4,8 @@ import { Layers, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { safeText } from '@/utils/safeDisplay';
 import { cleanTitle } from '@/utils/htmlDecode';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage } from '@/utils/fallbackImages';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import { useMemo, useState } from 'react';
 import type { NewsStory, NewsStoryArticle } from '@/hooks/useNewsStories';
 
@@ -15,8 +16,8 @@ interface StoryCardProps {
 
 export const StoryCard = ({ story, hero }: StoryCardProps) => {
   const [imgFailed, setImgFailed] = useState(false);
-  const fallback = useMemo(() => getRandomFallbackImage(), []);
-  const img = hero?.image_url && !imgFailed ? hero.image_url : fallback;
+  const fallback = useMemo(() => getFallbackImage('news', story.slug), [story.slug]);
+  const img = isValidImageUrl(hero?.image_url) && !imgFailed ? hero!.image_url! : fallback;
   const title = safeText(cleanTitle(story.title));
 
   return (

@@ -9,7 +9,7 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
     <a href={to} {...rest}>{children}</a>
   ),
 }));
-vi.mock('@/utils/fallbackImages', () => ({ getRandomFallbackImage: () => '/fallback.png' }));
+vi.mock('@/utils/fallbackImages', () => ({ getFallbackImage: () => '/fallback.png', getRandomFallbackImage: () => '/fallback.png' }));
 
 import { DestinationTiles } from '../DestinationTiles';
 
@@ -23,7 +23,7 @@ describe('DestinationTiles', () => {
     render(
       <DestinationTiles
         cities={[
-          { city_id: 'c1', name: 'Berlin', slug: 'berlin', image_url: '/b.jpg', hotel_count: 5, country: 'DE' },
+          { city_id: 'c1', name: 'Berlin', slug: 'berlin', image_url: 'https://img.test/b.jpg', hotel_count: 5, country: 'DE' },
         ] as never}
       />,
     );
@@ -31,7 +31,7 @@ describe('DestinationTiles', () => {
     expect(link).toHaveAttribute('href', '/hotels?city=berlin');
     expect(screen.getByText('Berlin')).toBeInTheDocument();
     expect(screen.getByText(/5 hotels.*DE/)).toBeInTheDocument();
-    expect(screen.getByRole('img')).toHaveAttribute('src', '/b.jpg');
+    expect(screen.getByRole('img')).toHaveAttribute('src', 'https://img.test/b.jpg');
   });
 
   it('falls back to image when image_url missing', () => {

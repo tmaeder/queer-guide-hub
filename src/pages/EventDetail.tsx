@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Luggage, Ticket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
@@ -21,6 +22,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
+import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import {
   type EventWithRelations,
   EventHero,
@@ -210,7 +212,7 @@ export default function EventDetail() {
   };
 
   if (!isLoading && !event && !error) {
-    return (
+    const eventNotFound = (
       <div className="container mx-auto py-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Event Not Found</h2>
         <p className="text-muted-foreground mb-6">
@@ -224,6 +226,7 @@ export default function EventDetail() {
         </LocalizedLink>
       </div>
     );
+    return <GatedDetailFallback entityType="event" slug={slug} notFound={eventNotFound} />;
   }
 
   const cityName = event?.cities?.name ?? event?.city ?? null;
@@ -357,6 +360,13 @@ export default function EventDetail() {
                 className="mt-10"
               />
             )}
+            <div className="mt-10">
+              <PeopleHereRail
+                mode="locals"
+                eventId={event.id}
+                title="Who's going & people to meet"
+              />
+            </div>
             <SimilarItems entity={{ type: 'event', id: event.id }} className="mt-10" />
             <MoreLikeThisByTag
               entityType="event"

@@ -1,4 +1,5 @@
 import type { ProfileLens } from '@/lib/profileLens';
+import { cn } from '@/lib/utils';
 
 const LENSES: Array<{ value: ProfileLens; label: string }> = [
   { value: 'you', label: 'You' },
@@ -9,18 +10,22 @@ const LENSES: Array<{ value: ProfileLens; label: string }> = [
 interface ViewAsToggleProps {
   lens: ProfileLens;
   onChange: (lens: ProfileLens) => void;
+  className?: string;
 }
 
 /**
  * Three-segment lens preview on the own profile: re-renders the page exactly
  * as a community member or signed-out visitor would see it.
  */
-export function ViewAsToggle({ lens, onChange }: ViewAsToggleProps) {
+export function ViewAsToggle({ lens, onChange, className }: ViewAsToggleProps) {
   return (
     <div
       role="group"
       aria-label="View profile as"
-      className="inline-flex items-center rounded-element border border-border bg-card p-0.5"
+      className={cn(
+        'inline-flex items-center rounded-element border border-border bg-card p-0.5',
+        className,
+      )}
     >
       <span className="px-2 text-2xs uppercase tracking-wider text-muted-foreground">
         View as

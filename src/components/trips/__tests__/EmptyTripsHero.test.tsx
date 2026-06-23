@@ -18,6 +18,7 @@ vi.mock('../PublicTripCard', () => ({
   PublicTripCard: (p: { trip: { id: string } }) => <div data-testid="public">{p.trip.id}</div>,
 }));
 vi.mock('../TripTemplates', () => ({ TripTemplates: () => <div data-testid="templates" /> }));
+vi.mock('../SavedToTripCard', () => ({ SavedToTripCard: () => <div data-testid="saved-to-trip" /> }));
 
 import { EmptyTripsHero } from '../EmptyTripsHero';
 

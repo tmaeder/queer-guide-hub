@@ -19,6 +19,7 @@ import { MarketplaceForVenue } from '@/components/marketplace/MarketplaceForVenu
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
+import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { useMeta } from '@/hooks/useMeta';
 import { buildVenueJsonLd, buildVenueMeta } from './VenueDetail.meta';
 import {
@@ -137,7 +138,7 @@ export default function VenueDetail() {
   if (!isLoading && notFound) {
     const sectionSlugs = ['hotels', 'events', 'news', 'marketplace', 'travel', 'groups', 'resources'];
     const didYouMeanSection = slug && sectionSlugs.includes(slug) ? slug : null;
-    return (
+    const venueNotFound = (
       <div className="container mx-auto py-8 px-4 text-center">
         <NotFoundMeta
           title={t('pages.venueDetail.notFoundTitle', 'Venue not found')}
@@ -168,6 +169,7 @@ export default function VenueDetail() {
         </LocalizedLink>
       </div>
     );
+    return <GatedDetailFallback entityType="venue" slug={slug} notFound={venueNotFound} />;
   }
 
   if (!isLoading && error && !venue) {
@@ -201,7 +203,6 @@ export default function VenueDetail() {
   const countryLink = venue?.countries?.id
     ? `/country/${venue.countries.slug || venue.countries.id}`
     : null;
-  const heroImage = venue?.images && venue.images.length > 0 ? venue.images[0] : null;
   const isClosed = Boolean(venue?.closed_at && new Date(venue.closed_at) <= new Date());
 
   const breadcrumbs = buildVenueBreadcrumbs(venue, t);
@@ -239,7 +240,6 @@ export default function VenueDetail() {
               countryName={countryName}
               cityLink={cityLink}
               countryLink={countryLink}
-              heroImage={heroImage}
               averageRating={averageRating}
               reviewCount={reviews.length}
               tripCount={tripStatus?.count}

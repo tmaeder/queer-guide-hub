@@ -15,6 +15,7 @@ interface PublicProfileData {
   pronouns?: string;
   website?: string;
   social_links?: Record<string, unknown>;
+  social_accounts?: unknown;
   interests?: string[];
   occupation?: string;
   education?: string;

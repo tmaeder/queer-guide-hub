@@ -193,6 +193,9 @@ verify_jwt = false
 [functions.pipeline-sanitize-news]
 verify_jwt = false
 
+[functions.pipeline-resanitize-news]
+verify_jwt = false
+
 [functions.pipeline-quality-enhance]
 verify_jwt = false
 

@@ -110,17 +110,19 @@ export const entityTypeLabel = (et: string) =>
   et.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
 export const entityAdminPath = (entityType: string, entityId: string) => {
-  const map: Record<string, string> = {
-    venue: '/admin/venues',
-    event: '/admin/events',
-    news_article: '/admin/news',
-    personality: '/admin/personalities',
-    marketplace_listing: '/admin/marketplace',
-    city: '/admin/cities',
-    country: '/admin/countries',
-    queer_village: '/admin/villages',
+  // Entity management lives in the unified content browser (/admin/content/:type);
+  // the editor is modal-launched there, so we link to the per-type list route.
+  const contentSlug: Record<string, string> = {
+    venue: 'venues',
+    event: 'events',
+    news_article: 'news_articles',
+    personality: 'personalities',
+    marketplace_listing: 'marketplace_listings',
+    city: 'cities',
+    country: 'countries',
+    queer_village: 'queer_villages',
   };
-  const base = map[entityType];
-  if (!base) return `/admin/${entityType}/${entityId}`;
-  return `${base}/${entityId}`;
+  const slug = contentSlug[entityType];
+  if (!slug) return `/admin/${entityType}/${entityId}`;
+  return `/admin/content/${slug}`;
 };

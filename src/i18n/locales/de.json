@@ -1547,6 +1547,7 @@
     "submitProduct": "Produkt einreichen",
     "submitHotel": "Hotel einreichen",
     "nav": {
+      "people": "Leute",
       "discover": "Entdecken",
       "connect": "Vernetzen",
       "more": "Mehr",
@@ -1612,6 +1613,17 @@
     "notifications": {
       "label": "[DE] Notifications",
       "unread": "[DE] Notifications, {{count}} unread"
+    },
+    "mobileNav": {
+      "home": "Start",
+      "explore": "Entdecken",
+      "contribute": "Hinzufügen",
+      "messages": "Nachrichten",
+      "you": "Profil",
+      "menuTitle": "Queer Guide entdecken",
+      "menuDescription": "Zu jedem Bereich springen, Sprache oder Design wechseln.",
+      "trips": "Meine Reisen",
+      "settingsSection": "Anzeige"
     }
   },
   "pages": {

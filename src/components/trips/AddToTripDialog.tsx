@@ -23,6 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTrips, useTrip, useTripMutations } from '@/hooks/useTrips';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
+import { resolveEntityGeo } from '@/lib/trips/resolveEntityGeo';
 import { cn } from '@/lib/utils';
 
 export interface AddToTripDialogProps {
@@ -66,6 +67,47 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
 
   const { data: selectedTrip } = useTrip(selectedTripId ?? undefined);
 
+  // Search hits and map markers carry the entity id + lat/lng but not
+  // city_id/country_id. Resolve those on demand from the source table so a place
+  // added from anywhere gets proper per-country safety scoring — and so the
+  // "create a new trip" path (which needs a geo anchor) works without forcing
+  // every call site to pre-fetch it.
+  const resolveGeo = async () => {
+    if (entity.city_id && entity.country_id) {
+      return {
+        city_id: entity.city_id,
+        country_id: entity.country_id,
+        latitude: entity.latitude ?? null,
+        longitude: entity.longitude ?? null,
+        address: entity.address ?? null,
+      };
+    }
+    if (entity.type === 'venue' || entity.type === 'event') {
+      try {
+        const map = await resolveEntityGeo([{ type: entity.type, id: entity.id }]);
+        const g = map.get(entity.id);
+        if (g) {
+          return {
+            city_id: g.city_id,
+            country_id: g.country_id,
+            latitude: g.latitude ?? entity.latitude ?? null,
+            longitude: g.longitude ?? entity.longitude ?? null,
+            address: g.address ?? entity.address ?? null,
+          };
+        }
+      } catch {
+        /* fall through to whatever the caller provided */
+      }
+    }
+    return {
+      city_id: entity.city_id ?? null,
+      country_id: entity.country_id ?? null,
+      latitude: entity.latitude ?? null,
+      longitude: entity.longitude ?? null,
+      address: entity.address ?? null,
+    };
+  };
+
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       setSelectedTripId(null);
@@ -82,6 +124,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
     if (!selectedTripId) return;
 
     try {
+      const geo = await resolveGeo();
       await addPlace.mutateAsync({
         trip_id: selectedTripId,
         day_id: selectedDayId || null,
@@ -89,11 +132,11 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         event_id: entity.type === 'event' ? entity.id : null,
         hotel_id: entity.type === 'hotel' ? entity.id : null,
         custom_name: null,
-        custom_address: entity.address || null,
-        latitude: entity.latitude || null,
-        longitude: entity.longitude || null,
-        city_id: entity.city_id || null,
-        country_id: entity.country_id || null,
+        custom_address: geo.address,
+        latitude: geo.latitude,
+        longitude: geo.longitude,
+        city_id: geo.city_id,
+        country_id: geo.country_id,
         start_time: null,
         end_time: null,
         duration_minutes: null,
@@ -130,10 +173,10 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
     if (!newTripTitle.trim()) return;
 
     // Geo is required at DB level (NOT NULL on trips.primary_city_id /
-    // primary_country_id). Without it, the insert fails silently from the
-    // user's POV and the spinner appears to hang. Surface a clear error
-    // instead of firing a doomed mutation.
-    if (!entity.city_id || !entity.country_id) {
+    // primary_country_id). Resolve it from the entity first (covers search/map
+    // rows that don't carry it); only error if it's genuinely unavailable.
+    const geo = await resolveGeo();
+    if (!geo.city_id || !geo.country_id) {
       toast({
         title: t('trips.addTo.missingGeoTitle', 'Add a city first'),
         description: t(
@@ -150,8 +193,8 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         title: newTripTitle.trim(),
         start_date: newTripStart || undefined,
         end_date: newTripEnd || undefined,
-        primary_city_id: entity.city_id,
-        primary_country_id: entity.country_id,
+        primary_city_id: geo.city_id,
+        primary_country_id: geo.country_id,
       });
 
       await addPlace.mutateAsync({
@@ -161,11 +204,11 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         event_id: entity.type === 'event' ? entity.id : null,
         hotel_id: entity.type === 'hotel' ? entity.id : null,
         custom_name: null,
-        custom_address: entity.address || null,
-        latitude: entity.latitude || null,
-        longitude: entity.longitude || null,
-        city_id: entity.city_id || null,
-        country_id: entity.country_id || null,
+        custom_address: geo.address,
+        latitude: geo.latitude,
+        longitude: geo.longitude,
+        city_id: geo.city_id,
+        country_id: geo.country_id,
         start_time: null,
         end_time: null,
         duration_minutes: null,

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Globe, Mail, Phone, Newspaper, ShoppingBag, MapPin, Building2 } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
+import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
@@ -307,7 +308,7 @@ export default function OrganizationDetail() {
   }, [org]);
 
   if (!isLoading && !org) {
-    return (
+    const orgNotFound = (
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="mb-4 text-xl font-bold">Organization not found</h1>
         <p className="mb-6 text-muted-foreground">
@@ -321,6 +322,7 @@ export default function OrganizationDetail() {
         </LocalizedLink>
       </div>
     );
+    return <GatedDetailFallback entityType="organization" slug={slug} notFound={orgNotFound} />;
   }
 
   return (

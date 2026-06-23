@@ -4,6 +4,7 @@ import {
   useMyIntimateProfile,
   useIntimateDiscovery,
 } from '@/hooks/useIntimateProfile';
+import { usePeopleDiscovery } from '@/hooks/usePeopleDiscovery';
 import {
   useIntimateMatches,
   useMyIntimateLikes,
@@ -59,6 +60,32 @@ export default function IntimateDiscovery() {
     () => (cards ?? []).filter((c) => !passedSet.has(c.user_id)),
     [cards, passedSet],
   );
+
+  // Compatibility ranking — reorders the same opted-in/approved cards by the
+  // shared people-matching engine. The view + filters still own which profiles
+  // appear (safety/eligibility wall); this only changes their order. Falls back
+  // to the view's own order when the RPC has nothing to say.
+  const { data: ranked } = usePeopleDiscovery({
+    mode: 'dating',
+    cityId: cityId ?? undefined,
+    limit: 200,
+    enabled: !!me?.opted_in_at,
+  });
+  const rankIndex = useMemo(() => {
+    const m = new Map<string, number>();
+    (ranked ?? []).forEach((r, i) => m.set(r.userId, i));
+    return m;
+  }, [ranked]);
+  const scoreById = useMemo(() => {
+    const m = new Map<string, number>();
+    (ranked ?? []).forEach((r) => m.set(r.userId, r.score));
+    return m;
+  }, [ranked]);
+  const rankedCards = useMemo(() => {
+    if (!rankIndex.size) return visibleCards;
+    const at = (id: string) => rankIndex.get(id) ?? Number.MAX_SAFE_INTEGER;
+    return [...visibleCards].sort((a, b) => at(a.user_id) - at(b.user_id));
+  }, [visibleCards, rankIndex]);
 
   useIncomingLikeListener((row) => {
     // If the receiver has already liked the sender, the trigger creates a
@@ -128,11 +155,11 @@ export default function IntimateDiscovery() {
 
       {loadingDisc ? (
         <p className="text-muted-foreground">Loading…</p>
-      ) : !visibleCards.length ? (
+      ) : !rankedCards.length ? (
         <p className="text-muted-foreground">No matches yet. Try widening filters.</p>
       ) : viewMode === 'deck' ? (
         <SwipeDeck
-          cards={visibleCards
+          cards={rankedCards
             .filter((c) => !likedSet.has(c.user_id))
             .map<SwipeableCard>((c) => ({
               id: c.user_id,
@@ -148,9 +175,10 @@ export default function IntimateDiscovery() {
         />
       ) : (
         <ul className="border-t border-border">
-          {visibleCards.map((c) => {
+          {rankedCards.map((c) => {
             const liked = likedSet.has(c.user_id);
             const matched = matchedSet.has(c.user_id);
+            const score = scoreById.get(c.user_id);
             return (
               <li key={c.user_id} className="border-b border-border">
                 <div className="flex items-center gap-4 py-4">
@@ -168,8 +196,15 @@ export default function IntimateDiscovery() {
                       <div className="h-12 w-12 bg-muted rounded-element" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">
-                        {c.display_name ?? 'Anon'}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium truncate">
+                          {c.display_name ?? 'Anon'}
+                        </span>
+                        {typeof score === 'number' && score > 0 ? (
+                          <span className="shrink-0 text-2xs uppercase tracking-wide text-muted-foreground rounded-badge bg-muted px-1.5 py-0.5">
+                            {score}% match
+                          </span>
+                        ) : null}
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
                         {[c.age_band, c.body_type, c.height_cm ? `${c.height_cm}cm` : null]

@@ -18,6 +18,7 @@ import { formatDistance } from '@/lib/formatDistance';
 import { timeUntil } from '@/utils/relativeTime';
 import { iconForMarker, categoryLabel } from './mapIcons';
 import type { MapPointSummary } from './mapPoint';
+import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 
 type CardVariant = 'popup' | 'rail' | 'hover';
 
@@ -62,13 +63,67 @@ function MarkerGlyph({
 }
 
 /** Small signal pills shared across variants. */
-function Signals({ point }: { point: MapPointSummary }) {
+function Signals({ point, compact }: { point: MapPointSummary; compact?: boolean }) {
   const price = priceLabel(point.priceRange);
   const dist = point.distanceKm != null ? formatDistance(point.distanceKm * 1000) : null;
   const countdown = point.type === 'events' && !point.live ? timeUntil(point.startDate) : null;
   // "Trending" = editorially featured AND high trust. Honest proxy until a
   // real engagement/check-in signal exists; otherwise just "Featured".
   const trending = point.featured && (point.trustScore ?? 0) >= 80;
+
+  // Compact (rail): one fixed, non-wrapping line so every card is the same
+  // height. Slot 1 = the single most important status; slot 2 = distance
+  // (the most useful at-a-glance fact), else price.
+  if (compact) {
+    const status =
+      point.type === 'venues' && point.openNow === true ? (
+        <Badge variant="soft" className="gap-1">
+          <Clock className="h-3 w-3" aria-hidden />
+          Open now
+        </Badge>
+      ) : point.type === 'events' && point.live ? (
+        <Badge variant="soft" className="gap-1">
+          <Radio className="h-3 w-3" aria-hidden />
+          On now
+        </Badge>
+      ) : countdown ? (
+        <Badge variant="soft" className="gap-1">
+          <Clock className="h-3 w-3" aria-hidden />
+          {countdown}
+        </Badge>
+      ) : trending ? (
+        <Badge variant="soft" className="gap-1">
+          <TrendingUp className="h-3 w-3" aria-hidden />
+          Trending
+        </Badge>
+      ) : point.featured ? (
+        <Badge variant="soft" className="gap-1">
+          <Star className="h-3 w-3" aria-hidden />
+          Featured
+        </Badge>
+      ) : point.favorited ? (
+        <Badge variant="soft" className="gap-1">
+          <Heart className="h-3 w-3 fill-current" aria-hidden />
+          Saved
+        </Badge>
+      ) : null;
+    const secondary = dist ? (
+      <Badge variant="outline" className="gap-1">
+        <MapPin className="h-3 w-3" aria-hidden />
+        {dist}
+      </Badge>
+    ) : price ? (
+      <Badge variant="outline">{price}</Badge>
+    ) : null;
+    if (!status && !secondary) return null;
+    return (
+      <div className="flex items-center gap-1 overflow-hidden">
+        {status}
+        {secondary}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {point.favorited && (
@@ -158,6 +213,7 @@ export function MapEntityCard({
               imageUrl={point.image}
               optimizedUrl={point.optimizedImage}
               thumbnailUrl={point.thumbImage}
+              fit={point.isLogo ? 'contain' : 'cover'}
               alt=""
               aspect="square"
               imageRole="thumb"
@@ -175,24 +231,57 @@ export function MapEntityCard({
     );
   }
 
-  const isRail = variant === 'rail';
-  const clickable = isRail && point.linkTo && onNavigate;
+  // Rail: a compact horizontal row — a small leading tile (photo thumbnail when
+  // present, else one category glyph) beside the text. Roughly half the height
+  // of a media-on-top card, and the icon is sized sensibly instead of floating
+  // in a tall empty band (most venues have no photo).
+  if (variant === 'rail') {
+    return (
+      <div className="flex w-full items-center gap-2 overflow-hidden rounded-container border border-border bg-background p-2">
+        {hasImage ? (
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-element">
+            <Image
+              imageUrl={point.image}
+              optimizedUrl={point.optimizedImage}
+              thumbnailUrl={point.thumbImage}
+              fit={point.isLogo ? 'contain' : 'cover'}
+              alt=""
+              aspect="square"
+              imageRole="thumb"
+              fallbackEntityType={fallbackTheme}
+              fallbackKey={point.id}
+              fallbackIcon={Icon}
+            />
+          </div>
+        ) : (
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-element bg-muted">
+            <MarkerGlyph icon={Icon} className="h-5 w-5" style={{ color: point.color }} />
+          </div>
+        )}
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="truncate text-15 font-semibold leading-tight text-foreground">
+            {point.name}
+          </div>
+          {metaLine && <div className="truncate text-13 text-muted-foreground">{metaLine}</div>}
+          <Signals point={point} compact />
+        </div>
+      </div>
+    );
+  }
 
-  const wrapperClass = `flex w-full flex-col overflow-hidden ${
-    isRail ? 'rounded-container border border-border bg-background' : ''
-  } ${clickable ? 'cursor-pointer text-left' : ''} ${className ?? ''}`;
-
+  // Popup (the only remaining variant): media-on-top card with inline actions.
   const body = (
     <>
       {hasImage ? (
-        <div className={`relative w-full ${isRail ? 'h-24' : 'h-28'}`}>
+        <div className="relative h-28 w-full">
           <Image
             imageUrl={point.image}
             optimizedUrl={point.optimizedImage}
             thumbnailUrl={point.thumbImage}
+            fit={point.isLogo ? 'contain' : 'cover'}
             alt={point.name}
-            aspect={isRail ? 'auto' : 'card'}
-            heightPx={isRail ? 96 : 112}
+            aspect="card"
+            heightPx={112}
             imageRole="cover"
             fallbackEntityType={fallbackTheme}
             fallbackKey={point.id}
@@ -206,12 +295,7 @@ export function MapEntityCard({
           </div>
         </div>
       ) : (
-        // No photo (most venues): a compact, intentional band — muted ground
-        // with one category glyph in the entity's accent color. Beats a giant
-        // generic placeholder repeated down the whole rail.
-        <div
-          className={`flex w-full items-center justify-center bg-muted ${isRail ? 'h-14' : 'h-16'}`}
-        >
+        <div className="flex h-16 w-full items-center justify-center bg-muted">
           <MarkerGlyph icon={Icon} className="h-6 w-6" style={{ color: point.color }} />
         </div>
       )}
@@ -245,23 +329,27 @@ export function MapEntityCard({
                 Share
               </button>
             )}
+            {(point.type === 'venues' || point.type === 'events') && (
+              <QuietAddToTripButton
+                variant="inline"
+                className="ml-auto h-7 w-7"
+                entity={{
+                  type: point.type === 'venues' ? 'venue' : 'event',
+                  id: point.id,
+                  name: point.name,
+                  latitude: point.lat,
+                  longitude: point.lng,
+                  category: point.category ?? null,
+                }}
+              />
+            )}
           </div>
         )}
       </div>
     </>
   );
 
-  // A native <button> gives the clickable rail card real keyboard + role
-  // semantics (the popup block with nested buttons never renders when clickable).
-  if (clickable) {
-    return (
-      <button type="button" className={wrapperClass} onClick={() => onNavigate!(point.linkTo!)}>
-        {body}
-      </button>
-    );
-  }
-
-  return <div className={wrapperClass}>{body}</div>;
+  return <div className={`flex w-full flex-col overflow-hidden ${className ?? ''}`}>{body}</div>;
 }
 
 export default MapEntityCard;

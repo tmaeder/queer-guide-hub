@@ -5,6 +5,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceRelated } from '@/components/marketplace/MarketplaceRelated';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
+import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
@@ -82,6 +83,9 @@ interface NewsArticle {
   editorial_note?: string | null;
   is_editors_pick?: boolean | null;
   image_attribution?: string | null;
+  media_type?: string | null;
+  audio_url?: string | null;
+  duration_seconds?: number | null;
 }
 
 interface DbCategory {
@@ -516,6 +520,17 @@ export default function NewsDetail() {
                 )}
               </Editable>
             </aside>
+          )}
+
+          {/* Podcast episode: inline player streaming the publisher's enclosure URL */}
+          {article.media_type === 'podcast' && article.audio_url && (
+            <div className="mb-6 max-w-[68ch]">
+              <PodcastPlayer
+                audioUrl={article.audio_url}
+                title={articleTitle}
+                durationSeconds={article.duration_seconds}
+              />
+            </div>
           )}
 
           {/* Article body — editorial prose, constrained measure, full-strength text */}

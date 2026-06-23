@@ -49,6 +49,13 @@ interface ImageProps {
   // ── Layout / treatment ──────────────────────────────────────────────
   alt: string;
   aspect?: AspectToken;
+  /**
+   * Object-fit of the rendered image. `cover` (default) crops to fill — right for
+   * photos. `contain` letterboxes on the neutral tile with padding and no hover
+   * zoom — right for brand logos, which must not be cropped. The texture fallback
+   * and icon tile always stay `cover` regardless.
+   */
+  fit?: 'cover' | 'contain';
   /** Fixed pixel height escape hatch; overrides `aspect` when set. */
   heightPx?: number;
   /** Named `imageRole` (not `role`) to avoid the ARIA `role` attribute. */
@@ -114,6 +121,7 @@ export const Image = ({
   fallbackIcon: FallbackIcon,
   alt,
   aspect = 'card',
+  fit = 'cover',
   heightPx,
   imageRole = 'cover',
   objectPosition,
@@ -152,8 +160,11 @@ export const Image = ({
     [fallbackEntityType, fallbackKey],
   );
 
-  const showIconTile = (!resolved || error) && !!FallbackIcon;
-  const effectiveSrc = showIconTile ? null : (!resolved || error ? fallback : resolved);
+  const showingFallback = !resolved || error;
+  const showIconTile = showingFallback && !!FallbackIcon;
+  const effectiveSrc = showIconTile ? null : (showingFallback ? fallback : resolved);
+  // Logos render contained; the texture fallback and icon tile always cover.
+  const useContain = fit === 'contain' && !showingFallback && !showIconTile;
 
   const widthSet = widths ?? DEFAULT_WIDTHS[imageRole];
   const cfSrcSet = effectiveSrc ? buildCfSrcSet(effectiveSrc, widthSet) : undefined;
@@ -192,7 +203,8 @@ export const Image = ({
           onError={() => { if (!error) setError(true); }}
           style={objectPosition ? { objectPosition } : undefined}
           className={cn(
-            'img-lazy-fade h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]',
+            'img-lazy-fade h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+            useContain ? 'object-contain p-4' : 'object-cover group-hover:scale-[1.04]',
             loaded && 'loaded',
             className,
           )}

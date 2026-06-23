@@ -1584,6 +1584,7 @@
     "submitProduct": "Submit Product",
     "submitHotel": "Submit Hotel",
     "nav": {
+      "people": "People",
       "discover": "Browse",
       "connect": "Connect",
       "more": "More",
@@ -1646,6 +1647,17 @@
       "accessibility": "Accessibility",
       "legal": "Legal",
       "contact": "Contact"
+    },
+    "mobileNav": {
+      "home": "Home",
+      "explore": "Explore",
+      "contribute": "Add",
+      "messages": "Messages",
+      "you": "You",
+      "menuTitle": "Explore Queer Guide",
+      "menuDescription": "Jump to any section, switch language or theme.",
+      "trips": "My Trips",
+      "settingsSection": "Display"
     }
   },
   "pages": {

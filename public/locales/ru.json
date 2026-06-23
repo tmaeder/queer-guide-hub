@@ -1575,6 +1575,7 @@
     "submitProduct": "Предложить товар",
     "submitHotel": "Предложить отель",
     "nav": {
+      "people": "Люди",
       "discover": "Открывать",
       "connect": "Общение",
       "more": "Ещё",
@@ -1640,6 +1641,17 @@
     "notifications": {
       "label": "[RU] Notifications",
       "unread": "[RU] Notifications, {{count}} unread"
+    },
+    "mobileNav": {
+      "home": "Главная",
+      "explore": "Обзор",
+      "contribute": "Добавить",
+      "messages": "Сообщения",
+      "you": "Профиль",
+      "menuTitle": "Обзор Queer Guide",
+      "menuDescription": "Перейдите в любой раздел, смените язык или тему.",
+      "trips": "Мои поездки",
+      "settingsSection": "Отображение"
     }
   },
   "pages": {
