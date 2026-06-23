@@ -51,8 +51,24 @@ export function logoUrlFromWebsite(website: string | null | undefined): string |
 }
 
 /**
+ * Build the *probe* URL for a domain — identical to the stored URL but with
+ * `fallback=404`, so logo.dev returns HTTP 404 (instead of a generic
+ * first-letter monogram, its 200 default) when it has no real logo for the
+ * domain. Used only to decide whether a real logo exists; never stored.
+ */
+export function buildLogoProbeUrl(domain: string): string | null {
+  if (!LOGO_DEV_API_KEY || !domain) return null
+  return `https://img.logo.dev/${domain}?token=${LOGO_DEV_API_KEY}&size=128&format=png&fallback=404`
+}
+
+/**
  * Check if a logo.dev URL actually returns an image (HEAD request).
  * Returns the URL if valid, null if 404 or error.
+ *
+ * NOTE: this is a plain reachability check. logo.dev serves a 200 monogram by
+ * default, so a HEAD on the bare URL passes even when no real logo exists — use
+ * {@link resolveLogoUrl} (which probes with `fallback=404`) to gate on a *real*
+ * logo.
  */
 export async function verifyLogoUrl(logoUrl: string): Promise<string | null> {
   try {
@@ -65,16 +81,33 @@ export async function verifyLogoUrl(logoUrl: string): Promise<string | null> {
 }
 
 /**
- * Resolve a logo URL from a website, with optional HEAD verification.
+ * Resolve a logo URL from a website.
+ *
+ * With `verify` (the default) we only return a URL when the domain has a *real*
+ * brand logo — probed via `fallback=404`. This deliberately rejects logo.dev's
+ * monogram fallback: under the logo-first display rule a monogram `logo_url`
+ * would mask the venue's own photos, which is usually a downgrade. Domains
+ * without a real logo resolve to null (the caller still marks them attempted, so
+ * they aren't retried). Pass `verify = false` to skip the network probe and
+ * return the unverified URL (monogram included).
  */
 export async function resolveLogoUrl(
   website: string | null | undefined,
-  verify = false,
+  verify = true,
 ): Promise<string | null> {
-  const url = logoUrlFromWebsite(website)
-  if (!url) return null
-  if (!verify) return url
-  return verifyLogoUrl(url)
+  const storeUrl = logoUrlFromWebsite(website)
+  if (!storeUrl) return null
+  if (!verify) return storeUrl
+
+  const probeUrl = buildLogoProbeUrl(extractDomain(website) ?? '')
+  if (!probeUrl) return null
+  try {
+    // GET (not HEAD) so the 404 fallback status is reliably reflected.
+    const res = await fetch(probeUrl, { method: 'GET' })
+    return res.ok ? storeUrl : null
+  } catch {
+    return null
+  }
 }
 
 /** Small delay helper for rate limiting in batch operations */

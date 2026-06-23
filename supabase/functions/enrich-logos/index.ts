@@ -8,6 +8,13 @@ import { resolveLogoUrl, delay } from '../_shared/logo-enrichment.ts'
  *
  * Finds records with a website but no logo_url, resolves via logo.dev, updates DB.
  * Call repeatedly until venues_remaining + events_remaining = 0.
+ *
+ * `verify` defaults to TRUE: each candidate is probed (`fallback=404`) and a
+ * logo_url is stored ONLY when the domain has a real brand logo. Domains with no
+ * logo are marked attempted (logo_fetched_at) but keep logo_url = null, so their
+ * own photos still show under the logo-first display rule. Pass `verify: false`
+ * to fall back to the old behaviour (store the URL unconditionally, including
+ * logo.dev's generic monogram).
  */
 
 Deno.serve(async (req) => {
@@ -23,7 +30,7 @@ Deno.serve(async (req) => {
     const table = (body.table as string) || 'all'
     const batchSize = Math.min(body.batch_size || 100, 500)
     const dryRun = body.dry_run || false
-    const verify = body.verify || false // HEAD-check each URL (slower but more accurate)
+    const verify = body.verify !== false // default true: only store real logos (no monograms)
 
     const results: Record<string, unknown> = { dry_run: dryRun }
 
