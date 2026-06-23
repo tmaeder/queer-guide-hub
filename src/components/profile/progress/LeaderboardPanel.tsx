@@ -115,12 +115,12 @@ function Board({
             <span className="flex-1 truncate">
               {r.display_name ?? t('venues.leaderboard.widget.anon', 'Anonymous explorer')}
               {isYou && (
-                <span className="ml-2 rounded-badge bg-foreground px-2 py-0.5 text-xs text-background">
+                <span className="ml-2 rounded-badge bg-foreground px-2 py-0.5 text-2xs text-background">
                   {t('venues.leaderboard.widget.you', 'You')}
                 </span>
               )}
             </span>
-            <span className="tabular-nums text-sm text-muted-foreground">
+            <span className="tabular-nums text-13 text-muted-foreground">
               {r.venues_visited} {t('venues.leaderboard.venuesShort', 'venues')}
             </span>
             <span className="tabular-nums text-sm">{r.points} pts</span>

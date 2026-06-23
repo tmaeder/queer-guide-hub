@@ -70,6 +70,10 @@ const NewsMagazine = React.memo(() => {
               loading="lazy"
               decoding="async"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                const fb = getFallbackImage('news', lead.id);
+                if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+              }}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             />
           </div>
@@ -103,6 +107,10 @@ const NewsMagazine = React.memo(() => {
                     loading="lazy"
                     decoding="async"
                     referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const fb = getFallbackImage('news', a.id);
+                      if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                    }}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 </div>

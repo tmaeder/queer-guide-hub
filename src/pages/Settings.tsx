@@ -37,6 +37,7 @@ import { DocumentsList } from '@/components/trips/DocumentsList';
 import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
 import { IdentityTab } from '@/components/profile/settings/IdentityTab';
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
+import { DangerZone } from '@/components/profile/settings/DangerZone';
 import { IntimateTab } from '@/components/profile/IntimateTab';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { IdentityPreviewCard } from '@/components/profile/IdentityPreviewCard';
@@ -559,6 +560,7 @@ function ProfileSettingsContent({
             </Card>
             <EmailForwardingSettings />
             <PushNotificationSettings />
+            <DangerZone username={username} />
           </div>
         </AccordionSection>
       </div>
