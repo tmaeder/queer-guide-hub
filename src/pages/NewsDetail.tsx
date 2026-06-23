@@ -417,6 +417,10 @@ export default function NewsDetail() {
               Shown to everyone when populated. Admins reveal a placeholder slot by holding
               Alt so they can alt-click to author one (never shown during normal browsing). */}
           {(article.editorial_note || isAdmin) && (
+          {/* "Why this matters" — admin-curated, shown to everyone when populated.
+              The empty authoring placeholder stays hidden during normal browsing;
+              admins reveal it by holding Alt (#1812). */}
+          {(article.editorial_note || altHeld) && (
             <aside aria-label="Why this matters" className="border-l-2 border-foreground py-2 pl-6">
               <p className="m-0 text-2xs uppercase tracking-[0.2em] text-muted-foreground">
                 Why this matters
@@ -517,13 +521,6 @@ export default function NewsDetail() {
       </div>
 
       <RelatedNewsRail articleId={article.id} className="mt-12" />
-
-      <MoreLikeThisByTag
-        entityType="news"
-        entityId={article.id}
-        title="Related by tag"
-        className="mt-10"
-      />
     </div>
   );
 }
