@@ -40,9 +40,11 @@ Deno.serve(withErrorReporting('pipeline-sanitize-news', async (req) => {
         const n = (item.normalized_data ?? {}) as Record<string, unknown>
         const title = String(n.title ?? n.name ?? '').trim()
         const content = String(n.content ?? n.body ?? '')
+        const excerpt = String(n.excerpt ?? n.summary ?? '')
+        const author = String(n.author ?? n.byline ?? '')
         if (!title && !content) { skipped++; continue }
 
-        const r = sanitizeArticle({ title, content })
+        const r = sanitizeArticle({ title, content, excerpt, author })
 
         if (!r.changed && !r.criticalPaywall && !r.truncated) {
           skipped++
@@ -58,6 +60,8 @@ Deno.serve(withErrorReporting('pipeline-sanitize-news', async (req) => {
             ...n,
             title: r.title,
             content: r.content,
+            ...(excerpt ? { excerpt: r.excerpt } : {}),
+            ...(author ? { author: r.author } : {}),
             sanitize_meta: {
               version: r.version,
               removed: r.removedArtifacts,
