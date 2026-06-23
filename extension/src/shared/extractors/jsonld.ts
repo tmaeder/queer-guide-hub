@@ -174,6 +174,18 @@ function nodeToItem(node: Record<string, unknown>, sourceUrl: string): DetectedI
     fc.images = 0.9;
   }
 
+  // Social profiles — schema.org sameAs (Organization / Person / LocalBusiness).
+  const sameAs = node["sameAs"];
+  const sameAsArr = Array.isArray(sameAs)
+    ? sameAs.filter((s): s is string => typeof s === "string")
+    : typeof sameAs === "string"
+    ? [sameAs]
+    : [];
+  if (sameAsArr.length) {
+    raw.sameAs = sameAsArr;
+    fc.sameAs = 0.9;
+  }
+
   if (!raw.url) raw.url = sourceUrl;
 
   return {
