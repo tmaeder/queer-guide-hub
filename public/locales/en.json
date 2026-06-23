@@ -1657,7 +1657,10 @@
       "menuTitle": "Explore Queer Guide",
       "menuDescription": "Jump to any section, switch language or theme.",
       "trips": "My Trips",
-      "settingsSection": "Display"
+      "settingsSection": "Display",
+      "browseAll": "Browse all sections",
+      "unreadCount": "{{count}} unread",
+      "tripsBadge": "{{count}} trip items need attention"
     }
   },
   "pages": {

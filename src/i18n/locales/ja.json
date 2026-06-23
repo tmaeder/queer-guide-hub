@@ -1623,7 +1623,10 @@
       "menuTitle": "Queer Guide を見る",
       "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
       "trips": "マイトリップ",
-      "settingsSection": "表示"
+      "settingsSection": "表示",
+      "browseAll": "すべてのセクションを見る",
+      "unreadCount": "未読 {{count}} 件",
+      "tripsBadge": "確認が必要な旅行項目が {{count}} 件"
     }
   },
   "pages": {

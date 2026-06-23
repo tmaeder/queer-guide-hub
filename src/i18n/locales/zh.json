@@ -1623,7 +1623,10 @@
       "menuTitle": "探索 Queer Guide",
       "menuDescription": "跳转到任意板块，切换语言或主题。",
       "trips": "我的行程",
-      "settingsSection": "显示"
+      "settingsSection": "显示",
+      "browseAll": "浏览所有板块",
+      "unreadCount": "{{count}} 条未读",
+      "tripsBadge": "{{count}} 个行程项目需要关注"
     }
   },
   "pages": {

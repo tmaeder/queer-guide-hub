@@ -1651,7 +1651,10 @@
       "menuTitle": "Обзор Queer Guide",
       "menuDescription": "Перейдите в любой раздел, смените язык или тему.",
       "trips": "Мои поездки",
-      "settingsSection": "Отображение"
+      "settingsSection": "Отображение",
+      "browseAll": "Просмотреть все разделы",
+      "unreadCount": "{{count}} непрочитанных",
+      "tripsBadge": "{{count}} элементов поездки требуют внимания"
     }
   },
   "pages": {

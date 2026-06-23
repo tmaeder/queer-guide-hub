@@ -1623,7 +1623,10 @@
       "menuTitle": "Explorar o Queer Guide",
       "menuDescription": "Vá para qualquer seção, mude o idioma ou o tema.",
       "trips": "Minhas Viagens",
-      "settingsSection": "Exibição"
+      "settingsSection": "Exibição",
+      "browseAll": "Ver todas as seções",
+      "unreadCount": "{{count}} não lidas",
+      "tripsBadge": "{{count}} itens de viagem precisam de atenção"
     }
   },
   "pages": {
