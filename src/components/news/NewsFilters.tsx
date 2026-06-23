@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatNewsTag } from '@/lib/newsTags';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag, Languages } from 'lucide-react';
+import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag, Languages, Headphones } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,6 +66,7 @@ interface NewsFiltersProps {
     inStory?: boolean;
     category?: string;
     language?: string;
+    mediaType?: 'podcast';
   }) => void;
   trendingTags?: { tag: string; count: number }[];
   sources?: NewsSource[];
@@ -93,6 +94,7 @@ export const NewsFilters = ({
   const [dateRange, setDateRange] = useState<string>('');
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const [inStoryOnly, setInStoryOnly] = useState(false);
+  const [podcastsOnly, setPodcastsOnly] = useState(false);
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
 
@@ -135,6 +137,7 @@ export const NewsFilters = ({
         dateRange: overrides.dateRange !== undefined ? overrides.dateRange : dateRange,
         featuredOnly: overrides.featuredOnly !== undefined ? overrides.featuredOnly : featuredOnly,
         inStoryOnly: overrides.inStoryOnly !== undefined ? overrides.inStoryOnly : inStoryOnly,
+        podcastsOnly: overrides.podcastsOnly !== undefined ? overrides.podcastsOnly : podcastsOnly,
         category:
           overrides.selectedCategory !== undefined ? overrides.selectedCategory : selectedCategory,
         language:
@@ -153,6 +156,7 @@ export const NewsFilters = ({
       }
       if (current.featuredOnly) filters.featured = true;
       if (current.inStoryOnly) filters.inStory = true;
+      if (current.podcastsOnly) filters.mediaType = 'podcast';
       if (current.category) filters.category = current.category;
       if (current.language) filters.language = current.language;
 
@@ -213,6 +217,7 @@ export const NewsFilters = ({
       dateRange,
       featuredOnly,
       inStoryOnly,
+      podcastsOnly,
       sources,
       onFiltersChange,
     ],
@@ -312,6 +317,12 @@ export const NewsFilters = ({
     emitFilters({ inStoryOnly: newVal });
   };
 
+  const handlePodcastsToggle = () => {
+    const newVal = !podcastsOnly;
+    setPodcastsOnly(newVal);
+    emitFilters({ podcastsOnly: newVal });
+  };
+
   const clearFilters = () => {
     setSource('');
     setSelectedCategory('');
@@ -324,6 +335,7 @@ export const NewsFilters = ({
     setDateRange('');
     setFeaturedOnly(false);
     setInStoryOnly(false);
+    setPodcastsOnly(false);
     onFiltersChange({});
   };
 
@@ -336,7 +348,8 @@ export const NewsFilters = ({
     selectedCities.length > 0 ||
     nearMe ||
     dateRange ||
-    featuredOnly;
+    featuredOnly ||
+    podcastsOnly;
 
   return (
     <Card style={{ top: 16 }} className="sticky">
@@ -357,6 +370,15 @@ export const NewsFilters = ({
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">Multi-article stories only</span>
           <Switch checked={inStoryOnly} onCheckedChange={handleInStoryToggle} />
+        </div>
+
+        {/* Podcasts only */}
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <Headphones size={16} />
+            Podcasts only
+          </span>
+          <Switch checked={podcastsOnly} onCheckedChange={handlePodcastsToggle} />
         </div>
 
         <Separator />
