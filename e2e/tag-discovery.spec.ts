@@ -24,7 +24,7 @@ test.describe('tag discovery', () => {
     await expect(page.getByRole('heading', { name: 'The Long Island Eagle Tavern' })).toBeVisible();
 
     // Tag chips render as links to the canonical tag page using the slug.
-    const bearBar = page.locator('a[href*="/resources/bear-bar"]').first();
+    const bearBar = page.locator('a[href*="/tags/bear-bar"]').first();
     await expect(bearBar).toBeVisible();
     await expect(bearBar).toContainText(/bear bar/i);
 
@@ -38,7 +38,7 @@ test.describe('tag discovery', () => {
   test('canonical tag page aggregates linked content + has a Follow affordance', async ({
     page,
   }) => {
-    await page.goto('/resources/bear-bar');
+    await page.goto('/tags/bear-bar');
     await expect(page.getByRole('heading', { name: /^Bear Bar$/ })).toBeVisible();
 
     // Cross-content aggregation: a venue-vocabulary tag surfaces a Venues section.
@@ -49,7 +49,7 @@ test.describe('tag discovery', () => {
   });
 
   test('marketplace-tagged term shows a Shop section on the tag page', async ({ page }) => {
-    await page.goto('/resources/occ-everyday');
+    await page.goto('/tags/occ-everyday');
     await expect(page.getByRole('heading', { name: 'Everyday' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Shop' })).toBeVisible();
   });

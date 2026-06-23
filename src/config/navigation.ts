@@ -68,7 +68,7 @@ export const DESTINATIONS: NavDestination[] = [
   { to: '/community/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
   { to: '/community/groups', icon: UsersRound, labelKey: 'header.nav.groups', cluster: 'community' },
   { to: '/community/members', icon: UserCheck, labelKey: 'header.nav.members', cluster: 'community' },
-  { to: '/resources', icon: Tags, labelKey: 'header.nav.resources', cluster: 'shop' },
+  { to: '/tags', icon: Tags, labelKey: 'header.nav.tags', cluster: 'shop' },
   { to: '/travel', icon: Plane, labelKey: 'header.nav.travel', cluster: 'places' },
   { to: '/personalities', icon: Users, labelKey: 'header.nav.personalities', cluster: 'community', searchType: 'personality' },
   { to: '/hotels', icon: Building, labelKey: 'header.nav.hotels', cluster: 'places' },

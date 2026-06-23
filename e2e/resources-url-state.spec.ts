@@ -2,30 +2,24 @@ import { test, expect } from '@playwright/test';
 
 // P1-1 — filter / search / sort / view state lives in URL query params.
 
-test.describe('@p1-1 /resources URL state', () => {
+test.describe('@p1-1 /tags URL state', () => {
   test('hydrates state from URL on direct visit', async ({ page }) => {
-    await page.goto('/resources?sort=alphabetical&dir=asc&view=list&hasImage=1');
-    // Page must render without bouncing back to defaults.
+    await page.goto('/tags?sort=alphabetical&dir=asc&view=list&hasImage=1');
     await expect(page).toHaveURL(
-      /\/resources\?.*sort=alphabetical.*dir=asc.*view=list.*hasImage=1/,
+      /\/tags\?.*sort=alphabetical.*dir=asc.*view=list.*hasImage=1/,
     );
   });
 
   test('typing in search updates the URL', async ({ page }) => {
-    // The pure overview (Help-first rework) has no filter bar — enter via
-    // ?q= so the search box renders, then type.
-    await page.goto('/resources?q=les');
+    await page.goto('/tags?q=les');
     const search = page.getByRole('textbox', { name: /search resources/i }).first();
     await expect(search).toBeVisible({ timeout: 15_000 });
     await search.fill('lesbian');
-    await expect(page).toHaveURL(/\/resources\?.*q=lesbian/, { timeout: 5_000 });
+    await expect(page).toHaveURL(/\/tags\?.*q=lesbian/, { timeout: 5_000 });
   });
 
   test('default values are not written to URL (clean links)', async ({ page }) => {
-    await page.goto('/resources?sort=usage&dir=desc&view=grid&usage=all&hasImage=0&cat=all');
-    // After hydration the URL should normalise to no params (defaults are
-    // implicit). We accept either fully-clean or just the absence of any
-    // of the default markers.
-    await expect(page).toHaveURL(/\/resources\??$/);
+    await page.goto('/tags?sort=usage&dir=desc&view=grid&usage=all&hasImage=0&cat=all');
+    await expect(page).toHaveURL(/\/tags\??$/);
   });
 });

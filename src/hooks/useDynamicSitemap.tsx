@@ -31,7 +31,7 @@ export function useDynamicSitemap() {
         { label: "Search", to: "/search" },
         { label: "Personalities", to: "/personalities" },
         { label: "Places", to: "/places" },
-        { label: "Resources", to: "/resources" },
+        { label: "Tags", to: "/tags" },
         { label: "Messages", to: "/messages" },
         { label: "Friends", to: "/community/friends" },
       ];
