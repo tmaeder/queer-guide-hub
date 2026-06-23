@@ -22,6 +22,8 @@ import {
 import { ContentListFilters } from './ContentListFilters';
 import { ContentListTable } from './ContentListTable';
 import { useContentListController } from './useContentListController';
+import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
+import { exportContentType } from './exportContentList';
 
 const BulkActionsBar = lazy(() =>
   import('../BulkActionsBar').then((m) => ({ default: m.BulkActionsBar })),
@@ -73,6 +75,11 @@ export function ContentListPanel(props: ContentListPanelProps) {
             </TooltipTrigger>
             <TooltipContent>Refresh</TooltipContent>
           </Tooltip>
+          {c.config && c.allListColumns.length > 0 && (
+            <ExportExcelButton
+              onExport={() => exportContentType(c.config!, c.allListColumns)}
+            />
+          )}
           {c.config && (
             <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
               <Plus size={16} className="mr-1" />
