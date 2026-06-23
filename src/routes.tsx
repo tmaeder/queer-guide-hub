@@ -62,9 +62,7 @@ const AdminDashboard = lazyRetry(() => import('./pages/AdminDashboard'));
 const AdminAnalytics = lazyRetry(() => import('./pages/AdminAnalytics'));
 const AdminMaps = lazyRetry(() => import('./pages/AdminMaps'));
 const AdminUsers = lazyRetry(() => import('./pages/AdminUsers'));
-const AdminCountries = lazyRetry(() => import('./pages/AdminCountries'));
 const AdminTags = lazyRetry(() => import('./pages/AdminTags'));
-const AdminGroups = lazyRetry(() => import('./pages/AdminGroups'));
 const Cities = lazyRetry(() => import('./pages/Cities'));
 const CitiesCompare = lazyRetry(() => import('./pages/cities/Compare'));
 const CityDetail = lazyRetry(() => import('./pages/CityDetail'));
@@ -72,7 +70,6 @@ const CountryDetail = lazyRetry(() => import('./pages/CountryDetail'));
 const Travel = lazyRetry(() => import('./pages/Travel'));
 const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
-const AdminVenues = lazyRetry(() => import('./pages/AdminVenues'));
 const AdminDuplicates = lazyRetry(() => import('./pages/AdminDuplicates'));
 const AdminVenueCategories = lazyRetry(() => import('./pages/AdminVenueCategories'));
 const AdminVenueServices = lazyRetry(() => import('./pages/AdminVenueServices'));
@@ -82,16 +79,13 @@ const AdminEventServices = lazyRetry(() => import('./pages/AdminEventServices'))
 const AdminAccessibilityAttributes = lazyRetry(() => import('./pages/AdminAccessibilityAttributes'));
 const AdminTargetGroups = lazyRetry(() => import('./pages/AdminTargetGroups'));
 const AdminProfessions = lazyRetry(() => import('./pages/AdminProfessions'));
-const AdminEvents = lazyRetry(() => import('./pages/AdminEvents'));
 const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
 const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
-const AdminMarketplace = lazyRetry(() => import('./pages/AdminMarketplace'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
 const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
 const AdminVenueGuides = lazyRetry(() => import('./pages/AdminVenueGuides'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
-const AdminPersonalities = lazyRetry(() => import('./pages/AdminPersonalities'));
 const AdminQuests = lazyRetry(() => import('./pages/AdminQuests'));
 const AdminPlacesEditorial = lazyRetry(() => import('./pages/AdminPlacesEditorial'));
 const Quests = lazyRetry(() => import('./pages/Quests'));
@@ -389,19 +383,19 @@ export const AppRoutes = () => {
                 <Route path="settings/professions" element={<AdminProfessions />} />
 
                 {/* Legacy routes -- redirect to new paths */}
-                <Route path="venues" element={<AdminVenues />} />
+                <Route path="venues" element={<Navigate to="/admin/content/venues" replace />} />
                 <Route path="duplicates" element={<AdminDuplicates />} />
-                <Route path="events" element={<AdminEvents />} />
+                <Route path="events" element={<Navigate to="/admin/content/events" replace />} />
                 <Route path="tags" element={<Navigate to="/admin/content/unified_tags" replace />} />
                 <Route path="cities" element={<Navigate to="/admin/content/city-quality" replace />} />
-                <Route path="countries" element={<AdminCountries />} />
-                <Route path="personalities" element={<AdminPersonalities />} />
+                <Route path="countries" element={<Navigate to="/admin/content/countries" replace />} />
+                <Route path="personalities" element={<Navigate to="/admin/content/personalities" replace />} />
                 <Route path="quests" element={<AdminQuests />} />
                 <Route path="places-editorial" element={<AdminPlacesEditorial />} />
-                <Route path="marketplace" element={<AdminMarketplace />} />
+                <Route path="marketplace" element={<Navigate to="/admin/content/marketplace_listings" replace />} />
                 <Route path="marketplace/guides" element={<AdminMarketplaceGuides />} />
                 <Route path="venue-guides" element={<AdminVenueGuides />} />
-                <Route path="groups" element={<AdminGroups />} />
+                <Route path="groups" element={<Navigate to="/admin/content/community_groups" replace />} />
                 <Route path="news-sources" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
                 <Route path="cms" element={<Navigate to="/admin/content" replace />} />
                 <Route path="import-hub" element={<Navigate to="/admin/pipelines" replace />} />
