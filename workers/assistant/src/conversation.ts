@@ -35,7 +35,7 @@ export class Conversation {
 
 	async fetch(request: Request): Promise<Response> {
 		if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
-		let body: { message?: unknown; user_id?: unknown; session_id?: unknown };
+		let body: { message?: unknown; user_id?: unknown; session_id?: unknown; authed?: unknown };
 		try {
 			body = (await request.json()) as typeof body;
 		} catch {
@@ -49,6 +49,8 @@ export class Conversation {
 			const result = await this.runTurn(message, {
 				userId: typeof body.user_id === "string" ? body.user_id : undefined,
 				sessionId: typeof body.session_id === "string" ? body.session_id : undefined,
+				// Trusted flag from the front worker, which verified the access token.
+				authed: body.authed === true,
 			});
 			return json({
 				reply: result.reply,
@@ -62,7 +64,7 @@ export class Conversation {
 		}
 	}
 
-	private async runTurn(message: string, who: { userId?: string; sessionId?: string }): Promise<TurnResult> {
+	private async runTurn(message: string, who: { userId?: string; sessionId?: string; authed?: boolean }): Promise<TurnResult> {
 		const history = (await this.ctx.storage.get<AiMessage[]>("history")) ?? [];
 		const model = this.env.ROUTER_MODEL || DEFAULT_MODEL;
 		const system =
@@ -99,7 +101,7 @@ export class Conversation {
 				});
 				for (let i = 0; i < toolCalls.length; i++) {
 					const tc = toolCalls[i];
-					const outcome = await executeTool(this.env, tc.name, tc.arguments);
+					const outcome = await executeTool(this.env, tc.name, tc.arguments, who.authed === true);
 					cards.push(...outcome.cards);
 					messages.push({ role: "tool", tool_call_id: `call_${i}`, name: tc.name, content: outcome.content });
 				}

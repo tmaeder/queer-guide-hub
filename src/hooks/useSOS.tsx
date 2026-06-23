@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -21,7 +20,6 @@ function getGeolocation(): Promise<{ lat: number; lng: number } | null> {
 
 export function useSOS(friendIds: string[]) {
   const { user } = useAuth();
-  const { profile } = useProfile();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -59,34 +57,34 @@ export function useSOS(friendIds: string[]) {
     setLoading(true);
     try {
       const location = await getGeolocation();
-      const senderName = profile?.display_name || 'Someone';
 
-      const notifications = ids.map((friendId) => ({
-        user_id: friendId,
-        type: 'system' as const,
-        title: t('sos.notificationTitle', { name: senderName }),
-        content: location
-          ? t('sos.notificationBodyWithLocation', { name: senderName })
-          : t('sos.notificationBody', { name: senderName }),
-        action_url: `/users/${user.id}`,
-        related_id: user.id,
-        metadata: {
-          sos: true,
-          sender_id: user.id,
-          ...(location && { lat: location.lat, lng: location.lng }),
-          sent_at: new Date().toISOString(),
-        },
-      }));
+      // Server-authoritative: send_sos enforces the cooldown, resolves recipients
+      // (trusted contacts, else accepted friends) and persists a durable alert
+      // with last-known location. The client cannot target arbitrary users.
+      const { data, error } = await supabase.rpc('send_sos', {
+        p_lat: location?.lat ?? undefined,
+        p_lng: location?.lng ?? undefined,
+        p_accuracy: undefined,
+        p_message: undefined,
+      });
+      if (error) {
+        const cooldown = error.message?.includes('sos_cooldown');
+        const none = error.message?.includes('sos_no_recipients');
+        toast({
+          title: cooldown
+            ? t('sos.cooldown', 'Please wait before sending another SOS.')
+            : none
+              ? t('sos.noRecipients', 'Add friends or trusted contacts to use SOS.')
+              : t('sos.error'),
+          variant: 'destructive',
+        });
+        return;
+      }
 
-      const { error } = await supabase.from('notifications').insert(notifications);
-      if (error) throw error;
-
+      const sent = (data as { recipients: number }[] | null)?.[0]?.recipients ?? ids.length;
       localStorage.setItem(STORAGE_KEY, Date.now().toString());
       setCooldownSeconds(Math.ceil(COOLDOWN_MS / 1000));
-
-      toast({
-        title: t('sos.sent', { count: ids.length }),
-      });
+      toast({ title: t('sos.sent', { count: sent }) });
     } catch (err) {
       console.error('SOS send failed:', err);
       toast({
@@ -96,7 +94,7 @@ export function useSOS(friendIds: string[]) {
     } finally {
       setLoading(false);
     }
-  }, [user, profile, t, toast]);
+  }, [user, t, toast]);
 
   return {
     sendSOS,

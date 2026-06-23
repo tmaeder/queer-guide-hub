@@ -40,6 +40,33 @@ import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { ReadingProgressBar } from '@/components/news/editorial/ReadingProgressBar';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { EditorsPickToggle } from '@/components/admin/news/EditorsPickToggle';
+
+interface NewsArticle {
+  id: string;
+  title: string;
+  title_i18n?: Record<string, string> | null;
+  content_language?: string | null;
+  content: string | null;
+  excerpt: string | null;
+  url: string;
+  image_url: string | null;
+  author: string | null;
+  published_at: string | null;
+  source_id: string;
+  views_count: number;
+  is_featured: boolean;
+  category: string | null;
+  country_ids: string[] | null;
+  city_ids: string[] | null;
+  tags: string[] | null;
+  publisher_name: string | null;
+  created_at: string;
+  is_editors_pick?: boolean | null;
+  image_attribution?: string | null;
+  media_type?: string | null;
+  audio_url?: string | null;
+  duration_seconds?: number | null;
+}
 import {
   loadNewsDetail,
   extractDek,
@@ -422,6 +449,15 @@ export default function NewsDetail() {
               className="border-l-2 border-foreground pl-6 py-2"
             >
               <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground m-0">
+          {/* "Why this matters" — admin-curated, shown to everyone when populated.
+              The empty authoring placeholder stays hidden during normal browsing;
+              admins reveal it by holding Alt (#1812). */}
+          {(article.editorial_note || altHeld) && (
+          {/* Podcast episode: inline player streaming the publisher's enclosure URL */}
+          {/* "Why this matters" — admin-curated, shown to everyone when populated. */}
+          {(article.editorial_note || isAdmin) && (
+            <aside aria-label="Why this matters" className="border-l-2 border-foreground py-2 pl-6">
+              <p className="m-0 text-2xs uppercase tracking-[0.2em] text-muted-foreground">
                 Why this matters
               </p>
               <Editable

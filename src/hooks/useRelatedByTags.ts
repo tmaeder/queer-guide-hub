@@ -37,6 +37,15 @@ async function fetchRelatedByTags(
   return data as unknown as RelatedByTagItem[];
 }
 
+/** Imperative variant for callers that blend this with other sources. */
+export function fetchRelatedByTagsClient(
+  entityType: string,
+  entityId: string,
+  limit = 8,
+): Promise<RelatedByTagItem[]> {
+  return fetchRelatedByTags(entityType, entityId, limit);
+}
+
 export function useRelatedByTags(
   entityType: string | undefined,
   entityId: string | undefined,
