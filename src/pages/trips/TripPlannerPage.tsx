@@ -30,6 +30,7 @@ import { DraggableItinerary } from '@/components/trips/DraggableItinerary';
 import { TripMap } from '@/components/trips/TripMap';
 import { TripSafetyBriefing } from '@/components/trips/TripSafetyBriefing';
 import { TripNudgesBanner } from '@/components/trips/TripNudgesBanner';
+import { TripTravelBuddiesCTA } from '@/components/trips/TripTravelBuddiesCTA';
 import { AddPlaceDialog } from '@/components/trips/AddPlaceDialog';
 import { ShareTripDialog } from '@/components/trips/ShareTripDialog';
 import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
@@ -266,6 +267,13 @@ export default function TripPlannerPage() {
       <TripDocExpiryBanner trip={trip} />
       <TripPreTripBlock trip={trip} />
       <TripNudgesBanner tripId={trip.id} />
+
+      <TripTravelBuddiesCTA
+        tripId={trip.id}
+        cityId={trip.primary_city_id}
+        cityName={trip.primary_city_name}
+        endDate={trip.end_date}
+      />
 
       {/* Quick action row */}
       <div className="flex items-center justify-between mb-6 gap-4 mt-2">

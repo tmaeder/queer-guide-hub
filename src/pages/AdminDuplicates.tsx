@@ -8,10 +8,9 @@ import {
   useDuplicateClusters,
   useFuzzyDuplicateClusters,
   runFuzzyAutomerge,
-  mergeVenuePair,
   mergeEntityPair,
   unmergeEntity,
-  unmergeAudit,
+  FUZZY_CONTENT_TYPES,
   type Cluster,
   type ClusterMember,
   type VenueMeta,
@@ -95,8 +94,9 @@ export default function AdminDuplicates() {
     onError: (e) => toast.error(`Merge failed: ${(e as Error).message}`),
   });
 
-  // Fuzzy "same place" review is venue-only (find_fuzzy_duplicate_clusters).
-  const effectiveView = contentType === 'venue' ? view : 'exact';
+  // Fuzzy "same place / same item" review: venues, events, marketplace.
+  const fuzzyAvailable = FUZZY_CONTENT_TYPES.includes(contentType);
+  const effectiveView = fuzzyAvailable ? view : 'exact';
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -121,19 +121,19 @@ export default function AdminDuplicates() {
         ))}
       </div>
 
-      {contentType === 'venue' && (
+      {fuzzyAvailable && (
         <div className="flex gap-2">
           <Button variant={view === 'exact' ? 'default' : 'outline'} size="sm" onClick={() => setView('exact')}>
             Exact (name + city)
           </Button>
           <Button variant={view === 'fuzzy' ? 'default' : 'outline'} size="sm" onClick={() => setView('fuzzy')}>
-            Same place (fuzzy)
+            {contentType === 'marketplace' ? 'Same item (fuzzy)' : 'Same place (fuzzy)'}
           </Button>
         </div>
       )}
 
       {effectiveView === 'fuzzy' ? (
-        <FuzzyDuplicates />
+        <FuzzyDuplicates contentType={contentType} />
       ) : (
       <>
       {isLoading && (
@@ -196,13 +196,13 @@ export default function AdminDuplicates() {
   );
 }
 
-/** Fuzzy "same place" view: name-corroborated pairs, with one-click auto-merge. */
-function FuzzyDuplicates() {
+/** Fuzzy "same place / same item" view: key-corroborated pairs, with merge + undo. */
+function FuzzyDuplicates({ contentType }: { contentType: DedupContentType }) {
   const queryClient = useQueryClient();
-  const { clusters, isLoading, isError, error } = useFuzzyDuplicateClusters();
+  const { clusters, isLoading, isError, error } = useFuzzyDuplicateClusters(contentType);
   const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['fuzzy-dup-clusters', 'venue'] });
-    queryClient.invalidateQueries({ queryKey: ['dup-clusters', 'venue'] });
+    queryClient.invalidateQueries({ queryKey: ['fuzzy-dup-clusters', contentType] });
+    queryClient.invalidateQueries({ queryKey: ['dup-clusters', contentType] });
   };
 
   // canonical = higher quality_score → featured → first listed
@@ -215,6 +215,8 @@ function FuzzyDuplicates() {
     return aBetter ? [a.id, b.id] : [b.id, a.id];
   };
 
+  // Bulk auto-merge sweep is venue-only (run_venue_fuzzy_automerge); events &
+  // marketplace are swept nightly server-side, so the UI offers per-pair merges.
   const autoMerge = useMutation({
     mutationFn: () => runFuzzyAutomerge(false),
     onSuccess: (r) => {
@@ -227,12 +229,12 @@ function FuzzyDuplicates() {
   const mergeOne = useMutation({
     mutationFn: async (c: FuzzyCluster) => {
       const [keep, drop] = keepDrop(c);
-      return mergeVenuePair(keep, drop);
+      return mergeEntityPair(contentType, keep, drop);
     },
     onSuccess: (auditId) => {
       toast.success('Merged', {
         action: auditId
-          ? { label: 'Undo', onClick: async () => { await unmergeAudit(auditId); refresh(); } }
+          ? { label: 'Undo', onClick: async () => { await unmergeEntity(contentType, auditId); refresh(); } }
           : undefined,
       });
       refresh();
@@ -256,12 +258,15 @@ function FuzzyDuplicates() {
     <div className="flex flex-col gap-4">
       <div className="rounded-container flex items-center justify-between gap-4 border p-4">
         <p className="text-muted-foreground text-15">
-          {clusters.length} candidate pairs · {autoCount} are near-identical at the same spot and safe to merge automatically.
+          {clusters.length} candidate pairs · {autoCount} are key-identical and safe to merge automatically
+          {contentType === 'venue' ? '.' : ' (swept nightly server-side).'}
         </p>
-        <Button size="sm" onClick={() => autoMerge.mutate()} disabled={autoMerge.isPending || autoCount === 0}>
-          {autoMerge.isPending ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
-          Auto-merge {autoCount} same-place
-        </Button>
+        {contentType === 'venue' && (
+          <Button size="sm" onClick={() => autoMerge.mutate()} disabled={autoMerge.isPending || autoCount === 0}>
+            {autoMerge.isPending ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
+            Auto-merge {autoCount} same-place
+          </Button>
+        )}
       </div>
 
       {clusters.map((c) => {

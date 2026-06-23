@@ -126,7 +126,9 @@ function norm(v: string | null | undefined): string {
 export function classifyFamily(matchType: string): SignalFamily {
   if (matchType === 'semantic') return 'semantic'
   if (/exact|fingerprint|platform|booking_url|external_url|source_entity|code_exact|_id/.test(matchType)) return 'exact'
-  if (/domain_proximity|venue_date_exact|name_exact|title_containment|name_city_website/.test(matchType)) return 'strong'
+  // despaced/core-token keys are deterministic name keys, as strong as a clean
+  // name match (despaced_exact also hits the 'exact' branch above — same intent).
+  if (/domain_proximity|venue_date_exact|name_exact|title_containment|name_city_website|core_token|despaced/.test(matchType)) return 'strong'
   return 'fuzzy'
 }
 

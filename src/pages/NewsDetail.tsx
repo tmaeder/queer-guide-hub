@@ -3,7 +3,6 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
-import { MarketplaceRelated } from '@/components/marketplace/MarketplaceRelated';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { useEffect, useMemo, useState } from 'react';
@@ -12,46 +11,28 @@ import {
   ExternalLink,
   Clock,
   Eye,
-  MapPin,
-  Tag,
-  Newspaper,
   Share2,
   Calendar,
   User,
   BookOpen,
-  ArrowRight,
-  Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Image } from '@/components/ui/Image';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
-import { estimateReadingTime } from '@/lib/readingTime';
+import { estimateReadingTime } from '@/lib/share';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
-import {
-  fetchNewsCategories,
-  fetchNewsArticleBySlugOrId,
-  fetchNewsSourceById,
-  fetchNewsTagsForEntity,
-  fetchRelatedNewsArticles,
-  fetchNamesByIds,
-} from '@/hooks/usePageFetchers';
+import { fetchNewsCategories } from '@/hooks/usePageFetchers';
 import { cleanTitle, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
-import { formatNewsTag } from '@/lib/newsTags';
-import { resolvePublisherName } from '@/lib/publisherName';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
-import { fetchStoryForArticle } from '@/hooks/useNewsStories';
-import { Layers } from 'lucide-react';
-import { TracingBeam } from '@/components/effects/TracingBeam';
 import { Editable } from '@/components/admin/inline/Editable';
 import { useUserNewsReads } from '@/hooks/useUserNewsReads';
 import { localizedNewsTitle } from '@/lib/newsTitle';
@@ -59,34 +40,20 @@ import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { ReadingProgressBar } from '@/components/news/editorial/ReadingProgressBar';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { EditorsPickToggle } from '@/components/admin/news/EditorsPickToggle';
-
-interface NewsArticle {
-  id: string;
-  title: string;
-  title_i18n?: Record<string, string> | null;
-  content_language?: string | null;
-  content: string | null;
-  excerpt: string | null;
-  url: string;
-  image_url: string | null;
-  author: string | null;
-  published_at: string | null;
-  source_id: string;
-  views_count: number;
-  is_featured: boolean;
-  category: string | null;
-  country_ids: string[] | null;
-  city_ids: string[] | null;
-  tags: string[] | null;
-  publisher_name: string | null;
-  created_at: string;
-  editorial_note?: string | null;
-  is_editors_pick?: boolean | null;
-  image_attribution?: string | null;
-  media_type?: string | null;
-  audio_url?: string | null;
-  duration_seconds?: number | null;
-}
+import {
+  loadNewsDetail,
+  extractDek,
+  isFreshArticle,
+  IntegrityNotice,
+  PersonalizationRibbon,
+  StoryClusterPanel,
+  TagsCard,
+  LocationCard,
+  SourceCard,
+  RelatedNewsRail,
+  type NewsDetailData,
+  type NewsArticleFull,
+} from './NewsDetail.parts';
 
 interface DbCategory {
   slug: string;
@@ -94,35 +61,22 @@ interface DbCategory {
   color: string;
 }
 
-interface RelatedArticle {
-  id: string;
-  slug?: string | null;
-  title: string;
-  excerpt: string | null;
-  image_url: string | null;
-  published_at: string | null;
-  category: string | null;
-}
-
 export default function NewsDetail() {
   const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
-  const [article, setArticle] = useState<NewsArticle | null>(null);
+  const [data, setData] = useState<NewsDetailData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sourceName, setSourceName] = useState<string>('');
-  const [sourceUrl, setSourceUrl] = useState<string>('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [cityNames, setCityNames] = useState<Record<string, string>>({});
-  const [countryNames, setCountryNames] = useState<Record<string, string>>({});
-  const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
-  const [story, setStory] = useState<{ slug: string; title: string; article_count: number } | null>(
-    null,
-  );
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
-  const { isAdmin } = useAdminEditMode();
+  const { isAdmin, altHeld } = useAdminEditMode();
   const isMobile = useIsMobile();
+
+  const article = data?.article ?? null;
+
+  // Patch a single article field in place after an inline admin edit.
+  const patchArticle = (patch: Partial<NewsArticleFull>) =>
+    setData((prev) => (prev ? { ...prev, article: { ...prev.article, ...patch } } : prev));
 
   // Mark the article as read once we have its id (drives streak + challenge progress).
   useEffect(() => {
@@ -177,81 +131,40 @@ export default function NewsDetail() {
       return;
     }
 
-    const fetchArticle = async () => {
-      setLoading(true);
-      setArticle(null);
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external data (slug-driven fetch); documented exemption from the eslint.config.js staged-ratchet plan.
+    setLoading(true);
+    setData(null);
 
-      // Fetch categories once (DUP-4)
-      fetchNewsCategories<DbCategory>().then((cats) => setDbCategories(cats));
+    fetchNewsCategories<DbCategory>().then((cats) => {
+      if (!cancelled) setDbCategories(cats);
+    });
 
-      try {
-        const data = await fetchNewsArticleBySlugOrId<NewsArticle>(slug);
-        if (!data) {
-          // Show in-app 404 instead of silently bouncing back to /news.
-          // (A real HTTP 404 needs an edge handler — tracked separately.)
-          setArticle(null);
-          return;
+    loadNewsDetail(slug)
+      .then((result) => {
+        if (cancelled) return;
+        setData(result);
+        if (result) {
+          // Increment views (RPC, fire-and-forget).
+          supabase.rpc('increment_article_views', { article_id: result.article.id }).then(() => {});
         }
-
-        setArticle(data);
-
-        // Increment views (RPC, not subject to the rule)
-        supabase.rpc('increment_article_views', { article_id: data.id }).then(() => {});
-
-        // Source name + url
-        if (data.source_id) {
-          fetchNewsSourceById(data.source_id).then((src) => {
-            if (src) {
-              setSourceName(
-                resolvePublisherName({
-                  publisherName: data.publisher_name,
-                  url: data.url,
-                  sourceName: src.name,
-                }),
-              );
-              setSourceUrl(src.url || '');
-            }
-          });
-        }
-
-        // Tags
-        fetchNewsTagsForEntity(data.id).then(setTags);
-
-        // City + country names
-        if (data.city_ids?.length) {
-          fetchNamesByIds('cities', data.city_ids).then((map) => {
-            if (Object.keys(map).length) setCityNames(map);
-          });
-        }
-        if (data.country_ids?.length) {
-          fetchNamesByIds('countries', data.country_ids).then((map) => {
-            if (Object.keys(map).length) setCountryNames(map);
-          });
-        }
-
-        // Related
-        if (data.category) {
-          fetchRelatedNewsArticles<RelatedArticle>(data.category, data.id).then(setRelatedArticles);
-        }
-
-        // Story membership
-        fetchStoryForArticle(data.id)
-          .then(setStory)
-          .catch(() => setStory(null));
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error('Error fetching article:', err);
-        setArticle(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+        if (!cancelled) setData(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-    fetchArticle();
+    return () => {
+      cancelled = true;
+    };
   }, [slug, navigate]);
 
   const handleShare = async () => {
     const url = window.location.href;
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({ title: article?.title, url });
       } catch {
@@ -288,26 +201,26 @@ export default function NewsDetail() {
       : null,
   );
 
-  // Loading skeleton matching 2-column grid pattern
+  // Loading skeleton matching the 2-column grid pattern.
   if (loading) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="animate-pulse">
-          <div className="h-6 bg-muted rounded w-2/5 mb-4" />
-          <div className="h-48 bg-muted rounded-container mb-6" />
-          <div className="h-8 bg-muted rounded w-3/5 mb-4" />
-          <div className="flex gap-2 mb-6">
+          <div className="mb-6 h-48 rounded-container bg-muted" />
+          <div className="mb-4 h-6 w-2/5 rounded bg-muted" />
+          <div className="mb-4 h-8 w-3/5 rounded bg-muted" />
+          <div className="mb-6 flex gap-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-7 w-20 bg-muted rounded-badge" />
+              <div key={i} className="h-7 w-20 rounded-badge bg-muted" />
             ))}
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
             <div className="flex flex-col gap-6">
-              <div className="h-64 bg-muted rounded-element" />
+              <div className="h-64 rounded-element bg-muted" />
             </div>
             <div className="flex flex-col gap-6">
-              <div className="h-40 bg-muted rounded-element" />
-              <div className="h-32 bg-muted rounded-element" />
+              <div className="h-40 rounded-element bg-muted" />
+              <div className="h-32 rounded-element bg-muted" />
             </div>
           </div>
         </div>
@@ -318,33 +231,35 @@ export default function NewsDetail() {
   if (!article) {
     return (
       <div className="container mx-auto py-8 px-4 text-center">
-        <h1 className="text-xl font-bold mb-4">Article Not Found</h1>
-        <p className="text-muted-foreground mb-6">
-          The article you're looking for doesn't exist or may have been removed.
+        <h1 className="mb-4 text-xl font-bold">
+          {t('newsDetail.notFound', 'Article Not Found')}
+        </h1>
+        <p className="mb-6 text-muted-foreground">
+          {t('newsDetail.notFoundDesc', "The article you're looking for doesn't exist.")}
         </p>
         <LocalizedLink to="/news">
           <Button>
             <ArrowLeft size={16} className="mr-2" />
-            Back to News
+            {t('newsDetail.backToNews', 'Back to News')}
           </Button>
         </LocalizedLink>
       </div>
     );
   }
 
+  const { sourceName, sourceUrl, tags, cityNames, countryNames } = data!;
   const authorName = cleanAuthor(article.author || '');
   const excerptText = cleanExcerpt(article.excerpt || '');
   const contentText = article.content ? cleanContent(article.content) : '';
-  const linkedCities = (article.city_ids || [])
-    .map((cid) => ({ id: cid, name: cityNames[cid] }))
-    .filter((c) => c.name);
-  const linkedCountries = (article.country_ids || [])
-    .map((cid) => ({ id: cid, name: countryNames[cid] }))
-    .filter((c) => c.name);
-  const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
+  const dek = excerptText ? extractDek(excerptText) : '';
+  const readMins = estimateReadingTime(article.content, article.excerpt);
+  const fresh = isFreshArticle(article.published_at);
+  const corroboration = article.corroboration_count ?? 0;
+  const categoryLabel =
+    article.category && article.category !== 'general' ? getCategoryLabel(article.category) : null;
 
   return (
-    <TracingBeam className="container mx-auto py-8 px-4 pb-24">
+    <div className="container mx-auto px-4 py-8 pb-24">
       <ReadingProgressBar />
 
       {/* Hero image */}
@@ -366,134 +281,153 @@ export default function NewsDetail() {
         )}
       </figure>
 
-      {/* Title Row */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-        <div className="flex-1 min-w-0">
-          {story && (
-            <LocalizedLink
-              to={`/news/story/${story.slug}`}
-              className="mb-4 inline-flex items-center gap-1.5 no-underline hover:text-foreground"
-            >
-              <Layers size={12} aria-hidden="true" />
-              <Eyebrow>Part of story · {story.article_count} articles</Eyebrow>
-            </LocalizedLink>
-          )}
-          {!story && article.category && article.category !== 'general' && (
-            <Eyebrow as="div" className="mb-2">
-              {getCategoryLabel(article.category)}
-            </Eyebrow>
-          )}
-          <div className="flex items-center gap-4 mb-4 flex-wrap">
-            <h1 className="text-display md:text-headline-lg font-bold leading-[1.05] tracking-tight m-0">
+      {/* Editorial header */}
+      <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0 flex-1">
+          {/* Eyebrow: category · source · fresh · credibility */}
+          <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-2">
+            {categoryLabel && <Eyebrow>{categoryLabel}</Eyebrow>}
+            {sourceName && (
+              <>
+                {categoryLabel && <span className="text-2xs text-muted-foreground">·</span>}
+                <Eyebrow>{sourceName}</Eyebrow>
+              </>
+            )}
+            {fresh && (
+              <span className="ml-1 inline-flex items-center gap-1">
+                <span
+                  className="inline-block h-1.5 w-1.5 rounded-full bg-foreground animate-pulse"
+                  aria-hidden="true"
+                />
+                <Eyebrow>New</Eyebrow>
+              </span>
+            )}
+            {corroboration > 1 && (
+              <Badge variant="soft" className="ml-1 px-2 py-0.5 text-2xs font-semibold">
+                Reported by {corroboration} outlets
+              </Badge>
+            )}
+          </div>
+
+          {/* Title */}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <h1 className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline-lg">
               <Editable
                 contentType="news_articles"
                 recordId={article.id}
                 field="title"
                 value={article.title}
-                onSaved={(next) =>
-                  setArticle((prev) => (prev ? { ...prev, title: String(next ?? '') } : prev))
-                }
+                onSaved={(next) => patchArticle({ title: String(next ?? '') })}
               >
                 {cleanTitle(localizedNewsTitle(article, i18n.language))}
               </Editable>
             </h1>
             <ContentLangBadge language={article.content_language} text={article.title} />
             {article.is_featured && (
-              <Badge
-                style={{ backgroundColor: 'hsl(var(--foreground))' }}
-                className="text-background"
-              >
+              <Badge variant="default" className="text-2xs">
                 Featured
               </Badge>
             )}
           </div>
 
+          {/* Dek */}
+          {dek && dek !== cleanTitle(article.title) && (
+            <p className="mb-4 max-w-[60ch] text-body-lg italic leading-relaxed text-muted-foreground">
+              {dek}
+            </p>
+          )}
+
           {/* Meta row */}
-          <div className="flex items-center gap-4 text-muted-foreground flex-wrap text-13">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-13 text-muted-foreground">
             {authorName && (
-              <div className="flex items-center gap-1">
+              <span className="flex items-center gap-1">
                 <User size={14} />
-                <span>By {authorName}</span>
-              </div>
+                By {authorName}
+              </span>
             )}
             {article.published_at && (
-              <div className="flex items-center gap-1">
+              <span className="flex items-center gap-1">
                 <Calendar size={14} />
-                <span>
-                  {format(new Date(article.published_at), 'MMMM d, yyyy')}
-                </span>
-              </div>
+                {format(new Date(article.published_at), 'MMMM d, yyyy')}
+              </span>
             )}
             {article.published_at && (
-              <div className="flex items-center gap-1">
+              <span className="flex items-center gap-1">
                 <Clock size={14} />
-                <span>
-                  {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
-                </span>
-              </div>
+                {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
+              </span>
             )}
-            {(contentText || excerptText) && (
-              <div className="flex items-center gap-1">
+            {readMins && (
+              <span className="flex items-center gap-1">
                 <BookOpen size={14} />
-                <span>{estimateReadingTime(contentText || excerptText)} min read</span>
-              </div>
+                {readMins} min read
+              </span>
             )}
             {article.views_count > 0 && (
-              <div className="flex items-center gap-1">
+              <span className="flex items-center gap-1">
                 <Eye size={14} />
-                <span>{article.views_count} views</span>
-              </div>
+                {article.views_count} views
+              </span>
             )}
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+        {/* Action row — one accent CTA, the rest monochrome */}
+        <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
           {isAdmin && (
             <EditorsPickToggle
               articleId={article.id}
               initialValue={!!article.is_editors_pick}
-              onChange={(next) =>
-                setArticle((prev) => (prev ? { ...prev, is_editors_pick: next } : prev))
-              }
+              onChange={(next) => patchArticle({ is_editors_pick: next })}
             />
           )}
           <FavoriteButton itemId={article.id} type="news" />
           <ReportButton contentType="news_article" contentId={article.id} />
           <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 size={16} className="mr-1.5" />
-            Share
+            {t('newsDetail.share', 'Share')}
           </Button>
-          <Button size="sm" onClick={() => window.open(article.url, '_blank')}>
+          <Button
+            variant="accent"
+            size="sm"
+            onClick={() => window.open(article.url, '_blank', 'noopener')}
+          >
             <ExternalLink size={16} className="mr-1.5" />
-            Read Full Article
+            Read at source
           </Button>
         </div>
+      </header>
+
+      <IntegrityNotice flags={article.integrity_flags} />
+
+      <div className="mt-6">
+        <PersonalizationRibbon
+          countryIds={article.country_ids}
+          cityIds={article.city_ids}
+          countryNames={countryNames}
+          cityNames={cityNames}
+        />
       </div>
 
-      {/* Category & Source badges */}
-      <div className="flex items-center gap-2 mb-6 flex-wrap">
-        {article.category && article.category !== 'general' && (
-          <Badge variant="outline" className="capitalize">
-            {getCategoryLabel(article.category)}
-          </Badge>
-        )}
-        {sourceName && <Badge variant="outline">{sourceName}</Badge>}
-      </div>
-
-      {/* 2-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
-        {/* Main Content */}
+      {/* 2-column layout */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
+        {/* Main */}
         <div className="flex flex-col gap-6">
           {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote.
-              Shown to everyone when populated. Admins see a placeholder slot when empty so
-              they can alt-click to author one. */}
-          {(article.editorial_note || isAdmin) && (
+              Shown to everyone when populated. Admins reveal a placeholder slot by holding
+              Alt so they can alt-click to author one (never shown during normal browsing). */}
+          {(article.editorial_note || altHeld) && (
             <aside
               aria-label="Why this matters"
               className="border-l-2 border-foreground pl-6 py-2"
             >
               <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground m-0">
+          {/* "Why this matters" — admin-curated, shown to everyone when populated.
+              The empty authoring placeholder stays hidden during normal browsing;
+              admins reveal it by holding Alt (#1812). */}
+          {(article.editorial_note || altHeld) && (
+            <aside aria-label="Why this matters" className="border-l-2 border-foreground py-2 pl-6">
+              <p className="m-0 text-2xs uppercase tracking-[0.2em] text-muted-foreground">
                 Why this matters
               </p>
               <Editable
@@ -501,18 +435,12 @@ export default function NewsDetail() {
                 recordId={article.id}
                 field="editorial_note"
                 value={article.editorial_note ?? ''}
-                onSaved={(next) =>
-                  setArticle((prev) =>
-                    prev ? { ...prev, editorial_note: (next as string) || null } : prev,
-                  )
-                }
+                onSaved={(next) => patchArticle({ editorial_note: (next as string) || null })}
                 as="div"
                 className="mt-2"
               >
                 {article.editorial_note ? (
-                  <p className="m-0 text-base italic leading-relaxed">
-                    {article.editorial_note}
-                  </p>
+                  <p className="m-0 text-base italic leading-relaxed">{article.editorial_note}</p>
                 ) : (
                   <p className="m-0 text-base italic leading-relaxed text-muted-foreground">
                     Alt-click to add the stakes — 1–3 sentences on why this story matters.
@@ -522,18 +450,18 @@ export default function NewsDetail() {
             </aside>
           )}
 
-          {/* Podcast episode: inline player streaming the publisher's enclosure URL */}
+          {/* Podcast episode */}
           {article.media_type === 'podcast' && article.audio_url && (
-            <div className="mb-6 max-w-[68ch]">
+            <div className="max-w-[68ch]">
               <PodcastPlayer
                 audioUrl={article.audio_url}
-                title={articleTitle}
+                title={cleanTitle(article.title)}
                 durationSeconds={article.duration_seconds}
               />
             </div>
           )}
 
-          {/* Article body — editorial prose, constrained measure, full-strength text */}
+          {/* Body */}
           <article className="max-w-[68ch]">
             <Editable
               contentType="news_articles"
@@ -541,14 +469,9 @@ export default function NewsDetail() {
               field={contentText || !excerptText ? 'content' : 'excerpt'}
               value={contentText || excerptText || ''}
               onSaved={(next) =>
-                setArticle((prev) =>
-                  prev
-                    ? {
-                        ...prev,
-                        [contentText || !excerptText ? 'content' : 'excerpt']: String(next ?? ''),
-                      }
-                    : prev,
-                )
+                patchArticle({
+                  [contentText || !excerptText ? 'content' : 'excerpt']: String(next ?? ''),
+                } as Partial<NewsArticleFull>)
               }
               fieldOverride={{ type: 'textarea' }}
               as="div"
@@ -571,201 +494,38 @@ export default function NewsDetail() {
               )}
             </Editable>
 
-            {/* Single source-attribution block — the one place to leave for the source */}
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
-              <p className="text-sm text-muted-foreground">
-                {sourceName
-                  ? `Originally published by ${sourceName}.`
-                  : 'Read the original report at the source.'}
-              </p>
-              <Button onClick={() => window.open(article.url, '_blank')}>
-                Read full article
-                <ExternalLink size={16} className="ml-2" />
-              </Button>
-            </div>
+            {/* Quiet source attribution — one outbound link, no second button. */}
+            <p className="mt-8 border-t border-border pt-6 text-sm text-muted-foreground">
+              {sourceName ? `Originally published by ${sourceName}. ` : ''}
+              <a href={article.url} target="_blank" rel="noopener noreferrer">
+                View the original report
+              </a>
+              .
+            </p>
           </article>
-
-          {/* Related Articles */}
-          {relatedArticles.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('pages.newsDetail.relatedArticles', 'Related Articles')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {relatedArticles.map((related) => (
-                    <LocalizedLink
-                      key={related.id}
-                      to={`/news/${related.slug || related.id}`}
-                      className="flex flex-col rounded overflow-hidden no-underline text-inherit transition-all duration-200 hover:bg-muted border border-border"
-                    >
-                      <div
-                        className="overflow-hidden"
-                        style={{ height: 120, background: 'hsl(var(--muted))' }}
-                      >
-                        {related.image_url ? (
-                          <img
-                            src={related.image_url}
-                            alt=""
-                            role="presentation"
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover"
-                            width={400}
-                            height={120}
-                            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        ) : null}
-                      </div>
-                      <div className="p-4">
-                        <p
-                          className="text-sm font-semibold mb-1 overflow-hidden text-foreground"
-                          style={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            textTransform: 'none',
-                          }}
-                        >
-                          {cleanTitle(related.title)}
-                        </p>
-                        {related.published_at && (
-                          <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(related.published_at), {
-                              addSuffix: true,
-                            })}
-                          </span>
-                        )}
-                      </div>
-                    </LocalizedLink>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Sidebar */}
         <div className="flex flex-col gap-6">
-          {/* Destination safety context — ties the story to where it happens */}
           <DestinationSafetyCard countryIds={article.country_ids ?? []} />
-
-          {/* Tags Card */}
-          {tags.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle style={{ alignItems: 'center', gap: '8px' }} className="flex">
-                  <Tag size={16} />
-                  Tags
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="outline"
-                      style={{ padding: '4px 10px' }}
-                      className="text-xs cursor-pointer"
-                      onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
-                    >
-                      {formatNewsTag(tag)}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Location Card */}
-          {hasLocation && (
-            <Card>
-              <CardHeader>
-                <CardTitle style={{ alignItems: 'center', gap: '8px' }} className="flex">
-                  <MapPin size={16} />
-                  Location
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col gap-2">
-                  {linkedCities.map((c) => (
-                    <LocalizedLink
-                      key={c.id}
-                      to={`/city/${c.slug || c.id}`}
-                      className="font-medium text-primary no-underline hover:underline"
-                    >
-                      {c.name}
-                    </LocalizedLink>
-                  ))}
-                  {linkedCountries.map((c) => (
-                    <LocalizedLink
-                      key={c.id}
-                      to={`/country/${c.slug || c.id}`}
-                      className="font-medium text-primary no-underline hover:underline"
-                    >
-                      {c.name}
-                    </LocalizedLink>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Source Card */}
-          {(sourceName || sourceUrl) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Newspaper size={16} />
-                  Source
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {sourceName && <p className="mb-1 font-medium">{sourceName}</p>}
-                {article.published_at && (
-                  <p className="text-sm text-muted-foreground">
-                    {format(new Date(article.published_at), 'MMMM d, yyyy')}
-                    {authorName ? ` · ${authorName}` : ''}
-                  </p>
-                )}
-                {sourceUrl && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-4 w-full justify-start"
-                    onClick={() => window.open(sourceUrl, '_blank')}
-                  >
-                    <Globe size={16} className="mr-2" />
-                    Visit {sourceName || 'source'}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          )}
+          <StoryClusterPanel articleId={article.id} />
+          <TagsCard tags={tags} />
+          <LocationCard
+            cityIds={article.city_ids}
+            countryIds={article.country_ids}
+            cityNames={cityNames}
+            countryNames={countryNames}
+          />
+          <SourceCard
+            sourceName={sourceName}
+            sourceUrl={sourceUrl}
+            corroborationCount={article.corroboration_count}
+            lastVerifiedAt={article.last_verified_at}
+          />
         </div>
       </div>
-      {story && (
-        <LocalizedLink
-          to={`/news/story/${story.slug}`}
-          className="mt-10 flex items-center justify-between gap-4 rounded-container border border-border p-4 no-underline transition-colors hover:bg-muted"
-        >
-          <span className="flex items-center gap-2">
-            <Layers size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-            <span>
-              <Eyebrow as="span">Story · {story.article_count} articles</Eyebrow>
-              <span className="block font-semibold">{cleanTitle(story.title)}</span>
-            </span>
-          </span>
-          <ArrowRight size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-        </LocalizedLink>
-      )}
 
-      <SimilarItems
-        entity={{ type: 'news', id: article.id }}
-        className="mt-10"
-        title="Related news"
-      />
+      <RelatedNewsRail articleId={article.id} className="mt-12" />
 
       <MoreLikeThisByTag
         entityType="news"
@@ -773,8 +533,6 @@ export default function NewsDetail() {
         title="Related by tag"
         className="mt-10"
       />
-
-      <MarketplaceRelated className="mt-12" title="Shop LGBTQ+ brands" />
-    </TracingBeam>
+    </div>
   );
 }

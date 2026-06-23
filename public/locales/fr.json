@@ -170,7 +170,7 @@
     "clear": "Effacer",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "[FR] More"
+    "more": "Plus"
   },
   "navigation": {
     "home": "Accueil",
@@ -1480,7 +1480,7 @@
     },
     "news": {
       "title": "Actualités",
-      "eyebrow": "[FR] Dispatches"
+      "eyebrow": "Dépêches"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1501,38 +1501,38 @@
         "resources": "resources"
       }
     },
-    "eyebrow": "[FR] Queer Guide",
-    "browseDirectory": "[FR] Browse the directory",
-    "planTrip": "[FR] Plan a trip",
-    "allVenues": "[FR] All venues",
+    "eyebrow": "Queer Guide",
+    "browseDirectory": "Parcourir l’annuaire",
+    "planTrip": "Planifier un voyage",
+    "allVenues": "Tous les lieux",
     "recentlyViewed": {
-      "eyebrow": "[FR] Recently viewed",
-      "title": "[FR] Pick up where you left off."
+      "eyebrow": "Vus récemment",
+      "title": "Reprenez où vous vous êtes arrêté."
     },
     "trending": {
-      "eyebrow": "[FR] Trending now",
-      "venues": "[FR] Venues on the rise.",
-      "venuesNear": "[FR] Popular venues in {{city}}.",
-      "venuesDesc": "[FR] What the community is checking out this week."
+      "eyebrow": "Tendances du moment",
+      "venues": "Lieux en plein essor.",
+      "venuesNear": "Lieux populaires à {{city}}.",
+      "venuesDesc": "Ce que la communauté découvre cette semaine."
     },
     "cta": {
-      "title": "[FR] Built by the community,",
-      "title2": "[FR] for the community.",
-      "subtitle": "[FR] Verified safe spaces, real reviews, no paywalls.",
-      "submit": "[FR] Add a venue",
-      "about": "[FR] Read the mission",
-      "invite": "[FR] Invite friends",
-      "join": "[FR] Join the community"
+      "title": "Créé par la communauté,",
+      "title2": "pour la communauté.",
+      "subtitle": "Espaces sûrs vérifiés, avis authentiques, sans péage.",
+      "submit": "Ajouter un lieu",
+      "about": "Découvrir la mission",
+      "invite": "Inviter des amis",
+      "join": "Rejoindre la communauté"
     },
-    "subtitleShort": "[FR] Verified safe places, real events, and the people behind them.",
+    "subtitleShort": "Lieux sûrs vérifiés, événements réels et les personnes qui les animent.",
     "events": {
-      "eyebrow": "[FR] What's on",
+      "eyebrow": "À l’affiche",
       "groups": {
-        "today": "[FR] Today",
-        "tomorrow": "[FR] Tomorrow",
-        "thisWeekend": "[FR] This weekend",
-        "thisWeek": "[FR] This week",
-        "later": "[FR] Later"
+        "today": "Aujourd’hui",
+        "tomorrow": "Demain",
+        "thisWeekend": "Ce week-end",
+        "thisWeek": "Cette semaine",
+        "later": "Plus tard"
       }
     }
   },
@@ -1582,11 +1582,11 @@
       "tripInbox": "Boîte de réception voyages",
       "extension": "Extension Navigateur",
       "footprint": "Footprint",
-      "messages": "[FR] Messages",
-      "mailbox": "[FR] Mailbox",
-      "you": "[FR] You",
-      "community": "[FR] Community",
-      "viewProfile": "[FR] View public profile"
+      "messages": "Messages",
+      "mailbox": "Boîte de réception",
+      "you": "Profil",
+      "community": "Communauté",
+      "viewProfile": "Voir le profil public"
     },
     "modes": {
       "dating": "En quête d'amour",
@@ -1606,17 +1606,17 @@
     "signUp": "Sign up",
     "navigation": "Navigation",
     "signIn": "Sign in",
-    "modeLabel": "[FR] Mode",
-    "modeActive": "[FR] Mode: {{mode}}",
+    "modeLabel": "Mode",
+    "modeActive": "Mode : {{mode}}",
     "clusters": {
-      "places": "[FR] Places",
-      "community": "[FR] Community",
-      "shop": "[FR] Shop & Read",
-      "support": "[FR] Support"
+      "places": "Lieux",
+      "community": "Communauté",
+      "shop": "Boutique et lecture",
+      "support": "Aide"
     },
     "notifications": {
-      "label": "[FR] Notifications",
-      "unread": "[FR] Notifications, {{count}} unread"
+      "label": "Notifications",
+      "unread": "Notifications, {{count}} non lues"
     },
     "mobileNav": {
       "home": "Accueil",
@@ -1677,7 +1677,7 @@
       "noPhotos": "Aucune photo disponible",
       "noEvents": "Aucun événement à venir dans ce lieu",
       "noReviews": "Pas encore d'avis. Sois la première personne à en laisser un !",
-      "accessibility": "[FR] Accessibility"
+      "accessibility": "Accessibilité"
     },
     "events": {
       "title": "Événements",
@@ -2047,7 +2047,7 @@
       "createGroup": "Créer un groupe",
       "mostPopular": "Groupes les plus populaires",
       "noPopular": "Pas encore de groupes populaires.",
-      "eyebrow": "[FR] Community"
+      "eyebrow": "Communauté"
     },
     "groupDetail": {
       "signInRequired": "Connecte-toi pour voir les détails du groupe."
@@ -2087,7 +2087,7 @@
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
       "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
-      "eyebrow": "[FR] Community"
+      "eyebrow": "Communauté"
     },
     "notFound": {
       "title": "Page introuvable",
@@ -2145,21 +2145,21 @@
       }
     },
     "members": {
-      "eyebrow": "[FR] Community",
-      "title": "[FR] Members",
-      "subtitle": "[FR] People, connections, and networks within the inclusive LGBTQ+ community.",
-      "member": "[FR] member",
-      "members": "[FR] members",
-      "visible": "[FR] visible",
-      "upsellTitle": "[FR] See the full community",
-      "upsellBody": "[FR] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
-      "signInToBrowse": "[FR] Sign in to browse"
+      "eyebrow": "Communauté",
+      "title": "Membres",
+      "subtitle": "Personnes, connexions et réseaux au sein de la communauté LGBTQ+ inclusive.",
+      "member": "membre",
+      "members": "membres",
+      "visible": "visibles",
+      "upsellTitle": "Voir toute la communauté",
+      "upsellBody": "Les profils publics sont listés ici. Connectez-vous pour voir les bios, lieux, centres d’intérêt et démarrer une conversation.",
+      "signInToBrowse": "Connectez-vous pour explorer"
     },
     "friends": {
-      "eyebrow": "[FR] Community",
-      "title": "[FR] Friends",
-      "subtitle": "[FR] Manage your connections",
-      "gate": "[FR] Please sign in to view your friends."
+      "eyebrow": "Communauté",
+      "title": "Amis",
+      "subtitle": "Gérez vos connexions",
+      "gate": "Connectez-vous pour voir vos amis."
     }
   },
   "settings": {
@@ -2169,8 +2169,8 @@
       "turnOn": "Activer",
       "turnOff": "Désactiver",
       "dm": {
-        "title": "[FR] Direct messages",
-        "body": "[FR] Notify me when someone sends me a message."
+        "title": "Messages directs",
+        "body": "Me prévenir quand quelqu’un m’envoie un message."
       }
     }
   },
@@ -2351,21 +2351,21 @@
     "suggestLede": "Suggérez-la — ajoutée à l'annuaire après vérification.",
     "suggestCta": "Suggérer une ville",
     "detail": {
-      "seeAll": "[FR] See all",
-      "planTrip": "[FR] Plan a trip to {{city}}",
+      "seeAll": "Tout voir",
+      "planTrip": "Planifier un voyage à {{city}}",
       "glance": {
-        "safety": "[FR] Safety",
-        "safetyLink": "[FR] Jump to safety & rights",
-        "deathPenalty": "[FR] Death penalty",
-        "criminalized": "[FR] Criminalized",
-        "equalityTier": "[FR] {{tier}} equality",
-        "checkLaws": "[FR] Check local laws",
-        "rating": "[FR] LGBTQ+ rating",
-        "population": "[FR] Population",
-        "language": "[FR] Language",
-        "currency": "[FR] Currency",
-        "bestTime": "[FR] Best time",
-        "airport": "[FR] Airport"
+        "safety": "Sécurité",
+        "safetyLink": "Aller à sécurité et droits",
+        "deathPenalty": "Peine de mort",
+        "criminalized": "Criminalisé",
+        "equalityTier": "Égalité {{tier}}",
+        "checkLaws": "Vérifier les lois locales",
+        "rating": "Note LGBTQ+",
+        "population": "Population",
+        "language": "Langue",
+        "currency": "Devise",
+        "bestTime": "Meilleure période",
+        "airport": "Aéroport"
       }
     }
   },
@@ -2462,312 +2462,312 @@
     }
   },
   "country": {
-    "loading": "[FR] Loading country…",
-    "planTrip": "[FR] Plan a trip to {{country}}",
-    "similar": "[FR] More destinations",
+    "loading": "Chargement du pays…",
+    "planTrip": "Planifier un voyage en {{country}}",
+    "similar": "Plus de destinations",
     "notFound": {
-      "title": "[FR] Country not found",
-      "body": "[FR] The country you're looking for doesn't exist.",
-      "back": "[FR] Back to Places"
+      "title": "Pays introuvable",
+      "body": "Le pays que vous recherchez n’existe pas.",
+      "back": "Retour aux Lieux"
     },
     "breadcrumb": {
-      "places": "[FR] Places"
+      "places": "Lieux"
     },
     "hero": {
-      "capital": "[FR] Capital"
+      "capital": "Capitale"
     },
     "verdict": {
-      "eyebrow": "[FR] For LGBTQ+ travelers",
-      "welcoming": "[FR] Welcoming",
-      "mixed": "[FR] Mixed",
-      "caution": "[FR] Use caution",
-      "dangerous": "[FR] Dangerous",
-      "equality": "[FR] Equality",
-      "fullBreakdown": "[FR] Full breakdown"
+      "eyebrow": "Pour les voyageurs LGBTQ+",
+      "welcoming": "Accueillant",
+      "mixed": "Mitigé",
+      "caution": "Soyez prudent",
+      "dangerous": "Dangereux",
+      "equality": "Égalité",
+      "fullBreakdown": "Détail complet"
     },
     "facts": {
-      "capital": "[FR] Capital",
-      "population": "[FR] Population",
-      "equality": "[FR] Equality",
-      "languages": "[FR] Languages",
-      "currency": "[FR] Currency",
-      "cities": "[FR] Cities"
+      "capital": "Capitale",
+      "population": "Population",
+      "equality": "Égalité",
+      "languages": "Langues",
+      "currency": "Devise",
+      "cities": "Villes"
     },
     "section": {
-      "rights": "[FR] Rights & safety",
-      "cities": "[FR] Cities",
-      "venues": "[FR] Venues",
-      "events": "[FR] Events",
-      "travel": "[FR] Travel",
-      "stats": "[FR] In numbers",
-      "personalities": "[FR] Voices",
-      "nearby": "[FR] Nearby",
-      "news": "[FR] News",
-      "map": "[FR] Map"
+      "rights": "Droits et sécurité",
+      "cities": "Villes",
+      "venues": "Lieux",
+      "events": "Événements",
+      "travel": "Voyage",
+      "stats": "En chiffres",
+      "personalities": "Voix",
+      "nearby": "À proximité",
+      "news": "Actualités",
+      "map": "Carte"
     },
     "practical": {
-      "languages": "[FR] Languages",
-      "currency": "[FR] Currency",
-      "callingCode": "[FR] Calling code",
-      "tld": "[FR] Internet domain",
-      "driving": "[FR] Driving",
-      "drivesLeft": "[FR] Left-hand side",
-      "drivesRight": "[FR] Right-hand side",
-      "airports": "[FR] Major airports",
-      "government": "[FR] Government",
-      "nationalDay": "[FR] National day"
+      "languages": "Langues",
+      "currency": "Devise",
+      "callingCode": "Indicatif téléphonique",
+      "tld": "Domaine internet",
+      "driving": "Conduite",
+      "drivesLeft": "À gauche",
+      "drivesRight": "À droite",
+      "airports": "Principaux aéroports",
+      "government": "Gouvernement",
+      "nationalDay": "Fête nationale"
     },
     "stats": {
-      "gdpPerCapita": "[FR] GDP / capita",
-      "hdi": "[FR] HDI",
-      "lifeExpectancy": "[FR] Life expectancy",
-      "literacy": "[FR] Literacy",
-      "income": "[FR] Income level"
+      "gdpPerCapita": "PIB / habitant",
+      "hdi": "IDH",
+      "lifeExpectancy": "Espérance de vie",
+      "literacy": "Alphabétisation",
+      "income": "Niveau de revenu"
     },
     "cities": {
-      "emptyTitle": "[FR] No cities yet",
-      "emptyBody": "[FR] No cities are listed for this country yet."
+      "emptyTitle": "Aucune ville pour l’instant",
+      "emptyBody": "Aucune ville n’est encore listée pour ce pays."
     },
     "venues": {
-      "emptyTitle": "[FR] No venues yet",
-      "emptyBody": "[FR] Be the first to add a venue in {{country}}."
+      "emptyTitle": "Aucun lieu pour l’instant",
+      "emptyBody": "Soyez le premier à ajouter un lieu en {{country}}."
     },
     "events": {
-      "emptyTitle": "[FR] No upcoming events",
-      "emptyBody": "[FR] No events are scheduled for this country yet."
+      "emptyTitle": "Aucun événement à venir",
+      "emptyBody": "Aucun événement n’est encore prévu pour ce pays."
     },
     "travel": {
-      "activities": "[FR] Activities & tours",
-      "activitiesBody": "[FR] Experiences in {{country}}"
+      "activities": "Activités et visites",
+      "activitiesBody": "Expériences en {{country}}"
     },
     "news": {
-      "emptyTitle": "[FR] No local news yet",
-      "emptyBody": "[FR] No news articles are available for this country yet."
+      "emptyTitle": "Aucune actualité locale pour l’instant",
+      "emptyBody": "Aucun article d’actualité n’est encore disponible pour ce pays."
     },
     "rights": {
-      "title": "[FR] LGBTI rights overview",
-      "source": "[FR] ILGA World Database",
-      "updated": "[FR] Updated",
-      "noData": "[FR] No data",
-      "sameSexActivity": "[FR] Same-sex activity",
-      "penalty": "[FR] Penalty",
-      "deathPenalty": "[FR] death penalty possible",
-      "decriminalized": "[FR] Decriminalized",
-      "expression": "[FR] Freedom of expression",
-      "association": "[FR] Freedom of association",
+      "title": "Aperçu des droits LGBTI",
+      "source": "ILGA World Database",
+      "updated": "Mis à jour",
+      "noData": "Aucune donnée",
+      "sameSexActivity": "Relations entre personnes de même sexe",
+      "penalty": "Peine",
+      "deathPenalty": "peine de mort possible",
+      "decriminalized": "Dépénalisé",
+      "expression": "Liberté d’expression",
+      "association": "Liberté d’association",
       "section": {
-        "criminalisation": "[FR] Criminalisation & freedoms",
-        "antiDiscrimination": "[FR] Anti-discrimination protection",
-        "criminalJustice": "[FR] Criminal justice",
-        "family": "[FR] Family & relationships",
-        "identity": "[FR] Identity & health"
+        "criminalisation": "Criminalisation et libertés",
+        "antiDiscrimination": "Protection contre la discrimination",
+        "criminalJustice": "Justice pénale",
+        "family": "Famille et relations",
+        "identity": "Identité et santé"
       },
-      "constitutional": "[FR] Constitutional",
-      "employment": "[FR] Employment",
-      "housing": "[FR] Housing",
-      "education": "[FR] Education",
-      "health": "[FR] Health",
-      "goodsServices": "[FR] Goods & services",
-      "bullying": "[FR] Bullying",
-      "hateCrime": "[FR] Hate crime laws",
-      "incitement": "[FR] Incitement prohibition",
-      "unions": "[FR] Same-sex unions",
-      "marriageSince": "[FR] Marriage since",
-      "civilUnionSince": "[FR] civil union since",
-      "adoption": "[FR] Adoption rights",
-      "genderRecognition": "[FR] Gender recognition",
-      "marker": "[FR] Marker",
-      "selfId": "[FR] Self-ID",
-      "requiresSurgery": "[FR] Requires surgery",
-      "requiresDiagnosis": "[FR] Requires diagnosis",
-      "conversionTherapy": "[FR] Conversion therapy",
-      "intersex": "[FR] Intersex bodily integrity",
-      "ilgaLink": "[FR] ILGA World Database"
+      "constitutional": "Constitutionnel",
+      "employment": "Emploi",
+      "housing": "Logement",
+      "education": "Éducation",
+      "health": "Santé",
+      "goodsServices": "Biens et services",
+      "bullying": "Harcèlement",
+      "hateCrime": "Lois sur les crimes de haine",
+      "incitement": "Interdiction de l’incitation",
+      "unions": "Unions de même sexe",
+      "marriageSince": "Mariage depuis",
+      "civilUnionSince": "union civile depuis",
+      "adoption": "Droits d’adoption",
+      "genderRecognition": "Reconnaissance du genre",
+      "marker": "Mention de genre",
+      "selfId": "Autodétermination",
+      "requiresSurgery": "Chirurgie requise",
+      "requiresDiagnosis": "Diagnostic requis",
+      "conversionTherapy": "Thérapie de conversion",
+      "intersex": "Intégrité corporelle intersexe",
+      "ilgaLink": "ILGA World Database"
     }
   },
   "inbox": {
-    "title": "[FR] Inbox",
+    "title": "Boîte de réception",
     "filter": {
-      "all": "[FR] All",
-      "chats": "[FR] Chats",
-      "mail": "[FR] Mail",
-      "alerts": "[FR] Alerts"
+      "all": "Tout",
+      "chats": "Discussions",
+      "mail": "Courrier",
+      "alerts": "Alertes"
     },
     "compose": {
-      "label": "[FR] Compose",
-      "message": "[FR] New message",
-      "email": "[FR] New email"
+      "label": "Rédiger",
+      "message": "Nouveau message",
+      "email": "Nouvel e-mail"
     },
     "notification": {
-      "open": "[FR] Open"
+      "open": "Ouvrir"
     },
-    "openInbox": "[FR] Open inbox",
-    "markAlertsRead": "[FR] Mark alerts read",
-    "unread": "[FR] Unread",
-    "unreadCount": "[FR] {{count}} unread",
+    "openInbox": "Ouvrir la boîte de réception",
+    "markAlertsRead": "Marquer les alertes comme lues",
+    "unread": "Non lus",
+    "unreadCount": "{{count}} non lus",
     "action": {
-      "pin": "[FR] Pin",
-      "unpin": "[FR] Unpin",
-      "mute": "[FR] Mute",
-      "unmute": "[FR] Unmute",
-      "markRead": "[FR] Mark as read",
-      "archive": "[FR] Archive"
+      "pin": "Épingler",
+      "unpin": "Désépingler",
+      "mute": "Désactiver les notifications",
+      "unmute": "Réactiver",
+      "markRead": "Marquer comme lu",
+      "archive": "Archiver"
     },
-    "search": "[FR] Search",
-    "searchEmpty": "[FR] No matches.",
+    "search": "Rechercher",
+    "searchEmpty": "Aucun résultat.",
     "recipient": {
-      "search": "[FR] Search people",
-      "empty": "[FR] No suggestions yet.",
-      "recent": "[FR] Recently messaged",
-      "active": "[FR] Active recently"
+      "search": "Rechercher des personnes",
+      "empty": "Aucune suggestion pour l’instant.",
+      "recent": "Contacts récents",
+      "active": "Actifs récemment"
     }
   },
   "extension": {
     "signInGate": {
-      "title": "[FR] Sign in to install the extension",
-      "subtitle": "[FR] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
-      "cta": "[FR] Sign in"
+      "title": "Connectez-vous pour installer l’extension",
+      "subtitle": "L’extension de capture queer.guide permet aux membres connectés de suggérer des lieux, événements, hôtels et plus depuis n’importe quelle page web.",
+      "cta": "Se connecter"
     },
     "heading": {
-      "title": "[FR] queer.guide capture",
-      "subtitle": "[FR] Browser extension that turns any webpage into a structured suggestion for our moderators."
+      "title": "Capture queer.guide",
+      "subtitle": "Extension de navigateur qui transforme n’importe quelle page web en suggestion structurée pour nos modérateurs."
     },
     "badge": {
-      "installed": "[FR] Installed"
+      "installed": "Installée"
     },
     "captures": {
-      "label": "[FR] Captures",
-      "venues": "[FR] Venues",
-      "events": "[FR] Events",
-      "hotels": "[FR] Hotels",
-      "marketplace": "[FR] Marketplace",
-      "news": "[FR] News"
+      "label": "Captures",
+      "venues": "Lieux",
+      "events": "Événements",
+      "hotels": "Hôtels",
+      "marketplace": "Boutique",
+      "news": "Actualités"
     },
     "connect": {
-      "title": "[FR] Connect this browser",
-      "detected": "[FR] Extension",
-      "installed": "[FR] is installed in this browser.",
-      "body": "[FR] Sign your queer.guide session into the extension so you can submit content from any webpage.",
-      "signInPrompt": "[FR] Sign in to your queer.guide account to connect this browser and start submitting.",
-      "signedInAs": "[FR] Signed in as",
-      "cta": "[FR] Connect",
-      "connecting": "[FR] Connecting…",
+      "title": "Connecter ce navigateur",
+      "detected": "Extension",
+      "installed": "est installée dans ce navigateur.",
+      "body": "Connectez votre session queer.guide à l’extension pour soumettre du contenu depuis n’importe quelle page web.",
+      "signInPrompt": "Connectez-vous à votre compte queer.guide pour connecter ce navigateur et commencer à soumettre.",
+      "signedInAs": "Connecté en tant que",
+      "cta": "Connecter",
+      "connecting": "Connexion…",
       "done": {
-        "title": "[FR] Connected.",
-        "body": "[FR] Open the extension popup on any page to capture content for queer.guide."
+        "title": "Connecté.",
+        "body": "Ouvrez la fenêtre de l’extension sur n’importe quelle page pour capturer du contenu pour queer.guide."
       }
     },
     "steps": {
-      "title": "[FR] Install in 3 steps",
+      "title": "Installer en 3 étapes",
       "s1": {
-        "title": "[FR] Download the latest build",
-        "body": "[FR] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
-        "download": "[FR] Download .zip",
-        "note": "[FR] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+        "title": "Télécharger la dernière version",
+        "body": "L’extension n’est pas encore sur le Chrome Web Store. Pour l’instant, téléchargez la dernière version signée.",
+        "download": "Télécharger le .zip",
+        "note": "Décompressez-le à un endroit que vous ne supprimerez pas par accident (p. ex. ~/Applications/queer-guide-extension)."
       },
       "s2": {
-        "title": "[FR] Load it in Chrome",
-        "l1": "[FR] Open chrome://extensions in a new tab.",
-        "l2": "[FR] Toggle Developer mode on (top right).",
-        "l3": "[FR] Click Load unpacked and pick the unzipped folder.",
-        "l4": "[FR] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
-        "note": "[FR] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+        "title": "La charger dans Chrome",
+        "l1": "Ouvrez chrome://extensions dans un nouvel onglet.",
+        "l2": "Activez le mode développeur (en haut à droite).",
+        "l3": "Cliquez sur « Charger l’extension non empaquetée » et choisissez le dossier décompressé.",
+        "l4": "L’icône puzzle queer.guide apparaît dans votre barre d’outils — épinglez-la pour un accès en un clic.",
+        "note": "Les autres navigateurs Chromium (Edge, Brave, Arc) fonctionnent de la même manière. Firefox / Safari ne sont pas encore pris en charge."
       },
       "s3": {
-        "title": "[FR] Reload this page and Connect",
-        "body": "[FR] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+        "title": "Rechargez cette page et connectez-vous",
+        "body": "Une fois que Chrome confirme le chargement de l’extension, actualisez cette page. Un bouton « Connecter » apparaîtra et un clic connecte l’extension à votre compte queer.guide."
       },
       "dev": {
-        "label": "[FR] Want to build it yourself or contribute?",
-        "cta": "[FR] Build instructions"
+        "label": "Envie de la compiler vous-même ou de contribuer ?",
+        "cta": "Instructions de compilation"
       }
     },
     "highlights": {
       "smart": {
-        "title": "[FR] Smart capture",
-        "body": "[FR] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+        "title": "Capture intelligente",
+        "body": "Lit JSON-LD, OpenGraph, microdonnées et heuristiques DOM — la plupart des pages fonctionnent directement."
       },
       "privacy": {
-        "title": "[FR] Privacy-first",
-        "body": "[FR] Only runs when you click. No host permissions, no background tracking."
+        "title": "Confidentialité d’abord",
+        "body": "Ne s’exécute que lorsque vous cliquez. Aucune autorisation d’hôte, aucun suivi en arrière-plan."
       },
       "review": {
-        "title": "[FR] Always reviewed",
-        "body": "[FR] Submissions land in a moderation queue, never live until approved."
+        "title": "Toujours vérifié",
+        "body": "Les soumissions arrivent dans une file de modération et ne sont publiées qu’après approbation."
       }
     },
     "bug": {
-      "label": "[FR] Found a bug?",
-      "cta": "[FR] open an issue"
+      "label": "Un bug ?",
+      "cta": "ouvrir un ticket"
     }
   },
   "breadcrumb": {
-    "home": "[FR] Home",
-    "venues": "[FR] Venues",
-    "events": "[FR] Events",
-    "hotels": "[FR] Hotels",
-    "villages": "[FR] Queer villages",
-    "marketplace": "[FR] Marketplace",
-    "resources": "[FR] Resources",
-    "personalities": "[FR] People",
-    "news": "[FR] News",
-    "places": "[FR] Places",
-    "cities": "[FR] Cities",
-    "quests": "[FR] Quests",
-    "groups": "[FR] Groups",
-    "trips": "[FR] Trips",
-    "help": "[FR] Help",
-    "pride": "[FR] Pride",
-    "contributors": "[FR] Contributors",
-    "wishlists": "[FR] Wishlists"
+    "home": "Accueil",
+    "venues": "Lieux",
+    "events": "Événements",
+    "hotels": "Hôtels",
+    "villages": "Quartiers queer",
+    "marketplace": "Boutique",
+    "resources": "Ressources",
+    "personalities": "Personnes",
+    "news": "Actualités",
+    "places": "Lieux",
+    "cities": "Villes",
+    "quests": "Quêtes",
+    "groups": "Groupes",
+    "trips": "Voyages",
+    "help": "Aide",
+    "pride": "Fierté",
+    "contributors": "Contributeurs",
+    "wishlists": "Listes de souhaits"
   },
   "chat": {
-    "react": "[FR] React",
-    "edited": "[FR] edited",
-    "deleted": "[FR] Message deleted",
-    "editing": "[FR] Editing message",
-    "replyingTo": "[FR] Replying to {{name}}",
+    "react": "Réagir",
+    "edited": "modifié",
+    "deleted": "Message supprimé",
+    "editing": "Modification du message",
+    "replyingTo": "En réponse à {{name}}",
     "reply": {
-      "action": "[FR] Reply",
-      "someone": "[FR] someone"
+      "action": "Répondre",
+      "someone": "quelqu’un"
     },
     "emoji": {
-      "search": "[FR] Search emoji",
-      "none": "[FR] No emoji found.",
+      "search": "Rechercher un emoji",
+      "none": "Aucun emoji trouvé.",
       "cat": {
-        "smileys": "[FR] Smileys",
-        "gestures": "[FR] Gestures",
-        "hearts": "[FR] Hearts",
-        "pride": "[FR] Pride",
-        "animals": "[FR] Animals",
-        "food": "[FR] Food",
-        "activity": "[FR] Activity",
-        "symbols": "[FR] Symbols"
+        "smileys": "Émoticônes",
+        "gestures": "Gestes",
+        "hearts": "Cœurs",
+        "pride": "Fierté",
+        "animals": "Animaux",
+        "food": "Nourriture",
+        "activity": "Activité",
+        "symbols": "Symboles"
       }
     },
-    "activeNow": "[FR] Active now",
+    "activeNow": "Actif maintenant",
     "preview": {
-      "you": "[FR] You",
-      "photo": "[FR] Photo",
-      "sticker": "[FR] Sticker",
-      "voice": "[FR] Voice message"
+      "you": "Vous",
+      "photo": "Photo",
+      "sticker": "Sticker",
+      "voice": "Message vocal"
     },
-    "streak": "[FR] You two have been chatting for {{count}} days ✨",
+    "streak": "Vous discutez depuis {{count}} jours ✨",
     "vibe": {
-      "set": "[FR] Set a vibe",
-      "title": "[FR] Your vibe",
-      "placeholder": "[FR] What's your vibe?",
-      "for4h": "[FR] 4h"
+      "set": "Définir une ambiance",
+      "title": "Votre ambiance",
+      "placeholder": "Quelle est votre ambiance ?",
+      "for4h": "4 h"
     },
     "stickers": {
-      "title": "[FR] Stickers"
+      "title": "Stickers"
     },
     "freeToMeet": {
-      "title": "[FR] Free to meet",
-      "set": "[FR] Free to meet",
-      "on": "[FR] Free now",
-      "both": "[FR] {{name}} is free to meet right now 🟢",
-      "youOnly": "[FR] You're marked free to meet 🟢"
+      "title": "Dispo pour se voir",
+      "set": "Dispo pour se voir",
+      "on": "Dispo maintenant",
+      "both": "{{name}} est dispo pour se voir maintenant 🟢",
+      "youOnly": "Vous êtes indiqué comme dispo pour se voir 🟢"
     }
   }
 }

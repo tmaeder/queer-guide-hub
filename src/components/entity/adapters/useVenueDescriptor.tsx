@@ -57,9 +57,10 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
   const { data: socialSignals } = useVenueSocialSignals(venue?.id ? [venue.id] : []);
   const nearbyPoints = useNearbyMapPoints({
-    excludeVenueIds: venue?.id ? [venue.id] : [],
     lat: typeof venue?.latitude === 'number' ? venue.latitude : null,
     lng: typeof venue?.longitude === 'number' ? venue.longitude : null,
+    excludeType: 'venue',
+    excludeId: venue?.id ?? null,
   });
 
   useEffect(() => {

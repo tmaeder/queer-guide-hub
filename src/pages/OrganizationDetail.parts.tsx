@@ -173,9 +173,10 @@ export function OrgVisit({ org }: { org: Organization }) {
   // Only enrich with surroundings for a single-location org — a multi-city org's
   // own markers already span the map and "nearby" around one of them misleads.
   const nearbyPoints = useNearbyMapPoints({
-    excludeVenueIds: org.venues.map((v) => v.id),
     lat: located.length === 1 && center ? Number(center.latitude) : null,
     lng: located.length === 1 && center ? Number(center.longitude) : null,
+    excludeType: 'venue',
+    excludeId: center?.id ?? null,
   });
   return (
     <div className="flex flex-col gap-6">

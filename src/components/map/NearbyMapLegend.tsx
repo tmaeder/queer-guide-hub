@@ -10,9 +10,11 @@ import type { EntityMapMarker } from '@/components/map/EntityMap';
  */
 export function NearbyMapLegend({ markers }: { markers: EntityMapMarker[] }) {
   const { t } = useTranslation();
-  const venues = markers.filter((m) => m.type === 'venues').length;
-  const events = markers.filter((m) => m.type === 'events').length;
-  const hotels = markers.filter((m) => m.type === 'hotels').length;
+  // Classify by linkTo prefix — robust to markers whose `type` is unset
+  // (the shared hook leaves hotels' type undefined but sets their link).
+  const venues = markers.filter((m) => m.linkTo?.startsWith('/venues')).length;
+  const events = markers.filter((m) => m.linkTo?.startsWith('/events')).length;
+  const hotels = markers.filter((m) => m.linkTo?.startsWith('/hotels')).length;
   if (venues + events + hotels === 0) return null;
 
   const items: Array<{ color: string; label: string }> = [];

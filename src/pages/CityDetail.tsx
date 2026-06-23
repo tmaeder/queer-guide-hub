@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,6 +57,7 @@ export default function CityDetail() {
     type: 'city',
     slug: city?.slug,
     title: city?.name,
+    image: resolveEntityImage('city', city).url ?? undefined,
     country: city?.countries?.name,
   });
   const [imageUrl, setImageUrl] = useState<string>('');

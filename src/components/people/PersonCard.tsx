@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';
+import { SignalChips } from './SignalChips';
 
 export interface PersonCardData {
   userId: string;
@@ -9,22 +10,12 @@ export interface PersonCardData {
   shared?: PeopleMatchShared;
 }
 
-/** Build a short, factual "why" line from the shared-signal counts. */
-function sharedReason(shared?: PeopleMatchShared): string | null {
-  if (!shared) return null;
-  const parts: string[] = [];
-  if (shared.mutual_friends) parts.push(`${shared.mutual_friends} mutual friend${shared.mutual_friends === 1 ? '' : 's'}`);
-  if (shared.shared_events) parts.push(`${shared.shared_events} shared event${shared.shared_events === 1 ? '' : 's'}`);
-  if (shared.mutual_groups) parts.push(`${shared.mutual_groups} shared group${shared.mutual_groups === 1 ? '' : 's'}`);
-  return parts.length ? parts.slice(0, 2).join(' · ') : null;
-}
-
 /**
  * Thin person card for the people rails. Monochrome, links to the public
- * profile. Shows an optional compatibility badge + factual "why" line.
+ * profile. Shows an optional compatibility badge + the "why you matched"
+ * signal chips.
  */
 export function PersonCard({ person, fullWidth = false }: { person: PersonCardData; fullWidth?: boolean }) {
-  const reason = sharedReason(person.shared);
   return (
     <Link
       to={`/user/${person.userId}`}
@@ -48,9 +39,7 @@ export function PersonCard({ person, fullWidth = false }: { person: PersonCardDa
             {person.score}% match
           </div>
         ) : null}
-        {reason ? (
-          <div className="mt-1 truncate text-xs text-muted-foreground">{reason}</div>
-        ) : null}
+        <SignalChips shared={person.shared} className="mt-1.5" max={2} />
       </div>
     </Link>
   );
