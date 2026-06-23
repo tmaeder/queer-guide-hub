@@ -3,6 +3,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useTrackView } from '@/hooks/useTrackView';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { PageLoading } from '@/components/ui/loading';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
@@ -56,6 +57,7 @@ export default function CountryDetail() {
     type: 'country',
     slug: country?.slug,
     title: country?.name,
+    image: resolveEntityImage('country', country).url ?? undefined,
     country: country?.name,
   });
 
