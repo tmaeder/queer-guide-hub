@@ -212,7 +212,15 @@ export const EntityMap = ({
       loaded = true;
       setMapReady(true);
     });
-    map.on('error', () => setMapError(true));
+    // Only treat an error as fatal before the map has loaded. MapLibre emits
+    // non-fatal `error` events routinely once running (a single tile 404, a
+    // missing sprite icon, a font-range hiccup) — letting those flip the whole
+    // map to the OSM fallback blanks an otherwise-working map (and its nearby
+    // pins). A truly broken map never fires `load` and is caught by the 15 s
+    // timeout below.
+    map.on('error', () => {
+      if (!loaded) setMapError(true);
+    });
     if (onMoveEnd) {
       map.on('moveend', () => {
         const c = map.getCenter();
