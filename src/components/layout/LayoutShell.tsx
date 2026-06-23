@@ -11,6 +11,7 @@ import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
+import { stripLocale, isMapRoute } from '@/lib/locale';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
 // above-the-fold or interaction-critical on first paint, so defer their
@@ -40,7 +41,7 @@ const InstallBanner = lazyOptional(() =>
 export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
   // Match /map and /:locale/map (locale prefix is optional in the router).
-  const isFullBleedMap = /^\/(?:[a-z]{2}\/)?map\/?$/.test(pathname);
+  const isFullBleedMap = isMapRoute(pathname);
   const reduced = useReducedMotion();
   // Broadcast the current user's global presence (only if they opted into the
   // global dot) so inbox/discovery surfaces can show "active now".
@@ -48,7 +49,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
 
   // Key route transitions by the first non-locale segment so detail-page
   // tab switches don't trigger a full fade (only true route changes do).
-  const transitionKey = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/').split('/').slice(0, 3).join('/');
+  const transitionKey = stripLocale(pathname).split('/').slice(0, 3).join('/');
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

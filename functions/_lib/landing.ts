@@ -211,7 +211,9 @@ async function identityLanding(env: Env, tag: string): Promise<Response | null> 
     env,
     'venues',
     'name,slug,city,country,venue_subtype,foursquare_rating',
-    `tags=cs.{${meta.tagFilter}}&order=foursquare_rating.desc.nullslast`,
+    // Safety layer — exclude high-risk-country venues from the prerendered
+    // facet landing list/JSON-LD (service-role fetch bypasses RLS).
+    `tags=cs.{${meta.tagFilter}}&safety_gated=eq.false&order=foursquare_rating.desc.nullslast`,
     100,
   ).catch(() => []);
 
@@ -312,7 +314,8 @@ async function prideYearLanding(env: Env, year: number): Promise<Response> {
     env,
     'events',
     'title,slug,city,country,start_date',
-    `event_type=eq.pride&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
+    // Safety layer — never surface high-risk-country events to crawlers.
+    `event_type=eq.pride&safety_gated=eq.false&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
     200,
   ).catch(() => []);
 
@@ -413,7 +416,8 @@ async function worldPrideLanding(env: Env, year: number): Promise<Response> {
     env,
     'events',
     'title,slug,city,country,start_date',
-    `event_type=eq.pride&status=neq.cancelled&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
+    // Safety layer — never surface high-risk-country events to crawlers.
+    `event_type=eq.pride&safety_gated=eq.false&status=neq.cancelled&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
     50,
   ).catch(() => []);
 
@@ -506,7 +510,8 @@ async function prideCityLanding(
     env,
     'events',
     'title,slug,city,country,start_date,end_date,address',
-    `event_type=eq.pride&city_id=eq.${cityId}&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
+    // Safety layer — never surface high-risk-country events to crawlers.
+    `event_type=eq.pride&safety_gated=eq.false&city_id=eq.${cityId}&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
     200,
   ).catch(() => []);
 
@@ -592,7 +597,8 @@ async function prideRegionLanding(
     env,
     'events',
     'title,slug,city,country,start_date,end_date,is_featured',
-    `event_type=eq.pride&country=in.(${countryFilter})&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
+    // Safety layer — never surface high-risk-country events to crawlers.
+    `event_type=eq.pride&safety_gated=eq.false&country=in.(${countryFilter})&start_date=gte.${start}&start_date=lt.${end}&order=start_date.asc`,
     300,
   ).catch(() => []);
 

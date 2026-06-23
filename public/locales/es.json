@@ -1623,7 +1623,10 @@
       "menuTitle": "Explora Queer Guide",
       "menuDescription": "Ve a cualquier sección, cambia el idioma o el tema.",
       "trips": "Mis viajes",
-      "settingsSection": "Pantalla"
+      "settingsSection": "Pantalla",
+      "browseAll": "Ver todas las secciones",
+      "unreadCount": "{{count}} sin leer",
+      "tripsBadge": "{{count}} elementos de viaje necesitan atención"
     }
   },
   "pages": {
@@ -2765,5 +2768,38 @@
       "both": "{{name}} está libre para quedar ahora mismo 🟢",
       "youOnly": "Apareces como libre para quedar 🟢"
     }
+  },
+  "newsDetail": {
+    "notFound": "Artículo no encontrado",
+    "notFoundDesc": "El artículo que buscas no existe.",
+    "backToNews": "Volver a Noticias",
+    "share": "Compartir",
+    "readAtSource": "Ver en la fuente",
+    "fresh": "Nuevo",
+    "reportedByOutlets": "Informado por {{count}} medios",
+    "featured": "Destacado",
+    "byAuthor": "Por {{author}}",
+    "minRead": "{{count}} min de lectura",
+    "viewsCount": "{{count}} vistas",
+    "whyThisMatters": "Por qué es importante",
+    "editorialPlaceholder": "Alt-clic para añadir el contexto: 1–3 frases sobre por qué importa esta noticia.",
+    "bodyFallback": "La noticia completa está en la fuente original.",
+    "originallyPublishedBy": "Publicado originalmente por {{source}}.",
+    "viewOriginal": "Ver el artículo original",
+    "integritySatire": "Marcado como sátira: no es un informe literal.",
+    "integrityAdvertorial": "Contenido patrocinado / publirreportaje.",
+    "integritySentimentConflict": "Las fuentes no coinciden en el tono: léelo con cautela.",
+    "closeToHome": "Cerca de tu ciudad",
+    "seeFullStory": "Ver la historia completa",
+    "topics": "Temas",
+    "home": "Casa",
+    "whereThisHappens": "Dónde ocurre",
+    "aboutSource": "Sobre la fuente",
+    "corroboratedAcross": "Corroborado por {{count}} medios",
+    "lastVerified": "Verificado por última vez {{time}}",
+    "visitSource": "Visitar {{source}}",
+    "source": "la fuente",
+    "moreLikeThis": "Más como esto",
+    "forYou": "Para ti"
   }
 }
