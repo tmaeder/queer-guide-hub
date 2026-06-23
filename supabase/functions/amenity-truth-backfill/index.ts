@@ -18,7 +18,8 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { loadAmenityVocabulary, normalizeVenueAmenities, type AmenityVocab } from '../_shared/amenity-normalize.ts'
 import { extractVenueAmenitiesFromText } from '../_shared/ai-enrichment.ts'
 
-const STEP = 'amenity-truth-backfill'
+const STEP = 'amenity-truth-backfill'                  // enrichment_log step (hyphen)
+const AUTOMATION_SLUG = 'amenity_truth_backfill'        // admin_automations slug (underscore)
 const AUTO_APPLY_CONFIDENCE = 0.8
 
 type Source = 'extract' | 'places' | 'llm'
@@ -87,7 +88,9 @@ Deno.serve(async (req: Request) => {
   const batchLimit: number = body.batch_limit ?? (wantLlm ? 5 : 25)
   const dailyCap: number = body.daily_cap ?? (wantLlm ? 80 : 600)
   const dryRun: boolean = body.dry_run ?? false
+  const onlyFillable: boolean = body.only_fillable ?? false
   const venueIds: string[] | undefined = body.venue_ids
+  const runStarted = new Date()
 
   // Daily cap (skipped for explicit venue_ids).
   const since = new Date(); since.setUTCHours(0, 0, 0, 0)
@@ -109,11 +112,14 @@ Deno.serve(async (req: Request) => {
     if (error) return jsonResponse({ error: error.message, success: false }, 500, req)
     venues = (data ?? []) as VenueRow[]
   } else {
-    const { data, error } = await supabase.rpc('venues_due_for_amenity_backfill', { p_limit: remaining })
+    const { data, error } = await supabase.rpc('venues_due_for_amenity_backfill', { p_limit: remaining, p_only_fillable: onlyFillable })
     if (error) return jsonResponse({ error: error.message, success: false }, 500, req)
     venues = (data ?? []) as VenueRow[]
   }
-  if (!venues.length) return jsonResponse({ processed: 0, message: 'no venues due' }, 200, req)
+  if (!venues.length) {
+    if (!venueIds?.length) await recordRun(supabase, runStarted, { processed: 0, message: 'no venues due', sources, only_fillable: onlyFillable })
+    return jsonResponse({ processed: 0, message: 'no venues due' }, 200, req)
+  }
 
   const vocab: AmenityVocab = await loadAmenityVocabulary(supabase, true)
   const amenitySlugs = [...vocab.amenity]
@@ -164,7 +170,10 @@ Deno.serve(async (req: Request) => {
               canonicalAmenities: amenitySlugs, canonicalAccessibility: accessibilitySlugs,
             }))
         } catch (e) {
-          if (e instanceof CircuitOpenError) return jsonResponse({ cleaned, filled, gated, circuit_open: true, results }, 200, req)
+          if (e instanceof CircuitOpenError) {
+            await recordRun(supabase, runStarted, { processed: results.length, cleaned, filled, gated, circuit_open: true, sources, only_fillable: onlyFillable })
+            return jsonResponse({ cleaned, filled, gated, circuit_open: true, results }, 200, req)
+          }
           throw e
         }
         if (ai) {
@@ -235,8 +244,35 @@ Deno.serve(async (req: Request) => {
     await logStep(supabase, v.id, status, started, dryRun)
   }
 
+  if (!dryRun && !venueIds?.length) {
+    await recordRun(supabase, runStarted, { processed: venues.length, cleaned, filled, gated, sources, only_fillable: onlyFillable })
+  }
   return jsonResponse({ processed: venues.length, cleaned, filled, gated, dry_run: dryRun, sources, results }, 200, req)
 })
+
+/** Write a run summary to admin_automation_runs so the admin panel can see real
+ *  outcomes (cron.job_run_details only shows that net.http_post enqueued). */
+async function recordRun(
+  supabase: ReturnType<typeof getServiceClient>,
+  startedAt: Date,
+  summary: Record<string, unknown>,
+) {
+  const { data: a } = await supabase
+    .from('admin_automations').select('id').eq('slug', AUTOMATION_SLUG).maybeSingle()
+  await supabase.from('admin_automation_runs').insert({
+    automation_id: a?.id ?? null,
+    automation_slug: AUTOMATION_SLUG,
+    started_at: startedAt.toISOString(),
+    finished_at: new Date().toISOString(),
+    status: summary.circuit_open ? 'error' : 'success',
+    items_examined: (summary.processed as number) ?? 0,
+    items_changed: ((summary.filled as number) ?? 0) + ((summary.gated as number) ?? 0),
+    summary,
+  }).then(() => {}, () => {})
+  await supabase.from('admin_automations')
+    .update({ last_run_at: startedAt.toISOString(), last_run_status: summary.circuit_open ? 'error' : 'success' })
+    .eq('slug', AUTOMATION_SLUG).then(() => {}, () => {})
+}
 
 async function logStep(supabase: ReturnType<typeof getServiceClient>, venueId: string, status: string, started: number, dryRun: boolean) {
   if (dryRun) return
