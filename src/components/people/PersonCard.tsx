@@ -23,12 +23,14 @@ function sharedReason(shared?: PeopleMatchShared): string | null {
  * Thin person card for the people rails. Monochrome, links to the public
  * profile. Shows an optional compatibility badge + factual "why" line.
  */
-export function PersonCard({ person }: { person: PersonCardData }) {
+export function PersonCard({ person, fullWidth = false }: { person: PersonCardData; fullWidth?: boolean }) {
   const reason = sharedReason(person.shared);
   return (
     <Link
       to={`/user/${person.userId}`}
-      className="flex w-40 shrink-0 flex-col gap-2 rounded-element border border-border p-4 transition-colors hover:bg-muted/40"
+      className={`flex flex-col gap-2 rounded-element border border-border p-4 transition-colors hover:bg-muted/40 ${
+        fullWidth ? 'w-full' : 'w-40 shrink-0'
+      }`}
     >
       {person.avatarUrl ? (
         <img

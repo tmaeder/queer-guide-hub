@@ -164,9 +164,9 @@ const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
 const Settings = lazyRetry(() => import('./pages/Settings'));
 const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard'));
-const IntimateDiscovery = lazyRetry(() => import('./pages/intimate/IntimateDiscovery'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
 
+const People = lazyRetry(() => import('./pages/people/People'));
 const Community = lazyRetry(() => import('./pages/Community'));
 
 const Messages = lazyRetry(() => import('./pages/Messages'));
@@ -574,8 +574,17 @@ export const AppRoutes = () => {
                 <Route path="settings" element={<Settings />} />
                 <Route path="settings/privacy" element={<Navigate to="/settings?section=privacy" replace />} />
                 <Route path="profile/settings" element={<SettingsRedirect />} />
-                <Route path="intimate" element={<IntimateDiscovery />} />
-                <Route path="discover" element={<IntimateDiscovery />} />
+                {/* Unified People surface. Static per-tab routes (not people/:tab?)
+                  so the optional :locale? parent can't capture "people" as an
+                  unknown locale and 404 — same reason /community/* is spelled out. */}
+                <Route path="people" element={<People />} />
+                <Route path="people/friends" element={<People tab="friends" />} />
+                <Route path="people/dating" element={<People tab="dating" />} />
+                <Route path="people/travel" element={<People tab="travel" />} />
+                <Route path="people/nearby" element={<People tab="nearby" />} />
+                {/* Dating folded into the People hub; legacy entry points redirect. */}
+                <Route path="intimate" element={<LocalizedRedirect to="/people/dating" />} />
+                <Route path="discover" element={<LocalizedRedirect to="/people/dating" />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
                 <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />
