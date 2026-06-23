@@ -242,6 +242,7 @@ export function BasicInfoTab({
       {/* Social Links */}
       <SocialLinksManager
         initialSocialLinks={profile?.social_links || {}}
+        initialSocialAccounts={(profile as { social_accounts?: unknown })?.social_accounts}
         onUpdate={() => {
           // TODO: persist updates to profile.social_links via the profile
           // mutation hook. Component currently emits but the parent doesn't

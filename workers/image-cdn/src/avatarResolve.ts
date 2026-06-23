@@ -21,7 +21,19 @@ export interface AvatarEnv {
 
 // Handle-based sources by default; gravatar (email) is allowed but the
 // frontend gates it behind an explicit extra confirm.
-const SOURCES = new Set(['github', 'x', 'twitter', 'instagram', 'telegram', 'gravatar']);
+const SOURCES = new Set([
+  'github',
+  'x',
+  'twitter',
+  'instagram',
+  'telegram',
+  'gravatar',
+  'youtube',
+  'twitch',
+  'tiktok',
+  'soundcloud',
+  'reddit',
+]);
 const MAX_BYTES = 5 * 1024 * 1024;
 const PREFIX = 'avatars/unavatar/';
 
