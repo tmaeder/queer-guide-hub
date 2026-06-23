@@ -7,6 +7,9 @@ export interface PlatformConfig {
   urlDetectionRegex: string;
   idValidationRegex: string;
   icon: React.ComponentType<{ style?: React.CSSProperties }>;
+  /** Sensitive tier — drives safe defaults (community visibility, no avatar fetch,
+   *  no verify/embed) and an 18+ badge on display. Absent = mainstream. */
+  sensitivity?: 'adult' | 'dating';
 }
 
 export const PLATFORM_CONFIGS: PlatformConfig[] = [
@@ -34,13 +37,21 @@ export const PLATFORM_CONFIGS: PlatformConfig[] = [
   { category: 'Music/Video', platform: 'SoundCloud', urlDetectionRegex: '(?i)^https?://(?:www\\.)?soundcloud\\.com/([A-Za-z0-9_-]{3,25})/?$', idValidationRegex: '^[A-Za-z0-9_-]{3,25}$', icon: Music },
   { category: 'Music/Video', platform: 'Bandcamp', urlDetectionRegex: '(?i)^https?://([A-Za-z0-9-]{1,63})\\.bandcamp\\.com/?$', idValidationRegex: '^[A-Za-z0-9-]{1,63}$', icon: Music },
   
-  // Queer/Dating
-  { category: 'Queer/Dating', platform: 'Grindr', urlDetectionRegex: '(?i)^https?://(?:www\\.)?grindr\\.com/profile/([A-Za-z0-9]{8,15})/?$', idValidationRegex: '^[A-Za-z0-9]{8,15}$', icon: Globe },
-  { category: 'Queer/Dating', platform: 'HER', urlDetectionRegex: '(?i)^https?://(?:www\\.)?weareher\\.com/profile/([A-Za-z0-9_-]{3,30})/?$', idValidationRegex: '^[A-Za-z0-9_-]{3,30}$', icon: Globe },
-  { category: 'Queer/Dating', platform: 'Tinder', urlDetectionRegex: '(?i)^https?://(?:www\\.)?tinder\\.com/@?([A-Za-z0-9]{3,30})/?$', idValidationRegex: '^[A-Za-z0-9]{3,30}$', icon: Globe },
-  
-  // Adult/Creator  
-  { category: 'Adult/Creator', platform: 'OnlyFans', urlDetectionRegex: '(?i)^https?://(?:www\\.)?onlyfans\\.com/([A-Za-z0-9._-]{3,50})/?$', idValidationRegex: '^[A-Za-z0-9._-]{3,50}$', icon: Globe },
+  // Queer/Dating (sensitive)
+  { category: 'Queer/Dating', platform: 'Grindr', urlDetectionRegex: '(?i)^https?://(?:www\\.)?grindr\\.com/profile/([A-Za-z0-9]{8,15})/?$', idValidationRegex: '^[A-Za-z0-9]{8,15}$', icon: Globe, sensitivity: 'dating' },
+  { category: 'Queer/Dating', platform: 'HER', urlDetectionRegex: '(?i)^https?://(?:www\\.)?weareher\\.com/profile/([A-Za-z0-9_-]{3,30})/?$', idValidationRegex: '^[A-Za-z0-9_-]{3,30}$', icon: Globe, sensitivity: 'dating' },
+  { category: 'Queer/Dating', platform: 'Tinder', urlDetectionRegex: '(?i)^https?://(?:www\\.)?tinder\\.com/@?([A-Za-z0-9]{3,30})/?$', idValidationRegex: '^[A-Za-z0-9]{3,30}$', icon: Globe, sensitivity: 'dating' },
+  { category: 'Queer/Dating', platform: 'ROMEO', urlDetectionRegex: '(?i)^https?://(?:www\\.)?(?:gayromeo|planetromeo|romeo)\\.com/([A-Za-z0-9_-]{2,40})/?$', idValidationRegex: '^[A-Za-z0-9_-]{2,40}$', icon: Globe, sensitivity: 'dating' },
+  { category: 'Queer/Dating', platform: 'Recon', urlDetectionRegex: '(?i)^https?://(?:www\\.)?recon\\.com/([A-Za-z0-9_-]{2,40})/?$', idValidationRegex: '^[A-Za-z0-9_-]{2,40}$', icon: Globe, sensitivity: 'dating' },
+  { category: 'Queer/Dating', platform: 'FetLife', urlDetectionRegex: '(?i)^https?://(?:www\\.)?fetlife\\.com/(?:users/\\d{1,12}|@?[A-Za-z0-9_-]{2,40})/?$', idValidationRegex: '^[A-Za-z0-9_-]{2,40}$', icon: Globe, sensitivity: 'dating' },
+  { category: 'Queer/Dating', platform: 'JoyClub', urlDetectionRegex: '(?i)^https?://(?:www\\.)?joyclub\\.de/.+$', idValidationRegex: '^.+$', icon: Globe, sensitivity: 'dating' },
+
+  // Adult/Creator (sensitive)
+  { category: 'Adult/Creator', platform: 'OnlyFans', urlDetectionRegex: '(?i)^https?://(?:www\\.)?onlyfans\\.com/([A-Za-z0-9._-]{3,50})/?$', idValidationRegex: '^[A-Za-z0-9._-]{3,50}$', icon: Globe, sensitivity: 'adult' },
+  { category: 'Adult/Creator', platform: 'Fansly', urlDetectionRegex: '(?i)^https?://(?:www\\.)?fansly\\.com/([A-Za-z0-9._-]{2,40})/?$', idValidationRegex: '^[A-Za-z0-9._-]{2,40}$', icon: Globe, sensitivity: 'adult' },
+  { category: 'Adult/Creator', platform: 'JustForFans', urlDetectionRegex: '(?i)^https?://(?:www\\.)?justfor\\.fans/([A-Za-z0-9._-]{2,40})/?$', idValidationRegex: '^[A-Za-z0-9._-]{2,40}$', icon: Globe, sensitivity: 'adult' },
+  { category: 'Adult/Creator', platform: 'Pornhub', urlDetectionRegex: '(?i)^https?://(?:www\\.)?pornhub\\.com/(?:users|model)/([A-Za-z0-9._-]{2,40})/?$', idValidationRegex: '^[A-Za-z0-9._-]{2,40}$', icon: Globe, sensitivity: 'adult' },
+  { category: 'Adult/Creator', platform: 'xHamster', urlDetectionRegex: '(?i)^https?://(?:www\\.)?xhamster\\.com/users/([A-Za-z0-9._-]{2,40})/?$', idValidationRegex: '^[A-Za-z0-9._-]{2,40}$', icon: Globe, sensitivity: 'adult' },
   { category: 'Adult/Creator', platform: 'Patreon', urlDetectionRegex: '(?i)^https?://(?:www\\.)?patreon\\.com/([A-Za-z0-9_-]{3,100})/?$', idValidationRegex: '^[A-Za-z0-9_-]{3,100}$', icon: Globe },
   
   // Payments/Support

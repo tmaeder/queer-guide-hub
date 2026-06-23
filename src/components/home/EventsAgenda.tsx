@@ -6,7 +6,9 @@ import { Eyebrow } from '@/components/ui/Eyebrow';
 import { HomeSection } from './HomeSection';
 import { useEvents } from '@/hooks/useEvents';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { dedupeEvents } from '@/utils/eventDedup';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
@@ -18,7 +20,11 @@ type Event = {
   end_date?: string | null;
   venue_name?: string | null;
   city?: string | null;
-  image_url?: string | null;
+  // The `events` table has no `image_url` column — images live in `images[]`
+  // and `logo_url`. The optimized R2 copy (when one exists) is fetched
+  // separately via useEntityImageAssets and merged in resolveImageUrl below.
+  images?: string[] | null;
+  logo_url?: string | null;
   is_featured?: boolean | null;
 };
 
@@ -85,6 +91,12 @@ const EventsAgenda = () => {
     }));
   }, [events]);
 
+  // Prefer the R2-optimized mirror when one exists. Keyed off the same visible
+  // events so the lookup is bounded. Called unconditionally (before the early
+  // return) to keep hook order stable.
+  const eventIds = useMemo(() => groups.flatMap((g) => g.events.map((e) => e.id)), [groups]);
+  const { assets } = useEntityImageAssets('event', eventIds);
+
   if (loading || groups.length === 0) return null;
 
   const title = userLocation?.city
@@ -107,9 +119,15 @@ const EventsAgenda = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-10">
               {group.events.map((ev) => {
                 const d = new Date(ev.start_date);
-                const img = isValidImageUrl(ev.image_url)
-                  ? (ev.image_url as string)
-                  : getFallbackImage('event', ev.id);
+                const rawImg = ev.images?.find(Boolean) ?? ev.logo_url ?? null;
+                const asset = assets.get(ev.id);
+                const img =
+                  resolveImageUrl({
+                    imageUrl: isValidImageUrl(rawImg) ? rawImg : null,
+                    optimizedUrl: asset?.optimized_url ?? null,
+                    thumbnailUrl: asset?.thumbnail_url ?? null,
+                    preferThumb: true, // 56px tile — the small variant is plenty
+                  }) || getFallbackImage('event', ev.id);
                 return (
                   <LocalizedLink
                     key={ev.id}

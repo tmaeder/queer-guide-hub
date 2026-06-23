@@ -1,4 +1,4 @@
-import './sentry'
+import { installSentry } from './sentry'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
@@ -9,6 +9,7 @@ import { installGlobalErrorSurfacing } from '@/utils/globalErrorSurfacing'
 import { installBuildVersionCheck } from '@/utils/buildVersion'
 import { installAnalyticsConsentLoader } from '@/utils/analyticsLoader'
 
+installSentry();
 installErrorBuffer();
 installNetworkBuffer();
 installGlobalErrorSurfacing();

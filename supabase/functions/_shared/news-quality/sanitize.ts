@@ -12,6 +12,8 @@ import {
 export interface SanitizeResult {
   title: string
   content: string
+  excerpt: string
+  author: string
   removedArtifacts: string[]
   truncated: boolean
   criticalPaywall: boolean
@@ -176,10 +178,41 @@ export function cleanTitle(raw: string): string {
   return t.slice(0, 240)
 }
 
-export function sanitizeArticle(input: { title: string; content: string }): SanitizeResult {
+// Decode + strip a short text field (excerpt, author). Mirrors the body loop but
+// without junk-phrase removal: runs decode→strip→decode until stable so
+// entity-encoded tags (&lt;p&gt;) and double-encoded entities (&amp;#39;) resolve,
+// then collapses whitespace. Single-line by default so bylines stay one line.
+export function cleanShortText(raw: string, singleLine = false): string {
+  if (!raw) return ''
+  let s = raw
+  for (let pass = 0; pass < 4; pass++) {
+    const before = s
+    s = decodeHtmlEntities(stripHtmlTags(s))
+    if (s === before) break
+  }
+  s = singleLine ? s.replace(/\s+/g, ' ').trim() : normalizeWhitespace(s)
+  return s
+}
+
+export function cleanExcerpt(raw: string): string {
+  return cleanShortText(raw || '').slice(0, 600)
+}
+
+export function cleanAuthorField(raw: string): string {
+  return cleanShortText(raw || '', true).slice(0, 200)
+}
+
+export function sanitizeArticle(
+  input: { title: string; content: string; excerpt?: string; author?: string },
+): SanitizeResult {
   const removed: string[] = []
   const cleanedTitle = cleanTitle(input.title || '')
   if (cleanedTitle !== (input.title || '').trim()) removed.push('title:reformatted')
+
+  const cleanedExcerpt = cleanExcerpt(input.excerpt || '')
+  if (cleanedExcerpt !== (input.excerpt || '').trim()) removed.push('excerpt:cleaned')
+  const cleanedAuthor = cleanAuthorField(input.author || '')
+  if (cleanedAuthor !== (input.author || '').trim()) removed.push('author:cleaned')
 
   // Iteratively strip tags + decode entities until the body stops changing. A single
   // pass misses entity-encoded tags (&lt;td&gt; → <td>) and double-encoded entities
@@ -209,11 +242,17 @@ export function sanitizeArticle(input: { title: string; content: string }): Sani
   const criticalPaywall = hasCriticalPaywall(input.content || '')
 
   const changed =
-    cleanedTitle !== (input.title || '') || body !== (input.content || '') || removed.length > 0
+    cleanedTitle !== (input.title || '') ||
+    body !== (input.content || '') ||
+    cleanedExcerpt !== (input.excerpt || '') ||
+    cleanedAuthor !== (input.author || '') ||
+    removed.length > 0
 
   return {
     title: cleanedTitle,
     content: body,
+    excerpt: cleanedExcerpt,
+    author: cleanedAuthor,
     removedArtifacts: removed,
     truncated,
     criticalPaywall,
