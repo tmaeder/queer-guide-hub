@@ -1613,6 +1613,17 @@
     "notifications": {
       "label": "[JA] Notifications",
       "unread": "[JA] Notifications, {{count}} unread"
+    },
+    "mobileNav": {
+      "home": "ホーム",
+      "explore": "さがす",
+      "contribute": "追加",
+      "messages": "メッセージ",
+      "you": "マイページ",
+      "menuTitle": "Queer Guide を見る",
+      "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
+      "trips": "マイトリップ",
+      "settingsSection": "表示"
     }
   },
   "pages": {

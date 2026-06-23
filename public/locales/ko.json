@@ -1613,6 +1613,17 @@
     "notifications": {
       "label": "[KO] Notifications",
       "unread": "[KO] Notifications, {{count}} unread"
+    },
+    "mobileNav": {
+      "home": "홈",
+      "explore": "둘러보기",
+      "contribute": "추가",
+      "messages": "메시지",
+      "you": "내 정보",
+      "menuTitle": "Queer Guide 둘러보기",
+      "menuDescription": "원하는 섹션으로 이동하고 언어나 테마를 변경하세요.",
+      "trips": "내 여행",
+      "settingsSection": "디스플레이"
     }
   },
   "pages": {
