@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Box } from 'lucide-react';
 
 const navigateMock = vi.fn();
@@ -44,11 +45,13 @@ describe('AdminCommandPalette', () => {
 
   it('navigates on selecting a nav item', () => {
     render(
-      <MemoryRouter>
-        <AdminCommandActionsProvider>
-          <AdminCommandPalette open onOpenChange={() => {}} />
-        </AdminCommandActionsProvider>
-      </MemoryRouter>,
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}>
+        <MemoryRouter>
+          <AdminCommandActionsProvider>
+            <AdminCommandPalette open onOpenChange={() => {}} />
+          </AdminCommandActionsProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
     const venues = screen.getByText('Venues');
     fireEvent.click(venues);
@@ -57,11 +60,13 @@ describe('AdminCommandPalette', () => {
 
   it('filters by search input', () => {
     render(
-      <MemoryRouter>
-        <AdminCommandActionsProvider>
-          <AdminCommandPalette open onOpenChange={() => {}} />
-        </AdminCommandActionsProvider>
-      </MemoryRouter>,
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}>
+        <MemoryRouter>
+          <AdminCommandActionsProvider>
+            <AdminCommandPalette open onOpenChange={() => {}} />
+          </AdminCommandActionsProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
     const input = screen.getByPlaceholderText(/jump to page/i);
     fireEvent.change(input, { target: { value: 'venues' } });
