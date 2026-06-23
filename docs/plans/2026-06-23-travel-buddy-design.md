@@ -1,6 +1,30 @@
-# Travel-buddy / "who's visiting at the same time" — Design (not yet built)
+# Travel-buddy / "who's visiting at the same time" — Design
 
-_2026-06-23 · status: design for review_
+_2026-06-23 · status: **largely implemented** by the people-match engine; this doc updated to reflect reality_
+
+## Status update (2026-06-23)
+
+Most of this design already shipped via a parallel **people-match engine** (migrations
+`20260624090000_people_match_engine`, `20260624100000_people_discovery_friends_travel`,
+`20260624110000_safety_spine_block_enforcement`):
+- `people_discovery(p_viewer, p_mode, p_city_id, p_event_id, p_trip_id, p_limit)` RPC with
+  `mode='travel'`; `usePeopleDiscovery` hook; `PeopleHereRail` component.
+- Opt-in is `profiles.presence_visibility.in_discovery` (+ `travel_mode`); the rail self-hides
+  for signed-out / not-opted-in viewers.
+- Bidirectional blocks (`is_blocked`/`intimate_is_blocked`), `report_content`, and
+  `get_public_profile_safe` enforce the safety/privacy constraints below.
+- The rail is mounted on the trip planner ("Travel buddies for this trip").
+
+**Gap closed in this change:** the rail was **not** suppressed for criminalizing/death-penalty
+destinations — a violation of the outing-safety invariant (constraint #5). `TravelBuddiesSection`
+(`src/components/trips/TravelBuddiesSection.tsx`) now gates the planner rail via `useTripSafety`
+over the trip's countries; for criminalizing/death-penalty destinations the surface renders
+nothing.
+
+**Recommended follow-ups (deferred — architecturally significant, need product sign-off):**
+- Defense-in-depth: suppress criminalizing-country candidates **inside `people_discovery`** so
+  the gate holds server-side across every mode/surface (changes shared multi-surface behavior).
+- Apply the same country-safety gate to the global `/people/travel` page.
 
 ## Why
 

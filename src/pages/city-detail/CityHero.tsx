@@ -6,6 +6,7 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import type { CityRelation } from './types';
 
 export interface CityHeroProps {
@@ -63,6 +64,7 @@ export function CityHero({
             </a>
           </Button>
         )}
+        <EntitySocialLinks links={city.social_links} size="sm" />
         <Button
           variant="ghost"
           size="icon"

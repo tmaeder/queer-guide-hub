@@ -11,6 +11,7 @@ import {
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,7 @@ export type VillageWithRelations = {
   id: string;
   name: string;
   slug: string;
+  social_links?: Record<string, string> | null;
   city_id: string;
   country_id: string;
   description: string | null;
@@ -179,6 +181,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle, onContentU
               </a>
             </Button>
           )}
+          <EntitySocialLinks links={village.social_links} size="sm" />
         </div>
       </div>
 

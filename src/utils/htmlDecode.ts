@@ -73,7 +73,8 @@ export function cleanAuthor(raw: string): string {
       /* not JSON — fall through with the original */
     }
   }
-  let author = stripHtmlTags(working);
+  // Decode entities first (handles `Jane &amp; John`, `O&#039;Brien`) then strip tags.
+  let author = stripHtmlTags(decodeHtmlEntities(working));
   // Reddit: "/u/NamelessResearcherhttps://www.reddit.com/user/NamelessResearcher"
   author = author.replace(/https?:\/\/\S+/g, '').trim();
   // Reddit /u/ prefix → just the username
@@ -113,6 +114,21 @@ export function cleanExcerpt(raw: string): string {
   // Collapse multiple whitespace/newlines into single space
   text = text.replace(/\s+/g, ' ').trim();
   return text;
+}
+
+/**
+ * Clean a headline for display:
+ * - Decode HTML entities (handles &#038; → &, &#8217; → ’, &amp; → &)
+ * - Strip any real tags so encoded markup (&lt;p&gt;) never renders as literal text
+ * - Decode once more for double-encoded entities, then collapse whitespace
+ * Single-line — titles never carry paragraph breaks.
+ */
+export function cleanTitle(raw: string): string {
+  if (!raw) return '';
+  let text = decodeHtmlEntities(raw);
+  text = stripHtmlTags(text);
+  text = decodeHtmlEntities(text);
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 /**

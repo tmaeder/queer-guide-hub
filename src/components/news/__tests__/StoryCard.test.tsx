@@ -10,7 +10,7 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
   ),
 }));
 vi.mock('@/utils/safeDisplay', () => ({ safeText: (s: string) => s }));
-vi.mock('@/utils/htmlDecode', () => ({ decodeHtmlEntities: (s: string) => s }));
+vi.mock('@/utils/htmlDecode', () => ({ decodeHtmlEntities: (s: string) => s, cleanTitle: (s: string) => s }));
 vi.mock('@/utils/fallbackImages', () => ({ getFallbackImage: () => '/fallback.png', getRandomFallbackImage: () => '/fallback.png' }));
 
 import { StoryCard } from '../StoryCard';

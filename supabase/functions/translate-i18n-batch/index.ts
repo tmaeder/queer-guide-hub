@@ -33,6 +33,7 @@ import {
 } from '../_shared/supabase-client.ts'
 import { anthropicMessages } from '../_shared/anthropic-shim.ts'
 import { applySuggestion, insertSuggestion } from '../_shared/ai-suggestions.ts'
+import { decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
 
 interface BatchInput {
   table: string
@@ -215,8 +216,9 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Build the JSON-array prompt.
-    const sources = pending.map((r: Row) => String(r[field]))
+    // Build the JSON-array prompt. Decode HTML entities in the source first so the
+    // LLM never sees (and never echoes) raw `&#038;`/`&#8217;` into translations.
+    const sources = pending.map((r: Row) => decodeHtmlEntities(String(r[field])))
     const userMsg = `Locale target: ${body.locale}\n\nTranslate each of the following ${cfg.sources.includes('title') ? 'titles' : 'names'} (one per line, deduplicated):\n\n${JSON.stringify(sources)}`
 
     let translated: Record<string, string> = {}
@@ -252,7 +254,8 @@ Deno.serve(async (req) => {
     const sourceRunId = crypto.randomUUID()
     for (const row of pending as Row[]) {
       const id = row[cfg.id_field] as string
-      const source = String(row[field])
+      // Match the decoded key used when building the prompt.
+      const source = decodeHtmlEntities(String(row[field]))
       const t = translated[source]
       if (!t) {
         errors.push({ id, error: 'no translation in LLM response' })
