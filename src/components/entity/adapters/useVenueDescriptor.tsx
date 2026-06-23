@@ -200,6 +200,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         type: 'venue',
         slug: venue.slug,
         title: venue.name,
+        image: venue.images?.[0] ?? venue.logo_url ?? undefined,
         city: cityName ?? undefined,
         country: countryName ?? undefined,
       },

@@ -69,7 +69,12 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
         countryName: null,
         criminalization: null,
       },
-      trackView: { type: 'organization', slug: org.slug, title: org.name },
+      trackView: {
+        type: 'organization',
+        slug: org.slug,
+        title: org.name,
+        image: org.cover_image_url ?? org.images?.[0] ?? org.logo_url ?? undefined,
+      },
     };
   }, [org, t]);
 
