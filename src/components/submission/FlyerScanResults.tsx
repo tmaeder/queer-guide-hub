@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertTriangle, Check, ChevronDown, ChevronUp, FileText, Link2, X } from 'lucide-react';
+import { WatchSiteControl } from '@/components/submission/WatchSiteControl';
 import {
   buildSubmissionRow,
   TABLE_BY_DETECTED,
@@ -344,6 +345,8 @@ export function FlyerScanResults({ results, onSubmitBatch, onDismiss }: FlyerSca
 
   const multipleFiles = results.length > 1;
   const includedCount = Object.values(drafts).filter((d) => d.included).length;
+  // A pasted-link scan stores the URL in source_file — offer to watch it.
+  const watchUrl = results.find((r) => /^https?:\/\//i.test(r.source_file))?.source_file;
 
   const updateDraft = (key: string, patch: Partial<ItemDraft>) =>
     setDrafts((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
@@ -412,6 +415,12 @@ export function FlyerScanResults({ results, onSubmitBatch, onDismiss }: FlyerSca
             />
           ))}
         </div>
+
+        {watchUrl && (
+          <div className="mt-4">
+            <WatchSiteControl url={watchUrl} />
+          </div>
+        )}
 
         <div className="sticky bottom-0 mt-4 pt-4 bg-background border-t border-border">
           <Button onClick={handleSubmit} disabled={includedCount === 0 || submitting} className="w-full">
