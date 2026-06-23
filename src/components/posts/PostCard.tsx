@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Trash2,
   Edit,
+  Flag,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
@@ -40,6 +41,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatDistanceToNow } from 'date-fns';
 import { CommunityPost } from '@/hooks/useCommunityPosts';
 import { CommentsSection } from './CommentsSection';
+import { ReportContentDialog } from '@/components/moderation/ReportContentDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
 
@@ -56,6 +58,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
   const reduced = useReducedMotion() ?? false;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   const isOwnPost = user?.id === post.user_id;
 
@@ -349,7 +352,12 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
                     </DropdownMenuItem>
                   </>
                 )}
-                {!isOwnPost && <DropdownMenuItem>Report Post</DropdownMenuItem>}
+                {!isOwnPost && user && (
+                  <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
+                    <Flag size={16} className="mr-2" />
+                    Report Post
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -444,6 +452,16 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {showReportDialog && (
+        <ReportContentDialog
+          open={showReportDialog}
+          onOpenChange={setShowReportDialog}
+          contentType="community_post"
+          contentId={post.id}
+          targetUserId={post.user_id}
+        />
+      )}
     </Card>
   );
 };
