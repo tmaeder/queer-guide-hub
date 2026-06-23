@@ -37,6 +37,7 @@ import { MapPin, Grid, Map } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { cn } from '@/lib/utils';
+import { getVenueVisual } from '@/lib/venueVisual';
 import { useTranslation } from 'react-i18next';
 import { VENUES_V2_ENABLED } from '@/lib/featureFlags';
 
@@ -319,7 +320,7 @@ const Venues = () => {
     if (loading || venues.length === 0 || viewMode !== 'grid') return;
     const links: HTMLLinkElement[] = [];
     for (const v of venues.slice(0, 4)) {
-      const src = v.images?.[0] ?? v.logo_url;
+      const src = getVenueVisual(v).src;
       if (!src) continue;
       const link = document.createElement('link');
       link.rel = 'preload';

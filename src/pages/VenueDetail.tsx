@@ -201,7 +201,6 @@ export default function VenueDetail() {
   const countryLink = venue?.countries?.id
     ? `/country/${venue.countries.slug || venue.countries.id}`
     : null;
-  const heroImage = venue?.images && venue.images.length > 0 ? venue.images[0] : null;
   const isClosed = Boolean(venue?.closed_at && new Date(venue.closed_at) <= new Date());
 
   const breadcrumbs = buildVenueBreadcrumbs(venue, t);
@@ -239,7 +238,6 @@ export default function VenueDetail() {
               countryName={countryName}
               cityLink={cityLink}
               countryLink={countryLink}
-              heroImage={heroImage}
               averageRating={averageRating}
               reviewCount={reviews.length}
               tripCount={tripStatus?.count}
