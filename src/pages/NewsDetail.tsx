@@ -2,6 +2,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -417,6 +418,8 @@ export default function NewsDetail() {
           {/* Editorial note ("Why this matters") — admin-curated, monochrome blockquote.
               Shown to everyone when populated. Admins reveal a placeholder slot by holding
               Alt so they can alt-click to author one (never shown during normal browsing). */}
+          {(article.editorial_note || altHeld) && (
+            <aside aria-label="Why this matters" className="border-l-2 border-foreground py-2 pl-6">
           {/* "Why this matters" — admin-curated, shown to everyone when populated.
               The empty authoring placeholder stays hidden during normal browsing;
               admins reveal it by holding Alt (#1812). */}
