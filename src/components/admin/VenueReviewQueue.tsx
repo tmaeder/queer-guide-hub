@@ -31,8 +31,12 @@ function renderValue(value: unknown) {
  * accessibility claim is a real-world harm.
  */
 export function VenueReviewQueue() {
-  const { data: rows, isLoading, decide } = useVenueReviewQueue();
+  const { data: rows, isLoading, decide, batchApproveSafe } = useVenueReviewQueue();
   const [busy, setBusy] = useState<string | null>(null);
+
+  const safeCount = (rows ?? []).filter(
+    (r) => (r.confidence ?? 0) >= 0.8 && (r.citations ?? []).length > 0,
+  ).length;
 
   const act = async (id: string, action: 'approve' | 'reject') => {
     setBusy(id);
@@ -46,13 +50,30 @@ export function VenueReviewQueue() {
     }
   };
 
+  const approveSafe = async () => {
+    setBusy('batch');
+    try {
+      const n = await batchApproveSafe.mutateAsync(0.8);
+      toast.success(`Approved ${n} safe ${n === 1 ? 'claim' : 'claims'}`);
+    } catch (e) {
+      toast.error(`Error: ${(e as Error).message}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-title">
-          <ShieldAlert size={16} />
-          Review queue — accessibility claims
-        </CardTitle>
+        <div className="flex items-center justify-between gap-4">
+          <CardTitle className="flex items-center gap-2 text-title">
+            <ShieldAlert size={16} />
+            Review queue — accessibility claims
+          </CardTitle>
+          <Button size="sm" variant="outline" disabled={busy !== null || safeCount === 0} onClick={approveSafe}>
+            <Check size={14} className="mr-1" /> Approve safe ({safeCount})
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <p className="text-13 text-muted-foreground">
