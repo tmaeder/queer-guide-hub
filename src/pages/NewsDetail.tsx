@@ -2,7 +2,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { useEffect, useMemo, useState } from 'react';
 import {

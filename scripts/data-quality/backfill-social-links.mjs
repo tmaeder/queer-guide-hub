@@ -18,12 +18,15 @@
 //   node scripts/data-quality/backfill-social-links.mjs --dry-run
 //   node scripts/data-quality/backfill-social-links.mjs --table venues --limit 200
 //   node scripts/data-quality/backfill-social-links.mjs            # all tables, live
+//   node scripts/data-quality/backfill-social-links.mjs --clean    # strip stored share/widget junk
+//   node scripts/data-quality/backfill-social-links.mjs --clean --table organizations --dry-run
 
 import { execFileSync } from 'node:child_process'
 
 const PROJECT = 'xqeacpakadqfxjxjcewc'
 const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
+const CLEAN = args.includes('--clean')
 const ONLY_TABLE = args[args.indexOf('--table') + 1] && !args[args.indexOf('--table') + 1].startsWith('--')
   ? args[args.indexOf('--table') + 1] : null
 const LIMIT = Number(args[args.indexOf('--limit') + 1]) || 150
@@ -98,7 +101,31 @@ async function sql(query, attempt = 0) {
 
 const esc = (s) => String(s).replace(/'/g, "''")
 
+// Share-button / widget / post-permalink paths that are NOT profile links
+// (facebook.com/sharer/sharer.php, t.me/share/url, twitter.com/intent/tweet,
+// instagram.com/reels/<id>/, instagram.com/p/<id>/, facebook.com/watch/, …).
+// Mirrors SHARE_WIDGET_RE + RESERVED_HANDLES in src/lib/social/registry.ts.
+const SHARE_WIDGET_RE =
+  /\/(?:sharer?\.php|sharer|share\/url|share|intent|dialog|reels?|p|watch|hashtag|explore|stories)(?:[/?#]|$)/i
+const RESERVED_HANDLES = new Set([
+  'reels', 'reel', 'p', 'share', 'intent', 'sharer', 'watch',
+  'hashtag', 'explore', 'stories', 'dialog',
+])
+
+function isShareOrWidget(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return false
+  const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`
+  if (SHARE_WIDGET_RE.test(url)) return true
+  try {
+    const seg = new URL(url).pathname.split('/').filter(Boolean)[0]
+    return seg ? RESERVED_HANDLES.has(seg.toLowerCase().replace(/^@/, '')) : false
+  } catch {
+    return false
+  }
+}
+
 function detectPlatform(url) {
+  if (isShareOrWidget(url)) return null
   for (const [key, re] of PLATFORMS) if (re.test(url)) return key
   return null
 }
@@ -162,11 +189,48 @@ async function backfillTable(table) {
   console.log(`${table}: scanned ${scanned}, found socials ${found}, wrote ${wrote}${DRY_RUN ? ' (dry-run)' : ''}`)
 }
 
+// --clean: strip already-stored share/widget/post-permalink values from the
+// social column. Batch-bounded (LIMIT rows per run) to avoid a search-trigger
+// storm; re-run until "cleaned 0". JS re-checks each value precisely — the SQL
+// candidate filter only over-selects rows that might contain junk.
+async function cleanTable(table) {
+  const { social } = TARGETS[table]
+  const res = await sql(`
+    select id, ${social} as social
+    from public.${table}
+    where ${social} is not null and ${social} <> '{}'::jsonb
+      and ${social}::text ~* '(sharer|/share|/intent|/dialog|/reels?|/p/|/watch|/hashtag|/explore|/stories)'
+    order by id
+    limit ${LIMIT}
+  `)
+  const list = Array.isArray(res) ? res : (res.result ?? [])
+  let scanned = 0, cleaned = 0
+  for (const row of list) {
+    scanned++
+    const social_map = row.social && typeof row.social === 'object' ? row.social : {}
+    const kept = {}
+    const dropped = {}
+    for (const [k, v] of Object.entries(social_map)) {
+      if (typeof v === 'string' && isShareOrWidget(v)) dropped[k] = v
+      else kept[k] = v
+    }
+    if (Object.keys(dropped).length === 0) continue
+    cleaned++
+    if (DRY_RUN) {
+      console.log(`  [dry] ${table} ${row.id} drop`, dropped)
+      continue
+    }
+    const json = esc(JSON.stringify(kept))
+    await sql(`update public.${table} set ${social} = '${json}'::jsonb where id = '${esc(row.id)}'`)
+  }
+  console.log(`${table}: scanned ${scanned}, cleaned ${cleaned}${DRY_RUN ? ' (dry-run)' : ''}`)
+}
+
 const tables = ONLY_TABLE ? [ONLY_TABLE] : Object.keys(TARGETS)
 for (const t of tables) {
   if (!TARGETS[t]) { console.error(`unknown table ${t}`); continue }
   try {
-    await backfillTable(t)
+    await (CLEAN ? cleanTable(t) : backfillTable(t))
   } catch (e) {
     console.error(`${t}: aborted — ${e?.message ?? e}`)
   }
