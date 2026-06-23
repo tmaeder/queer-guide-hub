@@ -42,7 +42,7 @@ import { MemoryRecapCard } from '@/components/trips/MemoryRecapCard';
 import { PostTripMemoryPrompt } from '@/components/trips/PostTripMemoryPrompt';
 import { TripLocalContext } from '@/components/trips/TripLocalContext';
 import { getTripPhase } from '@/components/trips/tripPhase';
-import { PeopleHereRail } from '@/components/people/PeopleHereRail';
+import { TravelBuddiesSection } from '@/components/trips/TravelBuddiesSection';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -526,15 +526,9 @@ export default function TripPlannerPage() {
         </div>
       )}
 
-      {/* Travel buddies — people heading to this trip's city around these dates. */}
-      <div className="mt-8">
-        <PeopleHereRail
-          mode="travel"
-          tripId={trip.id}
-          title="Travel buddies for this trip"
-          seeAllHref="/people/travel"
-        />
-      </div>
+      {/* Travel buddies — people heading to this trip's city around these dates.
+          Suppressed for criminalizing/death-penalty destinations (outing safety). */}
+      <TravelBuddiesSection trip={trip} />
 
       <AddPlaceDialog
         open={addPlaceOpen}
