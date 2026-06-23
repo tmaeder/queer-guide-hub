@@ -21,6 +21,15 @@ import { insertRow } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { formatPrice } from '@/lib/booking/price';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { PlaceBookableLinks } from './PlaceBookableLinks';
+import { AddReservationDialog } from './AddReservationDialog';
+import { getPlaceName, getPlaceCategory } from './SortablePlaceCard';
+
+function reservationTypeForCategory(category: string): 'hotel' | 'activity' | 'flight' | 'other' {
+  if (category === 'hotel') return 'hotel';
+  if (category === 'event' || category === 'venue') return 'activity';
+  return 'other';
+}
 
 interface Props {
   tripId: string;
@@ -33,12 +42,21 @@ interface Props {
 export function TripBookingAssistant({ tripId, places, _days, startDate, endDate }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { addPlace } = useTripMutations();
+  const { addPlace, updatePlace } = useTripMutations();
   const { originIata, _originCity } = useVisitorOrigin();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'suggestions' | 'booking'>('suggestions');
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [bookPlace, setBookPlace] = useState<TripPlace | null>(null);
+
+  // Places already added to the itinerary but not yet booked — the actionable
+  // core of the affiliate loop. Each row carries its provider deep-links (dates
+  // prefilled) + a one-tap "Mark booked".
+  const placesToBook = useMemo(
+    () => places.filter((p) => (p.booking_status ?? 'intent') === 'intent'),
+    [places],
+  );
 
   const tabs = [
     {
@@ -294,6 +312,51 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
       {/* Booking Tab */}
       {activeTab === 'booking' && (
         <div className="flex flex-col gap-4">
+          {/* Places to book — itinerary items still in "intent" status */}
+          {placesToBook.length > 0 && (
+            <div>
+              <span className="text-xs text-muted-foreground font-semibold mb-2 block">
+                {t('trips.bookingAssistant.placesToBook', 'Places to book ({{count}})', {
+                  count: placesToBook.length,
+                })}
+              </span>
+              <div className="flex flex-col gap-1">
+                {placesToBook.map((place) => {
+                  const cat = getPlaceCategory(place);
+                  return (
+                    <div
+                      key={place.id}
+                      className="flex items-center gap-2 py-1.5 border-b border-border min-h-11"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{getPlaceName(place)}</p>
+                      </div>
+                      <PlaceBookableLinks
+                        tripId={tripId}
+                        tripPlaceId={place.id}
+                        category={cat as 'venue' | 'event' | 'hotel' | 'custom'}
+                        name={getPlaceName(place)}
+                        cityName={place.cities?.name ?? null}
+                        startDate={startDate ?? null}
+                        endDate={endDate ?? null}
+                        bookingStatus={place.booking_status ?? 'intent'}
+                        onBookingPrompt={() => setBookPlace(place)}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setBookPlace(place)}
+                        className="h-6 px-2 text-xs2"
+                      >
+                        {t('trips.bookingAssistant.markBooked', 'Mark booked')}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Still need section */}
           <span className="text-xs text-muted-foreground font-semibold">
             {t('trips.bookingAssistant.stillNeed', 'Still need')}
@@ -415,6 +478,22 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
         </div>
       )}
 
+      {bookPlace && (
+        <AddReservationDialog
+          open={!!bookPlace}
+          onClose={() => setBookPlace(null)}
+          tripId={tripId}
+          initialTitle={getPlaceName(bookPlace)}
+          initialType={reservationTypeForCategory(getPlaceCategory(bookPlace))}
+          onCreated={(res) => {
+            void updatePlace.mutateAsync({
+              id: bookPlace.id,
+              reservation_id: res.id,
+              booking_status: 'booked',
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
