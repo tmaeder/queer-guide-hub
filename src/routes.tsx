@@ -359,6 +359,7 @@ export const AppRoutes = () => {
 
                 {/* Content type admin pages */}
                 <Route path="content/venue-quality" element={<AdminVenueQuality />} />
+                <Route path="content/city-quality" element={<AdminCityQuality />} />
                 <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
                 <Route path="content/village-quality" element={<AdminVillageQuality />} />
@@ -387,7 +388,7 @@ export const AppRoutes = () => {
                 <Route path="duplicates" element={<AdminDuplicates />} />
                 <Route path="events" element={<AdminEvents />} />
                 <Route path="tags" element={<Navigate to="/admin/content/unified_tags" replace />} />
-                <Route path="cities" element={<AdminCityQuality />} />
+                <Route path="cities" element={<Navigate to="/admin/content/city-quality" replace />} />
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
                 <Route path="quests" element={<AdminQuests />} />

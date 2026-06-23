@@ -1,7 +1,7 @@
-import { Globe, Music, BadgeCheck, ShieldCheck } from 'lucide-react';
+import { Globe, Music, BadgeCheck, ShieldCheck, EyeOff } from 'lucide-react';
 import { Twitter, Instagram, Linkedin, Github, Facebook, Youtube } from '@/components/icons/brand';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { displayHandle, readAccounts, type SocialAccount } from '@/lib/socialAccounts';
+import { displayHandle, isSensitivePlatform, readAccounts, type SocialAccount } from '@/lib/socialAccounts';
 
 interface SocialAccountsDisplayProps {
   /** profile.social_accounts (jsonb array) — preferred source. */
@@ -41,17 +41,18 @@ function VerifiedMarker({ status }: { status: SocialAccount['verified'] }) {
 function AccountCard({ account, featured }: { account: SocialAccount; featured?: boolean }) {
   const handle = displayHandle(account);
   const name = account.display_name || handle;
+  const sensitive = account.sensitive || isSensitivePlatform(account.platform);
   return (
     <a
       href={account.url}
       target="_blank"
-      rel="noopener noreferrer"
+      rel={sensitive ? 'noopener noreferrer nofollow' : 'noopener noreferrer'}
       className={`flex items-center gap-2 rounded-element border border-border bg-background px-2 py-2 hover:bg-muted no-underline ${
         featured ? 'sm:col-span-2' : ''
       }`}
     >
       <Avatar style={{ width: featured ? 40 : 32, height: featured ? 40 : 32 }}>
-        {account.avatar_url ? <AvatarImage src={account.avatar_url} alt={name} /> : null}
+        {account.avatar_url && !sensitive ? <AvatarImage src={account.avatar_url} alt={name} /> : null}
         <AvatarFallback className="bg-muted">
           <PlatformIcon platform={account.platform} />
         </AvatarFallback>
@@ -60,6 +61,12 @@ function AccountCard({ account, featured }: { account: SocialAccount; featured?:
         <span className="flex items-center gap-1 text-sm font-medium text-foreground truncate">
           {name}
           <VerifiedMarker status={account.verified} />
+          {sensitive && (
+            <span className="inline-flex items-center gap-1 rounded-badge bg-muted px-1 text-2xs text-muted-foreground" aria-label="Sensitive — 18+">
+              <EyeOff size={11} />
+              18+
+            </span>
+          )}
         </span>
         <span className="flex items-center gap-1 text-xs text-muted-foreground truncate">
           <PlatformIcon platform={account.platform} />

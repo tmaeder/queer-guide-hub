@@ -5,6 +5,7 @@ import {
   cleanAuthor,
   cleanExcerpt,
   cleanContent,
+  cleanTitle,
 } from '../htmlDecode';
 
 describe('decodeHtmlEntities', () => {
@@ -87,6 +88,37 @@ describe('cleanAuthor', () => {
 
   it('falls back to original string when not valid JSON', () => {
     expect(cleanAuthor('[author with brackets')).toBe('[author with brackets');
+  });
+
+  it('decodes entities in the byline', () => {
+    expect(cleanAuthor('Jane &amp; John')).toBe('Jane & John');
+    expect(cleanAuthor('O&#039;Brien')).toBe("O'Brien");
+  });
+});
+
+describe('cleanTitle', () => {
+  it('decodes WordPress decimal entities', () => {
+    expect(cleanTitle('Kristi Noem &#038; the biggest read')).toBe(
+      'Kristi Noem & the biggest read',
+    );
+    expect(cleanTitle('Bill Newton&#8217;s murder')).toBe('Bill Newton’s murder');
+  });
+
+  it('strips encoded tags instead of rendering them literally', () => {
+    expect(cleanTitle('A &lt;p&gt;headline&lt;/p&gt;')).toBe('A headline');
+  });
+
+  it('strips raw tags', () => {
+    expect(cleanTitle('A <b>bold</b> headline')).toBe('A bold headline');
+  });
+
+  it('collapses whitespace and trims', () => {
+    expect(cleanTitle('  spaced   out  ')).toBe('spaced out');
+  });
+
+  it('returns empty for falsy input', () => {
+    expect(cleanTitle('')).toBe('');
+    expect(cleanTitle(null as unknown as string)).toBe('');
   });
 });
 

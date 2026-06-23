@@ -14,6 +14,7 @@ import {
   Tag as TagIcon,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -290,6 +291,7 @@ export function MarketplaceBuyBox({
                 </a>
               </Button>
             )}
+            <EntitySocialLinks links={listing.social_media} size="sm" />
           </div>
 
           <div className="flex gap-2">
