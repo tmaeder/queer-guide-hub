@@ -2769,5 +2769,26 @@
       "both": "{{name}} est dispo pour se voir maintenant 🟢",
       "youOnly": "Vous êtes indiqué comme dispo pour se voir 🟢"
     }
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "Une nouvelle version est disponible",
+      "description": "Actualisez pour obtenir les dernières fonctionnalités.",
+      "action": "Actualiser"
+    },
+    "backOnline": "De retour en ligne",
+    "offline": {
+      "title": "Vous êtes hors ligne",
+      "description": "Certaines fonctionnalités peuvent être indisponibles."
+    },
+    "install": {
+      "title": "Installer Queer Guide",
+      "description": "Accès rapide depuis votre écran d'accueil — fonctionne aussi hors ligne.",
+      "action": "Installer",
+      "iosTitle": "Ajouter à l'écran d'accueil",
+      "iosHint": "Touchez le bouton Partager dans Safari, puis sélectionnez « Sur l'écran d'accueil ».",
+      "dismiss": "Fermer",
+      "ariaLabel": "Installer l'app"
+    }
   }
 }

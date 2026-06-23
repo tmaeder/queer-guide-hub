@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
+import i18n from '@/i18n';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -66,12 +67,12 @@ export function PWAProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const onOnline = () => {
       setIsOnline(true);
-      toast.success('Back online', { duration: 3000 });
+      toast.success(i18n.t('pwa.backOnline'), { duration: 3000 });
     };
     const onOffline = () => {
       setIsOnline(false);
-      toast.warning('You\'re offline', {
-        description: 'Some features may be unavailable.',
+      toast.warning(i18n.t('pwa.offline.title'), {
+        description: i18n.t('pwa.offline.description'),
         duration: 5000,
       });
     };
@@ -99,11 +100,11 @@ export function PWAProvider({ children }: { children: ReactNode }) {
           if (updateToastId.current !== undefined) {
             toast.dismiss(updateToastId.current);
           }
-          updateToastId.current = toast.info('A new version is available', {
-            description: 'Refresh to get the latest features.',
+          updateToastId.current = toast.info(i18n.t('pwa.updateAvailable.title'), {
+            description: i18n.t('pwa.updateAvailable.description'),
             duration: Infinity,
             action: {
-              label: 'Refresh',
+              label: i18n.t('pwa.updateAvailable.action'),
               onClick: () => {
                 registration.waiting?.postMessage('SKIP_WAITING');
               },

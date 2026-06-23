@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePWA } from './PWAProvider';
@@ -40,6 +41,7 @@ function isIOSSafari(): boolean {
 }
 
 export function InstallBanner() {
+  const { t } = useTranslation();
   const { canInstall, isInstalled, promptInstall } = usePWA();
   const location = useLocation();
   const [pageCount, setPageCount] = useState(0);
@@ -80,7 +82,7 @@ export function InstallBanner() {
   return (
     <div
       role="complementary"
-      aria-label="Install app"
+      aria-label={t('pwa.install.ariaLabel')}
       className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1300] w-[calc(100%-32px)] sm:w-auto max-w-[420px] bg-background/95 backdrop-blur-md p-4 flex items-start gap-4 animate-in slide-in-from-bottom-4 fade-in duration-300 border border-border/60 rounded-container"
     >
       <img
@@ -91,16 +93,16 @@ export function InstallBanner() {
       <div className="flex-1 min-w-0">
         {showIOSHint ? (
           <>
-            <p className="text-sm font-semibold mb-1">Add to Home Screen</p>
+            <p className="text-sm font-semibold mb-1">{t('pwa.install.iosTitle')}</p>
             <span className="text-xs text-muted-foreground">
-              Tap the share button in Safari, then select "Add to Home Screen".
+              {t('pwa.install.iosHint')}
             </span>
           </>
         ) : (
           <>
-            <p className="text-sm font-semibold mb-1">Install Queer Guide</p>
+            <p className="text-sm font-semibold mb-1">{t('pwa.install.title')}</p>
             <span className="text-xs text-muted-foreground">
-              Quick access from your home screen — works offline too.
+              {t('pwa.install.description')}
             </span>
           </>
         )}
@@ -111,7 +113,7 @@ export function InstallBanner() {
             className="mt-2 font-semibold rounded-element"
           >
             <Download size={16} className="mr-2" />
-            Install
+            {t('pwa.install.action')}
           </Button>
         )}
       </div>
@@ -119,7 +121,7 @@ export function InstallBanner() {
         variant="ghost"
         size="sm"
         onClick={handleDismiss}
-        aria-label="Dismiss install prompt"
+        aria-label={t('pwa.install.dismiss')}
         className="h-7 w-7 p-0 -ml-1 -mt-1"
       >
         <X size={18} />
