@@ -118,3 +118,40 @@ export async function fetchStoryForArticle(articleId: string): Promise<{ slug: s
   if (!story || story.article_count < 2) return null;
   return story;
 }
+
+/**
+ * Full story cluster for an article — the other outlets covering the same event.
+ * Resolves the article's story_id, then loads every member article so the news
+ * detail page can render a "Reported by N outlets" panel. Returns null when the
+ * article isn't part of a multi-source cluster.
+ */
+export async function fetchStoryClusterForArticle(articleId: string): Promise<StoryDetail | null> {
+  const { data: link } = await supabase
+    .from('news_story_articles' as never)
+    .select('story_id')
+    .eq('article_id', articleId)
+    .maybeSingle() as unknown as { data: { story_id: string } | null };
+  if (!link) return null;
+
+  const { data: story } = await supabase
+    .from('news_stories' as never)
+    .select('id, slug, title, summary, hero_article_id, article_count, first_seen_at, last_updated_at, top_tags, country_ids')
+    .eq('id', link.story_id)
+    .maybeSingle() as unknown as { data: NewsStory | null };
+  if (!story || story.article_count < 2) return null;
+
+  const { data: links } = await supabase
+    .from('news_story_articles' as never)
+    .select('article_id')
+    .eq('story_id', story.id) as unknown as { data: { article_id: string }[] | null };
+  const ids = (links ?? []).map((l) => l.article_id);
+  if (ids.length === 0) return { ...story, articles: [] };
+
+  const { data: arts } = await supabase
+    .from('news_articles')
+    .select('id, title, slug, url, image_url, excerpt, published_at, source_id, views_count, category, category_canonical')
+    .in('id', ids)
+    .order('published_at', { ascending: false }) as unknown as { data: NewsStoryArticle[] | null };
+
+  return { ...story, articles: arts ?? [] };
+}
