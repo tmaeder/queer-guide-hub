@@ -22,7 +22,7 @@ function StatTile({
         {icon}
         {label}
       </p>
-      <p className="mt-2 text-display tabular-nums leading-none">
+      <p className="mt-2 text-headline tabular-nums leading-none">
         {value}
         {suffix && <span className="text-body-lg text-muted-foreground"> {suffix}</span>}
       </p>
