@@ -24,6 +24,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
@@ -46,6 +47,7 @@ import { isMeaningfulTag } from '@/utils/eventText';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
+  social_links?: Record<string, string> | null;
   venues?: {
     id: string;
     slug?: string;
@@ -736,6 +738,7 @@ export function EventSidebar({ event, venueRef, countryId, onOrganizerClick }: S
                 </a>
               </Button>
             )}
+            <EntitySocialLinks links={event.social_links} size="sm" />
           </div>
         </CardContent>
       </Card>

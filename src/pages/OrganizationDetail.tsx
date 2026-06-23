@@ -8,6 +8,7 @@ import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
+import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { EntityMap } from '@/components/map/EntityMap';
 import { NewsCard } from '@/components/news/NewsCard';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
@@ -245,18 +246,7 @@ function OrgSidebar({ org }: { org: Organization }) {
             <span>{org.phone}</span>
           </a>
         )}
-        {socials.map(([key, value]) => (
-          <a
-            key={key}
-            href={value}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 capitalize hover:underline"
-          >
-            <Globe size={16} className="text-muted-foreground" aria-hidden="true" />
-            <span className="truncate">{key}</span>
-          </a>
-        ))}
+        {socials.length > 0 && <EntitySocialLinks links={org.social} size="sm" />}
       </CardContent>
     </Card>
   );

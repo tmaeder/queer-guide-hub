@@ -19,6 +19,7 @@ import {
 import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,7 @@ export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] &
 };
 
 export type VenueWithRelations = Venue & {
+  social_links?: Record<string, string> | null;
   cities?: { id: string; slug?: string; name: string } | null;
   countries?: {
     id: string;
@@ -907,6 +909,8 @@ export function VenueSidebar({ venue, checkinRefresh, onContentUpdated }: VenueS
                 </span>
               </div>
             )}
+
+            <EntitySocialLinks links={venue.social_links} exclude={['instagram']} size="sm" />
 
             {hasMap && (
               <Button variant="outline" size="sm" asChild className="self-start">
