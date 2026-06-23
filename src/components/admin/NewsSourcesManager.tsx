@@ -254,6 +254,7 @@ export function NewsSourcesManager() {
                       <SelectItem value="rss">RSS Feed</SelectItem>
                       <SelectItem value="api">API Source</SelectItem>
                       <SelectItem value="news_api">News API</SelectItem>
+                      <SelectItem value="wikimedia">Wikinews (MediaWiki)</SelectItem>
                       <SelectItem value="social">Social Media</SelectItem>
                     </SelectContent>
                   </Select>
