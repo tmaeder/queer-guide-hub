@@ -717,6 +717,11 @@ async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Pro
 			category: r.category as string | undefined,
 			slug: r.slug as string | undefined,
 			image_url: (r.imageUrl as string) ?? undefined,
+			// R2-mirrored copies (surfaced by related_entities since the
+			// discovery-RPC optimized-image upgrade) — the client prefers these
+			// over the raw image_url, which often hotlink-fails.
+			optimized_url: (r.optimizedUrl as string) ?? undefined,
+			thumbnail_url: (r.thumbnailUrl as string) ?? undefined,
 		},
 	}));
 	return json({ results }, 200, cors);

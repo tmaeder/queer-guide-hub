@@ -21,6 +21,12 @@ vi.mock('@/hooks/useIntimateMatches', () => ({
   useIncomingLikeListener: () => {},
 }));
 
+// Compatibility ranking reaches useAuth; mock it like the other data hooks so
+// the component renders without an AuthProvider.
+vi.mock('@/hooks/usePeopleDiscovery', () => ({
+  usePeopleDiscovery: () => ({ data: [] }),
+}));
+
 import IntimateDiscovery from '../IntimateDiscovery';
 
 describe('IntimateDiscovery', () => {

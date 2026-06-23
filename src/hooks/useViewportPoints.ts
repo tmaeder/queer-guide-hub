@@ -183,7 +183,7 @@ async function fetchVenuesInBbox(
   let query = supabase
     .from('venues')
     .select(
-      'id, slug, name, category, latitude, longitude, city, country, is_featured, images, hours, price_range',
+      'id, slug, name, category, latitude, longitude, city, country, is_featured, images, logo_url, hours, price_range',
     )
     .neq('data_source', 'refuge-restrooms')
     .neq('review_status', 'archived')
@@ -214,7 +214,11 @@ async function fetchVenuesInBbox(
 
   return (data ?? []).map((v: Record<string, unknown>) => {
     const images = Array.isArray(v.images) ? (v.images as string[]) : [];
-    const asset = assets.get(String(v.id));
+    const logoUrl = typeof v.logo_url === 'string' ? v.logo_url : undefined;
+    const isLogo = Boolean(logoUrl);
+    // Logo-first: when a brand logo exists, show it (contained) and skip the
+    // optimized/thumbnail cover-photo assets — those are not the logo.
+    const asset = isLogo ? undefined : assets.get(String(v.id));
     const openNow = isOpenNow(v.hours);
     const featured = Boolean(v.is_featured);
     return {
@@ -235,7 +239,8 @@ async function fetchVenuesInBbox(
           country: v.country,
           category: v.category,
           featured,
-          image: images[0] ?? undefined,
+          image: logoUrl ?? images[0] ?? undefined,
+          isLogo,
           optimizedImage: asset?.optimized_url,
           thumbImage: asset?.thumbnail_url,
           openNow,

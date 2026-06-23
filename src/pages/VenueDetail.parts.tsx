@@ -43,6 +43,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import { buildPlaceChain } from '@/config/breadcrumbs';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getVenueVisual } from '@/lib/venueVisual';
 import type { TFunction } from 'i18next';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
@@ -246,7 +247,6 @@ interface VenueHeroProps {
   countryName: string | null;
   cityLink: string | null;
   countryLink: string | null;
-  heroImage: string | null;
   averageRating: number;
   reviewCount: number;
   tripCount?: number;
@@ -287,7 +287,6 @@ export function VenueHero({
   countryName,
   cityLink,
   countryLink,
-  heroImage,
   averageRating,
   reviewCount,
   tripCount,
@@ -303,6 +302,7 @@ export function VenueHero({
   const isClosed = Boolean(venue.closed_at && new Date(venue.closed_at) <= new Date());
   const openNow = isClosed ? null : getOpenNow(venue.hours);
   const hasFlag = isClosed || venue.is_featured || venue.verified;
+  const visual = getVenueVisual(venue);
 
   // Adaptive fact bar — only cells with real data.
   const facts: Array<{ icon: typeof Star; label: string; value: React.ReactNode }> = [];
@@ -327,12 +327,13 @@ export function VenueHero({
       {/* Editorial cover */}
       <div className="group relative mb-6">
         <Image
-          src={heroImage}
+          src={visual.src}
+          fit={visual.fit}
           alt={venue.name}
           heightPx={isMobile ? 220 : 360}
           imageRole="hero"
           rounded="container"
-          scrim={hasFlag ? 'readable' : 'none'}
+          scrim={!visual.isLogo && hasFlag ? 'readable' : 'none'}
           priority
           fallbackEntityType="venue"
           fallbackKey={venue.id}
@@ -345,18 +346,6 @@ export function VenueHero({
                 <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
               )}
             </div>
-          )}
-          {venue.logo_url && (
-            <img
-              src={venue.logo_url}
-              alt=""
-              role="presentation"
-              referrerPolicy="no-referrer"
-              className="absolute bottom-4 left-4 h-12 w-12 rounded-element bg-background/90 object-contain p-1"
-              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
           )}
         </Image>
       </div>
@@ -663,7 +652,7 @@ export function VenueOverview({
             onSaved={onContentUpdated}
             as="div"
           >
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
               {venue.images!.map((imageUrl, index) => (
                 <button
                   type="button"

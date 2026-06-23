@@ -8,6 +8,8 @@ import type { ReactNode } from 'react';
 
 type MockResult = { data: unknown; error: { message: string } | null };
 
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'viewer-1' } }) }));
+
 const state = vi.hoisted(() => ({
   results: [] as MockResult[],
   calls: [] as Array<{ table: string; chain: Array<{ method: string; args: unknown[] }> }>,
@@ -37,6 +39,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       );
       return builder;
     },
+    rpc: () => Promise.resolve({ data: [], error: null }),
   },
 }));
 

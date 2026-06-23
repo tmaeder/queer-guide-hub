@@ -39,6 +39,11 @@ export function isValidImageUrl(url: unknown): url is string {
   if (typeof url !== 'string' || url.length === 0) return false;
   if (!/^https:\/\//i.test(url)) return false;
   if (url.startsWith('data:image/svg')) return false;
+  // Reject scraper-corrupted URLs where a lazy-load `data:` placeholder was
+  // concatenated onto the real host (e.g.
+  // `https://www.gaytravel4u.comdata:image/svg+xml,...`). A `data:` scheme
+  // embedded after the host can never resolve to an image.
+  if (/^https?:\/\/[^\s]*data:image/i.test(url)) return false;
   try {
     const u = new URL(url);
     if (DENY_HOSTS.has(u.host)) return false;

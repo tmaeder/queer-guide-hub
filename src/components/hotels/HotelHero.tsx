@@ -1,7 +1,8 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, ArrowRight } from 'lucide-react';
 import type { Hotel } from '@/hooks/useHotels';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage } from '@/utils/fallbackImages';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import { safeText } from '@/utils/safeDisplay';
 
 interface HotelHeroProps {
@@ -16,7 +17,8 @@ function excerpt(text: string | null | undefined, max = 180): string {
 }
 
 export function HotelHero({ hotel }: HotelHeroProps) {
-  const image = hotel.images?.[0] || getRandomFallbackImage();
+  const fallback = getFallbackImage('hotel', hotel.id);
+  const image = isValidImageUrl(hotel.images?.[0]) ? hotel.images![0] : fallback;
   const name = safeText(hotel.name);
   const city = safeText(hotel.city);
   const country = safeText(hotel.country);
@@ -41,7 +43,7 @@ export function HotelHero({ hotel }: HotelHeroProps) {
             decoding="async"
             fetchPriority="high"
             referrerPolicy="no-referrer"
-            onError={(e) => { const fb = getRandomFallbackImage(); if ((e.target as HTMLImageElement).src !== fb) (e.target as HTMLImageElement).src = fb; }}
+            onError={(e) => { if ((e.target as HTMLImageElement).src !== fallback) (e.target as HTMLImageElement).src = fallback; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         </div>

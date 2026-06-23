@@ -21,6 +21,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
+import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import {
   type EventWithRelations,
   EventHero,
@@ -357,6 +358,13 @@ export default function EventDetail() {
                 className="mt-10"
               />
             )}
+            <div className="mt-10">
+              <PeopleHereRail
+                mode="locals"
+                eventId={event.id}
+                title="Who's going & people to meet"
+              />
+            </div>
             <SimilarItems entity={{ type: 'event', id: event.id }} className="mt-10" />
             <MoreLikeThisByTag
               entityType="event"

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export type Profile = {
   user_id: string;
@@ -37,7 +38,7 @@ export interface UserFilters {
   isBusiness: boolean;
   hasChildren: boolean;
   hasPets: boolean;
-  sortBy: 'newest' | 'oldest' | 'alphabetical' | 'last_active';
+  sortBy: 'newest' | 'oldest' | 'alphabetical' | 'last_active' | 'match';
 }
 
 export const defaultUserFilters: UserFilters = {
@@ -104,8 +105,9 @@ export function useUserDirectoryQuery({
   nearMe,
   userLocation,
 }: UseUserDirectoryQueryArgs) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['user-directory', filters, nearMe, userLocation],
+    queryKey: ['user-directory', filters, nearMe, userLocation, user?.id],
     queryFn: async () => {
       let query = supabase.from('profiles').select('*').limit(PROFILE_PAGE_SIZE);
 
@@ -166,6 +168,9 @@ export function useUserDirectoryQuery({
           query = query.order('display_name', { ascending: true, nullsFirst: false });
           break;
         case 'last_active':
+        case 'match':
+          // 'match' fetches a recent base set, then re-orders by compatibility
+          // below (the RPC ranking is applied post-fetch so all filters hold).
           query = query.order('last_active_at', { ascending: false, nullsFirst: false });
           break;
         default:
@@ -216,6 +221,24 @@ export function useUserDirectoryQuery({
           }
         } catch (error) {
           console.error('Error getting user city for near me filter:', error);
+        }
+      }
+
+      // Compatibility sort: re-order the already-filtered set by the shared
+      // people-matching engine. Signed-in only; profiles the engine doesn't
+      // rank (e.g. not discoverable) fall to the end in their existing order.
+      if (filters.sortBy === 'match' && user) {
+        const { data: ranked, error: rankError } = await supabase.rpc('people_discovery', {
+          p_viewer: user.id,
+          p_mode: 'locals',
+          p_limit: 300,
+        });
+        if (!rankError && ranked) {
+          const rankIndex = new Map<string, number>(
+            (ranked as { user_id: string }[]).map((r, i) => [r.user_id, i]),
+          );
+          const at = (id: string) => rankIndex.get(id) ?? Number.MAX_SAFE_INTEGER;
+          filteredData = [...filteredData].sort((a, b) => at(a.user_id) - at(b.user_id));
         }
       }
 
