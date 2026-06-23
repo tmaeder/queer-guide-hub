@@ -136,6 +136,12 @@ verify_jwt = false
 [functions.calendar-token]
 verify_jwt = true
 
+[functions.delete-account]
+verify_jwt = true
+
+[functions.export-my-data]
+verify_jwt = true
+
 [functions.mapbox-geocoding]
 verify_jwt = false
 

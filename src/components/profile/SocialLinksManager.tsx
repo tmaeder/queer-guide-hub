@@ -21,6 +21,8 @@ import {
   BadgeCheck,
   ShieldCheck,
   Copy,
+  EyeOff,
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -30,6 +32,7 @@ import {
   detectPlatform,
   displayHandle,
   fromLegacyLinks,
+  isSensitivePlatform,
   normalizeUrl,
   toLegacyLinks,
   unavatarSource,
@@ -81,6 +84,7 @@ export function SocialLinksManager({
   );
   const [quickAddUrl, setQuickAddUrl] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [showSensitiveNotice, setShowSensitiveNotice] = useState(false);
 
   const detected = quickAddUrl.trim() ? detectPlatform(quickAddUrl) : null;
 
@@ -88,17 +92,24 @@ export function SocialLinksManager({
     if (!quickAddUrl.trim()) return;
     const url = normalizeUrl(quickAddUrl);
     const { platform, handle } = detectPlatform(url);
+    const sensitive = isSensitivePlatform(platform);
     const account: SocialAccount = {
       platform,
       url,
       handle,
       verified: 'unverified',
-      visibility: 'public',
-      featured: accounts.length === 0,
+      // Sensitive (adult/dating) links default to community, never public.
+      visibility: sensitive ? 'community' : 'public',
+      featured: accounts.length === 0 && !sensitive,
       embed_enabled: false,
+      sensitive,
     };
     setAccounts((prev) => [...prev, account]);
     setQuickAddUrl('');
+    if (sensitive) {
+      setShowSensitiveNotice(true);
+      return; // never fetch an avatar from an adult/dating site
+    }
 
     // Resolve avatar in the background, then patch the matching row.
     const avatar = await resolveAvatar(platform, handle);
@@ -228,6 +239,26 @@ export function SocialLinksManager({
             )}
           </div>
 
+          {showSensitiveNotice && (
+            <div className="flex items-start gap-2 rounded-element border border-border bg-muted px-2 py-2">
+              <EyeOff size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+              <p className="flex-1 text-xs text-muted-foreground">
+                Adult & dating links default to <strong>community</strong> visibility (signed-in members)
+                and show an 18+ badge to visitors. They’re never verified or embedded. Set visibility per
+                link below, or raise to public if you choose.
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Dismiss"
+                onClick={() => setShowSensitiveNotice(false)}
+              >
+                <X size={14} />
+              </Button>
+            </div>
+          )}
+
           {accounts.length > 0 && backlink && (
             <div className="flex flex-col gap-2 rounded-element border border-border bg-muted px-2 py-2">
               <p className="text-xs text-muted-foreground">
@@ -266,6 +297,12 @@ export function SocialLinksManager({
                       {account.verified === 'linked' && (
                         <ShieldCheck size={14} className="text-muted-foreground" aria-label="Self-linked" />
                       )}
+                      {(account.sensitive || isSensitivePlatform(account.platform)) && (
+                        <span className="inline-flex items-center gap-1 rounded-badge bg-muted px-1 text-2xs text-muted-foreground" aria-label="Sensitive — 18+">
+                          <EyeOff size={11} />
+                          18+
+                        </span>
+                      )}
                     </span>
                     <span className="text-xs text-muted-foreground truncate">
                       {displayHandle(account)}
@@ -285,19 +322,21 @@ export function SocialLinksManager({
                       <SelectItem value="private">Private</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={verifyingUrl === account.url || account.verified === 'verified'}
-                    onClick={() => verify(account)}
-                  >
-                    {account.verified === 'verified'
-                      ? 'Verified'
-                      : verifyingUrl === account.url
-                        ? 'Checking…'
-                        : 'Verify'}
-                  </Button>
+                  {!(account.sensitive || isSensitivePlatform(account.platform)) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={verifyingUrl === account.url || account.verified === 'verified'}
+                      onClick={() => verify(account)}
+                    >
+                      {account.verified === 'verified'
+                        ? 'Verified'
+                        : verifyingUrl === account.url
+                          ? 'Checking…'
+                          : 'Verify'}
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
