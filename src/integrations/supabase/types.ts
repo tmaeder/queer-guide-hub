@@ -23593,6 +23593,7 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: { user_id: string }; Returns: boolean }
+      is_blocked: { Args: { p_a: string; p_b: string }; Returns: boolean }
       is_exception_date: {
         Args: { p_exceptions: string[]; p_when: string }
         Returns: boolean
@@ -24446,6 +24447,15 @@ export type Database = {
           previous_error: string
           staging_id: string
         }[]
+      }
+      report_content: {
+        Args: {
+          p_content_type: string
+          p_content_id: string
+          p_reason: string
+          p_details?: string
+        }
+        Returns: string
       }
       resolve_city_and_country: {
         Args: { p_city_name: string; p_country_name: string }
