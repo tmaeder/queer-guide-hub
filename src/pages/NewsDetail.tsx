@@ -3,7 +3,6 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
-import { MarketplaceRelated } from '@/components/marketplace/MarketplaceRelated';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { useEffect, useMemo, useState } from 'react';
@@ -773,8 +772,6 @@ export default function NewsDetail() {
         title="Related by tag"
         className="mt-10"
       />
-
-      <MarketplaceRelated className="mt-12" title="Shop LGBTQ+ brands" />
     </TracingBeam>
   );
 }
