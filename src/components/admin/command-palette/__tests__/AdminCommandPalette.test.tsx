@@ -37,6 +37,8 @@ vi.mock('@/hooks/useGranularRoles', () => ({
 import { AdminCommandPalette } from '../AdminCommandPalette';
 import { AdminCommandActionsProvider } from '../useAdminCommandActions';
 
+const makeQc = () => new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
 describe('AdminCommandPalette', () => {
   beforeEach(() => {
     navigateMock.mockReset();
@@ -45,6 +47,7 @@ describe('AdminCommandPalette', () => {
 
   it('navigates on selecting a nav item', () => {
     render(
+      <QueryClientProvider client={makeQc()}>
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}>
         <MemoryRouter>
           <AdminCommandActionsProvider>
@@ -60,6 +63,7 @@ describe('AdminCommandPalette', () => {
 
   it('filters by search input', () => {
     render(
+      <QueryClientProvider client={makeQc()}>
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}>
         <MemoryRouter>
           <AdminCommandActionsProvider>
