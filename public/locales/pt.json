@@ -2769,26 +2769,6 @@
       "youOnly": "Estás marcado como livre para encontrar 🟢"
     }
   },
-  "pwa": {
-    "updateAvailable": {
-      "title": "Uma nova versão está disponível",
-      "description": "Atualize para obter os recursos mais recentes.",
-      "action": "Atualizar"
-    },
-    "backOnline": "De volta online",
-    "offline": {
-      "title": "Você está offline",
-      "description": "Alguns recursos podem estar indisponíveis."
-    },
-    "install": {
-      "title": "Instalar o Queer Guide",
-      "description": "Acesso rápido pela tela inicial — também funciona offline.",
-      "action": "Instalar",
-      "iosTitle": "Adicionar à Tela de Início",
-      "iosHint": "Toque no botão de partilha no Safari e selecione «Adicionar à Tela de Início».",
-      "dismiss": "Dispensar",
-      "ariaLabel": "Instalar app"
-    }
   "newsDetail": {
     "notFound": "Artigo não encontrado",
     "notFoundDesc": "O artigo que você procura não existe.",
@@ -2821,5 +2801,26 @@
     "source": "a fonte",
     "moreLikeThis": "Mais como isto",
     "forYou": "Para você"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "Uma nova versão está disponível",
+      "description": "Atualize para obter os recursos mais recentes.",
+      "action": "Atualizar"
+    },
+    "backOnline": "De volta online",
+    "offline": {
+      "title": "Você está offline",
+      "description": "Alguns recursos podem estar indisponíveis."
+    },
+    "install": {
+      "title": "Instalar o Queer Guide",
+      "description": "Acesso rápido pela tela inicial — também funciona offline.",
+      "action": "Instalar",
+      "iosTitle": "Adicionar à Tela de Início",
+      "iosHint": "Toque no botão de partilha no Safari e selecione «Adicionar à Tela de Início».",
+      "dismiss": "Dispensar",
+      "ariaLabel": "Instalar app"
+    }
   }
 }
