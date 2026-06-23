@@ -1,6 +1,11 @@
 /**
  * Shared helpers for the dynamic sitemap functions.
- * Pulls slugs from Supabase via PostgREST. Uses anon key (RLS-respecting).
+ * Pulls slugs from Supabase via PostgREST. NOTE: `fetchRows` PREFERS the
+ * service-role key when present (see below), which BYPASSES RLS — it only
+ * falls back to the anon key. So row-level visibility rules (e.g. the safety
+ * layer's `safety_gated` gate) are NOT enforced automatically here; callers
+ * that read gated tables (venues/events) must add an explicit
+ * `safety_gated=eq.false` filter.
  */
 import { SITE_ORIGIN } from './routeMeta';
 

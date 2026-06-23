@@ -13,6 +13,8 @@ import {
 import { adminNavSections, resolveItemMinRole } from '@/config/adminNavigation';
 import { roleAtLeast } from '@/config/adminRoles';
 import { useGranularRoles } from '@/hooks/useGranularRoles';
+import { useAdminCounts, readCount } from '@/hooks/useAdminCounts';
+import { useAdminNavPins } from '@/hooks/useAdminNavPins';
 import { OPEN_COMMAND_PALETTE_EVENT } from './commandPaletteBus';
 import { useAdminCommandActions } from './useAdminCommandActions';
 
@@ -62,18 +64,37 @@ export function AdminCommandPalette({ open, onOpenChange }: Props) {
   }, [open]);
 
   const { effectiveRole } = useGranularRoles();
+  const { data: counts } = useAdminCounts();
+  const { pins } = useAdminNavPins();
 
   const navItems = useMemo(() => {
-    const items: { id: string; label: string; route: string; section: string }[] = [];
+    const items: {
+      id: string;
+      label: string;
+      route: string;
+      section: string;
+      countKey?: string;
+    }[] = [];
     for (const section of adminNavSections) {
       for (const item of section.items) {
         // Don't list routes the user can't reach (they'd 403 / hit access-denied).
         if (!roleAtLeast(effectiveRole, resolveItemMinRole(item, section))) continue;
-        items.push({ id: item.id, label: item.label, route: item.route, section: section.label });
+        items.push({
+          id: item.id,
+          label: item.label,
+          route: item.route,
+          section: section.label,
+          countKey: item.countTable ?? item.reviewCountKey,
+        });
       }
     }
     return items;
   }, [effectiveRole]);
+
+  const pinnedItems = useMemo(
+    () => pins.map((id) => navItems.find((n) => n.id === id)).filter((n): n is (typeof navItems)[number] => Boolean(n)),
+    [pins, navItems],
+  );
 
   const go = useCallback(
     (route: string, label: string) => {
@@ -120,6 +141,20 @@ export function AdminCommandPalette({ open, onOpenChange }: Props) {
           </>
         )}
 
+        {pinnedItems.length > 0 && query.length === 0 && (
+          <>
+            <CommandGroup heading="Pinned">
+              {pinnedItems.map((n) => (
+                <CommandItem key={`pin-${n.id}`} value={`pinned ${n.label}`} onSelect={() => go(n.route, n.label)}>
+                  <span>{n.label}</span>
+                  <CommandShortcut>{n.section}</CommandShortcut>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+          </>
+        )}
+
         {recent.length > 0 && query.length === 0 && (
           <>
             <CommandGroup heading="Recent">
@@ -139,16 +174,26 @@ export function AdminCommandPalette({ open, onOpenChange }: Props) {
         )}
 
         <CommandGroup heading="Navigate">
-          {navItems.map((n) => (
-            <CommandItem
-              key={n.id}
-              value={`${n.label} ${n.section} ${n.route}`}
-              onSelect={() => go(n.route, n.label)}
-            >
-              <span>{n.label}</span>
-              <CommandShortcut>{n.section}</CommandShortcut>
-            </CommandItem>
-          ))}
+          {navItems.map((n) => {
+            const { count, overdue } = readCount(counts, n.countKey);
+            return (
+              <CommandItem
+                key={n.id}
+                value={`${n.label} ${n.section} ${n.route}`}
+                onSelect={() => go(n.route, n.label)}
+              >
+                <span>{n.label}</span>
+                {count !== undefined && count > 0 && (
+                  <span
+                    className={`ml-2 text-2xs font-semibold tabular-nums ${overdue > 0 ? 'text-destructive' : 'text-muted-foreground'}`}
+                  >
+                    {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
+                  </span>
+                )}
+                <CommandShortcut>{n.section}</CommandShortcut>
+              </CommandItem>
+            );
+          })}
         </CommandGroup>
       </CommandList>
     </CommandDialog>

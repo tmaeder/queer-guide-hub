@@ -11,6 +11,13 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { email: 'a@b' } }) }));
 vi.mock('@/hooks/useGranularRoles', () => ({ useGranularRoles: () => ({ effectiveRole: 'admin' }) }));
+vi.mock('@/hooks/useAdminCounts', () => ({
+  useAdminCounts: () => ({ data: {}, isLoading: false }),
+  readCount: () => ({ count: undefined, overdue: 0 }),
+}));
+vi.mock('@/hooks/useAdminNavPins', () => ({
+  useAdminNavPins: () => ({ pins: [], togglePin: vi.fn(), isPinned: () => false }),
+}));
 vi.mock('@/config/adminNavigation', () => ({
   adminNavSections: [
     { id: 's1', label: 'Section', defaultExpanded: true, minRole: 'editor', items: [{ id: 'i1', label: 'Item', route: '/admin/x', icon: Box }] },

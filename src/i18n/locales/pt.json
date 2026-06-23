@@ -1623,7 +1623,10 @@
       "menuTitle": "Explorar o Queer Guide",
       "menuDescription": "Vá para qualquer seção, mude o idioma ou o tema.",
       "trips": "Minhas Viagens",
-      "settingsSection": "Exibição"
+      "settingsSection": "Exibição",
+      "browseAll": "Ver todas as seções",
+      "unreadCount": "{{count}} não lidas",
+      "tripsBadge": "{{count}} itens de viagem precisam de atenção"
     }
   },
   "pages": {
@@ -2786,5 +2789,37 @@
       "dismiss": "Dispensar",
       "ariaLabel": "Instalar app"
     }
+  "newsDetail": {
+    "notFound": "Artigo não encontrado",
+    "notFoundDesc": "O artigo que você procura não existe.",
+    "backToNews": "Voltar para Notícias",
+    "share": "Compartilhar",
+    "readAtSource": "Ler na fonte",
+    "fresh": "Novo",
+    "reportedByOutlets": "Noticiado por {{count}} veículos",
+    "featured": "Destaque",
+    "byAuthor": "Por {{author}}",
+    "minRead": "{{count}} min de leitura",
+    "viewsCount": "{{count}} visualizações",
+    "whyThisMatters": "Por que isso importa",
+    "editorialPlaceholder": "Alt-clique para adicionar o contexto — 1 a 3 frases sobre por que esta notícia importa.",
+    "bodyFallback": "A notícia completa está na fonte original.",
+    "originallyPublishedBy": "Publicado originalmente por {{source}}.",
+    "viewOriginal": "Ver o artigo original",
+    "integritySatire": "Marcado como sátira — não é um relato literal.",
+    "integrityAdvertorial": "Conteúdo patrocinado / publieditorial.",
+    "integritySentimentConflict": "As fontes discordam sobre o tom — leia com cautela.",
+    "closeToHome": "Perto da sua cidade",
+    "seeFullStory": "Ver a história completa",
+    "topics": "Temas",
+    "home": "Início",
+    "whereThisHappens": "Onde acontece",
+    "aboutSource": "Sobre a fonte",
+    "corroboratedAcross": "Corroborado por {{count}} veículos",
+    "lastVerified": "Verificado {{time}}",
+    "visitSource": "Visitar {{source}}",
+    "source": "a fonte",
+    "moreLikeThis": "Mais como isto",
+    "forYou": "Para você"
   }
 }

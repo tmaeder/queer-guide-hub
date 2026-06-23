@@ -5,10 +5,15 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { breadcrumbJsonLd } from '@/lib/breadcrumbJsonLd';
 import { useNews } from '@/hooks/useNews';
 import type { NewsCategory } from '@/hooks/useNews';
+import { useNewsSearch, type NewsSearchFilters } from '@/hooks/useNewsSearch';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMeta } from '@/hooks/useMeta';
 import { NewsCard } from '@/components/news/NewsCard';
 import { NewsFilters } from '@/components/news/NewsFilters';
+import { NewsSearchInput } from '@/components/news/NewsSearchInput';
+import { NewsSavedSearchesPanel } from '@/components/news/NewsSavedSearchesPanel';
+import { ReadingHistoryPanel } from '@/components/news/ReadingHistoryPanel';
+import { FollowedTagsRail } from '@/components/news/FollowedTagsRail';
 import { PageHero, spansForPreset } from '@/components/discovery';
 
 const NEWS_SPAN_CLASS: Record<string, string> = {
@@ -20,7 +25,6 @@ const NEWS_SPAN_CLASS: Record<string, string> = {
 };
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -31,12 +35,10 @@ import {
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import {
   Newspaper,
-  Search,
   Grid3X3,
   List,
   SortAsc,
   Filter,
-  X,
   TrendingUp,
   Layers,
 } from 'lucide-react';
@@ -99,6 +101,17 @@ export default function NewsArchive() {
     getTrendingTags,
     loadingTimedOut,
   } = useNews();
+
+  const {
+    articles: searchHits,
+    totalHits: searchTotalHits,
+    loading: searchLoading,
+    error: searchError,
+    searchArticles: runSemanticSearch,
+    reset: resetSemanticSearch,
+  } = useNewsSearch();
+
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // ---- URL state (Group D) -------------------------------------------------
   // Filter, sort, view, search and pagination are all reflected in the
@@ -297,6 +310,23 @@ export default function NewsArchive() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
+  const semanticDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const buildSearchFilters = useCallback((filters: Record<string, unknown>): NewsSearchFilters => ({
+    tags: filters.tags as string[] | undefined,
+    dateRange: filters.dateRange as { from?: string; to?: string } | undefined,
+    featured: filters.featured as boolean | undefined,
+    category: filters.category as string | undefined,
+    countryIds: filters.countryIds as string[] | undefined,
+    cityIds: filters.cityIds as string[] | undefined,
+    sourceIds: filters.sourceId ? [filters.sourceId as string] : (filters.sourceIds as string[] | undefined),
+    language: filters.language as string | undefined,
+    mediaType: filters.mediaType as string | undefined,
+    sentiment: filters.sentiment as string | undefined,
+    trustScoreMin: filters.trustScoreMin as number | undefined,
+    authorNames: filters.authorNames as string[] | undefined,
+  }), []);
+
   const applyFiltersAndFetch = (filters: Record<string, unknown>) => {
     setCurrentFilters(filters);
     setCurrentPage(1);
@@ -311,18 +341,33 @@ export default function NewsArchive() {
       sortOrder: option?.order || 'desc',
       ...(activeCategory ? { category: activeCategory } : {}),
     };
-    applyFiltersAndFetch(filtersWithSort);
+    setCurrentFilters(filtersWithSort);
+    setCurrentPage(1);
+    if (quickSearch.trim().length >= 2) {
+      void runSemanticSearch(quickSearch.trim(), buildSearchFilters(filtersWithSort), 0, sortBy);
+    } else {
+      fetchArticles(filtersWithSort);
+    }
   };
 
   const handleQuickSearch = (value: string) => {
     setQuickSearch(value);
-    const option = sortOptions.find((opt) => opt.value === sortBy);
-    applyFiltersAndFetch({
-      ...currentFilters,
-      search: value || undefined,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    });
+    const q = value.trim();
+    if (semanticDebounce.current) clearTimeout(semanticDebounce.current);
+    if (q.length >= 2) {
+      semanticDebounce.current = setTimeout(() => {
+        void runSemanticSearch(q, buildSearchFilters(currentFilters), 0, sortBy);
+      }, 300);
+    } else {
+      resetSemanticSearch();
+      const option = sortOptions.find((opt) => opt.value === sortBy);
+      applyFiltersAndFetch({
+        ...currentFilters,
+        search: value || undefined,
+        sortField: option?.field || 'published_at',
+        sortOrder: option?.order || 'desc',
+      });
+    }
   };
 
   const handleSortChange = (value: string) => {
@@ -448,7 +493,15 @@ export default function NewsArchive() {
     activeCategory ||
     Object.keys(currentFilters).some((k) => currentFilters[k] !== undefined);
 
-  const sortedArticles = getSortedArticles();
+  const isSemanticSearch = quickSearch.trim().length >= 2;
+  const sortedArticles = isSemanticSearch
+    ? (searchHits as unknown as typeof articles)
+    : getSortedArticles();
+  const displayLoading = isSemanticSearch ? searchLoading : loading;
+  const displayError = isSemanticSearch ? searchError : error;
+  const displayLoadingTimedOut = !isSemanticSearch && loadingTimedOut;
+  const displayTotal = isSemanticSearch ? searchTotalHits : totalArticles;
+
   // Load-More pattern: currentPage is the number of pages currently *visible* (cumulative).
   // Clicking "Load more" increments by 1 and grows the window — old articles stay rendered.
   const visibleCount = currentPage * ARTICLES_PER_PAGE;
@@ -585,43 +638,28 @@ export default function NewsArchive() {
         {/* Quick Search & Controls — sticky on mobile so search stays reachable while scrolling */}
         <div className="border border-border rounded-element p-4 mb-6 bg-background sticky top-[44px] md:static z-10">
           <div className="flex flex-col md:flex-row gap-4 md:items-center">
-            <div className="relative flex-1 md:max-w-md">
-              <Search
-                style={{
-                  left: 12,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: 16,
-                  height: 16,
-                }}
-                className="absolute text-muted-foreground"
-              />
-              <Input
-                ref={searchInputRef}
-                placeholder={t('pages.news.searchPlaceholder', 'Quick search articles...')}
+            <div className="flex items-center gap-2 flex-1 md:max-w-[26rem]">
+              <NewsSearchInput
+                inputRef={searchInputRef}
                 value={quickSearch}
-                onChange={(e) => handleQuickSearch(e.target.value)}
-                style={{ paddingLeft: 40, paddingRight: 40 }}
-                aria-label="Search articles"
+                onChange={handleQuickSearch}
+                onClear={() => handleQuickSearch('')}
+                placeholder={t('pages.news.searchPlaceholder', 'Semantic search articles…')}
               />
-              {quickSearch && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleQuickSearch('')}
-                  style={{
-                    position: 'absolute',
-                    right: 8,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    height: 24,
-                    width: 24,
-                    padding: 0,
-                  }}
-                >
-                  <X size={16} />
-                </Button>
-              )}
+              <NewsSavedSearchesPanel
+                currentQuery={quickSearch}
+                currentFilters={currentFilters}
+                onLoadSearch={(q, f) => {
+                  setQuickSearch(q);
+                  setCurrentFilters(f);
+                  if (q.trim().length >= 2) {
+                    void runSemanticSearch(q.trim(), buildSearchFilters(f), 0, sortBy);
+                  } else {
+                    fetchArticles(f);
+                  }
+                }}
+                onOpenHistory={() => setHistoryOpen(true)}
+              />
             </div>
 
             <div className="flex items-center gap-2 md:ml-auto">
@@ -764,28 +802,33 @@ export default function NewsArchive() {
                 onFiltersChange={handleFiltersChange}
                 trendingTags={trendingTags}
               />
+              <FollowedTagsRail
+                onFilterByTag={(tag) => {
+                  handleFilterByTag(tag);
+                }}
+              />
             </div>
           )}
 
           <div className={showFilters ? 'lg:col-span-3' : 'lg:col-span-4'}>
             {/* Error and loading are mutually exclusive with the list. */}
-            {error && !loading ? (
-              <ErrorState message={error} onRetry={() => fetchArticles()} />
+            {displayError && !displayLoading ? (
+              <ErrorState message={displayError} onRetry={() => fetchArticles()} />
             ) : null}
 
-            {!error && loading && (
+            {!displayError && displayLoading && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <NewsCard key={i} loading />
                 ))}
               </div>
             )}
-            {!error && loading && loadingTimedOut && (
+            {!displayError && displayLoading && displayLoadingTimedOut && (
               <LoadingTimeout onRetry={() => fetchArticles()} />
             )}
 
-            {!loading &&
-              !error &&
+            {!displayLoading &&
+              !displayError &&
               sortedArticles.length === 0 &&
               (hasActiveFilters ? (
                 <EmptyState
@@ -859,9 +902,9 @@ export default function NewsArchive() {
                 />
               ))}
 
-            {!error &&
+            {!displayError &&
               (paginatedArticles.length > 0 || viewMode === 'stories') &&
-              !(loading && viewMode !== 'stories') && (
+              !(displayLoading && viewMode !== 'stories') && (
                 <div className="flex flex-col gap-6">
                   {/* aria-live so screen readers hear filter result counts change */}
                   <p
@@ -878,8 +921,10 @@ export default function NewsArchive() {
                           // resolve. The slice is capped at 200 in useNews, so when
                           // we hit that cap we suffix "+" to be honest.
                           const truth =
-                            (activeCategory && categoryCounts[activeCategory]) ||
-                            (!activeCategory ? totalArticles ?? undefined : undefined);
+                            isSemanticSearch
+                              ? (displayTotal ?? undefined)
+                              : (activeCategory && categoryCounts[activeCategory]) ||
+                                (!activeCategory ? displayTotal ?? undefined : undefined);
                           const sliceLen = sortedArticles.length;
                           const totalForFilter = truth ?? sliceLen;
                           const isCapped = sliceLen >= 200 && truth === undefined;
@@ -979,6 +1024,7 @@ export default function NewsArchive() {
           </div>
         </div>
       </div>
+      <ReadingHistoryPanel open={historyOpen} onOpenChange={setHistoryOpen} />
     </div>
   );
 }

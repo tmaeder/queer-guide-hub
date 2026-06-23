@@ -1623,7 +1623,10 @@
       "menuTitle": "Queer Guide entdecken",
       "menuDescription": "Zu jedem Bereich springen, Sprache oder Design wechseln.",
       "trips": "Meine Reisen",
-      "settingsSection": "Anzeige"
+      "settingsSection": "Anzeige",
+      "browseAll": "Alle Bereiche anzeigen",
+      "unreadCount": "{{count}} ungelesen",
+      "tripsBadge": "{{count}} Reise-Elemente erfordern Aufmerksamkeit"
     }
   },
   "pages": {
@@ -2786,5 +2789,37 @@
       "dismiss": "Schließen",
       "ariaLabel": "App installieren"
     }
+  "newsDetail": {
+    "notFound": "Artikel nicht gefunden",
+    "notFoundDesc": "Den gesuchten Artikel gibt es nicht.",
+    "backToNews": "Zurück zu News",
+    "share": "Teilen",
+    "readAtSource": "Zur Quelle",
+    "fresh": "Neu",
+    "reportedByOutlets": "Von {{count}} Medien berichtet",
+    "featured": "Empfohlen",
+    "byAuthor": "Von {{author}}",
+    "minRead": "{{count}} Min. Lesezeit",
+    "viewsCount": "{{count}} Aufrufe",
+    "whyThisMatters": "Warum das wichtig ist",
+    "editorialPlaceholder": "Alt-Klick, um den Kontext hinzuzufügen – 1–3 Sätze, warum diese Geschichte zählt.",
+    "bodyFallback": "Die ganze Geschichte gibt es bei der Originalquelle.",
+    "originallyPublishedBy": "Ursprünglich veröffentlicht von {{source}}.",
+    "viewOriginal": "Originalbericht ansehen",
+    "integritySatire": "Als Satire markiert – kein wörtlicher Bericht.",
+    "integrityAdvertorial": "Gesponserter / werblicher Inhalt.",
+    "integritySentimentConflict": "Quellen sind sich im Ton uneinig – mit Vorsicht lesen.",
+    "closeToHome": "In der Nähe deines Wohnorts",
+    "seeFullStory": "Ganze Story ansehen",
+    "topics": "Themen",
+    "home": "Zuhause",
+    "whereThisHappens": "Wo das passiert",
+    "aboutSource": "Über die Quelle",
+    "corroboratedAcross": "Bestätigt durch {{count}} Medien",
+    "lastVerified": "Zuletzt geprüft {{time}}",
+    "visitSource": "{{source}} besuchen",
+    "source": "Quelle",
+    "moreLikeThis": "Ähnliche Beiträge",
+    "forYou": "Für dich"
   }
 }

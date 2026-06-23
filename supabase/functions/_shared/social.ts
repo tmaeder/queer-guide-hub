@@ -287,6 +287,39 @@ const BY_KEY = new Map(PLATFORMS.map((p) => [p.key, p]));
 const KNOWN_HOSTS =
   /(instagram|tiktok|youtube|facebook|twitter|x|threads|bsky|linkedin|t\.me|telegram|github|reddit|twitch|spotify|soundcloud|pinterest|snapchat|discord|medium|patreon|ko-fi|onlyfans|fansly|fetlife|joyclub|romeo|planetromeo|gayromeo|grindr|scruff|recon|pornhub|xhamster|xtube)\./i;
 
+/**
+ * Share-button / widget / post-permalink paths that are NOT profile links.
+ * Harvesting pages picks these up off share widgets and embedded posts
+ * (facebook.com/sharer/sharer.php, t.me/share/url, twitter.com/intent/tweet,
+ * instagram.com/reels/<id>/, facebook.com/watch/, …); they must never be
+ * stored or treated as a social profile.
+ */
+const SHARE_WIDGET_RE =
+  /\/(?:sharer?\.php|sharer|share\/url|share|intent|dialog|reels?|p|watch|hashtag|explore|stories)(?:[/?#]|$)/i;
+
+/** First path segments that are platform features/permalinks, never handles. */
+const RESERVED_HANDLES = new Set([
+  'reels', 'reel', 'p', 'share', 'intent', 'sharer', 'watch',
+  'hashtag', 'explore', 'stories', 'dialog',
+]);
+
+function isReservedHandle(handle: string): boolean {
+  return RESERVED_HANDLES.has(handle.trim().toLowerCase().replace(/^@/, ''));
+}
+
+/** True for share-button / widget / post-permalink URLs that aren't profiles. */
+export function isShareOrWidgetUrl(rawUrl: string): boolean {
+  if (!rawUrl || typeof rawUrl !== 'string') return false;
+  const url = ensureHttp(rawUrl.trim());
+  if (SHARE_WIDGET_RE.test(url)) return true;
+  try {
+    const seg = new URL(url).pathname.split('/').filter(Boolean)[0];
+    return seg ? isReservedHandle(seg) : false;
+  } catch {
+    return false;
+  }
+}
+
 /** True for 18+/NSFW platforms (OnlyFans, Fansly, FetLife, ROMEO, Pornhub, …). */
 export function isAdultPlatform(key: string): boolean {
   return BY_KEY.get(key as SocialPlatformKey)?.adult === true;
@@ -300,6 +333,7 @@ function ensureHttp(url: string): string {
 export function detectPlatform(rawUrl: string): SocialPlatformKey | null {
   if (!rawUrl || typeof rawUrl !== 'string') return null;
   const url = ensureHttp(rawUrl.trim());
+  if (isShareOrWidgetUrl(url)) return null;
   for (const p of PLATFORMS) {
     if (p.key === 'website') continue;
     if (p.key === 'mastodon' && KNOWN_HOSTS.test(url)) continue;
@@ -316,14 +350,18 @@ export function normalizeHandle(platform: SocialPlatformKey, urlOrHandle: string
   const value = urlOrHandle.trim();
   // Already a bare handle (no protocol, no dots-as-host) — strip a leading @.
   if (!/^https?:\/\//i.test(value) && !value.includes('/')) {
-    return value.replace(/^@/, '') || null;
+    const bare = value.replace(/^@/, '');
+    if (!bare || isReservedHandle(bare)) return null;
+    return bare;
   }
+  if (isShareOrWidgetUrl(value)) return null;
   const m = ensureHttp(value).match(def.detect);
   if (!m) return null;
   // Mastodon captures host in g1 and user in g2; rebuild as user@host.
   if (platform === 'mastodon' && m[2]) return `${m[2]}@${m[1]}`;
   const handle = (m[2] ?? m[1] ?? '').replace(/^@/, '');
-  return handle || null;
+  if (!handle || isReservedHandle(handle)) return null;
+  return handle;
 }
 
 /** Builds a canonical profile URL from a platform + handle (or passes a full URL through). */
@@ -379,6 +417,8 @@ export function normalizeSocialLinks(
   for (const [k, v] of Object.entries(input)) {
     if (!v || typeof v !== 'string') continue;
     const url = ensureHttp(v.trim());
+    // Drop share-widget/post-permalink junk even when stored under a known key.
+    if (isShareOrWidgetUrl(url)) continue;
     const known = BY_KEY.has(k as SocialPlatformKey) ? (k as SocialPlatformKey) : null;
     const key = known ?? detectPlatform(url);
     if (!key) continue;

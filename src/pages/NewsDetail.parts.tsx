@@ -20,6 +20,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -113,10 +114,23 @@ export function isFreshArticle(publishedAt: string | null | undefined): boolean 
 }
 
 // Known-noise / advertorial integrity flags we surface honestly to readers.
-const INTEGRITY_LABELS: Record<string, { label: string; icon: typeof Megaphone }> = {
-  satire: { label: 'Flagged as satire — not a literal report.', icon: Smile },
-  advertorial: { label: 'Sponsored / advertorial content.', icon: Megaphone },
-  sentiment_conflict: { label: 'Sources disagree on tone — read with care.', icon: Megaphone },
+// Labels are resolved via i18n at render (see IntegrityNotice).
+const INTEGRITY_FLAGS: Record<string, { key: string; fallback: string; icon: typeof Megaphone }> = {
+  satire: {
+    key: 'newsDetail.integritySatire',
+    fallback: 'Flagged as satire — not a literal report.',
+    icon: Smile,
+  },
+  advertorial: {
+    key: 'newsDetail.integrityAdvertorial',
+    fallback: 'Sponsored / advertorial content.',
+    icon: Megaphone,
+  },
+  sentiment_conflict: {
+    key: 'newsDetail.integritySentimentConflict',
+    fallback: 'Sources disagree on tone — read with care.',
+    icon: Megaphone,
+  },
 };
 
 // ── Data loader ──────────────────────────────────────────────────────────────
@@ -157,16 +171,17 @@ export async function loadNewsDetail(slug: string): Promise<NewsDetailData | nul
 
 /** Honest banner for satire / advertorial articles. Monochrome, factual. */
 export function IntegrityNotice({ flags }: { flags?: string[] | null }) {
-  const shown = (flags ?? []).filter((f) => f in INTEGRITY_LABELS);
+  const { t } = useTranslation();
+  const shown = (flags ?? []).filter((f) => f in INTEGRITY_FLAGS);
   if (shown.length === 0) return null;
   return (
     <div className="flex flex-col gap-2 rounded-element border border-foreground/30 bg-muted px-4 py-2">
       {shown.map((flag) => {
-        const { label, icon: Icon } = INTEGRITY_LABELS[flag];
+        const { key, fallback, icon: Icon } = INTEGRITY_FLAGS[flag];
         return (
           <p key={flag} className="m-0 flex items-center gap-2 text-13 text-foreground">
             <Icon size={15} className="shrink-0" aria-hidden="true" />
-            {label}
+            {t(key, fallback)}
           </p>
         );
       })}
@@ -188,6 +203,7 @@ export function PersonalizationRibbon({
   countryNames: Record<string, string>;
   cityNames: Record<string, string>;
 }) {
+  const { t } = useTranslation();
   const { data: prefs } = useUserTravelPreferences();
   if (!prefs) return null;
 
@@ -206,7 +222,8 @@ export function PersonalizationRibbon({
     <div className="mb-6 flex items-center gap-2 rounded-element border border-border bg-muted/60 px-4 py-2 text-13 text-muted-foreground">
       <MapPin size={14} className="shrink-0" aria-hidden="true" />
       <span>
-        Close to your home base · <span className="font-medium text-foreground">{place}</span>
+        {t('newsDetail.closeToHome', 'Close to your home base')} ·{' '}
+        <span className="font-medium text-foreground">{place}</span>
       </span>
     </div>
   );
@@ -222,6 +239,7 @@ export function StoryClusterPanel({
   articleId: string;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const [cluster, setCluster] = useState<StoryDetail | null>(null);
 
   useEffect(() => {
@@ -249,7 +267,9 @@ export function StoryClusterPanel({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Layers size={16} aria-hidden="true" />
-          Reported by {cluster.article_count} outlets
+          {t('newsDetail.reportedByOutlets', 'Reported by {{count}} outlets', {
+            count: cluster.article_count,
+          })}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -276,7 +296,7 @@ export function StoryClusterPanel({
           to={`/news/story/${cluster.slug}`}
           className="mt-4 inline-flex items-center gap-1 text-13 font-medium text-foreground"
         >
-          See the full story
+          {t('newsDetail.seeFullStory', 'See the full story')}
           <ArrowUpRight size={14} aria-hidden="true" />
         </LocalizedLink>
       </CardContent>
@@ -287,11 +307,12 @@ export function StoryClusterPanel({
 // ── Tags card ────────────────────────────────────────────────────────────────
 
 export function TagsCard({ tags }: { tags: string[] }) {
+  const { t } = useTranslation();
   if (tags.length === 0) return null;
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Topics</CardTitle>
+        <CardTitle>{t('newsDetail.topics', 'Topics')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2">
@@ -321,6 +342,7 @@ export function LocationCard({
   cityNames: Record<string, string>;
   countryNames: Record<string, string>;
 }) {
+  const { t } = useTranslation();
   const { data: prefs } = useUserTravelPreferences();
   const cities = (cityIds || []).map((id) => ({ id, name: cityNames[id] })).filter((c) => c.name);
   const countries = (countryIds || [])
@@ -340,7 +362,7 @@ export function LocationCard({
       <span>{name}</span>
       {isHome(id) && (
         <Badge variant="soft" className="px-2 py-0.5 text-2xs font-semibold">
-          Home
+          {t('newsDetail.home', 'Home')}
         </Badge>
       )}
     </LocalizedLink>
@@ -351,7 +373,7 @@ export function LocationCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin size={16} aria-hidden="true" />
-          Where this happens
+          {t('newsDetail.whereThisHappens', 'Where this happens')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -377,13 +399,14 @@ export function SourceCard({
   corroborationCount?: number | null;
   lastVerifiedAt?: string | null;
 }) {
+  const { t } = useTranslation();
   if (!sourceName && !sourceUrl) return null;
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Newspaper size={16} aria-hidden="true" />
-          About the source
+          {t('newsDetail.aboutSource', 'About the source')}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
@@ -391,12 +414,16 @@ export function SourceCard({
         {!!corroborationCount && corroborationCount > 1 && (
           <p className="m-0 flex items-center gap-1.5 text-13 text-muted-foreground">
             <ShieldCheck size={14} aria-hidden="true" />
-            Corroborated across {corroborationCount} outlets
+            {t('newsDetail.corroboratedAcross', 'Corroborated across {{count}} outlets', {
+              count: corroborationCount,
+            })}
           </p>
         )}
         {lastVerifiedAt && (
           <p className="m-0 text-xs text-muted-foreground">
-            Last verified {formatDistanceToNow(new Date(lastVerifiedAt), { addSuffix: true })}
+            {t('newsDetail.lastVerified', 'Last verified {{time}}', {
+              time: formatDistanceToNow(new Date(lastVerifiedAt), { addSuffix: true }),
+            })}
           </p>
         )}
         {sourceUrl && (
@@ -407,7 +434,9 @@ export function SourceCard({
             onClick={() => window.open(sourceUrl, '_blank', 'noopener')}
           >
             <Globe size={16} className="mr-2" />
-            Visit {sourceName || 'source'}
+            {t('newsDetail.visitSource', 'Visit {{source}}', {
+              source: sourceName || t('newsDetail.source', 'source'),
+            })}
           </Button>
         )}
       </CardContent>
@@ -426,6 +455,7 @@ function ForYouNewsRail({
   userId: string;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const [hits, setHits] = useState<SearchHit[] | null>(null);
   const trackClick = useTrackClick();
 
@@ -456,15 +486,15 @@ function ForYouNewsRail({
       <SimilarItems
         entity={{ type: 'news', id: articleId }}
         contentTypes={['news']}
-        title="More like this"
+        title={t('newsDetail.moreLikeThis', 'More like this')}
         className={className}
       />
     );
   }
 
   return (
-    <section className={className} aria-label="For you">
-      <h2 className="mb-4 text-title font-semibold">For you</h2>
+    <section className={className} aria-label={t('newsDetail.forYou', 'For you')}>
+      <h2 className="mb-4 text-title font-semibold">{t('newsDetail.forYou', 'For you')}</h2>
       <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex gap-4 pb-4">
           {!hits
@@ -522,13 +552,14 @@ function ForYouNewsRail({
  * and the semantic "More like this" rail for everyone else.
  */
 export function RelatedNewsRail({ articleId, className }: { articleId: string; className?: string }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   if (user) return <ForYouNewsRail articleId={articleId} userId={user.id} className={className} />;
   return (
     <SimilarItems
       entity={{ type: 'news', id: articleId }}
       contentTypes={['news']}
-      title="More like this"
+      title={t('newsDetail.moreLikeThis', 'More like this')}
       className={className}
     />
   );

@@ -39,6 +39,7 @@ import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { ReadingProgressBar } from '@/components/news/editorial/ReadingProgressBar';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { EditorsPickToggle } from '@/components/admin/news/EditorsPickToggle';
+
 import {
   loadNewsDetail,
   extractDek,
@@ -298,12 +299,14 @@ export default function NewsDetail() {
                   className="inline-block h-1.5 w-1.5 rounded-full bg-foreground animate-pulse"
                   aria-hidden="true"
                 />
-                <Eyebrow>New</Eyebrow>
+                <Eyebrow>{t('newsDetail.fresh', 'New')}</Eyebrow>
               </span>
             )}
             {corroboration > 1 && (
               <Badge variant="soft" className="ml-1 px-2 py-0.5 text-2xs font-semibold">
-                Reported by {corroboration} outlets
+                {t('newsDetail.reportedByOutlets', 'Reported by {{count}} outlets', {
+                  count: corroboration,
+                })}
               </Badge>
             )}
           </div>
@@ -324,7 +327,7 @@ export default function NewsDetail() {
             <ContentLangBadge language={article.content_language} text={article.title} />
             {article.is_featured && (
               <Badge variant="default" className="text-2xs">
-                Featured
+                {t('newsDetail.featured', 'Featured')}
               </Badge>
             )}
           </div>
@@ -341,7 +344,7 @@ export default function NewsDetail() {
             {authorName && (
               <span className="flex items-center gap-1">
                 <User size={14} />
-                By {authorName}
+                {t('newsDetail.byAuthor', 'By {{author}}', { author: authorName })}
               </span>
             )}
             {article.published_at && (
@@ -359,13 +362,13 @@ export default function NewsDetail() {
             {readMins && (
               <span className="flex items-center gap-1">
                 <BookOpen size={14} />
-                {readMins} min read
+                {t('newsDetail.minRead', '{{count}} min read', { count: readMins })}
               </span>
             )}
             {article.views_count > 0 && (
               <span className="flex items-center gap-1">
                 <Eye size={14} />
-                {article.views_count} views
+                {t('newsDetail.viewsCount', '{{count}} views', { count: article.views_count })}
               </span>
             )}
           </div>
@@ -392,7 +395,7 @@ export default function NewsDetail() {
             onClick={() => window.open(article.url, '_blank', 'noopener')}
           >
             <ExternalLink size={16} className="mr-1.5" />
-            Read at source
+            {t('newsDetail.readAtSource', 'Read at source')}
           </Button>
         </div>
       </header>
@@ -417,8 +420,16 @@ export default function NewsDetail() {
               Alt so they can alt-click to author one (never shown during normal browsing). */}
           {(article.editorial_note || altHeld) && (
             <aside aria-label="Why this matters" className="border-l-2 border-foreground py-2 pl-6">
+          {/* "Why this matters" — admin-curated, shown to everyone when populated.
+              The empty authoring placeholder stays hidden during normal browsing;
+              admins reveal it by holding Alt (#1812). */}
+          {(article.editorial_note || altHeld) && (
+            <aside
+              aria-label={t('newsDetail.whyThisMatters', 'Why this matters')}
+              className="border-l-2 border-foreground py-2 pl-6"
+            >
               <p className="m-0 text-2xs uppercase tracking-[0.2em] text-muted-foreground">
-                Why this matters
+                {t('newsDetail.whyThisMatters', 'Why this matters')}
               </p>
               <Editable
                 contentType="news_articles"
@@ -433,7 +444,10 @@ export default function NewsDetail() {
                   <p className="m-0 text-base italic leading-relaxed">{article.editorial_note}</p>
                 ) : (
                   <p className="m-0 text-base italic leading-relaxed text-muted-foreground">
-                    Alt-click to add the stakes — 1–3 sentences on why this story matters.
+                    {t(
+                      'newsDetail.editorialPlaceholder',
+                      'Alt-click to add the stakes — 1–3 sentences on why this story matters.',
+                    )}
                   </p>
                 )}
               </Editable>
@@ -479,16 +493,20 @@ export default function NewsDetail() {
                 </p>
               ) : (
                 <p className="text-body-lg italic text-muted-foreground">
-                  The full story lives on the original source.
+                  {t('newsDetail.bodyFallback', 'The full story lives on the original source.')}
                 </p>
               )}
             </Editable>
 
             {/* Quiet source attribution — one outbound link, no second button. */}
             <p className="mt-8 border-t border-border pt-6 text-sm text-muted-foreground">
-              {sourceName ? `Originally published by ${sourceName}. ` : ''}
+              {sourceName
+                ? t('newsDetail.originallyPublishedBy', 'Originally published by {{source}}.', {
+                    source: sourceName,
+                  }) + ' '
+                : ''}
               <a href={article.url} target="_blank" rel="noopener noreferrer">
-                View the original report
+                {t('newsDetail.viewOriginal', 'View the original report')}
               </a>
               .
             </p>
@@ -516,13 +534,6 @@ export default function NewsDetail() {
       </div>
 
       <RelatedNewsRail articleId={article.id} className="mt-12" />
-
-      <MoreLikeThisByTag
-        entityType="news"
-        entityId={article.id}
-        title="Related by tag"
-        className="mt-10"
-      />
     </div>
   );
 }

@@ -1623,7 +1623,10 @@
       "menuTitle": "Queer Guide 둘러보기",
       "menuDescription": "원하는 섹션으로 이동하고 언어나 테마를 변경하세요.",
       "trips": "내 여행",
-      "settingsSection": "디스플레이"
+      "settingsSection": "디스플레이",
+      "browseAll": "모든 섹션 보기",
+      "unreadCount": "읽지 않음 {{count}}개",
+      "tripsBadge": "확인이 필요한 여행 항목 {{count}}개"
     }
   },
   "pages": {
@@ -2784,5 +2787,37 @@
       "dismiss": "닫기",
       "ariaLabel": "앱 설치"
     }
+  "newsDetail": {
+    "notFound": "기사를 찾을 수 없습니다",
+    "notFoundDesc": "찾으시는 기사가 존재하지 않습니다.",
+    "backToNews": "뉴스로 돌아가기",
+    "share": "공유",
+    "readAtSource": "출처에서 보기",
+    "fresh": "새 소식",
+    "reportedByOutlets": "{{count}}개 매체 보도",
+    "featured": "추천",
+    "byAuthor": "{{author}}",
+    "minRead": "{{count}}분 분량",
+    "viewsCount": "조회 {{count}}회",
+    "whyThisMatters": "왜 중요한가",
+    "editorialPlaceholder": "Alt+클릭하여 맥락 추가 — 이 소식이 중요한 이유를 1~3문장으로.",
+    "bodyFallback": "전체 내용은 원본 출처에서 확인할 수 있습니다.",
+    "originallyPublishedBy": "원 출처: {{source}}.",
+    "viewOriginal": "원문 보기",
+    "integritySatire": "풍자로 표시됨 — 사실 보도가 아닙니다.",
+    "integrityAdvertorial": "협찬/광고성 콘텐츠.",
+    "integritySentimentConflict": "출처마다 논조가 다릅니다 — 주의해서 읽으세요.",
+    "closeToHome": "내 거점 근처",
+    "seeFullStory": "전체 이야기 보기",
+    "topics": "주제",
+    "home": "홈",
+    "whereThisHappens": "발생 장소",
+    "aboutSource": "출처 정보",
+    "corroboratedAcross": "{{count}}개 매체가 확인",
+    "lastVerified": "최종 확인 {{time}}",
+    "visitSource": "{{source}} 방문",
+    "source": "출처",
+    "moreLikeThis": "비슷한 기사",
+    "forYou": "추천"
   }
 }

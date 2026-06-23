@@ -1623,7 +1623,10 @@
       "menuTitle": "Queer Guide を見る",
       "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
       "trips": "マイトリップ",
-      "settingsSection": "表示"
+      "settingsSection": "表示",
+      "browseAll": "すべてのセクションを見る",
+      "unreadCount": "未読 {{count}} 件",
+      "tripsBadge": "確認が必要な旅行項目が {{count}} 件"
     }
   },
   "pages": {
@@ -2784,5 +2787,37 @@
       "dismiss": "閉じる",
       "ariaLabel": "アプリをインストール"
     }
+  "newsDetail": {
+    "notFound": "記事が見つかりません",
+    "notFoundDesc": "お探しの記事は存在しません。",
+    "backToNews": "ニュースに戻る",
+    "share": "共有",
+    "readAtSource": "ソースで読む",
+    "fresh": "新着",
+    "reportedByOutlets": "{{count}}社が報道",
+    "featured": "注目",
+    "byAuthor": "{{author}}",
+    "minRead": "約{{count}}分で読了",
+    "viewsCount": "{{count}} 回表示",
+    "whyThisMatters": "なぜ重要か",
+    "editorialPlaceholder": "Alt＋クリックで背景を追加 — このニュースが重要な理由を1〜3文で。",
+    "bodyFallback": "全文は元のソースでご覧いただけます。",
+    "originallyPublishedBy": "初出: {{source}}。",
+    "viewOriginal": "元の記事を見る",
+    "integritySatire": "風刺としてフラグ付け — 事実の報道ではありません。",
+    "integrityAdvertorial": "広告・タイアップコンテンツ。",
+    "integritySentimentConflict": "トーンについて情報源が一致していません — 注意してお読みください。",
+    "closeToHome": "あなたの拠点の近く",
+    "seeFullStory": "全文を見る",
+    "topics": "トピック",
+    "home": "ホーム",
+    "whereThisHappens": "発生場所",
+    "aboutSource": "情報源について",
+    "corroboratedAcross": "{{count}}社が裏付け",
+    "lastVerified": "最終確認: {{time}}",
+    "visitSource": "{{source}} を開く",
+    "source": "情報源",
+    "moreLikeThis": "関連記事",
+    "forYou": "おすすめ"
   }
 }

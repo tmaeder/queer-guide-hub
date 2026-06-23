@@ -39,7 +39,7 @@ async function gotoMobile(page: Page, path: string) {
 test.describe('Mobile bottom navigation', () => {
   test.setTimeout(60_000);
 
-  test('renders the five slots at mobile viewport', async ({ page }) => {
+  test('renders the four destination tabs at mobile viewport', async ({ page }) => {
     await gotoMobile(page, '/');
     const nav = bottomNav(page);
     await expect(nav).toBeVisible();
@@ -50,6 +50,24 @@ test.describe('Mobile bottom navigation', () => {
     await expect(nav.getByRole('button', { name: /sign in to contribute/i })).toBeVisible();
   });
 
+  test('tabs meet the minimum tap-target size', async ({ page }) => {
+    await gotoMobile(page, '/');
+    const nav = bottomNav(page);
+    for (const label of ['Home', 'Explore', 'Messages', 'You']) {
+      const box = await nav.getByText(label, { exact: true }).locator('..').boundingBox();
+      expect(box, `${label} tab has a bounding box`).not.toBeNull();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test('Explore deep-links to the discovery surface', async ({ page }) => {
+    await gotoMobile(page, '/');
+    await bottomNav(page).getByText('Explore', { exact: true }).click();
+    await expect(page).toHaveURL(/\/search\b/);
+    // The bar persists across the navigation (it is not a full-bleed route).
+    await expect(bottomNav(page)).toBeVisible();
+  });
+
   test('is hidden on desktop viewport', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/');
@@ -57,9 +75,9 @@ test.describe('Mobile bottom navigation', () => {
     await expect(bottomNav(page)).toBeHidden();
   });
 
-  test('Explore opens the discovery sheet with destinations', async ({ page }) => {
+  test('the Browse-all affordance opens the destination hub', async ({ page }) => {
     await gotoMobile(page, '/');
-    await bottomNav(page).getByText('Explore', { exact: true }).click();
+    await bottomNav(page).getByRole('button', { name: /browse all sections/i }).click();
 
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
@@ -68,9 +86,9 @@ test.describe('Mobile bottom navigation', () => {
     await expect(sheet.locator('a[href$="/events"]')).toBeVisible();
   });
 
-  test('tapping a sheet destination navigates and closes the sheet', async ({ page }) => {
+  test('tapping a hub destination navigates and closes the sheet', async ({ page }) => {
     await gotoMobile(page, '/');
-    await bottomNav(page).getByText('Explore', { exact: true }).click();
+    await bottomNav(page).getByRole('button', { name: /browse all sections/i }).click();
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
     await sheet.locator('a[href$="/venues"]').first().click();
