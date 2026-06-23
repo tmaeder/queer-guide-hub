@@ -1,6 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { trackSearchEvent } from '@/lib/searchClient';
+
+/**
+ * Adding a place to a trip is a strong intent signal — feed it to the
+ * recommendation engine's bias vector via the same `/track` pipe used by
+ * search (event_type 'save'). Custom places have no entity id, so skip them.
+ */
+function trackPlaceAdded(
+  row: { venue_id?: string | null; event_id?: string | null; hotel_id?: string | null },
+  userId: string | null,
+  source: string,
+) {
+  const tracked = row.venue_id
+    ? { type: 'venue', id: row.venue_id }
+    : row.event_id
+      ? { type: 'event', id: row.event_id }
+      : row.hotel_id
+        ? { type: 'hotel', id: row.hotel_id }
+        : null;
+  if (tracked) void trackSearchEvent('save', tracked, { source }, userId);
+}
 
 // ── Types ──────────────────────────────────────────────────────
 export interface Trip {
@@ -293,6 +314,7 @@ export function useTripMutations() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['trip', data.trip_id] });
+      trackPlaceAdded(data, user?.id ?? null, 'trip_add');
     },
   });
 
@@ -307,6 +329,7 @@ export function useTripMutations() {
         .from('trip_places')
         .insert(rows.map((r) => ({ ...r, trip_id: tripId, created_by: user!.id })));
       if (error) throw error;
+      for (const r of rows) trackPlaceAdded(r, user?.id ?? null, 'trip_add_bulk');
       return { tripId, inserted: rows.length };
     },
     onSuccess: (data) => {
