@@ -39,12 +39,12 @@ export function GapPromptCard({ profile }: GapPromptCardProps) {
         </div>
         <div className="flex-1">
           <p className="font-semibold">{prompt.title}</p>
-          <p className="text-sm text-muted-foreground">{prompt.body}</p>
+          <p className="text-13 text-muted-foreground">{prompt.body}</p>
           <div className="flex gap-2 mt-4">
             <Button
               size="sm"
               className="rounded-element"
-              onClick={() => navigate(`/settings?section=${prompt!.section}`)}
+              onClick={() => navigate(`/settings?section=${prompt.section}`)}
             >
               {prompt.cta}
             </Button>
@@ -53,7 +53,7 @@ export function GapPromptCard({ profile }: GapPromptCardProps) {
                 variant="ghost"
                 size="sm"
                 className="rounded-element"
-                onClick={() => dismiss(prompt!.kind)}
+                onClick={() => dismiss(prompt.kind)}
               >
                 Later
               </Button>
