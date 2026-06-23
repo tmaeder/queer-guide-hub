@@ -4,6 +4,7 @@ import { SocialSummaryRow } from '@/components/profile/SocialSummaryRow';
 import { ActivityStrip } from '@/components/profile/ActivityStrip';
 import { CompletionNudge } from '@/components/profile/CompletionNudge';
 import { GapPromptCard } from '@/components/profile/GapPromptCard';
+import { getProfileGap } from '@/lib/profileGaps';
 import { previewFilterProfile, sectionVisible, type ProfileLens } from '@/lib/profileLens';
 
 interface OverviewTabProps {
@@ -22,6 +23,9 @@ export function OverviewTab({
   onPostsClick,
 }: OverviewTabProps) {
   const ownView = isOwnProfile && lens === 'you';
+  // One completion surface only: the actionable gap prompt when there's a
+  // specific gap, otherwise the generic percentage nudge.
+  const hasGap = ownView && getProfileGap(profile) !== null;
   const privacy = (profile.privacy_settings ?? {}) as Record<string, unknown>;
   const socialVisible = sectionVisible(
     privacy.social_visibility as string | undefined,
@@ -31,8 +35,12 @@ export function OverviewTab({
 
   return (
     <div className="flex flex-col gap-6">
-      {ownView && <GapPromptCard profile={profile} />}
-      {ownView && typeof completionPct === 'number' && <CompletionNudge percent={completionPct} />}
+      {hasGap ? (
+        <GapPromptCard profile={profile} />
+      ) : (
+        ownView &&
+        typeof completionPct === 'number' && <CompletionNudge percent={completionPct} />
+      )}
 
       {socialVisible ? (
         <SocialSummaryRow

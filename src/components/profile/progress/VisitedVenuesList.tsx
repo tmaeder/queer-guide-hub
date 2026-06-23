@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useVisitedVenues } from '@/hooks/useVenuesV2Data';
+import { ProfileSectionHeader } from '@/components/profile/ProfileSectionHeader';
 
 /** Checked-in venues grouped by city. Moved from VenuesPassport. */
 export function VisitedVenuesList() {
@@ -21,9 +22,14 @@ export function VisitedVenuesList() {
 
   return (
     <section aria-labelledby="visited-h">
-      <h2 id="visited-h" className="text-title font-semibold mb-4">
-        {t('venues.passport.visited', { count: venues.length, defaultValue: '{{count}} venues visited' })}
-      </h2>
+      <ProfileSectionHeader
+        id="visited-h"
+        title={t('venues.passport.visited', {
+          count: venues.length,
+          defaultValue: '{{count}} venues visited',
+        })}
+        className="mb-4"
+      />
       {loading ? (
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (

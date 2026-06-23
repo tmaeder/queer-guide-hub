@@ -9,6 +9,7 @@ import {
   type TrustTier,
 } from '@/hooks/useTrustTier';
 import { TrustTierBadge } from '@/components/profile/TrustTierBadge';
+import { ProfileSectionHeader } from '@/components/profile/ProfileSectionHeader';
 
 const ICONS: Record<TrustTier, typeof Eye> = {
   visitor: Eye,
@@ -71,7 +72,7 @@ export function TrustTierLadder() {
 
   return (
     <section aria-label="Trust tier" className="flex flex-col gap-4">
-      <h2 className="text-title font-semibold">Trust tier</h2>
+      <ProfileSectionHeader title="Trust tier" />
       <p className="text-sm text-muted-foreground">
         Tiers reflect verified contributions. Counts stay private — only your tier label is
         visible to others.

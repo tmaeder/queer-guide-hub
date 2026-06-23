@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useCityLeaderboard,
@@ -8,25 +10,32 @@ import {
 } from '@/hooks/useVenuesV2Data';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ProfileSectionHeader } from '@/components/profile/ProfileSectionHeader';
+
+const COLLAPSED_LIMIT = 10;
+const EXPANDED_LIMIT = 100;
 
 /** Global + home-city explorer rankings. Moved from VenuesLeaderboard. */
 export function LeaderboardPanel() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const [expanded, setExpanded] = useState(false);
+  const limit = expanded ? EXPANDED_LIMIT : COLLAPSED_LIMIT;
 
   const { data: dp } = useDiscoveryProfile();
   const myCity = dp?.primary_city_id
     ? { id: dp.primary_city_id, name: dp.primary_city_name ?? 'Your city' }
     : null;
 
-  const { rows: globalRows, loading: loadingGlobal } = useGlobalLeaderboard(100);
-  const { rows: cityRows, loading: loadingCity } = useCityLeaderboard(myCity?.id ?? null, 100);
+  const { rows: globalRows, loading: loadingGlobal } = useGlobalLeaderboard(limit);
+  const { rows: cityRows, loading: loadingCity } = useCityLeaderboard(myCity?.id ?? null, limit);
+
+  // Only offer "view all" once a board is actually filled to the collapsed cap.
+  const canExpand = expanded || globalRows.length >= COLLAPSED_LIMIT;
 
   return (
     <section aria-label="Leaderboard" className="flex flex-col gap-4">
-      <h2 className="text-title font-semibold">
-        {t('venues.leaderboard.title', 'Leaderboard')}
-      </h2>
+      <ProfileSectionHeader title={t('venues.leaderboard.title', 'Leaderboard')} />
       <Tabs defaultValue="global">
         <TabsList>
           <TabsTrigger value="global">{t('venues.leaderboard.tabs.global', 'Global')}</TabsTrigger>
@@ -45,6 +54,23 @@ export function LeaderboardPanel() {
           </TabsContent>
         )}
       </Tabs>
+      {canExpand && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="inline-flex items-center justify-center gap-1 self-start text-13 text-muted-foreground hover:text-foreground"
+        >
+          {expanded ? (
+            <>
+              {t('common.showLess', 'Show fewer')} <ChevronUp size={14} aria-hidden />
+            </>
+          ) : (
+            <>
+              {t('venues.leaderboard.viewAll', 'View top 100')} <ChevronDown size={14} aria-hidden />
+            </>
+          )}
+        </button>
+      )}
     </section>
   );
 }
