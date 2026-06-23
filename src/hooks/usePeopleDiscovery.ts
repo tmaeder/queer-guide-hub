@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
  * is a thin, typed client over the result.
  */
 
-export type PeopleMode = 'locals' | 'dating' | 'friends' | 'travel';
+export type PeopleMode = 'locals' | 'dating' | 'friends' | 'travel' | 'nearby';
 
 export interface PeopleMatchShared {
   shared_events?: number;
@@ -31,17 +31,19 @@ export interface PeopleDiscoveryParams {
   eventId?: string;
   tripId?: string;
   limit?: number;
+  /** Radius in metres for the 'nearby' mode (server default 5000). */
+  radiusM?: number;
   /** Defaults to true; pass false to hold the query (e.g. presence not opted in). */
   enabled?: boolean;
 }
 
 /** Ranked people for the signed-in viewer in a mode + optional place context. */
 export function usePeopleDiscovery(params: PeopleDiscoveryParams) {
-  const { mode, cityId, eventId, tripId, limit = 60, enabled = true } = params;
+  const { mode, cityId, eventId, tripId, limit = 60, radiusM, enabled = true } = params;
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['people-discovery', mode, user?.id, cityId, eventId, tripId, limit],
+    queryKey: ['people-discovery', mode, user?.id, cityId, eventId, tripId, limit, radiusM],
     enabled: !!user && enabled,
     queryFn: async (): Promise<PeopleMatch[]> => {
       if (!user) return [];
@@ -52,6 +54,7 @@ export function usePeopleDiscovery(params: PeopleDiscoveryParams) {
         p_event_id: eventId ?? undefined,
         p_trip_id: tripId ?? undefined,
         p_limit: limit,
+        p_radius_m: radiusM ?? undefined,
       });
       if (error) throw error;
       return ((data as { user_id: string; score: number; shared: PeopleMatchShared | null }[]) ?? []).map(
