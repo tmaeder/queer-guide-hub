@@ -89,7 +89,7 @@ export function NewsSavedSearchesPanel({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" style={{ width: 320, padding: 0 }}>
-        <div className="p-4 flex flex-col gap-3">
+        <div className="p-4 flex flex-col gap-2">
           {!user && (
             <p className="text-sm text-muted-foreground text-center py-2">
               Sign in to save searches and set up alerts.
@@ -112,7 +112,7 @@ export function NewsSavedSearchesPanel({
               )}
 
               {showSaveForm && (
-                <div className="flex flex-col gap-2 border border-border rounded-element p-3">
+                <div className="flex flex-col gap-2 border border-border rounded-element p-2">
                   <Input
                     placeholder="Name this search…"
                     value={saveName}

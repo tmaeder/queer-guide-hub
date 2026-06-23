@@ -27,9 +27,14 @@ export interface WikinewsTarget {
   category: string // e.g. Category:LGBT
 }
 
+function hostIsWikinews(hostname: string): boolean {
+  const h = hostname.toLowerCase()
+  return h === 'wikinews.org' || h.endsWith('.wikinews.org')
+}
+
 export function isWikinewsHost(rawUrl: string): boolean {
   try {
-    return new URL(rawUrl).hostname.toLowerCase().endsWith('wikinews.org')
+    return hostIsWikinews(new URL(rawUrl).hostname)
   } catch {
     return false
   }
@@ -42,7 +47,7 @@ export function isWikinewsHost(rawUrl: string): boolean {
 //   https://en.wikinews.org/w/index.php?title=Category:LGBT
 export function parseWikinewsCategoryUrl(rawUrl: string): WikinewsTarget {
   const u = new URL(rawUrl)
-  if (!u.hostname.toLowerCase().endsWith('wikinews.org')) {
+  if (!hostIsWikinews(u.hostname)) {
     throw new Error(`Not a Wikinews URL: ${rawUrl}`)
   }
   const fromTitleParam = u.searchParams.get('title')
