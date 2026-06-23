@@ -5,9 +5,10 @@
  * "More ways to contribute" disclosure.
  */
 
-import { useState } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import type { BuiltSubmission } from '@/hooks/useFlyerScan';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
@@ -29,21 +30,28 @@ const SubmitHub = () => {
   const { t } = useTranslation();
 
   const flyerScan = useFlyerScan();
-  const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleResetScan = () => {
-    setSelectedVenueId(null);
     flyerScan.reset();
   };
 
-  const handleApplyScan = (
-    resultIdx: number,
-    itemIdx: number,
-    detectedType: 'event' | 'venue',
-  ) => {
-    const formData = flyerScan.applyToForm(resultIdx, itemIdx, selectedVenueId ?? undefined);
-    const imageUrl = flyerScan.results[resultIdx]?.image_url;
-    navigate(`/submit/${detectedType}`, { state: { prefill: formData, imageUrl } });
+  const handleSubmitBatch = async (rows: BuiltSubmission[]) => {
+    try {
+      const { inserted, enriched } = await flyerScan.submitBatch(rows);
+      const linkedNote = enriched > 0 ? ` (${enriched} linked to an existing entry)` : '';
+      toast({
+        title: `${inserted} item${inserted === 1 ? '' : 's'} submitted${linkedNote}`,
+        description: 'Thank you — submissions are reviewed before publishing.',
+      });
+      flyerScan.reset();
+    } catch (err) {
+      toast({
+        title: 'Submission failed',
+        description: err instanceof Error ? err.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -98,9 +106,7 @@ const SubmitHub = () => {
             {flyerScan.results.length > 0 && (
               <FlyerScanResults
                 results={flyerScan.results}
-                selectedVenueId={selectedVenueId}
-                onSelectVenue={setSelectedVenueId}
-                onApply={handleApplyScan}
+                onSubmitBatch={handleSubmitBatch}
                 onDismiss={handleResetScan}
               />
             )}

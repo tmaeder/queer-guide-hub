@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { listFrom } from '@/hooks/usePageFetchers';
 import { submissionRegistry } from '@/config/submissionRegistry';
@@ -27,6 +28,9 @@ interface KanbanRow {
   ocr_text: string | null;
   vision_summary: string | null;
   transcript_text: string | null;
+  submission_intent: string | null;
+  proposed_link_id: string | null;
+  proposed_link_table: string | null;
 }
 
 const LANES: Array<{ key: string; label: string; color: string }> = [
@@ -37,7 +41,7 @@ const LANES: Array<{ key: string; label: string; color: string }> = [
 ];
 
 const SELECT =
-  'id,content_type,status,feedback_status,data,submitted_by,submitted_at,reviewed_by,reviewed_at,reviewer_notes,promoted_to_id,promoted_to_table,platform,media_processing_status,media_urls,queer_relevance_score,confidence_score,safety_flags,raw_text,ocr_text,vision_summary,transcript_text';
+  'id,content_type,status,feedback_status,data,submitted_by,submitted_at,reviewed_by,reviewed_at,reviewer_notes,promoted_to_id,promoted_to_table,platform,media_processing_status,media_urls,queer_relevance_score,confidence_score,safety_flags,raw_text,ocr_text,vision_summary,transcript_text,submission_intent,proposed_link_id,proposed_link_table';
 
 function getTitle(row: KanbanRow): string {
   const config = submissionRegistry[row.content_type];
@@ -151,6 +155,21 @@ function KanbanCard({ row, onClick }: { row: KanbanRow; onClick: () => void }) {
         <p className="text-sm font-medium truncate">{getTitle(row)}</p>
       </div>
       <div className="flex gap-1 flex-wrap">
+        {row.submission_intent === 'enrich' && (
+          <Badge
+            variant="secondary"
+            style={{ fontSize: 10 }}
+            className="flex items-center gap-1"
+            title={
+              row.proposed_link_id
+                ? `Proposed update to ${row.proposed_link_table ?? 'an existing entry'} ${row.proposed_link_id}`
+                : 'Proposed enrichment of an existing entry'
+            }
+          >
+            <Link2 size={10} />
+            enrich
+          </Badge>
+        )}
         {row.platform && (
           <Badge variant="outline" style={{ fontSize: 10 }}>
             {row.platform}

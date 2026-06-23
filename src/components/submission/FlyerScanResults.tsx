@@ -1,299 +1,352 @@
 /**
- * FlyerScanResults — Displays AI extraction results with confidence indicators,
- * venue matching, type toggle, and duplicate warnings.
- * Supports multiple items across multiple files.
+ * FlyerScanResults — batch review of AI scan results.
+ * Every detected item (event/venue/hotel/news/marketplace) is listed with a
+ * checkbox, type selector, inline-editable key fields, tag chips, and a
+ * duplicate-resolution card (link & enrich an existing entity, or keep as new).
+ * The whole selection is submitted in one action.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Check, X, ChevronDown, ChevronUp, FileText } from 'lucide-react';
-import type { FlyerScanResult, FlyerScanItem, VenueCandidate } from '@/hooks/useFlyerScan';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AlertTriangle, Check, ChevronDown, ChevronUp, FileText, Link2, X } from 'lucide-react';
+import {
+  buildSubmissionRow,
+  TABLE_BY_DETECTED,
+  type BuiltSubmission,
+  type DetectedType,
+  type DuplicateMatch,
+  type FlyerScanItem,
+  type FlyerScanResult,
+  type VenueCandidate,
+} from '@/hooks/useFlyerScan';
 
 interface FlyerScanResultsProps {
   results: FlyerScanResult[];
-  selectedVenueId: string | null;
-  onSelectVenue: (id: string | null) => void;
-  onApply: (resultIdx: number, itemIdx: number, detectedType: 'event' | 'venue') => void;
+  onSubmitBatch: (rows: BuiltSubmission[]) => Promise<void> | void;
   onDismiss: () => void;
 }
 
-// Confidence dot color
+const TYPES: DetectedType[] = ['event', 'venue', 'hotel', 'news', 'marketplace'];
+const TYPE_LABEL: Record<DetectedType, string> = {
+  event: 'Event',
+  venue: 'Venue',
+  hotel: 'Hotel',
+  news: 'News',
+  marketplace: 'Product',
+};
+
+// Inline-editable key fields per type (keys match the submission data shape).
+const EDITABLE: Record<DetectedType, Array<{ key: string; label: string }>> = {
+  event: [
+    { key: 'title', label: 'Title' },
+    { key: 'start_date', label: 'Start' },
+    { key: 'venue_name', label: 'Venue' },
+    { key: 'city', label: 'City' },
+  ],
+  venue: [
+    { key: 'name', label: 'Name' },
+    { key: 'category', label: 'Category' },
+    { key: 'city', label: 'City' },
+  ],
+  hotel: [
+    { key: 'name', label: 'Name' },
+    { key: 'city', label: 'City' },
+  ],
+  news: [
+    { key: 'title', label: 'Title' },
+    { key: 'author', label: 'Author' },
+  ],
+  marketplace: [
+    { key: 'title', label: 'Title' },
+    { key: 'price', label: 'Price' },
+  ],
+};
+
+// Confidence dot (functional categorical color — "submission scan flyers" is an
+// allowlisted exception in the design system).
 function confidenceColor(c: number): string {
   if (c >= 0.8) return '#22c55e';
   if (c >= 0.5) return '#eab308';
   return '#ef4444';
 }
 
-function confidenceLabel(c: number): string {
-  if (c >= 0.8) return 'High';
-  if (c >= 0.5) return 'Medium';
-  return 'Low';
+interface ItemDraft {
+  included: boolean;
+  type: DetectedType;
+  tags: string[];
+  selectedVenueId?: string;
+  enrich: { id: string; table: string } | null;
+  edits: Record<string, string>;
 }
 
-// Human-readable field labels
-const FIELD_LABELS: Record<string, string> = {
-  title: 'Title',
-  name: 'Name',
-  description: 'Description',
-  event_type: 'Event Type',
-  category: 'Category',
-  start_date: 'Start Date',
-  end_date: 'End Date',
-  venue_name: 'Venue',
-  address: 'Address',
-  city: 'City',
-  country: 'Country',
-  postal_code: 'Postal Code',
-  organizer_name: 'Organizer',
-  organizer_contact: 'Organizer Contact',
-  ticket_url: 'Ticket URL',
-  website: 'Website',
-  phone: 'Phone',
-  email: 'Email',
-  instagram: 'Instagram',
-  price_text: 'Price',
-  is_free: 'Free Event',
-  age_restriction: 'Age Restriction',
-  hours_text: 'Hours',
-};
+function fieldString(item: FlyerScanItem, key: string): string {
+  const v = item.fields[key]?.value;
+  return v === undefined || v === null ? '' : String(v);
+}
 
-const EVENT_DISPLAY_FIELDS = [
-  'title',
-  'event_type',
-  'start_date',
-  'end_date',
-  'venue_name',
-  'address',
-  'city',
-  'country',
-  'organizer_name',
-  'price_text',
-  'is_free',
-  'website',
-  'ticket_url',
-];
-const VENUE_DISPLAY_FIELDS = [
-  'name',
-  'category',
-  'address',
-  'city',
-  'country',
-  'postal_code',
-  'phone',
-  'email',
-  'website',
-  'instagram',
-  'hours_text',
-];
+function primaryTitle(item: FlyerScanItem, type: DetectedType): string {
+  const key = type === 'venue' || type === 'hotel' ? 'name' : 'title';
+  return fieldString(item, key) || 'Untitled';
+}
 
-// ── Single item detail view ───────────────────────────────────────────
+function itemDuplicates(item: FlyerScanItem): DuplicateMatch[] {
+  if (item.matches.duplicates?.length) return item.matches.duplicates;
+  return [
+    ...item.matches.duplicate_events.map((d) => ({ id: d.id, title: d.title, score: d.score, type: 'event' as DetectedType })),
+    ...item.matches.duplicate_venues.map((d) => ({ id: d.id, title: d.name, score: d.score, type: 'venue' as DetectedType })),
+  ].sort((a, b) => b.score - a.score);
+}
 
-function ItemDetail({
+function makeDraft(item: FlyerScanItem): ItemDraft {
+  const dups = itemDuplicates(item);
+  const named = primaryTitle(item, item.detected_type) !== 'Untitled';
+  const exactDup = dups.some((d) => d.score >= 0.9);
+  return {
+    included: named && !exactDup,
+    type: item.detected_type,
+    tags: (item.tag_suggestions ?? []).filter((tg) => tg.preselected).map((tg) => tg.slug),
+    enrich: null,
+    edits: {},
+  };
+}
+
+// ── Per-item review row ───────────────────────────────────────────────
+
+function ItemRow({
   item,
-  imageUrl,
-  selectedVenueId,
-  onSelectVenue,
-  onChangeType,
-  onApply,
+  result,
+  draft,
+  expanded,
+  showFile,
+  onToggleExpand,
+  update,
 }: {
   item: FlyerScanItem;
-  imageUrl: string | null;
-  selectedVenueId: string | null;
-  onSelectVenue: (id: string | null) => void;
-  onChangeType: (type: 'event' | 'venue') => void;
-  onApply: () => void;
+  result: FlyerScanResult;
+  draft: ItemDraft;
+  expanded: boolean;
+  showFile: boolean;
+  onToggleExpand: () => void;
+  update: (patch: Partial<ItemDraft>) => void;
 }) {
-  const { t } = useTranslation();
-  const { fields, detected_type, matches } = item;
-  const displayFields = detected_type === 'event' ? EVENT_DISPLAY_FIELDS : VENUE_DISPLAY_FIELDS;
+  const dups = useMemo(() => itemDuplicates(item), [item]);
+  const editable = EDITABLE[draft.type];
+  const editableKeys = new Set(editable.map((e) => e.key));
+  const suggestions = item.tag_suggestions ?? [];
+  const venues = item.matches.venue_candidates;
+  const canLinkVenue = draft.type === 'event' || draft.type === 'venue' || draft.type === 'hotel';
 
-  const extractedFields = displayFields
-    .filter((key) => fields[key] && fields[key].confidence > 0.2)
-    .map((key) => ({ key, ...fields[key] }));
-
-  const hasDuplicates = matches.duplicate_events.length > 0 || matches.duplicate_venues.length > 0;
-  const venueCandidates = matches.venue_candidates;
+  const readOnlyFields = Object.entries(item.fields)
+    .filter(
+      ([k, f]) =>
+        f && typeof f === 'object' && 'confidence' in f && f.confidence > 0.2 && !editableKeys.has(k) && k !== 'description',
+    )
+    .slice(0, 6);
 
   return (
-    <>
-      {/* Type toggle */}
-      <div className="flex gap-1.5 mb-4">
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt="Scanned flyer"
-            className="w-12 h-12 rounded-element object-cover flex-shrink-0"
-          />
-        )}
-        <div className="flex gap-1.5 items-center">
-          <Badge
-            onClick={() => onChangeType('event')}
-            style={{
-              fontWeight: 600,
-              fontSize: '0.75rem',
-              cursor: 'pointer',
-              ...(detected_type === 'event' ? { backgroundColor: 'hsl(var(--foreground))', color: '#fff' } : {}),
-            }}
-            variant={detected_type === 'event' ? 'default' : 'secondary'}
-          >
-            Event
-          </Badge>
-          <Badge
-            onClick={() => onChangeType('venue')}
-            style={{
-              fontWeight: 600,
-              fontSize: '0.75rem',
-              cursor: 'pointer',
-              ...(detected_type === 'venue'
-                ? { backgroundColor: 'hsl(var(--foreground))', color: '#fff' }
-                : {}),
-            }}
-            variant={detected_type === 'venue' ? 'default' : 'secondary'}
-          >
-            Venue
-          </Badge>
-        </div>
-      </div>
-
-      {/* Duplicate warning */}
-      {hasDuplicates && (
-        <div
-          className="flex items-center gap-2 p-4 mb-4 rounded-element"
-          style={{ backgroundColor: '#fef3c7' }}
+    <div className={`rounded-element overflow-hidden border ${expanded ? 'border-foreground' : 'border-border'}`}>
+      {/* Header */}
+      <div className="flex items-center gap-2 p-4">
+        <Checkbox
+          checked={draft.included}
+          onCheckedChange={(v) => update({ included: !!v })}
+          aria-label="Include this item"
+        />
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          className="flex flex-1 items-center gap-2 min-w-0 text-left"
+          aria-expanded={expanded}
         >
-          <AlertTriangle size={16} style={{ color: '#d97706' }} className="shrink-0" />
-          <span className="text-xs" style={{ color: '#92400e' }}>
-            {matches.duplicate_events.length > 0
-              ? `Similar event found: "${matches.duplicate_events[0].title}"`
-              : `Similar venue found: "${matches.duplicate_venues[0].name}"`}{' '}
-            — please check before submitting.
-          </span>
-        </div>
-      )}
-
-      {/* Extracted fields */}
-      <div className="flex flex-col gap-1.5 mb-4">
-        {extractedFields.map(({ key, value, confidence }) => (
-          <div key={key} className="flex items-baseline gap-2">
-            <div
-              className="rounded-full flex-shrink-0"
-              style={{
-                width: 8,
-                height: 8,
-                backgroundColor: confidenceColor(confidence),
-                marginTop: '4px',
-              }}
-              title={`${confidenceLabel(confidence)} confidence (${Math.round(confidence * 100)}%)`}
-            />
-            <span className="text-xs text-muted-foreground flex-shrink-0" style={{ minWidth: 80 }}>
-              {FIELD_LABELS[key] || key}
+          <Badge variant="outline" className="font-semibold shrink-0">
+            {TYPE_LABEL[draft.type]}
+          </Badge>
+          <span className="flex-1 min-w-0 truncate text-sm font-semibold">{primaryTitle(item, draft.type)}</span>
+          {showFile && (
+            <span className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
+              <FileText size={10} />
+              {result.source_file}
             </span>
-            <span className="text-xs font-medium break-words">
-              {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
-            </span>
-          </div>
-        ))}
-        {extractedFields.length === 0 && (
-          <div role="status" data-testid="extraction-empty">
-            <span className="text-xs text-muted-foreground block mb-1">
-              {t('submission.errors.extractionEmpty')}
-            </span>
-          </div>
-        )}
+          )}
+          {expanded ? (
+            <ChevronUp size={16} className="shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronDown size={16} className="shrink-0 text-muted-foreground" />
+          )}
+        </button>
       </div>
 
-      {/* Venue candidates */}
-      {venueCandidates.length > 0 && (
-        <div className="mb-4">
-          <span className="text-xs text-muted-foreground font-semibold mb-1.5 block">
-            Matching venues
-          </span>
+      {expanded && (
+        <div className="px-4 pb-4 flex flex-col gap-4">
+          {/* Type selector */}
           <div className="flex flex-wrap gap-1.5">
-            {venueCandidates.map((v: VenueCandidate) => (
+            {TYPES.map((tp) => (
               <Badge
-                key={v.id}
-                onClick={() => onSelectVenue(selectedVenueId === v.id ? null : v.id)}
-                variant={selectedVenueId === v.id ? 'default' : 'outline'}
-                style={{
-                  fontSize: '0.72rem',
-                  cursor: 'pointer',
-                  ...(selectedVenueId === v.id
-                    ? {
-                        backgroundColor: 'hsl(var(--muted))',
-                        borderColor: 'hsl(var(--foreground))',
-                        borderWidth: 1,
-                        borderStyle: 'solid',
-                      }
-                    : {}),
-                }}
+                key={tp}
+                onClick={() => update({ type: tp, edits: {}, selectedVenueId: undefined })}
+                variant={draft.type === tp ? 'default' : 'secondary'}
+                className="cursor-pointer"
               >
-                {selectedVenueId === v.id && <Check size={14} className="mr-1" />}
-                {`${v.name} (${Math.round(v.score * 100)}%)`}
+                {TYPE_LABEL[tp]}
               </Badge>
             ))}
           </div>
+
+          {/* Duplicate resolution */}
+          {dups.length > 0 && (
+            <div className="rounded-element border border-border p-4 flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-xs font-semibold">
+                <AlertTriangle size={14} className="shrink-0" />
+                Possible match{dups.length > 1 ? 'es' : ''} already in the guide
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {dups.slice(0, 3).map((d) => {
+                  const linked = draft.enrich?.id === d.id;
+                  return (
+                    <div key={d.id} className="flex items-center gap-2">
+                      <span className="flex-1 min-w-0 truncate text-xs">
+                        {d.title} <span className="text-muted-foreground">({Math.round(d.score * 100)}%)</span>
+                      </span>
+                      <Button
+                        size="sm"
+                        variant={linked ? 'default' : 'outline'}
+                        onClick={() => update({ enrich: linked ? null : { id: d.id, table: TABLE_BY_DETECTED[d.type] } })}
+                        className="h-7 gap-1 text-xs"
+                      >
+                        <Link2 size={12} />
+                        {linked ? 'Linked' : 'Link & enrich'}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+              {draft.enrich && (
+                <p className="text-xs text-muted-foreground">
+                  Submitted as an update to the linked entry — an editor reviews the merge.{' '}
+                  <button type="button" className="underline" onClick={() => update({ enrich: null })}>
+                    It’s new instead
+                  </button>
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Editable key fields */}
+          <div className="flex flex-col gap-2">
+            {editable.map(({ key, label }) => (
+              <label key={key} className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground shrink-0" style={{ minWidth: 64 }}>
+                  {label}
+                </span>
+                <Input
+                  value={draft.edits[key] ?? fieldString(item, key)}
+                  onChange={(e) => update({ edits: { ...draft.edits, [key]: e.target.value } })}
+                  className="h-8 text-sm"
+                />
+              </label>
+            ))}
+          </div>
+
+          {/* Read-only extracted fields with confidence */}
+          {readOnlyFields.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              {readOnlyFields.map(([key, f]) => (
+                <div key={key} className="flex items-baseline gap-2">
+                  <span
+                    className="rounded-full shrink-0"
+                    style={{ width: 8, height: 8, marginTop: 4, backgroundColor: confidenceColor(f.confidence) }}
+                    title={`${Math.round(f.confidence * 100)}% confidence`}
+                  />
+                  <span className="text-xs text-muted-foreground shrink-0" style={{ minWidth: 64 }}>
+                    {key}
+                  </span>
+                  <span className="text-xs break-words">
+                    {typeof f.value === 'boolean' ? (f.value ? 'Yes' : 'No') : String(f.value)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Matching venues */}
+          {canLinkVenue && venues.length > 0 && (
+            <div>
+              <span className="text-xs text-muted-foreground font-semibold mb-1.5 block">Use an existing venue</span>
+              <div className="flex flex-wrap gap-1.5">
+                {venues.map((v: VenueCandidate) => (
+                  <Badge
+                    key={v.id}
+                    onClick={() => update({ selectedVenueId: draft.selectedVenueId === v.id ? undefined : v.id })}
+                    variant={draft.selectedVenueId === v.id ? 'default' : 'outline'}
+                    className="cursor-pointer"
+                  >
+                    {draft.selectedVenueId === v.id && <Check size={12} className="mr-1" />}
+                    {v.name} ({Math.round(v.score * 100)}%)
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tag chips */}
+          {suggestions.length > 0 && (
+            <div>
+              <span className="text-xs text-muted-foreground font-semibold mb-1.5 block">Tags</span>
+              <div className="flex flex-wrap gap-1.5">
+                {suggestions.map((tag) => {
+                  const on = draft.tags.includes(tag.slug);
+                  return (
+                    <Badge
+                      key={tag.slug}
+                      onClick={() =>
+                        update({ tags: on ? draft.tags.filter((s) => s !== tag.slug) : [...draft.tags, tag.slug] })
+                      }
+                      variant={on ? 'default' : 'outline'}
+                      className="cursor-pointer"
+                    >
+                      {on && <Check size={12} className="mr-1" />}
+                      {tag.label}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
-
-      {/* Apply button */}
-      <Button
-        size="sm"
-        onClick={onApply}
-        style={{
-          width: '100%',
-          backgroundColor: 'hsl(var(--foreground))',
-          color: '#fff',
-        }}
-      >
-        Use this data
-      </Button>
-    </>
+    </div>
   );
 }
 
 // ── Main component ────────────────────────────────────────────────────
 
-export function FlyerScanResults({
-  results,
-  selectedVenueId,
-  onSelectVenue,
-  onApply,
-  onDismiss,
-}: FlyerScanResultsProps) {
+export function FlyerScanResults({ results, onSubmitBatch, onDismiss }: FlyerScanResultsProps) {
   const { t } = useTranslation();
-  // Flatten all items with their result indices
-  const allItems: Array<{
-    resultIdx: number;
-    itemIdx: number;
-    item: FlyerScanItem;
-    result: FlyerScanResult;
-  }> = [];
-  results.forEach((result, ri) => {
-    result.items.forEach((item, ii) => {
-      allItems.push({ resultIdx: ri, itemIdx: ii, item, result });
+
+  const allItems = useMemo(() => {
+    const out: Array<{ key: string; item: FlyerScanItem; result: FlyerScanResult }> = [];
+    results.forEach((result, ri) => {
+      result.items.forEach((item, ii) => out.push({ key: `${ri}-${ii}`, item, result }));
     });
-  });
+    return out;
+  }, [results]);
 
-  const [expandedIdx, setExpandedIdx] = useState(0);
-  const [itemTypes, setItemTypes] = useState<Record<string, 'event' | 'venue'>>({});
-  const isSingleItem = allItems.length === 1;
+  const [drafts, setDrafts] = useState<Record<string, ItemDraft>>(() =>
+    Object.fromEntries(allItems.map((a) => [a.key, makeDraft(a.item)])),
+  );
+  const [expandedKey, setExpandedKey] = useState<string | null>(allItems[0]?.key ?? null);
+  const [submitting, setSubmitting] = useState(false);
+
   const multipleFiles = results.length > 1;
+  const includedCount = Object.values(drafts).filter((d) => d.included).length;
 
-  const getItemType = (ri: number, ii: number): 'event' | 'venue' => {
-    const key = `${ri}-${ii}`;
-    return (
-      itemTypes[key] ||
-      allItems.find((a) => a.resultIdx === ri && a.itemIdx === ii)?.item.detected_type ||
-      'event'
-    );
-  };
-
-  const handleChangeType = (ri: number, ii: number, type: 'event' | 'venue') => {
-    setItemTypes((prev) => ({ ...prev, [`${ri}-${ii}`]: type }));
-  };
+  const updateDraft = (key: string, patch: Partial<ItemDraft>) =>
+    setDrafts((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
 
   if (allItems.length === 0) {
     return (
@@ -308,143 +361,65 @@ export function FlyerScanResults({
     );
   }
 
-  // Single item — render flat (same UX as before)
-  if (isSingleItem) {
-    const { resultIdx, itemIdx, item, result } = allItems[0];
-    const effectiveItem = { ...item, detected_type: getItemType(resultIdx, itemIdx) };
+  const handleSubmit = async () => {
+    const rows: BuiltSubmission[] = allItems
+      .filter((a) => drafts[a.key]?.included)
+      .map((a) => {
+        const d = drafts[a.key];
+        return buildSubmissionRow(a.item, {
+          imageUrl: a.result.image_url,
+          typeOverride: d.type,
+          selectedVenueId: d.selectedVenueId,
+          selectedTagSlugs: d.tags,
+          enrich: d.enrich,
+          edits: d.edits,
+        });
+      });
+    if (rows.length === 0) return;
+    setSubmitting(true);
+    try {
+      await onSubmitBatch(rows);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-    return (
-      <Card>
-        <CardContent>
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-sm font-semibold">Scan results</p>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDismiss}
-              style={{ alignItems: 'center' }}
-              className="flex gap-1"
-            >
-              <X size={14} />
-              Dismiss
-            </Button>
-          </div>
-          <ItemDetail
-            item={effectiveItem}
-            imageUrl={result.image_url}
-            selectedVenueId={selectedVenueId}
-            onSelectVenue={onSelectVenue}
-            onChangeType={(type) => handleChangeType(resultIdx, itemIdx, type)}
-            onApply={() => onApply(resultIdx, itemIdx, effectiveItem.detected_type)}
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Multiple items — accordion
   return (
     <Card>
       <CardContent>
         <div className="flex justify-between items-center mb-4">
           <p className="text-sm font-semibold">
-            Found {allItems.length} items{multipleFiles ? ` across ${results.length} files` : ''}
+            Found {allItems.length} item{allItems.length === 1 ? '' : 's'}
+            {multipleFiles ? ` across ${results.length} files` : ''}
           </p>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDismiss}
-            style={{ alignItems: 'center' }}
-            className="flex gap-1"
-          >
+          <Button variant="ghost" size="sm" onClick={onDismiss} className="flex items-center gap-1">
             <X size={14} />
             Dismiss
           </Button>
         </div>
 
         <div className="flex flex-col gap-2">
-          {allItems.map(({ resultIdx, itemIdx, item, result }, flatIdx) => {
-            const isExpanded = expandedIdx === flatIdx;
-            const effectiveType = getItemType(resultIdx, itemIdx);
-            const primaryField =
-              effectiveType === 'event'
-                ? (item.fields.title?.value as string)
-                : (item.fields.name?.value as string);
+          {allItems.map(({ key, item, result }) => (
+            <ItemRow
+              key={key}
+              item={item}
+              result={result}
+              draft={drafts[key]}
+              expanded={expandedKey === key}
+              showFile={multipleFiles}
+              onToggleExpand={() => setExpandedKey(expandedKey === key ? null : key)}
+              update={(patch) => updateDraft(key, patch)}
+            />
+          ))}
+        </div>
 
-            return (
-              <div
-                key={`${resultIdx}-${itemIdx}`}
-                style={{
-                  border: '1px solid',
-                  borderColor: isExpanded
-                    ? effectiveType === 'event'
-                      ? 'hsl(var(--foreground))'
-                      : 'hsl(var(--foreground))'
-                    : 'hsl(var(--border))',
-                  transition: 'border-color 0.2s',
-                }}
-                className="rounded-element overflow-hidden"
-              >
-                {/* Collapsed header */}
-                <div
-                  onClick={() => setExpandedIdx(isExpanded ? -1 : flatIdx)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setExpandedIdx(isExpanded ? -1 : flatIdx);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-expanded={isExpanded}
-                  className="flex items-center gap-2 p-4 cursor-pointer hover:bg-muted"
-                >
-                  <Badge
-                    style={{
-                      fontSize: '0.7rem',
-                      height: 22,
-                      backgroundColor: effectiveType === 'event' ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
-                      color: effectiveType === 'event' ? 'hsl(var(--foreground))' : 'hsl(var(--foreground))',
-                    }}
-                    className="font-semibold"
-                    variant="outline"
-                  >
-                    {effectiveType === 'event' ? 'Event' : 'Venue'}
-                  </Badge>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs font-semibold block overflow-hidden text-ellipsis whitespace-nowrap">
-                      {primaryField || 'Untitled'}
-                    </span>
-                    {multipleFiles && (
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <FileText size={10} />
-                        {result.source_file}
-                      </span>
-                    )}
-                  </div>
-                  {isExpanded ? (
-                    <ChevronUp size={16} style={{ color: '#999' }} className="shrink-0" />
-                  ) : (
-                    <ChevronDown size={16} style={{ color: '#999' }} className="shrink-0" />
-                  )}
-                </div>
-
-                {/* Expanded detail */}
-                {isExpanded && (
-                  <div className="p-4 pt-0">
-                    <ItemDetail
-                      item={{ ...item, detected_type: effectiveType }}
-                      imageUrl={result.image_url}
-                      selectedVenueId={selectedVenueId}
-                      onSelectVenue={onSelectVenue}
-                      onChangeType={(type) => handleChangeType(resultIdx, itemIdx, type)}
-                      onApply={() => onApply(resultIdx, itemIdx, effectiveType)}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <div className="sticky bottom-0 mt-4 pt-4 bg-background border-t border-border">
+          <Button onClick={handleSubmit} disabled={includedCount === 0 || submitting} className="w-full">
+            {submitting ? 'Submitting…' : `Submit ${includedCount} item${includedCount === 1 ? '' : 's'}`}
+          </Button>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            All submissions are reviewed before publishing.
+          </p>
         </div>
       </CardContent>
     </Card>
