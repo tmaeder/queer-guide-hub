@@ -35,13 +35,13 @@ export function NewsSearchInput({
 
   useEffect(() => {
     const q = value.trim();
-    if (q.length < 2) {
-      setSuggestions([]);
-      setOpen(false);
-      return;
-    }
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(async () => {
+      if (q.length < 2) {
+        setSuggestions([]);
+        setOpen(false);
+        return;
+      }
       try {
         const hits = await fetchAutocomplete(q, ['news'], 6);
         setSuggestions(hits);
@@ -49,7 +49,7 @@ export function NewsSearchInput({
       } catch {
         /* best-effort */
       }
-    }, 250);
+    }, q.length < 2 ? 0 : 250);
     return () => {
       if (debounce.current) clearTimeout(debounce.current);
     };

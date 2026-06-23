@@ -29,6 +29,19 @@ export interface SocialCard {
   last_items: unknown[];
 }
 
+// Strip HTML tags robustly: loop until stable (so interleaved/nested tags like
+// `<scr<script>ipt>` can't reassemble into a live tag after one pass), then drop
+// any stray angle brackets that remain.
+function stripHtml(input: string): string {
+  let prev: string;
+  let out = input;
+  do {
+    prev = out;
+    out = out.replace(/<[^>]*>/g, '');
+  } while (out !== prev);
+  return out.replace(/[<>]/g, '');
+}
+
 const MAX_BYTES = 4 * 1024 * 1024;
 const PREFIX = 'social-cards/';
 const EXT: Record<string, string> = {
@@ -101,7 +114,7 @@ async function resolveMastodon(handle: string): Promise<Partial<SocialCard> | nu
   };
   return {
     display_name: a.display_name || null,
-    bio: a.note ? a.note.replace(/<[^>]+>/g, '').trim() : null,
+    bio: a.note ? stripHtml(a.note).trim() : null,
     avatar_url: a.avatar ?? null,
     follower_count: typeof a.followers_count === 'number' ? a.followers_count : null,
   };
