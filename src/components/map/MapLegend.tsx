@@ -36,7 +36,7 @@ export function MapLegend({ lens, layers, pridePalette, raised }: MapLegendProps
   const showHeat = lens === 'density' || lens === 'combined';
   const showPins = lens !== 'density' && lens !== 'boundary';
   // The collapsed button sits low; when the rail is present, clear its height.
-  const bottomClass = raised ? 'bottom-48' : 'bottom-10';
+  const bottomClass = raised ? 'bottom-36' : 'bottom-10';
 
   return (
     <AnimatePresence initial={false} mode="wait">
